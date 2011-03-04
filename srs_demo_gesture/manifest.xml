@@ -1,0 +1,22 @@
+<package>
+  <description brief="srs_demo_gesture">
+
+     srs_demo_gesture
+
+  </description>
+  <author>Florian Weisshardt</author>
+  <license>Fraunhofer IPA</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_demo_gesture</url>
+
+  <depend package="rospy"/>
+  <depend package="actionlib"/>
+  <depend package="cob_bringup"/>
+  <depend package="cob_default_config"/>
+  <depend package="cob_script_server"/>
+  <depend package="cob_platform_ctrl"/>
+  <depend package="cob_2dnav"/>
+  
+</package>
+
+

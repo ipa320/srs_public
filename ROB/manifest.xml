@@ -1,0 +1,16 @@
+<package>
+  <description brief="ROB">
+
+     ROB
+
+  </description>
+  <author>robotnik</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ROB</url>
+  <depend package="rospy"/>
+  <depend package="tf"/>
+  <depend package="cob_script_server"/>
+
+
+</package>

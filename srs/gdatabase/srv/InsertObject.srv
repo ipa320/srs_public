@@ -1,0 +1,13 @@
+#insert a new object in the GDB
+#Name of the new object
+string objectName
+#Class of the new object
+uint32 classID
+#Reference ID in household object DB
+uint32 HHobjectID
+#object pose
+geometry_msgs/Pose thePose
+#Time stamp for the object
+string lastseenTime
+---
+bool success

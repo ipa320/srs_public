@@ -1,0 +1,12 @@
+#goal definition
+string actionName
+string parameter
+string solution
+---
+#result definition
+int32 returnValue
+---
+#feedback
+string currentState
+bool solutionRequired
+uint32 exceptionalCase_id

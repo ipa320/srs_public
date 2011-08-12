@@ -1,0 +1,22 @@
+<package>
+  <description brief="MixedRealityServer">
+
+     MixedRealityServer
+
+  </description>
+  <author>srg</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/MixedRealityServer</url>
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+  <depend package="roslib"/>
+  <depend package="cv_bridge"/>
+  <depend package="image_transport"/>
+  <depend package="opencv2"/>
+  <depend package="nav_msgs"/>
+  <depend package="tf"/>
+
+</package>
+
+

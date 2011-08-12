@@ -1,0 +1,36 @@
+UI_PRI Interface installation and usage express guide
+
+I. Installation
+1. Ipad/Ipad2
+Double click on app.ipa file. Sync your device with ITunes. 
+(Note: Your UDID must be in the allowed devices list)
+Go to Ipad Settings>SRS and enter your ROS server IP.
+Start the application.
+
+2. ROS server
+
+rosmake MixedRealityServer
+
+II. Starting the UI_PRI user interface
+
+1. Start the simulation and the IPA navigation stack
+
+roslaunch srs_get_milk get_milk.launch
+roslaunch cob_2dnav 2dnav.launch
+
+2. Start the Rosbridge stack
+
+rosrun rosbridge rosbridge
+
+3. Start MixedRealityServer
+
+rosrun MixedRealityServer MRS
+rosrun MixedRealityServer MapTF
+
+4. Start the UI_PRI on the Ipad/Ipad2 device 
+(please ensure that the Ipad is connected to the
+ same network as the ROS server)
+5. Enter the IP of the ROS server in the Ipad SRS settings
+
+For more information, please read the provided topics and services documentation.
+

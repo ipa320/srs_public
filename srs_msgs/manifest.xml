@@ -1,0 +1,20 @@
+<package>
+  <description brief="srs_msgs">
+
+     srs_msgs
+
+  </description>
+  <author>renxi</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_msgs</url>
+  <depend package="cob_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="roslib"/>
+  <depend package="geometry_msgs"/>
+  <depend package="actionlib_msgs"/>
+
+</package>
+
+

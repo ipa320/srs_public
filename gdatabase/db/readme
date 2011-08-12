@@ -1,0 +1,10 @@
+
+CREATE DATABASE srs_gdatabase;
+CREATE USER 'srs'@'localhost';
+SET PASSWORD FOR 'srs'@'localhost' = OLD_PASSWORD('srs');
+GRANT ALL ON srs_gdatabase.* TO 'srs'@'localhost';
+quit
+
+mysql srs_gdatabase < srs_database -p -u srs
+
+

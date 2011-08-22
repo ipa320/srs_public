@@ -6,7 +6,7 @@
 #include "gdatabase/GetParentObject.h"
 #include <ros/duration.h>
 #include <cstdlib>
-#include <stdio.h>
+#include <cstdio>
 using namespace std;
 
 int main(int argc, char **argv)
@@ -19,7 +19,7 @@ int main(int argc, char **argv)
    gdatabase::GetObjectsOnWorkspace srv;
 
    // assign map ID
-   srv.request.objectID = atoll(argv[1]);
+   srv.request.objectID = atol(argv[1]);
 
    // call the server and display the result
    if (client.call(srv))

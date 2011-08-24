@@ -1,16 +1,21 @@
 <package>
   <description brief="ROB">
 
-     ROB
+     Grasping package
 
   </description>
-  <author>robotnik</author>
+  <author>Robotnik Automation SLL</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/ROB</url>
+
+
   <depend package="rospy"/>
   <depend package="tf"/>
   <depend package="cob_script_server"/>
+  <!--<depend package="openrave"/>-->
+  <depend package="trajectory_msgs"/>
+  <depend package="geometry_msgs"/>
 
 
 </package>

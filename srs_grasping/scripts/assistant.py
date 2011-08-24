@@ -7,19 +7,15 @@ class SCRIPT():#################################################################
 ##################################################################################
 	
 	def __init__(self):
-		print "Running assistant."
+		print "Running the assistent."
 	
 	def run(self):	
-		#finish = False;
-		#while not finish:
-
 			print "<-------------- MENU -------------->"
-			print "0 - Generate grasp configurations."
-			print "1 - Depurate manually the XML file."
+			print "0 - Generator"
+			print "1 - Depurator <obsolet>"
 			print "2 - Show grasps in OpenRAVE"
-			print "3 - Show grasps in Gazebo"
+			print "3 - Show grasps in Gazebo <obsolet>"
 			print "4 - Help"
-			print "<---------------------------------->"
 
 			repeat = True;
 			while repeat:
@@ -38,34 +34,26 @@ class SCRIPT():#################################################################
 				s.run()
 
 			elif option == 1:
-				s = depurator.SCRIPT()
-				s.run()
+				res = raw_input("The script is obsolet. Do you want to continue? (y/n): ")
+				if res=="y":
+					s = depurator.SCRIPT()
+					s.run()
 
 			elif option == 2:
 				s = showGraspsOR.SCRIPT()
 				s.run()
 
 			elif option == 3:
-				s = showGraspsGazebo.SCRIPT()
-				s.run()
+				res = raw_input("The script is obsolet. Do you want to continue? (y/n): ")
+				if res=="y":
+					s = showGraspsGazebo.SCRIPT()
+					s.run()
 
 			else:
 				print "USE: "
-				print "     ./assistant.py (load default values)"
-				print "     ./assistant.py object (load ../DB/obj/object.kinbody.xml value)"
-				print "     ./assistant.py object.iv (load ../DB/obj/object.iv value)"
-				print "     ------------------------------------------------------\n"
-				
-				print "     ROB/DB folder:         Grasping configuration files."
-				print "     ROB/scripts folder:    Scripts."
-				print "     ROB/DB/obj folder:     OpenRAVE object files."
-				print "     ------------------------------------------------------\n"
-	
-
-			#res = raw_input("Finish? (y/n): ");
-			#if res=="y":
-			#	finish = True;
-
+				print "     rosrun srs_grasping assistant.py (Load milk_box.iv value)"
+				print "     rosrun srs_grasping assistant.py object (Load object.kinbody.xml value)"
+				print "     rosrun srs_grasping assistant.py object.iv (Load object.iv value)"
 
 
 

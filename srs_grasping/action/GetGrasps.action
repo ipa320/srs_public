@@ -1,0 +1,7 @@
+string ObjectID
+string poseID
+---
+srs_grasping/grasp[] grasps
+bool response
+---
+string fb

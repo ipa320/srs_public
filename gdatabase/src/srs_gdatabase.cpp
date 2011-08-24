@@ -18,7 +18,11 @@
 #include "gdatabase/InsertObject.h"
 #include <sstream>
 #include <ros/duration.h>
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "boost/format.hpp"
 using namespace std;
+using namespace boost::posix_time;
+using namespace boost::gregorian;
 MYSQL *connection;
 MYSQL mysql;
 MYSQL_RES *result;
@@ -30,11 +34,24 @@ bool updatePosInfo(gdatabase::UpdatePosInfo::Request  &req,
 {
 	ROS_INFO("updatePosInfo is called.");
 	mysql_init(&mysql);
-	connection=mysql_real_connect(&mysql,"localhost","root","srs","srs_database",0,0,0);
+	connection=mysql_real_connect(&mysql,"localhost","srs","srs","srs_gdatabase",0,0,0);
 	if (connection==NULL){
 		cout<<mysql_error(&mysql)<<endl;
 		return 1;
 	}
+	res.success=false;
+	string checking_String("SELECT object_name FROM object WHERE object_id=");
+		ostringstream object;
+		object<<req.objectID;
+		checking_String+=object.str();
+		ROS_INFO("%s\n", checking_String.c_str());
+		mysql_query(connection,checking_String.c_str());
+		if (mysql_num_rows(mysql_store_result(connection))==0)
+		{
+			ROS_INFO("Object ID does not exist in the database");
+			return 1;
+		}
+
 
 	string query_String("UPDATE object SET position_x=");
 	ostringstream para;
@@ -51,7 +68,11 @@ bool updatePosInfo(gdatabase::UpdatePosInfo::Request  &req,
 	para<<req.newPose.orientation.z;
 	para<<", orientation_w=";
 	para<<req.newPose.orientation.w;
-	para<<" WHERE object_id=";
+	para<<", time='";
+	ptime m_now = second_clock::universal_time();
+	std::string s_t = ::to_iso_string(m_now);
+	para<<s_t;
+	para<<"' WHERE object_id=";
 	para<<req.objectID;
 	query_String+=para.str();
 
@@ -61,7 +82,12 @@ bool updatePosInfo(gdatabase::UpdatePosInfo::Request  &req,
 	}
 	ROS_INFO("%s\n", query_String.c_str());
 
-	res.success=mysql_query(connection,query_String.c_str());
+
+	if (mysql_query(connection,query_String.c_str())==0)
+	{
+		res.success=true;
+	}
+
 	mysql_close(connection);
 	return true;
 }
@@ -72,7 +98,7 @@ bool getSymbolic(gdatabase::GetSymbolic::Request  &req,
 {
 	ROS_INFO("getSymbolic is called.");
 	mysql_init(&mysql);
-	connection=mysql_real_connect(&mysql,"localhost","root","srs","srs_database",0,0,0);
+	connection=mysql_real_connect(&mysql,"localhost","srs","srs","srs_gdatabase",0,0,0);
 	if (connection==NULL){
 		cout<<mysql_error(&mysql)<<endl;
 		return 1;
@@ -81,11 +107,9 @@ bool getSymbolic(gdatabase::GetSymbolic::Request  &req,
 	string query_String("SELECT symbolic_id FROM oacs WHERE object_id=");
 	ostringstream para;
 	para<<req.objectID;
-	query_String+=para.str();
-	query_String+=" and action_id=";
+	para<<" and action_id=";
 	para<<req.actionID;
-	query_String+=para.str();
-	query_String+=" and component_id=";
+	para<<" and component_id=";
 	para<<req.componentID;
 	query_String+=para.str();
 	if (query_state!=0){
@@ -113,7 +137,7 @@ bool getActionsByObject(gdatabase::GetActionsByObject::Request  &req,
 {
 	ROS_INFO("getActionsByObject is called.");
 	mysql_init(&mysql);
-	connection=mysql_real_connect(&mysql,"localhost","root","srs","srs_database",0,0,0);
+	connection=mysql_real_connect(&mysql,"localhost","srs","srs","srs_gdatabase",0,0,0);
 	if (connection==NULL){
 		cout<<mysql_error(&mysql)<<endl;
 		return 1;
@@ -154,7 +178,7 @@ bool getObjectsOnMap(gdatabase::GetObjectsOnMap::Request  &req,
 {
 	ROS_INFO("getObjectsOnMap is called.");
 	mysql_init(&mysql);
-	connection=mysql_real_connect(&mysql,"localhost","root","srs","srs_database",0,0,0);
+	connection=mysql_real_connect(&mysql,"localhost","srs","srs","srs_gdatabase",0,0,0);
 	if (connection==NULL){
 		cout<<mysql_error(&mysql)<<endl;
 		return 1;
@@ -349,13 +373,9 @@ bool getInfoObject(gdatabase::GetInfoObject::Request  &req,
 
 	mysql_query(connection,query_String.c_str());
 	result=mysql_store_result(connection);
-	while ((row = mysql_fetch_row(result))){
-		if(!row[0])
-		{
-			res.objectName=row[0];
-		}
-		if(!row[1])
-		{
+	row = mysql_fetch_row(result);
+			if (::size_t(row[0])>0){res.objectName=row[0];}
+			if (::size_t(row[1])>0){
 			res.objectPose.position.x=atof(row[1]);
 			res.objectPose.position.y=atof(row[2]);
 			res.objectPose.position.z=atof(row[3]);
@@ -363,20 +383,10 @@ bool getInfoObject(gdatabase::GetInfoObject::Request  &req,
 			res.objectPose.orientation.y=atof(row[5]);
 			res.objectPose.orientation.z=atof(row[6]);
 			res.objectPose.orientation.w=atof(row[7]);
-		}
-		if(!row[8])
-		{
-			res.classID=atoi(row[8]);
-		}
-		if(!row[9])
-		{
-			res.HHobjectID=atoi(row[9]);
-		}
-		if(!row[10])
-		{
-			res.lastseenTime=row[10];
-		}
-	}
+			}
+			if (::size_t(row[8])>0){res.classID=atoll(row[8]);}else{res.classID=0;}
+			if (::size_t(row[9])>0){res.HHobjectID=atoll(row[9]);}else{res.HHobjectID=0;}
+			if (::size_t(row[10])>0){res.lastseenTime=row[10];}
 
 	mysql_free_result(result);
 	mysql_close(connection);
@@ -388,14 +398,33 @@ bool insertObject(gdatabase::InsertObject::Request  &req,
 {
 	ROS_INFO("insertObject is called.");
 	mysql_init(&mysql);
-	connection=mysql_real_connect(&mysql,"localhost","root","srs","srs_database",0,0,0);
+	connection=mysql_real_connect(&mysql,"localhost","srs","srs","srs_gdatabase",0,0,0);
 	if (connection==NULL){
 		cout<<mysql_error(&mysql)<<endl;
 		return 1;
 	}
 
+
+	string checking_String("SELECT object_id FROM object WHERE object_name=");
+	ostringstream object;
+	object<<"'"<<req.objectName<<"'";
+	checking_String+=object.str();
+	ROS_INFO("%s\n", checking_String.c_str());
+	mysql_query(connection,checking_String.c_str());
+	if (mysql_num_rows(mysql_store_result(connection))>0)
+	{
+		ROS_INFO("Object name already exist in the database");
+		return 1;
+	}
+
 	string query_String("INSERT INTO object (object_name, object_class_id, position_x, position_y,position_z,orientation_x,orientation_y,orientation_z, orientation_w, HH_object_ID,time ) VALUES (");
 	ostringstream para;
+	para<<"'";
+	para<<req.objectName;
+	para<<"'";
+	para<<", ";
+	para<<req.classID;
+	para<<", ";
 	para<<req.thePose.position.x;
 	para<<", ";
 	para<<req.thePose.position.y;
@@ -412,16 +441,23 @@ bool insertObject(gdatabase::InsertObject::Request  &req,
 	para<<", ";
 	para<<req.HHobjectID;
 	para<<", ";
+	para<<"'";
 	para<<req.lastseenTime;
+	para<<"'";
 	para<<" )";
 
 	if (query_state!=0){
 		cout<<mysql_error(connection)<<endl;
 		return 1;
 	}
+	query_String+=para.str();
 	ROS_INFO("%s\n", query_String.c_str());
 
-	res.success=mysql_query(connection,query_String.c_str());
+	res.success=false;
+	if (mysql_query(connection,query_String.c_str())==0)
+	{
+		res.success=true;
+	}
 	mysql_close(connection);
 	return true;
 }

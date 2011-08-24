@@ -30,6 +30,64 @@ mysql srs_gdatabase < ./gdatabase/db/srs_database -p -u srs
 
 //The password for user srs is srs. You are under srs directory. The path need to be updated for other place.
 
+Examples of using GDB
+
+#Start the services:
+rosrun gdatabase srs_gdatabase
+
+#Updating the pose for a given object ID
+#rosrun gdatabase srs_gdatabase_client service_id  pose  object_id
+#service_id 1 is assigned for updating the pose
+#pose e.g. 4.7 1 3 2 1 3.5 1 
+#object_id e.g. 3
+rosrun gdatabase srs_gdatabase_client 1 4.7 1 3 2 1 3.5 1 3
+
+#getSymbolic for given objectID, actionID, componentID
+#rosrun gdatabase srs_gdatabase_client service_id  objectID actionID componentID
+#service_id 2 is assigned for getSymbolic 
+rosrun gdatabase srs_gdatabase_client 2 4 2 5
+
+#getActionsByObject
+#service_id 3 is assigned for getActionsByObject
+#rosrun gdatabase srs_gdatabase_client service_id  objectID 
+rosrun gdatabase srs_gdatabase_client 3 1 
+
+#getObjectsOnMap
+#service_id 4 is assigned for getObjectsOnMap
+#rosrun gdatabase srs_gdatabase_client service_id  map_id 
+rosrun gdatabase srs_gdatabase_client 4 1 
+
+#getChildObjects
+#service_id 5 is assigned for getChildObjects
+#rosrun gdatabase srs_gdatabase_client service_id  object_id 
+rosrun gdatabase srs_gdatabase_client 5 1 
+
+#getParentObject
+#service_id 6 is assigned for getParentObject
+#rosrun gdatabase srs_gdatabase_client service_id  object_id 
+rosrun gdatabase srs_gdatabase_client 6 5
+
+#getObjectsOnWorkspace
+#service_id 7 is assigned for getObjectsOnWorkspace
+#rosrun gdatabase srs_gdatabase_client service_id  object_id 
+rosrun gdatabase srs_gdatabase_client 7 1
+
+#getWorkspaceOnMap
+#service_id 8 is assigned for getWorkspaceOnMap
+#rosrun gdatabase srs_gdatabase_client service_id  map_id 
+rosrun gdatabase srs_gdatabase_client 8 1
+
+#getInfoObject
+#service_id 9 is assigned for getInfoObject
+#rosrun gdatabase srs_gdatabase_client service_id  object_id 
+rosrun gdatabase srs_gdatabase_client 9 1
+
+#insertObject
+#service_id 10 is assigned for insertObject
+#rosrun gdatabase srs_gdatabase_client service_id  object_name object_class pose HHobjectID
+rosrun gdatabase srs_gdatabase_client 10 cup1 1 8 2  3 2 1 3.5 1  0
+
+
 
 2  SRS_control_task
 

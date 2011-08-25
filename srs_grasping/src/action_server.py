@@ -61,7 +61,7 @@ class grasp_action_server():
 
 ## Main routine for running the grasp server
 if __name__ == '__main__':
-	rospy.init_node('GetGraspsActionServer')
+	rospy.init_node('get_grasps_action_server')
 	SCRIPT = grasp_action_server()
 	rospy.loginfo("/grasp_server is running")
 	rospy.spin()

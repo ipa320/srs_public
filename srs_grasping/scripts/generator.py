@@ -72,8 +72,7 @@ class SCRIPT():#################################################################
 		"""
 		
 
-		grasping_functions.generateFile(all_grasps=True, targetName=self.targetName, gmodel=gmodel, env=env)
-
+		grasping_functions.generateFile(targetName=self.targetName, gmodel=gmodel, env=env)
 
 		raw_input("Press ENTER to finish.")
 		

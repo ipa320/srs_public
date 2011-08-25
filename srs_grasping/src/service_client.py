@@ -10,8 +10,8 @@ from srs_grasping.srv import *
 
 def grasp_service_client():
 
-	rospy.wait_for_service('/grasp_service/GetGrasps')
-	gg = rospy.ServiceProxy('/grasp_service/GetGrasps', GetGrasps)  
+	rospy.wait_for_service('/grasp_service/get_grasps')
+	gg = rospy.ServiceProxy('/grasp_service/get_grasps', GetGrasps)  
 	try:
 		resp = gg("milk_box","Z")
 	except rospy.ServiceException, e:
@@ -23,7 +23,7 @@ def grasp_service_client():
 
 if __name__ == '__main__':
 	try:
-		rospy.init_node('GetGraspsServiceClient')
+		rospy.init_node('get_grasp_service_client')
 		result = grasp_service_client()
 		print "-----------------"
 		print result

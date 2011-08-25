@@ -70,36 +70,10 @@ class SCRIPT():#################################################################
 			print "There are not generated file."
 			sys.exit()
 
-		repeat=True;
-		while repeat==True:
 
-			rep = True;
-			conf = 0;
-			while rep:
-				try:
-					#conf = int(raw_input("There are "+str(len(GRASPS))+" configurations. What do you want to see?: "))
-					conf = 0
-
-					if (conf<0 or conf>=len(GRASPS)):
-						print "Wrong configuration."
-						rep = True;
-					else:
-						rep = False;
-				except:
-					print "Wrong configuration."
-					rep = True;			
-
-
-
-
-			grasps = GRASPS[conf]
-			g = grasping_functions.showOR(env, grasps, delay=None)
-
-			res = raw_input("Do you want to see another configuration? (y/n): ")
-			if res=="n":
-				repeat = False
-	
-						
+		grasps = GRASPS[0]
+		g = grasping_functions.showOR(env, grasps, delay=None)
+				
 		raw_input("Press ENTER to finish.")
 		
 

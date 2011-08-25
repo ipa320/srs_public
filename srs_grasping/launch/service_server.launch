@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-	<group ns="service_server">
+	<group ns="grasp_server">
 		<!-- start service_server -->
 		<node pkg="srs_grasping" type="service_server.py" name="service_server" cwd="node" respawn="false" output="screen" />
 	</group>

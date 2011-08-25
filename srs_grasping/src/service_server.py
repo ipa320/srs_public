@@ -53,9 +53,9 @@ def GetGraspsFunction(req):
 
 def GetGraspsService():
 
-	rospy.init_node("GetGraspsService")
-	s = rospy.Service('/grasp_service/GetGrasps', GetGrasps, GetGraspsFunction)
-	print "/grasp_service/GetGrasps service is running."
+	rospy.init_node("get_grasp_service_server")
+	s = rospy.Service('/grasp_service/get_grasps', GetGrasps, GetGraspsFunction)
+	print "/grasp_service/get_grasps service is running."
 	rospy.spin()
 
 

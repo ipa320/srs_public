@@ -62,29 +62,16 @@ class SCRIPT():
 			sys.exit()	
 
 	
-		repeat = True;
-		while repeat:
-			#conf = int(raw_input("There are "+str(len(GRASPS))+" configurations. What do you want to see?: "));
-			conf=0
-			if (conf>=len(GRASPS)):
-				continue;
-			g = GRASPS[conf]
-			print str(len(g))+" grasps will be showed.";
 
-			for i in range (0,len(g)):
-				print 'grasp %d/%d'%(i,len(g))
-				grasping_functions.Grasp(g[i].joint_values)
-				raw_input("...")
+		g = GRASPS[0]
+		print str(len(g))+" grasps will be showed.";
 
-			r = raw_input("Do you want to see another configuration? (y/n): ");
-			if r=="y":
-				repeat = True;
-			else:
-				repeat = False;
+		for i in range (0,len(g)):
+			print 'grasp %d/%d'%(i,len(g))
+			grasping_functions.Grasp(g[i].joint_values)
+			raw_input("...")
 
-
-
-
+		raw_input("Press ENTER to finish.")
 
 if __name__ == "__main__":
 	s = SCRIPT()

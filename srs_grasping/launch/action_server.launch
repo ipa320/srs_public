@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+	<group ns="action_server">
+		<!-- start action_server -->
+		<node pkg="srs_grasping" type="action_server.py" name="action_server" cwd="node" respawn="false" output="screen" />
+	</group>
+
+</launch>

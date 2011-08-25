@@ -33,12 +33,12 @@ class grasp_action_server():
 			if len(g)==0:
 				print "----------------------------"
 				print "Wrong poseID value. Options:"
-				print "		TOP"
-				print "		DOWN"
-				print "		SIDEX"
-				print "		SIDEmX"
-				print "		SIDEY"
-				print "		SIDEmY"
+				print "		 Z"
+				print "		_Z"
+				print "		 X"
+				print "		_X"
+				print "		 Y"
+				print "		_Y"
 				print "----------------------------"
 
 				server_result.grasps = []

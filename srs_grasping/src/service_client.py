@@ -13,7 +13,7 @@ def grasp_service_client():
 	rospy.wait_for_service('/grasp_service/GetGrasps')
 	gg = rospy.ServiceProxy('/grasp_service/GetGrasps', GetGrasps)  
 	try:
-		resp = gg("milk_box","TOP")
+		resp = gg("milk_box","Z")
 	except rospy.ServiceException, e:
 		print "Service did not process request: %s"%str(e)
 

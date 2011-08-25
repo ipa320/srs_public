@@ -17,21 +17,23 @@ def GetGraspsFunction(req):
 	res = GetGraspsResponse()
 	
 	try:
+
 		GRASPS = grasping_functions.getGrasps(file_name, pose=req.poseID, msg=True)
+		print "-----------------_"
 		rospy.loginfo(str(len( GRASPS[0]))+" grasping configuration for this object.")			
 
-		g = GRASPS[0]
 
+		g = GRASPS[0]
 		if len(g)==0:
 
 			print "----------------------------"
 			print "Wrong poseID value. Options:"
-			print "		TOP"
-			print "		DOWN"
-			print "		SIDEX"
-			print "		SIDEmX"
-			print "		SIDEY"
-			print "		SIDEmY"
+			print "		 Z"
+			print "		_Z"
+			print "		 X"
+			print "		_X"
+			print "		 Y"
+			print "		_Y"
 			print "----------------------------"
 
 			res.grasps = []
@@ -45,7 +47,7 @@ def GetGraspsFunction(req):
 		rospy.logerr("No grasping configurations for "+req.ObjectID+" object.")	
 		res.grasps = []
 		res.response = False;		
-
+	
 	return res
     
 

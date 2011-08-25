@@ -5,7 +5,6 @@ roslib.load_manifest('srs_grasping')
 import roslib.packages
 import rospy
 import sys
-import simple_script_server
 from trajectory_msgs.msg import *
 import grasping_functions
 
@@ -17,6 +16,7 @@ class SCRIPT():
 
 	def __init__(self):
 
+		rospy.init_node("simGaz_script")
 
 		if (len(sys.argv)<=1):
 			self.targetName = 'milk_box'
@@ -33,10 +33,7 @@ class SCRIPT():
 
 
 
-		rospy.init_node("simGaz_script")
-		print "Loading script server..."
-		self.sss = simple_script_server.simple_script_server()
-		print "Script server loaded."
+
 
 	def run(self):
 
@@ -48,8 +45,18 @@ class SCRIPT():
 			file_name = package_path+'/DB/'+self.targetName+"_all_grasps.xml"
 
 
-		try:
-			grasps = grasping_functions.getGrasps(file_name, "Z");
+		try: 
+			REP = True
+			while REP:
+				print "What configuration do you prefer?"
+				print " X  Y  Z (positive axis)"
+				print "_X _Y _Z (negative axis)"
+				res = raw_input("?: ")
+				if res!="X" and res!="_X" and res!="Y" and res!="_Y" and res!="Z" and res!="_Z":
+					print "Wrong value."
+				else: 
+					GRASPS = grasping_functions.getGrasps(file_name, res)
+					REP = False;
 		except:
 			print "There are not generated file."
 			sys.exit()	
@@ -57,17 +64,17 @@ class SCRIPT():
 	
 		repeat = True;
 		while repeat:
-			#conf = int(raw_input("There are "+str(len(grasps))+" configurations. What do you want to see?: "));
+			#conf = int(raw_input("There are "+str(len(GRASPS))+" configurations. What do you want to see?: "));
 			conf=0
-			if (conf>=len(grasps)):
+			if (conf>=len(GRASPS)):
 				continue;
-			g = grasps[conf]
+			g = GRASPS[conf]
 			print str(len(g))+" grasps will be showed.";
 
 			for i in range (0,len(g)):
-				self.sss.move("sdh",[eval(g[i].joint_values)])
-				self.sss.wait_for_input()
-
+				print 'grasp %d/%d'%(i,len(g))
+				grasping_functions.Grasp(g[i].joint_values)
+				raw_input("...")
 
 			r = raw_input("Do you want to see another configuration? (y/n): ");
 			if r=="y":

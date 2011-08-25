@@ -4,7 +4,6 @@
 import roslib; 
 roslib.load_manifest('srs_grasping')
 import rospy
-import simple_script_server
 import sys, time
 import openravepy
 
@@ -14,6 +13,7 @@ from tf.transformations import *
 from trajectory_msgs.msg import *
 from geometry_msgs.msg import *
 from srs_grasping.msg import *
+
 
 
 pi = math.pi
@@ -398,7 +398,6 @@ def getGrasps(file_name, pose=None, num=0, msg=False):
 		hijos = (((xmldoc.firstChild)).getElementsByTagName('configuration'))[j].getElementsByTagName('Grasp');
 		grasps = []
 		for i in range(0,len(hijos)):
-
 			joint_values = ((hijos[i].getElementsByTagName('joint_values'))[0]).firstChild.nodeValue;
 
 			aux = ((hijos[i].getElementsByTagName('GraspPose'))[0]);
@@ -656,35 +655,23 @@ def addDepurateConfiguration(file_name, grasps):
 # -------------------------------------------------------------------------------------------------------------------
 # Grasp function
 # -------------------------------------------------------------------------------------------------------------------
-def graspIt(objectID, poseID):
+def Grasp(values):
 
-	file_name = package_path+'/DB/'+objectID+"_all_grasps.xml"
+	pub = rospy.Publisher('/sdh_controller/command', JointTrajectory, latch=True)
 
-	GRASPS = getGrasps(file_name, poseID)
-	grasps = GRASPS[0];
+	jt = JointTrajectory()
+	jt.joint_names = ["sdh_knuckle_joint", "sdh_finger_12_joint", "sdh_finger_13_joint", "sdh_finger_22_joint", "sdh_finger_23_joint", "sdh_thumb_2_joint", "sdh_thumb_3_joint"]
+	jt.points = []
+	jt.points.append(JointTrajectoryPoint())
+	jt.points[0].positions = eval(values)
+	jt.points[0].time_from_start.secs = 3
 
-	
-	rospy.init_node("grasping_node")
-	sss = simple_script_server.simple_script_server()
-
-	
-	fail = False;
-	for i in range(0,len(grasps)):
-		values = eval(grasps[i].joint_values)
-
-		for j in range(0,len(values)):
-			values[j] = float(values[j]);
+	pub.publish(jt)
 		
-			if j==0:
-				if values[j]<0:
-					values[j] = 0;
 
-		res = sss.move("sdh", [values])
-		if res.get_error_code() == 0:
-			print "Grasp valido."
-			break;
-		else:
-			print "Grasp no valido."
+	
+
+
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -694,8 +681,7 @@ def graspConfig_to_MSG(res):
 	aux = []
 	res = res[0]
 	for i in range(0,len(res)):
-		aux.append(grasp(str(res[i].joint_values), res[i].G2, float(res[i].MinDist), float(res[i].Volume)));
-
+		aux.append(grasp(str(res[i].joint_values), res[i].G2, float(res[i].MinDist), float(res[i].MinDist)));
 	return [aux]
 
 

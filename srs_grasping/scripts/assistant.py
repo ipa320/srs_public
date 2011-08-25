@@ -14,7 +14,7 @@ class SCRIPT():#################################################################
 			print "0 - Generator"
 			print "1 - Depurator <obsolet>"
 			print "2 - Show grasps in OpenRAVE"
-			print "3 - Show grasps in Gazebo <obsolet>"
+			print "3 - Show SDH in Gazebo"
 			print "4 - Help"
 
 			repeat = True;

@@ -28,12 +28,12 @@ def GetGraspsFunction(req):
 
 			print "----------------------------"
 			print "Wrong poseID value. Options:"
-			print "		 Z"
-			print "		_Z"
 			print "		 X"
 			print "		_X"
 			print "		 Y"
 			print "		_Y"
+			print "		 Z"
+			print "		_Z"
 			print "----------------------------"
 
 			res.grasps = []

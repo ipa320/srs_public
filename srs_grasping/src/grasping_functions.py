@@ -7,6 +7,7 @@ import sys, time
 import openravepy
 
 from xml.dom import minidom
+from numpy import *
 
 from tf.transformations import *
 from trajectory_msgs.msg import *
@@ -22,10 +23,9 @@ package_path = roslib.packages.get_pkg_dir('srs_grasping')
 class GraspConfig(): ############################################################################
 #################################################################################################
 
-	def __init__(self, joint_values, GraspPose, G2, MinDist, Volume):
+	def __init__(self, joint_values, GraspPose, MinDist, Volume):
 		self.joint_values = joint_values
-		self.GraspPose = GraspPose	# Configuracion de la mano relativa al palm link.
-		self.G2 = G2			# Para poder mostrarlo en OR.	
+		self.GraspPose = GraspPose
 		self.MinDist = MinDist
 		self.Volume = Volume;
 
@@ -163,6 +163,7 @@ def stringList_to_ORformat(OR):
 	for i in range (0,len(OR)):
 		res[i+7] = float(OR[i])
 
+
 	return res
 
 
@@ -212,7 +213,7 @@ def generateFile(targetName, gmodel, env):
 
 	f_name = targetName + "_all_grasps.xml"
 
-
+	print "DKASLDASDLKASKLDASLDASLDKAS"
 	try:
 		f = open(package_path+'/DB/'+f_name,'r')
 		#addConfiguration(f_name, gmodel)
@@ -237,39 +238,24 @@ def generateFile(targetName, gmodel, env):
 	 			contacts,finalconfig,mindist,volume = gmodel.testGrasp(grasp=gmodel.grasps[i],translate=True,forceclosure=True)
 			   	f.write("<Grasp Index=\""+str(cont)+"\">\n")
 
-
 				value = (finalconfig[0])	#care-o-bot3.zae
 				value = value[7:14]
 				value = OR_to_ROS(value);
 				f.write("<joint_values>"+str(value)+"</joint_values>\n");
 
 			   	f.write("<GraspPose>\n");
-
 				# [Valores relativos al palm_link]
 				env.GetRobots()[0].GetController().Reset(0)
 				env.GetRobots()[0].SetDOFValues(finalconfig[0])
 				env.GetRobots()[0].SetTransform(finalconfig[1])
 				env.UpdatePublishedBodies()
-				conf = ((env.GetRobots()[0]).GetManipulator("arm")).GetEndEffectorTransform()
 				index = ((env.GetRobots()[0]).GetLink("sdh_palm_link")).GetIndex()
 				matrix = (((env.GetRobots()[0]).GetLinkTransformations())[index])
-
 				t = translation_from_matrix(matrix)
 				e = euler_from_matrix(matrix, axes='sxyz')
 				f.write("<Translation>["+str(t[0])+", "+str(t[1])+", "+str(t[2])+"]</Translation>\n");
 				f.write("<Rotation>["+str(e[0])+", "+str(e[1])+", "+str(e[2])+"]</Rotation>\n");
-				# [/Valores relativos al palm_link]
-
-				# [Necesario para simularlo en OR]
-				t = translation_from_matrix(finalconfig[1])
-				e = euler_from_matrix(finalconfig[1], axes='sxyz')
-				f.write("<GT>["+str(t[0])+", "+str(t[1])+", "+str(t[2])+"]</GT>\n");
-				f.write("<GR>["+str(e[0])+", "+str(e[1])+", "+str(e[2])+"]</GR>\n");
-				# [/Necesario para simularlo en OR]
-
-
 			   	f.write("</GraspPose>\n")
-
 
 			   	f.write("<MinDist>"+str(mindist)+"</MinDist>\n")
 			   	f.write("<Volume>"+str(volume)+"</Volume>\n")
@@ -302,7 +288,6 @@ def getGrasps(file_name, pose=None, num=0, msg=False):
 		hijos = (((xmldoc.firstChild)).getElementsByTagName('configuration'))[j].getElementsByTagName('Grasp');
 		grasps = []
 		for i in range(0,len(hijos)):
-
 			joint_values = ((hijos[i].getElementsByTagName('joint_values'))[0]).firstChild.nodeValue;
 
 			aux = ((hijos[i].getElementsByTagName('GraspPose'))[0]);
@@ -318,22 +303,11 @@ def getGrasps(file_name, pose=None, num=0, msg=False):
 			g.pose.orientation.z = float(Rotation[2])
 			g.pose.orientation.w = float(Rotation[3])
 
-			GT = eval((aux.getElementsByTagName('GT')[0]).firstChild.nodeValue);
-			GR = eval((aux.getElementsByTagName('GR')[0]).firstChild.nodeValue);
-			g2 = PoseStamped()
-			g2.pose.position.x = float(GT[0])
-			g2.pose.position.y = float(GT[1])
-			g2.pose.position.z = float(GT[2])
-			GR =  quaternion_from_euler(GR[0], GR[1], GR[2], axes='sxyz')
-			g2.pose.orientation.x = float(GR[0])
-			g2.pose.orientation.y = float(GR[1])
-			g2.pose.orientation.z = float(GR[2])
-			g2.pose.orientation.w = float(GR[3])
-
 			MinDist = ((hijos[i].getElementsByTagName('MinDist'))[0]).firstChild.nodeValue;
 			Volume = ((hijos[i].getElementsByTagName('Volume'))[0]).firstChild.nodeValue;
 
-			grasps.append(GraspConfig(joint_values, g, g2, MinDist, Volume));
+
+			grasps.append(GraspConfig(joint_values, g, MinDist, Volume));
 
 		grasps = grasp_filter(grasps)
 
@@ -350,7 +324,7 @@ def getGrasps(file_name, pose=None, num=0, msg=False):
 		elif pose=="_Y":	
 			grasps.sort(GraspConfig._Y)
 		else:
-			grasps.sort()
+			grasps = []
 		
 		if num==0:
 			num=int(len(grasps)/6)
@@ -397,6 +371,7 @@ def grasp_filter(g):
 # Shows the grasps in OpenRAVE
 # -----------------------------------------------------------------------------------------------
 def showOR(env, grasps, delay=0.5, depurador=False):
+	"""
 	g = []
 
 	env.SetViewer('qtcoin')
@@ -414,8 +389,8 @@ def showOR(env, grasps, delay=0.5, depurador=False):
 			env.GetRobots()[0].SetDOFValues(stringList_to_ORformat(grasps[i].joint_values))
 			env.GetRobots()[0].SetTransform(matrix_from_graspPose(grasps[i].G2))
 			env.UpdatePublishedBodies()
+			print grasps[i].GraspPose
 
-				
 			if depurador==True:
 				res = raw_input("?: " )
 				if res=="save":
@@ -428,8 +403,47 @@ def showOR(env, grasps, delay=0.5, depurador=False):
 				elif delay > 0:
 					time.sleep(delay)
 	return g;
+	"""
 
+	g = []
 
+	env.SetViewer('qtcoin')
+	time.sleep(1.0)
+
+	if depurador==True:
+		print "Write <save> to save the current configuration and <end> to finish."
+
+	manip = ((env.GetRobots()[0]).GetManipulator("arm"))
+	robot = env.GetRobots()[0]
+	with openravepy.databases.grasping.GraspingModel.GripperVisibility(manip):
+
+		for i in range(0,len(grasps)):
+			print 'grasp %d/%d'%(i,len(grasps))
+
+			robot.SetDOFValues(stringList_to_ORformat(grasps[i].joint_values))
+			Tgrasp = matrix_from_graspPose(grasps[i].GraspPose)
+
+			index = (robot.GetLink("sdh_palm_link")).GetIndex()
+			matrix = ((robot.GetLinkTransformations())[index])
+			Tdelta = dot(Tgrasp,linalg.inv(matrix))
+			for link in manip.GetChildLinks():
+				link.SetTransform(dot(Tdelta,link.GetTransform()))
+
+			env.UpdatePublishedBodies()
+
+			if depurador==True:
+				res = raw_input("?: " )
+				if res=="save":
+					g.append(grasps[i]);
+				if res=="end":
+					return g;
+			else:
+				if delay is None:
+					raw_input('Next config.')
+				elif delay > 0:
+					time.sleep(delay)
+	return g;
+	
 
 
 

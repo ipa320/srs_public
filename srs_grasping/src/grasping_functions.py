@@ -4,7 +4,7 @@ import roslib
 roslib.load_manifest('srs_grasping')
 import rospy
 import sys, time
-import openravepy
+#import openravepy
 
 from xml.dom import minidom
 from numpy import *

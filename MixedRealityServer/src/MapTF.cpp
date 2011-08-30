@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 			tf::StampedTransform transform;
 			try
 			{
-				listener.lookupTransform("/odom_combined", "/map", ros::Time(0), transform);
+				listener.lookupTransform("/base_link", "/map", ros::Time(0), transform);
 			}
 			catch (tf::TransformException ex)
 			{

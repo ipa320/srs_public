@@ -12,7 +12,7 @@
   <depend package="actionlib"/>
   <depend package="rospy"/>
   <depend package="tf"/>
-  <depend package="openrave"/>
+  <!--<depend package="openrave"/>-->
   <depend package="trajectory_msgs"/>
   <depend package="geometry_msgs"/>
 

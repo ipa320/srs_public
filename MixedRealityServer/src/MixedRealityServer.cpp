@@ -77,7 +77,8 @@ namespace MixedRealityServer
 	 		tf::StampedTransform transform;	
 			try
 			{
-		  		listener.lookupTransform("/map", "/odom_combined", ros::Time(0), transform);
+//	listener.lookupTransform("/map", "/odom_combined", ros::Time(0), transform);
+	listener.lookupTransform("/map", "/base_link", ros::Time(0), transform);
 			}
 			catch (tf::TransformException ex)
 			{

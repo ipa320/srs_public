@@ -14,6 +14,8 @@ from trajectory_msgs.msg import *
 from geometry_msgs.msg import *
 from srs_grasping.msg import *
 
+from simple_script_server import *
+sss = simple_script_server()
 
 pi = math.pi
 package_path = roslib.packages.get_pkg_dir('srs_grasping')
@@ -31,15 +33,16 @@ class GraspConfig(): ###########################################################
 
 	
 	def __cmp__(self,other):
+		
 		if self.Volume > other.Volume:
 			return 1
 		elif self.Volume < other.Volume:
 			return -1
 		else:
 			return 0
+		
 
-
-	###### [ GRASP FILTERS ] ##################################################
+	###### [ GRASP CMP FILTERS ] ##################################################
 	def Z(self,other):
 		s = self.GraspPose.pose.position.z
 		o = other.GraspPose.pose.position.z
@@ -112,6 +115,17 @@ class GraspConfig(): ###########################################################
 			return 0
 	###### [/GRASP FILTERS ] ##################################################
 
+	def minZ(self,other):
+		s = self.G2.pose.position.z
+		o = other.G2.pose.position.z
+
+		if s > o:
+			return 1
+		elif  s < o:
+			return -1
+		else:
+			return 0
+	
 
 
 #################################################################################################
@@ -125,6 +139,17 @@ def OR_to_ROS(OR):
 # Convert Gazebo to OpenRAVE format.
 def ROS_to_OR(ROS):
 	return [ROS[3], ROS[4], ROS[0], ROS[1], ROS[2], ROS[5], ROS[6]]
+
+
+# Convert /sdh_controller/command to script_server/sdh/joint_names
+def sdh_controller_TO_script_server(values):
+	#/sdh_controller/command
+	#sdh_knuckle_joint", "sdh_finger_12_joint", "sdh_finger_13_joint", "sdh_finger_22_joint", "sdh_finger_23_joint", "sdh_thumb_2_joint", "sdh_thumb_3_joint
+
+	#/script_server/sdh/joint_names
+	#sdh_knuckle_joint, sdh_thumb_2_joint, sdh_thumb_3_joint, sdh_finger_12_joint, sdh_finger_13_joint,sdh_finger_22_joint, sdh_finger_23_joint
+	values = eval(values)
+	return [[values[0], values[5], values[6], values[1], values[2], values[3], values[4]]]
 
 
 # Convert GraspConfig to msg format.
@@ -201,12 +226,18 @@ def generateFile(targetName, gmodel, env):
 			print str(i+1)+"/"+str(len(gmodel.grasps))
 			try:
 	 			contacts,finalconfig,mindist,volume = gmodel.testGrasp(grasp=gmodel.grasps[i],translate=True,forceclosure=True)
-
-			   	f.write("<Grasp Index=\""+str(cont)+"\">\n")
-
 				#care-o-bot3.zae
 				value = (finalconfig[0])[7:14]	
 				value = OR_to_ROS(value)
+				j = value
+
+
+				if not (j[1]>=-1.15 and j[3]>=-1.15 and j[5]>=-1.25 and j[1]<=1 and j[3]<=1 and j[5]<=1 and j[2]>-0.5 and j[4]>-0.5 and j[6]>-0.5):
+					continue
+
+			   	f.write("<Grasp Index=\""+str(cont)+"\">\n")
+			   	
+                value = sdh_controller_TO_script_server(value)
 				f.write("<joint_values>"+str(value)+"</joint_values>\n")
 
 				# [Valores relativos al palm_link]
@@ -216,6 +247,7 @@ def generateFile(targetName, gmodel, env):
 				robot.SetDOFValues(finalconfig[0])
 				robot.SetTransform(finalconfig[1])
 				env.UpdatePublishedBodies()
+
 				index = (robot.GetLink("sdh_palm_link")).GetIndex()
 				matrix = (robot.GetLinkTransformations())[index]
 				t = translation_from_matrix(matrix)
@@ -223,6 +255,7 @@ def generateFile(targetName, gmodel, env):
 				f.write("<Translation>["+str(t[0])+", "+str(t[1])+", "+str(t[2])+"]</Translation>\n")
 				f.write("<Rotation>["+str(e[0])+", "+str(e[1])+", "+str(e[2])+"]</Rotation>\n")
 			   	f.write("</GraspPose>\n")
+
 
 			   	f.write("<MinDist>"+str(mindist)+"</MinDist>\n")
 			   	f.write("<Volume>"+str(volume)+"</Volume>\n")
@@ -270,32 +303,53 @@ def getGrasps(file_name, pose=None, num=0, msg=False):
 			g.pose.orientation.z = float(Rotation[2])
 			g.pose.orientation.w = float(Rotation[3])
 
+			aux = ((hijos[i].getElementsByTagName('G2'))[0])
+			Translation = eval((aux.getElementsByTagName('TG')[0]).firstChild.nodeValue)
+			Rotation = eval((aux.getElementsByTagName('TR')[0]).firstChild.nodeValue)
+			g2 = PoseStamped()
+			g2.pose.position.x = float(Translation[0])
+			g2.pose.position.y = float(Translation[1])
+			g2.pose.position.z = float(Translation[2])
+			Rotation =  quaternion_from_euler(Rotation[0], Rotation[1], Rotation[2], axes='sxyz')
+			g2.pose.orientation.x = float(Rotation[0])
+			g2.pose.orientation.y = float(Rotation[1])
+			g2.pose.orientation.z = float(Rotation[2])
+			g2.pose.orientation.w = float(Rotation[3])
+
+
+
+
 			MinDist = ((hijos[i].getElementsByTagName('MinDist'))[0]).firstChild.nodeValue
 			Volume = ((hijos[i].getElementsByTagName('Volume'))[0]).firstChild.nodeValue
 
 			grasps.append(GraspConfig(joint_values, g, MinDist, Volume))
 
-		grasps = grasp_filter(grasps)
+		#grasps = grasp_filter(grasps)
 
 		if pose=="Z":
 			grasps.sort(GraspConfig.Z)
+			grasps = Zfilter(grasps)
 		elif pose=="_Z":	
 			grasps.sort(GraspConfig._Z)
+			grasps = _Zfilter(grasps)
 		elif pose=="X":	
 			grasps.sort(GraspConfig.X)
+			grasps = Xfilter(grasps)
 		elif pose=="_X":	
 			grasps.sort(GraspConfig._X)
+			grasps = Xfilter(grasps)
 		elif pose=="Y":	
 			grasps.sort(GraspConfig.Y)
-		elif pose=="_Y":	
+			grasps = Yfilter(grasps)
+		else:	
 			grasps.sort(GraspConfig._Y)
-		else:
-			grasps = []
-		
+			grasps = Yfilter(grasps)
+
 		if num==0:
-			num=int(len(grasps)/6)
+			num=len(grasps)
 		
 		res.append(grasps[0:num])
+
 
 	if msg==False:
 		return res					#returns a GraspConfig list (openrave viewer)
@@ -307,7 +361,7 @@ def getGrasps(file_name, pose=None, num=0, msg=False):
 # Grasp function
 # -----------------------------------------------------------------------------------------------
 def Grasp(values):
-
+	"""
 	pub = rospy.Publisher('/sdh_controller/command', JointTrajectory, latch=True)
 
 	jt = JointTrajectory()
@@ -318,10 +372,14 @@ def Grasp(values):
 	jt.points[0].time_from_start.secs = 3
 
 	pub.publish(jt)
-		
+	"""
+
+	sss.move("sdh", sdh_controller_TO_script_server(values))
+
+	
 	
 # -----------------------------------------------------------------------------------------------
-# Remove grasps in wich the fingers are in a extrange position.
+# Remove grasps in wich the fingers are in a extrange position. (obsolet, we have filtered all the filter)
 # -----------------------------------------------------------------------------------------------
 def grasp_filter(g):
 	grasps = []
@@ -377,3 +435,74 @@ def showOR(env, grasps, delay=0.5, depurador=False):
 				elif delay > 0:
 					time.sleep(delay)
 	return g
+	
+
+
+
+
+###### [ GRASP FILTERS ] ##################################################
+def _Zfilter(grasps):
+	aux = []
+	for i in range(0,len(grasps)):
+		g = abs(grasps[i].GraspPose.pose.orientation.w)
+		if g > 0 and g < 0.1:
+			aux.append(grasps[i])
+		else:
+			break
+	return aux
+
+
+def Zfilter(grasps):
+	aux = []
+	for i in range(0,len(grasps)):
+		g1 = abs(grasps[i].GraspPose.pose.orientation.x)
+		g2 = abs(grasps[i].GraspPose.pose.orientation.y)
+		if g1<0.09 and g2<0.09:
+			aux.append(grasps[i])
+		else:
+			break
+	return aux
+
+
+def Xfilter(grasps):
+	aux = []
+	for i in range(0,len(grasps)):
+		g1 = abs(grasps[i].GraspPose.pose.orientation.x)
+		if g1>0.4 and g1<0.8:
+			aux.append(grasps[i])
+		else:
+			break
+
+	aux = aux[0:len(aux)-5]
+	aux.sort(GraspConfig._Z)
+
+	p = int(len(aux)*0.15)
+	aux = aux[p:len(aux)-p]
+	return aux
+
+
+def Yfilter(grasps):
+	aux = []
+	for i in range(0,len(grasps)):
+		x = abs(grasps[i].GraspPose.pose.orientation.x)
+		y= abs(grasps[i].GraspPose.pose.orientation.y)
+		if (x<0.1 and (y>0.6 and y<0.8)) or (y<0.1 and (x>0.6 and x<0.8)):
+			aux.append(grasps[i])
+		else:
+			break
+
+	aux = aux[0:len(aux)-5]
+	aux.sort(GraspConfig._Z)
+
+	p = int(len(aux)*0.15)
+	aux = aux[p:len(aux)-p]
+	return aux
+
+
+
+	
+
+
+
+
+

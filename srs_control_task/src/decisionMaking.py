@@ -14,6 +14,7 @@
 import roslib; roslib.load_manifest('srs_control_task')
 import rospy
 import actionlib
+import string
 
 import sys
 import time
@@ -36,10 +37,10 @@ class DecisionMaking:
 
     #### Display the feedback for the user ####
     def execute_callback(self,fb):
-    	print ('Display feedback')
-    	rospy.loginfo("%s",fb.current_state)
-	rospy.loginfo("%s",fb.solution_required)
-    	if(fb.solution_required == True):
+        print ('Display feedback')
+        rospy.loginfo("%s",fb.current_state)
+        rospy.loginfo("%s",fb.solution_required)
+        if(fb.solution_required == True):
             rospy.loginfo("Solution required")
             #self.DecisionMaking_errors_server()
             ##lancement du server erreur
@@ -84,10 +85,9 @@ class DecisionMaking:
             
         self.exec_task_client.wait_for_result()
         #####show the result######
-        rospy.loginfo("Result is : %s",self.exec_task_client.get_result())
-        #int_result = self.exec_task_client.get_result()[13:]
-        #print float(int_result)
-        self._resultUser.returnValue = 2
+        int_result = str(self.exec_task_client.get_result())
+        rospy.loginfo("Result is : %s",int_result)
+        self._resultUser.returnValue = string.atoi(int_result[14:], 10)
         self.serverUser.set_succeeded(self._resultUser)
     
     

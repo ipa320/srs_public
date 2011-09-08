@@ -27,8 +27,7 @@ import tf
 import actionlib
 
 # include script server, to move the robot
-from simple_script_server import simple_script_server
-sss = simple_script_server()
+from simple_script_server import script
 
 # msg imports
 from geometry_msgs.msg import *
@@ -65,9 +64,9 @@ class INIT_COMPONENTS(smach.State):
         global hdl_head
         global hdl_base
         global current_action
-        #self.sc = script()
-        #self.sc.Start()
-        #self.sss = self.sc.sss
+        self.sc = script()
+        self.sc.Start()
+        self.sss = self.sc.sss
         self.pub_fb = rospy.Publisher('fb_executing_state', String)
         self.count = 0
 
@@ -87,20 +86,20 @@ class INIT_COMPONENTS(smach.State):
         # Init depends on the action required
         if (userdata.action_req == "move"):
             # move to initial positions
-            # hdl_torso = sss.move("torso", "home", False)
-            # hdl_tray = sss.move("tray", "down", False)
-            # hdl_arm = sss.move("arm", "folded", False)
-            # hdl_sdh = sss.move("sdh", "cylclosed", False)
-            # hdl_head = sss.move("head", "back", False)
+            #hdl_torso = self.sss.move("torso", "home", False)
+            #hdl_tray = self.sss.move("tray", "down", False)
+            #hdl_arm = self.sss.move("arm", "folded", False)
+            #hdl_sdh = self.sss.move("sdh", "cylclosed", False)
+            #hdl_head = self.sss.move("head", "back", False)
             
             # wait for initial movements to finish
-            # hdl_torso.wait()
-            # hdl_tray.wait()
-            # hdl_arm.wait()
-            # hdl_sdh.wait()
-            # hdl_head.wait()
+            #hdl_torso.wait()
+            #hdl_tray.wait()
+            #hdl_arm.wait()
+            #hdl_sdh.wait()
+            #hdl_head.wait()
             
-            # if (hdl_arm.get_state() == 3):#ARM folded succeeded
+            #if (hdl_arm.get_state() == 2):#ARM folded succeeded
             return 'trigger'
             #else:
             #    return 'init_error'
@@ -185,9 +184,9 @@ class MOVE(smach.State):
         global hdl_sdh
         global hdl_head
         global hdl_base
-        #self.sc = script()
-        #self.sc.Start()
-        #self.sss = self.sc.sss
+        self.sc = script()
+        self.sc.Start()
+        self.sss = self.sc.sss
         self.pub_fb = rospy.Publisher('fb_executing_state', String)
         self.count = 0
 
@@ -207,7 +206,7 @@ class MOVE(smach.State):
         ##parameter (e.g: kitchen) or if contains x,y,z coordinates
         #########                                        ##############
         if (userdata.new_pos.find("[") == -1):   #string not coordinate
-            hdl_base = sss.move("base",userdata.new_pos,blocking=False)
+            hdl_base = self.sss.move("base",userdata.new_pos,blocking=False)
         else:
             self.tmppos = ""
             self.tmppos = userdata.new_pos.replace('[','')
@@ -223,12 +222,10 @@ class MOVE(smach.State):
             self.list.insert(1, float(self.listtmp[1]))
             self.list.insert(2, float(self.listtmp[2]))
             print self.list
-            hdl_base = sss.move("base",self.list, blocking=False)
+            hdl_base = self.sss.move("base",self.list, blocking=False)
         #####END of test##################
         
-        rospy.loginfo("(before manual wait) State base is : %s",hdl_base.get_state())
-        print "Send command to UI_PRI:" # here feedback to the UI in topic \inteface_cmd should be sent for user to select new task (the current task is terminated)
-        #return 'ok'
+        rospy.loginfo("(before manual wait).  Base state is : %s",hdl_base.get_state())
         
         if (hdl_base.get_state() == 1) :  #active
             self.count = 0
@@ -243,21 +240,19 @@ class MOVE(smach.State):
         # wait for base to reach target position
         timeout = 0
         while True :
-            if (hdl_base.get_state() == 3):   #succeeded
+            if (hdl_base.get_state() == 2):   #succeeded
                 return 'ok'
-            elif (hdl_base.get_state() == 2 or hdl_base.get_state() == 4):  #error or paused
+            elif (hdl_base.get_state() == 3 or hdl_base.get_state() == 4):  #error or paused
                 return 'nok'
                 break
-                
-             # check if service is available
+            # check if service is available
             service_full_name = '/base_controller/is_moving'
             try:
                 rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
             except rospy.ROSException, e:
                 error_message = "%s"%e
                 rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
-                return 'nok'
-                
+                return 'failed'
             # check if service is callable
             try:
                 is_moving = rospy.ServiceProxy(service_full_name,Trigger)
@@ -267,7 +262,7 @@ class MOVE(smach.State):
                 rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
                 return 'nok'
 		
-            # evaluate sevice response
+			# evaluate sevice response
             if not resp.success.data: # robot stands still
                 if timeout > 10:
                     #sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
@@ -281,11 +276,10 @@ class MOVE(smach.State):
                         rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
                     return 'nok'
                 else:
-                    print "waiting for ",timeout," seconds"
                     timeout = timeout + 1
                     rospy.sleep(1)
             else:
-                 timeout = 0   
+                timeout = 0
 
  
 #------------------- GRASP section -------------------#
@@ -308,9 +302,9 @@ class GRASP(smach.State):
         global hdl_sdh
         global hdl_head
         global hdl_base
-        #self.sc = script()
-        #self.sc.Start()
-        #self.sss = self.sc.sss
+        self.sc = script()
+        self.sc.Start()
+        self.sss = self.sc.sss
         self.pub_fb = rospy.Publisher('fb_executing_state', String)
         self.count = 0
 
@@ -328,8 +322,8 @@ class GRASP(smach.State):
         listener = tf.TransformListener(True, rospy.Duration(10.0))
 
         # move arm to pregrasp position
-        hdl_arm = sss.move("arm", "pregrasp", False)
-        hdl_sdh = sss.move("sdh", "cylopen", False)
+        hdl_arm = self.sss.move("arm", "pregrasp", False)
+        hdl_sdh = self.sss.move("sdh", "cylopen", False)
 
         # wait for arm movements to finish
         hdl_arm.wait()
@@ -355,26 +349,26 @@ class GRASP(smach.State):
         object.point.x = float(self.list_coord[0])#-2.9
         object.point.y = float(self.list_coord[1])#0.05
         object.point.z = float(self.list_coord[2])#0.98
-        sss.sleep(2)
+        self.sss.sleep(2)
 
-        #if not self.sss.parse:
-        object = listener.transformPoint('/arm_7_link', object)
+        if not self.sss.parse:
+            object = listener.transformPoint('/arm_7_link', object)
 
         # grasp object
-        hdl_arm = sss.move("arm",'pregrasp_2', False)
-        sss.move_cart_rel("arm",[[0.0, 0.0, 0.2], [0, 0, 0]])
-        hdl_sdh = sss.move("sdh", "cylclosed", False)
+        hdl_arm = self.sss.move("arm",'pregrasp_2', False)
+        self.sss.move_cart_rel("arm",[[0.0, 0.0, 0.2], [0, 0, 0]])
+        hdl_sdh = self.sss.move("sdh", "cylclosed", False)
 
         # move object
-        sss.move_cart_rel("arm",[[0.0, 0.4, 0.0], [0, 0, 0]])
+        self.sss.move_cart_rel("arm",[[0.0, 0.4, 0.0], [0, 0, 0]])
         
         # put object on tray
-        handle01 = sss.move("arm","grasp-to-tablet",False)
-        sss.move("tray","up")
+        handle01 = self.sss.move("arm","grasp-to-tablet",False)
+        self.sss.move("tray","up")
 
         #wait for arm movement to be finished
         handle01.wait()
-        sss.move("sdh","cylopen")
+        self.sss.move("sdh","cylopen")
 
         while True :
             if (hdl_arm.get_state() == 1) or (hdl_sdh.get_state() == 1):
@@ -388,7 +382,7 @@ class GRASP(smach.State):
                    if (self.count == 2):
                        break
             else:
-                if (hdl_arm.get_state() == 3):   #succeeded
+                if (hdl_arm.get_state() == 2):   #succeeded
                     rospy.loginfo("state arm is : %s",hdl_arm.get_state())
                     if (hdl_sdh == 2): #SDH succeeded to close, so grasp failed
                         return 'nok'
@@ -418,9 +412,9 @@ class DETECT(smach.State):
         global hdl_sdh
         global hdl_head
         global hdl_base
-        #self.sc = script()
-        #self.sc.Start()
-        #self.sss = self.sc.sss
+        self.sc = script()
+        self.sc.Start()
+        self.sss = self.sc.sss
         self.pub_fb = rospy.Publisher('fb_executing_state', String)
         self.count = 0
 
@@ -435,11 +429,11 @@ class DETECT(smach.State):
         
         rospy.loginfo("detect is running")
         
-        sss.detect(userdata.target_detect, False)
+        self.sss.detect(userdata.target_detect, False)
         
         
-        if (hdl_detect.get_state() == 3) :  #success
-            rospy.loginfo("Pose of %s are : %s",userdata.target_detect,sss.get_object_pose(userdata.target_detect))
+        if (hdl_detect.get_state() == 2) :  #success
+            rospy.loginfo("Pose of %s are : %s",userdata.target_detect,self.sss.get_object_pose(userdata.target_detect))
             return 'ok'
         else:
             return 'nok'
@@ -511,6 +505,8 @@ class wait_solution(smach.State):
             print s.solution
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
+        #self.pub_fb2(str(exceptional_case_id)+str(current_state))
+        #print "error published"
             
         userdata.solution_from_DM = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
             

@@ -15,6 +15,7 @@
   <!--<depend package="openrave"/>-->
   <depend package="trajectory_msgs"/>
   <depend package="geometry_msgs"/>
+    <depend package="cob_script_server"/>
 
 
 </package>

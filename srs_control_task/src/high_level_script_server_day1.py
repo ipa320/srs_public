@@ -19,7 +19,6 @@ import smach
 import smach_ros
 
 from std_msgs.msg import String, Bool, Int32
-from cob_srvs.srv import Trigger
 
 import time
 import tf
@@ -87,23 +86,23 @@ class INIT_COMPONENTS(smach.State):
         # Init depends on the action required
         if (userdata.action_req == "move"):
             # move to initial positions
-            # hdl_torso = sss.move("torso", "home", False)
-            # hdl_tray = sss.move("tray", "down", False)
-            # hdl_arm = sss.move("arm", "folded", False)
-            # hdl_sdh = sss.move("sdh", "cylclosed", False)
-            # hdl_head = sss.move("head", "back", False)
+            hdl_torso = sss.move("torso", "home", False)
+            hdl_tray = sss.move("tray", "down", False)
+            hdl_arm = sss.move("arm", "folded", False)
+            hdl_sdh = sss.move("sdh", "cylclosed", False)
+            hdl_head = sss.move("head", "back", False)
             
             # wait for initial movements to finish
-            # hdl_torso.wait()
-            # hdl_tray.wait()
-            # hdl_arm.wait()
-            # hdl_sdh.wait()
-            # hdl_head.wait()
+            hdl_torso.wait()
+            hdl_tray.wait()
+            hdl_arm.wait()
+            hdl_sdh.wait()
+            hdl_head.wait()
             
-            # if (hdl_arm.get_state() == 3):#ARM folded succeeded
-            return 'trigger'
-            #else:
-            #    return 'init_error'
+            if (hdl_arm.get_state() == 3):#ARM folded succeeded
+                return 'trigger'
+            else:
+                return 'init_error'
         
         elif (userdata.action_req == "grasp"):
             rospy.loginfo("Not initialization components for action GRASP")
@@ -227,8 +226,6 @@ class MOVE(smach.State):
         #####END of test##################
         
         rospy.loginfo("(before manual wait) State base is : %s",hdl_base.get_state())
-        print "Send command to UI_PRI:" # here feedback to the UI in topic \inteface_cmd should be sent for user to select new task (the current task is terminated)
-        #return 'ok'
         
         if (hdl_base.get_state() == 1) :  #active
             self.count = 0
@@ -241,51 +238,12 @@ class MOVE(smach.State):
                     break
                         
         # wait for base to reach target position
-        timeout = 0
         while True :
             if (hdl_base.get_state() == 3):   #succeeded
                 return 'ok'
             elif (hdl_base.get_state() == 2 or hdl_base.get_state() == 4):  #error or paused
                 return 'nok'
                 break
-                
-             # check if service is available
-            service_full_name = '/base_controller/is_moving'
-            try:
-                rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
-            except rospy.ROSException, e:
-                error_message = "%s"%e
-                rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
-                return 'nok'
-                
-            # check if service is callable
-            try:
-                is_moving = rospy.ServiceProxy(service_full_name,Trigger)
-                resp = is_moving()
-            except rospy.ServiceException, e:
-                error_message = "%s"%e
-                rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                return 'nok'
-		
-            # evaluate sevice response
-            if not resp.success.data: # robot stands still
-                if timeout > 10:
-                    #sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
-                    print "Timeout...."                   
-                    rospy.wait_for_service('base_controller/stop',10)
-                    try:
-                        stop = rospy.ServiceProxy('base_controller/stop',Trigger)
-                        resp = stop()
-                    except rospy.ServiceException, e:
-                        error_message = "%s"%e
-                        rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                    return 'nok'
-                else:
-                    print "waiting for ",timeout," seconds"
-                    timeout = timeout + 1
-                    rospy.sleep(1)
-            else:
-                 timeout = 0   
 
  
 #------------------- GRASP section -------------------#

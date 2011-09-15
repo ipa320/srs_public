@@ -34,7 +34,7 @@ sss = simple_script_server()
 from geometry_msgs.msg import *
 import srs_control_task.msg as xmsg
 import srs_control_task.srv as xsrv
-
+from srs_control_task.srv import *
 
 hdl_torso = ""
 hdl_tray = ""
@@ -43,7 +43,8 @@ hdl_sdh = ""
 hdl_head = ""
 hdl_base = ""
 
-current_action = ""
+#current_action = ""
+
 
 #------------------- Init section -------------------#
 # Description : this is a smach state which initialize the components before running the task
@@ -54,8 +55,7 @@ current_action = ""
 #                           components initialization
 class INIT_COMPONENTS(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['trigger',
-                                             'init_error'],
+        smach.State.__init__(self, outcomes=['trigger'],
                              input_keys=['action_req'])
         
         global hdl_torso
@@ -64,7 +64,8 @@ class INIT_COMPONENTS(smach.State):
         global hdl_sdh
         global hdl_head
         global hdl_base
-        global current_action
+        self.current_action=""
+#        global current_action
         #self.sc = script()
         #self.sc.Start()
         #self.sss = self.sc.sss
@@ -72,48 +73,52 @@ class INIT_COMPONENTS(smach.State):
         self.count = 0
 
     def execute(self, userdata):
-        current_action = "INIT_COMPONENTS"
         
         # publish the feedback current_state to the decision making
         while not rospy.is_shutdown():
             self.pub_fb.publish("Init Components is running ...")
             rospy.sleep(1.0)
-            self.count += 1
-            if (self.count == 1):
-                break
+            #if (self.count <1):
+            #    self.current_action = "INIT_COMPONENTS"
+            #else:
+            #    if (self.current_action != "INIT_COMPONENTS"): 
+            #        return 'trigger'
+            #self.count += 1
+            #if (self.count == 1):
+            #    break
             
-        rospy.loginfo("Init all position components is running") 
+            rospy.loginfo("Init all position components is running") 
         
         # Init depends on the action required
-        if (userdata.action_req == "move"):
-            # move to initial positions
-            # hdl_torso = sss.move("torso", "home", False)
-            # hdl_tray = sss.move("tray", "down", False)
-            # hdl_arm = sss.move("arm", "folded", False)
-            # hdl_sdh = sss.move("sdh", "cylclosed", False)
-            # hdl_head = sss.move("head", "back", False)
+            if (userdata.action_req == "move"):
+                # move to initial positions
+                # hdl_torso = sss.move("torso", "home", False)
+                # hdl_tray = sss.move("tray", "down", False)
+                # hdl_arm = sss.move("arm", "folded", False)
+                # hdl_sdh = sss.move("sdh", "cylclosed", False)
+                # hdl_head = sss.move("head", "back", False)
             
-            # wait for initial movements to finish
-            # hdl_torso.wait()
-            # hdl_tray.wait()
-            # hdl_arm.wait()
-            # hdl_sdh.wait()
-            # hdl_head.wait()
+                # wait for initial movements to finish
+                # hdl_torso.wait()
+                # hdl_tray.wait()
+                # hdl_arm.wait()
+                # hdl_sdh.wait()
+                # hdl_head.wait()
             
-            # if (hdl_arm.get_state() == 3):#ARM folded succeeded
-            return 'trigger'
+                # if (hdl_arm.get_state() == 3):#ARM folded succeeded
+                return 'trigger'
             #else:
-            #    return 'init_error'
+                #    return 'init_error'
         
-        elif (userdata.action_req == "grasp"):
-            rospy.loginfo("Not initialization components for action GRASP")
-            return 'trigger'
+            elif (userdata.action_req == "grasp"):
+                rospy.loginfo("Not initialization components for action GRASP")
+                return 'trigger'
             
-        else:
-            rospy.loginfo("components initialization not necessary")
-            return 'trigger'
+            else:
+                rospy.loginfo("components initialization not necessary")
+                return 'trigger'
         
-        return 'init_error'
+       # return 'init_error'
         
 #------------------- SELECT section -------------------#
 # Description : this Smach state is used to go to the required action.
@@ -126,13 +131,17 @@ class SELECT(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['goto_move',
                                              'goto_detect',
-                                             'goto_grasp'],
-                             input_keys=['action_required'])
+                                             'goto_grasp',
+                                             'nok'],
+                             input_keys=['action_required'],
+                             output_keys=['action_selected']
+                             )
         
         self.pub_fb = rospy.Publisher('fb_executing_state', String)
         self.pub_fb2 = rospy.Publisher('fb_executing_solution', Bool)
         self.count = 0
-        global current_action
+        self.current_selection = ""
+       # global current_action
         
     def execute(self,userdata):
         # publish the feedback current_state to the decision making
@@ -140,30 +149,52 @@ class SELECT(smach.State):
             self.pub_fb.publish("SELECT the action ...")
             rospy.sleep(1.0)
             self.count += 1
-            if (self.count == 1):
-                break
-        self.count = 0
-        # publish the feedback solution_reauired False
-        while not rospy.is_shutdown():
             self.pub_fb2.publish(False)
             rospy.sleep(1.0)
-            self.count += 1
-            if (self.count == 1):
-                break
+            #if (self.count >=1):
+            #    break
+        #self.count -= 1
+        # publish the feedback solution_reauired False
+        #while not rospy.is_shutdown():
+
+        #    self.count += 1
+        #    if (self.count >= 1):
+        #        break
         
-        rospy.loginfo("This state select the action required. It could be resume.")
+            rospy.loginfo("This state select the action required. It could be resume.")
+            rospy.loginfo("self.current_selection is : %s", self.current_selection )
         
-        if (userdata.action_required == "move"):
-            current_action = "MOVE"
-            return 'goto_move'
-        if (userdata.action_required == "detect"):
-            current_action = "DETECT"
-            return 'goto_detect'
-        if (userdata.action_required == "grasp"):
-            current_action = "GRASP"
-            return 'goto_grasp'
-        
-        
+
+            if (self.current_selection != ""):   #Task already selected
+                rospy.loginfo("further try")   
+                userdata.action_selected = self.current_selection
+                if (self.current_selection  == "MOVE"):
+                    return 'goto_move'
+                if (self.current_selection  == "DETECT"):
+                    return 'goto_detect'        
+                if (self.current_selection  == "GRASP"):
+                    return 'goto_grasp'
+            else:
+                rospy.loginfo("first try")
+                if (userdata.action_required == "move"):
+                    userdata.action_selected = "MOVE"
+                    self.current_selection = "MOVE"
+                    return 'goto_move'
+                if (userdata.action_required == "detect"):
+                    userdata.action_selected = "DETECT"
+                    self.current_selection = "DETECT"
+                    return 'goto_detect'
+                if (userdata.action_required == "grasp"):
+                    userdata.action_selected = "GRASP"
+                    self.current_selection = "GRASP"
+                    return 'goto_grasp'
+                else:
+                    userdata.action_selected = "UNKNOWN"
+                    self.current_selection = ""
+                    return 'nok'
+            
+
+                    
 #------------------- MOVE position section -------------------#
 # Description : This smach state is to move the robot's base.
 #                Move from position A to position B
@@ -173,12 +204,13 @@ class SELECT(smach.State):
 # output keys : None
 # outcomes : 'ok' is returned if the new position is reached.
 #            'nok' go to the error manager if there is an obstacle or an other error.
-class MOVE(smach.State):
 
+class MOVE_E(smach.State):
+    
     def __init__(self):
         smach.State.__init__(self, outcomes=['ok','nok'],
-                             input_keys=['new_pos'])
-      
+                             input_keys=['intermediate_pos'])
+   
         global hdl_torso
         global hdl_tray
         global hdl_arm
@@ -194,98 +226,174 @@ class MOVE(smach.State):
     def execute(self, userdata):
         # publish the feedback current_state to the decision making
         while not rospy.is_shutdown():
+            self.pub_fb.publish("Error MOVE begin ...")
+            rospy.loginfo("New target is :%s", userdata.intermediate_pos) 
+            rospy.sleep(1.0)
+            self.count += 1
+        #    if (self.count >= 1):
+        #        break
+        
+             
+            rospy.loginfo("Robot try to reach intermediate  position : <<%s>>",userdata.intermediate_pos)
+            if self.count < 2: 
+                rospy.sleep(1.0)
+                return 'nok'
+            else:
+                rospy.sleep(1.0)
+                return 'ok'
+            self.current_goal=userdata.intermediate_pos
+              
+
+
+class MOVE(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['ok','nok'],
+                             input_keys=['new_pos'])
+   
+        global hdl_torso
+        global hdl_tray
+        global hdl_arm
+        global hdl_sdh
+        global hdl_head
+        global hdl_base
+        #self.sc = script()
+        #self.sc.Start()
+        #self.sss = self.sc.sss
+        self.pub_fb = rospy.Publisher('fb_executing_state', String)
+        self.count = 0
+        self.current_goal = ""
+
+    def execute(self, userdata):
+        # publish the feedback current_state to the decision making
+       while not rospy.is_shutdown():
             self.pub_fb.publish("MOVE begin ...")
             rospy.sleep(1.0)
             self.count += 1
-            if (self.count == 1):
-                break
+           # if (self.count == 1):
+           #     break
             
-        rospy.loginfo("Robot try to reach new position : <<%s>>",userdata.new_pos)
-        
+            rospy.loginfo("Robot try to reach new position : %s",userdata.new_pos)
+           
+
+            # shortcut for testing without the simulation - REMOVE FOR THE REAL TESTS
+      #      if self.count < 3: 
+       #         rospy.sleep(1.0)
+        #        return 'nok'
+         #   else:
+          #      rospy.sleep(1.0)
+           #     return 'ok'
+                
+            
+            
+            
+            self.current_goal=userdata.new_pos
+              
         ######                                        ##################
         ##Here, it necessary to know if 'new_pos' contains a script server 
         ##parameter (e.g: kitchen) or if contains x,y,z coordinates
         #########                                        ##############
-        if (userdata.new_pos.find("[") == -1):   #string not coordinate
-            hdl_base = sss.move("base",userdata.new_pos,blocking=False)
-        else:
-            self.tmppos = ""
-            self.tmppos = userdata.new_pos.replace('[','')
-            self.tmppos = userdata.new_pos.replace(']','')
-            self.tmppos = userdata.new_pos.replace(',','')
-            #print self.tmppos
-            self.listtmp = self.tmppos.split()
-            #print self.listtmp
-            self.listtmp[0] = self.listtmp[0].replace('[','')
-            self.listtmp[2] = self.listtmp[2].replace(']','')
-            self.list = []            
-            self.list.insert(0, float(self.listtmp[0]))
-            self.list.insert(1, float(self.listtmp[1]))
-            self.list.insert(2, float(self.listtmp[2]))
-            print self.list
-            hdl_base = sss.move("base",self.list, blocking=False)
+            if (self.current_goal.find("[") == -1):   #string not coordinate
+                try:
+                    hdl_base = sss.move("base",self.current_goal,blocking=False)
+                                
+                except rospy.ROSException, e:
+                    error_message = "%s"%e
+                    rospy.logerr("unable to send sss move, error: %s", error_message)
+            else:
+                self.tmppos = ""
+                self.tmppos = userdata.self.current_goal.replace('[','')
+                self.tmppos = userdata.self.current_goal.replace(']','')
+                self.tmppos = userdata.self.current_goal.replace(',','')
+                #print self.tmppos
+                self.listtmp = self.tmppos.split()
+                #print self.listtmp
+                self.listtmp[0] = self.listtmp[0].replace('[','')
+                self.listtmp[2] = self.listtmp[2].replace(']','')
+                self.list = []            
+                self.list.insert(0, float(self.listtmp[0]))
+                self.list.insert(1, float(self.listtmp[1]))
+                self.list.insert(2, float(self.listtmp[2]))
+                print self.list
+                try:
+                    hdl_base = sss.move("base",self.list, blocking=False)
+                except rospy.ROSException, e:
+                    error_message = "%s"%e
+                    rospy.logerr("unable to send sss move, error: %s", error_message)
         #####END of test##################
         
-        rospy.loginfo("(before manual wait) State base is : %s",hdl_base.get_state())
-        print "Send command to UI_PRI:" # here feedback to the UI in topic \inteface_cmd should be sent for user to select new task (the current task is terminated)
-        #return 'ok'
-        
-        if (hdl_base.get_state() == 1) :  #active
-            self.count = 0
+        #    rospy.loginfo("(before manual wait) State base is : %s",hdl_base.get_state())
+       #     print "Send command to UI_PRI:" # here feedback to the UI in topic \inteface_cmd should be sent for user to select new task (the current task is terminated)
+           #return 'ok'
+            
+         #   print "1"         
+         #   if (hdl_base.get_state() == 1) :  #active
+         #       self.count = 0
             # publish the feedback current_state to the decision making
-            while not rospy.is_shutdown():
-                self.pub_fb.publish("MOVE is active : base try to reach target position "+userdata.new_pos)
-                rospy.sleep(1.0)
-                self.count += 1
-                if (self.count == 1):
-                    break
-                        
+         #   while not rospy.is_shutdown():
+         #       self.pub_fb.publish("MOVE is active : base try to reach target position "+userdata.new_pos+ ":", self.count)
+         #       rospy.sleep(1.0)
+         #       self.count += 1
+         #       if (self.count == 1):
+         #           break
+            
+            #print "2"             
         # wait for base to reach target position
-        timeout = 0
-        while True :
-            if (hdl_base.get_state() == 3):   #succeeded
-                return 'ok'
-            elif (hdl_base.get_state() == 2 or hdl_base.get_state() == 4):  #error or paused
-                return 'nok'
-                break
-                
-             # check if service is available
-            service_full_name = '/base_controller/is_moving'
-            try:
-                rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
-            except rospy.ROSException, e:
-                error_message = "%s"%e
-                rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
-                return 'nok'
-                
-            # check if service is callable
-            try:
-                is_moving = rospy.ServiceProxy(service_full_name,Trigger)
-                resp = is_moving()
-            except rospy.ServiceException, e:
-                error_message = "%s"%e
-                rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                return 'nok'
-		
-            # evaluate sevice response
-            if not resp.success.data: # robot stands still
-                if timeout > 10:
+            timeout = 0
+            while True :
+                try:
+                    if (hdl_base.get_state() == 3):   #succeeded
+                      return 'ok'
+                    elif (hdl_base.get_state() == 2 or hdl_base.get_state() == 4):  #error or paused
+                      return 'nok'
+                except rospy.ROSException, e:
+                    error_message = "%s"%e
+                    rospy.logerr("unable to check hdl_base state, error: %s", error_message)
+                rospy.sleep(0.5)
+            
+                #print "3"     
+                # check if service is available
+                service_full_name = '/base_controller/is_moving'
+                try:
+                  rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+                except rospy.ROSException, e:
+                  error_message = "%s"%e
+                  rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+                  return 'nok'
+          
+                #print "4"                
+                # check if service is callable
+                try:
+                  is_moving = rospy.ServiceProxy(service_full_name,Trigger)
+                  resp = is_moving()
+                except rospy.ServiceException, e:
+                  error_message = "%s"%e
+                  rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
+                  return 'nok'
+    
+                #print "5"    
+               # evaluate sevice response
+                if not resp.success.data: # robot stands still
+                  if timeout > 7:
                     #sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
-                    print "Timeout...."                   
-                    rospy.wait_for_service('base_controller/stop',10)
-                    try:
-                        stop = rospy.ServiceProxy('base_controller/stop',Trigger)
-                        resp = stop()
-                    except rospy.ServiceException, e:
-                        error_message = "%s"%e
-                        rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                    return 'nok'
-                else:
+                    print "Timeout...." 
+                    return 'nok'          
+                            
+                  #  try:
+                  #      rospy.wait_for_service('base_controller/stop',10)
+                  #      stop = rospy.ServiceProxy('base_controller/stop',Trigger)
+                  #      resp = stop()
+                  #  except rospy.ServiceException, e:
+                  #      error_message = "%s"%e
+                  #      rospy.logerr("calling <<%s>> service not successfully, error: %s",service_full_name, error_message)
+                    
+                  else:
                     print "waiting for ",timeout," seconds"
                     timeout = timeout + 1
                     rospy.sleep(1)
-            else:
-                 timeout = 0   
+                else:
+                  timeout = 0   
+            
 
  
 #------------------- GRASP section -------------------#
@@ -455,63 +563,85 @@ class DETECT(smach.State):
 class wait_solution(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['try'],
+        smach.State.__init__(self, outcomes=['try','not_try'],
+                                input_keys=['current_action'],
                                 output_keys=['solution_from_DM'])
         self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)
         self.pub_fb2 = rospy.Publisher('fb_executing_state', String)
         self.count = 0
-        global current_action
         
     def execute(self,userdata):
         while not rospy.is_shutdown():
             self.pub_fb.publish(True)
             rospy.sleep(1.0)
             self.count += 1
-            if (self.count == 2):
-                break
-        
-        self.count = 0
-        while not rospy.is_shutdown():
             self.pub_fb2.publish("Wait solution")
-            rospy.sleep(1.0)
-            self.count += 1
-            if (self.count == 2):
-                break
+
         
-        rospy.loginfo("State : wait_solution")
+            rospy.loginfo("State : wait_solution")
+
+            print userdata.current_action
         
-        current_state = 'MOVE'
-        exceptional_case_id=0
+            if userdata.current_action == 'INIT_COMPONENTS':
+                current_state= 'Initial failed'
+                exceptional_case_id=1
         
-        print current_action
+            if userdata.current_action == 'MOVE':
+                current_state= 'Target not reached'
+                exceptional_case_id=2
         
-        if current_action == 'INIT_COMPONENTS':
-            current_state= 'Initial failed'
-            exceptional_case_id=1
+            if userdata.current_action == 'GRASP':
+                current_state= 'Grasp failed'
+                exceptional_case_id=3
         
-        if current_action == 'MOVE':
-            current_state= 'Target not reached'
-            exceptional_case_id=2
-        
-        if current_action == 'GRASP':
-            current_state= 'Grasp failed'
-            exceptional_case_id=3
-        
-        if current_action == 'DETECT':
-            current_state= 'Object is not detected'
-            exceptional_case_id=4
+            if userdata.current_action == 'DETECT':
+                current_state= 'Object is not detected'
+                exceptional_case_id=4
            
-        rospy.wait_for_service('message_errors')
+            rospy.wait_for_service('message_errors')
         
-        print current_state
-          
-        try:
-            message_errors = rospy.ServiceProxy('message_errors',xsrv.errors)
-            s = message_errors(current_state, exceptional_case_id)
-            print s.solution
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
+            print current_state
             
-        userdata.solution_from_DM = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
+             
+            s = xsrv.errorsResponse()
             
-        return 'try'
+            try:
+                message_errors = rospy.ServiceProxy('message_errors',xsrv.errors)
+               
+                s = message_errors(current_state, exceptional_case_id)
+                print s.solution
+            except rospy.ServiceException, e:
+                print "Service call failed: %s"%e
+                
+            
+
+                self.pub_fb.publish(False)   
+            
+            print (s)
+             
+            if  (s.giveup == 1):
+                return 'not_try'
+            else:
+                userdata.solution_from_DM = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
+                rospy.loginfo("New target is :%s", s.solution.__str__())    
+                return 'try'
+        
+class SUCCESS(smach.State):
+    
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['complete'],
+                             output_keys=['act_result'])
+   
+    def execute(self, userdata):
+        userdata.act_result = 3 # successful
+        return 'complete'
+        
+class GIVENUP(smach.State):
+    
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['complete'],
+                             output_keys=['act_result'])
+   
+    def execute(self, userdata):
+        userdata.act_result = 4 # failed or given up
+        return 'complete'

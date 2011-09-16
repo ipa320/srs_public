@@ -205,6 +205,8 @@ class SELECT(smach.State):
 # outcomes : 'ok' is returned if the new position is reached.
 #            'nok' go to the error manager if there is an obstacle or an other error.
 
+
+## Here is the intermediate move aimed at overcomming the problem encountered in the first move
 class MOVE_E(smach.State):
     
     def __init__(self):
@@ -226,23 +228,66 @@ class MOVE_E(smach.State):
     def execute(self, userdata):
         # publish the feedback current_state to the decision making
         while not rospy.is_shutdown():
-            self.pub_fb.publish("Error MOVE begin ...")
+            self.pub_fb.publish("Error correction MOVE begins ...")
             rospy.loginfo("New target is :%s", userdata.intermediate_pos) 
-            rospy.sleep(1.0)
-            self.count += 1
+        #   rospy.sleep(1.0)
+        #   self.count += 1
         #    if (self.count >= 1):
         #        break
         
              
-            rospy.loginfo("Robot try to reach intermediate  position : <<%s>>",userdata.intermediate_pos)
-            if self.count < 2: 
-                rospy.sleep(1.0)
-                return 'nok'
-            else:
-                rospy.sleep(1.0)
-                return 'ok'
+            rospy.loginfo("Robot is trying to reach the intermediate  position : <<%s>>",userdata.intermediate_pos)
+        #    if self.count < 2: 
+         #       rospy.sleep(1.0)
+          #      return 'nok'
+          #  else:
+           #     rospy.sleep(1.0)
+            #    return 'ok'
             self.current_goal=userdata.intermediate_pos
               
+            # waiting for base to reach the target position
+            timeout = 0
+            while True :
+                try:
+                    if (hdl_base.get_state() == 3):   #succeeded - final position reached ruturn success to the user
+                      return 'ok'
+                    elif (hdl_base.get_state() == 2 or hdl_base.get_state() == 4):  #error or paused
+                      return 'nok'
+                except rospy.ROSException, e:
+                    error_message = "%s"%e
+                    rospy.logerr("unable to check hdl_base state, error: %s", error_message)
+                rospy.sleep(0.5)
+            
+                print "3a"     
+                # check if service is available
+                service_full_name = '/base_controller/is_moving'
+                try:
+                  rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+                except rospy.ROSException, e:
+                  error_message = "%s"%e
+                  rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+                  return 'nok'
+          
+                print "4a"                
+                # check if service is callable
+                try:
+                  is_moving = rospy.ServiceProxy(service_full_name,Trigger)
+                  resp = is_moving()
+                except rospy.ServiceException, e:
+                  error_message = "%s"%e
+                  rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
+                  return 'nok'
+    
+                print "5a"    
+               # evaluate sevice response
+                if not resp.success.data: # robot stands still
+                  if timeout > 7:
+                    print "Timeout...." 
+                    return 'nok'          
+                            
+
+
+
 
 
 class MOVE(smach.State):
@@ -267,13 +312,13 @@ class MOVE(smach.State):
     def execute(self, userdata):
         # publish the feedback current_state to the decision making
        while not rospy.is_shutdown():
-            self.pub_fb.publish("MOVE begin ...")
+            self.pub_fb.publish("MOVE begins ...")
             rospy.sleep(1.0)
             self.count += 1
            # if (self.count == 1):
            #     break
             
-            rospy.loginfo("Robot try to reach new position : %s",userdata.new_pos)
+            rospy.loginfo("Robot is trying to reach a new position : %s",userdata.new_pos)
            
 
             # shortcut for testing without the simulation - REMOVE FOR THE REAL TESTS
@@ -289,11 +334,12 @@ class MOVE(smach.State):
             
             self.current_goal=userdata.new_pos
               
+
         ######                                        ##################
         ##Here, it necessary to know if 'new_pos' contains a script server 
         ##parameter (e.g: kitchen) or if contains x,y,z coordinates
         #########                                        ##############
-            if (self.current_goal.find("[") == -1):   #string not coordinate
+            if (self.current_goal.find("[") == -1):   #this means we have received string with map coordinates not a predefined point,e.g. kitchen
                 try:
                     hdl_base = sss.move("base",self.current_goal,blocking=False)
                                 

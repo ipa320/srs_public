@@ -49,17 +49,17 @@ class DecisionMaking:
         self.user_respsol =""
         self.user_resppar =""
         self.user_com_id = 0
-        rospy.Subscriber ("DM_UI/interface_cmd_responce",srs_msg.UI_DMresp, self.callbackUI)
+        rospy.Subscriber ("DM_UI/interface_cmd_response",srs_msg.UI_DMresp, self.callbackUI)
 
     ### Declaration of  callback function for the commands from the user interface
     def callbackUI (self,data):
-        rospy.loginfo ("I heard %s,%s,%i from the UI_PRI",data.solution,data.parameter,data.responceID)
-        if (data.responceID == self.user_com_id):
+        rospy.loginfo ("I heard %s,%s,%i from the UI_PRI",data.solution,data.parameter,data.responseID)
+        if (data.responseID == self.user_com_id):
             self.user_respsol = data.solution 
             self.user_resppar = data.parameter
-            rospy.loginfo ("Match between responceId and requestID. Now user_respsol is %s and user_resppar is %s",self.user_respsol,self.user_resppar)  
+            rospy.loginfo ("Match between responseId and requestID. Now user_respsol is %s and user_resppar is %s",self.user_respsol,self.user_resppar)  
         else:
-            print ("but the id:%s does not correspond to requestId:%s",user_com_id,data.responceID)
+            print ("but the id:%s does not correspond to requestId:%s",user_com_id,data.responseID)
 
     
 
@@ -91,7 +91,7 @@ class DecisionMaking:
             
             timeout=0
             while (self.user_respsol =="" and timeout < 30):
-                print "waiting for user responce for",timeout," seconds"
+                print "waiting for response",timeout," seconds from the user"
                 timeout = timeout + 1
                 print ("user_respsol is:. ",self.user_respsol)
                 rospy.sleep(1)
@@ -111,7 +111,7 @@ class DecisionMaking:
                 
                 timeout=0
                 while (self.user_respsol =="" and timeout < 90):
-                  print "waiting for user responce for",timeout," seconds"
+                  print "waiting for response for",timeout," seconds from the user"
                   timeout = timeout + 1
                   rospy.sleep(1)
                   
@@ -119,16 +119,16 @@ class DecisionMaking:
                     satisfaction_flag = True
                     self.solfromUser.giveup = 0
                     self.solfromUser.solution = self.user_resppar
-                    print "We got responce from the user"
+                    print "We got response from the user"
                     print(self.solfromUser)
                 else:
                     satisfaction_flag = False
-                    rospy.loginfo("The user responce doesn't make sence or timed out")
+                    rospy.loginfo("The user response doesn't make sence or timed out")
                     self.solfromUser.giveup = 1
                     self.solfromUser.solution = ""
 
             else:
-                rospy.loginfo("The responce from the user is not to continue. Giving up")
+                rospy.loginfo("The response from the user is: <<Do not to continue>>. Giving up")
                 satisfaction_flag = True
                 self.solfromUser.giveup = 1
                 self.solfromUser.solution = ""

@@ -17,7 +17,6 @@ class SCRIPT():#################################################################
 
 		self.robotName = 'robots/care-o-bot3.zae'
 
-		self.envName = None
 
 		if (len(sys.argv)<=1):
 			self.targetName = 'milk_box'
@@ -30,7 +29,7 @@ class SCRIPT():#################################################################
 			if self.targetName[len(self.targetName)-3:len(self.targetName)] == ".iv":
 				self.object_path = package_path+'/DB/obj/'+self.targetName;
 			else:
-				self.object_path = package_path+'DB/obj/'+self.targetName+'.kinbody.xml'
+				self.object_path = package_path+'/DB/obj/'+self.targetName+'.kinbody.xml'
 
 			print "Loaded values: (%s, %s)" %(self.robotName, self.object_path)
 
@@ -53,24 +52,6 @@ class SCRIPT():#################################################################
 		    gmodel.autogenerate()
 		    print "GENERATING GRASPS HAS FINISHED."
 
-
-
-		"""
-		res = raw_input("Do you want to load a collision environment? (y/n): ")
-		if res=="y":
-			env.Remove(target)
-			self.envName = raw_input("Write the environment file absolute path: ")
-
-			while(not env.Load(self.envName)):
-				print "File not found."
-				self.envName = raw_input("Write the environment file absolute path: ")
-
-			all_grasps = False
-		else:
-			print "A free collision environment will be generated."
-			all_grasps = True
-		"""
-		
 
 		grasping_functions.generateFile(targetName=self.targetName, gmodel=gmodel, env=env)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import generator, depurator, showGraspsOR, showGraspsGazebo
+import generator, depurator, showGraspsOR, showGrasps
 
 ##################################################################################	
 class SCRIPT():###################################################################
@@ -14,7 +14,7 @@ class SCRIPT():#################################################################
 			print "0 - Generator"
 			print "1 - Depurator <obsolet>"
 			print "2 - Show grasps in OpenRAVE"
-			print "3 - Show SDH in Gazebo"
+			print "3 - Show grasps in OpenRAVE and Gazebo"
 			print "4 - Help"
 
 			repeat = True;
@@ -44,10 +44,8 @@ class SCRIPT():#################################################################
 				s.run()
 
 			elif option == 3:
-				res = raw_input("The script is obsolet. Do you want to continue? (y/n): ")
-				if res=="y":
-					s = showGraspsGazebo.SCRIPT()
-					s.run()
+				s = showGrasps.SCRIPT()
+				s.run()
 
 			else:
 				print "USE: "

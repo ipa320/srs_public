@@ -3,10 +3,11 @@
 import roslib; 
 roslib.load_manifest('srs_grasping')
 import sys
-from tf.transformations import *
+import rospy
 import openravepy
 import grasping_functions
 
+from tf.transformations import *
 
 package_path = roslib.packages.get_pkg_dir('srs_grasping')
 ##################################################################################	
@@ -60,8 +61,9 @@ class SCRIPT():#################################################################
 
 
 		grasps = GRASPS[0]
-		g = grasping_functions.showOR(env, grasps, delay=None)
-				
+		grasping_functions.showOR(env, grasps, gazebo=True, delay=None)
+
+	
 		raw_input("Press ENTER to finish.")
 		
 
@@ -69,5 +71,6 @@ class SCRIPT():#################################################################
 ##########################################################################
 if __name__ == "__main__":################################################
 ##########################################################################
+	rospy.init_node("simGaz_script")
 	s = SCRIPT()
     	s.run()

@@ -315,7 +315,13 @@ class MOVE_E(smach.State):
                 if not resp.success.data: # robot stands still
                   if timeout > 7:
                     print "Timeout...." 
-                    return 'nok'          
+                    return 'nok'  
+                  else:
+                    print "waiting for ",timeout," seconds"
+                    timeout = timeout + 1
+                    rospy.sleep(1)
+                else:
+                  timeout = 0           
                             
 
 

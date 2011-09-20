@@ -237,19 +237,51 @@ class MOVE_E(smach.State):
         
              
             rospy.loginfo("Robot is trying to reach the intermediate  position : <<%s>>",userdata.intermediate_pos)
-        #    if self.count < 2: 
+       
+        #   for faster testing only #################################################### remove for the real tests #################
+         #   if self.count < 2: 
          #       rospy.sleep(1.0)
-          #      return 'nok'
-          #  else:
-           #     rospy.sleep(1.0)
-            #    return 'ok'
+         #       return 'nok'
+         #   else:
+         #       rospy.sleep(1.0)
+         #       return 'ok'
+
             self.current_goal=userdata.intermediate_pos
-              
+            
+            if (self.current_goal.find("[") == -1):   #this means we have received string with map coordinates not a predefined point,e.g. kitchen
+                try:
+                    hdl_base = sss.move("base",self.current_goal,blocking=False)
+                                
+                except rospy.ROSException, e:
+                    error_message = "%s"%e
+                    rospy.logerr("unable to send sss move, error: %s", error_message)
+            else:
+                self.tmppos = ""
+                self.tmppos = userdata.self.current_goal.replace('[','')
+                self.tmppos = userdata.self.current_goal.replace(']','')
+                self.tmppos = userdata.self.current_goal.replace(',','')
+                #print self.tmppos
+                self.listtmp = self.tmppos.split()
+                #print self.listtmp
+                self.listtmp[0] = self.listtmp[0].replace('[','')
+                self.listtmp[2] = self.listtmp[2].replace(']','')
+                self.list = []            
+                self.list.insert(0, float(self.listtmp[0]))
+                self.list.insert(1, float(self.listtmp[1]))
+                self.list.insert(2, float(self.listtmp[2]))
+                print self.list
+                try:
+                    hdl_base = sss.move("base",self.list, blocking=False)
+                except rospy.ROSException, e:
+                    error_message = "%s"%e
+                    rospy.logerr("unable to send move command via sss, error: %s", error_message)
+
+ 
             # waiting for base to reach the target position
             timeout = 0
             while True :
                 try:
-                    if (hdl_base.get_state() == 3):   #succeeded - final position reached ruturn success to the user
+                    if (hdl_base.get_state() == 3):   #succeeded - final position reached return success to the user
                       return 'ok'
                     elif (hdl_base.get_state() == 2 or hdl_base.get_state() == 4):  #error or paused
                       return 'nok'
@@ -321,13 +353,13 @@ class MOVE(smach.State):
             rospy.loginfo("Robot is trying to reach a new position : %s",userdata.new_pos)
            
 
-            # shortcut for testing without the simulation - REMOVE FOR THE REAL TESTS
-      #      if self.count < 3: 
-       #         rospy.sleep(1.0)
-        #        return 'nok'
-         #   else:
-          #      rospy.sleep(1.0)
-           #     return 'ok'
+            # shortcut for testing without the simulation - ###################### REMOVE FOR THE REAL TESTS ################
+            #if self.count < 3: 
+             #  rospy.sleep(1.0)
+             #  return 'nok'
+          #  else:
+          #     rospy.sleep(1.0)
+          #     return 'ok'
                 
             
             
@@ -366,7 +398,7 @@ class MOVE(smach.State):
                 except rospy.ROSException, e:
                     error_message = "%s"%e
                     rospy.logerr("unable to send sss move, error: %s", error_message)
-        #####END of test##################
+      
         
         #    rospy.loginfo("(before manual wait) State base is : %s",hdl_base.get_state())
        #     print "Send command to UI_PRI:" # here feedback to the UI in topic \inteface_cmd should be sent for user to select new task (the current task is terminated)

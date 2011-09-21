@@ -46,6 +46,88 @@ hdl_base = ""
 #current_action = ""
 
 
+def sss_move(current_goal):
+    global hdl_base
+    rospy.loginfo("now inside  sss_move function")   
+    if (current_goal.find("[") == -1):   #this means we have received string with map coordinates not a predefined point,e.g. kitchen
+        try:
+            hdl_base = sss.move("base",current_goal,blocking=False)           
+        except rospy.ROSException, e:
+            error_message = "%s"%e
+            rospy.logerr("unable to send sss move, error: %s", error_message)
+
+    else:
+        tmppos = ""
+        list = []
+        tmppos = current_goal.replace('[','')
+        tmppos = tmppos.replace(']','')
+        tmppos = tmppos.replace(',',' ')
+        
+        try:         
+            listtmp = tmppos.split()           
+            list.insert(0, float(listtmp[0]))
+            list.insert(1, float(listtmp[1]))
+            list.insert(2, float(listtmp[2]))     
+            print list
+        
+            hdl_base = sss.move("base",list, blocking=False)
+            
+        except rospy.ROSException, e:
+            error_message = "%s"%e
+            rospy.logerr("unable to convert values or send move command via sss, error: %s", error_message)
+            return 'nok'
+                   
+           
+        # wait for base to reach target position
+    timeout = 0
+    while True :
+        try:
+            if (hdl_base.get_state() == 3):   #succeeded
+                return 'ok'
+            elif (hdl_base.get_state() == 2 or hdl_base.get_state() == 4):  #error or paused
+                return 'nok'
+        except rospy.ROSException, e:
+            error_message = "%s"%e
+            rospy.logerr("unable to check hdl_base state, error: %s", error_message)
+            rospy.sleep(0.5)
+            
+                #print "3"     
+                # check if service is available
+        service_full_name = '/base_controller/is_moving'
+        try:
+            rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+        except rospy.ROSException, e:
+            error_message = "%s"%e
+            rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+            return 'nok'
+          
+                #print "4"                
+                # check if service is callable
+        try:
+            is_moving = rospy.ServiceProxy(service_full_name,Trigger)
+            resp = is_moving()
+        except rospy.ServiceException, e:
+            error_message = "%s"%e
+            rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
+            return 'nok'
+    
+                #print "5"    
+               # evaluate sevice response
+        if not resp.success.data: # robot stands still
+            if timeout > 7:
+                #sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
+                print "Timeout...." 
+                return 'nok'          
+                                          
+            else:
+                print "waiting for ",timeout," seconds"
+                timeout = timeout + 1
+                rospy.sleep(1)
+        else:
+                timeout = 0   
+    return  'nok';
+
+
 #------------------- Init section -------------------#
 # Description : this is a smach state which initialize the components before running the task
 # input keys : 'action_req' contains the name of the action required by the decision making
@@ -161,7 +243,7 @@ class SELECT(smach.State):
         #    if (self.count >= 1):
         #        break
         
-            rospy.loginfo("This state select the action required. It could be resume.")
+            rospy.loginfo("This state select the action required. It could be resumed.")
             rospy.loginfo("self.current_selection is : %s", self.current_selection )
         
 
@@ -235,7 +317,7 @@ class MOVE_E(smach.State):
         #    if (self.count >= 1):
         #        break
         
-             
+            print "&1" 
             rospy.loginfo("Robot is trying to reach the intermediate  position : <<%s>>",userdata.intermediate_pos)
        
         #   for faster testing only #################################################### remove for the real tests #################
@@ -245,83 +327,9 @@ class MOVE_E(smach.State):
          #   else:
          #       rospy.sleep(1.0)
          #       return 'ok'
-
+            print "&2"  
             self.current_goal=userdata.intermediate_pos
-            
-            if (self.current_goal.find("[") == -1):   #this means we have received string with map coordinates not a predefined point,e.g. kitchen
-                try:
-                    hdl_base = sss.move("base",self.current_goal,blocking=False)
-                                
-                except rospy.ROSException, e:
-                    error_message = "%s"%e
-                    rospy.logerr("unable to send sss move, error: %s", error_message)
-            else:
-                self.tmppos = ""
-                self.tmppos = userdata.self.current_goal.replace('[','')
-                self.tmppos = userdata.self.current_goal.replace(']','')
-                self.tmppos = userdata.self.current_goal.replace(',','')
-                #print self.tmppos
-                self.listtmp = self.tmppos.split()
-                #print self.listtmp
-                self.listtmp[0] = self.listtmp[0].replace('[','')
-                self.listtmp[2] = self.listtmp[2].replace(']','')
-                self.list = []            
-                self.list.insert(0, float(self.listtmp[0]))
-                self.list.insert(1, float(self.listtmp[1]))
-                self.list.insert(2, float(self.listtmp[2]))
-                print self.list
-                try:
-                    hdl_base = sss.move("base",self.list, blocking=False)
-                except rospy.ROSException, e:
-                    error_message = "%s"%e
-                    rospy.logerr("unable to send move command via sss, error: %s", error_message)
-
- 
-            # waiting for base to reach the target position
-            timeout = 0
-            while True :
-                try:
-                    if (hdl_base.get_state() == 3):   #succeeded - final position reached return success to the user
-                      return 'ok'
-                    elif (hdl_base.get_state() == 2 or hdl_base.get_state() == 4):  #error or paused
-                      return 'nok'
-                except rospy.ROSException, e:
-                    error_message = "%s"%e
-                    rospy.logerr("unable to check hdl_base state, error: %s", error_message)
-                rospy.sleep(0.5)
-            
-                print "3a"     
-                # check if service is available
-                service_full_name = '/base_controller/is_moving'
-                try:
-                  rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
-                except rospy.ROSException, e:
-                  error_message = "%s"%e
-                  rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
-                  return 'nok'
-          
-                print "4a"                
-                # check if service is callable
-                try:
-                  is_moving = rospy.ServiceProxy(service_full_name,Trigger)
-                  resp = is_moving()
-                except rospy.ServiceException, e:
-                  error_message = "%s"%e
-                  rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                  return 'nok'
-    
-                print "5a"    
-               # evaluate sevice response
-                if not resp.success.data: # robot stands still
-                  if timeout > 7:
-                    print "Timeout...." 
-                    return 'nok'  
-                  else:
-                    print "waiting for ",timeout," seconds"
-                    timeout = timeout + 1
-                    rospy.sleep(1)
-                else:
-                  timeout = 0           
+            return sss_move(self.current_goal)     
                             
 
 
@@ -333,7 +341,7 @@ class MOVE(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['ok','nok'],
                              input_keys=['new_pos'])
-   
+           
         global hdl_torso
         global hdl_tray
         global hdl_arm
@@ -347,6 +355,7 @@ class MOVE(smach.State):
         self.count = 0
         self.current_goal = ""
 
+        
     def execute(self, userdata):
         # publish the feedback current_state to the decision making
        while not rospy.is_shutdown():
@@ -356,6 +365,7 @@ class MOVE(smach.State):
            # if (self.count == 1):
            #     break
             
+            print "!2"
             rospy.loginfo("Robot is trying to reach a new position : %s",userdata.new_pos)
            
 
@@ -371,112 +381,14 @@ class MOVE(smach.State):
             
             
             self.current_goal=userdata.new_pos
+            return sss_move(self.current_goal)
               
 
         ######                                        ##################
         ##Here, it necessary to know if 'new_pos' contains a script server 
         ##parameter (e.g: kitchen) or if contains x,y,z coordinates
         #########                                        ##############
-            if (self.current_goal.find("[") == -1):   #this means we have received string with map coordinates not a predefined point,e.g. kitchen
-                try:
-                    hdl_base = sss.move("base",self.current_goal,blocking=False)
-                                
-                except rospy.ROSException, e:
-                    error_message = "%s"%e
-                    rospy.logerr("unable to send sss move, error: %s", error_message)
-            else:
-                self.tmppos = ""
-                self.tmppos = userdata.self.current_goal.replace('[','')
-                self.tmppos = userdata.self.current_goal.replace(']','')
-                self.tmppos = userdata.self.current_goal.replace(',','')
-                #print self.tmppos
-                self.listtmp = self.tmppos.split()
-                #print self.listtmp
-                self.listtmp[0] = self.listtmp[0].replace('[','')
-                self.listtmp[2] = self.listtmp[2].replace(']','')
-                self.list = []            
-                self.list.insert(0, float(self.listtmp[0]))
-                self.list.insert(1, float(self.listtmp[1]))
-                self.list.insert(2, float(self.listtmp[2]))
-                print self.list
-                try:
-                    hdl_base = sss.move("base",self.list, blocking=False)
-                except rospy.ROSException, e:
-                    error_message = "%s"%e
-                    rospy.logerr("unable to send sss move, error: %s", error_message)
-      
-        
-        #    rospy.loginfo("(before manual wait) State base is : %s",hdl_base.get_state())
-       #     print "Send command to UI_PRI:" # here feedback to the UI in topic \inteface_cmd should be sent for user to select new task (the current task is terminated)
-           #return 'ok'
-            
-         #   print "1"         
-         #   if (hdl_base.get_state() == 1) :  #active
-         #       self.count = 0
-            # publish the feedback current_state to the decision making
-         #   while not rospy.is_shutdown():
-         #       self.pub_fb.publish("MOVE is active : base try to reach target position "+userdata.new_pos+ ":", self.count)
-         #       rospy.sleep(1.0)
-         #       self.count += 1
-         #       if (self.count == 1):
-         #           break
-            
-            #print "2"             
-        # wait for base to reach target position
-            timeout = 0
-            while True :
-                try:
-                    if (hdl_base.get_state() == 3):   #succeeded
-                      return 'ok'
-                    elif (hdl_base.get_state() == 2 or hdl_base.get_state() == 4):  #error or paused
-                      return 'nok'
-                except rospy.ROSException, e:
-                    error_message = "%s"%e
-                    rospy.logerr("unable to check hdl_base state, error: %s", error_message)
-                rospy.sleep(0.5)
-            
-                #print "3"     
-                # check if service is available
-                service_full_name = '/base_controller/is_moving'
-                try:
-                  rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
-                except rospy.ROSException, e:
-                  error_message = "%s"%e
-                  rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
-                  return 'nok'
-          
-                #print "4"                
-                # check if service is callable
-                try:
-                  is_moving = rospy.ServiceProxy(service_full_name,Trigger)
-                  resp = is_moving()
-                except rospy.ServiceException, e:
-                  error_message = "%s"%e
-                  rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                  return 'nok'
-    
-                #print "5"    
-               # evaluate sevice response
-                if not resp.success.data: # robot stands still
-                  if timeout > 7:
-                    #sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
-                    print "Timeout...." 
-                    return 'nok'          
-                            
-                  #  try:
-                  #      rospy.wait_for_service('base_controller/stop',10)
-                  #      stop = rospy.ServiceProxy('base_controller/stop',Trigger)
-                  #      resp = stop()
-                  #  except rospy.ServiceException, e:
-                  #      error_message = "%s"%e
-                  #      rospy.logerr("calling <<%s>> service not successfully, error: %s",service_full_name, error_message)
-                    
-                  else:
-                    print "waiting for ",timeout," seconds"
-                    timeout = timeout + 1
-                    rospy.sleep(1)
-                else:
-                  timeout = 0   
+
             
 
  

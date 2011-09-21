@@ -49,7 +49,7 @@ hdl_base = ""
 def sss_move(current_goal):
     global hdl_base
     rospy.loginfo("now inside  sss_move function")   
-    if (current_goal.find("[") == -1):   #this means we have received string with map coordinates not a predefined point,e.g. kitchen
+    if (current_goal.find("[") == -1 and current_goal.find("#") == -1 ):   #this means we have received string with map coordinates not a predefined point,e.g. kitchen
         try:
             hdl_base = sss.move("base",current_goal,blocking=False)           
         except rospy.ROSException, e:
@@ -62,6 +62,8 @@ def sss_move(current_goal):
         tmppos = current_goal.replace('[','')
         tmppos = tmppos.replace(']','')
         tmppos = tmppos.replace(',',' ')
+        tmppos = tmppos.replace('#','')
+
         
         try:         
             listtmp = tmppos.split()           

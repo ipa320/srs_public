@@ -4,19 +4,25 @@
   	This is a repository for SRS software.
   
   </description>
-  <author>Maintained by Florian Weisshardt</author>
-  <license>Fraunhofer IPA</license>  
+  <author>Maintained by Georg Arbeiter</author>
+  <license>BSD,Fraunhofer IPA</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs</url>
+  <depend stack="arm_navigation" /> <!-- arm_navigation_msgs -->
+  <depend stack="bullet" /> <!-- bullet -->
   <depend stack="cob_apps" /> <!-- cob_bringup, cob_script_server, cob_2dnav -->
-  <depend stack="cob_common" /> <!-- cob_default_config -->
+  <depend stack="cob_common" /> <!-- cob_msgs, cob_default_config, cob_srvs -->
   <depend stack="cob_navigation" /> <!-- cob_platform_ctrl -->
-  <depend stack="cob_vision" /> <!-- cob_object_detection -->
-  <depend stack="common" /> <!-- actionlib -->
-  <depend stack="common_msgs" /> <!-- geometry_msgs -->
+  <depend stack="cob_vision" /> <!-- opencv2, cob_object_detection -->
+  <depend stack="common" /> <!-- actionlib, bfl -->
+  <depend stack="common_msgs" /> <!-- nav_msgs, actionlib_msgs, trajectory_msgs, sensor_msgs, geometry_msgs, visualization_msgs -->
   <depend stack="executive_smach" /> <!-- smach_ros, smach -->
   <depend stack="geometry" /> <!-- tf -->
-  <depend stack="ros" />
-  <depend stack="ros_comm" /> <!-- rospy -->
+  <depend stack="image_common" /> <!-- image_transport -->
+  <depend stack="laser_pipeline" /> <!-- laser_geometry -->
+  <depend stack="perception_pcl" /> <!-- pcl, pcl_ros -->
+  <depend stack="ros" /> <!-- roslib -->
+  <depend stack="ros_comm" /> <!-- std_srvs, rosbag, std_msgs, roscpp, rospy -->
+  <depend stack="vision_opencv" /> <!-- cv_bridge -->
 
 </stack>

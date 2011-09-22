@@ -19,9 +19,9 @@ class SCRIPT():#################################################################
 
 
 		if (len(sys.argv)<=1):
-			self.targetName = 'milk_box'
-			self.object_path = package_path+"/DB/obj/"+self.targetName+'.iv'
-			print "Loaded default values: (%s, %s)" %(self.robotName, self.object_path)
+			self.targetName = 'Milk'
+			self.object_path = package_path+"/DB/obj/"+self.targetName+'.xml'
+
 
 		else:
 			self.targetName = sys.argv[1]
@@ -29,9 +29,9 @@ class SCRIPT():#################################################################
 			if self.targetName[len(self.targetName)-3:len(self.targetName)] == ".iv":
 				self.object_path = package_path+'/DB/obj/'+self.targetName;
 			else:
-				self.object_path = package_path+'/DB/obj/'+self.targetName+'.kinbody.xml'
+				self.object_path = package_path+'/DB/obj/'+self.targetName+'.xml'
 
-			print "Loaded values: (%s, %s)" %(self.robotName, self.object_path)
+		print "Loaded values: (%s, %s)" %(self.robotName, self.object_path)
 
 
 

@@ -17,6 +17,8 @@
   <depend package="geometry_msgs"/>
   <depend package="srs_msgs"/>
   <depend package="cob_script_server"/>
+  <depend package="kinematics_msgs"/>
+
 
 
 </package>

@@ -405,11 +405,19 @@ def showOR(env, grasps, gazebo=False, delay=0.5):
 
 			env.UpdatePublishedBodies()
 
+			r1 = eval(grasps[i].sconfiguration)[1]
+			r2 = eval(grasps[i].sconfiguration)[3]
+			r3 = eval(grasps[i].sconfiguration)[5]
+
+			if (abs(r1)-abs(r2) > 0.6) or (abs(r1)-abs(r3) > 0.6) or (abs(r2)-abs(r3) > 0.6) or (abs(r1)-abs(r2) < -0.6) or (abs(r1)-abs(r3) < -0.6) or (abs(r2)-abs(r3) < -0.6):
+				print "meeeeeeeeeeeeeeeeec!"
+			print "------------"
+
+
 			if gazebo==True:
 				res = raw_input("Do you want to see this configuration in Gazebo? (y/n): ")
 				if res=="y":
 					GraspIt(grasps[i].sconfiguration)
-
 
 			if delay is None:
 				raw_input('Next config.')
@@ -426,10 +434,17 @@ def _Zfilter(grasps):
 	for i in range(0,len(grasps)):
 		m = matrix_from_graspPose(grasps[i].palm_pose)
 		zx = m[2][2]
-		if zx < -0.5:
-			grasps[i].category = "-Z"
-			grasps[i].score = zx
-			aux.append(grasps[i])
+		if zx < -0.85:
+
+			r1 = eval(grasps[i].sconfiguration)[1]
+			r2 = eval(grasps[i].sconfiguration)[3]
+			r3 = eval(grasps[i].sconfiguration)[5]
+			if (abs(r1)-abs(r2) > 0.6) or (abs(r1)-abs(r3) > 0.6) or (abs(r2)-abs(r3) > 0.6) or (abs(r1)-abs(r2) < -0.6) or (abs(r1)-abs(r3) < -0.6) or (abs(r2)-abs(r3) < -0.6):
+				continue
+			else:
+				grasps[i].category = "-Z"
+				grasps[i].score = zx
+				aux.append(grasps[i])
 		else:
 			continue
 
@@ -441,12 +456,20 @@ def Zfilter(grasps):
 	for i in range(0,len(grasps)):
 		m = matrix_from_graspPose(grasps[i].palm_pose)
 		zx = m[2][2]
-		if zx > 0.5:
-			grasps[i].category = "Z"
-			grasps[i].score = zx
-			aux.append(grasps[i])
+		if zx > 0.85:
+
+			r1 = eval(grasps[i].sconfiguration)[1]
+			r2 = eval(grasps[i].sconfiguration)[3]
+			r3 = eval(grasps[i].sconfiguration)[5]
+			if (abs(r1)-abs(r2) > 0.6) or (abs(r1)-abs(r3) > 0.6) or (abs(r2)-abs(r3) > 0.6) or (abs(r1)-abs(r2) < -0.6) or (abs(r1)-abs(r3) < -0.6) or (abs(r2)-abs(r3) < -0.6):
+				continue
+			else:
+				grasps[i].category = "Z"
+				grasps[i].score = zx
+				aux.append(grasps[i])
 		else:
 			continue
+
 	return aux
 
 
@@ -455,12 +478,20 @@ def Xfilter(grasps):
 	for i in range(0,len(grasps)):
 		m = matrix_from_graspPose(grasps[i].palm_pose)
 		zx = m[0][2]
-		if zx > 0.5:
-			grasps[i].category = "X"
-			grasps[i].score = zx
-			aux.append(grasps[i])
+		if zx > 0.85:
+
+			r1 = eval(grasps[i].sconfiguration)[1]
+			r2 = eval(grasps[i].sconfiguration)[3]
+			r3 = eval(grasps[i].sconfiguration)[5]
+			if (abs(r1)-abs(r2) > 0.6) or (abs(r1)-abs(r3) > 0.6) or (abs(r2)-abs(r3) > 0.6) or (abs(r1)-abs(r2) < -0.6) or (abs(r1)-abs(r3) < -0.6) or (abs(r2)-abs(r3) < -0.6):
+				continue
+			else:
+				grasps[i].category = "X"
+				grasps[i].score = zx
+				aux.append(grasps[i])
 		else:
 			continue
+
 	return aux
 
 def _Xfilter(grasps):
@@ -468,12 +499,20 @@ def _Xfilter(grasps):
 	for i in range(0,len(grasps)):
 		m = matrix_from_graspPose(grasps[i].palm_pose)
 		zx = m[0][2]
-		if zx < -0.5:
-			grasps[i].category = "-X"
-			grasps[i].score = zx
-			aux.append(grasps[i])
+		if zx < -0.85:
+
+			r1 = eval(grasps[i].sconfiguration)[1]
+			r2 = eval(grasps[i].sconfiguration)[3]
+			r3 = eval(grasps[i].sconfiguration)[5]
+			if (abs(r1)-abs(r2) > 0.6) or (abs(r1)-abs(r3) > 0.6) or (abs(r2)-abs(r3) > 0.6) or (abs(r1)-abs(r2) < -0.6) or (abs(r1)-abs(r3) < -0.6) or (abs(r2)-abs(r3) < -0.6):
+				continue
+			else:
+				grasps[i].category = "-X"
+				grasps[i].score = zx
+				aux.append(grasps[i])
 		else:
 			continue
+
 	return aux
 
 def _Yfilter(grasps):
@@ -481,12 +520,20 @@ def _Yfilter(grasps):
 	for i in range(0,len(grasps)):
 		m = matrix_from_graspPose(grasps[i].palm_pose)
 		zx = m[1][2]
-		if zx < -0.5:
-			grasps[i].category = "-Y"
-			grasps[i].score = zx
-			aux.append(grasps[i])
+		if zx < -0.85:
+
+			r1 = eval(grasps[i].sconfiguration)[1]
+			r2 = eval(grasps[i].sconfiguration)[3]
+			r3 = eval(grasps[i].sconfiguration)[5]
+			if (abs(r1)-abs(r2) > 0.6) or (abs(r1)-abs(r3) > 0.6) or (abs(r2)-abs(r3) > 0.6) or (abs(r1)-abs(r2) < -0.6) or (abs(r1)-abs(r3) < -0.6) or (abs(r2)-abs(r3) < -0.6):
+				continue
+			else:
+				grasps[i].category = "-Y"
+				grasps[i].score = zx
+				aux.append(grasps[i])
 		else:
 			continue
+
 	return aux
 
 def Yfilter(grasps):
@@ -494,12 +541,20 @@ def Yfilter(grasps):
 	for i in range(0,len(grasps)):
 		m = matrix_from_graspPose(grasps[i].palm_pose)
 		zx = m[1][2]
-		if zx > 0.5:
-			grasps[i].category = "Z"
-			grasps[i].score = zx
-			aux.append(grasps[i])
+		if zx > 0.85:
+
+			r1 = eval(grasps[i].sconfiguration)[1]
+			r2 = eval(grasps[i].sconfiguration)[3]
+			r3 = eval(grasps[i].sconfiguration)[5]
+			if (abs(r1)-abs(r2) > 0.6) or (abs(r1)-abs(r3) > 0.6) or (abs(r2)-abs(r3) > 0.6) or (abs(r1)-abs(r2) < -0.6) or (abs(r1)-abs(r3) < -0.6) or (abs(r2)-abs(r3) < -0.6):
+				continue
+			else:
+				grasps[i].category = "Z"
+				grasps[i].score = zx
+				aux.append(grasps[i])
 		else:
 			continue
+
 	return aux
 
 
@@ -523,13 +578,16 @@ def graspFilter(grasps):
 
 	#3 different grasps for each axys
 	sol = []
-	D = 3
+	D = 2
 
 	aux = len(g1)
 	media = int(aux/2)
 	decimo = int(media/D)
 	M = media+decimo
 	m = media-decimo
+	if M==m==media:
+		M = aux-1
+		m = 0
 	sol.append(g1[m])
 	sol.append(g1[media])
 	sol.append(g1[M])
@@ -540,6 +598,9 @@ def graspFilter(grasps):
 	decimo = int(media/D)
 	M = media+decimo
 	m = media-decimo
+	if M==m==media:
+		M = aux-1
+		m = 0
 	sol.append(g2[m])
 	sol.append(g2[media])
 	sol.append(g2[M])
@@ -550,6 +611,9 @@ def graspFilter(grasps):
 	decimo = int(media/D)
 	M = media+decimo
 	m = media-decimo
+	if M==m==media:
+		M = aux-1
+		m = 0
 	sol.append(g3[m])
 	sol.append(g3[media])
 	sol.append(g3[M])
@@ -560,6 +624,9 @@ def graspFilter(grasps):
 	decimo = int(media/D)
 	M = media+decimo
 	m = media-decimo
+	if M==m==media:
+		M = aux-1
+		m = 0
 	sol.append(g4[m])
 	sol.append(g4[media])
 	sol.append(g4[M])
@@ -570,6 +637,9 @@ def graspFilter(grasps):
 	decimo = int(media/D)
 	M = media+decimo
 	m = media-decimo
+	if M==m==media:
+		M = aux-1
+		m = 0
 	sol.append(g5[m])
 	sol.append(g5[media])
 	sol.append(g5[M])
@@ -580,6 +650,9 @@ def graspFilter(grasps):
 	decimo = int(media/D)
 	M = media+decimo
 	m = media-decimo
+	if M==m==media:
+		M = aux-1
+		m = 0
 	sol.append(g6[m])
 	sol.append(g6[media])
 	sol.append(g6[M])

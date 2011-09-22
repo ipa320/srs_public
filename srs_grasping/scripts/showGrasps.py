@@ -17,19 +17,21 @@ class SCRIPT():#################################################################
 	# ------------------------------------------------------------------------------------
 	# ------------------------------------------------------------------------------------
 	def __init__(self):
+		rospy.init_node("sim_Gzb")
 		self.robotName = 'robots/care-o-bot3.zae'
 
 
 		if (len(sys.argv)<=1):
-			self.targetName = 'milk_box'
-			self.object_path = package_path+"/DB/obj/"+self.targetName+'.iv'
+			self.targetName = 'Milk'
+			self.object_path = package_path+"/DB/obj/"+self.targetName+'.xml'
 
 		else:
 			self.targetName = sys.argv[1]
+
 			if self.targetName[len(self.targetName)-3:len(self.targetName)] == ".iv":
 				self.object_path = package_path+'/DB/obj/'+self.targetName;
 			else:
-				self.object_path = package_path+'/DB/obj/'+self.targetName+'.kinbody.xml'
+				self.object_path = package_path+'/DB/obj/'+self.targetName+'.xml'
 
 		print "Loaded values: (%s, %s)" %(self.robotName, self.object_path)
 
@@ -71,6 +73,5 @@ class SCRIPT():#################################################################
 ##########################################################################
 if __name__ == "__main__":################################################
 ##########################################################################
-	rospy.init_node("simGaz_script")
 	s = SCRIPT()
     	s.run()

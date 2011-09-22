@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <GraspList>
-<object_id>milk_box</object_id>
+<object_id>Milk</object_id>
 <hand_type>SDH</hand_type>
 <joint_names>[sdh_knuckle_joint, sdh_thumb_2_joint, sdh_thumb_3_joint, sdh_finger_12_joint, sdh_finger_13_joint, sdh_finger_22_joint, sdh_finger_23_joint]</joint_names>
 <grasp_reference_link>sdh_palm_link</grasp_reference_link>

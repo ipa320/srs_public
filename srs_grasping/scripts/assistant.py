@@ -49,8 +49,8 @@ class SCRIPT():#################################################################
 
 			else:
 				print "USE: "
-				print "     rosrun srs_grasping assistant.py (Load milk_box.iv value)"
-				print "     rosrun srs_grasping assistant.py object (Load object.kinbody.xml value)"
+				print "     rosrun srs_grasping assistant.py (Load Milk.xml value)"
+				print "     rosrun srs_grasping assistant.py object (Load object.xml value)"
 				print "     rosrun srs_grasping assistant.py object.iv (Load object.iv value)"
 
 

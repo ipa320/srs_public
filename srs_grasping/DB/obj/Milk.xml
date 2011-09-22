@@ -1,7 +1,7 @@
-<KinBody name="Model_Oel">
+<KinBody name="Milk">
   <Body type="dynamic">
     <Geom type="trimesh">
-      <Data>Model_Oel.iv</Data>
+      <Data>Model_SRS_Milk.txt.iv</Data>
     </Geom>      
   </Body>
 </KinBody>

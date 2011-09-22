@@ -13,7 +13,6 @@
   <depend stack="cob_apps" /> <!-- cob_bringup, cob_script_server, cob_2dnav -->
   <depend stack="cob_common" /> <!-- cob_msgs, cob_default_config, cob_srvs -->
   <depend stack="cob_navigation" /> <!-- cob_platform_ctrl -->
-  <depend stack="cob_vision" /> <!-- opencv2, cob_object_detection -->
   <depend stack="common" /> <!-- actionlib, bfl -->
   <depend stack="common_msgs" /> <!-- nav_msgs, actionlib_msgs, trajectory_msgs, sensor_msgs, geometry_msgs, visualization_msgs -->
   <depend stack="executive_smach" /> <!-- smach_ros, smach -->
@@ -23,6 +22,7 @@
   <depend stack="perception_pcl" /> <!-- pcl, pcl_ros -->
   <depend stack="ros" /> <!-- roslib -->
   <depend stack="ros_comm" /> <!-- std_srvs, rosbag, std_msgs, roscpp, rospy -->
+  <depend stack="sql_database" /> <!-- database_interface -->
   <depend stack="vision_opencv" /> <!-- cv_bridge -->
 
 </stack>

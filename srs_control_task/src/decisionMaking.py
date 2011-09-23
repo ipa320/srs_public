@@ -121,7 +121,7 @@ class DecisionMaking:
                     satisfaction_flag = True
                     self.solfromUser.giveup = 0
                     self.solfromUser.solution = self.user_resppar.strip()
-                    print "We got response from the user"
+                    print "We got a move response from the user"
                     print(self.solfromUser)
                 else:
                     satisfaction_flag = False

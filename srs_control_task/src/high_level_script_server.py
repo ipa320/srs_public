@@ -48,7 +48,26 @@ hdl_base = ""
 
 def sss_move(current_goal):
     global hdl_base
-    rospy.loginfo("now inside  sss_move function")   
+    rospy.loginfo("now executing inside  the sss_move function")   
+    
+
+    if (current_goal=="dog"): # this means that move dog command has been issued and we have to try to scare the dog away by moving the arm
+       try:
+            sss.move("arm",'pregrasp', False)
+            sss.say("go go go")
+            sss.move("arm",'wave', False)
+            sss.say ("go away")
+            sss.move("arm",'folded', False)
+            sss.say ("stupid dog")
+              
+            return "ok"
+
+       except rospy.ROSException, e:
+            error_message = "%s"%e
+            rospy.logerr("unable to send sss move to send the dog away, error: %s", error_message)
+            return "nok"
+
+
     if (current_goal.find("[") == -1 and current_goal.find("#") == -1 ):   #this means we have received string with map coordinates not a predefined point,e.g. kitchen
         try:
             hdl_base = sss.move("base",current_goal,blocking=False)           

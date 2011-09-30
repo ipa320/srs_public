@@ -15,11 +15,14 @@
 #include <syslog.h>
 #include <netdb.h>
 #include <errno.h>
+#include <string>
 
 #include <opencv2/highgui/highgui.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
+
+#include<iostream>
 
 #define ABS(a) (((a) < 0) ? -(a) : (a))
 #ifndef MIN
@@ -44,6 +47,8 @@
     "Pragma: no-cache\r\n" \
     "Expires: Fri, 10 Dec 2010 18:22:23 GMT\r\n"
 
+#define MAP_ZOOM_FACTOR 3.2f
+
 namespace MixedRealityServer
 {
     MRServer::MRServer(ros::NodeHandle& node) :
@@ -51,7 +56,7 @@ namespace MixedRealityServer
     {
         ros::NodeHandle private_nh("~");
         private_nh.param("port", port_, 8080);
-
+		
 		pos_map = cvCreateImage(cvSize(320, 320), IPL_DEPTH_8U,1);
         boost::thread t(boost::bind( &MRServer::getOdometry, this));
         t.detach();
@@ -66,36 +71,36 @@ namespace MixedRealityServer
     	cvReleaseImage(&map);
         CleanUp();
     }
-
+	
 	void MRServer::getOdometry()
 	{
 		ros::Rate rate(5.0);
-		
+
 		tf::TransformListener listener;
 	 	while (!stop_requested_)
 	 	{	 
 	 		tf::StampedTransform transform;	
 			try
 			{
-		  		listener.lookupTransform("/map", "/odom_combined", ros::Time(0), transform);
+		  		listener.lookupTransform("/map", "/base_link", ros::Time(0), transform);
 			}
 			catch (tf::TransformException ex)
 			{
-		  		ROS_ERROR("%s",ex.what());
+		  		ROS_ERROR("%s", ex.what());
 		  		rate.sleep();
 		  		continue;
 			}
 			double x = transform.getOrigin().x() / ppm + map->width / 2;
 			double y = map->height - (transform.getOrigin().y() / ppm + map->height / 2);
-			
-			ROS_INFO("%d %d", (int)x, (int)y);
-			
+
+			//ROS_INFO("%d %d", (int)x, (int)y);
+
 			boost::unique_lock<boost::mutex> lock(odom_mutex_);
 
 			pos_map = cvCloneImage(map);
 			cvCircle(pos_map, cvPoint((int)x,(int)y), 10, cvScalar(0,0,0), 1);			
 			odom_condition_.notify_all();
-			
+
 			rate.sleep();
 		}
 	}
@@ -119,7 +124,7 @@ namespace MixedRealityServer
 
     void MRServer::imageCallback(const sensor_msgs::ImageConstPtr& msg, const std::string& topic)
     {
-        ROS_INFO("imageCallback");
+        //ROS_INFO("imageCallback");
         ImageBuffer* image_buffer = getImageBuffer(topic);
         boost::unique_lock<boost::mutex> lock(image_buffer->Mutex);
         // copy image
@@ -430,17 +435,20 @@ namespace MixedRealityServer
 
     ImageBuffer* MRServer::getImageBuffer(const std::string& topic)
     {
-        ROS_INFO("getImageBuffer");
         boost::unique_lock<boost::mutex> lock(image_maps_mutex_);
         ImageSubscriberMap::iterator it = image_subscribers_.find(topic);
-        if (it == image_subscribers_.end() && topic.compare("/map") != 0)
+        if (it == image_subscribers_.end())
         {
-            ROS_INFO("Subscribing to topic %s", topic.c_str());
-            image_subscribers_[topic] = image_transport_.subscribe(topic, 1, boost::bind(&MRServer::imageCallback, this, _1, topic));
-            image_buffers_[topic] = new ImageBuffer();
-            virtual_layers_[topic] = new VirtualLayer();
-        
+          	if(topic.compare("/map") != 0)
+		    {
+		        ROS_INFO("Subscribing to topic %s", topic.c_str());
+		        image_subscribers_[topic] = image_transport_.subscribe(topic, 1, boost::bind(&MRServer::imageCallback, this, _1, topic));
+		        image_buffers_[topic] = new ImageBuffer();
+		    }
+		    virtual_layers_[topic] = new VirtualLayer();
+		    ROS_INFO("Streaming...");
         }
+        
         ImageBuffer* image_buffer = image_buffers_[topic];
         return image_buffer;
     }
@@ -501,12 +509,18 @@ namespace MixedRealityServer
         {
             {
             	cv::Mat img;
+            	IplImage* image;
+            	
             	if(topic.compare("/mappos") == 0)
 				{	
       			 	boost::unique_lock<boost::mutex> lock(odom_mutex_);
 		            odom_condition_.wait(lock);
-					img = pos_map;
-					ROS_INFO("/mappos");
+  					image = cvCreateImage(cvSize(map->height,map->width),IPL_DEPTH_8U, 3);
+					image = cvCloneImage(pos_map);
+				}
+				else if(topic.compare("/map") == 0)
+				{
+					image = cvCloneImage(map);
 				}
 				else
 				{
@@ -515,7 +529,7 @@ namespace MixedRealityServer
 		            boost::unique_lock<boost::mutex> lock(image_buffer->Mutex);
 		            image_buffer->Condition.wait(lock);
 
-		            IplImage* image;
+
 		            try
 		            {
 		                if (image_bridge.fromImage(image_buffer->Msg, "bgr8"))
@@ -533,11 +547,15 @@ namespace MixedRealityServer
 		                ROS_ERROR("Unable to convert %s image to ipl format", image_buffer->Msg.encoding.c_str());
 		                return;
 		            }
-				
-		            //Draw the virtual objects
-		            virtual_layers_[topic]->DrawLayer(image);
-					img = image;
 				}
+	            //Draw the virtual 
+				boost::unique_lock<boost::mutex> v_lock(virtual_layer_mutex_);
+				//ROS_INFO("Objects: %d; %s", virtual_layers_[topic]->GetObjectsCount(), topic.c_str());
+	            virtual_layers_[topic]->DrawLayer(image);
+				virtual_layer_condition_.notify_all();
+				
+				img = image;
+			
                 // encode image
            
                 std::vector<uchar> encoded_buffer;
@@ -604,6 +622,7 @@ namespace MixedRealityServer
 
                 memcpy(frame, &encoded_buffer[0], frame_size);
                 ROS_DEBUG("got frame (size: %d kB)", frame_size / 1024);
+                cvReleaseImage(&image);
             }
 
             /*
@@ -654,7 +673,7 @@ namespace MixedRealityServer
 		cv::Mat img;
 		if(topic.compare("/map") == 0)
 		{
-			img = map;
+			img = cvCloneImage(map);
 		}
 		else
 		{
@@ -758,7 +777,6 @@ namespace MixedRealityServer
 			return;
 	
 		}
-        
 		image_subscribers_.erase (topic);
         image_buffers_.erase(topic);
         virtual_layers_.erase(topic);
@@ -1089,9 +1107,54 @@ namespace MixedRealityServer
     
     void MRServer::SetMap(IplImage* img, float res)
     {
-    	map = cvCloneImage(img);
+    	IplImage *tmp = cvCreateImage(cvSize(img->height, img->width),IPL_DEPTH_8U, 3);
+		cvConvertImage(img, tmp);
+		map = cvCreateImage(cvSize(MAP_ZOOM_FACTOR * img->height, MAP_ZOOM_FACTOR * img->width), IPL_DEPTH_8U, 3);
+		cvResize(tmp, map);
     	ppm = res;
+    	cvReleaseImage(&tmp);
     }
+
+	void MRServer::DrawCommand(MixedRealityServer::DrawObject obj)
+	{
+		if(virtual_layers_.find(obj.topic) != virtual_layers_.end())
+		{
+			boost::unique_lock<boost::mutex> lock(virtual_layer_mutex_);
+			if(!obj.command.compare("ADD"))
+			{	
+				float x = obj.x / ppm + map->width / 2;
+				float y = map->height - (obj.y / ppm + map->height / 2);
+				float w = obj.width / ppm;
+				float h = obj.height / ppm;
+				
+				std::string reds = obj.clr.substr(0, 2);    
+				std::string greens = obj.clr.substr(2, 2);    
+				std::string blues = obj.clr.substr(4, 2);    
+				int red = strtoul(reds.c_str(), NULL, 16);
+				int green = strtoul(greens.c_str(), NULL, 16);
+				int blue = strtoul(blues.c_str(), NULL, 16);
+
+				Contour2D* cntr;
+				cntr = new Contour2D(obj.id, 
+				  					 (ContourType) obj.type, 
+				  					 obj.label, 
+				  					 cvPoint((int)x, (int)y), 
+				  					 cvSize((int)w, (int)h), 
+				  					 obj.angle, 
+				  					 cvScalar(red, green, blue));
+				  					 
+				virtual_layers_[obj.topic]->AddObject(cntr);
+			}
+			if(!obj.command.compare("REMOVE"))
+			{
+				if(obj.id == -10)
+					virtual_layers_[obj.topic]->RemoveAllObjects();
+				else
+					virtual_layers_[obj.topic]->RemoveObject(obj.id);
+			}
+			virtual_layer_condition_.notify_all();
+		}
+	}
 }
 
 

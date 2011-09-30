@@ -17,7 +17,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #uncomment if you have defined messages
-#rosbuild_genmsg()
+rosbuild_genmsg()
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
@@ -34,3 +34,4 @@ rosbuild_add_library(MRS src/VirtualLayer.cpp)
 rosbuild_add_library(MRS src/MixedRealityServer.cpp)
 rosbuild_add_executable(MRS src/Main.cpp)
 rosbuild_add_executable(MapTF src/MapTF.cpp)
+rosbuild_add_executable(ControlMRS src/ControlMRS.cpp)

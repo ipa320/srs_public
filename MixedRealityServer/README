@@ -2,7 +2,7 @@ UI_PRI Interface installation and usage express guide
 
 I. Installation
 1. Ipad/Ipad2
-Double click on app.ipa file. Sync your device with ITunes. 
+Double click on srs.ipa file. Sync your device with ITunes. 
 (Note: Your UDID must be in the allowed devices list)
 Go to Ipad Settings>SRS and enter your ROS server IP.
 Start the application.
@@ -13,24 +13,29 @@ rosmake MixedRealityServer
 
 II. Starting the UI_PRI user interface
 
-1. Start the simulation and the IPA navigation stack
+1. Start the roscore
 
-roslaunch srs_get_milk get_milk.launch
-roslaunch cob_2dnav 2dnav.launch
+roscore 
 
-2. Start the Rosbridge stack
+2. Start the simulation with the MixedRealityServer
 
-rosrun rosbridge rosbridge
+roslaunch MixedRealityServer fillsim.launch
+(it will start the gazebo simulation, cob_2dnav, rosbridge, gdatabase 
+ and Decision making automatically)
 
-3. Start MixedRealityServer
-
-rosrun MixedRealityServer MRS
-rosrun MixedRealityServer MapTF
+Optional: If you already have the required componens running you can launch
+just the MixedRealityServer with: 
+roslaunch MixedRealityServer MRS.launch 
 
 4. Start the UI_PRI on the Ipad/Ipad2 device 
 (please ensure that the Ipad is connected to the
  same network as the ROS server)
+
 5. Enter the IP of the ROS server in the Ipad SRS settings
+
+6. Viewing the generated map with object via browser:
+Open with Google Chrome or Mozilla Firefox http://127.0.0.1:8080/stream?topic=/map
+*replace the 127.0.0.1 with the ip of your ros server if you want to see it remotely
 
 For more information, please read the provided topics and services documentation.
 

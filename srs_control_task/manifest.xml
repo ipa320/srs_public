@@ -25,6 +25,7 @@
   <depend package="smach_ros"/>
   <depend package="tf"/>
   <depend package="geometry_msgs"/>
+  <depend package="srs_msgs"/>
 
 </package>
 

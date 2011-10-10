@@ -3,6 +3,7 @@
 #include "nav_msgs/OccupancyGrid.h"
 
 #include "tf/transform_listener.h"
+#include "MixedRealityServer/DrawObject.h"
 
 
 using namespace MixedRealityServer;
@@ -22,6 +23,10 @@ void mapCallback(const nav_msgs::OccupancyGrid msg)
 	cvReleaseImage(&img);
 }
 
+void controlMRSCallback(MixedRealityServer::DrawObject obj)
+{
+	server->DrawCommand(obj);
+}
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "MixedRealityServer");
@@ -29,6 +34,7 @@ int main(int argc, char** argv)
     ros::NodeHandle node_hndl;
     server = new MRServer(node_hndl);
     ros::Subscriber map_sub = node_hndl.subscribe("map", 1, mapCallback);
+	ros::Subscriber control_sub = node_hndl.subscribe("control_mrs", 10, controlMRSCallback);
     //ros::Subscriber input_sub = node_hndl.subscribe("interface_recobj", 1, inputCallback);
     
     server->Spin();

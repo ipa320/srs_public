@@ -11,6 +11,8 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 
+#include "MixedRealityServer/DrawObject.h"
+
 //Maximum number of server sockets to listen.
 #define MAX_NUM_SOCKETS    100
 #define IO_BUFFER_SIZE     256
@@ -73,6 +75,8 @@ namespace MixedRealityServer
           
           void SetMap(IplImage* img, float res);
 
+		  void DrawCommand(MixedRealityServer::DrawObject obj);
+
         private:
           typedef std::map<std::string, ImageBuffer*> ImageBufferMap;
           typedef std::map<std::string, image_transport::Subscriber> ImageSubscriberMap;
@@ -80,7 +84,7 @@ namespace MixedRealityServer
           typedef std::map<std::string, VirtualLayer*> VirtualLayerMap;
           
           void getOdometry();
-
+		  
           ImageBuffer* getImageBuffer(const std::string& topic);
 
           void imageCallback(const sensor_msgs::ImageConstPtr& msg, const std::string& topic);
@@ -198,6 +202,9 @@ namespace MixedRealityServer
           IplImage* pos_map;
           boost::mutex 		odom_mutex_;
           boost::condition 	odom_condition_;
+
+		  boost::mutex		virtual_layer_mutex_;
+		  boost::condition  virtual_layer_condition_;
 
     };
 }

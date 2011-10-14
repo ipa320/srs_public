@@ -16,6 +16,7 @@
   <!--depend package="opencv2"/-->
   <depend package="nav_msgs"/>
   <depend package="tf"/>
+  <depend package="gdatabase"/>
 
 </package>
 

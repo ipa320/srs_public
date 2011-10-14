@@ -7,45 +7,40 @@ namespace MixedRealityServer
 {
     typedef enum
     {
-        CONTOUR_UNKNOWN,
-        CONTOUR_RECTANGLE,
-        CONTOUR_CIRCLE,
-        CONTOUR_ELIPSE,
-        CONTOUR_POLY
+        CONTOUR_UNKNOWN = 0,
+        CONTOUR_RECTANGLE = 1,
+        CONTOUR_ELIPSE = 2,
     } ContourType;
 
     class Contour2D
     {
         private:
-            static int ID_Generator;
-
             unsigned int id;
             bool selected;
             ContourType type;
+			std::string label;
             CvScalar color;
             int contour_width;
             CvPoint position;
             CvSize size;
-            //Rectangle Data
-            CvPoint drawPoint1;
-            CvPoint drawPoint2;
-
+			float angle;
+ 
         public:
 
-            Contour2D(ContourType t, CvScalar clr=cvScalar(255, 0, 0), int line_width=1);
-            void SetAsRectangle(CvPoint p, CvSize s);
+            Contour2D(int id, ContourType t, std::string lbl, CvPoint pos, CvSize sz, float ang, CvScalar clr = cvScalar(255, 0, 0), int line_width=1);
 
             void Select();
             void Deselect();
 
             int GetID();
-            ContourType GetContourType();
+            bool IsSelected();
+            ContourType GetContourType();	
+			std::string GetLabel();
             CvScalar GetColor();
             int GetContourWidth();
-            bool IsSelected();
-            CvPoint GetDrawPoint1();
-            CvPoint GetDrawPoint2();
-
+			CvPoint GetPosition();
+			CvSize GetSize();
+			float GetAngle();
     };
 }
 

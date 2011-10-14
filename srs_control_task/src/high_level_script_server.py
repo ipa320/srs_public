@@ -11,7 +11,7 @@
 # a solution to solve the problem. Then, the task is resumed.
 #################################################################################
 
-# ROS imports
+# ROS imports first
 import roslib; roslib.load_manifest('srs_control_task')
 
 import rospy

@@ -26,24 +26,25 @@ class grasp_action_server():
 		server_result = GraspActionResult().result
 
 
-		try:
-			# SE DEBE IMPLEMENTAR UNA FUNCION QUE DADO UN FLOAT object_id SEPA A QUE OBJETO SE CORRESPONDE
-			# DE MOMENTO UTILIZO UN IF CHAPUCERO
-			if server_goal.object_id == 0:
-				object_name = "milk_box"
-			else:
-				object_name = "OTHER"
+		#SE DEBE IMPLEMENTAR UNA FUNCION QUE DADO UN FLOAT object_id SEPA A QUE OBJETO SE CORRESPONDE
+		#DE MOMENTO UTILIZO UN IF CHAPUCERO
+		if server_goal.object_id == 0:
+			object_name = "Milk"
+		else:
+			object_name = "OTHER"
 				
 
-			file_name = self.package_path+"/DB/"+object_name+"_all_grasps.xml"
+		file_name = self.package_path+"/DB/"+object_name+"_all_grasps.xml"
 
-			GRASPS = grasping_functions.getGrasps(file_name, msg=True)
-			rospy.loginfo(str(len(GRASPS))+" grasping configuration for this object.")		
+		GRASPS = grasping_functions.getGrasps(file_name, msg=True)
+		GRASPS = grasping_functions.getGraspsByAxis(GRASPS, server_goal.pose_id)
 
+		rospy.loginfo(str(len(GRASPS))+" grasping configuration for this object.")		
+
+		if len(GRASPS)>0:
 			server_result.grasp_configuration = GRASPS
 			self.grasp_action_server.set_succeeded(server_result)
-
-		except:
+		else:
 			rospy.logerr("No grasping configurations for this object.")
 			server_result.grasp_configuration = []
 			self.grasp_action_server.set_aborted(server_result)

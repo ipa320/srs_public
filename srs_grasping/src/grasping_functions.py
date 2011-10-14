@@ -313,55 +313,76 @@ def generateFile(targetName, gmodel, env):
 # Get grasps
 # -----------------------------------------------------------------------------------------------
 def getGrasps(file_name, all_grasps=False, msg=False):
-	xmldoc = minidom.parse(file_name)  
+	try:
+		xmldoc = minidom.parse(file_name)  
+	
+		padres = ((xmldoc.firstChild)).getElementsByTagName('configuration')
+		object_id = ((xmldoc.firstChild)).getElementsByTagName('object_id')[0].firstChild.nodeValue
 
-	padres = ((xmldoc.firstChild)).getElementsByTagName('configuration')
-	object_id = ((xmldoc.firstChild)).getElementsByTagName('object_id')[0].firstChild.nodeValue
+		res = []
+		for j in range(0, len(padres)):
+			hijos = (((xmldoc.firstChild)).getElementsByTagName('configuration'))[j].getElementsByTagName('Grasp')
+			grasps = []
+			for i in range(0,len(hijos)):
+				score = (hijos[i].attributes["Index"]).value
+
+				sconfiguration = ((hijos[i].getElementsByTagName('joint_values'))[0]).firstChild.nodeValue
+
+				aux = ((hijos[i].getElementsByTagName('GraspPose'))[0])
+				Translation = eval((aux.getElementsByTagName('Translation')[0]).firstChild.nodeValue)
+				Rotation = eval((aux.getElementsByTagName('Rotation')[0]).firstChild.nodeValue)
+				palm_pose = PoseStamped()
+				palm_pose.pose.position.x = float(Translation[0])
+				palm_pose.pose.position.y = float(Translation[1])
+				palm_pose.pose.position.z = float(Translation[2])
+				Rotation =  quaternion_from_euler(Rotation[0], Rotation[1], Rotation[2], axes='sxyz')
+				palm_pose.pose.orientation.x = float(Rotation[0])
+				palm_pose.pose.orientation.y = float(Rotation[1])
+				palm_pose.pose.orientation.z = float(Rotation[2])
+				palm_pose.pose.orientation.w = float(Rotation[3])
+
+
+				grasps.append(GraspConfig(object_id, score, sconfiguration, palm_pose))
+
+
+			filtered_grasps, ALL_grasps = graspFilter(grasps)
+
+			if all_grasps==True:
+				res.append(ALL_grasps)
+			else:
+				res.append(filtered_grasps)
+
+
+		if msg==False:
+			return res					#returns a GraspConfig list (openrave viewer)
+		else:
+			return graspConfig_to_MSG(res)			#returns a msg list (server/service)
+	except:
+		return []
+
+# -----------------------------------------------------------------------------------------------
+# Get grasps by axis
+# -----------------------------------------------------------------------------------------------
+def getGraspsByAxis(grasps, axis=""):
 
 	res = []
-	for j in range(0, len(padres)):
-		hijos = (((xmldoc.firstChild)).getElementsByTagName('configuration'))[j].getElementsByTagName('Grasp')
-		grasps = []
-		for i in range(0,len(hijos)):
-			score = (hijos[i].attributes["Index"]).value
+	if axis == "":
+		return grasps
 
-			sconfiguration = ((hijos[i].getElementsByTagName('joint_values'))[0]).firstChild.nodeValue
+	for i in range(0,len(grasps)):
+		if grasps[i].category == axis:
+			res.append(grasps[i])
 
-			aux = ((hijos[i].getElementsByTagName('GraspPose'))[0])
-			Translation = eval((aux.getElementsByTagName('Translation')[0]).firstChild.nodeValue)
-			Rotation = eval((aux.getElementsByTagName('Rotation')[0]).firstChild.nodeValue)
-			palm_pose = PoseStamped()
-			palm_pose.pose.position.x = float(Translation[0])
-			palm_pose.pose.position.y = float(Translation[1])
-			palm_pose.pose.position.z = float(Translation[2])
-			Rotation =  quaternion_from_euler(Rotation[0], Rotation[1], Rotation[2], axes='sxyz')
-			palm_pose.pose.orientation.x = float(Rotation[0])
-			palm_pose.pose.orientation.y = float(Rotation[1])
-			palm_pose.pose.orientation.z = float(Rotation[2])
-			palm_pose.pose.orientation.w = float(Rotation[3])
-
-
-			grasps.append(GraspConfig(object_id, score, sconfiguration, palm_pose))
-
-
-		filtered_grasps, ALL_grasps = graspFilter(grasps)
-
-		if all_grasps==True:
-			res.append(ALL_grasps)
-		else:
-			res.append(filtered_grasps)
-
-
-	if msg==False:
-		return res					#returns a GraspConfig list (openrave viewer)
-	else:
-		return 	graspConfig_to_MSG(res)			#returns a msg list (server/service)
+	return res
 
 
 # -----------------------------------------------------------------------------------------------
 # Grasp function
 # -----------------------------------------------------------------------------------------------
-def GraspIt(values):
+def GraspIt(values, palm_pose):
+	#pre-grasp to the palm_pose - offset
+	# offset
+	sss.move("sdh", [eval(values)])
 	sss.move("sdh", [eval(values)])
 
 	
@@ -417,7 +438,7 @@ def showOR(env, grasps, gazebo=False, delay=0.5):
 			if gazebo==True:
 				res = raw_input("Do you want to see this configuration in Gazebo? (y/n): ")
 				if res=="y":
-					GraspIt(grasps[i].sconfiguration)
+					GraspIt(grasps[i].sconfiguration, grasps[i].palm_pose)
 
 			if delay is None:
 				raw_input('Next config.')
@@ -549,7 +570,7 @@ def Yfilter(grasps):
 			if (abs(r1)-abs(r2) > 0.6) or (abs(r1)-abs(r3) > 0.6) or (abs(r2)-abs(r3) > 0.6) or (abs(r1)-abs(r2) < -0.6) or (abs(r1)-abs(r3) < -0.6) or (abs(r2)-abs(r3) < -0.6):
 				continue
 			else:
-				grasps[i].category = "Z"
+				grasps[i].category = "Y"
 				grasps[i].score = zx
 				aux.append(grasps[i])
 		else:
@@ -659,5 +680,6 @@ def graspFilter(grasps):
 	
 
 	return sol, all_grasps
+
 
 

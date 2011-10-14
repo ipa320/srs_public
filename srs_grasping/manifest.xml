@@ -13,6 +13,10 @@
   <depend package="rospy"/>
   <depend package="tf"/>
   <depend package="openrave"/>
+  <depend package="smach"/>
+  <depend package="smach_ros"/>
+
+
   <depend package="trajectory_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="srs_msgs"/>

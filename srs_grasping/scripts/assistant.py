@@ -11,8 +11,7 @@ class SCRIPT():#################################################################
 	
 	def run(self):	
 			print "<-------------- MENU -------------->"
-			print "0 - Generator"
-			print "1 - Depurator <obsolet>"
+			print "1 - Generator"
 			print "2 - Show grasps in OpenRAVE"
 			print "3 - Show grasps in OpenRAVE and Gazebo"
 			print "4 - Help"
@@ -29,15 +28,9 @@ class SCRIPT():#################################################################
 					print "Wrong value."
 
 	
-			if option == 0:
+			if option == 1:
 				s = generator.SCRIPT()
 				s.run()
-
-			elif option == 1:
-				res = raw_input("The script is obsolet. Do you want to continue? (y/n): ")
-				if res=="y":
-					s = depurator.SCRIPT()
-					s.run()
 
 			elif option == 2:
 				s = showGraspsOR.SCRIPT()

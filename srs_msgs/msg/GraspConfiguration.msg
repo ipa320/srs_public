@@ -1,0 +1,6 @@
+std_msgs/Float32 object_id
+std_msgs/String hand_type
+trajectory_msgs/JointTrajectory sconfiguration
+geometry_msgs/PoseStamped palm_pose
+std_msgs/String category
+std_msgs/Float32 score

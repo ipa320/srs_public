@@ -2,5 +2,6 @@ float32 object_id
 string hand_type
 trajectory_msgs/JointTrajectory sconfiguration
 geometry_msgs/PoseStamped palm_pose
+geometry_msgs/PoseStamped pre_grasp
 string category
 float32 score

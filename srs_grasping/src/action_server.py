@@ -36,8 +36,8 @@ class grasp_action_server():
 
 		file_name = self.package_path+"/DB/"+object_name+"_all_grasps.xml"
 
-		GRASPS = grasping_functions.getGrasps(file_name, msg=True)
-		GRASPS = grasping_functions.getGraspsByAxis(GRASPS, server_goal.pose_id)
+		grasps = grasping_functions.getGrasps(file_name, msg=True)
+		GRASPS = grasping_functions.getGraspsByAxis(grasps, server_goal.pose_id)
 
 		rospy.loginfo(str(len(GRASPS))+" grasping configuration for this object.")		
 

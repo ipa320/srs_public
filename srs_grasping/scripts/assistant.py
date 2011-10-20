@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import generator, depurator, showGraspsOR, showGrasps
+import generator, showGrasps, grasp_machine
 
 ##################################################################################	
 class SCRIPT():###################################################################
@@ -11,16 +11,16 @@ class SCRIPT():#################################################################
 	
 	def run(self):	
 			print "<-------------- MENU -------------->"
-			print "1 - Generator"
-			print "2 - Show grasps in OpenRAVE"
-			print "3 - Show grasps in OpenRAVE and Gazebo"
-			print "4 - Help"
+			print "1 - Generator."
+			print "2 - Show grasps."
+			print "3 - Grasp machine."
+			print "4 - Help."
 
 			repeat = True;
 			while repeat:
 				try:
 					option = int(raw_input("?: "));
-					if (option>=0 and option<=4):
+					if (option>=1 and option<=4):
 						repeat = False;
 					else:
 						print "Wrong value."
@@ -35,16 +35,15 @@ class SCRIPT():#################################################################
 			elif option == 2:
 				s = showGraspsOR.SCRIPT()
 				s.run()
-
 			elif option == 3:
-				s = showGrasps.SCRIPT()
-				s.run()
-
+				grasp_machine.main()
 			else:
 				print "USE: "
 				print "     rosrun srs_grasping assistant.py (Load Milk.xml value)"
 				print "     rosrun srs_grasping assistant.py object (Load object.xml value)"
 				print "     rosrun srs_grasping assistant.py object.iv (Load object.iv value)"
+
+				
 
 
 

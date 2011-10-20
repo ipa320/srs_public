@@ -8,22 +8,16 @@ import roslib.rostime
 import std_msgs.msg
 
 class GraspConfiguration(roslib.message.Message):
-  _md5sum = "4c745da5a0311a190cd94a0d5558e1fe"
+  _md5sum = "a1206df281d1adfdf3cdaec4a57ad123"
   _type = "srs_msgs/GraspConfiguration"
   _has_header = False #flag to mark the presence of a Header object
-  _full_text = """std_msgs/Float32 object_id
-std_msgs/String hand_type
+  _full_text = """float32 object_id
+string hand_type
 trajectory_msgs/JointTrajectory sconfiguration
 geometry_msgs/PoseStamped palm_pose
-std_msgs/String category
-std_msgs/Float32 score
-
-================================================================================
-MSG: std_msgs/Float32
-float32 data
-================================================================================
-MSG: std_msgs/String
-string data
+geometry_msgs/PoseStamped pre_grasp
+string category
+float32 score
 
 ================================================================================
 MSG: trajectory_msgs/JointTrajectory
@@ -83,8 +77,8 @@ float64 z
 float64 w
 
 """
-  __slots__ = ['object_id','hand_type','sconfiguration','palm_pose','category','score']
-  _slot_types = ['std_msgs/Float32','std_msgs/String','trajectory_msgs/JointTrajectory','geometry_msgs/PoseStamped','std_msgs/String','std_msgs/Float32']
+  __slots__ = ['object_id','hand_type','sconfiguration','palm_pose','pre_grasp','category','score']
+  _slot_types = ['float32','string','trajectory_msgs/JointTrajectory','geometry_msgs/PoseStamped','geometry_msgs/PoseStamped','string','float32']
 
   def __init__(self, *args, **kwds):
     """
@@ -94,7 +88,7 @@ float64 w
     changes.  You cannot mix in-order arguments and keyword arguments.
     
     The available fields are:
-       object_id,hand_type,sconfiguration,palm_pose,category,score
+       object_id,hand_type,sconfiguration,palm_pose,pre_grasp,category,score
     
     @param args: complete set of field values, in .msg order
     @param kwds: use keyword arguments corresponding to message field names
@@ -104,24 +98,27 @@ float64 w
       super(GraspConfiguration, self).__init__(*args, **kwds)
       #message fields cannot be None, assign default values for those that are
       if self.object_id is None:
-        self.object_id = std_msgs.msg.Float32()
+        self.object_id = 0.
       if self.hand_type is None:
-        self.hand_type = std_msgs.msg.String()
+        self.hand_type = ''
       if self.sconfiguration is None:
         self.sconfiguration = trajectory_msgs.msg.JointTrajectory()
       if self.palm_pose is None:
         self.palm_pose = geometry_msgs.msg.PoseStamped()
+      if self.pre_grasp is None:
+        self.pre_grasp = geometry_msgs.msg.PoseStamped()
       if self.category is None:
-        self.category = std_msgs.msg.String()
+        self.category = ''
       if self.score is None:
-        self.score = std_msgs.msg.Float32()
+        self.score = 0.
     else:
-      self.object_id = std_msgs.msg.Float32()
-      self.hand_type = std_msgs.msg.String()
+      self.object_id = 0.
+      self.hand_type = ''
       self.sconfiguration = trajectory_msgs.msg.JointTrajectory()
       self.palm_pose = geometry_msgs.msg.PoseStamped()
-      self.category = std_msgs.msg.String()
-      self.score = std_msgs.msg.Float32()
+      self.pre_grasp = geometry_msgs.msg.PoseStamped()
+      self.category = ''
+      self.score = 0.
 
   def _get_types(self):
     """
@@ -136,8 +133,8 @@ float64 w
     @type  buff: StringIO
     """
     try:
-      buff.write(_struct_f.pack(self.object_id.data))
-      _x = self.hand_type.data
+      buff.write(_struct_f.pack(self.object_id))
+      _x = self.hand_type
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
       _x = self
@@ -174,11 +171,16 @@ float64 w
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
       _x = self
-      buff.write(_struct_7d.pack(_x.palm_pose.pose.position.x, _x.palm_pose.pose.position.y, _x.palm_pose.pose.position.z, _x.palm_pose.pose.orientation.x, _x.palm_pose.pose.orientation.y, _x.palm_pose.pose.orientation.z, _x.palm_pose.pose.orientation.w))
-      _x = self.category.data
+      buff.write(_struct_7d3I.pack(_x.palm_pose.pose.position.x, _x.palm_pose.pose.position.y, _x.palm_pose.pose.position.z, _x.palm_pose.pose.orientation.x, _x.palm_pose.pose.orientation.y, _x.palm_pose.pose.orientation.z, _x.palm_pose.pose.orientation.w, _x.pre_grasp.header.seq, _x.pre_grasp.header.stamp.secs, _x.pre_grasp.header.stamp.nsecs))
+      _x = self.pre_grasp.header.frame_id
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-      buff.write(_struct_f.pack(self.score.data))
+      _x = self
+      buff.write(_struct_7d.pack(_x.pre_grasp.pose.position.x, _x.pre_grasp.pose.position.y, _x.pre_grasp.pose.position.z, _x.pre_grasp.pose.orientation.x, _x.pre_grasp.pose.orientation.y, _x.pre_grasp.pose.orientation.z, _x.pre_grasp.pose.orientation.w))
+      _x = self.category
+      length = len(_x)
+      buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
+      buff.write(_struct_f.pack(self.score))
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -189,28 +191,22 @@ float64 w
     @type  str: str
     """
     try:
-      if self.object_id is None:
-        self.object_id = std_msgs.msg.Float32()
-      if self.hand_type is None:
-        self.hand_type = std_msgs.msg.String()
       if self.sconfiguration is None:
         self.sconfiguration = trajectory_msgs.msg.JointTrajectory()
       if self.palm_pose is None:
         self.palm_pose = geometry_msgs.msg.PoseStamped()
-      if self.category is None:
-        self.category = std_msgs.msg.String()
-      if self.score is None:
-        self.score = std_msgs.msg.Float32()
+      if self.pre_grasp is None:
+        self.pre_grasp = geometry_msgs.msg.PoseStamped()
       end = 0
       start = end
       end += 4
-      (self.object_id.data,) = _struct_f.unpack(str[start:end])
+      (self.object_id,) = _struct_f.unpack(str[start:end])
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
       start = end
       end += length
-      self.hand_type.data = str[start:end]
+      self.hand_type = str[start:end]
       _x = self
       start = end
       end += 12
@@ -278,17 +274,27 @@ float64 w
       self.palm_pose.header.frame_id = str[start:end]
       _x = self
       start = end
-      end += 56
-      (_x.palm_pose.pose.position.x, _x.palm_pose.pose.position.y, _x.palm_pose.pose.position.z, _x.palm_pose.pose.orientation.x, _x.palm_pose.pose.orientation.y, _x.palm_pose.pose.orientation.z, _x.palm_pose.pose.orientation.w,) = _struct_7d.unpack(str[start:end])
+      end += 68
+      (_x.palm_pose.pose.position.x, _x.palm_pose.pose.position.y, _x.palm_pose.pose.position.z, _x.palm_pose.pose.orientation.x, _x.palm_pose.pose.orientation.y, _x.palm_pose.pose.orientation.z, _x.palm_pose.pose.orientation.w, _x.pre_grasp.header.seq, _x.pre_grasp.header.stamp.secs, _x.pre_grasp.header.stamp.nsecs,) = _struct_7d3I.unpack(str[start:end])
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
       start = end
       end += length
-      self.category.data = str[start:end]
+      self.pre_grasp.header.frame_id = str[start:end]
+      _x = self
+      start = end
+      end += 56
+      (_x.pre_grasp.pose.position.x, _x.pre_grasp.pose.position.y, _x.pre_grasp.pose.position.z, _x.pre_grasp.pose.orientation.x, _x.pre_grasp.pose.orientation.y, _x.pre_grasp.pose.orientation.z, _x.pre_grasp.pose.orientation.w,) = _struct_7d.unpack(str[start:end])
       start = end
       end += 4
-      (self.score.data,) = _struct_f.unpack(str[start:end])
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      self.category = str[start:end]
+      start = end
+      end += 4
+      (self.score,) = _struct_f.unpack(str[start:end])
       return self
     except struct.error as e:
       raise roslib.message.DeserializationError(e) #most likely buffer underfill
@@ -303,8 +309,8 @@ float64 w
     @type  numpy module
     """
     try:
-      buff.write(_struct_f.pack(self.object_id.data))
-      _x = self.hand_type.data
+      buff.write(_struct_f.pack(self.object_id))
+      _x = self.hand_type
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
       _x = self
@@ -341,11 +347,16 @@ float64 w
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
       _x = self
-      buff.write(_struct_7d.pack(_x.palm_pose.pose.position.x, _x.palm_pose.pose.position.y, _x.palm_pose.pose.position.z, _x.palm_pose.pose.orientation.x, _x.palm_pose.pose.orientation.y, _x.palm_pose.pose.orientation.z, _x.palm_pose.pose.orientation.w))
-      _x = self.category.data
+      buff.write(_struct_7d3I.pack(_x.palm_pose.pose.position.x, _x.palm_pose.pose.position.y, _x.palm_pose.pose.position.z, _x.palm_pose.pose.orientation.x, _x.palm_pose.pose.orientation.y, _x.palm_pose.pose.orientation.z, _x.palm_pose.pose.orientation.w, _x.pre_grasp.header.seq, _x.pre_grasp.header.stamp.secs, _x.pre_grasp.header.stamp.nsecs))
+      _x = self.pre_grasp.header.frame_id
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-      buff.write(_struct_f.pack(self.score.data))
+      _x = self
+      buff.write(_struct_7d.pack(_x.pre_grasp.pose.position.x, _x.pre_grasp.pose.position.y, _x.pre_grasp.pose.position.z, _x.pre_grasp.pose.orientation.x, _x.pre_grasp.pose.orientation.y, _x.pre_grasp.pose.orientation.z, _x.pre_grasp.pose.orientation.w))
+      _x = self.category
+      length = len(_x)
+      buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
+      buff.write(_struct_f.pack(self.score))
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -358,28 +369,22 @@ float64 w
     @type  numpy: module
     """
     try:
-      if self.object_id is None:
-        self.object_id = std_msgs.msg.Float32()
-      if self.hand_type is None:
-        self.hand_type = std_msgs.msg.String()
       if self.sconfiguration is None:
         self.sconfiguration = trajectory_msgs.msg.JointTrajectory()
       if self.palm_pose is None:
         self.palm_pose = geometry_msgs.msg.PoseStamped()
-      if self.category is None:
-        self.category = std_msgs.msg.String()
-      if self.score is None:
-        self.score = std_msgs.msg.Float32()
+      if self.pre_grasp is None:
+        self.pre_grasp = geometry_msgs.msg.PoseStamped()
       end = 0
       start = end
       end += 4
-      (self.object_id.data,) = _struct_f.unpack(str[start:end])
+      (self.object_id,) = _struct_f.unpack(str[start:end])
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
       start = end
       end += length
-      self.hand_type.data = str[start:end]
+      self.hand_type = str[start:end]
       _x = self
       start = end
       end += 12
@@ -447,22 +452,33 @@ float64 w
       self.palm_pose.header.frame_id = str[start:end]
       _x = self
       start = end
-      end += 56
-      (_x.palm_pose.pose.position.x, _x.palm_pose.pose.position.y, _x.palm_pose.pose.position.z, _x.palm_pose.pose.orientation.x, _x.palm_pose.pose.orientation.y, _x.palm_pose.pose.orientation.z, _x.palm_pose.pose.orientation.w,) = _struct_7d.unpack(str[start:end])
+      end += 68
+      (_x.palm_pose.pose.position.x, _x.palm_pose.pose.position.y, _x.palm_pose.pose.position.z, _x.palm_pose.pose.orientation.x, _x.palm_pose.pose.orientation.y, _x.palm_pose.pose.orientation.z, _x.palm_pose.pose.orientation.w, _x.pre_grasp.header.seq, _x.pre_grasp.header.stamp.secs, _x.pre_grasp.header.stamp.nsecs,) = _struct_7d3I.unpack(str[start:end])
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
       start = end
       end += length
-      self.category.data = str[start:end]
+      self.pre_grasp.header.frame_id = str[start:end]
+      _x = self
+      start = end
+      end += 56
+      (_x.pre_grasp.pose.position.x, _x.pre_grasp.pose.position.y, _x.pre_grasp.pose.position.z, _x.pre_grasp.pose.orientation.x, _x.pre_grasp.pose.orientation.y, _x.pre_grasp.pose.orientation.z, _x.pre_grasp.pose.orientation.w,) = _struct_7d.unpack(str[start:end])
       start = end
       end += 4
-      (self.score.data,) = _struct_f.unpack(str[start:end])
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      self.category = str[start:end]
+      start = end
+      end += 4
+      (self.score,) = _struct_f.unpack(str[start:end])
       return self
     except struct.error as e:
       raise roslib.message.DeserializationError(e) #most likely buffer underfill
 
 _struct_I = roslib.message.struct_I
+_struct_7d3I = struct.Struct("<7d3I")
 _struct_3I = struct.Struct("<3I")
 _struct_7d = struct.Struct("<7d")
 _struct_2i = struct.Struct("<2i")

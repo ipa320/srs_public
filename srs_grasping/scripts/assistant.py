@@ -33,7 +33,7 @@ class SCRIPT():#################################################################
 				s.run()
 
 			elif option == 2:
-				s = showGraspsOR.SCRIPT()
+				s = showGrasps.SCRIPT()
 				s.run()
 			elif option == 3:
 				grasp_machine.main()

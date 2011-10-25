@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src
+END
+tracker_kalman.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 126
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/tracker_kalman.cpp
+END
+tracker_particle.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/tracker_particle.cpp
+END
+mcpdf_pos_vel.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/mcpdf_pos_vel.cpp
+END
+gaussian_pos_vel.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/gaussian_pos_vel.cpp
+END
+sysmodel_vector.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/sysmodel_vector.cpp
+END
+uniform_vector.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 126
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/uniform_vector.cpp
+END
+sysmodel_pos_vel.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/sysmodel_pos_vel.cpp
+END
+measmodel_pos.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/measmodel_pos.cpp
+END
+measmodel_vector.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/measmodel_vector.cpp
+END
+mcpdf_vector.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 124
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/mcpdf_vector.cpp
+END
+people_tracking_node.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/people_tracking_node.cpp
+END
+detector_particle.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 129
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/detector_particle.cpp
+END
+gaussian_vector.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/wg-ros-pkg/!svn/ver/42502/branches/trunk_cturtle/stacks/people_experimental/people_tracking_filter/src/gaussian_vector.cpp
+END

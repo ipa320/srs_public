@@ -39,10 +39,18 @@
 #include "opencv/cv.h"
 #include "opencv/ml.h"
 
-#include "rosrecord/Player.h"
+//#include "rosrecord/Player.h"
+#include "rosbag/bag.h"
+#include <rosbag/view.h>
+#include <boost/foreach.hpp>
 
-#include "people_msgs/PositionMeasurement.h"
+#include "std_msgs/String.h"
+#include "std_msgs/Int32.h"
+
+#include "srs_msgs/PositionMeasurement.h"
 #include "sensor_msgs/LaserScan.h"
+
+
 
 using namespace std;
 using namespace laser_processor;
@@ -72,6 +80,7 @@ public:
 
   void loadData(LoadType load, char* file)
   {
+   printf("In loadData ...\n");
     if (load != LOADING_NONE)
     {
       switch (load)
@@ -86,7 +95,55 @@ public:
         break;
       }
 
-      ros::record::Player p;
+
+  rosbag::Bag bag;
+
+
+  bag.open(file, rosbag::bagmode::Read);
+  
+    std::vector<std::string> topics;
+    topics.push_back(std::string("/scan_front"));
+   // topics.push_back(std::string("/scan_rear"));
+
+
+   rosbag::View view(bag, rosbag::TopicQuery(topics));
+   printf("1** size%i", view.size());
+      
+
+   BOOST_FOREACH(rosbag::MessageInstance const m, view)
+    {
+       printf("2**"); 
+           sensor_msgs::LaserScan::ConstPtr scanptr = m.instantiate<sensor_msgs::LaserScan>();
+           printf("3**"); 
+           if (scanptr != NULL)
+           
+
+   switch (load)
+      {
+      case LOADING_POS:
+        loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&pos_data_);
+        break;
+      case LOADING_NEG:
+        mask_count_ = 1000; // effectively disable masking
+        loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&neg_data_);
+        break;
+      case LOADING_TEST:
+       loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&test_data_);
+        break;
+      default:
+        break;
+      }
+
+  //            printf("Laser data %i:",(*scanptr).ranges.size());
+ 
+           
+     }
+   
+       bag.close();
+
+
+
+ /*     ros::record::Player p;   Alex
       if (p.open(file, ros::Time()))
       {
         mask_.clear();
@@ -95,7 +152,10 @@ public:
       switch (load)
       {
       case LOADING_POS:
-        p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &pos_data_);
+        p.addHandler<sensor_msgs::LaserScan>(string("*"),                      // Topic name
+                                             &TrainLegDetector::loadCb,        // Handler (callback)
+                                             this,
+                                             &pos_data_);                      // vector storage with positive data
         break;
       case LOADING_NEG:
         mask_count_ = 1000; // effectively disable masking
@@ -110,13 +170,21 @@ public:
     
         while (p.nextMsg())
         {}
+
+
     } 
+*/
     }
   }
 
-  void loadCb(string name, sensor_msgs::LaserScan* scan, ros::Time t, ros::Time t_no_use, void* n)
-  {
-    vector< vector<float> >* data = (vector< vector<float> >*)(n);
+ // void loadCb(string name, sensor_msgs::LaserScan* scan, ros::Time t, ros::Time t_no_use, std::vector n)
+ 
+void loadCb(sensor_msgs::LaserScan* scan, vector< vector<float> >* data)
+ {
+    printf (".");
+  //  vector< vector<float> >* data = (vector< vector<float> >*)(n);
+
+
 
     if (mask_count_++ < 20)
     {
@@ -137,6 +205,7 @@ public:
 
   void train()
   {
+printf("In train()....");
     int sample_size = pos_data_.size() + neg_data_.size();
     feat_count_ = pos_data_[0].size();
 

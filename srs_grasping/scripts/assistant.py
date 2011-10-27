@@ -13,7 +13,7 @@ class SCRIPT():#################################################################
 			print "<-------------- MENU -------------->"
 			print "1 - Generator."
 			print "2 - Show grasps."
-			print "3 - Grasp machine."
+			print "3 - Grasp machine example (Milk, X-axis)."
 			print "4 - Help."
 
 			repeat = True;
@@ -35,8 +35,11 @@ class SCRIPT():#################################################################
 			elif option == 2:
 				s = showGrasps.SCRIPT()
 				s.run()
+
 			elif option == 3:
-				grasp_machine.main()
+				raw_input("Launch the smach_viewer and press any key.")
+				grasp_machine.main(0, "X")
+
 			else:
 				print "USE: "
 				print "     rosrun srs_grasping assistant.py (Load Milk.xml value)"
@@ -44,9 +47,6 @@ class SCRIPT():#################################################################
 				print "     rosrun srs_grasping assistant.py object.iv (Load object.iv value)"
 
 				
-
-
-
 ##########################################################################
 if __name__ == "__main__":################################################
 ##########################################################################

@@ -16,6 +16,7 @@ class SCRIPT():#################################################################
 	def __init__(self):
 
 		self.robotName = 'robots/care-o-bot3.zae'
+		#self.robotName = 'robots/barrett-hand.zae'
 
 
 		if (len(sys.argv)<=1):
@@ -45,12 +46,14 @@ class SCRIPT():#################################################################
 		target = env.ReadKinBodyXMLFile(self.object_path)
 		env.AddKinBody(target)
 
-		robot.SetActiveManipulator("arm")
+		robot.SetActiveManipulator("arm")		#care-o-bot
+		#robot.SetActiveManipulator("hand")		#barretthand
 		gmodel = openravepy.databases.grasping.GraspingModel(robot=robot,target=target)
 		if not gmodel.load():
 		    print "GENERATING GRASPS..."
 		    gmodel.autogenerate()
 		    print "GENERATING GRASPS HAS FINISHED."
+
 
 
 		grasping_functions.generateFile(targetName=self.targetName, gmodel=gmodel, env=env)

@@ -2,16 +2,13 @@
 
 import roslib; 
 roslib.load_manifest('srs_grasping')
-
 import sys
-import openravepy
-
 from tf.transformations import *
-
-
+import openravepy
 import grasping_functions
-package_path = roslib.packages.get_pkg_dir('srs_grasping')
 
+
+package_path = roslib.packages.get_pkg_dir('srs_grasping')
 ##################################################################################	
 class SCRIPT():###################################################################
 ##################################################################################	
@@ -49,7 +46,7 @@ class SCRIPT():#################################################################
 		env.AddRobot(robot)
 		env.AddKinBody(target)
 
-	
+		axis = ""
 		file_name = package_path+'/DB/'+self.targetName+"_all_grasps.xml"
 
 		repeat = True
@@ -100,9 +97,9 @@ class SCRIPT():#################################################################
 
 
 
+		print grasping_functions.GraspIt(0, axis)
+		print "---------------"
 
-		grasping_functions.showOR(env, grasps, gazebo=gazebo, delay=None)
-		raw_input("Press ENTER to finish.")
 		
 
 

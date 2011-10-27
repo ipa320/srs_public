@@ -1,17 +1,13 @@
 #!/usr/bin/python
 
-import time
 import roslib
 roslib.load_manifest('srs_grasping')
+import time
 import rospy
 import actionlib
 
-import grasping_functions
-from trajectory_msgs.msg import *
-from geometry_msgs.msg import *
 from srs_grasping.msg import *
-from srs_msgs.msg import *
-
+import grasping_functions
 
 class grasp_action_server():
 
@@ -26,13 +22,8 @@ class grasp_action_server():
 		server_result = GraspActionResult().result
 
 
-		#SE DEBE IMPLEMENTAR UNA FUNCION QUE DADO UN FLOAT object_id SEPA A QUE OBJETO SE CORRESPONDE
-		#DE MOMENTO UTILIZO UN IF CHAPUCERO
-		if server_goal.object_id == 0:
-			object_name = "Milk"
-		else:
-			object_name = "OTHER"
-				
+		#SE DEBE IMPLEMENTAR UNA FUNCION QUE DADO UN INR object_id SEPA A QUE OBJETO SE CORRESPONDE
+		object_name = grasping_functions.getObjectName(server_goal.object_id)
 
 		file_name = self.package_path+"/DB/"+object_name+"_all_grasps.xml"
 

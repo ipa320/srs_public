@@ -2,7 +2,6 @@
 
 import roslib
 roslib.load_manifest('srs_grasping')
-import rospy
 import sys, time
 import openravepy
 
@@ -18,8 +17,11 @@ from srs_msgs.msg import *
 from simple_script_server import *
 sss = simple_script_server()
 
+import grasp_machine
+
 pi = math.pi
 package_path = roslib.packages.get_pkg_dir('srs_grasping')
+
 
 
 #################################################################################################
@@ -47,90 +49,6 @@ class GraspConfig(): ###########################################################
 			return 0
 		
 
-	###### [ GRASP CMP FILTERS ] ##################################################
-	def Z(self,other):
-		ms = matrix_from_graspPose(self.palm_pose)
-		mo = matrix_from_graspPose(other.palm_pose)
-		s = ms[2][2]
-		o = mo[2][2]
-
-		if s > o:
-			return -1
-		elif  s < o:
-			return 1
-		else:
-			return 0
-
-
-	def _Z(self,other):
-		ms = matrix_from_graspPose(self.palm_pose)
-		mo = matrix_from_graspPose(other.palm_pose)
-		s = ms[2][2]
-		o = mo[2][2]
-
-		if s > o:
-			return 1
-		elif  s < o:
-			return -1
-		else:
-			return 0
-
-
-	def X(self,other):
-		ms = matrix_from_graspPose(self.palm_pose)
-		mo = matrix_from_graspPose(other.palm_pose)
-		s = ms[0][2]
-		o = mo[0][2]
-
-		if s > o:
-			return -1
-		elif  s < o:
-			return 1
-		else:
-			return 0
-
-
-	def _X(self,other):
-		ms = matrix_from_graspPose(self.palm_pose)
-		mo = matrix_from_graspPose(other.palm_pose)
-		s = ms[0][2]
-		o = mo[0][2]
-
-		if s > o:
-			return 1
-		elif  s < o:
-			return -1
-		else:
-			return 0
-
-
-	def Y(self,other):
-		ms = matrix_from_graspPose(self.palm_pose)
-		mo = matrix_from_graspPose(other.palm_pose)
-		s = ms[1][2]
-		o = mo[1][2]
-
-		if s > o:
-			return -1
-		elif  s < o:
-			return 1
-		else:
-			return 0
-
-
-	def _Y(self,other):
-		ms = matrix_from_graspPose(self.palm_pose)
-		mo = matrix_from_graspPose(other.palm_pose)
-		s = ms[1][2]
-		o = mo[1][2]
-
-		if s > o:
-			return 1
-		elif  s < o:
-			return -1
-		else:
-			return 0
-
 
 	def mZ(self,other):
 		s = self.palm_pose.pose.position.z
@@ -143,7 +61,6 @@ class GraspConfig(): ###########################################################
 		else:
 			return 0
 
-	###### [/GRASP FILTERS ] ##################################################
 
 
 #################################################################################################
@@ -163,6 +80,7 @@ def ROS_to_OR(ROS):
 def ROS_to_script_server(values):
 	return [values[0], values[5], values[6], values[1], values[2], values[3], values[4]]
 	
+
 # Convert /script_server/sdh/ to OpenRAVE
 def COB_to_OR(values):
 
@@ -194,7 +112,6 @@ def graspConfig_to_MSG(res):
 		GC.score =  float(res[i].score)
 
 		aux.append(GC)
-
 	return aux
 
 
@@ -256,7 +173,6 @@ def generateFile(targetName, gmodel, env):
 		f.write("<hand_type>SDH</hand_type>\n")
 		f.write("<joint_names>[sdh_knuckle_joint, sdh_thumb_2_joint, sdh_thumb_3_joint, sdh_finger_12_joint, sdh_finger_13_joint, sdh_finger_22_joint, sdh_finger_23_joint]</joint_names>\n")
 		f.write("<grasp_reference_link>sdh_palm_link</grasp_reference_link>\n")
-		#f.write("<pose_reference_link>base_link</pose_reference_link>\n")
 		f.write("<configuration id=\"0\">\n")
 
 
@@ -337,7 +253,6 @@ def generateFile(targetName, gmodel, env):
 
 
 
-
 # -----------------------------------------------------------------------------------------------
 # XML file generator.
 # -----------------------------------------------------------------------------------------------
@@ -412,8 +327,6 @@ def getGrasps(file_name, all_grasps=False, msg=False):
 				palm_pose.pose.orientation.w = float(Rotation[3])
 
 
-
-
 				aux = ((hijos[i].getElementsByTagName('PreGraspPose'))[0])
 				Translation = eval((aux.getElementsByTagName('Translation')[0]).firstChild.nodeValue)
 				Rotation = eval((aux.getElementsByTagName('Rotation')[0]).firstChild.nodeValue)
@@ -452,6 +365,8 @@ def getGrasps(file_name, all_grasps=False, msg=False):
 	except:
 		return []
 
+
+
 # -----------------------------------------------------------------------------------------------
 # Get grasps by axis
 # -----------------------------------------------------------------------------------------------
@@ -472,16 +387,30 @@ def getGraspsByAxis(grasps, axis=""):
 	return res
 
 
+
+# -----------------------------------------------------------------------------------------------
+# Get object name.
+# -----------------------------------------------------------------------------------------------
+def getObjectName(object_id):
+	
+	if object_id==0:
+		return "Milk"
+	elif object_id==1:
+		return "Other1"
+	elif object_id==2:
+		return "Other2"
+	else:
+		return "OTHER"
+
+
+
 # -----------------------------------------------------------------------------------------------
 # Grasp function
 # -----------------------------------------------------------------------------------------------
-def GraspIt(grasp):
-	sss.move("sdh", "cylopen")
-	#pre-grasp to the palm_pose
-	offset = 0.1
-	
-	#grasp to the palm_pose
-	sss.move("sdh", [eval(grasp.sconfiguration)])
+def GraspIt(object_id, pose_id):
+
+	res = grasp_machine.main(object_id, pose_id)
+	return res
 
 	
 	
@@ -498,6 +427,7 @@ def grasp_filter(g):
 	return grasps
 
 
+
 # -----------------------------------------------------------------------------------------------
 # Shows the grasps in OpenRAVE
 # -----------------------------------------------------------------------------------------------
@@ -505,7 +435,6 @@ def showOR(env, grasps, gazebo=False, delay=0.5):
 
 	env.SetViewer('qtcoin')
 	time.sleep(1.0)
-
 
 	manip = ((env.GetRobots()[0]).GetManipulator("arm"))
 	robot = env.GetRobots()[0]
@@ -542,18 +471,17 @@ def showOR(env, grasps, gazebo=False, delay=0.5):
 
 			env.UpdatePublishedBodies()
 
-
+			
 			if gazebo==True:
 				res = raw_input("Do you want to see this configuration in Gazebo? (y/n): ")
 				if res=="y":
-					GraspIt(grasps[i])
+					sss.move("sdh", [eval(grasps[i].sconfiguration)])
 
 			if delay is None:
 				raw_input('Next config.')
 			elif delay > 0:
 				time.sleep(delay)
 			print "--------------------------"
-
 
 
 
@@ -586,7 +514,6 @@ def graspFilter(grasps):
 			else:
 				continue
 	
-
 	#All the grasps
 	all_grasps = []
 	all_grasps = AUX[0]+AUX[1]+AUX[2]+AUX[3]+AUX[4]+AUX[5]
@@ -701,6 +628,3 @@ def graspFilter(grasps):
 	
 
 	return sol, all_grasps
-
-
-

@@ -1,8 +1,7 @@
 <package>
+
   <description brief="srs_grasping">
-
      Grasping package
-
   </description>
   <author>Robotnik Automation SLL</author>
   <license>BSD</license>
@@ -15,14 +14,10 @@
   <depend package="openrave"/>
   <depend package="smach"/>
   <depend package="smach_ros"/>
-
-
+  <depend package="cob_script_server"/>
+  <depend package="srs_msgs"/>
   <depend package="trajectory_msgs"/>
   <depend package="geometry_msgs"/>
-  <depend package="srs_msgs"/>
-  <depend package="cob_script_server"/>
   <depend package="kinematics_msgs"/>
-
-
 
 </package>

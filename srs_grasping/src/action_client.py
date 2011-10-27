@@ -3,11 +3,10 @@
 import roslib; roslib.load_manifest('srs_grasping')
 import rospy
 import time
-
 import actionlib
+
 from srs_grasping.msg import *
-from srs_grasping import *
-from std_msgs import *
+
 
 def grasp_action_client():
 
@@ -15,7 +14,7 @@ def grasp_action_client():
 	client = actionlib.SimpleActionClient('/grasp_server', GraspAction)
 	client.wait_for_server()
 
-	goal = GraspGoal(object_id=0, pose_id="X")
+	goal = GraspGoal(object_id=0, pose_id="X")	#Milk, 5 X-axis configurations
 	client.send_goal(goal)
 	client.wait_for_result()
 	y = time.time()
@@ -30,4 +29,4 @@ if __name__ == '__main__':
 		print result
 		print "-----------------"
 	except rospy.ROSInterruptException:
-		print "program interrupted before completion"
+		print "Program interrupted before completion"

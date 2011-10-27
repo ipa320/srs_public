@@ -102,12 +102,12 @@ namespace laser_processor
     tf::Point center();
   };
 
-  //! A mask for filtering out Samples based on range
+  //! A mask for filtering out Samples based on range 
   class ScanMask
   {
     SampleSet mask_;
 
-    bool     filled;
+    bool     filled;  // indicates if there is any data inside
     float    angle_min;
     float    angle_max;
     uint32_t size;

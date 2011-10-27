@@ -62,7 +62,7 @@ class TrainLegDetector
 {
 public:
   ScanMask mask_;
-  int mask_count_;
+  int mask_count_; // number of added scans to the mask
 
   vector< vector<float> > pos_data_;
   vector< vector<float> > neg_data_;
@@ -107,14 +107,14 @@ public:
 
 
    rosbag::View view(bag, rosbag::TopicQuery(topics));
-   printf("1** size%i", view.size());
+   printf("scan size %i:", view.size());
       
 
    BOOST_FOREACH(rosbag::MessageInstance const m, view)
     {
-       printf("2**"); 
+ 
            sensor_msgs::LaserScan::ConstPtr scanptr = m.instantiate<sensor_msgs::LaserScan>();
-           printf("3**"); 
+           
            if (scanptr != NULL)
            
 
@@ -143,54 +143,20 @@ public:
 
 
 
- /*     ros::record::Player p;   Alex
-      if (p.open(file, ros::Time()))
-      {
-        mask_.clear();
-        mask_count_ = 0;    
-
-      switch (load)
-      {
-      case LOADING_POS:
-        p.addHandler<sensor_msgs::LaserScan>(string("*"),                      // Topic name
-                                             &TrainLegDetector::loadCb,        // Handler (callback)
-                                             this,
-                                             &pos_data_);                      // vector storage with positive data
-        break;
-      case LOADING_NEG:
-        mask_count_ = 1000; // effectively disable masking
-        p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &neg_data_);
-        break;
-      case LOADING_TEST:
-        p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &test_data_);
-        break;
-      default:
-        break;
-      }
-    
-        while (p.nextMsg())
-        {}
-
-
-    } 
-*/
     }
   }
 
- // void loadCb(string name, sensor_msgs::LaserScan* scan, ros::Time t, ros::Time t_no_use, std::vector n)
+
  
 void loadCb(sensor_msgs::LaserScan* scan, vector< vector<float> >* data)
  {
     printf (".");
-  //  vector< vector<float> >* data = (vector< vector<float> >*)(n);
 
-
-
-    if (mask_count_++ < 20)
+    if (mask_count_++ < 20)  // for the first 20 scans it only builds the mask (expands it)
     {
       mask_.addScan(*scan);
     }
-    else
+    else  // and then does the processing
     {
       ScanProcessor processor(*scan,mask_);
       processor.splitConnected(connected_thresh_);
@@ -209,8 +175,8 @@ printf("In train()....");
     int sample_size = pos_data_.size() + neg_data_.size();
     feat_count_ = pos_data_[0].size();
 
-    CvMat* cv_data = cvCreateMat( sample_size, feat_count_, CV_32FC1);
-    CvMat* cv_resp = cvCreateMat( sample_size, 1, CV_32S);
+    CvMat* cv_data = cvCreateMat( sample_size, feat_count_, CV_32FC1); // sample data
+    CvMat* cv_resp = cvCreateMat( sample_size, 1, CV_32S);  // responces
 
     // Put positive data in opencv format.
     int j = 0;
@@ -222,7 +188,7 @@ printf("In train()....");
       for (int k = 0; k < feat_count_; k++)
         data_row[k] = (*i)[k];
       
-      cv_resp->data.i[j] = 1;
+      cv_resp->data.i[j] = 1;  // positive responce
       j++;
     }
 
@@ -235,7 +201,7 @@ printf("In train()....");
       for (int k = 0; k < feat_count_; k++)
         data_row[k] = (*i)[k];
       
-      cv_resp->data.i[j] = -1;
+      cv_resp->data.i[j] = -1; // negative responce
       j++;
     }
 
@@ -245,11 +211,28 @@ printf("In train()....");
     
     float priors[] = {1.0, 1.0};
     
-    CvRTParams fparam(8,20,0,false,10,priors,false,5,50,0.001f,CV_TERMCRIT_ITER);
+    CvRTParams fparam(8,  // _max_depth: max_categories until pre-clustering
+                     20,  // _min_sample_count: Don’t split a node if less
+                      0,  // _regression_accuracy: One of the “stop splitting” criteria
+                  false,  // _use_surrogates: Alternate splits for missing data
+                     10,  // _max_categories: 
+                 priors,  // priors 
+                  false,  // _calc_var_importance
+                      5,  // _nactive_vars
+                     50,  // max_tree_count
+                 0.001f,  // forest_accuracy
+       CV_TERMCRIT_ITER   // termcrit_type
+       );
     fparam.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, 100, 0.1);
     
-    forest.train( cv_data, CV_ROW_SAMPLE, cv_resp, 0, 0, var_type, 0,
-                  fparam);
+    forest.train( cv_data, // train_data
+            CV_ROW_SAMPLE, // tflag --> each row is a data point consisting of a vector of features that make up the columns of the matrix
+                  cv_resp, // responses  --> a floating-point vector of values to be predicted given the data features
+                        0, // comp_idx
+                        0, // sample_idx
+                 var_type, // var_type
+                        0, // missing_mask
+                  fparam); // the structure from above
 
 
     cvReleaseMat(&cv_data);
@@ -316,6 +299,12 @@ printf("In train()....");
 
 int main(int argc, char **argv)
 {
+  if (argc < 2) 
+    {
+     printf("Usage: train_leg_detector --train file1 --neg file2 --test file3 --save conf_file\n");
+     exit (0);
+    }
+
   TrainLegDetector tld;
 
   LoadType loading = LOADING_NONE;

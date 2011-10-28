@@ -1,4 +1,4 @@
-// This file is modified for SRS leg_detector from people_experimental/leg_detector 
+
 #include "ros/ros.h"
 
 #include "laser_processor.h"
@@ -8,18 +8,19 @@
 #include "opencv/cv.h"
 #include "opencv/ml.h"
 
-#include "rosrecord/Player.h"
+//#include "rosrecord/Player.h"
+//#include "rosbag/bag.h"
 
-#include "people_msgs/PositionMeasurement.h"
+#include "srs_msgs/PositionMeasurement.h"
 #include "sensor_msgs/LaserScan.h"
-#include "roslib/Header.h"
+#include "std_msgs/Header.h"
 
 #include "tf/transform_listener.h"
 #include "tf/message_filter.h"
 #include "message_filters/subscriber.h"
 
-//#include "people_tracking_filter/tracker_kalman.h"
-#include "people_tracking_filter/tracker_particle.h"
+#include "people_tracking_filter/tracker_kalman.h"
+//#include "people_tracking_filter/tracker_particle.h" // particle
 #include "people_tracking_filter/gaussian_pos_vel.h"
 
 #include "people_tracking_filter/state_pos_vel.h"
@@ -36,15 +37,15 @@ using namespace BFL;
 using namespace MatrixWrapper;
 
 
-static const double no_observation_timeout_s = 0.5;
+static const double no_observation_timeout_s = 0.7;
 static const double max_second_leg_age_s     = 2.0;
-static const double max_track_jump_m         = 1.0;
-static const double max_meas_jump_m          = 0.75; // 1.0
-static const double leg_pair_separation_m    = 1.0;
+static const double max_track_jump_m         = 1; //1.0;
+static const double max_meas_jump_m          = 1; //0.75; // 1.0
+static const double leg_pair_separation_m    = 0.5;
 //static const string fixed_frame              = "odom_combined";
 static const string fixed_frame              = "/base_link";
 //
-static const unsigned int num_particles=100;
+//static const unsigned int num_particles=100; // particle
 
 class SavedFeature
 {
@@ -53,8 +54,8 @@ public:
 	TransformListener& tfl_;
 
 	BFL::StatePosVel sys_sigma_;
-	//  TrackerKalman filter_;
-	TrackerParticle filter_;
+	  TrackerKalman filter_;
+	//TrackerParticle filter_;  // particle
 
 	string id_;
 	string object_id;
@@ -68,8 +69,8 @@ public:
 	SavedFeature(Stamped<Point> loc, TransformListener& tfl)
 	: tfl_(tfl),
 	  sys_sigma_(Vector3(0.05, 0.05, 0.05), Vector3(1.0, 1.0, 1.0)),
-	  //      filter_("tracker_name",sys_sigma_)
-	  filter_("tracker_name",num_particles,sys_sigma_)
+	    filter_("tracker_name",sys_sigma_)
+	 // filter_("tracker_name",num_particles,sys_sigma_) // particle
 	{
 		char id[100];
 		snprintf(id,100,"legtrack%d", nextid++);
@@ -245,12 +246,13 @@ public:
 
 	int feature_id_;
 
-	ros::Publisher leg_cloud_pub_;
+	ros::Publisher leg_cloud_pub_ , leg_detections_pub_;
+
 	ros::Publisher tracker_measurements_pub_;
 
-	message_filters::Subscriber<people_msgs::PositionMeasurement> people_sub_;
+	message_filters::Subscriber<srs_msgs::PositionMeasurement> people_sub_;
 	message_filters::Subscriber<sensor_msgs::LaserScan> laser_sub_;
-	tf::MessageFilter<people_msgs::PositionMeasurement> people_notifier_;
+	tf::MessageFilter<srs_msgs::PositionMeasurement> people_notifier_;
 	tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
 
 	LegDetector(ros::NodeHandle nh) :
@@ -276,7 +278,8 @@ public:
 		// advertise topics
 		//    leg_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("kalman_filt_cloud",10);
 		leg_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("particle_filt_cloud",10);
-		tracker_measurements_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("people_tracker_measurements",1);
+                leg_detections_pub_ = nh_.advertise<sensor_msgs::PointCloud>("leg_detections_cloud",10);
+		tracker_measurements_pub_ = nh_.advertise<srs_msgs::PositionMeasurement>("people_tracker_measurements",1);
 
 		//		people_notifier_.registerCallback(boost::bind(&LegDetector::peopleCallback, this, _1));
 		people_notifier_.setTolerance(ros::Duration(0.01));
@@ -295,7 +298,7 @@ public:
 
 	// Find the tracker that is closest to this person message
 	// If a tracker was already assigned to a person, keep this assignment when the distance between them is not too large.
-	/* void peopleCallback(const people_msgs::PositionMeasurement::ConstPtr& people_meas)
+	/* void peopleCallback(const srs_msgs::PositionMeasurement::ConstPtr& people_meas)
   {
     // If there are no legs, return.
     if (saved_features_.empty())
@@ -687,7 +690,7 @@ public:
 //      filter_visualize[i].z = est.pos_[2];
       weights[i] = *(float*)&(rgb[min(998, max(1, (int)trunc( reliability*999.0 )))]);
 
-      people_msgs::PositionMeasurement pos;
+      srs_msgs::PositionMeasurement pos;
       pos.header.stamp = (*sf_iter)->time_;
       pos.header.frame_id = fixed_frame;
       pos.name = "leg_detector";
@@ -770,7 +773,7 @@ public:
 
 			if (forest.predict( tmp_mat ) > 0)
 			{
-				leg_candidates.push_back(*i);
+				leg_candidates.push_back(*i); // adds a new element
 			}
 		}
 		// build list of positions
@@ -853,14 +856,24 @@ public:
 	// For each candidate, find the closest tracker (within threshold) and add to the match list
 	// If no tracker is found, start a new one
 	multiset<MatchedFeature> matches;
+
+        vector<geometry_msgs::Point32> detections_visualize(legs.size()); // used to visuallise the leg candidates
+
+        int i = 0;
 	for (list<Legs*>::iterator cf_iter = legs.begin();
-			cf_iter != legs.end(); cf_iter++){
+			cf_iter != legs.end(); cf_iter++,i++){
 		Stamped<Point> loc=(*cf_iter)->loc_;
 		try {
 			tfl_.transformPoint(fixed_frame, loc, loc);
 		} catch(...) {
 			ROS_WARN("TF exception spot 3.");
 		}
+                
+               // int y111 = (*loc);
+                
+                detections_visualize[i].x =  loc[0];
+                detections_visualize[i].y = loc[1];
+                detections_visualize[i].z =0.15;
 
 		list<SavedFeature*>::iterator closest = propagated.end();
 		float closest_dist = max_track_jump_m;
@@ -965,9 +978,12 @@ public:
 			cvReleaseMat(&tmp_mat); tmp_mat = 0;
 
 			vector<geometry_msgs::Point32> filter_visualize(saved_features_.size());
+                        
+
 			vector<float> weights(saved_features_.size());
 			sensor_msgs::ChannelFloat32 channel;
-			int i = 0;
+			
+                        i = 0;
 
 			for (list<SavedFeature*>::iterator sf_iter = saved_features_.begin();
 					sf_iter != saved_features_.end();
@@ -979,13 +995,14 @@ public:
 				double reliability = fmin(1.0, fmax(0.1, est.vel_.length() / 0.5));
 
 				// publish filter result
+                                
 				filter_visualize[i].x = est.pos_[0];
 				filter_visualize[i].y = est.pos_[1];
 				//	filter_visualize[i].z = est.pos_[2];
 				filter_visualize[i].z=0.15607;
 				weights[i] = *(float*)&(rgb[min(998, max(1, (int)trunc( reliability*999.0 )))]);
 
-				people_msgs::PositionMeasurement pos;
+				srs_msgs::PositionMeasurement pos;
 				pos.header.stamp = (*sf_iter)->time_;
 				pos.header.frame_id = fixed_frame;
 				pos.name = "leg_detector";
@@ -1013,11 +1030,21 @@ public:
 			channel.name = "rgb";
 			channel.values = weights;
 			sensor_msgs::PointCloud  people_cloud;
+                        sensor_msgs::PointCloud  detections_cloud;
+
 			people_cloud.channels.push_back(channel);
 			people_cloud.header.frame_id = fixed_frame;//scan_.header.frame_id;
 			people_cloud.header.stamp = scan->header.stamp;
 			people_cloud.points  = filter_visualize;
 			leg_cloud_pub_.publish(people_cloud);
+
+                        detections_cloud.channels.push_back(channel);
+			detections_cloud.header.frame_id = fixed_frame;//scan_.header.frame_id;
+			detections_cloud.header.stamp = scan->header.stamp;
+			detections_cloud.points  = detections_visualize;
+			leg_detections_pub_.publish(detections_cloud);
+
+
 
 }
 

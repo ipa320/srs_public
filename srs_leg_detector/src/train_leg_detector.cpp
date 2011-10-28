@@ -39,10 +39,18 @@
 #include "opencv/cv.h"
 #include "opencv/ml.h"
 
-#include "rosrecord/Player.h"
+//#include "rosrecord/Player.h"
+#include "rosbag/bag.h"
+#include <rosbag/view.h>
+#include <boost/foreach.hpp>
 
-#include "people_msgs/PositionMeasurement.h"
+#include "std_msgs/String.h"
+#include "std_msgs/Int32.h"
+
+#include "srs_msgs/PositionMeasurement.h"
 #include "sensor_msgs/LaserScan.h"
+
+
 
 using namespace std;
 using namespace laser_processor;
@@ -54,7 +62,7 @@ class TrainLegDetector
 {
 public:
   ScanMask mask_;
-  int mask_count_;
+  int mask_count_; // number of added scans to the mask
 
   vector< vector<float> > pos_data_;
   vector< vector<float> > neg_data_;
@@ -72,6 +80,7 @@ public:
 
   void loadData(LoadType load, char* file)
   {
+   printf("In loadData ...\n");
     if (load != LOADING_NONE)
     {
       switch (load)
@@ -86,43 +95,68 @@ public:
         break;
       }
 
-      ros::record::Player p;
-      if (p.open(file, ros::Time()))
-      {
-        mask_.clear();
-        mask_count_ = 0;    
 
-      switch (load)
+  rosbag::Bag bag;
+
+
+  bag.open(file, rosbag::bagmode::Read);
+  
+    std::vector<std::string> topics;
+    topics.push_back(std::string("/scan_front"));
+   // topics.push_back(std::string("/scan_rear"));
+
+
+   rosbag::View view(bag, rosbag::TopicQuery(topics));
+   printf("scan size %i:", view.size());
+      
+
+   BOOST_FOREACH(rosbag::MessageInstance const m, view)
+    {
+ 
+           sensor_msgs::LaserScan::ConstPtr scanptr = m.instantiate<sensor_msgs::LaserScan>();
+           
+           if (scanptr != NULL)
+           
+
+   switch (load)
       {
       case LOADING_POS:
-        p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &pos_data_);
+        loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&pos_data_);
         break;
       case LOADING_NEG:
         mask_count_ = 1000; // effectively disable masking
-        p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &neg_data_);
+        loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&neg_data_);
         break;
       case LOADING_TEST:
-        p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &test_data_);
+       loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&test_data_);
         break;
       default:
         break;
       }
-    
-        while (p.nextMsg())
-        {}
-    } 
+
+  //            printf("Laser data %i:",(*scanptr).ranges.size());
+ 
+           
+     }
+   
+       bag.close();
+
+
+
     }
   }
 
-  void loadCb(string name, sensor_msgs::LaserScan* scan, ros::Time t, ros::Time t_no_use, void* n)
-  {
-    vector< vector<float> >* data = (vector< vector<float> >*)(n);
 
-    if (mask_count_++ < 20)
+ 
+void loadCb(sensor_msgs::LaserScan* scan, vector< vector<float> >* data)
+ {
+    printf (".");
+
+    if (mask_count_++ < 20)  // for the first 20 scans it only builds the mask (expands it)
     {
       mask_.addScan(*scan);
     }
-    else
+    else  // and then does the processing
     {
       ScanProcessor processor(*scan,mask_);
       processor.splitConnected(connected_thresh_);
@@ -137,11 +171,12 @@ public:
 
   void train()
   {
+printf("In train()....");
     int sample_size = pos_data_.size() + neg_data_.size();
     feat_count_ = pos_data_[0].size();
 
-    CvMat* cv_data = cvCreateMat( sample_size, feat_count_, CV_32FC1);
-    CvMat* cv_resp = cvCreateMat( sample_size, 1, CV_32S);
+    CvMat* cv_data = cvCreateMat( sample_size, feat_count_, CV_32FC1); // sample data
+    CvMat* cv_resp = cvCreateMat( sample_size, 1, CV_32S);  // responces
 
     // Put positive data in opencv format.
     int j = 0;
@@ -153,7 +188,7 @@ public:
       for (int k = 0; k < feat_count_; k++)
         data_row[k] = (*i)[k];
       
-      cv_resp->data.i[j] = 1;
+      cv_resp->data.i[j] = 1;  // positive responce
       j++;
     }
 
@@ -166,7 +201,7 @@ public:
       for (int k = 0; k < feat_count_; k++)
         data_row[k] = (*i)[k];
       
-      cv_resp->data.i[j] = -1;
+      cv_resp->data.i[j] = -1; // negative responce
       j++;
     }
 
@@ -176,11 +211,28 @@ public:
     
     float priors[] = {1.0, 1.0};
     
-    CvRTParams fparam(8,20,0,false,10,priors,false,5,50,0.001f,CV_TERMCRIT_ITER);
+    CvRTParams fparam(8,  // _max_depth: max_categories until pre-clustering
+                     20,  // _min_sample_count: Don’t split a node if less
+                      0,  // _regression_accuracy: One of the “stop splitting” criteria
+                  false,  // _use_surrogates: Alternate splits for missing data
+                     10,  // _max_categories: 
+                 priors,  // priors 
+                  false,  // _calc_var_importance
+                      5,  // _nactive_vars
+                     50,  // max_tree_count
+                 0.001f,  // forest_accuracy
+       CV_TERMCRIT_ITER   // termcrit_type
+       );
     fparam.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, 100, 0.1);
     
-    forest.train( cv_data, CV_ROW_SAMPLE, cv_resp, 0, 0, var_type, 0,
-                  fparam);
+    forest.train( cv_data, // train_data
+            CV_ROW_SAMPLE, // tflag --> each row is a data point consisting of a vector of features that make up the columns of the matrix
+                  cv_resp, // responses  --> a floating-point vector of values to be predicted given the data features
+                        0, // comp_idx
+                        0, // sample_idx
+                 var_type, // var_type
+                        0, // missing_mask
+                  fparam); // the structure from above
 
 
     cvReleaseMat(&cv_data);
@@ -247,6 +299,12 @@ public:
 
 int main(int argc, char **argv)
 {
+  if (argc < 2) 
+    {
+     printf("Usage: train_leg_detector --train file1 --neg file2 --test file3 --save conf_file\n");
+     exit (0);
+    }
+
   TrainLegDetector tld;
 
   LoadType loading = LOADING_NONE;

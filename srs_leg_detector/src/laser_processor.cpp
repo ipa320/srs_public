@@ -116,7 +116,7 @@ void ScanMask::addScan(sensor_msgs::LaserScan& scan)
     angle_max = scan.angle_max;
     size      = scan.ranges.size();
     filled    = true;
-  } else if (angle_min != scan.angle_min     ||
+  } else if (angle_min != scan.angle_min     ||  // min and max angles of the new scan have to be the same as previous
              angle_max != scan.angle_max     ||
              size      != scan.ranges.size())
   {
@@ -131,18 +131,18 @@ void ScanMask::addScan(sensor_msgs::LaserScan& scan)
     {
       SampleSet::iterator m = mask_.find(s);
 
-      if (m != mask_.end())
+      if (m != mask_.end())  // at least one such a sample in the mask is found
       {
-        if ((*m)->range > s->range)
+        if ((*m)->range > s->range)  // if the sample(s) in the mask is further away  than the current sample replaces the sample in the mask to remove the background
         {
           delete (*m);
-          mask_.erase(m);
-          mask_.insert(s);
+          mask_.erase(m);  // delete the sample from the mask
+          mask_.insert(s); // insert the new sample
         } else {
-          delete s;
+          delete s; 
         }
       }
-      else
+      else // if there is no such sample in the mask not found just insert the new sample
       {
         mask_.insert(s);
       }
@@ -252,7 +252,7 @@ ScanProcessor::splitConnected(float thresh)
           {
             break;
           }
-          else if (sqrt( pow( (*s_q)->x - (*s_rest)->x, 2.0f) + pow( (*s_q)->y - (*s_rest)->y, 2.0f)) < thresh)
+          else if (sqrt( pow( (*s_q)->x - (*s_rest)->x, 2.0f) + pow( (*s_q)->y - (*s_rest)->y, 2.0f)) < thresh)  // check whether to split
           {
             sample_queue.push_back(*s_rest);
             (*c_iter)->erase(s_rest++);
@@ -280,5 +280,5 @@ ScanProcessor::splitConnected(float thresh)
     clusters_.erase(c_iter++);
   }
 
-  clusters_.insert(clusters_.begin(), tmp_clusters.begin(), tmp_clusters.end());
+  clusters_.insert(clusters_.begin(), tmp_clusters.begin(), tmp_clusters.end()); // move back from temp clusters back into the clustrts_
 }

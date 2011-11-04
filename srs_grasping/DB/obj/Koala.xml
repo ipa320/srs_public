@@ -1,0 +1,7 @@
+<KinBody name="Koala">
+  <Body type="dynamic">
+    <Geom type="trimesh">
+      <Data>Model_Koala.txt.iv</Data>
+    </Geom>      
+  </Body>
+</KinBody>

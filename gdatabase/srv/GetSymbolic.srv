@@ -1,8 +1,8 @@
 #get_symbolics
-#reference of the action 
-uint32 actionID
 #reference of the object
 uint32 objectID
+#reference of the action 
+uint32 actionID
 #reference of the component
 uint32 componentID
 ---

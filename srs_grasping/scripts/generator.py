@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 
 import roslib; 
-roslib.load_manifest('ROB')
-import rospy
-import os,sys,itertools,traceback,time, random
-import grasp_functions
-from numpy import *
-from openravepy import *
+roslib.load_manifest('srs_grasping')
+import sys
+import openravepy
+import grasping_functions
 
-
-
+package_path = roslib.packages.get_pkg_dir('srs_grasping')
 ##################################################################################	
 class SCRIPT():###################################################################
 ##################################################################################	
@@ -17,45 +14,41 @@ class SCRIPT():#################################################################
 	# ------------------------------------------------------------------------------------
 	# ------------------------------------------------------------------------------------
 	def __init__(self):
-		print "---------------------------------------------"
-		print "To run this script you must be in his folder." 
-		print "---------------------------------------------"
 
-		self.collisionCheckerName =  "bullet"
-		self.robotName = 'robots/schunk-sdh.zae'
-		self.envName = None
+		self.robotName = 'robots/care-o-bot3.zae'
+		#self.robotName = 'robots/barrett-hand.zae'
+
+
 		if (len(sys.argv)<=1):
-			self.targetName = 'mug'
-			self.object_path = '../DB/obj/'+self.targetName+'.kinbody.xml'
-			print "Loaded default values: (%s, %s)" %(self.robotName, self.object_path)
+			self.targetName = 'Milk'
+			self.object_path = package_path+"/DB/obj/"+self.targetName+'.xml'
+
+
 		else:
 			self.targetName = sys.argv[1]
 
 			if self.targetName[len(self.targetName)-3:len(self.targetName)] == ".iv":
-				self.object_path = '../DB/obj/'+self.targetName;
+				self.object_path = package_path+'/DB/obj/'+self.targetName;
 			else:
-				self.object_path = '../DB/obj/'+self.targetName+'.kinbody.xml'
+				self.object_path = package_path+'/DB/obj/'+self.targetName+'.xml'
 
-			print "Loaded values: (%s, %s)" %(self.robotName, self.targetName)
+		print "Loaded values: (%s, %s)" %(self.robotName, self.object_path)
 
 
 
 	# ------------------------------------------------------------------------------------
 	# ------------------------------------------------------------------------------------
-	def run(self):	
-		env = Environment()
-		cc = RaveCreateCollisionChecker(env, self.collisionCheckerName)
-		env.SetCollisionChecker(cc)
-
-
-
+	def run(self):
+	
+		env = openravepy.Environment()
     		robot = env.ReadRobotXMLFile(self.robotName)
 		env.AddRobot(robot)
 		target = env.ReadKinBodyXMLFile(self.object_path)
 		env.AddKinBody(target)
 
-
-		gmodel = databases.grasping.GraspingModel(robot=robot,target=target)
+		robot.SetActiveManipulator("arm")		#care-o-bot
+		#robot.SetActiveManipulator("hand")		#barretthand
+		gmodel = openravepy.databases.grasping.GraspingModel(robot=robot,target=target)
 		if not gmodel.load():
 		    print "GENERATING GRASPS..."
 		    gmodel.autogenerate()
@@ -63,26 +56,10 @@ class SCRIPT():#################################################################
 
 
 
-		res = raw_input("Do you want to load a collision environment? (y/n): ")
-		if res=="y":
-			env.Remove(target)
-			self.envName = raw_input("Write the environment file absolute path: ")
-
-			while(not env.Load(self.envName)):
-				print "File not found."
-				self.envName = raw_input("Write the environment file absolute path: ")
-
-			all_grasps = False
-		else:
-			print "A free collision environment will be generated."
-			all_grasps = True
-
-		
-
-		grasp_functions.generaFicheroXML(all_grasps=all_grasps, targetName=target.GetName(), realTargetName=self.targetName, gmodel=gmodel, envName = self.envName)
+		grasping_functions.generateFile(targetName=self.targetName, gmodel=gmodel, env=env)
 
 		raw_input("Press ENTER to finish.")
-
+		
 
 
 ##########################################################################

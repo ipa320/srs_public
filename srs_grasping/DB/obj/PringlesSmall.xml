@@ -1,0 +1,7 @@
+<KinBody name="PringlesSmall">
+  <Body type="dynamic">
+    <Geom type="trimesh">
+      <Data>Model_PringlesSmall.txt.iv</Data>
+    </Geom>      
+  </Body>
+</KinBody>

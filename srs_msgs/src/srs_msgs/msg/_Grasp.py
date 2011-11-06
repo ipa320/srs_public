@@ -9,26 +9,20 @@ import srs_msgs.msg
 import std_msgs.msg
 
 class Grasp(roslib.message.Message):
-  _md5sum = "ebd0462690e2e7b4da2b335d97c908d9"
+  _md5sum = "eab730440692481ec12770602c3365c8"
   _type = "srs_msgs/Grasp"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """srs_msgs/GraspConfiguration[] grasp_configuration
 
 ================================================================================
 MSG: srs_msgs/GraspConfiguration
-std_msgs/Float32 object_id
-std_msgs/String hand_type
+float32 object_id
+string hand_type
 trajectory_msgs/JointTrajectory sconfiguration
 geometry_msgs/PoseStamped palm_pose
-std_msgs/String category
-std_msgs/Float32 score
-
-================================================================================
-MSG: std_msgs/Float32
-float32 data
-================================================================================
-MSG: std_msgs/String
-string data
+geometry_msgs/PoseStamped pre_grasp
+string category
+float32 score
 
 ================================================================================
 MSG: trajectory_msgs/JointTrajectory
@@ -129,29 +123,27 @@ float64 w
       length = len(self.grasp_configuration)
       buff.write(_struct_I.pack(length))
       for val1 in self.grasp_configuration:
-        _v1 = val1.object_id
-        buff.write(_struct_f.pack(_v1.data))
-        _v2 = val1.hand_type
-        _x = _v2.data
+        buff.write(_struct_f.pack(val1.object_id))
+        _x = val1.hand_type
         length = len(_x)
         buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-        _v3 = val1.sconfiguration
-        _v4 = _v3.header
-        buff.write(_struct_I.pack(_v4.seq))
-        _v5 = _v4.stamp
-        _x = _v5
+        _v1 = val1.sconfiguration
+        _v2 = _v1.header
+        buff.write(_struct_I.pack(_v2.seq))
+        _v3 = _v2.stamp
+        _x = _v3
         buff.write(_struct_2I.pack(_x.secs, _x.nsecs))
-        _x = _v4.frame_id
+        _x = _v2.frame_id
         length = len(_x)
         buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-        length = len(_v3.joint_names)
+        length = len(_v1.joint_names)
         buff.write(_struct_I.pack(length))
-        for val3 in _v3.joint_names:
+        for val3 in _v1.joint_names:
           length = len(val3)
           buff.write(struct.pack('<I%ss'%length, length, val3.encode()))
-        length = len(_v3.points)
+        length = len(_v1.points)
         buff.write(_struct_I.pack(length))
-        for val3 in _v3.points:
+        for val3 in _v1.points:
           length = len(val3.positions)
           buff.write(_struct_I.pack(length))
           pattern = '<%sd'%length
@@ -164,31 +156,45 @@ float64 w
           buff.write(_struct_I.pack(length))
           pattern = '<%sd'%length
           buff.write(struct.pack(pattern, *val3.accelerations))
-          _v6 = val3.time_from_start
-          _x = _v6
+          _v4 = val3.time_from_start
+          _x = _v4
           buff.write(_struct_2i.pack(_x.secs, _x.nsecs))
-        _v7 = val1.palm_pose
-        _v8 = _v7.header
-        buff.write(_struct_I.pack(_v8.seq))
-        _v9 = _v8.stamp
-        _x = _v9
+        _v5 = val1.palm_pose
+        _v6 = _v5.header
+        buff.write(_struct_I.pack(_v6.seq))
+        _v7 = _v6.stamp
+        _x = _v7
         buff.write(_struct_2I.pack(_x.secs, _x.nsecs))
-        _x = _v8.frame_id
+        _x = _v6.frame_id
         length = len(_x)
         buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-        _v10 = _v7.pose
-        _v11 = _v10.position
-        _x = _v11
+        _v8 = _v5.pose
+        _v9 = _v8.position
+        _x = _v9
         buff.write(_struct_3d.pack(_x.x, _x.y, _x.z))
-        _v12 = _v10.orientation
-        _x = _v12
+        _v10 = _v8.orientation
+        _x = _v10
         buff.write(_struct_4d.pack(_x.x, _x.y, _x.z, _x.w))
-        _v13 = val1.category
-        _x = _v13.data
+        _v11 = val1.pre_grasp
+        _v12 = _v11.header
+        buff.write(_struct_I.pack(_v12.seq))
+        _v13 = _v12.stamp
+        _x = _v13
+        buff.write(_struct_2I.pack(_x.secs, _x.nsecs))
+        _x = _v12.frame_id
         length = len(_x)
         buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-        _v14 = val1.score
-        buff.write(_struct_f.pack(_v14.data))
+        _v14 = _v11.pose
+        _v15 = _v14.position
+        _x = _v15
+        buff.write(_struct_3d.pack(_x.x, _x.y, _x.z))
+        _v16 = _v14.orientation
+        _x = _v16
+        buff.write(_struct_4d.pack(_x.x, _x.y, _x.z, _x.w))
+        _x = val1.category
+        length = len(_x)
+        buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
+        buff.write(_struct_f.pack(val1.score))
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -206,17 +212,15 @@ float64 w
       self.grasp_configuration = []
       for i in range(0, length):
         val1 = srs_msgs.msg.GraspConfiguration()
-        _v15 = val1.object_id
         start = end
         end += 4
-        (_v15.data,) = _struct_f.unpack(str[start:end])
-        _v16 = val1.hand_type
+        (val1.object_id,) = _struct_f.unpack(str[start:end])
         start = end
         end += 4
         (length,) = _struct_I.unpack(str[start:end])
         start = end
         end += length
-        _v16.data = str[start:end]
+        val1.hand_type = str[start:end]
         _v17 = val1.sconfiguration
         _v18 = _v17.header
         start = end
@@ -305,17 +309,42 @@ float64 w
         start = end
         end += 32
         (_x.x, _x.y, _x.z, _x.w,) = _struct_4d.unpack(str[start:end])
-        _v27 = val1.category
+        _v27 = val1.pre_grasp
+        _v28 = _v27.header
+        start = end
+        end += 4
+        (_v28.seq,) = _struct_I.unpack(str[start:end])
+        _v29 = _v28.stamp
+        _x = _v29
+        start = end
+        end += 8
+        (_x.secs, _x.nsecs,) = _struct_2I.unpack(str[start:end])
         start = end
         end += 4
         (length,) = _struct_I.unpack(str[start:end])
         start = end
         end += length
-        _v27.data = str[start:end]
-        _v28 = val1.score
+        _v28.frame_id = str[start:end]
+        _v30 = _v27.pose
+        _v31 = _v30.position
+        _x = _v31
+        start = end
+        end += 24
+        (_x.x, _x.y, _x.z,) = _struct_3d.unpack(str[start:end])
+        _v32 = _v30.orientation
+        _x = _v32
+        start = end
+        end += 32
+        (_x.x, _x.y, _x.z, _x.w,) = _struct_4d.unpack(str[start:end])
         start = end
         end += 4
-        (_v28.data,) = _struct_f.unpack(str[start:end])
+        (length,) = _struct_I.unpack(str[start:end])
+        start = end
+        end += length
+        val1.category = str[start:end]
+        start = end
+        end += 4
+        (val1.score,) = _struct_f.unpack(str[start:end])
         self.grasp_configuration.append(val1)
       return self
     except struct.error as e:
@@ -334,29 +363,27 @@ float64 w
       length = len(self.grasp_configuration)
       buff.write(_struct_I.pack(length))
       for val1 in self.grasp_configuration:
-        _v29 = val1.object_id
-        buff.write(_struct_f.pack(_v29.data))
-        _v30 = val1.hand_type
-        _x = _v30.data
+        buff.write(_struct_f.pack(val1.object_id))
+        _x = val1.hand_type
         length = len(_x)
         buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-        _v31 = val1.sconfiguration
-        _v32 = _v31.header
-        buff.write(_struct_I.pack(_v32.seq))
-        _v33 = _v32.stamp
-        _x = _v33
+        _v33 = val1.sconfiguration
+        _v34 = _v33.header
+        buff.write(_struct_I.pack(_v34.seq))
+        _v35 = _v34.stamp
+        _x = _v35
         buff.write(_struct_2I.pack(_x.secs, _x.nsecs))
-        _x = _v32.frame_id
+        _x = _v34.frame_id
         length = len(_x)
         buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-        length = len(_v31.joint_names)
+        length = len(_v33.joint_names)
         buff.write(_struct_I.pack(length))
-        for val3 in _v31.joint_names:
+        for val3 in _v33.joint_names:
           length = len(val3)
           buff.write(struct.pack('<I%ss'%length, length, val3.encode()))
-        length = len(_v31.points)
+        length = len(_v33.points)
         buff.write(_struct_I.pack(length))
-        for val3 in _v31.points:
+        for val3 in _v33.points:
           length = len(val3.positions)
           buff.write(_struct_I.pack(length))
           pattern = '<%sd'%length
@@ -369,31 +396,45 @@ float64 w
           buff.write(_struct_I.pack(length))
           pattern = '<%sd'%length
           buff.write(val3.accelerations.tostring())
-          _v34 = val3.time_from_start
-          _x = _v34
+          _v36 = val3.time_from_start
+          _x = _v36
           buff.write(_struct_2i.pack(_x.secs, _x.nsecs))
-        _v35 = val1.palm_pose
-        _v36 = _v35.header
-        buff.write(_struct_I.pack(_v36.seq))
-        _v37 = _v36.stamp
-        _x = _v37
-        buff.write(_struct_2I.pack(_x.secs, _x.nsecs))
-        _x = _v36.frame_id
-        length = len(_x)
-        buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-        _v38 = _v35.pose
-        _v39 = _v38.position
+        _v37 = val1.palm_pose
+        _v38 = _v37.header
+        buff.write(_struct_I.pack(_v38.seq))
+        _v39 = _v38.stamp
         _x = _v39
-        buff.write(_struct_3d.pack(_x.x, _x.y, _x.z))
-        _v40 = _v38.orientation
-        _x = _v40
-        buff.write(_struct_4d.pack(_x.x, _x.y, _x.z, _x.w))
-        _v41 = val1.category
-        _x = _v41.data
+        buff.write(_struct_2I.pack(_x.secs, _x.nsecs))
+        _x = _v38.frame_id
         length = len(_x)
         buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-        _v42 = val1.score
-        buff.write(_struct_f.pack(_v42.data))
+        _v40 = _v37.pose
+        _v41 = _v40.position
+        _x = _v41
+        buff.write(_struct_3d.pack(_x.x, _x.y, _x.z))
+        _v42 = _v40.orientation
+        _x = _v42
+        buff.write(_struct_4d.pack(_x.x, _x.y, _x.z, _x.w))
+        _v43 = val1.pre_grasp
+        _v44 = _v43.header
+        buff.write(_struct_I.pack(_v44.seq))
+        _v45 = _v44.stamp
+        _x = _v45
+        buff.write(_struct_2I.pack(_x.secs, _x.nsecs))
+        _x = _v44.frame_id
+        length = len(_x)
+        buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
+        _v46 = _v43.pose
+        _v47 = _v46.position
+        _x = _v47
+        buff.write(_struct_3d.pack(_x.x, _x.y, _x.z))
+        _v48 = _v46.orientation
+        _x = _v48
+        buff.write(_struct_4d.pack(_x.x, _x.y, _x.z, _x.w))
+        _x = val1.category
+        length = len(_x)
+        buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
+        buff.write(_struct_f.pack(val1.score))
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -413,24 +454,22 @@ float64 w
       self.grasp_configuration = []
       for i in range(0, length):
         val1 = srs_msgs.msg.GraspConfiguration()
-        _v43 = val1.object_id
         start = end
         end += 4
-        (_v43.data,) = _struct_f.unpack(str[start:end])
-        _v44 = val1.hand_type
+        (val1.object_id,) = _struct_f.unpack(str[start:end])
         start = end
         end += 4
         (length,) = _struct_I.unpack(str[start:end])
         start = end
         end += length
-        _v44.data = str[start:end]
-        _v45 = val1.sconfiguration
-        _v46 = _v45.header
+        val1.hand_type = str[start:end]
+        _v49 = val1.sconfiguration
+        _v50 = _v49.header
         start = end
         end += 4
-        (_v46.seq,) = _struct_I.unpack(str[start:end])
-        _v47 = _v46.stamp
-        _x = _v47
+        (_v50.seq,) = _struct_I.unpack(str[start:end])
+        _v51 = _v50.stamp
+        _x = _v51
         start = end
         end += 8
         (_x.secs, _x.nsecs,) = _struct_2I.unpack(str[start:end])
@@ -439,11 +478,11 @@ float64 w
         (length,) = _struct_I.unpack(str[start:end])
         start = end
         end += length
-        _v46.frame_id = str[start:end]
+        _v50.frame_id = str[start:end]
         start = end
         end += 4
         (length,) = _struct_I.unpack(str[start:end])
-        _v45.joint_names = []
+        _v49.joint_names = []
         for i in range(0, length):
           start = end
           end += 4
@@ -451,11 +490,11 @@ float64 w
           start = end
           end += length
           val3 = str[start:end]
-          _v45.joint_names.append(val3)
+          _v49.joint_names.append(val3)
         start = end
         end += 4
         (length,) = _struct_I.unpack(str[start:end])
-        _v45.points = []
+        _v49.points = []
         for i in range(0, length):
           val3 = trajectory_msgs.msg.JointTrajectoryPoint()
           start = end
@@ -479,19 +518,19 @@ float64 w
           start = end
           end += struct.calcsize(pattern)
           val3.accelerations = numpy.frombuffer(str[start:end], dtype=numpy.float64, count=length)
-          _v48 = val3.time_from_start
-          _x = _v48
+          _v52 = val3.time_from_start
+          _x = _v52
           start = end
           end += 8
           (_x.secs, _x.nsecs,) = _struct_2i.unpack(str[start:end])
-          _v45.points.append(val3)
-        _v49 = val1.palm_pose
-        _v50 = _v49.header
+          _v49.points.append(val3)
+        _v53 = val1.palm_pose
+        _v54 = _v53.header
         start = end
         end += 4
-        (_v50.seq,) = _struct_I.unpack(str[start:end])
-        _v51 = _v50.stamp
-        _x = _v51
+        (_v54.seq,) = _struct_I.unpack(str[start:end])
+        _v55 = _v54.stamp
+        _x = _v55
         start = end
         end += 8
         (_x.secs, _x.nsecs,) = _struct_2I.unpack(str[start:end])
@@ -500,29 +539,54 @@ float64 w
         (length,) = _struct_I.unpack(str[start:end])
         start = end
         end += length
-        _v50.frame_id = str[start:end]
-        _v52 = _v49.pose
-        _v53 = _v52.position
-        _x = _v53
+        _v54.frame_id = str[start:end]
+        _v56 = _v53.pose
+        _v57 = _v56.position
+        _x = _v57
         start = end
         end += 24
         (_x.x, _x.y, _x.z,) = _struct_3d.unpack(str[start:end])
-        _v54 = _v52.orientation
-        _x = _v54
+        _v58 = _v56.orientation
+        _x = _v58
         start = end
         end += 32
         (_x.x, _x.y, _x.z, _x.w,) = _struct_4d.unpack(str[start:end])
-        _v55 = val1.category
+        _v59 = val1.pre_grasp
+        _v60 = _v59.header
+        start = end
+        end += 4
+        (_v60.seq,) = _struct_I.unpack(str[start:end])
+        _v61 = _v60.stamp
+        _x = _v61
+        start = end
+        end += 8
+        (_x.secs, _x.nsecs,) = _struct_2I.unpack(str[start:end])
         start = end
         end += 4
         (length,) = _struct_I.unpack(str[start:end])
         start = end
         end += length
-        _v55.data = str[start:end]
-        _v56 = val1.score
+        _v60.frame_id = str[start:end]
+        _v62 = _v59.pose
+        _v63 = _v62.position
+        _x = _v63
+        start = end
+        end += 24
+        (_x.x, _x.y, _x.z,) = _struct_3d.unpack(str[start:end])
+        _v64 = _v62.orientation
+        _x = _v64
+        start = end
+        end += 32
+        (_x.x, _x.y, _x.z, _x.w,) = _struct_4d.unpack(str[start:end])
         start = end
         end += 4
-        (_v56.data,) = _struct_f.unpack(str[start:end])
+        (length,) = _struct_I.unpack(str[start:end])
+        start = end
+        end += length
+        val1.category = str[start:end]
+        start = end
+        end += 4
+        (val1.score,) = _struct_f.unpack(str[start:end])
         self.grasp_configuration.append(val1)
       return self
     except struct.error as e:

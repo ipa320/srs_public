@@ -16,13 +16,13 @@ class SCRIPT():#################################################################
 	def __init__(self):
 
 		self.robotName = 'robots/care-o-bot3.zae'
+		#self.robotName = 'robots/barrett-hand.zae'
 
-		self.envName = None
 
 		if (len(sys.argv)<=1):
-			self.targetName = 'milk_box'
-			self.object_path = package_path+"/DB/obj/"+self.targetName+'.iv'
-			print "Loaded default values: (%s, %s)" %(self.robotName, self.object_path)
+			self.targetName = 'Milk'
+			self.object_path = package_path+"/DB/obj/"+self.targetName+'.xml'
+
 
 		else:
 			self.targetName = sys.argv[1]
@@ -30,9 +30,9 @@ class SCRIPT():#################################################################
 			if self.targetName[len(self.targetName)-3:len(self.targetName)] == ".iv":
 				self.object_path = package_path+'/DB/obj/'+self.targetName;
 			else:
-				self.object_path = package_path+'DB/obj/'+self.targetName+'.kinbody.xml'
+				self.object_path = package_path+'/DB/obj/'+self.targetName+'.xml'
 
-			print "Loaded values: (%s, %s)" %(self.robotName, self.object_path)
+		print "Loaded values: (%s, %s)" %(self.robotName, self.object_path)
 
 
 
@@ -46,7 +46,8 @@ class SCRIPT():#################################################################
 		target = env.ReadKinBodyXMLFile(self.object_path)
 		env.AddKinBody(target)
 
-		robot.SetActiveManipulator("arm")
+		robot.SetActiveManipulator("arm")		#care-o-bot
+		#robot.SetActiveManipulator("hand")		#barretthand
 		gmodel = openravepy.databases.grasping.GraspingModel(robot=robot,target=target)
 		if not gmodel.load():
 		    print "GENERATING GRASPS..."
@@ -54,23 +55,6 @@ class SCRIPT():#################################################################
 		    print "GENERATING GRASPS HAS FINISHED."
 
 
-
-		"""
-		res = raw_input("Do you want to load a collision environment? (y/n): ")
-		if res=="y":
-			env.Remove(target)
-			self.envName = raw_input("Write the environment file absolute path: ")
-
-			while(not env.Load(self.envName)):
-				print "File not found."
-				self.envName = raw_input("Write the environment file absolute path: ")
-
-			all_grasps = False
-		else:
-			print "A free collision environment will be generated."
-			all_grasps = True
-		"""
-		
 
 		grasping_functions.generateFile(targetName=self.targetName, gmodel=gmodel, env=env)
 

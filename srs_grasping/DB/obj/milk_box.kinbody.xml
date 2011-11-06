@@ -1,7 +1,0 @@
-<KinBody name="milk_box">
-  <Body type="dynamic">
-    <Geom type="trimesh">
-      <Data>milk_box.iv</Data>
-    </Geom>      
-  </Body>
-</KinBody>

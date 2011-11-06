@@ -1,0 +1,26 @@
+
+#input: command + target
+
+# task: get(fetch & carry task) 
+string task
+
+# if to get an object (milk0) or any in the general class (eg. Milk)
+string objectOrClass 
+
+ABoxObject aboxObject
+TBoxObject tboxObject
+
+# Or other task information
+
+geometry_msgs/Pose2D userPose
+
+---
+
+# 0: successful. 1: unsuccessful. 2: other
+int32 result
+
+# generated sessionId
+int32 sessionId
+
+#if other case
+string description

@@ -1,0 +1,7 @@
+PREFIX house: <http://www.semanticweb.org/ontologies/house.owl#> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?room
+WHERE {
+?room rdf:type house:KitchenObject . 
+}
+

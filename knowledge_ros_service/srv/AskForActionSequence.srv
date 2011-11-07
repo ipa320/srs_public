@@ -1,0 +1,14 @@
+#input: command + target
+
+# task: get(fetch & carry task) 
+string task
+
+# if to get an object (milk0) or any in the general class (eg. Milk)
+string objectOrClass
+
+ABoxObject aboxObject
+TBoxObject tboxObject
+
+---
+
+CUAction[] actionSequence

@@ -10,8 +10,10 @@
   <url>http://ros.org/wiki/srs</url>
   <depend stack="arm_navigation" /> <!-- kinematics_msgs, arm_navigation_msgs -->
   <depend stack="bullet" /> <!-- bullet -->
-  <depend stack="cob_apps" /> <!-- cob_bringup, cob_script_server, cob_2dnav -->
-  <depend stack="cob_common" /> <!-- cob_default_config, cob_srvs, cob_msgs -->
+  <depend stack="cob_command_tools" /> <!-- cob_script_server -->
+  <depend stack="cob_common" /> <!-- cob_srvs, cob_msgs -->
+  <depend stack="cob_navigation" /> <!-- cob_2dnav -->
+  <depend stack="cob_robots" /> <!-- cob_bringup, cob_default_robot_config -->
   <depend stack="common" /> <!-- actionlib, bfl -->
   <depend stack="common_msgs" /> <!-- nav_msgs, actionlib_msgs, trajectory_msgs, sensor_msgs, geometry_msgs, visualization_msgs -->
   <depend stack="executive_smach" /> <!-- smach_ros, smach -->

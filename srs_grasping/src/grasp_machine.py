@@ -20,19 +20,19 @@ client = actionlib.SimpleActionClient('/grasp_server', GraspAction)
 # STATES
 # ------------------------------------------------------------------------------------------
 # define state WAIT_SERVER
-class Wait_server(smach.State):
+class Wait_grasp_server(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','failed'])
+        smach.State.__init__(self, outcomes=['succeeded'])
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state WAIT_SERVER')
+        rospy.loginfo('Executing state WAIT_GRASP_SERVER')
 	
-	if not client.wait_for_server(rospy.Duration(120)):
-        	rospy.logerr('Time expired: /grasp_server not found')
-		return 'failed'
-	else:
-        	rospy.loginfo('/grasp_server found')
-		return 'succeeded'
+	while not client.wait_for_server(rospy.Duration(1.0)):
+        	rospy.logerr('Waiting for /grasp_server...')
+
+
+	rospy.loginfo('/grasp_server found')
+	return 'succeeded'
 
 
 
@@ -66,6 +66,11 @@ class Move_arm(smach.State):
         smach.State.__init__(self, outcomes=['succeeded','retry','failed'], input_keys=['grasp_configuration'])
 	self.counter = 0
 
+    def get_joint_state(msg):
+	global current_joint_configuration
+	current_joint_configuration = list(msg.desired.positions)
+	rospy.spin()
+
     def execute(self, userdata):
         rospy.loginfo('Executing state MOVE_ARM')
 
@@ -74,12 +79,18 @@ class Move_arm(smach.State):
 		return 'failed'
 
         rospy.loginfo('Executing the grasp_configuration[%d]' %self.counter)
+
+	#sub = rospy.Subscriber("/sdh_controller/state", JointTrajectoryControllerState, get_joint_state)
+	#while sub.get_num_connections() == 0:
+	#	time.sleep(0.3)
+	#	continue
+
 	#(conf1, pre_grasp_result) = ik_solver_function(current_joint_configuration, userdata.grasp_configuration[self.counter].pre_grasp)
 	#(conf2, grasp_result) = ik_solver_function(conf1, userdata.grasp_configuration[self.counter].palm_pose)
 
 	#------
 	pre_grasp_result = True	
-	grasp_result = True		
+	grasp_result = True
 	#------
 
 
@@ -89,6 +100,7 @@ class Move_arm(smach.State):
 		return 'retry'
 
 
+	rospy.loginfo('This configuration has worked.')
 	#move_arm_function(conf1)
 	#sss.move("sdh", "cylopen")
 	#move_arm_function(conf2)
@@ -115,8 +127,6 @@ class Move_hand(smach.State):
 # ------------------------------------------------------------------------------------------
 def main(object_id, pose_id):
 
-    rospy.init_node('grasp_state_machine')
-
 
     # Create a SMACH state machine
     sm_top = smach.StateMachine(outcomes=['succeeded','failed'])
@@ -125,7 +135,7 @@ def main(object_id, pose_id):
     # Open the container
     with sm_top:
         # Add states to the container
-        smach.StateMachine.add('WAIT_SERVER', Wait_server(), transitions={'succeeded':'READ_DB', 'failed': 'failed'})
+        smach.StateMachine.add('WAIT_GRASP_SERVER', Wait_grasp_server(), transitions={'succeeded':'READ_DB'})
         smach.StateMachine.add('READ_DB', Read_DB(), transitions={'succeeded':'GRASP_OBJECT', 'failed': 'failed'})
 
     	sm_sub = smach.StateMachine(outcomes=['succeeded','failed','retry'])
@@ -159,4 +169,5 @@ def main(object_id, pose_id):
 # ------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+    rospy.init_node('grasp_state_machine')
     main(0, "X")	#object_id = Milk, pose_id = X

@@ -22,8 +22,8 @@ def grasp_action_client():
 	return client.get_result() 
 
 if __name__ == '__main__':
-	try:
 		rospy.init_node('get_grasps_action_client')
+	try:
 		result = grasp_action_client()
 		print "-----------------"
 		print result

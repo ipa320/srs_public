@@ -12,7 +12,7 @@ import grasping_functions
 class grasp_action_server():
 
 	def __init__(self):
-		self.package_path = roslib.packages.get_pkg_dir('srs_grasping')
+		self.package_path = roslib.packages.get_pkg_dir('srs_grasping')+"/DB/"
 		self.ns_global_prefix = "/grasp_server"
 		self.grasp_action_server = actionlib.SimpleActionServer(self.ns_global_prefix, GraspAction, self.execute_cb, True)
 		self.grasp_action_server.start()
@@ -22,12 +22,13 @@ class grasp_action_server():
 		server_result = GraspActionResult().result
 
 
-		#SE DEBE IMPLEMENTAR UNA FUNCION QUE DADO UN INR object_id SEPA A QUE OBJETO SE CORRESPONDE
-		object_name = grasping_functions.getObjectName(server_goal.object_id)
+		#SE DEBE ESTABLECER UN ID ARBITRARIO PARA CADA OBJETO #####################
+		#object_name = str(getObjectId("Milk"))
+		object_name = "Milk"
+		file_name = self.package_path+object_name+".xml"
+		###########################################################################
 
-		file_name = self.package_path+"/DB/"+object_name+"_all_grasps.xml"
-
-		grasps = grasping_functions.getGrasps(file_name, msg=True)
+		grasps = grasping_functions.getGrasps(file_name, all_grasps=True, msg=True)
 		GRASPS = grasping_functions.getGraspsByAxis(grasps, server_goal.pose_id)
 
 		rospy.loginfo(str(len(GRASPS))+" grasping configuration for this object.")		

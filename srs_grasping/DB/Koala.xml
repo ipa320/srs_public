@@ -1,0 +1,4066 @@
+<?xml version="1.0" ?>
+<GraspList>
+<object_id>Koala</object_id>
+<hand_type>SDH</hand_type>
+<joint_names>[sdh_knuckle_joint, sdh_thumb_2_joint, sdh_thumb_3_joint, sdh_finger_12_joint, sdh_finger_13_joint, sdh_finger_22_joint, sdh_finger_23_joint]</joint_names>
+<grasp_reference_link>sdh_palm_link</grasp_reference_link>
+<configuration id="0">
+<Grasp Index="0">
+<joint_values>[0.0, -1.100796317509612, 1.344203717130938, -0.82279631408420395, 1.3222037193456151, -0.88979631400690096, 1.30920371872816]</joint_values>
+<GraspPose>
+<Translation>[-0.0285926118185, 0.162116516877, 0.0495469942312]</Translation>
+<Rotation>[-1.55037466662, 1.35523578784, -2.9061265217]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0285926118185, 0.262116516877, 0.0495469942312]</Translation>
+<Rotation>[-1.55037466662, 1.35523578784, -2.9061265217]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.976856651183</score>
+</Grasp>
+<Grasp Index="1">
+<joint_values>[0.0, -1.192796318619739, 0.88520371162774403, -0.62779631134146663, 1.270203716875753, -0.45579630969116069, 1.0142037144952849]</joint_values>
+<GraspPose>
+<Translation>[-0.164786256905, 0.0162152611991, 0.0299703355243]</Translation>
+<Rotation>[1.56168794623, 1.44849913568, 1.43946380433]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.264786256905, 0.0162152611991, 0.0299703355243]</Translation>
+<Rotation>[1.56168794623, 1.44849913568, 1.43946380433]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="2">
+<joint_values>[0.0, -1.119796318412065, 1.3732037185083581, -0.8647963160790979, 1.312203718870641, -0.82679631427419287, 1.3182037191556311]</joint_values>
+<GraspPose>
+<Translation>[-0.164354729905, 0.0190810905417, 0.0504808656811]</Translation>
+<Rotation>[1.5901228704, 1.4264378819, 1.44559003416]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.264354729905, 0.0190810905417, 0.0504808656811]</Translation>
+<Rotation>[1.5901228704, 1.4264378819, 1.44559003416]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="3">
+<joint_values>[0.0, -1.1077963178420891, 1.36820371827087, -0.71579631226160456, 1.1312037135332349, -0.91779631533683037, 1.3752037186033561]</joint_values>
+<GraspPose>
+<Translation>[0.0163797202494, -0.164235433401, 0.050068420214]</Translation>
+<Rotation>[-1.56865276235, 1.40050630125, 0.172402201117]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0163797202494, -0.264235433401, 0.050068420214]</Translation>
+<Rotation>[-1.56865276235, 1.40050630125, 0.172402201117]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.985535658257</score>
+</Grasp>
+<Grasp Index="4">
+<joint_values>[0.0, -1.1717963176223041, 0.86120371048780897, -0.42479630821873687, 0.92820371367013677, -0.64579631219641709, 1.2852037175882169]</joint_values>
+<GraspPose>
+<Translation>[-0.0238403936275, 0.163326725274, 0.029000818877]</Translation>
+<Rotation>[-1.52257852188, 1.39281619333, -2.91635776959]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0238403936275, 0.263326725274, 0.029000818877]</Translation>
+<Rotation>[-1.52257852188, 1.39281619333, -2.91635776959]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.984203301415</score>
+</Grasp>
+<Grasp Index="5">
+<joint_values>[2.2204460492503131e-16, -1.176796317859782, 0.83720370934786736, -0.46079630992864529, 0.99420371354533754, -0.57079630863411435, 1.2212037178080219]</joint_values>
+<GraspPose>
+<Translation>[-0.0338216521889, 0.161291836104, 0.0295452471159]</Translation>
+<Rotation>[-1.55037466662, 1.35523578784, -2.9061265217]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0338216521889, 0.261291836104, 0.0295452471159]</Translation>
+<Rotation>[-1.55037466662, 1.35523578784, -2.9061265217]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.976856651183</score>
+</Grasp>
+<Grasp Index="6">
+<joint_values>[0.0, -0.91779631533683481, 1.4522037190010271, -1.1357963191720251, 1.3122037188706439, -0.92279631557432518, 1.117203716127898]</joint_values>
+<GraspPose>
+<Translation>[-0.160694778474, 0.0409689218602, 0.0698323011367]</Translation>
+<Rotation>[-1.58393461399, -1.41165048107, -1.71695639051]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.260694778474, 0.0409689218602, 0.0698323011367]</Translation>
+<Rotation>[-1.58393461399, -1.41165048107, -1.71695639051]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.987363005557</score>
+</Grasp>
+<Grasp Index="7">
+<joint_values>[0.0, -1.114796318174575, 1.3832037189833331, -0.94179631647677708, 1.4402037184310621, -0.72079631249909837, 1.160203714910653]</joint_values>
+<GraspPose>
+<Translation>[-0.165346228375, 0.0110215624307, 0.0499704466383]</Translation>
+<Rotation>[1.56168794623, 1.44849913568, 1.43946380433]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.265346228375, 0.0110215624307, 0.0499704466383]</Translation>
+<Rotation>[1.56168794623, 1.44849913568, 1.43946380433]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="8">
+<joint_values>[0.0, -1.099796317462107, 1.3192037192031221, -0.682796310694192, 0.95020371145545335, -0.84679631522414545, 1.3732037185083621]</joint_values>
+<GraspPose>
+<Translation>[0.161888179523, -0.0297295246033, 0.0504599117748]</Translation>
+<Rotation>[1.58468134897, 1.38338888392, -1.74454419075]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.261888179523, -0.0297295246033, 0.0504599117748]</Translation>
+<Rotation>[1.58468134897, 1.38338888392, -1.74454419075]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="9">
+<joint_values>[0.0, -1.1247963186495471, 1.330203716465965, -0.632796311578949, 1.0412037125180911, -0.87579631334194663, 1.436203718241071]</joint_values>
+<GraspPose>
+<Translation>[0.159094130193, -0.034203281025, 0.0908805006579]</Translation>
+<Rotation>[-1.61595350251, -1.34587015469, 1.39011298306]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.259094130193, -0.034203281025, 0.0908805006579]</Translation>
+<Rotation>[-1.61595350251, -1.34587015469, 1.39011298306]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.974810575884</score>
+</Grasp>
+<Grasp Index="10">
+<joint_values>[1.3254611430302851e-16, -1.116796318269575, 1.369203718318369, -0.81779631384672047, 1.1982037167155599, -0.86079631588910765, 1.411203720313255]</joint_values>
+<GraspPose>
+<Translation>[0.161200432107, -0.0242313240835, 0.0504555140987]</Translation>
+<Rotation>[1.58468134897, 1.38338888392, -1.74454419075]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.261200432107, -0.0242313240835, 0.0504555140987]</Translation>
+<Rotation>[1.58468134897, 1.38338888392, -1.74454419075]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="11">
+<joint_values>[0.0, -1.2017963190472249, 0.83720370934786925, -0.36379630858102341, 1.414203720455768, -0.52679630980385217, 1.114203715985403]</joint_values>
+<GraspPose>
+<Translation>[-0.164863040692, 0.0132954625954, 0.110353766686]</Translation>
+<Rotation>[-1.61424817091, -1.4308763094, -1.66755826823]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.264863040692, 0.0132954625954, 0.110353766686]</Translation>
+<Rotation>[-1.61424817091, -1.4308763094, -1.66755826823]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.990227154067</score>
+</Grasp>
+<Grasp Index="12">
+<joint_values>[0.0, -1.0027963161144819, 1.205203717048045, -0.94979631685675425, 1.3682037182708711, -0.76879631477897348, 1.248203715830805]</joint_values>
+<GraspPose>
+<Translation>[-0.157870464624, 0.0513636529334, 0.0935855500328]</Translation>
+<Rotation>[-1.69931635447, -1.32827123906, -1.6865994768]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.257870464624, 0.0513636529334, 0.0935855500328]</Translation>
+<Rotation>[-1.69931635447, -1.32827123906, -1.6865994768]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.970734658846</score>
+</Grasp>
+<Grasp Index="13">
+<joint_values>[2.2204460492503131e-16, -0.9897963154970284, 1.1412037140082041, -0.87279631319944206, 1.4432037185735529, -0.83079631446418556, 1.1552037146731711]</joint_values>
+<GraspPose>
+<Translation>[0.0374552973042, -0.158585246213, 0.0492880919295]</Translation>
+<Rotation>[-1.54911413824, 1.27472362205, 0.316746174859]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0374552973042, -0.258585246213, 0.0492880919295]</Translation>
+<Rotation>[-1.54911413824, 1.27472362205, 0.316746174859]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="14">
+<joint_values>[0.0, -1.043796318061887, 0.49220370599976798, -0.40579630731628141, 0.98920371330784174, -0.69379631121666008, 1.312203718870645]</joint_values>
+<GraspPose>
+<Translation>[0.0374844670529, -0.158548626896, 0.0292874593664]</Translation>
+<Rotation>[-1.54911413824, 1.27472362205, 0.316746174859]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0374844670529, -0.258548626896, 0.0292874593664]</Translation>
+<Rotation>[-1.54911413824, 1.27472362205, 0.316746174859]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="15">
+<joint_values>[0.0, -1.196796318809737, 0.84520370972784986, -0.44879630935867559, 1.2072037171430321, -0.52279630961386103, 1.1002037153204409]</joint_values>
+<GraspPose>
+<Translation>[-0.164133965059, 0.0184769626131, 0.110353766686]</Translation>
+<Rotation>[-1.61424817091, -1.4308763094, -1.66755826823]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.264133965059, 0.0184769626131, 0.110353766686]</Translation>
+<Rotation>[-1.61424817091, -1.4308763094, -1.66755826823]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.990227154067</score>
+</Grasp>
+<Grasp Index="16">
+<joint_values>[0.0, -0.88179631362692157, 1.570796326794897, -1.108796317889585, 1.570796326794897, -0.83979631489165985, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.00123155152383, -0.0042543810364, -0.104633877461]</Translation>
+<Rotation>[-0.00479679956265, 0.0068249837737, -1.57081269593]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00123155152383, -0.0042543810364, -0.204633877461]</Translation>
+<Rotation>[-0.00479679956265, 0.0068249837737, -1.57081269593]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="17">
+<joint_values>[1.1219814661497761e-16, -1.0287963173494259, 1.570796326794897, -1.0107963164944651, 1.570796326794897, -0.87279631319943485, 1.5707963267948959]</joint_values>
+<GraspPose>
+<Translation>[-0.000295194484251, -0.00459352812189, 0.243780019007]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.000295194484251, -0.00459352812189, 0.343780019007]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="18">
+<joint_values>[0.0, -0.92579631571681664, 1.4332037180985799, -0.96279631747422145, 1.048203712850575, -1.073796316227188, 1.407203720123277]</joint_values>
+<GraspPose>
+<Translation>[-0.165586585839, 0.0192680704787, 0.0699279181583]</Translation>
+<Rotation>[1.5901228704, 1.4264378819, 1.44559003416]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.265586585839, 0.0192680704787, 0.0699279181583]</Translation>
+<Rotation>[1.5901228704, 1.4264378819, 1.44559003416]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="19">
+<joint_values>[2.2204460492503131e-16, -1.0207963169694441, 0.43720370338740472, -0.36179630848602562, 1.095203715082959, -0.75979631435149619, 1.4202037207407301]</joint_values>
+<GraspPose>
+<Translation>[0.0293921743512, -0.159926110281, 0.0298109668329]</Translation>
+<Rotation>[-1.56214313312, 1.29608569251, 0.28302960567]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0293921743512, -0.259926110281, 0.0298109668329]</Translation>
+<Rotation>[-1.56214313312, 1.29608569251, 0.28302960567]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962503733706</score>
+</Grasp>
+<Grasp Index="20">
+<joint_values>[0.0, -1.2107963194746989, 0.80320371099258558, -0.41779630788625283, 1.3182037191556299, -0.50579630880639947, 1.099203715272945]</joint_values>
+<GraspPose>
+<Translation>[0.16104391776, -0.0242313240835, 0.10989895245]</Translation>
+<Rotation>[-1.58468134897, -1.38338888392, 1.39704846284]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.26104391776, -0.0242313240835, 0.10989895245]</Translation>
+<Rotation>[-1.58468134897, -1.38338888392, 1.39704846284]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="21">
+<joint_values>[0.0, -0.94879631680925713, 1.474203720045979, -0.92179631552682062, 1.085203714607974, -1.0467963182043749, 1.2222037178554921]</joint_values>
+<GraspPose>
+<Translation>[0.00723219542683, -0.165417451569, 0.0694929616115]</Translation>
+<Rotation>[-1.56571427432, 1.47075326188, 0.105098423557]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.00723219542683, -0.265417451569, 0.0694929616115]</Translation>
+<Rotation>[-1.56571427432, 1.47075326188, 0.105098423557]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.994999865038</score>
+</Grasp>
+<Grasp Index="22">
+<joint_values>[0.0, -1.1327963190295329, 1.364203718080885, -0.58779630944156824, 1.1342037136757279, -0.87279631319945283, 1.4282037211207199]</joint_values>
+<GraspPose>
+<Translation>[0.16099832847, -0.0242126946422, 0.0898986937632]</Translation>
+<Rotation>[-1.58468134897, -1.38338888392, 1.39704846284]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.26099832847, -0.0242126946422, 0.0898986937632]</Translation>
+<Rotation>[-1.58468134897, -1.38338888392, 1.39704846284]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="23">
+<joint_values>[0.0, -0.91579631524184468, 1.4332037180985799, -1.066796319154325, 1.4242037209307301, -0.91079631500434655, 0.64620370679511296]</joint_values>
+<GraspPose>
+<Translation>[-0.0363478089413, 0.160420180837, 0.0709320043079]</Translation>
+<Rotation>[-1.60930766705, 1.29456266557, -2.90260627785]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0363478089413, 0.260420180837, 0.0709320043079]</Translation>
+<Rotation>[-1.60930766705, 1.29456266557, -2.90260627785]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="24">
+<joint_values>[2.2204460492503131e-16, -0.73879631335404927, 1.190203716335569, -1.0937963171771361, 1.448203718811041, -0.93179631600180224, 0.54720370535249241]</joint_values>
+<GraspPose>
+<Translation>[-0.0700897131965, 0.149816202517, 0.0712040242796]</Translation>
+<Rotation>[1.60796896743, -1.22678849481, 0.308791927832]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0700897131965, 0.249816202517, 0.0712040242796]</Translation>
+<Rotation>[1.60796896743, -1.22678849481, 0.308791927832]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.941410537281</score>
+</Grasp>
+<Grasp Index="25">
+<joint_values>[0.0, -0.8237963141317014, 0.77320370956765694, -0.81679631379922646, 1.364203718080879, -0.89779631438689178, 1.226203718045481]</joint_values>
+<GraspPose>
+<Translation>[-0.0696852773907, 0.148420227914, 0.0911889834042]</Translation>
+<Rotation>[1.60796896743, -1.22678849481, 0.308791927832]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0696852773907, 0.248420227914, 0.0911889834042]</Translation>
+<Rotation>[1.60796896743, -1.22678849481, 0.308791927832]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.941410537281</score>
+</Grasp>
+<Grasp Index="26">
+<joint_values>[0.0, -0.91479631519433946, 1.461203719428507, -1.080796316559671, 1.45220371900103, -0.92279631557432351, 0.65320370712759268]</joint_values>
+<GraspPose>
+<Translation>[0.0574261275554, -0.15251885282, 0.0687321628439]</Translation>
+<Rotation>[1.54911413824, -1.27472362205, -2.82484647873]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0574261275554, -0.25251885282, 0.0687321628439]</Translation>
+<Rotation>[1.54911413824, -1.27472362205, -2.82484647873]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="27">
+<joint_values>[0.0, -1.104796317699597, 1.306203718585665, -0.83179631451168434, 1.36720371822338, -0.72079631249909815, 0.96220371202542543]</joint_values>
+<GraspPose>
+<Translation>[-0.041600321867, 0.159560228591, 0.0514927662597]</Translation>
+<Rotation>[-1.60930766705, 1.29456266557, -2.90260627785]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.041600321867, 0.259560228591, 0.0514927662597]</Translation>
+<Rotation>[-1.60930766705, 1.29456266557, -2.90260627785]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="28">
+<joint_values>[0.0, -1.1187963183645631, 1.3732037185083581, -0.63979631191142905, 1.0852037146079769, -0.86579631612659647, 1.403203719933287]</joint_values>
+<GraspPose>
+<Translation>[-0.164243921145, 0.0190810905417, 0.0899243040324]</Translation>
+<Rotation>[-1.5901228704, -1.4264378819, -1.69600261943]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.264243921145, 0.0190810905417, 0.0899243040324]</Translation>
+<Rotation>[-1.5901228704, -1.4264378819, -1.69600261943]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="29">
+<joint_values>[2.2204460492503131e-16, -0.93579631619178871, 1.4662037196659941, -1.0897963169871461, 1.4592037193335119, -0.89879631443438879, 0.60520370810734714]</joint_values>
+<GraspPose>
+<Translation>[0.0348611844976, -0.15972773922, 0.0692515884132]</Translation>
+<Rotation>[-1.56214313312, 1.29608569251, 0.28302960567]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0348611844976, -0.25972773922, 0.0692515884132]</Translation>
+<Rotation>[-1.56214313312, 1.29608569251, 0.28302960567]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962503733706</score>
+</Grasp>
+<Grasp Index="30">
+<joint_values>[0.0, -0.93679631623928816, 1.442203718526053, -1.075796316322172, 1.4412037184785571, -0.82179631403670905, 0.38420370412967542]</joint_values>
+<GraspPose>
+<Translation>[-0.0415458155011, 0.159155594867, 0.0709341044595]</Translation>
+<Rotation>[-1.60930766705, 1.29456266557, -2.90260627785]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0415458155011, 0.259155594867, 0.0709341044595]</Translation>
+<Rotation>[-1.60930766705, 1.29456266557, -2.90260627785]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="31">
+<joint_values>[0.0, -0.94379631657176677, 1.002203713925321, -0.85679631569911863, 1.445203718668544, -0.82379631413170307, 1.1392037139132161]</joint_values>
+<GraspPose>
+<Translation>[0.0600514272962, -0.151901502638, 0.0896055921705]</Translation>
+<Rotation>[1.57192525169, -1.25424322111, -2.82611256966]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0600514272962, -0.251901502638, 0.0896055921705]</Translation>
+<Rotation>[1.57192525169, -1.25424322111, -2.82611256966]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.950314054661</score>
+</Grasp>
+<Grasp Index="32">
+<joint_values>[0.0, -1.105796317747094, 1.2522037160207959, -0.84679631522414545, 1.3862037191258261, -0.56979631184623791, 1.2882037177307]</joint_values>
+<GraspPose>
+<Translation>[-0.0418728536966, 0.160091812396, 0.0909467053689]</Translation>
+<Rotation>[1.60930766705, -1.29456266557, 0.238986375741]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0418728536966, 0.260091812396, 0.0909467053689]</Translation>
+<Rotation>[1.60930766705, -1.29456266557, 0.238986375741]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="33">
+<joint_values>[0.0, -0.92979631590680301, 1.4522037190010271, -1.062796318964337, 1.3732037185083561, -0.82379631413170162, 0.94720371131296444]</joint_values>
+<GraspPose>
+<Translation>[0.00723219542683, -0.165417451569, 0.0694929616115]</Translation>
+<Rotation>[1.56571427432, -1.47075326188, -3.03649423003]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.00723219542683, -0.265417451569, 0.0694929616115]</Translation>
+<Rotation>[1.56571427432, -1.47075326188, -3.03649423003]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.994999865038</score>
+</Grasp>
+<Grasp Index="34">
+<joint_values>[0.0, -1.196796318809729, 0.79020371037511472, -0.48879630799894502, 1.079203714322996, -0.43079630850372008, 1.4252037209782371]</joint_values>
+<GraspPose>
+<Translation>[-0.0442768054931, 0.157686735751, 0.112044039498]</Translation>
+<Rotation>[1.63539731431, -1.2721433853, 0.236317485647]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0442768054931, 0.257686735751, 0.112044039498]</Translation>
+<Rotation>[1.63539731431, -1.2721433853, 0.236317485647]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.955733705253</score>
+</Grasp>
+<Grasp Index="35">
+<joint_values>[0.0, -1.2377963207571321, 0.060203698519382773, -0.033796302685750373, 0.2862037027345537, -0.23679630580847461, 0.73420370771526045]</joint_values>
+<GraspPose>
+<Translation>[-0.0239111281156, 0.163547002738, 0.00899740556963]</Translation>
+<Rotation>[-1.52257852188, 1.39281619333, -2.91635776959]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0239111281156, 0.263547002738, 0.00899740556963]</Translation>
+<Rotation>[-1.52257852188, 1.39281619333, -2.91635776959]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.984203301415</score>
+</Grasp>
+<Grasp Index="36">
+<joint_values>[0.0, -1.2407963208996251, 0.048203697949411241, -0.020796302068280651, 0.17320370062696411, -0.2377963058559712, 0.81920371175254481]</joint_values>
+<GraspPose>
+<Translation>[-0.0339285774095, 0.161690838867, 0.00954306322181]</Translation>
+<Rotation>[-1.55037466662, 1.35523578784, -2.9061265217]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0339285774095, 0.261690838867, 0.00954306322181]</Translation>
+<Rotation>[-1.55037466662, 1.35523578784, -2.9061265217]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.976856651183</score>
+</Grasp>
+<Grasp Index="37">
+<joint_values>[0.0, -1.237796320757137, -0.025796302305770281, -0.2027963041935596, 0.78620371018512991, -0.049796303445709018, 0.25020370102464168]</joint_values>
+<GraspPose>
+<Translation>[0.159923322056, -0.0265978261844, 0.00693947362267]</Translation>
+<Rotation>[1.4249548133, 1.40315044798, -1.88052025202]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.259923322056, -0.0265978261844, 0.00693947362267]</Translation>
+<Rotation>[1.4249548133, 1.40315044798, -1.88052025202]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.985980311295</score>
+</Grasp>
+<Grasp Index="38">
+<joint_values>[0.0, -1.2447963210896149, -0.0077963014508141857, -0.020796302068278531, 0.064203698709372384, -0.17079630267364199, 1.1472037142931939]</joint_values>
+<GraspPose>
+<Translation>[-0.0307475071027, 0.161233200737, 0.131886891581]</Translation>
+<Rotation>[1.64816876766, -1.3390581145, 0.155757269697]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0307475071027, 0.261233200737, 0.131886891581]</Translation>
+<Rotation>[1.64816876766, -1.3390581145, 0.155757269697]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.973268650962</score>
+</Grasp>
+<Grasp Index="39">
+<joint_values>[2.2204460492503131e-16, -0.87779631343693665, 0.25820370140461418, -0.35279630805855061, 1.1042037155104321, -0.76279631449398977, 1.378203718745844]</joint_values>
+<GraspPose>
+<Translation>[-0.0693308547848, 0.148129592123, 0.111515218962]</Translation>
+<Rotation>[1.61576571789, -1.22929785203, 0.298803635964]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0693308547848, 0.248129592123, 0.111515218962]</Translation>
+<Rotation>[1.61576571789, -1.22929785203, 0.298803635964]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.942253885281</score>
+</Grasp>
+<Grasp Index="40">
+<joint_values>[0.0, -1.116796318269569, 1.295203718063191, -0.87279631319945483, 1.431203718003585, -0.42679630831373039, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.0338669026459, 0.160979674041, 0.0916234658071]</Translation>
+<Rotation>[1.63299639405, -1.3143411662, 0.195809812545]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0338669026459, 0.260979674041, 0.0916234658071]</Translation>
+<Rotation>[1.63299639405, -1.3143411662, 0.195809812545]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96729521373</score>
+</Grasp>
+<Grasp Index="41">
+<joint_values>[1.6653345369377351e-16, -0.94279631652427032, 1.415203720503265, -1.07579631632219, 1.418203720645749, -0.58779630944157024, 1.2852037175882109]</joint_values>
+<GraspPose>
+<Translation>[-0.0417910941477, 0.160021475442, 0.0709435551415]</Translation>
+<Rotation>[1.60930766705, -1.29456266557, 0.238986375741]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0417910941477, 0.260021475442, 0.0709435551415]</Translation>
+<Rotation>[1.60930766705, -1.29456266557, 0.238986375741]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="42">
+<joint_values>[0.0, -1.183796318192275, 0.69420370907500195, -0.45579630969115681, 1.003203713972826, -0.34579630772606579, 1.418203720645749]</joint_values>
+<GraspPose>
+<Translation>[0.0354495898575, -0.162147191538, 0.109278060575]</Translation>
+<Rotation>[1.56301554687, -1.29657462379, -2.85988876951]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0354495898575, -0.262147191538, 0.109278060575]</Translation>
+<Rotation>[1.56301554687, -1.29657462379, -2.85988876951]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962636250278</score>
+</Grasp>
+<Grasp Index="43">
+<joint_values>[0.0, -1.18779631838226, 0.7322037076202671, -0.49779630842642592, 1.065203713658031, -0.40779630741127998, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.030724608851, 0.161500672919, 0.111885116344]</Translation>
+<Rotation>[1.64816876766, -1.3390581145, 0.155757269697]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.030724608851, 0.261500672919, 0.111885116344]</Translation>
+<Rotation>[1.64816876766, -1.3390581145, 0.155757269697]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.973268650962</score>
+</Grasp>
+<Grasp Index="44">
+<joint_values>[1.6653345369377351e-16, -0.38679630641382862, 0.98920371330785406, -1.100796317509618, 0.22420370304933179, -0.23079630552348851, 1.007203714162807]</joint_values>
+<GraspPose>
+<Translation>[0.10151171698, -0.132194113525, 0.110157650511]</Translation>
+<Rotation>[-1.57870683276, 0.956621665005, 0.607695025365]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.10151171698, -0.132194113525, 0.110157650511]</Translation>
+<Rotation>[-1.57870683276, 0.956621665005, 0.607695025365]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="45">
+<joint_values>[0.0, -0.19179630367108311, 1.570796326794897, -1.1497963198369849, 1.570796326794897, 0.47020370495481811, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.052283926495, -0.125412621422, 0.00130627986903]</Translation>
+<Rotation>[1.48191893987, 0.321089588713, -2.84743327976]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.052283926495, -0.225412621422, 0.00130627986903]</Translation>
+<Rotation>[1.48191893987, 0.321089588713, -2.84743327976]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.945146833392</score>
+</Grasp>
+<Grasp Index="46">
+<joint_values>[0.0, -0.36279630853352379, 0.92320371343264873, -0.2447963061884505, 1.125203716507883, -1.113796318127068, 0.77920370985264675]</joint_values>
+<GraspPose>
+<Translation>[0.11345492587, 0.117434518371, 0.110350225023]</Translation>
+<Rotation>[1.5797715244, 0.834613013754, -0.729512240236]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.11345492587, 0.117434518371, 0.110350225023]</Translation>
+<Rotation>[1.5797715244, 0.834613013754, -0.729512240236]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="47">
+<joint_values>[0.0, -0.2417963060459602, 0.84720370982284343, -0.44779630931117748, 0.93920371093298494, -1.010796316494468, 0.88920371181774838]</joint_values>
+<GraspPose>
+<Translation>[0.100762570899, -0.131131689298, 0.110151724262]</Translation>
+<Rotation>[1.57637431208, 0.614152599275, -2.524218301]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.100762570899, -0.131131689298, 0.110151724262]</Translation>
+<Rotation>[1.57637431208, 0.614152599275, -2.524218301]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="48">
+<joint_values>[0.0, -0.37079630565386418, 0.9922037134503513, -1.0457963181568819, 0.88320371153274879, -0.30679630587366818, 1.183203716003103]</joint_values>
+<GraspPose>
+<Translation>[-0.11404551174, -0.117027129344, 0.0282549326673]</Translation>
+<Rotation>[1.55155765448, -0.739067521967, 2.41539301459]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.11404551174, -0.117027129344, 0.0282549326673]</Translation>
+<Rotation>[1.55155765448, -0.739067521967, 2.41539301459]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="49">
+<joint_values>[0.0, -0.30779630592116369, 0.90420371253018517, -1.1007963175096109, 0.87420371110527106, -0.37679630593885088, 1.1802037158606049]</joint_values>
+<GraspPose>
+<Translation>[0.105252025826, 0.124914626426, 0.0301099379928]</Translation>
+<Rotation>[1.57073397582, -0.714625797908, -0.714584938105]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.105252025826, 0.124914626426, 0.0301099379928]</Translation>
+<Rotation>[1.57073397582, -0.714625797908, -0.714584938105]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="50">
+<joint_values>[0.0, -0.30579630582617551, 0.94520371121796809, -1.1067963177945981, 0.83120370906288643, -0.42079630802874601, 1.234203715165844]</joint_values>
+<GraspPose>
+<Translation>[-0.107384182367, -0.122953913637, 0.0281944768115]</Translation>
+<Rotation>[1.5511868482, -0.724732889848, 2.4297650836]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.107384182367, -0.122953913637, 0.0281944768115]</Translation>
+<Rotation>[1.5511868482, -0.724732889848, 2.4297650836]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="51">
+<joint_values>[0.0, -0.10179630265594899, 0.82420371199003828, -0.52479630970885305, 1.1332037136282289, 0.3232037044919574, 1.4032037199332881]</joint_values>
+<GraspPose>
+<Translation>[0.060173942742, -0.149041292257, -0.000799321755567]</Translation>
+<Rotation>[1.48191893987, 0.321089588713, -2.84743327976]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.060173942742, -0.249041292257, -0.000799321755567]</Translation>
+<Rotation>[1.48191893987, 0.321089588713, -2.84743327976]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.945146833392</score>
+</Grasp>
+<Grasp Index="52">
+<joint_values>[0.0, -0.24779630633094421, 0.88020371139025499, -1.121796318507049, 0.79520371061260631, -0.44879630935866871, 1.2102037172855289]</joint_values>
+<GraspPose>
+<Translation>[-0.111800098089, -0.12014387094, 0.108838379721]</Translation>
+<Rotation>[-1.5635223022, 0.714108959306, -0.709357923879]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.111800098089, -0.12014387094, 0.108838379721]</Translation>
+<Rotation>[-1.5635223022, 0.714108959306, -0.709357923879]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="53">
+<joint_values>[0.0, -0.34679630777356019, 0.99420371354534776, -0.34179630753607843, 1.244203715640821, -1.1417963194570071, 0.6252037090572985]</joint_values>
+<GraspPose>
+<Translation>[-0.107317888814, -0.122879060374, 0.0281959448331]</Translation>
+<Rotation>[-1.5486556859, -0.845846337911, -0.741402505204]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.107317888814, -0.122879060374, 0.0281959448331]</Translation>
+<Rotation>[-1.5486556859, -0.845846337911, -0.741402505204]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="54">
+<joint_values>[0.0, -0.60079631005902467, 1.189203716288086, -0.84079631493916052, 1.3772037186983499, -0.49779630842642503, 0.62820370919979351]</joint_values>
+<GraspPose>
+<Translation>[0.101266543708, -0.131622038941, 0.0901544594539]</Translation>
+<Rotation>[1.57870683276, -0.956621665005, -2.53389762822]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.101266543708, -0.131622038941, 0.0901544594539]</Translation>
+<Rotation>[1.57870683276, -0.956621665005, -2.53389762822]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="55">
+<joint_values>[0.0, -0.30079630558867831, 0.91420371300517544, -1.031796317491914, 0.85720371029782028, -0.35779630829603659, 1.14220371405571]</joint_values>
+<GraspPose>
+<Translation>[-0.105062760737, -0.126616224501, 0.109377851913]</Translation>
+<Rotation>[-1.56900870476, 0.69005764263, -0.688920458968]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.105062760737, -0.126616224501, 0.109377851913]</Translation>
+<Rotation>[-1.56900870476, 0.69005764263, -0.688920458968]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="56">
+<joint_values>[0.0, -0.31279630615864668, 0.90820371272018907, -1.0247963171594361, 0.76520370918767922, -0.34879630786855981, 1.146203714245698]</joint_values>
+<GraspPose>
+<Translation>[0.103162611011, 0.126278411577, 0.111439041545]</Translation>
+<Rotation>[-1.58945325101, 0.694364382665, 2.43520335257]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.103162611011, 0.126278411577, 0.111439041545]</Translation>
+<Rotation>[-1.58945325101, 0.694364382665, 2.43520335257]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="57">
+<joint_values>[1.1556420425924159e-16, -0.39679630688881118, 0.97420371259539207, -1.0037963161619869, 0.98320371302287024, -0.21679630485852749, 1.058203713325548]</joint_values>
+<GraspPose>
+<Translation>[0.111645324068, 0.119235380741, 0.0301099427024]</Translation>
+<Rotation>[1.57073397582, -0.714625797908, -0.714584938105]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.111645324068, 0.119235380741, 0.0301099427024]</Translation>
+<Rotation>[1.57073397582, -0.714625797908, -0.714584938105]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="58">
+<joint_values>[0.0, -0.40579630731628602, 1.132203713580731, -0.24779630633094571, 0.96820371231040558, 0.37520370370219203, -0.109796303035925]</joint_values>
+<GraspPose>
+<Translation>[0.0379024192632, -0.156604533647, 0.00710800780059]</Translation>
+<Rotation>[1.5464984539, 0.302432980531, -2.84631398865]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0379024192632, -0.256604533647, 0.00710800780059]</Translation>
+<Rotation>[1.5464984539, 0.302432980531, -2.84631398865]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.954332885417</score>
+</Grasp>
+<Grasp Index="59">
+<joint_values>[0.0, -0.14479630469833801, 0.86720371077279412, -0.55379631108627825, 1.286203717635712, -0.79979631299176224, 1.319203719203131]</joint_values>
+<GraspPose>
+<Translation>[-0.028314606245, 0.160846603151, 0.0495526723559]</Translation>
+<Rotation>[-1.56632508851, -0.215514882241, -2.92703186544]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.028314606245, 0.260846603151, 0.0495526723559]</Translation>
+<Rotation>[-1.56632508851, -0.215514882241, -2.92703186544]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.976856651183</score>
+</Grasp>
+<Grasp Index="60">
+<joint_values>[0.0, -0.43479630869370978, 1.1592037148631691, -0.24779630633094329, 1.0602037134205431, 0.32620370463444909, -0.3067963058736643]</joint_values>
+<GraspPose>
+<Translation>[0.0600444519641, -0.148273000685, 0.133916959708]</Translation>
+<Rotation>[-1.60671692278, -0.324182538814, 0.33582378239]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0600444519641, -0.248273000685, 0.133916959708]</Translation>
+<Rotation>[-1.60671692278, -0.324182538814, 0.33582378239]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.947299958097</score>
+</Grasp>
+<Grasp Index="61">
+<joint_values>[0.0, -0.24379630614095449, 0.84420370968035419, -1.1357963191720211, 0.69720370921748098, -0.45579630969115792, 1.181203715908099]</joint_values>
+<GraspPose>
+<Translation>[0.11345492587, 0.117434518371, 0.110350225023]</Translation>
+<Rotation>[-1.57892859971, 0.736146818217, 2.39996900307]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.11345492587, 0.117434518371, 0.110350225023]</Translation>
+<Rotation>[-1.57892859971, 0.736146818217, 2.39996900307]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="62">
+<joint_values>[0.0, -0.995796315782006, 1.570796326794897, -0.26479630713840202, 1.570796326794897, 0.37020370346470649, 0.68720370874251402]</joint_values>
+<GraspPose>
+<Translation>[-0.0610002897759, 0.124347913121, 0.131140345796]</Translation>
+<Rotation>[-1.58677277061, -0.341139181099, -2.79506773507]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0610002897759, 0.224347913121, 0.131140345796]</Translation>
+<Rotation>[-1.58677277061, -0.341139181099, -2.79506773507]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.942253885281</score>
+</Grasp>
+<Grasp Index="63">
+<joint_values>[0.0, -0.066796304253164171, 0.68920370883750981, -0.72379631264159072, 1.2842037175407179, -0.59179630963155883, 1.2442037156408139]</joint_values>
+<GraspPose>
+<Translation>[-0.164849962837, 0.0109605686768, 0.049971002208]</Translation>
+<Rotation>[1.56967682642, -0.122292092663, 1.44864072337]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.264849962837, 0.0109605686768, 0.049971002208]</Translation>
+<Rotation>[1.56967682642, -0.122292092663, 1.44864072337]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="64">
+<joint_values>[0.0, -0.30079630558867859, 1.022203714875269, -0.33379630715609448, 1.0332037121381119, -0.57379630877659338, 1.12420371646038]</joint_values>
+<GraspPose>
+<Translation>[-0.041654828233, 0.159322140774, 0.0909383047626]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.041654828233, 0.259322140774, 0.0909383047626]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="65">
+<joint_values>[0.0, -0.47279630723898552, 1.1392037139132141, -0.1597963054107997, 0.84620370977534531, 0.37320370360719568, -0.17179630272113761]</joint_values>
+<GraspPose>
+<Translation>[0.0330567627327, -0.159164133297, 0.00708481497556]</Translation>
+<Rotation>[1.5464984539, 0.302432980531, -2.84631398865]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0330567627327, -0.259164133297, 0.00708481497556]</Translation>
+<Rotation>[1.5464984539, 0.302432980531, -2.84631398865]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.954332885417</score>
+</Grasp>
+<Grasp Index="66">
+<joint_values>[5.8987203898146183e-16, -0.19079630362359709, 0.87120371096278204, -0.43079630850372042, 1.0842037145604839, -0.76579631463647979, 1.2552037161632881]</joint_values>
+<GraspPose>
+<Translation>[-0.0417910941477, 0.160233691261, 0.0515001167902]</Translation>
+<Rotation>[-1.58171042635, -0.27602347486, -2.86257901211]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0417910941477, 0.260233691261, 0.0515001167902]</Translation>
+<Rotation>[-1.58171042635, -0.27602347486, -2.86257901211]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="67">
+<joint_values>[0.0, -0.36879630881850822, 1.1202037162703991, -0.28879630501871772, 1.043203712613086, -0.51879630942387278, 1.1652037151481489]</joint_values>
+<GraspPose>
+<Translation>[-0.0334618422498, 0.159432001603, 0.0915982384812]</Translation>
+<Rotation>[1.58709505468, 0.255948094907, 0.260107201437]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0334618422498, 0.259432001603, 0.0915982384812]</Translation>
+<Rotation>[1.58709505468, 0.255948094907, 0.260107201437]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96729521373</score>
+</Grasp>
+<Grasp Index="68">
+<joint_values>[0.0, -0.1097963030359288, 0.77020370942516891, -0.5197963094713608, 1.1652037151481509, -0.86679631617409303, 1.2412037154983251]</joint_values>
+<GraspPose>
+<Translation>[0.0374844670529, -0.15868089519, 0.0492874593664]</Translation>
+<Rotation>[-1.56418304229, -0.296001006432, 0.294078003809]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0374844670529, -0.25868089519, 0.0492874593664]</Translation>
+<Rotation>[-1.56418304229, -0.296001006432, 0.294078003809]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="69">
+<joint_values>[0.0, -0.26879630732839332, 0.98320371302287468, -0.47779630747645169, 1.1032037154629419, -0.34779630782105458, 1.0222037148752861]</joint_values>
+<GraspPose>
+<Translation>[-0.16275952345, 0.0188653444606, 0.0899201338872]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.26275952345, 0.0188653444606, 0.0899201338872]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="70">
+<joint_values>[1.8393797721738859e-16, -0.4277963083612305, 1.1042037155104241, -0.22379630519100269, 0.99720371368783356, -0.49579630833142418, 1.175203715623123]</joint_values>
+<GraspPose>
+<Translation>[0.057105260319, -0.151338124498, 0.049295682687]</Translation>
+<Rotation>[-1.56418304229, -0.296001006432, 0.294078003809]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.057105260319, -0.251338124498, 0.049295682687]</Translation>
+<Rotation>[-1.56418304229, -0.296001006432, 0.294078003809]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="71">
+<joint_values>[0.0, -0.41879630793375361, 1.1162037160804019, -0.40179630712629361, 1.0812037144179949, -0.21279630466853369, 0.94420371117046975]</joint_values>
+<GraspPose>
+<Translation>[-0.156744529603, 0.0467899673567, 0.0477428656221]</Translation>
+<Rotation>[1.55187192068, -0.208842950255, 1.36584106259]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.256744529603, 0.0467899673567, 0.0477428656221]</Translation>
+<Rotation>[1.55187192068, -0.208842950255, 1.36584106259]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.978096287978</score>
+</Grasp>
+<Grasp Index="72">
+<joint_values>[0.0, -1.207796319332213, 0.76920370937767701, -0.51779630937636567, 1.1682037152906399, -0.2317963055709851, 1.4432037185735489]</joint_values>
+<GraspPose>
+<Translation>[0.058272831319, -0.151532492876, 0.0274641939351]</Translation>
+<Rotation>[-1.50290408257, 1.26657926237, 0.368342200084]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.058272831319, -0.251532492876, 0.0274641939351]</Translation>
+<Rotation>[-1.50290408257, 1.26657926237, 0.368342200084]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.954081770404</score>
+</Grasp>
+<Grasp Index="73">
+<joint_values>[2.6487719510388252e-16, -0.47079630714399567, 1.0912037148929661, -0.15279630507831801, 0.86020371044031096, -0.48479630780895677, 1.1342037136757279]</joint_values>
+<GraspPose>
+<Translation>[-0.0704448333449, 0.150267640081, 0.0516560129883]</Translation>
+<Rotation>[-1.58324374908, -0.345812788916, -2.79153576945]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0704448333449, 0.250267640081, 0.0516560129883]</Translation>
+<Rotation>[-1.58324374908, -0.345812788916, -2.79153576945]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.940727377211</score>
+</Grasp>
+<Grasp Index="74">
+<joint_values>[0.0, -0.80179631308676436, 0.71720371016744133, -0.42179630807624158, 0.93120371055300166, -0.2507963064734372, 0.99320371349784009]</joint_values>
+<GraspPose>
+<Translation>[0.102873240182, -0.131965442423, 0.0263753233665]</Translation>
+<Rotation>[-1.52249456461, 0.944067493096, 0.665307072854]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.102873240182, -0.131965442423, 0.0263753233665]</Translation>
+<Rotation>[-1.52249456461, 0.944067493096, 0.665307072854]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="75">
+<joint_values>[0.0, -0.80179631308675381, 1.5707963267948959, -0.75079631392402246, 1.570796326794897, -0.34379630763107261, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.132292122404, 0.0416067641033, 0.0482056681561]</Translation>
+<Rotation>[1.55187192068, -0.208842950255, 1.36584106259]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.232292122404, 0.0416067641033, 0.0482056681561]</Translation>
+<Rotation>[1.55187192068, -0.208842950255, 1.36584106259]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.978096287978</score>
+</Grasp>
+<Grasp Index="76">
+<joint_values>[2.2204460492503131e-16, -0.015796301830797731, 0.30620370368450073, -0.32679630682361949, 1.2522037160207999, -1.141796319457006, 0.6072037082023416]</joint_values>
+<GraspPose>
+<Translation>[-0.10700759292, -0.1230287669, 0.00819300878988]</Translation>
+<Rotation>[-1.5486556859, -0.845846337911, -0.741402505204]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.10700759292, -0.1230287669, 0.00819300878988]</Translation>
+<Rotation>[-1.5486556859, -0.845846337911, -0.741402505204]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="77">
+<joint_values>[0.0, -0.1427963046033501, 0.81920371175256179, -0.6707963101242318, 1.2992037182531839, -0.48579630785645828, 1.15020371443568]</joint_values>
+<GraspPose>
+<Translation>[-0.163068251902, 0.0188941106047, 0.0504772515552]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.263068251902, 0.0188941106047, 0.0504772515552]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="78">
+<joint_values>[1.614595344895588e-16, -0.10379630275094209, 0.83320370915788144, -0.52679630980384784, 1.133203713628228, -0.87679631338943886, 1.2022037169055539]</joint_values>
+<GraspPose>
+<Translation>[0.059926910254, -0.151521376992, 0.0896054516001]</Translation>
+<Rotation>[1.57116612674, 0.316552896942, -2.82492462043]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.059926910254, -0.251521376992, 0.0896054516001]</Translation>
+<Rotation>[1.57116612674, 0.316552896942, -2.82492462043]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.950314054661</score>
+</Grasp>
+<Grasp Index="79">
+<joint_values>[0.0, -0.37379630579637102, 1.09620371513045, -0.27479630435374069, 0.99520371359283655, -0.51379630918637953, 1.111203715842928]</joint_values>
+<GraspPose>
+<Translation>[0.034555984105, -0.158926716759, 0.0892850136647]</Translation>
+<Rotation>[1.5686075525, 0.274213187776, -2.86797153961]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.034555984105, -0.258926716759, 0.0892850136647]</Translation>
+<Rotation>[1.5686075525, 0.274213187776, -2.86797153961]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962636250278</score>
+</Grasp>
+<Grasp Index="80">
+<joint_values>[1.6653345369377351e-16, -0.43079630850371831, 1.570796326794897, -0.92079631547933261, 1.5707963267948959, -0.56679631170374634, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.138019563398, 0.0152695766659, 0.0898506314705]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.238019563398, 0.0152695766659, 0.0898506314705]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="81">
+<joint_values>[2.548962284062684e-16, -1.0547963185843561, 1.570796326794897, -0.43379630864621338, 1.570796326794897, 0.1542036997245122, 1.0312037120431159]</joint_values>
+<GraspPose>
+<Translation>[0.0809599281069, -0.110564495134, 0.133927207959]</Translation>
+<Rotation>[-1.62177996237, -0.579089041262, 0.60760308623]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0809599281069, -0.110564495134, 0.133927207959]</Translation>
+<Rotation>[-1.62177996237, -0.579089041262, 0.60760308623]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="82">
+<joint_values>[1.6653345369377351e-16, -0.31279630615864967, 1.037203712328103, -0.49579630833143962, 1.1382037138657171, -0.32279630663362752, 1.046203712755583]</joint_values>
+<GraspPose>
+<Translation>[0.15972109066, -0.0239705119053, 0.0898953308344]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.25972109066, -0.0239705119053, 0.0898953308344]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="83">
+<joint_values>[0.0, -0.041796303065728457, 0.5342037047350302, -1.1387963193145121, 0.66620370774505433, -0.4397963089311937, 1.1962037166205719]</joint_values>
+<GraspPose>
+<Translation>[0.114555236414, 0.116243676822, 0.1305521874]</Translation>
+<Rotation>[-1.58113230386, 0.749544493655, 2.38497942858]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.114555236414, 0.116243676822, 0.1305521874]</Translation>
+<Rotation>[-1.58113230386, 0.749544493655, 2.38497942858]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="84">
+<joint_values>[1.5442665561541269e-16, -0.81779631384671458, 1.570796326794897, -0.39179630665132059, 1.570796326794897, 0.33420370175479652, 0.98420371307036647]</joint_values>
+<GraspPose>
+<Translation>[0.0520811016748, -0.124590501733, 0.133065904163]</Translation>
+<Rotation>[-1.60671692278, -0.324182538814, 0.33582378239]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0520811016748, -0.224590501733, 0.133065904163]</Translation>
+<Rotation>[-1.60671692278, -0.324182538814, 0.33582378239]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.947299958097</score>
+</Grasp>
+<Grasp Index="85">
+<joint_values>[0.0, -0.94379631657176699, 1.570796326794897, -0.86479631607909757, 1.570796326794897, -0.95879631728422865, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.0860677832701, -0.110291830731, 0.110035478632]</Translation>
+<Rotation>[1.57870683276, -0.956621665005, -2.53389762822]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0860677832701, -0.110291830731, 0.110035478632]</Translation>
+<Rotation>[1.57870683276, -0.956621665005, -2.53389762822]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="86">
+<joint_values>[0.0, -0.59679630986904153, 1.2052037170480481, -1.0037963161619881, 1.0192037147327759, -0.2227963051435124, 1.063203713563035]</joint_values>
+<GraspPose>
+<Translation>[0.111581228544, 0.119159846884, 0.050109947412]</Translation>
+<Rotation>[1.57073397582, -0.714625797908, -0.714584938105]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.111581228544, 0.119159846884, 0.050109947412]</Translation>
+<Rotation>[1.57073397582, -0.714625797908, -0.714584938105]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="87">
+<joint_values>[0.0, -0.13479630422336161, 0.85520371020282759, -0.5157963092813812, 1.193203716478072, -0.63779631181643792, 1.2982037182056809]</joint_values>
+<GraspPose>
+<Translation>[0.0343393524074, -0.158200382665, 0.109286699262]</Translation>
+<Rotation>[-1.5686075525, -0.274213187776, 0.27362111398]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0343393524074, -0.258200382665, 0.109286699262]</Translation>
+<Rotation>[-1.5686075525, -0.274213187776, 0.27362111398]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962636250278</score>
+</Grasp>
+<Grasp Index="88">
+<joint_values>[0.0, -0.055796303730695447, 0.73820370790525047, -0.83379631460667503, 1.2062037170955431, -0.5947963097740373, 1.2442037156408119]</joint_values>
+<GraspPose>
+<Translation>[-0.156123142129, 0.0509349398078, 0.0935301464325]</Translation>
+<Rotation>[-1.60249342017, 0.240485253729, -1.81894963759]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.256123142129, 0.0509349398078, 0.0935301464325]</Translation>
+<Rotation>[-1.60249342017, 0.240485253729, -1.81894963759]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.970734658846</score>
+</Grasp>
+<Grasp Index="89">
+<joint_values>[1.173097363379447e-16, -0.54579631070629742, 0.56520370620745841, -0.31779630639613698, 0.67020370793505823, -0.2197963050010168, 0.83120370906288843]</joint_values>
+<GraspPose>
+<Translation>[0.119430719414, 0.124029745346, 0.110403860391]</Translation>
+<Rotation>[1.57892859971, -0.736146818217, -0.741623650516]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.119430719414, 0.124029745346, 0.110403860391]</Translation>
+<Rotation>[1.57892859971, -0.736146818217, -0.741623650516]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="90">
+<joint_values>[0.0, -0.54179631051630872, 1.1692037153381409, -1.0527963184893609, 0.95020371145545124, -0.31679630634863709, 1.177203715718119]</joint_values>
+<GraspPose>
+<Translation>[-0.114848851725, -0.117239914304, 0.0493106366742]</Translation>
+<Rotation>[1.56246569376, -0.743881987014, 2.40333453132]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.114848851725, -0.117239914304, 0.0493106366742]</Translation>
+<Rotation>[1.56246569376, -0.743881987014, 2.40333453132]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="91">
+<joint_values>[0.0, -0.024796302258270661, 0.6812037084575262, -0.57679630891909228, 1.1302037134857399, -0.92379631562182218, 1.021203714827789]</joint_values>
+<GraspPose>
+<Translation>[-0.070200713033, 0.150579452377, 0.111554362347]</Translation>
+<Rotation>[1.58677277061, 0.341139181099, 0.34652491852]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.070200713033, 0.250579452377, 0.111554362347]</Translation>
+<Rotation>[1.58677277061, 0.341139181099, 0.34652491852]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.942253885281</score>
+</Grasp>
+<Grasp Index="92">
+<joint_values>[1.8260291922081779e-16, -0.07279630127852002, 0.6872037087425108, -0.60979631048650573, 1.249203715878302, -0.8057963132767465, 1.2782037172557299]</joint_values>
+<GraspPose>
+<Translation>[0.0160577314143, -0.162362915533, 0.0500691104189]</Translation>
+<Rotation>[-1.57042772959, -0.170289630485, 0.170227176472]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0160577314143, -0.262362915533, 0.0500691104189]</Translation>
+<Rotation>[-1.57042772959, -0.170289630485, 0.170227176472]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.985535658257</score>
+</Grasp>
+<Grasp Index="93">
+<joint_values>[0.0, -0.22079630504851211, 0.95220371155044692, -0.50679630885390436, 1.1372037138182221, -0.40779630741127831, 1.0812037144179849]</joint_values>
+<GraspPose>
+<Translation>[0.159241298043, -0.0278581141223, 0.0281200968403]</Translation>
+<Rotation>[-1.55522279094, 0.176702414433, 1.39681072288]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.259241298043, -0.0278581141223, 0.0281200968403]</Translation>
+<Rotation>[-1.55522279094, 0.176702414433, 1.39681072288]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.984309331063</score>
+</Grasp>
+<Grasp Index="94">
+<joint_values>[1.6653345369377351e-16, -0.66579631314636312, 1.1912037163830831, -1.0917963170821341, 0.8512037100128349, -0.22979630547599089, 1.0042037140203139]</joint_values>
+<GraspPose>
+<Translation>[0.101554676816, -0.132030663644, 0.0901567387801]</Translation>
+<Rotation>[-1.57870683276, 0.956621665005, 0.607695025365]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.101554676816, -0.132030663644, 0.0901567387801]</Translation>
+<Rotation>[-1.57870683276, 0.956621665005, 0.607695025365]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="95">
+<joint_values>[2.460777216339825e-16, -0.026796302353263579, 0.64920370693760698, -0.60479631024901548, 1.2162037175705129, -0.92079631547932883, 1.2202037177605041]</joint_values>
+<GraspPose>
+<Translation>[0.0296363068155, -0.160792363695, 0.0298088542547]</Translation>
+<Rotation>[-1.5683575785, -0.274700082738, 0.274039327273]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0296363068155, -0.260792363695, 0.0298088542547]</Translation>
+<Rotation>[-1.5683575785, -0.274700082738, 0.274039327273]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962503733706</score>
+</Grasp>
+<Grasp Index="96">
+<joint_values>[2.3194824886236271e-16, -0.14379630465083951, 0.88420371158024558, -0.54979631089629022, 1.278203717255735, -0.69979631150164656, 1.375203718603351]</joint_values>
+<GraspPose>
+<Translation>[-0.0302666438183, 0.159554135495, 0.111849611593]</Translation>
+<Rotation>[-1.58903425703, -0.231032283971, -2.90634668861]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0302666438183, 0.259554135495, 0.111849611593]</Translation>
+<Rotation>[-1.58903425703, -0.231032283971, -2.90634668861]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.973268650962</score>
+</Grasp>
+<Grasp Index="97">
+<joint_values>[0.0, -0.44779630931117698, 1.1802037158606089, -1.040796317919392, 0.93220371060049922, -0.36479630862851797, 1.16520371514815]</joint_values>
+<GraspPose>
+<Translation>[-0.104637499643, -0.126153499619, 0.0893786790913]</Translation>
+<Rotation>[-1.56900870476, 0.69005764263, -0.688920458968]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.104637499643, -0.126153499619, 0.0893786790913]</Translation>
+<Rotation>[-1.56900870476, 0.69005764263, -0.688920458968]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="98">
+<joint_values>[0.0, -0.30479630577866279, 1.058203713325554, -0.4437963091211915, 1.1322037135807359, -0.33979630744108458, 1.0542037131355619]</joint_values>
+<GraspPose>
+<Translation>[0.158985471187, -0.0224656729349, 0.0281384933407]</Translation>
+<Rotation>[-1.55522279094, 0.176702414433, 1.39681072288]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.258985471187, -0.0224656729349, 0.0281384933407]</Translation>
+<Rotation>[-1.55522279094, 0.176702414433, 1.39681072288]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.984309331063</score>
+</Grasp>
+<Grasp Index="99">
+<joint_values>[1.732136283058398e-16, -0.51179630909138618, 1.049203712898068, -0.25479630666342978, 1.0312037120431179, 0.15520369977201121, -0.1277963038908832]</joint_values>
+<GraspPose>
+<Translation>[0.0946414712707, -0.131461345022, 0.134993529407]</Translation>
+<Rotation>[-1.62177996237, -0.579089041262, 0.60760308623]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0946414712707, -0.131461345022, 0.134993529407]</Translation>
+<Rotation>[-1.62177996237, -0.579089041262, 0.60760308623]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="100">
+<joint_values>[0.0, -0.1077963029409298, 0.7782037098051463, -0.51179630909138363, 1.151203714483185, -0.86679631617409292, 1.239203715403332]</joint_values>
+<GraspPose>
+<Translation>[0.0375136368017, -0.158644275873, 0.0292868268032]</Translation>
+<Rotation>[-1.56418304229, -0.296001006432, 0.294078003809]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0375136368017, -0.258644275873, 0.0292868268032]</Translation>
+<Rotation>[-1.56418304229, -0.296001006432, 0.294078003809]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="101">
+<joint_values>[0.0, -0.30779630592116541, 1.011203714352803, -0.45079630945367011, 0.93220371060049623, -1.0047963162094891, 0.87520371115277962]</joint_values>
+<GraspPose>
+<Translation>[0.100920783978, -0.131131689298, 0.0901517242624]</Translation>
+<Rotation>[1.57637431208, 0.614152599275, -2.524218301]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.100920783978, -0.131131689298, 0.0901517242624]</Translation>
+<Rotation>[1.57637431208, 0.614152599275, -2.524218301]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="102">
+<joint_values>[0.0, -0.49479630828392712, 1.1972037166680589, -1.0487963182993709, 0.86020371044030852, -0.32979630696610768, 1.1372037138182189]</joint_values>
+<GraspPose>
+<Translation>[0.105684726901, 0.124334772948, 0.0898951368055]</Translation>
+<Rotation>[-1.5742001277, 0.719668257168, 2.41967795495]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.105684726901, 0.124334772948, 0.0898951368055]</Translation>
+<Rotation>[-1.5742001277, 0.719668257168, 2.41967795495]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="103">
+<joint_values>[0.0, -0.096796302418462099, -0.12679630384338289, -0.53979631042131404, 1.1392037139132161, -0.68679631088418502, 1.2822037174457139]</joint_values>
+<GraspPose>
+<Translation>[0.0580935175939, -0.150960043779, 0.0274763866856]</Translation>
+<Rotation>[1.54950027215, 0.303493840844, -2.84439946417]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0580935175939, -0.250960043779, 0.0274763866856]</Translation>
+<Rotation>[1.54950027215, 0.303493840844, -2.84439946417]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.954081770404</score>
+</Grasp>
+<Grasp Index="104">
+<joint_values>[0.0, -0.27179630421124579, 1.013203714447801, -0.6157963107714981, 1.2532037160682961, -0.37079630565388771, 1.110203715795409]</joint_values>
+<GraspPose>
+<Translation>[0.157241989984, -0.0337799476405, 0.0908613711133]</Translation>
+<Rotation>[-1.58112430538, 0.224692939231, 1.34379057869]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.257241989984, -0.0337799476405, 0.0908613711133]</Translation>
+<Rotation>[-1.58112430538, 0.224692939231, 1.34379057869]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.974810575884</score>
+</Grasp>
+<Grasp Index="105">
+<joint_values>[0.0, -0.21579630481102141, 0.90920371276769363, -0.63079631148395909, 1.273203717018254, -0.40879630745878559, 1.1062037156054241]</joint_values>
+<GraspPose>
+<Translation>[0.159137205778, -0.0292079002468, 0.0504526685436]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.259137205778, -0.0292079002468, 0.0504526685436]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="106">
+<joint_values>[0.0, -0.043796303160721112, 0.59120370744236561, -0.64579631219641709, 1.196203716620571, -0.54479631065880385, 1.1082037157004161]</joint_values>
+<GraspPose>
+<Translation>[-0.166546426959, 0.0135323274803, 0.110364065385]</Translation>
+<Rotation>[1.57691409674, -0.139787081875, 1.43015424967]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.266546426959, 0.0135323274803, 0.110364065385]</Translation>
+<Rotation>[1.57691409674, -0.139787081875, 1.43015424967]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.990227154067</score>
+</Grasp>
+<Grasp Index="107">
+<joint_values>[0.0, -0.19279630371858489, 0.91220371291017888, -0.44479630916868568, 1.124203716460386, -0.62379631115147238, 1.2572037162582841]</joint_values>
+<GraspPose>
+<Translation>[-0.0443355293565, 0.157877882504, 0.112047838403]</Translation>
+<Rotation>[-1.59066799903, -0.298010832242, -2.83769098742]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0443355293565, 0.257877882504, 0.112047838403]</Translation>
+<Rotation>[-1.59066799903, -0.298010832242, -2.83769098742]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.955733705253</score>
+</Grasp>
+<Grasp Index="108">
+<joint_values>[0.0, -0.046796303303213709, 0.62620370910480139, -1.104796317699603, 0.77820370980515297, -0.46079630992864562, 1.2162037175705069]</joint_values>
+<GraspPose>
+<Translation>[-0.109390911875, -0.122301374808, 0.129378679091]</Translation>
+<Rotation>[-1.56900870476, 0.69005764263, -0.688920458968]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.109390911875, -0.122301374808, 0.129378679091]</Translation>
+<Rotation>[-1.56900870476, 0.69005764263, -0.688920458968]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="109">
+<joint_values>[0.0, -0.25479630666342751, 1.016203714590282, -0.39679630688880568, 1.1042037155104401, -0.50279630866390823, 1.138203713865714]</joint_values>
+<GraspPose>
+<Translation>[-0.033458106439, 0.159631179694, 0.0295526723559]</Translation>
+<Rotation>[1.56632508851, 0.215514882241, 0.214560788151]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.033458106439, 0.259631179694, 0.0295526723559]</Translation>
+<Rotation>[1.56632508851, 0.215514882241, 0.214560788151]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.976856651183</score>
+</Grasp>
+<Grasp Index="110">
+<joint_values>[1.665745010468917e-16, -0.30679630587366791, 0.64620370679511463, -0.63779631181644014, 1.2042037170005511, -0.44579630921618368, 0.86420371063029788]</joint_values>
+<GraspPose>
+<Translation>[-0.00135146826008, -0.00408375776668, -0.129633007599]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.63689415884e-05]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00135146826008, -0.00408375776668, -0.229633007599]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.63689415884e-05]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="111">
+<joint_values>[0.0, -0.43079630850372053, 1.089203714797969, -0.3357963072510915, 1.048203712850575, -0.19579630386107891, 0.92120371333764883]</joint_values>
+<GraspPose>
+<Translation>[-0.158917524953, 0.0406836916341, 0.0698285534844]</Translation>
+<Rotation>[1.5729049999, -0.15913199334, 1.4113298422]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.258917524953, 0.0406836916341, 0.0698285534844]</Translation>
+<Rotation>[1.5729049999, -0.15913199334, 1.4113298422]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.987363005557</score>
+</Grasp>
+<Grasp Index="112">
+<joint_values>[0.0, -0.29879630549368502, 1.069203713848025, -0.35579630820104241, 1.0802037143704999, -0.44979630940617288, 1.136203713770719]</joint_values>
+<GraspPose>
+<Translation>[-0.0233806194554, 0.160767796531, 0.0290230053753]</Translation>
+<Rotation>[1.56212631503, 0.177771067176, 0.176244399712]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0233806194554, 0.260767796531, 0.0290230053753]</Translation>
+<Rotation>[1.56212631503, 0.177771067176, 0.176244399712]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.984203301415</score>
+</Grasp>
+<Grasp Index="113">
+<joint_values>[0.0, -0.44479630916868462, 1.2022037169055479, -1.0987963174146129, 0.97420371259538951, -0.41179630760126462, 1.221203717808012]</joint_values>
+<GraspPose>
+<Translation>[-0.106721488504, -0.124113213872, 0.0493949413701]</Translation>
+<Rotation>[1.5635223022, -0.714108959306, 2.43223472971]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.106721488504, -0.124113213872, 0.0493949413701]</Translation>
+<Rotation>[1.5635223022, -0.714108959306, 2.43223472971]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="114">
+<joint_values>[0.0, -0.091796302180970124, 0.67120370798254958, -0.60479631024901737, 1.2492037158783049, -0.72079631249909448, 1.2812037173982169]</joint_values>
+<GraspPose>
+<Translation>[0.00696253297329, -0.162730951765, 0.069494332062]</Translation>
+<Rotation>[-1.5702862019, -0.100041768667, 0.0999908328813]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.00696253297329, -0.262730951765, 0.069494332062]</Translation>
+<Rotation>[-1.5702862019, -0.100041768667, 0.0999908328813]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.994999865038</score>
+</Grasp>
+<Grasp Index="115">
+<joint_values>[0.0, -0.1397963044608472, 0.86120371048781097, -0.63079631148395565, 1.278203717255737, -0.48879630799895302, 1.159203714863162]</joint_values>
+<GraspPose>
+<Translation>[0.159471932763, -0.0239332530227, 0.109894813461]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.259471932763, -0.0239332530227, 0.109894813461]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="116">
+<joint_values>[0.0, -0.30279630568367683, 0.65420370717509602, -0.51379630918638086, 0.98020371288037833, -0.59579630982154452, 1.149203714388187]</joint_values>
+<GraspPose>
+<Translation>[-9.3077642294e-05, 0.00250280156777, -0.129575650315]</Translation>
+<Rotation>[0.0176342036104, -0.00488327784375, -4.30575592362e-05]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-9.3077642294e-05, 0.00250280156777, -0.229575650315]</Translation>
+<Rotation>[0.0176342036104, -0.00488327784375, -4.30575592362e-05]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999832600137</score>
+</Grasp>
+<Grasp Index="117">
+<joint_values>[0.0, -0.1007963026084505, 0.82820371218001543, -0.5277963098513444, 1.1542037146256769, -0.87579631334194052, 1.1982037167155759]</joint_values>
+<GraspPose>
+<Translation>[0.0599580395146, -0.15160901184, 0.109605486743]</Translation>
+<Rotation>[1.57116612674, 0.316552896942, -2.82492462043]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0599580395146, -0.25160901184, 0.109605486743]</Translation>
+<Rotation>[1.57116612674, 0.316552896942, -2.82492462043]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.950314054661</score>
+</Grasp>
+<Grasp Index="118">
+<joint_values>[0.0, -0.37779630598635711, 1.1032037154629371, -0.2737963043062478, 0.98220371297536413, -0.51379630918638064, 1.12820371665038]</joint_values>
+<GraspPose>
+<Translation>[0.0345356745451, -0.158572734667, 0.0692544051842]</Translation>
+<Rotation>[1.5683575785, 0.274700082738, -2.86755332632]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0345356745451, -0.258572734667, 0.0692544051842]</Translation>
+<Rotation>[1.5683575785, 0.274700082738, -2.86755332632]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962503733706</score>
+</Grasp>
+<Grasp Index="119">
+<joint_values>[4.4432587123447326e-16, -0.45079630945367088, 0.89120371191272707, -0.2997963055411873, 0.67020370793504702, -0.43179630855121631, 0.88020371139025866]</joint_values>
+<GraspPose>
+<Translation>[-0.00533557104757, -0.00450356848297, 0.268800861851]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00533557104757, -0.00450356848297, 0.368800861851]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="120">
+<joint_values>[1.6394293750772701e-16, -0.30679630587366591, 1.1252037165078801, -0.35979630839103022, 1.1282037166503649, -0.45479630964365941, 1.1512037144831839]</joint_values>
+<GraspPose>
+<Translation>[0.00662295803181, -0.159358152789, 0.0894960578145]</Translation>
+<Rotation>[1.5702862019, 0.100041768667, -3.04160182071]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.00662295803181, -0.259358152789, 0.0894960578145]</Translation>
+<Rotation>[1.5702862019, 0.100041768667, -3.04160182071]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.994999865038</score>
+</Grasp>
+<Grasp Index="121">
+<joint_values>[0.0, -0.05179630354069989, 0.73920370795275447, -0.8447963151291481, 1.2282037181404919, -0.60779631039150717, 1.2732037170182471]</joint_values>
+<GraspPose>
+<Translation>[-0.155780206377, 0.0510063919954, 0.113539380366]</Translation>
+<Rotation>[-1.60249342017, 0.240485253729, -1.81894963759]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.255780206377, 0.0510063919954, 0.113539380366]</Translation>
+<Rotation>[-1.60249342017, 0.240485253729, -1.81894963759]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.970734658846</score>
+</Grasp>
+<Grasp Index="122">
+<joint_values>[0.0, -0.51779630937637022, 1.0572037132780481, -0.3617963084860254, 0.67720370826753895, 0.1062037007042667, -0.1277963038908754]</joint_values>
+<GraspPose>
+<Translation>[-0.0043405209053, 0.0248763725244, 0.268461489855]</Translation>
+<Rotation>[3.12979060331, 0.0359543661394, 0.936514609954]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0043405209053, 0.0248763725244, 0.368461489855]</Translation>
+<Rotation>[3.12979060331, 0.0359543661394, 0.936514609954]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999284113027</score>
+</Grasp>
+<Grasp Index="123">
+<joint_values>[1.661973894316977e-16, -0.39279630669881588, 1.142203714055706, -0.27279630425874951, 1.0382037123756001, -0.51679630932887477, 1.178203715765606]</joint_values>
+<GraspPose>
+<Translation>[-0.035884504831, 0.158784628639, 0.0709141530196]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.035884504831, 0.258784628639, 0.0709141530196]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="124">
+<joint_values>[0.0, -0.79579631280177154, 1.570796326794897, -0.4327963085987187, 1.570796326794897, -1.041796317966891, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.0290712095171, 0.134732391929, 0.07065163409]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0290712095171, 0.234732391929, 0.07065163409]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="125">
+<joint_values>[0.0, -0.20779630443104841, 0.94620371126545888, -0.5517963109912839, 1.176203715670622, -0.42979630845622308, 1.1222037163653891]</joint_values>
+<GraspPose>
+<Translation>[0.157620309019, -0.0339136318672, 0.110867412022]</Translation>
+<Rotation>[1.58112430538, -0.224692939231, -1.7978020749]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.257620309019, -0.0339136318672, 0.110867412022]</Translation>
+<Rotation>[1.58112430538, -0.224692939231, -1.7978020749]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.974810575884</score>
+</Grasp>
+<Grasp Index="126">
+<joint_values>[0.0, -0.25379630661592922, 0.53420370473502954, -0.36179630848602601, 0.72020371030992236, -0.66979631333635425, 1.234203715165844]</joint_values>
+<GraspPose>
+<Translation>[-0.000191245864526, -0.00450284880581, 0.268979641476]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.000191245864526, -0.00450284880581, 0.368979641476]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="127">
+<joint_values>[1.7511905932133339e-16, -0.96179631742672234, 0.84720370982284532, -0.1677963057907785, 0.86220371053530898, -0.81179631356172788, 1.3322037165609579]</joint_values>
+<GraspPose>
+<Translation>[0.141573284766, -0.0903999777818, 0.0502017732309]</Translation>
+<Rotation>[1.57210547426, 1.05476557919, -2.08568803019]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.241573284766, -0.0903999777818, 0.0502017732309]</Translation>
+<Rotation>[1.57210547426, 1.05476557919, -2.08568803019]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.869784580955</score>
+</Grasp>
+<Grasp Index="128">
+<joint_values>[1.93005894088112e-16, -0.96379631752171568, 1.5707963267948959, -0.29979630554118047, 1.570796326794897, -0.54779631080129443, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.0226920949189, -0.136152268076, 0.029868945365]</Translation>
+<Rotation>[1.5683575785, 0.274700082738, -2.86755332632]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0226920949189, -0.236152268076, 0.029868945365]</Translation>
+<Rotation>[1.5683575785, 0.274700082738, -2.86755332632]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962503733706</score>
+</Grasp>
+<Grasp Index="129">
+<joint_values>[0.0, -0.48179630766645948, 1.1192037162228929, -0.15779630531580291, 0.89320371200772386, -0.48579630785644717, 1.163203715053154]</joint_values>
+<GraspPose>
+<Translation>[-0.0699549012612, 0.149439638279, 0.0711990106545]</Translation>
+<Rotation>[-1.58410966989, -0.343760353775, -2.79331694847]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0699549012612, 0.249439638279, 0.0711990106545]</Translation>
+<Rotation>[-1.58410966989, -0.343760353775, -2.79331694847]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.941410537281</score>
+</Grasp>
+<Grasp Index="130">
+<joint_values>[1.590431413412037e-16, -0.23479630571347779, 0.49620370618975418, -0.59179630963155383, 1.1292037166978639, -0.52579630975635028, 0.98320371302287091]</joint_values>
+<GraspPose>
+<Translation>[-0.000191658359074, 0.000678291373252, 0.26886099789]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.000191658359074, 0.000678291373252, 0.36886099789]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="131">
+<joint_values>[1.6653345369377351e-16, -0.31379630620613569, 1.0482037128505679, -0.4977963084264323, 1.140203713960716, -0.32679630682361033, 1.051203712993066]</joint_values>
+<GraspPose>
+<Translation>[0.159479003246, -0.0239146235814, 0.0698945547739]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.259479003246, -0.0239146235814, 0.0698945547739]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="132">
+<joint_values>[1.3962871761585539e-16, -0.39179630665132043, 0.81020371132507019, -0.22179630509601, 0.48020370542979463, -0.52779630985134418, 1.011203714352797]</joint_values>
+<GraspPose>
+<Translation>[-0.00649496845403, -0.00408375776668, -0.129608335001]</Translation>
+<Rotation>[-0.00682506229102, -0.0047966878438, -3.14157628465]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00649496845403, -0.00408375776668, -0.229608335001]</Translation>
+<Rotation>[-0.00682506229102, -0.0047966878438, -3.14157628465]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="133">
+<joint_values>[0.0, -0.41779630788625732, 0.833203709157881, -0.46779631026112689, 0.94120371102797729, -0.24879630637844441, 0.54220370511500782]</joint_values>
+<GraspPose>
+<Translation>[-0.00649448878705, -0.0040844402598, -0.129508338475]</Translation>
+<Rotation>[-0.00479679956265, 0.0068249837737, -1.57081269593]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00649448878705, -0.0040844402598, -0.229508338475]</Translation>
+<Rotation>[-0.00479679956265, 0.0068249837737, -1.57081269593]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="134">
+<joint_values>[0.0, -0.1337963041758711, 0.79920371080259123, -0.72079631249908827, 1.3022037183956809, -0.47379630728647049, 1.118203716175419]</joint_values>
+<GraspPose>
+<Translation>[0.16090568492, -0.0241754357596, 0.0504547380382]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.26090568492, -0.0241754357596, 0.0504547380382]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="135">
+<joint_values>[0.0, -0.43379630864621332, 0.864203710630296, -0.39579630684131228, 0.83520370925287724, -0.38579630636633838, 0.79520371061261186]</joint_values>
+<GraspPose>
+<Translation>[-0.00019207085362, -0.00450356848297, 0.26877964446]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00019207085362, -0.00450356848297, 0.36877964446]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="136">
+<joint_values>[0.0, -0.27479630435374403, 0.99620371364033145, -0.47879630752397462, 1.1172037161279049, -0.34979630791606048, 1.0282037151602561]</joint_values>
+<GraspPose>
+<Translation>[-0.162617790448, 0.0188365783164, 0.0699195778678]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.262617790448, 0.0188365783164, 0.0699195778678]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="137">
+<joint_values>[2.2204460492503131e-16, -1.036796317729402, 1.570796326794897, -0.33279630710860209, 1.570796326794897, 0.084203699659326378, 0.76120370899769607]</joint_values>
+<GraspPose>
+<Translation>[0.100781249662, 0.103492646342, 0.00669242452767]</Translation>
+<Rotation>[1.52551360948, 0.83349527966, -0.770323144026]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.100781249662, 0.103492646342, 0.00669242452767]</Translation>
+<Rotation>[1.52551360948, 0.83349527966, -0.770323144026]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="138">
+<joint_values>[0.0, -0.1447963046983376, 0.8582037103453164, -0.53579631023132368, 1.2752037171132331, -0.76079631439899231, 1.3352037167034569]</joint_values>
+<GraspPose>
+<Translation>[-0.0235574556755, 0.161751999894, 0.0290144721067]</Translation>
+<Rotation>[-1.56212631503, -0.177771067176, -2.96534825388]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0235574556755, 0.261751999894, 0.0290144721067]</Translation>
+<Rotation>[-1.56212631503, -0.177771067176, -2.96534825388]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.984203301415</score>
+</Grasp>
+<Grasp Index="139">
+<joint_values>[0.0, -0.29879630549368452, 0.60120370791735689, -0.5487963108487941, 1.0852037146079769, -0.48179630766646642, 0.98020371288038088]</joint_values>
+<GraspPose>
+<Translation>[-9.35659681652e-05, 0.00250103825971, -0.129475667049]</Translation>
+<Rotation>[0.00488403719465, 0.0176339933329, -1.57075326305]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-9.35659681652e-05, 0.00250103825971, -0.229475667049]</Translation>
+<Rotation>[0.00488403719465, 0.0176339933329, -1.57075326305]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999832600137</score>
+</Grasp>
+<Grasp Index="140">
+<joint_values>[0.0, -0.36279630853352351, 0.73920370795275048, -0.51379630918638219, 0.98220371297536679, -0.40779630741127981, 0.8602037104403103]</joint_values>
+<GraspPose>
+<Translation>[-0.00533557104758, 0.000677931534674, 0.268782216773]</Translation>
+<Rotation>[-3.13746766996, -0.00359839332234, 3.00544032306]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00533557104758, 0.000677931534674, 0.368782216773]</Translation>
+<Rotation>[-3.13746766996, -0.00359839332234, 3.00544032306]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="141">
+<joint_values>[0.0, -0.42779630836122989, 1.089203714797973, -0.22779630538099491, 0.9982037137353329, -0.49379630823643123, 1.173203715528129]</joint_values>
+<GraspPose>
+<Translation>[0.0571344300678, -0.151562363046, 0.0687384884751]</Translation>
+<Rotation>[-1.56418304229, -0.296001006432, 0.294078003809]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0571344300678, -0.251562363046, 0.0687384884751]</Translation>
+<Rotation>[-1.56418304229, -0.296001006432, 0.294078003809]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="142">
+<joint_values>[1.3531438329900649e-16, -0.3127963061586535, 1.07320371403801, -0.34779630782106141, 1.089203714797969, -0.58279630920407755, 1.1802037158606209]</joint_values>
+<GraspPose>
+<Translation>[-0.0411642709397, 0.157808669527, 0.0709194033985]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0411642709397, 0.257808669527, 0.0709194033985]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="143">
+<joint_values>[0.0, -0.2357963057609741, 0.96920371235790659, -0.57779630896657386, 1.1782037157656171, -0.39979630703129138, 1.099203715272961]</joint_values>
+<GraspPose>
+<Translation>[0.158889512852, -0.0291706413642, 0.0698955895212]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.258889512852, -0.0291706413642, 0.0698955895212]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="144">
+<joint_values>[1.191258666688975e-16, -0.34379630763107139, 0.70720370969245516, -0.54879631084879399, 1.031203712043117, -0.23679630580847269, 0.537203704877522]</joint_values>
+<GraspPose>
+<Translation>[-0.00533557104757, -0.00450356848297, 0.268800861851]</Translation>
+<Rotation>[-3.13746766996, -0.00359839332234, 3.00544032306]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00533557104757, -0.00450356848297, 0.368800861851]</Translation>
+<Rotation>[-3.13746766996, -0.00359839332234, 3.00544032306]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="145">
+<joint_values>[0.0, -0.41679630783876948, 0.83020370901538842, -0.42279630812374819, 0.8612037104878062, -0.35979630839103388, 0.75020370847522255]</joint_values>
+<GraspPose>
+<Translation>[-0.00135146826008, -0.00408375776668, -0.129633007599]</Translation>
+<Rotation>[-0.00479679956265, 0.0068249837737, -1.57081269593]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00135146826008, -0.00408375776668, -0.229633007599]</Translation>
+<Rotation>[-0.00479679956265, 0.0068249837737, -1.57081269593]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="146">
+<joint_values>[1.1162706700466599e-16, -0.26179630699590889, 0.56620370625494643, -0.34979630791605709, 0.72520371054741517, -0.64179631200642495, 1.189203716288088]</joint_values>
+<GraspPose>
+<Translation>[-0.00135146826008, -0.00408375776668, -0.129633007599]</Translation>
+<Rotation>[-0.00682506229102, -0.0047966878438, -3.14157628465]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00135146826008, -0.00408375776668, -0.229633007599]</Translation>
+<Rotation>[-0.00682506229102, -0.0047966878438, -3.14157628465]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="147">
+<joint_values>[1.6653345369377351e-16, -0.3557963082010413, 1.096203715130448, -0.41479630774375831, 1.111203715842924, -0.27979630459124161, 1.0032037139728209]</joint_values>
+<GraspPose>
+<Translation>[-0.161985444247, 0.0134537152897, 0.0699156857322]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.261985444247, 0.0134537152897, 0.0699156857322]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="148">
+<joint_values>[0.0, -0.074796301373508151, 0.63520370627264222, -0.45579630969115692, 1.0052037140678169, -0.97879631497454489, 0.87320371105778816]</joint_values>
+<GraspPose>
+<Translation>[0.0959001733203, -0.133383855331, 0.135091630986]</Translation>
+<Rotation>[1.62177996237, 0.579089041262, -2.53398956736]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0959001733203, -0.133383855331, 0.135091630986]</Translation>
+<Rotation>[1.62177996237, 0.579089041262, -2.53398956736]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="149">
+<joint_values>[1.6653345369377351e-16, -1.218796319854681, 1.570796326794897, -0.55779631127626761, 1.570796326794897, 0.11920370132173951, 1.243203715593314]</joint_values>
+<GraspPose>
+<Translation>[-0.0871555522958, -0.109561681538, 0.131030675148]</Translation>
+<Rotation>[-1.59302879117, -0.9069412412, -0.646223251621]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0871555522958, -0.109561681538, 0.131030675148]</Translation>
+<Rotation>[-1.59302879117, -0.9069412412, -0.646223251621]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="150">
+<joint_values>[0.0, -0.35279630805855211, 1.1162037160804019, -0.37979630608133658, 1.116203716080415, -0.30179630563616638, 1.0232037149227751]</joint_values>
+<GraspPose>
+<Translation>[-0.161849978749, 0.0105946061533, 0.0299743356261]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.261849978749, 0.0105946061533, 0.0299743356261]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="151">
+<joint_values>[0.0, -1.0097963164469721, 1.570796326794897, -0.63579631172143847, 1.570796326794897, 0.1162037011792455, 1.3112037188231449]</joint_values>
+<GraspPose>
+<Translation>[0.0895217938094, 0.103045796963, 0.00693284382771]</Translation>
+<Rotation>[1.52551360948, 0.83349527966, -0.770323144026]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0895217938094, 0.103045796963, 0.00693284382771]</Translation>
+<Rotation>[1.52551360948, 0.83349527966, -0.770323144026]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="152">
+<joint_values>[0.0, -0.13779630436586229, 0.81720371165752637, -0.69879631145413657, 1.259203716353277, -0.467796310261124, 1.1272037166028921]</joint_values>
+<GraspPose>
+<Translation>[0.160757228094, -0.0227820846896, 0.0281108985901]</Translation>
+<Rotation>[1.55522279094, -0.176702414433, -1.74478193071]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.260757228094, -0.0227820846896, 0.0281108985901]</Translation>
+<Rotation>[1.55522279094, -0.176702414433, -1.74478193071]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.984309331063</score>
+</Grasp>
+<Grasp Index="153">
+<joint_values>[0.0, -0.031796302590749358, 0.56720370630244277, -0.7337963131165639, 1.2902037178257031, -0.54779631080129743, 1.094203715035466]</joint_values>
+<GraspPose>
+<Translation>[-0.158981673574, 0.0500453739919, 0.0272074560104]</Translation>
+<Rotation>[-1.5480830224, 0.228874135302, -1.79457340916]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.258981673574, 0.0500453739919, 0.0272074560104]</Translation>
+<Rotation>[-1.5480830224, 0.228874135302, -1.79457340916]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.973671240031</score>
+</Grasp>
+<Grasp Index="154">
+<joint_values>[0.0, -0.34979630791605948, 1.082203714465475, -0.41479630774374959, 1.096203715130456, -0.27779630449621828, 0.99520371359284343]</joint_values>
+<GraspPose>
+<Translation>[-0.162226137095, 0.0134968645059, 0.0899165197613]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.262226137095, 0.0134968645059, 0.0899165197613]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="155">
+<joint_values>[2.2990591770849852e-16, -0.23279630561848369, 0.48820370580977479, -0.60679631034401649, 1.1352037137232229, -0.54379631061130351, 1.0782037142754961]</joint_values>
+<GraspPose>
+<Translation>[-0.000192070853621, 0.000677931534673, 0.268760999382]</Translation>
+<Rotation>[-3.13746766996, -0.00359839332234, 3.00544032306]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.000192070853621, 0.000677931534673, 0.368760999382]</Translation>
+<Rotation>[-3.13746766996, -0.00359839332234, 3.00544032306]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="156">
+<joint_values>[0.0, -0.67179631017170627, 1.570796326794897, -0.62879631138896563, 1.570796326794897, -0.4907963080939482, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.137036703382, 0.00754491864775, 0.0300021141087]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.237036703382, 0.00754491864775, 0.0300021141087]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="157">
+<joint_values>[1.1163551170725619e-16, -0.32879630691858408, 0.71020370983494951, -0.49479630828393051, 0.96520371216792089, -0.51879630942387611, 0.99920371378283057]</joint_values>
+<GraspPose>
+<Translation>[-0.000191658359072, 0.00067829137325, 0.26886099789]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.000191658359072, 0.00067829137325, 0.36886099789]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="158">
+<joint_values>[1.182652811944872e-16, -0.21379630471603189, 0.45420370419486211, -0.65979631286137874, 1.1952037165730669, -0.38579630636633572, 0.81220371142006309]</joint_values>
+<GraspPose>
+<Translation>[-0.00019207085362, -0.00450356848297, 0.26877964446]</Translation>
+<Rotation>[-3.13746766996, -0.00359839332234, 3.00544032306]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00019207085362, -0.00450356848297, 0.36877964446]</Translation>
+<Rotation>[-3.13746766996, -0.00359839332234, 3.00544032306]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="159">
+<joint_values>[0.0, -0.32379630668110959, 0.66620370774506876, -0.40879630745876849, 0.86220371053531131, -0.56079631141873754, 1.09220371494047]</joint_values>
+<GraspPose>
+<Translation>[-0.00533515855302, 0.000678291373251, 0.268882215281]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00533515855302, 0.000678291373251, 0.368882215281]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="160">
+<joint_values>[0.0, -0.094796302323443105, 0.602203707964857, -1.026796317254427, 0.75420370866521447, -0.35479630815354429, 1.208203717190542]</joint_values>
+<GraspPose>
+<Translation>[0.102716830993, 0.12609785882, 0.132127618312]</Translation>
+<Rotation>[-1.5962292034, 0.69057778737, 2.43465365743]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.102716830993, 0.12609785882, 0.132127618312]</Translation>
+<Rotation>[-1.5962292034, 0.69057778737, 2.43465365743]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="161">
+<joint_values>[0.0, -0.26379630709091029, 1.0042037140203199, -0.44579630921617808, 1.132203713580733, -0.37379630579635398, 1.059203713373041]</joint_values>
+<GraspPose>
+<Translation>[-0.162106422998, 0.015885894928, 0.0299733356006]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.262106422998, 0.015885894928, 0.0299733356006]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="162">
+<joint_values>[1.134696565396512e-16, -0.31079630606366099, 0.67620370822003917, -0.58379630925156478, 1.1032037154629439, -0.476796307428973, 0.9302037105055051]</joint_values>
+<GraspPose>
+<Translation>[-0.00533515855302, 0.000678291373251, 0.268882215281]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00533515855302, 0.000678291373251, 0.368882215281]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="163">
+<joint_values>[1.6653345369377351e-16, -0.8367963147491756, 1.570796326794897, -0.66979631333635559, 1.570796326794897, -0.36079630843852839, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.129473296995, 0.0445518780873, 0.112705248432]</Translation>
+<Rotation>[1.60249342017, -0.240485253729, 1.322643016]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.229473296995, 0.0445518780873, 0.112705248432]</Translation>
+<Rotation>[1.60249342017, -0.240485253729, 1.322643016]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.970734658846</score>
+</Grasp>
+<Grasp Index="164">
+<joint_values>[0.0, -0.29479630530369361, 0.61120370839233162, -0.5907963095840606, 1.139203713913211, -0.37779630598636033, 0.77620370971014341]</joint_values>
+<GraspPose>
+<Translation>[-0.00649448878705, 0.00109705975784, -0.129472974294]</Translation>
+<Rotation>[-0.00479679956265, 0.0068249837737, -1.57081269593]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00649448878705, 0.00109705975784, -0.229472974294]</Translation>
+<Rotation>[-0.00479679956265, 0.0068249837737, -1.57081269593]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="165">
+<joint_values>[1.4500279439537049e-16, -0.40479630726878402, 1.1362037137707219, -0.25379630661593078, 0.96020371193042287, -0.41579630779126192, 1.074203714085509]</joint_values>
+<GraspPose>
+<Translation>[0.037105260319, -0.15730519019, 0.029295682687]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.037105260319, -0.25730519019, 0.029295682687]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="166">
+<joint_values>[0.0, -0.42979630845622607, 1.12420371646039, -0.24079630599846311, 1.0312037120431179, -0.38779630646132929, 1.0782037142754961]</joint_values>
+<GraspPose>
+<Translation>[0.0594288420856, -0.149993477846, 0.109604889318]</Translation>
+<Rotation>[-1.57116612674, -0.316552896942, 0.316668033155]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0594288420856, -0.249993477846, 0.109604889318]</Translation>
+<Rotation>[-1.57116612674, -0.316552896942, 0.316668033155]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.950314054661</score>
+</Grasp>
+<Grasp Index="167">
+<joint_values>[0.0, -0.38079630612883408, 1.1672037152431429, -1.1237963186020521, 0.92420371348013897, -0.45179630950116678, 1.21420371747551]</joint_values>
+<GraspPose>
+<Translation>[-0.111800098089, -0.11999838904, 0.0888383797214]</Translation>
+<Rotation>[-1.5635223022, 0.714108959306, -0.709357923879]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.111800098089, -0.11999838904, 0.0888383797214]</Translation>
+<Rotation>[-1.5635223022, 0.714108959306, -0.709357923879]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="168">
+<joint_values>[2.7755575615628909e-16, -0.68079631059919832, 1.570796326794897, -0.75079631392401958, 1.5707963267948959, -0.45379630959616679, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.137245484195, 0.00985794749503, 0.0698461833155]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.237245484195, 0.00985794749503, 0.0698461833155]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="169">
+<joint_values>[0.0, -0.58479630929907789, 1.1812037159081099, -0.34679630777356218, 1.2032037169530601, -1.140796319409509, 0.98920371330784929]</joint_values>
+<GraspPose>
+<Translation>[-0.107179949569, -0.124642173897, 0.049391093634]</Translation>
+<Rotation>[-1.56240380222, -0.85665684346, -0.720463987997]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.107179949569, -0.124642173897, 0.049391093634]</Translation>
+<Rotation>[-1.56240380222, -0.85665684346, -0.720463987997]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="170">
+<joint_values>[0.0, -0.36679630872351282, 1.0882037147504751, -0.27779630449623738, 1.019203714732781, -0.5157963092813741, 1.10920371574793]</joint_values>
+<GraspPose>
+<Translation>[0.034555984105, -0.158970491714, 0.109285013665]</Translation>
+<Rotation>[1.5686075525, 0.274213187776, -2.86797153961]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.034555984105, -0.258970491714, 0.109285013665]</Translation>
+<Rotation>[1.5686075525, 0.274213187776, -2.86797153961]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962636250278</score>
+</Grasp>
+<Grasp Index="171">
+<joint_values>[0.0, -0.7377963133065506, 1.570796326794897, -0.72079631249909293, 1.570796326794897, 0.161203700056995, 1.5707963267948959]</joint_values>
+<GraspPose>
+<Translation>[0.0975226014037, 0.0979446722358, 0.130363042573]</Translation>
+<Rotation>[-1.58190071862, -0.82119444467, 2.40014964771]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0975226014037, 0.0979446722358, 0.130363042573]</Translation>
+<Rotation>[-1.58190071862, -0.82119444467, 2.40014964771]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="172">
+<joint_values>[1.6653345369377351e-16, -0.41579630779125337, 1.132203713580733, -0.37279630574886141, 1.116203716080395, -0.22179630509602041, 0.9692037123579057]</joint_values>
+<GraspPose>
+<Translation>[-0.153741663466, 0.0505062266822, 0.113474742832]</Translation>
+<Rotation>[1.60249342017, -0.240485253729, 1.322643016]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.253741663466, 0.0505062266822, 0.113474742832]</Translation>
+<Rotation>[1.60249342017, -0.240485253729, 1.322643016]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.970734658846</score>
+</Grasp>
+<Grasp Index="173">
+<joint_values>[4.4463638807095871e-16, -0.30679630587365248, 0.63320370617764865, -0.50379630871142367, 1.0072037141628081, -0.51779630937639087, 1.0202037147802749]</joint_values>
+<GraspPose>
+<Translation>[-0.000191658359072, 0.00067829137325, 0.26886099789]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.000191658359072, 0.00067829137325, 0.36886099789]</Translation>
+<Rotation>[3.13799422965, -0.00412495692311, -1.70693381396]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="174">
+<joint_values>[1.525709384243849e-16, -0.64779631229141155, 1.570796326794897, -0.49679630837892302, 1.5707963267948959, -0.98279631516454313, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.0246107760206, 0.135514399835, 0.111411127954]</Translation>
+<Rotation>[1.58903425703, 0.231032283971, 0.235245964983]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0246107760206, 0.235514399835, 0.111411127954]</Translation>
+<Rotation>[1.58903425703, 0.231032283971, 0.235245964983]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.973268650962</score>
+</Grasp>
+<Grasp Index="175">
+<joint_values>[0.0, -0.17179630272113791, 0.37420370365469541, -0.74079631344904417, 1.33820371684595, -0.5597963113712644, 1.0452037127080811]</joint_values>
+<GraspPose>
+<Translation>[-0.00649496845403, -0.00408375776668, -0.129608335001]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.6368941588e-05]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00649496845403, -0.00408375776668, -0.229608335001]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.6368941588e-05]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="176">
+<joint_values>[0.0, -0.13379630417586519, 0.29720370325702289, -0.44479630916868579, 0.86320371058280465, -0.77179631166183738, 1.360203717890895]</joint_values>
+<GraspPose>
+<Translation>[-0.00533515855303, -0.00450320864439, 0.268900860359]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00533515855303, -0.00450320864439, 0.368900860359]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="177">
+<joint_values>[1.942693781333578e-16, -0.52379630966135249, 0.96220371202542909, -0.24179630604595559, 0.92720371362264187, -0.79579631280177499, 1.0892037147979761]</joint_values>
+<GraspPose>
+<Translation>[0.101078997057, -0.131131689298, 0.0701517242624]</Translation>
+<Rotation>[-1.57637431208, -0.614152599275, 0.617374352587]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.101078997057, -0.131131689298, 0.0701517242624]</Translation>
+<Rotation>[-1.57637431208, -0.614152599275, 0.617374352587]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="178">
+<joint_values>[1.587216050958823e-16, -0.66579631314636223, 1.570796326794897, -0.43779630883620613, 1.570796326794897, -1.0387963178243991, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.0277862439782, -0.134904585457, 0.109337688586]</Translation>
+<Rotation>[1.5686075525, 0.274213187776, -2.86797153961]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0277862439782, -0.234904585457, 0.109337688586]</Translation>
+<Rotation>[1.5686075525, 0.274213187776, -2.86797153961]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962636250278</score>
+</Grasp>
+<Grasp Index="179">
+<joint_values>[0.0, -0.5757963088715875, 1.136203713770721, -1.0267963172544281, 1.252203716020803, -0.49479630828393001, 0.57920370687241729]</joint_values>
+<GraspPose>
+<Translation>[0.101828143138, -0.132194113525, 0.0701576505106]</Translation>
+<Rotation>[1.57870683276, -0.956621665005, -2.53389762822]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.101828143138, -0.132194113525, 0.0701576505106]</Translation>
+<Rotation>[1.57870683276, -0.956621665005, -2.53389762822]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="180">
+<joint_values>[0.0, -0.48379630776146099, 0.9782037127853862, -0.39379630674632737, 0.74720370833272931, 0.1142037010842278, -0.1397963044608497]</joint_values>
+<GraspPose>
+<Translation>[0.024106702236, -0.00827785022195, 0.268529370477]</Translation>
+<Rotation>[3.11611534678, 0.0372264843841, -1.20028302164]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.024106702236, -0.00827785022195, 0.368529370477]</Translation>
+<Rotation>[3.11611534678, 0.0372264843841, -1.20028302164]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.998982870262</score>
+</Grasp>
+<Grasp Index="181">
+<joint_values>[0.0, -0.11879630346339699, 0.74220370809523528, -1.011796316541967, 0.83920370944286304, -0.37579630589137297, 1.2112037173330381]</joint_values>
+<GraspPose>
+<Translation>[-0.101693282146, -0.128149578348, 0.131353937972]</Translation>
+<Rotation>[-1.58818561203, 0.66366176943, -0.67444770713]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.101693282146, -0.128149578348, 0.131353937972]</Translation>
+<Rotation>[-1.58818561203, 0.66366176943, -0.67444770713]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="182">
+<joint_values>[2.2204460492503131e-16, -1.1957963187622409, 0.68220370850503065, -0.42679630831373072, 0.94120371102797584, -0.060796303968182093, 1.195203716573074]</joint_values>
+<GraspPose>
+<Translation>[-0.0708176909754, 0.151551401411, 0.0316688942484]</Translation>
+<Rotation>[-1.60532998792, 1.22476858621, -2.82824340454]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0708176909754, 0.251551401411, 0.0316688942484]</Translation>
+<Rotation>[-1.60532998792, 1.22476858621, -2.82824340454]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.940727377211</score>
+</Grasp>
+<Grasp Index="183">
+<joint_values>[0.0, 0.029203700306575559, 0.57320370658742825, -0.79779631289676045, 1.26020371640077, -0.62079631100897192, 1.1702037153856379]</joint_values>
+<GraspPose>
+<Translation>[-0.160398569554, 0.0409213834892, 0.0698316765279]</Translation>
+<Rotation>[-1.5729049999, 0.15913199334, -1.73026281139]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.260398569554, 0.0409213834892, 0.0698316765279]</Translation>
+<Rotation>[-1.5729049999, 0.15913199334, -1.73026281139]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.987363005557</score>
+</Grasp>
+<Grasp Index="184">
+<joint_values>[1.382185149277101e-16, -0.55279631103878069, 1.5112037218033849, -0.52379630966135371, 1.389203719268316, -0.42879630840872429, 1.456203719191016]</joint_values>
+<GraspPose>
+<Translation>[0.0966356605412, 0.118441477942, 0.111292811501]</Translation>
+<Rotation>[1.58945325101, -0.694364382665, -0.706389301018]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0966356605412, 0.118441477942, 0.111292811501]</Translation>
+<Rotation>[1.58945325101, -0.694364382665, -0.706389301018]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="185">
+<joint_values>[1.1103791468606601e-16, -0.19579630386107749, 0.45020370400487142, -0.59979631001152989, 1.1292037166978739, -0.64079631195892572, 1.1842037160505909]</joint_values>
+<GraspPose>
+<Translation>[-0.000191658359071, -0.00450320864439, 0.268879642968]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.000191658359071, -0.00450320864439, 0.368879642968]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="186">
+<joint_values>[0.0, -0.20979630452603731, 0.87220371101028504, -0.60279631015402046, 1.193203716478092, -0.39679630688880119, 1.049203712898076]</joint_values>
+<GraspPose>
+<Translation>[0.160854494098, -0.0295432301903, 0.0699007632578]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.260854494098, -0.0295432301903, 0.0699007632578]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="187">
+<joint_values>[0.0, -0.9707963145945685, 1.5707963267948959, 0.068203698899362855, 1.570796326794897, -0.97679631487955298, 1.5707963267948959]</joint_values>
+<GraspPose>
+<Translation>[0.0811241066351, -0.110815257348, 0.133940003818]</Translation>
+<Rotation>[1.64857777062, -0.989723065714, -2.62696289221]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0811241066351, -0.110815257348, 0.133940003818]</Translation>
+<Rotation>[1.64857777062, -0.989723065714, -2.62696289221]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="188">
+<joint_values>[1.6653345369377351e-16, -0.99079631554453074, 1.419203720693238, -1.081796316607156, 1.4582037192860171, -0.061796304015678337, 1.2442037156408181]</joint_values>
+<GraspPose>
+<Translation>[-0.0700897131965, 0.149816202517, 0.0712040242796]</Translation>
+<Rotation>[-1.60796896743, 1.22678849481, -2.83280072576]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0700897131965, 0.249816202517, 0.0712040242796]</Translation>
+<Rotation>[-1.60796896743, 1.22678849481, -2.83280072576]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.941410537281</score>
+</Grasp>
+<Grasp Index="189">
+<joint_values>[1.3797876271091269e-16, -0.7547963141140076, 1.366203718175875, -0.1607963054582956, 0.32320370449195268, -0.024796302258271431, 0.113203701036747]</joint_values>
+<GraspPose>
+<Translation>[0.0199064340318, -0.00268046175793, -0.12946936572]</Translation>
+<Rotation>[0.0176342036104, -0.00488327784375, -4.3057559236e-05]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0199064340318, -0.00268046175793, -0.22946936572]</Translation>
+<Rotation>[0.0176342036104, -0.00488327784375, -4.3057559236e-05]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999832600137</score>
+</Grasp>
+<Grasp Index="190">
+<joint_values>[1.6574680995818109e-16, -0.1717963027211401, 0.3742037036546963, -0.62079631100897958, 1.1742037155756211, -0.70179631159664424, 1.306203718585659]</joint_values>
+<GraspPose>
+<Translation>[-0.00649496845403, 0.00109774225096, -0.129572970821]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.63689415884e-05]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00649496845403, 0.00109774225096, -0.229572970821]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.63689415884e-05]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="191">
+<joint_values>[0.0, -0.55079631094378523, 1.570796326794897, -0.88579631381690582, 1.570796326794897, -1.053796318536858, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.0865876002273, -0.109448821934, 0.0271625607939]</Translation>
+<Rotation>[1.53584805842, 0.625884552205, -2.53589675096]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0865876002273, -0.109448821934, 0.0271625607939]</Translation>
+<Rotation>[1.53584805842, 0.625884552205, -2.53589675096]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="192">
+<joint_values>[0.0, -0.063796304110673982, 0.70920370978746405, -0.75679631420900162, 1.326203719535608, -0.59979631001153233, 1.261203716448285]</joint_values>
+<GraspPose>
+<Translation>[-0.163766721482, 0.0137126105871, 0.0699206899065]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.263766721482, 0.0137126105871, 0.0699206899065]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="193">
+<joint_values>[1.8087686699636599e-16, -0.33279630710860258, 1.015203714542783, -0.43979630893119531, 0.96420371212041733, -0.45379630959616529, 0.9792037128328771]</joint_values>
+<GraspPose>
+<Translation>[0.101232959806, -0.129697581239, 0.0264546134715]</Translation>
+<Rotation>[1.53584805842, 0.625884552205, -2.53589675096]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.101232959806, -0.129697581239, 0.0264546134715]</Translation>
+<Rotation>[1.53584805842, 0.625884552205, -2.53589675096]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="194">
+<joint_values>[0.0, -0.44179630902618983, 1.5707963267948959, -0.9147963151943489, 1.5707963267948959, -0.56579631165624877, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.137877830396, 0.0152408105217, 0.0698500754511]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.237877830396, 0.0152408105217, 0.0698500754511]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="195">
+<joint_values>[1.6653345369377351e-16, -0.14479630469833049, 0.81920371175254114, -0.66279631300387143, 1.291203717873201, -0.48279630771396542, 1.1462037142457]</joint_values>
+<GraspPose>
+<Translation>[-0.162914669987, 0.0188797275326, 0.0699204118969]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.262914669987, 0.0188797275326, 0.0699204118969]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="196">
+<joint_values>[0.0, 0.1292037017967029, -0.32479630672861859, -0.92879631585930689, 1.4492037188585369, -0.8687963162690876, 1.4262037210257179]</joint_values>
+<GraspPose>
+<Translation>[0.029331760276, -0.0442591259499, 0.266016398202]</Translation>
+<Rotation>[3.0630788642, -0.149267072381, 2.53814221476]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.029331760276, -0.0442591259499, 0.366016398202]</Translation>
+<Rotation>[3.0630788642, -0.149267072381, 2.53814221476]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.98583397063</score>
+</Grasp>
+<Grasp Index="197">
+<joint_values>[4.241100490909792e-16, -0.4517963095011665, 1.132203713580731, -0.18679630343359829, 0.8642037106303031, -0.34979630791605609, 1.011203714352795]</joint_values>
+<GraspPose>
+<Translation>[0.0294735518393, -0.160214861419, 0.0298102626401]</Translation>
+<Rotation>[1.5683575785, 0.274700082738, -2.86755332632]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0294735518393, -0.260214861419, 0.0298102626401]</Translation>
+<Rotation>[1.5683575785, 0.274700082738, -2.86755332632]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962503733706</score>
+</Grasp>
+<Grasp Index="198">
+<joint_values>[1.653624948034548e-16, 0.16420370019948541, -0.22379630519100679, -1.0027963161144871, 1.495203721043417, -0.87479631329444341, 1.366203718175875]</joint_values>
+<GraspPose>
+<Translation>[-0.0265007244577, -0.00407556784922, -0.130712356853]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.63689415873e-05]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0265007244577, -0.00407556784922, -0.230712356853]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.63689415873e-05]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="199">
+<joint_values>[1.4118419090810119e-16, -0.087796301990982539, 0.60820370824983971, -0.5677963117512429, 1.0862037146554819, -0.66279631300387243, 1.1312037135332349]</joint_values>
+<GraspPose>
+<Translation>[0.00726215792166, -0.165726152323, 0.0894928093392]</Translation>
+<Rotation>[-1.5702862019, -0.100041768667, 0.0999908328813]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.00726215792166, -0.265726152323, 0.0894928093392]</Translation>
+<Rotation>[-1.5702862019, -0.100041768667, 0.0999908328813]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.994999865038</score>
+</Grasp>
+<Grasp Index="200">
+<joint_values>[0.0, -0.053796303635698657, 0.68320370855252111, -0.49879630847391948, 1.226203718045497, -0.86679631617409414, 1.214203717475522]</joint_values>
+<GraspPose>
+<Translation>[0.0382896160256, -0.157845166476, 0.00707785712806]</Translation>
+<Rotation>[-1.5464984539, -0.302432980531, 0.29527866494]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0382896160256, -0.257845166476, 0.00707785712806]</Translation>
+<Rotation>[-1.5464984539, -0.302432980531, 0.29527866494]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.954332885417</score>
+</Grasp>
+<Grasp Index="201">
+<joint_values>[2.10228788309352e-16, 0.041203697616934931, 0.42320370598206702, -0.54579631070629664, 0.9842037130703617, -0.86979631631658727, 0.95720371178793295]</joint_values>
+<GraspPose>
+<Translation>[0.0344864122198, -0.163744931122, 0.00697348942301]</Translation>
+<Rotation>[-1.5464984539, -0.302432980531, 0.29527866494]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0344864122198, -0.263744931122, 0.00697348942301]</Translation>
+<Rotation>[-1.5464984539, -0.302432980531, 0.29527866494]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.954332885417</score>
+</Grasp>
+<Grasp Index="202">
+<joint_values>[0.0, -0.70579631178662727, 1.0282037151602621, -0.2297963054759897, 1.1272037166028821, -1.0197963169219419, 1.261203716448281]</joint_values>
+<GraspPose>
+<Translation>[0.112076741822, 0.118800332893, 0.0698951368054]</Translation>
+<Rotation>[1.57467978427, 0.851121460355, -0.716750684276]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.112076741822, 0.118800332893, 0.0698951368054]</Translation>
+<Rotation>[1.57467978427, 0.851121460355, -0.716750684276]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="203">
+<joint_values>[0.0, 0.032203697189455018, -0.098796302513456835, -0.91179631505184933, 1.489203720758435, -0.60479631024901781, 1.077203714227998]</joint_values>
+<GraspPose>
+<Translation>[0.0241104240249, -0.00828039591223, 0.268629268771]</Translation>
+<Rotation>[3.10435409538, -0.0254596516645, -2.77013093198]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0241104240249, -0.00828039591223, 0.368629268771]</Translation>
+<Rotation>[3.10435409538, -0.0254596516645, -2.77013093198]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.998982870262</score>
+</Grasp>
+<Grasp Index="204">
+<joint_values>[0.0, -0.21179630462104129, 0.84220370958535618, -0.86179631593660644, 1.2342037151658429, -0.51979630947136546, 1.13320371362823]</joint_values>
+<GraspPose>
+<Translation>[0.138529038543, -0.0886729684162, 0.0501995123197]</Translation>
+<Rotation>[-1.57153901009, 0.516030261463, 1.0543994838]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.238529038543, -0.0886729684162, 0.0501995123197]</Translation>
+<Rotation>[-1.57153901009, 0.516030261463, 1.0543994838]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.869784580955</score>
+</Grasp>
+<Grasp Index="205">
+<joint_values>[1.3248927734747931e-16, -0.1217963036058942, 0.75620370876020637, -0.62579631124646384, 1.3502037174159141, -0.61979631096147525, 1.349203717368417]</joint_values>
+<GraspPose>
+<Translation>[-0.00479519939164, -0.1601569757, 0.109669488533]</Translation>
+<Rotation>[-1.57167371906, -0.00858910837263, 0.00859664760505]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00479519939164, -0.2601569757, 0.109669488533]</Translation>
+<Rotation>[-1.57167371906, -0.00858910837263, 0.00859664760505]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.999962728941</score>
+</Grasp>
+<Grasp Index="206">
+<joint_values>[0.0, -0.37979630608135478, 1.1662037151956419, -1.131796318982027, 0.89720371219773654, -0.46379631007113648, 1.1912037163830751]</joint_values>
+<GraspPose>
+<Translation>[0.113567294547, 0.117360414694, 0.0903496223782]</Translation>
+<Rotation>[-1.57892859971, 0.736146818217, 2.39996900307]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.113567294547, 0.117360414694, 0.0903496223782]</Translation>
+<Rotation>[-1.57892859971, 0.736146818217, 2.39996900307]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="207">
+<joint_values>[0.0, -0.1147963032734131, 0.256203701309626, -0.66779631324135935, 1.2222037178555021, -0.65979631286137941, 1.1862037161455901]</joint_values>
+<GraspPose>
+<Translation>[-0.00533515855303, 0.000678291373251, 0.268882215281]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00533515855303, 0.000678291373251, 0.368882215281]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="208">
+<joint_values>[0.0, -0.55979631137126185, 1.220203717760497, -0.98379631521202904, 1.279203717303224, -0.29279630520869221, 1.1462037142456949]</joint_values>
+<GraspPose>
+<Translation>[-0.111931086965, -0.120004032989, 0.0688372803682]</Translation>
+<Rotation>[1.5635223022, -0.714108959306, 2.43223472971]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.111931086965, -0.120004032989, 0.0688372803682]</Translation>
+<Rotation>[1.5635223022, -0.714108959306, 2.43223472971]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="209">
+<joint_values>[1.7542469190779809e-16, -0.2297963054759922, 1.048203712850577, -0.44579630921618207, 1.2152037175230239, -0.45079630945366977, 1.1462037142456989]</joint_values>
+<GraspPose>
+<Translation>[-0.00480207058508, -0.159357006538, 0.109668786646]</Translation>
+<Rotation>[1.57167371906, 0.00858910837263, -3.13299600598]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00480207058508, -0.259357006538, 0.109668786646]</Translation>
+<Rotation>[1.57167371906, 0.00858910837263, -3.13299600598]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.999962728941</score>
+</Grasp>
+<Grasp Index="210">
+<joint_values>[1.864842828104526e-16, -0.50179630861641122, 1.570796326794897, -0.79479631275427742, 1.570796326794897, -0.79879631294426401, 1.5707963267948959]</joint_values>
+<GraspPose>
+<Translation>[-0.00501679565423, -0.134357938315, 0.109646852651]</Translation>
+<Rotation>[1.57167371906, 0.00858910837263, -3.13299600598]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00501679565423, -0.234357938315, 0.109646852651]</Translation>
+<Rotation>[1.57167371906, 0.00858910837263, -3.13299600598]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.999962728941</score>
+</Grasp>
+<Grasp Index="211">
+<joint_values>[0.0, -0.34079630748857709, 1.0762037141805061, -0.41579630779125493, 1.095203715082959, -0.28279630473372258, 1.02020371478028]</joint_values>
+<GraspPose>
+<Translation>[-0.162090404488, 0.0129053321967, 0.110336804124]</Translation>
+<Rotation>[-1.57691409674, 0.139787081875, -1.71143840392]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.262090404488, 0.0129053321967, 0.110336804124]</Translation>
+<Rotation>[-1.57691409674, 0.139787081875, -1.71143840392]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.990227154067</score>
+</Grasp>
+<Grasp Index="212">
+<joint_values>[0.0, -0.2157963048110281, 0.96020371193042819, -0.43179630855121731, 1.1742037155756211, -0.73179631302156534, 1.3752037186033641]</joint_values>
+<GraspPose>
+<Translation>[-0.0334153363508, 0.159435808351, 0.0295535459136]</Translation>
+<Rotation>[-1.56632508851, -0.215514882241, -2.92703186544]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0334153363508, 0.259435808351, 0.0295535459136]</Translation>
+<Rotation>[-1.56632508851, -0.215514882241, -2.92703186544]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.976856651183</score>
+</Grasp>
+<Grasp Index="213">
+<joint_values>[0.0, -0.4757963073814786, 0.69220370898000372, -0.2247963052385028, 0.78020370990014121, -0.60679631034400894, 0.84120370953786094]</joint_values>
+<GraspPose>
+<Translation>[0.103974994739, -0.135463110881, 0.0901758851188]</Translation>
+<Rotation>[-1.57637431208, -0.614152599275, 0.617374352587]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.103974994739, -0.135463110881, 0.0901758851188]</Translation>
+<Rotation>[-1.57637431208, -0.614152599275, 0.617374352587]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="214">
+<joint_values>[0.0, -0.40779630741128742, 1.1132037159379109, -0.42879630840872102, 1.09020371484546, -0.2177963049060169, 0.96120371197792231]</joint_values>
+<GraspPose>
+<Translation>[-0.156158026802, 0.0493874185791, 0.0272716013902]</Translation>
+<Rotation>[1.5480830224, -0.228874135302, 1.34701924443]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.256158026802, 0.0493874185791, 0.0272716013902]</Translation>
+<Rotation>[1.5480830224, -0.228874135302, 1.34701924443]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.973671240031</score>
+</Grasp>
+<Grasp Index="215">
+<joint_values>[0.0, -0.45379630959616402, 1.250203715925801, -0.93379631609679337, 1.4832037204734521, -0.43879630888370319, 1.2282037181404739]</joint_values>
+<GraspPose>
+<Translation>[-0.114307132052, -0.116651258355, 0.0493155406643]</Translation>
+<Rotation>[-1.56246569376, 0.743881987014, -0.738258122265]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.114307132052, -0.116651258355, 0.0493155406643]</Translation>
+<Rotation>[-1.56246569376, 0.743881987014, -0.738258122265]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="216">
+<joint_values>[0.0, -0.51879630942386978, 1.245203715688314, -0.86579631612659602, 1.3892037192683231, -0.34479630767857061, 1.1702037153856351]</joint_values>
+<GraspPose>
+<Translation>[-0.10652500519, -0.123886516718, 0.0493965903999]</Translation>
+<Rotation>[-1.5635223022, 0.714108959306, -0.709357923879]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.10652500519, -0.123886516718, 0.0493965903999]</Translation>
+<Rotation>[-1.5635223022, 0.714108959306, -0.709357923879]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="217">
+<joint_values>[0.0, -0.42179630807624641, 1.0992037152729419, -0.21579630481102319, 0.97320371254789406, -0.49479630828392079, 1.1282037166503831]</joint_values>
+<GraspPose>
+<Translation>[0.0583027169398, -0.151627901059, 0.02746216181]</Translation>
+<Rotation>[-1.54950027215, -0.303493840844, 0.297193189418]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0583027169398, -0.251627901059, 0.02746216181]</Translation>
+<Rotation>[-1.54950027215, -0.303493840844, 0.297193189418]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.954081770404</score>
+</Grasp>
+<Grasp Index="218">
+<joint_values>[1.6653345369377351e-16, -0.13279630412837021, 0.7472037083327312, -0.56079631141876074, 1.1612037149581509, -0.45779630978615299, 1.067203713753025]</joint_values>
+<GraspPose>
+<Translation>[-0.164926146832, 0.0185884284412, 0.110358613133]</Translation>
+<Rotation>[1.57691409674, -0.139787081875, 1.43015424967]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.264926146832, 0.0185884284412, 0.110358613133]</Translation>
+<Rotation>[1.57691409674, -0.139787081875, 1.43015424967]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.990227154067</score>
+</Grasp>
+<Grasp Index="219">
+<joint_values>[1.7692038677465571e-16, -0.76879631477897159, 1.5707963267948959, -0.40179630712629588, 1.570796326794897, -0.78079631208931299, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.0298128235841, -0.133392947343, 0.0294538234576]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0298128235841, -0.233392947343, 0.0294538234576]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="220">
+<joint_values>[0.0, -0.3127963061586419, 1.031203712043117, -0.49479630828393228, 1.140203713960708, -0.31879630644364049, 1.042203712565589]</joint_values>
+<GraspPose>
+<Translation>[0.159864929012, -0.0240077707879, 0.109895848208]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.259864929012, -0.0240077707879, 0.109895848208]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="221">
+<joint_values>[2.2204460492503131e-16, -0.87479631329443863, 1.159203714863166, -1.0107963164944671, 1.2662037166857549, -0.22879630542849019, 1.0102037143052971]</joint_values>
+<GraspPose>
+<Translation>[0.101367130165, -0.131540314001, 0.0701540035886]</Translation>
+<Rotation>[-1.57870683276, 0.956621665005, 0.607695025365]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.101367130165, -0.131540314001, 0.0701540035886]</Translation>
+<Rotation>[-1.57870683276, 0.956621665005, 0.607695025365]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="222">
+<joint_values>[0.0, -0.59879630996402677, 1.185203716098105, -0.27879630454373427, 0.5182037072347061, 0.070203698994358729, -0.092796302228460498]</joint_values>
+<GraspPose>
+<Translation>[0.000795902798849, 0.0248548045509, 0.267801214813]</Translation>
+<Rotation>[3.12979060331, 0.0359543661394, 0.936514609954]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.000795902798849, 0.0248548045509, 0.367801214813]</Translation>
+<Rotation>[3.12979060331, 0.0359543661394, 0.936514609954]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999284113027</score>
+</Grasp>
+<Grasp Index="223">
+<joint_values>[0.0, -0.25979630690091488, 0.97520371264288674, -0.47879630752397051, 1.102203715415442, -0.35179630801105188, 1.041203712518092]</joint_values>
+<GraspPose>
+<Translation>[-0.162648624236, 0.0182679641852, 0.110344679599]</Translation>
+<Rotation>[-1.57691409674, 0.139787081875, -1.71143840392]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.262648624236, 0.0182679641852, 0.110344679599]</Translation>
+<Rotation>[-1.57691409674, 0.139787081875, -1.71143840392]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.990227154067</score>
+</Grasp>
+<Grasp Index="224">
+<joint_values>[0.0, 0.047203697901915642, 0.51120370690222328, -0.57479630882409727, 1.1752037156231221, -0.95079631690424848, 1.09620371513046]</joint_values>
+<GraspPose>
+<Translation>[-0.0697323278225, 0.148940739591, 0.131533285139]</Translation>
+<Rotation>[1.58677277061, 0.341139181099, 0.34652491852]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0697323278225, 0.248940739591, 0.131533285139]</Translation>
+<Rotation>[1.58677277061, 0.341139181099, 0.34652491852]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.942253885281</score>
+</Grasp>
+<Grasp Index="225">
+<joint_values>[0.0, -0.30479630577867012, 1.096203715130452, -0.35279630805854878, 1.0772037142280051, -0.44579630921618291, 1.1312037135332349]</joint_values>
+<GraspPose>
+<Translation>[0.00670285801804, -0.160143951955, 0.0694956517551]</Translation>
+<Rotation>[1.5702862019, 0.100041768667, -3.04160182071]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.00670285801804, -0.260143951955, 0.0694956517551]</Translation>
+<Rotation>[1.5702862019, 0.100041768667, -3.04160182071]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.994999865038</score>
+</Grasp>
+<Grasp Index="226">
+<joint_values>[0.0, -0.13079630403336351, 0.78220370999512046, -0.70379631169163737, 1.2612037164482801, -0.46879631030862329, 1.091203714892965]</joint_values>
+<GraspPose>
+<Translation>[0.161738731679, -0.0243431007313, 0.069900504571]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.261738731679, -0.0243431007313, 0.069900504571]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="227">
+<joint_values>[0.0, 0.1622037001044892, -0.2187963049535149, -0.94879631680925658, 1.4912037208534239, -0.97179631464206895, 1.484203720520942]</joint_values>
+<GraspPose>
+<Translation>[-0.00688984085746, -0.0258491493887, -0.130525664022]</Translation>
+<Rotation>[0.00778053955432, 0.0067086112786, 1.57082242533]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00688984085746, -0.0258491493887, -0.230525664022]</Translation>
+<Rotation>[0.00778053955432, 0.0067086112786, 1.57082242533]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999947229788</score>
+</Grasp>
+<Grasp Index="228">
+<joint_values>[1.3115373451990861e-16, -0.7037963116916367, 1.2852037175882121, -0.1637963056007887, 0.35720370284723918, -0.01279630168830481, 0.051203698091905288]</joint_values>
+<GraspPose>
+<Translation>[0.0198083416409, 0.000678291373252, 0.268778497611]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0198083416409, 0.000678291373252, 0.368778497611]</Translation>
+<Rotation>[3.13746766996, 0.00359839332234, -0.136152330533]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="229">
+<joint_values>[0.0, -0.49579630833142602, 1.2022037169055571, -0.83579631470167948, 1.3192037192031241, -0.3427963075835786, 1.1532037145781859]</joint_values>
+<GraspPose>
+<Translation>[0.10518649234, 0.124840340542, 0.0501099427024]</Translation>
+<Rotation>[-1.57073397582, 0.714625797908, 2.42700771548]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.10518649234, 0.124840340542, 0.0501099427024]</Translation>
+<Rotation>[-1.57073397582, 0.714625797908, 2.42700771548]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="230">
+<joint_values>[0.0, -0.1737963028161271, 0.40620370517461579, -0.68879631097917227, 1.2712037169232511, -0.61579631077148711, 1.173203715528123]</joint_values>
+<GraspPose>
+<Translation>[-0.0013509885931, -0.0040844402598, -0.129533011072]</Translation>
+<Rotation>[0.00479679956265, -0.0068249837737, 1.57077995766]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0013509885931, -0.0040844402598, -0.229533011072]</Translation>
+<Rotation>[0.00479679956265, -0.0068249837737, 1.57077995766]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="231">
+<joint_values>[1.847002832061193e-16, -0.04379630316072073, 0.65920370741258139, -0.53079630999383798, 1.289203717778215, -0.86779631622159059, 1.147203714293191]</joint_values>
+<GraspPose>
+<Translation>[0.0606178132207, -0.149978140716, 0.133978235711]</Translation>
+<Rotation>[1.60671692278, 0.324182538814, -2.8057688712]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0606178132207, -0.249978140716, 0.133978235711]</Translation>
+<Rotation>[1.60671692278, 0.324182538814, -2.8057688712]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.947299958097</score>
+</Grasp>
+<Grasp Index="232">
+<joint_values>[0.0, -0.53279631008882677, 1.0282037151602541, -0.25079630647344642, 0.98220371297537212, -0.37979630608135312, 0.96320371207291944]</joint_values>
+<GraspPose>
+<Translation>[0.100071051438, -0.130150990011, 0.110146253879]</Translation>
+<Rotation>[-1.57637431208, -0.614152599275, 0.617374352587]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.100071051438, -0.130150990011, 0.110146253879]</Translation>
+<Rotation>[-1.57637431208, -0.614152599275, 0.617374352587]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="233">
+<joint_values>[0.0, -0.33079630701360679, 1.106203715605429, -0.33179630706110042, 1.100203715320442, -0.60179631010652412, 1.200203716810563]</joint_values>
+<GraspPose>
+<Translation>[-0.043895100381, 0.156444281856, 0.112019346611]</Translation>
+<Rotation>[1.59066799903, 0.298010832242, 0.303901666172]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.043895100381, 0.256444281856, 0.112019346611]</Translation>
+<Rotation>[1.59066799903, 0.298010832242, 0.303901666172]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.955733705253</score>
+</Grasp>
+<Grasp Index="234">
+<joint_values>[0.0, -0.71679631230910335, 1.372203718460862, -0.10379630275094499, 0.1322036986795706, -0.05979630392070974, 0.033203697236950887]</joint_values>
+<GraspPose>
+<Translation>[0.000976540705961, 0.0287252929058, -0.127206013496]</Translation>
+<Rotation>[-0.0133145632204, -0.0664150792719, 1.5712386398]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.000976540705961, 0.0287252929058, -0.227206013496]</Translation>
+<Rotation>[-0.0133145632204, -0.0664150792719, 1.5712386398]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.997706887124</score>
+</Grasp>
+<Grasp Index="235">
+<joint_values>[2.3565247349485309e-16, -0.19179630367109221, 0.87120371096278315, -0.42879630840872329, 1.0782037142755001, -0.75079631392401758, 1.2162037175705249]</joint_values>
+<GraspPose>
+<Translation>[-0.0418456005136, 0.160213893348, 0.0709456552931]</Translation>
+<Rotation>[-1.58171042635, -0.27602347486, -2.86257901211]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0418456005136, 0.260213893348, 0.0709456552931]</Translation>
+<Rotation>[-1.58171042635, -0.27602347486, -2.86257901211]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="236">
+<joint_values>[1.6653345369377351e-16, 0.014203699594127881, 0.49820370628474431, -0.81879631389419805, 1.145203714198197, -0.4997963085214126, 1.1382037138657179]</joint_values>
+<GraspPose>
+<Translation>[-0.157385119108, 0.0509062463209, 0.134482475856]</Translation>
+<Rotation>[-1.60930610464, 0.235601304183, -1.81555948707]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.257385119108, 0.0509062463209, 0.134482475856]</Translation>
+<Rotation>[-1.60930610464, 0.235601304183, -1.81555948707]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.971653228277</score>
+</Grasp>
+<Grasp Index="237">
+<joint_values>[1.5230232438648609e-16, -0.46979631035612163, 1.21820371766552, -0.90179631457687859, 1.430203717956084, -0.38079630612885229, 1.181203715908099]</joint_values>
+<GraspPose>
+<Translation>[0.10548698632, 0.124109166911, 0.0898943688845]</Translation>
+<Rotation>[1.5742001277, -0.719668257168, -0.721914698636]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.10548698632, 0.124109166911, 0.0898943688845]</Translation>
+<Rotation>[1.5742001277, -0.719668257168, -0.721914698636]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="238">
+<joint_values>[0.0, -0.46979631035612002, 1.22120371780801, -0.87979631353193177, 1.4132037204082539, -0.37479630584386309, 1.187203716193092]</joint_values>
+<GraspPose>
+<Translation>[-0.10444652514, -0.125922137177, 0.0893790926803]</Translation>
+<Rotation>[1.56900870476, -0.69005764263, 2.45267219462]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.10444652514, -0.125922137177, 0.0893790926803]</Translation>
+<Rotation>[1.56900870476, -0.69005764263, 2.45267219462]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="239">
+<joint_values>[0.0, -0.65379631257639503, 1.570796326794897, -0.62379631115147227, 1.5707963267948959, -0.80379631318175471, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.00412608361787, -0.134483156163, 0.0895087471706]</Translation>
+<Rotation>[1.5702862019, 0.100041768667, -3.04160182071]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.00412608361787, -0.234483156163, 0.0895087471706]</Translation>
+<Rotation>[1.5702862019, 0.100041768667, -3.04160182071]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.994999865038</score>
+</Grasp>
+<Grasp Index="240">
+<joint_values>[2.7678711150650989e-16, -0.1197963035109012, 0.82220371189503738, -0.55279631103877946, 1.2292037181879949, -0.85279631550912893, 1.2542037161157911]</joint_values>
+<GraspPose>
+<Translation>[-0.0363750621242, 0.16051638979, 0.0709330543837]</Translation>
+<Rotation>[-1.58171042635, -0.27602347486, -2.86257901211]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0363750621242, 0.26051638979, 0.0709330543837]</Translation>
+<Rotation>[-1.58171042635, -0.27602347486, -2.86257901211]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="241">
+<joint_values>[0.0, -0.80079631303926546, 1.570796326794897, -0.3837963062713402, 1.5707963267948959, -0.79879631294426456, 1.5707963267948959]</joint_values>
+<GraspPose>
+<Translation>[0.051646527439, -0.12623562648, 0.109596103666]</Translation>
+<Rotation>[-1.57116612674, -0.316552896942, 0.316668033155]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.051646527439, -0.22623562648, 0.109596103666]</Translation>
+<Rotation>[-1.57116612674, -0.316552896942, 0.316668033155]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.950314054661</score>
+</Grasp>
+<Grasp Index="242">
+<joint_values>[0.0, -0.33879630739358341, 1.062203713515538, -1.013796316636963, 1.0102037143052971, -0.45779630978615288, 1.0662037137055229]</joint_values>
+<GraspPose>
+<Translation>[0.11392232058, 0.120905989241, 0.0699023040681]</Translation>
+<Rotation>[-1.5742001277, 0.719668257168, 2.41967795495]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.11392232058, 0.120905989241, 0.0699023040681]</Translation>
+<Rotation>[-1.5742001277, 0.719668257168, 2.41967795495]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="243">
+<joint_values>[0.0, 0.14520369929703589, -0.2027963041935579, -0.94979631685675348, 1.477203720188474, -0.90779631486186019, 1.4512037189535281]</joint_values>
+<GraspPose>
+<Translation>[-0.0271007477188, -0.00515481942063, 0.269449652178]</Translation>
+<Rotation>[3.1401850819, -0.00941320407096, 0.29686158126]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0271007477188, -0.00515481942063, 0.369449652178]</Translation>
+<Rotation>[3.1401850819, -0.00941320407096, 0.29686158126]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999954705537</score>
+</Grasp>
+<Grasp Index="244">
+<joint_values>[0.0, -1.1437963195520049, 1.3102037187756559, -0.8817963136269259, 1.4772037201884609, -0.25079630647343848, 1.460203719381008]</joint_values>
+<GraspPose>
+<Translation>[0.0575428065504, -0.152772859158, 0.0492861942401]</Translation>
+<Rotation>[-1.54911413824, 1.27472362205, 0.316746174859]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0575428065504, -0.252772859158, 0.0492861942401]</Translation>
+<Rotation>[-1.54911413824, 1.27472362205, 0.316746174859]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="245">
+<joint_values>[0.0, -1.1317963189820299, 1.570796326794897, -0.87279631319944917, 1.570796326794897, 0.084203699659321438, -0.1057963028459418]</joint_values>
+<GraspPose>
+<Translation>[-0.00463537462891, 0.02397770702, 0.24347938703]</Translation>
+<Rotation>[3.12979060331, 0.0359543661394, 0.936514609954]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00463537462891, 0.02397770702, 0.34347938703]</Translation>
+<Rotation>[3.12979060331, 0.0359543661394, 0.936514609954]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999284113027</score>
+</Grasp>
+<Grasp Index="246">
+<joint_values>[1.619576261346961e-16, -0.60879631043901217, 1.177203715718109, -0.97879631497455633, 1.309203718728144, -0.2257963052859952, 1.060203713420544]</joint_values>
+<GraspPose>
+<Translation>[0.112076741822, 0.118800332893, 0.0698951368055]</Translation>
+<Rotation>[1.5742001277, -0.719668257168, -0.721914698636]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.112076741822, 0.118800332893, 0.0698951368055]</Translation>
+<Rotation>[1.5742001277, -0.719668257168, -0.721914698636]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="247">
+<joint_values>[1.6653345369377351e-16, -0.31579630630115618, 1.0642037136105309, -0.48579630785644889, 1.141203714008205, -0.33179630706110352, 1.061203713468031]</joint_values>
+<GraspPose>
+<Translation>[0.159038952736, -0.0238214763748, 0.0504498229885]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.259038952736, -0.0238214763748, 0.0504498229885]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="248">
+<joint_values>[0.0, -0.27179630421125212, 1.010203714305314, -0.61479631072399421, 1.259203716353281, -0.36679630872351499, 1.1092037157479211]</joint_values>
+<GraspPose>
+<Translation>[0.1571329037, -0.033802228345, 0.110862377931]</Translation>
+<Rotation>[-1.58112430538, 0.224692939231, 1.34379057869]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.2571329037, -0.033802228345, 0.110862377931]</Translation>
+<Rotation>[-1.58112430538, 0.224692939231, 1.34379057869]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.974810575884</score>
+</Grasp>
+<Grasp Index="249">
+<joint_values>[0.0, -0.2357963057609811, 0.97720371273788809, -0.55579631118126926, 1.162203715005655, -0.40279630717378317, 1.1012037153679519]</joint_values>
+<GraspPose>
+<Translation>[0.158744209529, -0.0291333824816, 0.0504516337963]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.258744209529, -0.0291333824816, 0.0504516337963]</Translation>
+<Rotation>[-1.57342929068, 0.187389163187, 1.38291602164]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="250">
+<joint_values>[1.812856571586799e-16, -0.45879630983364961, 1.1042037155104361, -0.16379630560078989, 0.91520371305267623, -0.4977963084264217, 1.180203715860612]</joint_values>
+<GraspPose>
+<Translation>[-0.0699024949732, 0.149011437334, 0.03163727661]</Translation>
+<Rotation>[-1.58324374908, -0.345812788916, -2.79153576945]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0699024949732, 0.249011437334, 0.03163727661]</Translation>
+<Rotation>[-1.58324374908, -0.345812788916, -2.79153576945]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.940727377211</score>
+</Grasp>
+<Grasp Index="251">
+<joint_values>[0.0, 0.099203700371783082, -0.16579630569578349, -0.98979631549702063, 1.4962037210909269, -0.066796304253164643, -0.29279630520870309]</joint_values>
+<GraspPose>
+<Translation>[0.0209977964136, 0.0288314789353, -0.128536037582]</Translation>
+<Rotation>[-0.0664209493597, 0.0132852072625, 3.14115127679]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0209977964136, 0.0288314789353, -0.228536037582]</Translation>
+<Rotation>[-0.0664209493597, 0.0132852072625, 3.14115127679]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.997706887124</score>
+</Grasp>
+<Grasp Index="252">
+<joint_values>[0.0, -0.85579631565162162, 1.570796326794897, -0.65579631267138949, 1.5707963267948959, -0.33579630725109072, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.102644782927, 0.105503827353, 0.110253199248]</Translation>
+<Rotation>[1.57892859971, -0.736146818217, -0.741623650516]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.102644782927, 0.105503827353, 0.110253199248]</Translation>
+<Rotation>[1.57892859971, -0.736146818217, -0.741623650516]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="253">
+<joint_values>[0.0, -0.28079630463872851, 1.011203714352777, -0.47079630714399112, 1.128203716650378, -0.35179630801105177, 1.0352037122331099]</joint_values>
+<GraspPose>
+<Translation>[-0.162375532978, 0.0187934291002, 0.0504753054875]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.262375532978, 0.0187934291002, 0.0504753054875]</Translation>
+<Rotation>[-1.57360563747, 0.1443312969, -1.71553225156]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="254">
+<joint_values>[0.0, -0.072796301278517148, 0.7452037082377303, -0.75179631397151381, 1.34420371713093, -0.59279630967904529, 1.267203716733257]</joint_values>
+<GraspPose>
+<Translation>[-0.163835040903, 0.0108385811689, 0.0299721133473]</Translation>
+<Rotation>[1.56967682642, -0.122292092663, 1.44864072337]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.263835040903, 0.0108385811689, 0.0299721133473]</Translation>
+<Rotation>[1.56967682642, -0.122292092663, 1.44864072337]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="255">
+<joint_values>[0.0, -0.037796302875749851, 0.00520369916665076, -0.90079631452937514, 1.4952037210434279, 0.071203699041898397, -0.47279630723898669]</joint_values>
+<GraspPose>
+<Translation>[0.000804158703624, 0.0248799671866, 0.268500713736]</Translation>
+<Rotation>[3.10563578545, -0.011794422393, -0.633857453349]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.000804158703624, 0.0248799671866, 0.368500713736]</Translation>
+<Rotation>[3.10563578545, -0.011794422393, -0.633857453349]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999284113027</score>
+</Grasp>
+<Grasp Index="256">
+<joint_values>[0.0, -0.68179631064668778, 1.0282037151602721, -0.30079630558868309, 1.2132037174280299, -1.047796318251873, 1.2652037166382639]</joint_values>
+<GraspPose>
+<Translation>[-0.112127570279, -0.120230730142, 0.0688356313385]</Translation>
+<Rotation>[1.56240380222, 0.85665684346, 2.42112866559]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.112127570279, -0.120230730142, 0.0688356313385]</Translation>
+<Rotation>[1.56240380222, 0.85665684346, 2.42112866559]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="257">
+<joint_values>[2.4616810326283378e-16, 0.061203698566882812, -0.15579630522080889, -0.40579630731628857, 0.73420370771526156, -0.92379631562182285, 1.509203721708378]</joint_values>
+<GraspPose>
+<Translation>[0.000804158703625, 0.0248799671866, 0.268500713736]</Translation>
+<Rotation>[-3.12979060331, -0.0359543661394, -2.20507804364]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.000804158703625, 0.0248799671866, 0.368500713736]</Translation>
+<Rotation>[-3.12979060331, -0.0359543661394, -2.20507804364]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999284113027</score>
+</Grasp>
+<Grasp Index="258">
+<joint_values>[0.0, -0.49579630833142457, 1.182203715955606, -0.1677963057907772, 0.96120371197792565, -0.35679630824853698, 1.065203713658033]</joint_values>
+<GraspPose>
+<Translation>[-0.0691635743525, 0.147658465151, 0.111507691388]</Translation>
+<Rotation>[-1.58677277061, -0.341139181099, -2.79506773507]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0691635743525, 0.247658465151, 0.111507691388]</Translation>
+<Rotation>[-1.58677277061, -0.341139181099, -2.79506773507]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.942253885281</score>
+</Grasp>
+<Grasp Index="259">
+<joint_values>[0.0, -0.34379630763106289, 1.0832037145130049, -0.41479630774377108, 1.142203714055708, -0.30179630563619181, 1.026203715065273]</joint_values>
+<GraspPose>
+<Translation>[-0.161773116499, 0.0105824074025, 0.04997444674]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.261773116499, 0.0105824074025, 0.04997444674]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="260">
+<joint_values>[0.0, -0.19679630390856551, 0.88320371153275379, -0.62679631129396263, 1.199203716763058, -0.41679630783875471, 1.0712037139430151]</joint_values>
+<GraspPose>
+<Translation>[0.159386573384, -0.0342701231384, 0.0908835211123]</Translation>
+<Rotation>[1.58112430538, -0.224692939231, -1.7978020749]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.259386573384, -0.0342701231384, 0.0908835211123]</Translation>
+<Rotation>[1.58112430538, -0.224692939231, -1.7978020749]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.974810575884</score>
+</Grasp>
+<Grasp Index="261">
+<joint_values>[0.0, -0.78279631218430679, 1.570796326794897, -0.80779631337174973, 1.570796326794897, -0.34979630791605709, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.131816245801, 0.0437153895127, 0.0278245787675]</Translation>
+<Rotation>[1.5480830224, -0.228874135302, 1.34701924443]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.231816245801, 0.0437153895127, 0.0278245787675]</Translation>
+<Rotation>[1.5480830224, -0.228874135302, 1.34701924443]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.973671240031</score>
+</Grasp>
+<Grasp Index="262">
+<joint_values>[0.0, -0.38379630627133471, 1.0472037128030769, -0.23579630576097901, 0.87020371091528126, -0.47379630728649103, 1.0372037123281019]</joint_values>
+<GraspPose>
+<Translation>[0.0378636737868, -0.159924331896, 0.0492792360458]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0378636737868, -0.259924331896, 0.0492792360458]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="263">
+<joint_values>[0.0, -0.1227963036533932, 0.77920370985265019, -0.51379630918638064, 1.1622037150056559, -0.84379631508165054, 1.2682037167807561]</joint_values>
+<GraspPose>
+<Translation>[0.034671303692, -0.159053986564, 0.0692532315296]</Translation>
+<Rotation>[-1.5683575785, -0.274700082738, 0.274039327273]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.034671303692, -0.259053986564, 0.0692532315296]</Translation>
+<Rotation>[-1.5683575785, -0.274700082738, 0.274039327273]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962503733706</score>
+</Grasp>
+<Grasp Index="264">
+<joint_values>[1.586647353411043e-16, -0.46579631016613049, 0.87420371110527506, -0.89579631429188888, 0.91020371281517864, -0.31579630630114519, 0.94620371126546643]</joint_values>
+<GraspPose>
+<Translation>[0.110100933, 0.129441383492, 0.0699122870403]</Translation>
+<Rotation>[-1.5742001277, 0.719668257168, 2.41967795495]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.110100933, 0.129441383492, 0.0699122870403]</Translation>
+<Rotation>[-1.5742001277, 0.719668257168, 2.41967795495]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="265">
+<joint_values>[1.584315569701074e-16, -0.57279630872909693, 1.2522037160207971, -0.82979631441669177, 1.395203719553298, -0.28979630506620668, 1.1582037148156661]</joint_values>
+<GraspPose>
+<Translation>[-0.111341637024, -0.119469429015, 0.0888422274575]</Translation>
+<Rotation>[1.5635223022, -0.714108959306, 2.43223472971]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.111341637024, -0.119469429015, 0.0888422274575]</Translation>
+<Rotation>[1.5635223022, -0.714108959306, 2.43223472971]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="266">
+<joint_values>[1.1893028102106649e-16, -1.040796317919396, 1.570796326794897, -0.99079631554453296, 1.5707963267948959, 0.091203699991797546, -0.098796302513450174]</joint_values>
+<GraspPose>
+<Translation>[0.0231762550652, -0.00764142768973, 0.243554798721]</Translation>
+<Rotation>[3.11611534678, 0.0372264843841, -1.20028302164]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0231762550652, -0.00764142768973, 0.343554798721]</Translation>
+<Rotation>[3.11611534678, 0.0372264843841, -1.20028302164]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.998982870262</score>
+</Grasp>
+<Grasp Index="267">
+<joint_values>[1.383074282031078e-16, -0.31779630639613871, 1.09020371484547, -0.35079630796355282, 1.102203715415436, -0.55679631122876971, 1.1662037151956439]</joint_values>
+<GraspPose>
+<Translation>[-0.041000751842, 0.157443631628, 0.0514696645925]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.041000751842, 0.257443631628, 0.0514696645925]</Translation>
+<Rotation>[1.58171042635, 0.27602347486, 0.279013641478]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="268">
+<joint_values>[0.0, -0.35179630801105172, 1.1532037145781751, -0.91479631519434756, 1.426203721025723, -0.48979630804645841, 1.2142037174755229]</joint_values>
+<GraspPose>
+<Translation>[0.11164676203, 0.119235380741, 0.0501099427024]</Translation>
+<Rotation>[-1.57073397582, 0.714625797908, 2.42700771548]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.11164676203, 0.119235380741, 0.0501099427024]</Translation>
+<Rotation>[-1.57073397582, 0.714625797908, 2.42700771548]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="269">
+<joint_values>[2.8824022058386602e-16, -0.077796301516013674, 0.77420370961515772, -0.53579631023132124, 1.1052037155579391, -0.86579631612659669, 1.2182037176655149]</joint_values>
+<GraspPose>
+<Translation>[0.0575428065504, -0.152901448729, 0.0687296325914]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0575428065504, -0.252901448729, 0.0687296325914]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="270">
+<joint_values>[0.0, -0.58279630920407477, 0.93320371064799712, -0.77779631194682564, 1.26220371649577, -0.2267963053334979, 0.99920371378282202]</joint_values>
+<GraspPose>
+<Translation>[0.11531303205, 0.119287110285, 0.090365291138]</Translation>
+<Rotation>[1.57892859971, -0.736146818217, -0.741623650516]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.11531303205, 0.119287110285, 0.090365291138]</Translation>
+<Rotation>[1.57892859971, -0.736146818217, -0.741623650516]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="271">
+<joint_values>[4.4333893268121108e-16, -0.17779630300612381, 0.41420370555460562, -0.6797963105516891, 1.2372037153083391, -0.60379631020151792, 1.135203713723226]</joint_values>
+<GraspPose>
+<Translation>[-0.00533515855302, -0.00450320864439, 0.268900860359]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00533515855302, -0.00450320864439, 0.368900860359]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="272">
+<joint_values>[1.368918559309721e-16, -0.02979630249576028, 0.65020370698510577, -0.56379631156125176, 1.0562037132305551, -0.8947963142443992, 0.98420371307036769]</joint_values>
+<GraspPose>
+<Translation>[-0.0708648818241, 0.151981446888, 0.071232852624]</Translation>
+<Rotation>[1.58410966989, 0.343760353775, 0.348275705115]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0708648818241, 0.251981446888, 0.071232852624]</Translation>
+<Rotation>[1.58410966989, 0.343760353775, 0.348275705115]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.941410537281</score>
+</Grasp>
+<Grasp Index="273">
+<joint_values>[0.0, -0.40079630707880137, 1.0702037138955229, -0.43179630855121731, 1.123203716412863, -0.2177963049060202, 0.91620371310016813]</joint_values>
+<GraspPose>
+<Translation>[-0.155831921713, 0.0508634876202, 0.0935209124991]</Translation>
+<Rotation>[1.60249342017, -0.240485253729, 1.322643016]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.255831921713, 0.0508634876202, 0.0935209124991]</Translation>
+<Rotation>[1.60249342017, -0.240485253729, 1.322643016]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.970734658846</score>
+</Grasp>
+<Grasp Index="274">
+<joint_values>[0.0, -0.46979631035612218, 1.2092037172380321, -1.0407963179193931, 1.233203715118341, -0.38079630612884319, 1.1732037155281241]</joint_values>
+<GraspPose>
+<Translation>[0.105750640428, 0.124478050916, 0.0698953927791]</Translation>
+<Rotation>[1.5742001277, -0.719668257168, -0.721914698636]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.105750640428, 0.124478050916, 0.0698953927791]</Translation>
+<Rotation>[1.5742001277, -0.719668257168, -0.721914698636]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="275">
+<joint_values>[0.0, -0.45979630988114928, 1.216203717570506, -1.0357963176819049, 1.230203714975854, -0.40679630736378197, 1.2192037177130211]</joint_values>
+<GraspPose>
+<Translation>[-0.10688467112, -0.124113213872, 0.0688383797214]</Translation>
+<Rotation>[1.5635223022, -0.714108959306, 2.43223472971]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.10688467112, -0.124113213872, 0.0688383797214]</Translation>
+<Rotation>[1.5635223022, -0.714108959306, 2.43223472971]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="276">
+<joint_values>[0.0, -1.024796317159433, 1.5707963267948959, -0.26879630732839138, 1.5707963267948959, -0.59979631001153, 1.5707963267948959]</joint_values>
+<GraspPose>
+<Translation>[-0.0607995532571, 0.124102118019, 0.111131312708]</Translation>
+<Rotation>[-1.58677277061, -0.341139181099, -2.79506773507]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0607995532571, 0.224102118019, 0.111131312708]</Translation>
+<Rotation>[-1.58677277061, -0.341139181099, -2.79506773507]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.942253885281</score>
+</Grasp>
+<Grasp Index="277">
+<joint_values>[0.0, -0.22179630509600529, 0.947203711312957, -0.61979631096148202, 1.2812037173982169, -0.40879630745878393, 1.140203713960714]</joint_values>
+<GraspPose>
+<Translation>[0.158256988651, -0.0276823298142, 0.0281354272573]</Translation>
+<Rotation>[1.55522279094, -0.176702414433, -1.74478193071]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.258256988651, -0.0276823298142, 0.0281354272573]</Translation>
+<Rotation>[1.55522279094, -0.176702414433, -1.74478193071]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.984309331063</score>
+</Grasp>
+<Grasp Index="278">
+<joint_values>[0.0, -0.33079630701360679, 1.0792037143229971, -0.31979630649113427, 1.046203712755577, -0.4927963081889371, 1.1452037141981961]</joint_values>
+<GraspPose>
+<Translation>[-0.0282718361568, 0.160651231809, 0.0495535459136]</Translation>
+<Rotation>[1.56632508851, 0.215514882241, 0.214560788151]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0282718361568, 0.260651231809, 0.0495535459136]</Translation>
+<Rotation>[1.56632508851, 0.215514882241, 0.214560788151]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.976856651183</score>
+</Grasp>
+<Grasp Index="279">
+<joint_values>[0.0, -0.17379630281613179, 0.40620370517461207, -0.65379631257639337, 1.226203718045487, -0.70579631178662972, 1.2942037180156949]</joint_values>
+<GraspPose>
+<Translation>[-0.00649448878705, -0.0040844402598, -0.129508338475]</Translation>
+<Rotation>[0.00479679956265, -0.0068249837737, 1.57077995766]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00649448878705, -0.0040844402598, -0.229508338475]</Translation>
+<Rotation>[0.00479679956265, -0.0068249837737, 1.57077995766]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="280">
+<joint_values>[0.0, -0.44879630935867437, 0.94320371112296864, -0.1197963035109003, 0.7072037096924606, -0.40279630717379028, 0.92020371329015693]</joint_values>
+<GraspPose>
+<Translation>[-0.0715389413904, 0.153597985885, 0.0912579207455]</Translation>
+<Rotation>[-1.58410966989, -0.343760353775, -2.79331694847]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0715389413904, 0.253597985885, 0.0912579207455]</Translation>
+<Rotation>[-1.58410966989, -0.343760353775, -2.79331694847]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.941410537281</score>
+</Grasp>
+<Grasp Index="281">
+<joint_values>[0.0, -0.96379631752171668, 1.570796326794897, -1.008796316399472, 1.570796326794897, -0.51579630928137732, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.0910759693983, -0.104540012061, 0.0285556101106]</Translation>
+<Rotation>[-1.5511868482, 0.724732889848, -0.711827569989]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0910759693983, -0.104540012061, 0.0285556101106]</Translation>
+<Rotation>[-1.5511868482, 0.724732889848, -0.711827569989]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="282">
+<joint_values>[0.0, -0.59079630958405283, 1.570796326794897, -0.32779630687111072, 1.570796326794897, -0.85679631569911863, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.0540123511377, -0.13346541, 0.0895987745042]</Translation>
+<Rotation>[-1.57116612674, -0.316552896942, 0.316668033155]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0540123511377, -0.23346541, 0.0895987745042]</Translation>
+<Rotation>[-1.57116612674, -0.316552896942, 0.316668033155]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.950314054661</score>
+</Grasp>
+<Grasp Index="283">
+<joint_values>[0.0, 0.021203699926614729, -0.1087963029884271, -0.92479631566931719, 1.5052037215183951, -0.34779630782105991, 0.33520370180229653]</joint_values>
+<GraspPose>
+<Translation>[-0.00433816207536, 0.0248835618489, 0.26866134669]</Translation>
+<Rotation>[3.10563578545, -0.011794422393, -0.633857453349]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00433816207536, 0.0248835618489, 0.36866134669]</Translation>
+<Rotation>[3.10563578545, -0.011794422393, -0.633857453349]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999284113027</score>
+</Grasp>
+<Grasp Index="284">
+<joint_values>[1.730230737462583e-16, -0.47979630757146219, 1.0982037152254469, -0.368796308818508, 0.87120371096278049, -0.32679630682362582, 1.0772037142280031]</joint_values>
+<GraspPose>
+<Translation>[0.106693762505, 0.126576371274, 0.0301098343814]</Translation>
+<Rotation>[-1.57073397582, 0.714625797908, 2.42700771548]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.106693762505, 0.126576371274, 0.0301098343814]</Translation>
+<Rotation>[-1.57073397582, 0.714625797908, 2.42700771548]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="285">
+<joint_values>[0.0, -0.21079630457354001, 0.95720371178793784, -0.44379630912118823, 1.1492037143881879, -0.72979631292657177, 1.320203719250624]</joint_values>
+<GraspPose>
+<Translation>[-0.0412460304886, 0.157879006481, 0.0909225536258]</Translation>
+<Rotation>[-1.58171042635, -0.27602347486, -2.86257901211]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0412460304886, 0.257879006481, 0.0909225536258]</Translation>
+<Rotation>[-1.58171042635, -0.27602347486, -2.86257901211]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<Grasp Index="286">
+<joint_values>[0.0, -0.41679630783874683, 1.570796326794897, -0.92479631566931764, 1.570796326794897, -0.58679630939406191, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.137892945384, 0.0147846572715, 0.110193228162]</Translation>
+<Rotation>[-1.57691409674, 0.139787081875, -1.71143840392]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.237892945384, 0.0147846572715, 0.110193228162]</Translation>
+<Rotation>[-1.57691409674, 0.139787081875, -1.71143840392]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.990227154067</score>
+</Grasp>
+<Grasp Index="287">
+<joint_values>[0.0, -0.69479631126415886, 1.570796326794897, -0.38079630612885118, 1.570796326794897, -0.94279631652427232, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.0305712370518, -0.136012089049, 0.0494373768165]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0305712370518, -0.236012089049, 0.0494373768165]</Translation>
+<Rotation>[1.56418304229, 0.296001006432, -2.84751464978]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="288">
+<joint_values>[0.0, -0.32679630682361349, 1.0332037121381119, -0.36679630872351271, 0.85420371015532492, -0.45979630988114772, 1.0532037130880589]</joint_values>
+<GraspPose>
+<Translation>[0.114070063028, 0.12203013344, 0.0301097684468]</Translation>
+<Rotation>[-1.57073397582, 0.714625797908, 2.42700771548]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.114070063028, 0.12203013344, 0.0301097684468]</Translation>
+<Rotation>[-1.57073397582, 0.714625797908, 2.42700771548]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="289">
+<joint_values>[0.0, -0.66179631295637542, 1.570796326794897, -0.73279631306906723, 1.570796326794897, -0.49179630814144037, 1.5707963267948959]</joint_values>
+<GraspPose>
+<Translation>[-0.136959841131, 0.00753271989697, 0.0500022252226]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.236959841131, 0.00753271989697, 0.0500022252226]</Translation>
+<Rotation>[-1.56967682642, 0.122292092663, -1.69295193022]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="290">
+<joint_values>[2.2204460492503131e-16, -0.022796302163267449, 0.64520370674761307, -0.82279631408420673, 1.325203719488113, -0.57779630896660061, 1.1472037142931939]</joint_values>
+<GraspPose>
+<Translation>[-0.158700722301, 0.0472046236429, 0.0477058414171]</Translation>
+<Rotation>[-1.55187192068, 0.208842950255, -1.775751591]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.258700722301, 0.0472046236429, 0.0477058414171]</Translation>
+<Rotation>[-1.55187192068, 0.208842950255, -1.775751591]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.978096287978</score>
+</Grasp>
+<Grasp Index="291">
+<joint_values>[0.0, -0.97479631478456519, 1.462203719475998, -1.09279631712963, 1.4632037195235059, -0.37979630608134918, 1.5152037219933701]</joint_values>
+<GraspPose>
+<Translation>[0.0348340586682, -0.15963148884, 0.0692518231441]</Translation>
+<Rotation>[1.56214313312, -1.29608569251, -2.85856304792]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0348340586682, -0.25963148884, 0.0692518231441]</Translation>
+<Rotation>[1.56214313312, -1.29608569251, -2.85856304792]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962503733706</score>
+</Grasp>
+<Grasp Index="292">
+<joint_values>[0.0, -0.39479630679380728, 1.1892037162880871, -1.061796318916838, 1.1882037162406009, -0.45479630964366119, 1.2172037176180019]</joint_values>
+<GraspPose>
+<Translation>[-0.111800098089, -0.119852901553, 0.0688383797214]</Translation>
+<Rotation>[-1.5635223022, 0.714108959306, -0.709357923879]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.111800098089, -0.119852901553, 0.0688383797214]</Translation>
+<Rotation>[-1.5635223022, 0.714108959306, -0.709357923879]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="293">
+<joint_values>[2.9856815230765641e-16, -0.082796301753493895, 0.56920370639743978, -0.46779631026112689, 0.92220371338515439, -0.72279631259408794, 1.0242037149702601]</joint_values>
+<GraspPose>
+<Translation>[0.0360724058997, -0.164317479783, 0.0892732144823]</Translation>
+<Rotation>[-1.5686075525, -0.274213187776, 0.27362111398]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0360724058997, -0.264317479783, 0.0892732144823]</Translation>
+<Rotation>[-1.5686075525, -0.274213187776, 0.27362111398]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.962636250278</score>
+</Grasp>
+<Grasp Index="294">
+<joint_values>[0.0, 0.1642037001994853, -0.2237963051910066, -0.93279631604929714, 1.469203719808484, -0.98079631506954434, 1.495203721043423]</joint_values>
+<GraspPose>
+<Translation>[-0.0265007244577, 0.00110593216842, -0.130676992672]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.63689415875e-05]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0265007244577, 0.00110593216842, -0.230676992672]</Translation>
+<Rotation>[0.00682506229102, 0.0047966878438, 1.63689415875e-05]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999965205536</score>
+</Grasp>
+<Grasp Index="295">
+<joint_values>[1.1222080251252709e-16, 0.16020370000948, -0.21179630462103971, -0.89479631424438966, 1.438203718336063, -0.95779631723672809, 1.457203719238513]</joint_values>
+<GraspPose>
+<Translation>[-0.000186708424492, -0.0244988905815, 0.270151594879]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.000186708424492, -0.0244988905815, 0.370151594879]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="296">
+<joint_values>[0.0, -0.15279630507831329, 0.85420371015532259, -0.65579631267139271, 1.314203718965641, -0.48879630799895818, 1.1842037160506049]</joint_values>
+<GraspPose>
+<Translation>[-0.162999700967, 0.015995683685, 0.0299723355752]</Translation>
+<Rotation>[1.56967682642, -0.122292092663, 1.44864072337]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.262999700967, 0.015995683685, 0.0299723355752]</Translation>
+<Rotation>[1.56967682642, -0.122292092663, 1.44864072337]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.992531014709</score>
+</Grasp>
+<Grasp Index="297">
+<joint_values>[0.0, -0.64479631214891664, 1.5707963267948959, -0.7597963143514963, 1.570796326794897, -0.45679630973865631, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.137334725636, 0.00942202528299, 0.110185352687]</Translation>
+<Rotation>[-1.57691409674, 0.139787081875, -1.71143840392]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.237334725636, 0.00942202528299, 0.110185352687]</Translation>
+<Rotation>[-1.57691409674, 0.139787081875, -1.71143840392]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.990227154067</score>
+</Grasp>
+<Grasp Index="298">
+<joint_values>[0.0, -0.75479631411400727, 1.570796326794897, -0.77879631199432486, 1.570796326794895, -0.93579631619179016, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[0.0964004143825, 0.0986121856718, 0.110197153302]</Translation>
+<Rotation>[-1.5797715244, -0.834613013754, 2.41208041335]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0964004143825, 0.0986121856718, 0.110197153302]</Translation>
+<Rotation>[-1.5797715244, -0.834613013754, 2.41208041335]</Rotation>
+</PreGraspPose>
+<category>NONE</category>
+<score>0</score>
+</Grasp>
+<Grasp Index="299">
+<joint_values>[0.0, -0.36879630881850739, 1.109203715747912, -0.17079630267363841, 1.570796326794897, -0.51479630923387698, 1.1252037165078821]</joint_values>
+<GraspPose>
+<Translation>[0.0595743014698, -0.147245513161, -0.000639296022112]</Translation>
+<Rotation>[-1.48191893987, -0.321089588713, 0.294159373832]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0595743014698, -0.247245513161, -0.000639296022112]</Translation>
+<Rotation>[-1.48191893987, -0.321089588713, 0.294159373832]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.945146833392</score>
+</Grasp>
+<Grasp Index="300">
+<joint_values>[1.382624916841863e-16, 0.1112037009417534, -0.13779630436585491, -0.75279631401901204, 1.3442037171309369, -0.9437963165717671, 1.470203719855989]</joint_values>
+<GraspPose>
+<Translation>[0.0199127822682, -0.00265753875322, -0.130769148181]</Translation>
+<Rotation>[-0.0176342036104, 0.00488327784375, 3.14154959603]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0199127822682, -0.00265753875322, -0.230769148181]</Translation>
+<Rotation>[-0.0176342036104, 0.00488327784375, 3.14154959603]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999832600137</score>
+</Grasp>
+<Grasp Index="301">
+<joint_values>[1.6653345369377351e-16, -0.14479630469831739, 0.82420371199004094, -0.64879631233890844, 1.2982037182056729, -0.47879630752395558, 1.1422037140557071]</joint_values>
+<GraspPose>
+<Translation>[-0.16275952345, 0.0188653444606, 0.0899201338872]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.26275952345, 0.0188653444606, 0.0899201338872]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="302">
+<joint_values>[0.0, -0.99279631563951354, 1.464203719571002, -1.0887963169396451, 1.459203719333509, -0.25679630675842258, 1.4662037196659921]</joint_values>
+<GraspPose>
+<Translation>[0.0575428065504, -0.152901448729, 0.0687296325914]</Translation>
+<Rotation>[-1.54911413824, 1.27472362205, 0.316746174859]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0575428065504, -0.252901448729, 0.0687296325914]</Translation>
+<Rotation>[-1.54911413824, 1.27472362205, 0.316746174859]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.956489713871</score>
+</Grasp>
+<Grasp Index="303">
+<joint_values>[0.0, -0.058796303873182597, 0.68320370855253498, -0.72879631287908297, 1.300203718300678, -0.58279630920409675, 1.221203717808]</joint_values>
+<GraspPose>
+<Translation>[-0.164403253715, 0.0138132920916, 0.0899226359743]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.264403253715, 0.0138132920916, 0.0899226359743]</Translation>
+<Rotation>[1.57360563747, -0.1443312969, 1.42606040203]</Rotation>
+</PreGraspPose>
+<category>X</category>
+<score>0.989598402085</score>
+</Grasp>
+<Grasp Index="304">
+<joint_values>[3.0277362106194412e-16, -0.79879631294426079, 1.388203719220817, -0.040796303018231568, 0.069203698946865497, 0.38120370398717951, -0.35379630810604901]</joint_values>
+<GraspPose>
+<Translation>[-0.0271054542516, 0.0200259768425, 0.269985074768]</Translation>
+<Rotation>[3.13217944019, 0.00140750932848, 1.86764465848]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0271054542516, 0.0200259768425, 0.369985074768]</Translation>
+<Rotation>[3.13217944019, 0.00140750932848, 1.86764465848]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999954705537</score>
+</Grasp>
+<Grasp Index="305">
+<joint_values>[1.3914520699991931e-16, 0.1042037006092702, -0.15079630498332139, -0.84879631531914035, 1.435203718193572, -0.93279631604929747, 1.464203719570996]</joint_values>
+<GraspPose>
+<Translation>[0.0199127822682, 0.00252396126442, -0.130677768673]</Translation>
+<Rotation>[-0.0176342036104, 0.00488327784375, 3.14154959603]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0199127822682, 0.00252396126442, -0.230677768673]</Translation>
+<Rotation>[-0.0176342036104, 0.00488327784375, 3.14154959603]</Rotation>
+</PreGraspPose>
+<category>Z</category>
+<score>0.999832600137</score>
+</Grasp>
+<Grasp Index="306">
+<joint_values>[0.0, -0.1357963042708577, 0.86820371082029191, -0.55779631127626594, 1.2672037167332639, -0.80179631308675836, 1.3412037169884441]</joint_values>
+<GraspPose>
+<Translation>[-0.0335631073488, 0.159818919713, 0.0916045453127]</Translation>
+<Rotation>[-1.58709505468, -0.255948094907, -2.88148545215]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0335631073488, 0.259818919713, 0.0916045453127]</Translation>
+<Rotation>[-1.58709505468, -0.255948094907, -2.88148545215]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96729521373</score>
+</Grasp>
+<Grasp Index="307">
+<joint_values>[0.0, -0.14179630455584721, 0.85220371006034101, -0.70279631164413869, 1.310203718775667, -0.48479630780895411, 1.151203714483185]</joint_values>
+<GraspPose>
+<Translation>[0.15972109066, -0.0239705119053, 0.0898953308344]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.25972109066, -0.0239705119053, 0.0898953308344]</Translation>
+<Rotation>[1.57342929068, -0.187389163187, -1.75867663195]</Rotation>
+</PreGraspPose>
+<category>-X</category>
+<score>-0.982490561847</score>
+</Grasp>
+<Grasp Index="308">
+<joint_values>[0.0, -1.137796319267018, 1.229203718188, -0.8587963157941142, 1.4352037181935711, -0.063796304110673704, 1.2392037154033271]</joint_values>
+<GraspPose>
+<Translation>[-0.0703092487519, 0.149891349107, 0.0516513288937]</Translation>
+<Rotation>[-1.60532998792, 1.22476858621, -2.82824340454]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.0703092487519, 0.249891349107, 0.0516513288937]</Translation>
+<Rotation>[-1.60532998792, 1.22476858621, -2.82824340454]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.940727377211</score>
+</Grasp>
+<Grasp Index="309">
+<joint_values>[0.0, 0.16820370038950239, -0.21879630495351801, -0.943796316571762, 1.460203719381014, -0.93879631633427651, 1.457203719238521]</joint_values>
+<GraspPose>
+<Translation>[-0.00533020861845, -0.0244988905815, 0.270172810407]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.00533020861845, -0.0244988905815, 0.370172810407]</Translation>
+<Rotation>[-3.13799422965, 0.00412495692311, 1.43465883963]</Rotation>
+</PreGraspPose>
+<category>-Z</category>
+<score>-0.999985018112</score>
+</Grasp>
+<Grasp Index="310">
+<joint_values>[1.122051115319658e-16, -0.3687963088185055, 1.150203714435688, -0.28879630501871351, 1.0102037143053, -0.44679630926367858, 1.1502037144356869]</joint_values>
+<GraspPose>
+<Translation>[0.0155493279905, -0.159406308374, 0.050070200216]</Translation>
+<Rotation>[1.57042772959, 0.170289630485, -2.97136547712]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[0.0155493279905, -0.259406308374, 0.050070200216]</Translation>
+<Rotation>[1.57042772959, 0.170289630485, -2.97136547712]</Rotation>
+</PreGraspPose>
+<category>Y</category>
+<score>0.985535658257</score>
+</Grasp>
+<Grasp Index="311">
+<joint_values>[0.0, -0.96779631771170749, 1.441203718478558, -1.0857963167971461, 1.437203718288564, -0.3587963083435321, 1.570796326794897]</joint_values>
+<GraspPose>
+<Translation>[-0.036484074856, 0.160901225602, 0.0709372546868]</Translation>
+<Rotation>[1.60930766705, -1.29456266557, 0.238986375741]</Rotation>
+</GraspPose>
+<PreGraspPose>
+<Translation>[-0.036484074856, 0.260901225602, 0.0709372546868]</Translation>
+<Rotation>[1.60930766705, -1.29456266557, 0.238986375741]</Rotation>
+</PreGraspPose>
+<category>-Y</category>
+<score>-0.96208946842</score>
+</Grasp>
+<NumberOfGrasps>312</NumberOfGrasps>
+</configuration>
+</GraspList>

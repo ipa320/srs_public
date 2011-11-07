@@ -1,4 +1,5 @@
 from ._UI_DMresp import *
+from ._PositionMeasurement import *
 from ._Component import *
 from ._DM_UIcom import *
 from ._Grasp import *

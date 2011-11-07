@@ -1,0 +1,22 @@
+<package>
+  <description brief="knowledge_ros_service">
+
+     knowledge_ros_service
+
+  </description>
+  <author>Ze Ji</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/knowledge_ros_service</url>
+  <depend package="roslib"/>
+  <depend package="rosjava_jni"/>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="geometry_msgs"/>
+  <depend package="std_msgs"/>
+  <!-- depend package="apache_xmlrpc" /-->
+  <!-- depend package="apache_commons_util" /-->
+
+</package>
+
+

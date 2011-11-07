@@ -11,7 +11,7 @@
   <depend package="actionlib"/>
   <depend package="rospy"/>
   <depend package="tf"/>
-  <depend package="openrave"/>
+  <!--depend package="openrave"/-->
   <depend package="smach"/>
   <depend package="smach_ros"/>
   <depend package="cob_script_server"/>

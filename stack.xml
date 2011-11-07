@@ -8,11 +8,10 @@
   <license>BSD,Fraunhofer IPA</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs</url>
-  <depend stack="arm_navigation" /> <!-- arm_navigation_msgs -->
+  <depend stack="arm_navigation" /> <!-- kinematics_msgs, arm_navigation_msgs -->
   <depend stack="bullet" /> <!-- bullet -->
   <depend stack="cob_apps" /> <!-- cob_bringup, cob_script_server, cob_2dnav -->
-  <depend stack="cob_common" /> <!-- cob_msgs, cob_default_config, cob_srvs -->
-  <depend stack="cob_navigation" /> <!-- cob_platform_ctrl -->
+  <depend stack="cob_common" /> <!-- cob_default_config, cob_srvs, cob_msgs -->
   <depend stack="common" /> <!-- actionlib, bfl -->
   <depend stack="common_msgs" /> <!-- nav_msgs, actionlib_msgs, trajectory_msgs, sensor_msgs, geometry_msgs, visualization_msgs -->
   <depend stack="executive_smach" /> <!-- smach_ros, smach -->
@@ -21,8 +20,8 @@
   <depend stack="laser_pipeline" /> <!-- laser_geometry -->
   <depend stack="perception_pcl" /> <!-- pcl, pcl_ros -->
   <depend stack="ros" /> <!-- roslib -->
-  <depend stack="ros_comm" /> <!-- std_srvs, rosbag, std_msgs, roscpp, rospy -->
+  <depend stack="ros_comm" /> <!-- std_srvs, roscpp, message_filters, std_msgs, rospy, rosbag -->
   <depend stack="sql_database" /> <!-- database_interface -->
-  <depend stack="vision_opencv" /> <!-- cv_bridge -->
+  <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
 
 </stack>

@@ -12,7 +12,7 @@
   <depend stack="bullet" /> <!-- bullet -->
   <depend stack="client_rosjava_jni" /> <!-- rosjava_jni -->
   <depend stack="cob_command_tools" /> <!-- cob_script_server -->
-  <depend stack="cob_common" /> <!-- cob_srvs, cob_msgs -->
+  <depend stack="cob_common" /> <!-- cob_srvs -->
   <depend stack="cob_environment_perception" /> <!-- cob_3d_mapping_msgs -->
   <depend stack="cob_navigation" /> <!-- cob_2dnav -->
   <depend stack="cob_object_perception" /> <!-- cob_object_detection_msgs -->

@@ -9,4 +9,8 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_jena</url>
 
+  <export>
+    <cpp cflags="-I${prefix}/common/lib"/>
+  </export>
+
 </package>

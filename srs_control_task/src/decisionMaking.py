@@ -14,7 +14,6 @@
 import roslib; roslib.load_manifest('srs_control_task')
 import rospy
 import actionlib
-import string
 
 import sys
 import time
@@ -41,7 +40,7 @@ class DecisionMaking:
     def __init__(self):
         self._feedbackUser = xmsg.UserFeedback()
         self._resultUser = xmsg.UserResult()
-        self.solfromUser = errorsResponse()
+        self.solfromUser = xsrv.errorsResponse()
         self.serverUser = actionlib.SimpleActionServer(rospy.get_name(), xmsg.UserAction, self.getCommandUser, False)
         self.serverUser.start()
         rospy.loginfo("Waiting for a new task ...")
@@ -54,23 +53,23 @@ class DecisionMaking:
 
     ### Declaration of  callback function for the commands from the user interface
     def callbackUI (self,data):
-        rospy.loginfo ("I heard %s %s %i from the UI_PRI",data.solution,data.parameter,data.responseID)
+        rospy.loginfo ("I heard %s %s %i from the UI_PRI",data.solution,data.parameter, data.responseID)
         if (data.responseID == self.user_com_id):
             self.user_respsol = data.solution 
             self.user_resppar = data.parameter
             rospy.loginfo ("Match between responseId and requestID. Now user_respsol is:%s and user_resppar is:%s",self.user_respsol,self.user_resppar)  
         else:
-            print ("but the id:%s does not correspond to requestId:%s",self.user_com_id,data.responseID)
+            print ("but the id:%s does not correspond to requestId:%s",self.user_com_id)
 
     
 
 
     #### Display the feedback for the user ####
     def execute_callback(self,fb):
-        print ('Display feedback')
-        rospy.loginfo("%s",fb.current_state)
-        rospy.loginfo("%s",fb.solution_required)
-        if(fb.solution_required == True):
+    	print ('Display feedback')
+    	rospy.loginfo("%s",fb.current_state)
+	rospy.loginfo("%s",fb.solution_required)
+    	if(fb.solution_required == True):
             rospy.loginfo("Solution required")
             #self.DecisionMaking_errors_server()
             ##lancement du server erreur

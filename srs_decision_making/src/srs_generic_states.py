@@ -23,7 +23,7 @@ from cob_srvs.srv import Trigger
 from geometry_msgs.msg import *
 
 import srs_decision_making.msg as xmsg
-
+import srs_decision_making.srv as xsrv
 
 """
 This file contains (or import) basic states for SRS high level state machines.
@@ -151,7 +151,9 @@ class intervention_base_pose(smach.State):
                     print "Service call failed: %s"%e           
                     self.pub_fb.publish(False)   
                     return 'failed'
-                print (s)             
+                print (s)   
+                
+                          
                 
                 if  (s.giveup == 1):
                     return 'no_more_retry'
@@ -165,8 +167,9 @@ class intervention_base_pose(smach.State):
             """
             call srs knowledge ros service for a new scanning or grasping position
             """
-            userdata.intermediate_pose = "kitchen"   
-            return 'retry'
+            #userdata.intermediate_pose = "kitchen"   
+            #return 'retry'
+            return 'no_more_retry'
             
 
 #get a interested region from UI or KB and then pass it to the object detector
@@ -267,7 +270,7 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','open_door','env_object_update'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','open_door','env_object_update', 'turn_head', 'simple_detect'],
                              input_keys=['target_object_name','target_base_pose','target_object_pose'],
                              output_keys=['target_object_name',
                                           'target_base_pose',
@@ -288,7 +291,7 @@ class semantic_dm(smach.State):
         userdata.semi_autonomous_mode=False
         
         if current_task_info.task_name=="get" and current_task_info.task_parameter=="milk":
-            userdata.target_base_pose="table1"
+            userdata.target_base_pose="order"
             userdata.target_object_name="milk_box1"    
                     
         else: 
@@ -300,7 +303,7 @@ class semantic_dm(smach.State):
         rospy.loginfo("self.count: %s", self.count)
         rospy.sleep(1)
         
-        if self.count>0:     
+        if self.count>1:     
             current_task_info.last_step_name = "semantic_dm"
 
             last_step_info = xmsg.Last_step_info()
@@ -311,16 +314,25 @@ class semantic_dm(smach.State):
             #recording the information of last step
             current_task_info.last_step_info.append(last_step_info)
             
-            return 'succeeded'
+            return 'succeeded'        
         else:
-
-            last_step_info = xmsg.Last_step_info()
-            last_step_info.step_name = "semantic_dm"
-            last_step_info.outcome = 'random'
-            last_step_info.semi_autonomous_mode = False
-            self.count+=1
-            #recording the information of last step
-            current_task_info.last_step_info.append(last_step_info)
+            if self.count==1:
+                last_step_info = xmsg.Last_step_info()
+                last_step_info.step_name = "semantic_dm"
+                last_step_info.outcome = 'random'
+                last_step_info.semi_autonomous_mode = False
+                self.count+=1
+                current_task_info.last_step_info.append(last_step_info)
+                userdata.target_object_pose="kitchen"
+                return 'simple_detect'
+            else:
+                last_step_info = xmsg.Last_step_info()
+                last_step_info.step_name = "semantic_dm"
+                last_step_info.outcome = 'random'
+                last_step_info.semi_autonomous_mode = False
+                self.count+=1
+                #recording the information of last step
+                current_task_info.last_step_info.append(last_step_info)
 
             return 'navigation'
 
@@ -337,7 +349,7 @@ class initialise(smach.State):
         last_step_info = xmsg.Last_step_info()
         last_step_info.step_name = "initialise"
         last_step_info.outcome = 'succeeded'
-        last_step_info.semi_autonomous_mode = False
+        last_step_info.semi_autonomous_mode = True
         
         #recording the information of last step
         global current_task_info

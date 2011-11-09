@@ -21,7 +21,6 @@ from actionlib.msg import *
 
 import time
 from string import *
-from std_msgs.msg import String, Bool, Int32
 
 import srs_control_task.msg as xmsg
 
@@ -149,34 +148,26 @@ class Executor():
         #rospy.loginfo("I heard %s",data.data)
         _feedback.current_state = data.data
         self._as.publish_feedback(_feedback)
-        
-# This function is called when a rostopic message is published by the emergency listener       
-    def callback_emergency(self, data):
-        rospy.loginfo("callback emergency:I heard %s",data.data)
-        if (data.data) :
-            rospy.loginfo("Emergency stop received")
-            _result.return_value = 3    # 3 = FAILED
-            self._as.set_preempted(_result, "Caused by emergency stop")
-            rospy.signal_shutdown("emergency stop occured !")
 
 # This function is triggered when a goal is received.
 # The state machine start here.
     def launch(self, goal):
-        rospy.Subscriber("fb_executing_solution", Bool, self.callback_fb_solution_req)
-        rospy.Subscriber("fb_executing_state", String, self.callback_fb_current_state)
-        rospy.Subscriber("feedback_emergency", Bool, self.callback_emergency)
-        
         _feedback.current_state = "Launching the state machine"
         _feedback.solution_required = False
         _feedback.exceptional_case_id = 0
         self._as.publish_feedback(_feedback)
         
+        rospy.Subscriber("fb_executing_solution", Bool, self.callback_fb_solution_req)
+        rospy.Subscriber("fb_executing_state", String, self.callback_fb_current_state)
+        
+        rospy.loginfo('Current goal :\n%s',goal)
+    
         self.action = goal.action
         self.param = goal.parameter
         rospy.loginfo('Current action %s',self.action)
         rospy.loginfo('Current parameter %s',self.param)
         
-        #self.act = self.init_sm_act(self.action, self.param)
+        self.act = self.init_sm_act(self.action, self.param)
         
         self._as.is_active()
         # Execute the state machine

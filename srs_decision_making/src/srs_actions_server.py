@@ -179,11 +179,14 @@ class SRS_DM_ACTION(object):
                                                 'detection':'SM_DETECTION',
                                                 'simple_grasp':'SM_SIMPLE_GRASP',
                                                 'open_door':'SM_OPEN_DOOR',
-                                                'env_object_update':'SM_ENV_OBJECT_UPDATE'},
+                                                'env_object_update':'SM_ENV_OBJECT_UPDATE',
+                                                'turn_head':'TURN_HEAD',
+                                                'simple_detect':'SM_DETECTION_SIMPLE'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
                                                'target_object_pose':'target_object_pose',
-                                               'semi_autonomous_mode':'semi_autonomous_mode'}
+                                               'semi_autonomous_mode':'semi_autonomous_mode'
+}
                                    )                                   
             smach.StateMachine.add('SM_NAVIGATION', sm_approach_pose_assisted(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'pose_not_reacheable':'SEMANTIC_DM', 'failed':'task_aborted'},
@@ -210,7 +213,15 @@ class SRS_DM_ACTION(object):
                                    remapping={'target_object_name':'target_object_name',
                                               'target_base_pose':'target_base_pose',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_pose':'target_object_pose'})        
+                                              'target_object_pose':'target_object_pose'})      
+              
+            smach.StateMachine.add('TURN_HEAD', move_head(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'failed':'task_aborted'})
+            
+            smach.StateMachine.add('SM_DETECTION_SIMPLE', detect_object(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'retry':'SEMANTIC_DM', 'failed':'task_aborted','no_more_retries':'SEMANTIC_DM'},
+                                   remapping={'object_name':'target_object_name',
+                                              'semi_autonomous_mode':'semi_autonomous_mode'})
 
         return self.temp
                     
@@ -278,7 +289,7 @@ class SRS_DM_ACTION(object):
         rospy.loginfo("sm last step session ID: %s", current_task_info.session_id)
         
         #set outcomes based on the execution result       
-        
+        """
         if self.preempt_check()==True:
             self._result.return_value=2
             self._as.set_preempted(self._result)
@@ -288,7 +299,7 @@ class SRS_DM_ACTION(object):
             self._result.return_value=3
             self._as.set_succeeded(self._result)
             return
-        
+        """
         #for all other cases outcome == "task_aborted": 
         self._result.return_value=4
         self._as.set_aborted(self._result)
@@ -296,7 +307,7 @@ class SRS_DM_ACTION(object):
             
     def callback_fb_solution_req(self, data):
         #rospy.loginfo("I heard %s",data.data)
-        self._feedback.solution_required = data.data_as
+        self._feedback.solution_required = data.data
         self._as.publish_feedback(self._feedback)
         
     def callback_fb_current_state(self, data):

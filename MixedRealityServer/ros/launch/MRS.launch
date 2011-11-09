@@ -6,4 +6,6 @@
         <node name="MapRF" pkg="MixedRealityServer" type="MapTF" respawn="true" />
 	<!-- mixed reality server gdatabase object drawer -->
         <node name="ControlMRS" pkg="MixedRealityServer" type="ControlMRS" respawn="true" />
+	<!-- mixed reality server gdatabase object drawer -->
+        <node name="RealityPublisher" pkg="MixedRealityServer" type="RealityPublisher" respawn="true" />
 </launch>

@@ -1,0 +1,10 @@
+#get_objects_map
+#mapID
+uint32 mapID
+#Time stamp for the period
+duration period # if empty then all the period
+---
+#list of object ID for possible object in current map
+uint32[] objectID
+#object classID for each object on the map 
+uint32[] classID

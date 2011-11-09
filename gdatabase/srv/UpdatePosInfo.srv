@@ -1,0 +1,9 @@
+#updating positional information of an object
+#object ID
+uint32 objectID
+#object pose
+geometry_msgs/Pose newPose
+#Time stamp for the object
+time lastseenTime
+---
+bool success

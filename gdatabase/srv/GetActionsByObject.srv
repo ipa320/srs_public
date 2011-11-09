@@ -1,0 +1,10 @@
+#get_actions_by_object
+#reference of the action
+uint32 objectID
+---
+#list of actionID for possible action on the given object
+uint32[] actionID
+#list of action name for possible action on the given object
+string[] actionName
+#list of components required for each action
+srs_msgs/Component[]  requiredComponent

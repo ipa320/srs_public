@@ -1,8 +1,0 @@
-#Trigger Table Object Cluster
-#goal definition
----
-#result definition
-sensor_msgs/PointCloud2[] bounding_boxes
----
-#feedback
-std_msgs/String currentStep

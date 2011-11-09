@@ -13,6 +13,8 @@ import roslib; roslib.load_manifest('srs_control_task')
 import rospy
 import smach
 import smach_ros
+from smach import Iterator, StateMachine, CBState
+from smach_ros import ConditionState, IntrospectionServer
 
 from actionlib import *
 from actionlib.msg import *
@@ -51,26 +53,25 @@ class Executor():
         self.temp.userdata.param_move = paramgoal
         self.temp.userdata.param_detect = paramgoal
         self.temp.userdata.param_grasp = paramgoal
+        self.temp.userdata.current_action = ""
+        self.temp.userdata.final_result = -1;
         
         self.running = self.init_sm_running()
         
-        self.fail = self.init_sm_failed()
+       # self.fail = self.init_sm_failed()
         
         with self.temp:
             smach.StateMachine.add('INIT_COMPONENTS',INIT_COMPONENTS(),
-                                  transitions={'trigger':'RUNNING',
-                                               'init_error':'FAILED'},
+                                  transitions={'trigger':'RUNNING'},
                                   remapping={'action_req':'action'})
        
             smach.StateMachine.add('RUNNING',self.running,
-                                   transitions={'success':'end',
-                                                'fail':'FAILED'},
+                                   transitions={'complete':'end'},
                                    remapping={'action_run':'action',
                                               'parameter_move':'param_move',
                                               'parameter_detect':'param_detect',
-                                              'parameter_grasp':'param_grasp'})
-            smach.StateMachine.add('FAILED',self.fail,
-                                   transitions={'resume':'RUNNING'})
+                                              'parameter_grasp':'param_grasp',
+                                              'running_result':'final_result'})
         
         #Your state machine needs to run an introspection server to allow the smach viewer to connect to it.   
         sis = smach_ros.IntrospectionServer('ACT_SM', self.temp, '/START')
@@ -84,11 +85,17 @@ class Executor():
 # input : None
 # output : smach State Machine object      
     def init_sm_running(self):
-        self.tmprun = smach.StateMachine(outcomes=['success','fail'],
+        self.tmprun = smach.StateMachine(outcomes=['complete'],
                                 input_keys=['action_run',
                                             'parameter_move',
                                             'parameter_detect',
-                                            'parameter_grasp'])
+                                            'parameter_grasp'],
+                                output_keys=['running_result'])
+                                
+#        self.last_action_name = ""
+#        self.last_action_goal = ""
+        self.transfert = ""
+        self.current_action = ""
 
         # Open the container
         with self.tmprun :
@@ -96,45 +103,40 @@ class Executor():
             smach.StateMachine.add('SELECT',SELECT(),
                                    transitions={'goto_move':'MOVE',
                                                 'goto_detect':'DETECT',
-                                                'goto_grasp':'GRASP'},
-                                   remapping={'action_required':'action_run'})
+                                                'goto_grasp':'GRASP',
+                                                'nok':'GIVENUP'},
+                                   remapping={'action_required':'action_run',
+                                              'action_selected':'current_action'})
             smach.StateMachine.add('MOVE',MOVE(),
-                                   transitions={'ok':'success',
-                                                'nok':'fail'},
+                                   transitions={'ok':'SUCCESS',
+                                                'nok':'wait_solution'},
                                    remapping={'new_pos':'parameter_move'})
             smach.StateMachine.add('DETECT',DETECT(),
-                                   transitions={'ok':'success',
-                                                'nok':'fail'},
+                                   transitions={'ok':'SUCCESS',
+                                                'nok':'wait_solution'},
                                    remapping={'target_detect':'parameter_detect'})
             smach.StateMachine.add('GRASP',GRASP(),
-                                   transitions={'ok':'success',
-                                                'nok':'fail'},
+                                   transitions={'ok':'SUCCESS',
+                                                'nok':'wait_solution'},
                                    remapping={'target_grasp':'parameter_grasp'})
-        return self.tmprun
-    
-# create the sub state machine named FAILED.
-# it contains Wait_solution and MOVE_errors
-# input : None
-# output : smach State Machine object   
-    def init_sm_failed(self):
-        self.Failed = smach.StateMachine(outcomes=['resume'])
-        
-        #self.Failed.userdata.transfert = ""
-        
-        # Open the container
-        with self.Failed :
-                smach.StateMachine.add('wait_solution',wait_solution(),
-                                   transitions={'try':'move_errors'},
-                                   remapping={'useless':'transfert',
-                                              'solution_from_DM':'transfert'})
+            smach.StateMachine.add('wait_solution',wait_solution(),
+                                   transitions={'try':'move_errors',
+                                                'not_try':'GIVENUP'},
+                                    remapping={'solution_from_DM':'transfert',
+                                               'action_required':'action_run'})
             
-
-                smach.StateMachine.add('move_errors',MOVE(),
-                                       transitions={'ok':'resume',
-                                                    'nok':'wait_solution'},
-                                       remapping={'new_pos':'transfert'})
-        
-        return self.Failed
+                                 #  remapping={'useless':'transfert', solution_from_DM':'transfert'})
+            smach.StateMachine.add('move_errors',MOVE_E(),
+                                    transitions={'ok':'SELECT',
+                                                'nok':'wait_solution'},
+                                    remapping={'intermediate_pos':'transfert'})
+            smach.StateMachine.add('SUCCESS',SUCCESS(),
+                                    transitions={'complete':'complete'},
+                                    remapping={'act_result':'running_result'})                 
+            smach.StateMachine.add('GIVENUP',GIVENUP(),
+                                    transitions={'complete':'complete'},
+                                    remapping={'act_result':'running_result'})         
+        return self.tmprun
 
 # This function is called when a rostopic message is published.
 # Then, the action lib feedback is published to the decision making.
@@ -178,12 +180,9 @@ class Executor():
         
         self._as.is_active()
         # Execute the state machine
-        #outcome = self.act.execute()
-        
+        outcome = self.act.execute() 
         self._as.is_active()
-        
-        _result.return_value = 2
-        
+        _result.return_value = self.act.userdata.final_result
         self._as.set_succeeded(_result)
 
 

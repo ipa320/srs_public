@@ -1,0 +1,7 @@
+<KinBody name="ChocolateSticks">
+  <Body type="dynamic">
+    <Geom type="trimesh">
+      <Data>Model_ChocolateSticks.txt.iv</Data>
+    </Geom>      
+  </Body>
+</KinBody>

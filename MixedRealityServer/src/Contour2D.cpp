@@ -2,28 +2,20 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
+
 namespace MixedRealityServer
 {
-    int Contour2D::ID_Generator = 1;
-
-    Contour2D::Contour2D(ContourType t, CvScalar clr, int line_width)
+	Contour2D::Contour2D(int id, ContourType t, std::string lbl, CvPoint pos, CvSize sz, float ang, CvScalar clr, int line_width)
     {
-        this->id = ID_Generator++;
+        this->id = id;
         this->type = t;
+		this->label = lbl;
         this->selected = false;
         this->color = clr;
         this->contour_width = line_width;
-    }
-
-    void Contour2D::SetAsRectangle(CvPoint p, CvSize s)
-    {
-        if(this->type == CONTOUR_RECTANGLE)
-        {
-            this->position = p;
-            this->size = s;
-            this->drawPoint1 = cvPoint(p.x, p.y);
-            this->drawPoint2 = cvPoint(p.x + s.width, p.y + s.height);
-        }
+		this->position = pos;
+		this->size = sz;
+		this->angle = ang;
     }
 
     void Contour2D::Select()
@@ -47,6 +39,10 @@ namespace MixedRealityServer
     {
         return this->type;
     }
+	std::string Contour2D::GetLabel()
+	{
+		return label;
+	}
     CvScalar Contour2D::GetColor()
     {
         return this->color;
@@ -60,14 +56,17 @@ namespace MixedRealityServer
     {
         return selected;
     }
-    CvPoint Contour2D::GetDrawPoint1()
-    {
-        return this->drawPoint1;
-    }
-
-    CvPoint Contour2D::GetDrawPoint2()
-    {
-        return this->drawPoint2;
-    }
+	CvPoint Contour2D::GetPosition()
+	{
+		return position;
+	}	
+	CvSize Contour2D::GetSize()
+	{
+		return size;
+	}
+	float Contour2D::GetAngle()
+	{
+		return angle;
+	}
 
 }

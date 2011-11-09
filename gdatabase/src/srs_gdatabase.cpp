@@ -15,6 +15,7 @@
 #include "gdatabase/GetSymbolic.h"
 #include "gdatabase/UpdatePosInfo.h"
 #include "gdatabase/GetInfoObject.h"
+#include "gdatabase/GetDrawObject.h"
 #include "gdatabase/InsertObject.h"
 #include <sstream>
 #include <ros/duration.h>
@@ -350,6 +351,39 @@ bool getWorkspaceOnMap(gdatabase::GetWorkspaceOnMap::Request  &req,
 	return true;
 }
 
+bool getDrawObject(gdatabase::GetDrawObject::Request  &req,
+		gdatabase::GetDrawObject::Response &res )
+{
+	ROS_INFO("getDrawObject is called.");
+	mysql_init(&mysql);
+	connection=mysql_real_connect(&mysql,"localhost","srs","srs","srs_gdatabase",0,0,0);
+	if (connection==NULL){
+		cout<<mysql_error(&mysql)<<endl;
+		return 1;
+	}
+
+	string query_String("Select object_shape, object_color, object_width, object_height from object WHERE object_id=");
+	ostringstream object;
+	object<<req.objectID;
+	query_String+=object.str();
+	if (query_state!=0){
+		cout<<mysql_error(connection)<<endl;
+		return 1;
+	}
+	ROS_INFO("%s\n", query_String.c_str());
+
+	mysql_query(connection,query_String.c_str());
+	result=mysql_store_result(connection);
+	row = mysql_fetch_row(result);
+        res.shape=atol(row[0]);
+        res.color=row[1];
+        res.width=atof(row[2]);
+        res.height=atof(row[3]);
+	mysql_free_result(result);
+	mysql_close(connection);
+	return true;
+
+}
 bool getInfoObject(gdatabase::GetInfoObject::Request  &req,
 		gdatabase::GetInfoObject::Response &res )
 {
@@ -476,6 +510,7 @@ int main(int argc, char **argv)
 	ros::ServiceServer GetSymbolic = n.advertiseService("GetSymbolic", getSymbolic);
 	ros::ServiceServer UpdatePosInfo = n.advertiseService("UpdatePosInfo", updatePosInfo);
 	ros::ServiceServer GetInfoObject = n.advertiseService("GetInfoObject", getInfoObject);
+	ros::ServiceServer GetDrawObject = n.advertiseService("GetDrawObject", getDrawObject);
 	ros::ServiceServer InsertObject = n.advertiseService("InsertObject",insertObject);
 
 	ROS_INFO("srs_gdatabase Running.");

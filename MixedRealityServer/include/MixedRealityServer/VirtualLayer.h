@@ -1,7 +1,8 @@
 #ifndef VIRTUAL_LAYER_H
 #define VIRTUAL_LAYER_H
 
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui/highgui_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
 #include "MixedRealityServer/Contour2D.h"
 
 
@@ -21,8 +22,10 @@ namespace MixedRealityServer
 
             void AddObject(Contour2D* obj);
             void RemoveObject(int obj_id);
+            void RemoveAllObjects();
             void DrawLayer(IplImage* img);
             void HitTest(int x, int y);
+			int GetObjectsCount();
         private:
             CvSize imageSize;
             IplImage* objectMap;

@@ -5,7 +5,7 @@
   
   </description>
   <author>Maintained by Georg Arbeiter</author>
-  <license>BSD,Fraunhofer IPA</license>  
+  <license>BSD,LGPL,Fraunhofer IPA</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs</url>
   <depend stack="arm_navigation" /> <!-- kinematics_msgs, arm_navigation_msgs -->

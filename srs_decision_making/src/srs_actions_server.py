@@ -10,6 +10,9 @@
 # ROS imports
 
 import roslib; roslib.load_manifest('srs_decision_making')
+
+roslib.load_manifest('knowledge_ros_service')
+
 import rospy
 import smach
 import smach_ros
@@ -134,6 +137,26 @@ class SRSActionServer(SimpleActionServer):
 class SRS_DM_ACTION(object):
     #action server for taking tasks 
     def __init__(self, name):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         self._action_name = name
         self._as = SRSActionServer(self._action_name, xmsg.ExecutionAction, self.execute_cb, auto_start=False) 
         self._feedback = xmsg.ExecutionFeedback()
@@ -243,6 +266,35 @@ class SRS_DM_ACTION(object):
    
         
     def execute_cb(self, gh):
+
+
+
+
+
+
+        ### SHOULD IT BE HERE????? 
+        ##############################################
+        # taskrequest From Knowledge_ros_service
+        ##############################################
+        print '#######################   Action Accept Command'
+        print gh
+        print 'Request new task'
+        rospy.wait_for_service('task_request')
+        try:
+            requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
+            res = requestNewTask()
+            
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+        ##############################################
+        # END OF taskrequest From Knowledge_ros_service
+        ##############################################
+
+
+
+
+
+
         self._feedback.current_state = "initialisation"
         self._feedback.solution_required = False
         self._feedback.exceptional_case_id = 0

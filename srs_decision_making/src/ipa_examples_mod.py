@@ -147,7 +147,8 @@ class grasp_general(smach.State):
 
 
     def execute(self, userdata):
-        return 'failed'     
+        return 'succeeded'    
+        #return 'failed'     
 
 ## Open door state
 #

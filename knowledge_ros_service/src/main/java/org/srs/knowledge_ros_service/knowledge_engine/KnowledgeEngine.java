@@ -151,7 +151,9 @@ class KnowledgeEngine
 		ros.logInfo("INFO: Task termintated");
 		
 		currentTask = null;
+		// TODO:
 		currentSessionId = 1;
+
 		res.nextAction = new CUAction();
 		return res;
 	    }
@@ -292,14 +294,13 @@ class KnowledgeEngine
 	    InputStream is = new FileInputStream(configFile);
 	    conf.load(is);
 	
-	//////
-	//testTask(conf);
-	/////
-
+	    //////
+	    //testTask(conf);
+	    /////
 
 	    knowEng = new KnowledgeEngine(conf);
 
-	    
+	  
 	}
 	catch(IOException e){
 	    knowEng = new KnowledgeEngine("knowledge_srs_node", "../conf/house.owl");

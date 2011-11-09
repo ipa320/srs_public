@@ -9,6 +9,7 @@
 #################################################################
 # ROS imports
 import roslib; roslib.load_manifest('srs_decision_making')
+roslib.load_manifest('knowledge_ros_service')
 
 import rospy
 import smach
@@ -23,6 +24,9 @@ from cob_srvs.srv import Trigger
 from geometry_msgs.msg import *
 
 import srs_decision_making.msg as xmsg
+
+from knowledge_ros_service.srv import *
+from knowledge_ros_service.msg import *
 
 
 """
@@ -278,7 +282,7 @@ class semantic_dm(smach.State):
         self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)
         self.pub_fb2 = rospy.Publisher('fb_executing_state', String)
         self.count = 0
-        
+
     def execute(self,userdata):     
         global current_task_info
         
@@ -286,7 +290,94 @@ class semantic_dm(smach.State):
         
         #dummy code for testing
         userdata.semi_autonomous_mode=False
+
+        ##############################################
+        # get Next Action From Knowledge_ros_service
+        ##############################################
+        print 'Request new task'
+        rospy.wait_for_service('task_request')
+        try:
+            requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
+            res = requestNewTask()
+            
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+
+        print 'Plan next Action service'
+        rospy.wait_for_service('plan_next_action')
+        try:
+            next_action = rospy.ServiceProxy('plan_next_action', PlanNextAction)
+
+            # decide result ()
+            # current_task_info.last_step_info.append(last_step_info)
+            # current_task_info.session_id = 123456
+
+            result = [1, 1, 1]
+            # print current_task_info.last_step_info
+            print 'first action acquired ---- '
+            print current_task_info.last_step_info;
+            if not current_task_info.last_step_info:
+                print 'first action acquired ++++ '
+                result = [0, 0, 0]   ## first action. does not matter this. just to keep it filled
+            elif current_task_info.last_step_info and current_task_info.last_step_info[0].outcome == 'succeeded':
+                print '######### test ##########'
+                # convert to the format that knowledge_ros_service understands
+                result = [0, 0, 0]
+            elif current_task_info.last_step_info and current_task_info.last_step_info[0].outcome == 'failed':
+                if current_task_info.last_step_info.step_name == 'navigation':
+                    result = [1, 0, 0]
+                elif current_task_info.last_step_info.step_name == 'detection':
+                    result = [1, 1, 0]
+                elif current_task_info.last_step_info.step_name == 'simple_grasp':
+                    result = [0, 1, 1]
+                else:
+                    result = [1, 1, 1]
+
+            print result
+            print '########## mmmmmm ###########'
+            resp1 = next_action(current_task_info.session_id, result)
+            if resp1.nextAction.status == 1:
+                print 'succeeded'
+                return 'succeeded'
+            elif resp1.nextAction.status == -1:
+                print 'failed'
+                return 'failed'
+
+            print resp1.nextAction.actionFlags
+            print resp1.nextAction.ma
+            # else should be 0: then continue executing the following
+            if resp1.nextAction.actionFlags == [0, 1, 1]:
+                print '========'
+                nextStep = 'navigation'
+                userdata.target_base_pose = resp1.ma.targetPose2D
+            elif resp1.nextAction.actionFlags == [0, 0, 1]:
+                print '---------------'
+
+                nextStep = 'detection'
+                userdata.target_base_pose = resp1.ma.targetPose2D
+                userdata.target_object_name = resp1.tboxObject.name
+                # should be updated to object_id in future
+            elif resp1.nextAction.actionFlags == [1, 0, 0]:
+                nextStep = 'simple_grasp'
+                userdata.target_object_name = resp1.tboxObject.name
+                # should be updated to object_id in future            
+            else:
+                print 'No valid actionFlags'
+                print resp1.nextAction.actionFlags[0]
+                nextStep = 'No_corresponding_action???'
+                return 'failed'
+            #return resp1.nextAction
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e        
+            return 'failed'
+
+        return nextStep
+        ##############################################        
+        ### End of GetNextAction######################
+        ##############################################
+
         
+        """
         if current_task_info.task_name=="get" and current_task_info.task_parameter=="milk":
             userdata.target_base_pose="table1"
             userdata.target_object_name="milk_box1"    
@@ -323,7 +414,7 @@ class semantic_dm(smach.State):
             current_task_info.last_step_info.append(last_step_info)
 
             return 'navigation'
-
+        """
 
 
 #initialisation for a given task

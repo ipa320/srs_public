@@ -9,12 +9,12 @@ public class ActionTuple
 {
     public ActionTuple()
     {
-	ca = new CUAction();
+	//ca = new CUAction();
     }
 
     public void setCUAction(CUAction ca)
     {
-	ca = ca;
+	this.ca = ca;
     }
 
     public void setActionName(String actionName)
@@ -44,7 +44,7 @@ public class ActionTuple
 
     public CUAction getCUAction()
     {
-	return ca;
+	return this.ca;
     }
 
     public String getActionName()

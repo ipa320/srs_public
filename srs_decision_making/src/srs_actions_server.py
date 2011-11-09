@@ -138,25 +138,6 @@ class SRS_DM_ACTION(object):
     #action server for taking tasks 
     def __init__(self, name):
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         self._action_name = name
         self._as = SRSActionServer(self._action_name, xmsg.ExecutionAction, self.execute_cb, auto_start=False) 
         self._feedback = xmsg.ExecutionFeedback()
@@ -209,27 +190,27 @@ class SRS_DM_ACTION(object):
                                                'semi_autonomous_mode':'semi_autonomous_mode'}
                                    )                                   
             smach.StateMachine.add('SM_NAVIGATION', sm_approach_pose_assisted(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'pose_not_reacheable':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'})            
 
             smach.StateMachine.add('SM_DETECTION', sm_detect_asisted_pose_region(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'object_not_found':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_pose':'target_object_pose'})
        
             smach.StateMachine.add('SM_SIMPLE_GRASP', sm_pick_object_asisted(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'object_not_picked':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_pose':'target_object_pose'})
                                 
             smach.StateMachine.add('SM_OPEN_DOOR', sm_open_door(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'door_not_opened':'SEMANTIC_DM', 'failed':'task_aborted'})
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'})
             
             smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', sm_enviroment_object_update(),
-                                   transitions={'objects_found':'SEMANTIC_DM', 'objects_not_found':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'target_base_pose':'target_base_pose',
                                               'semi_autonomous_mode':'semi_autonomous_mode',

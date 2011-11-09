@@ -170,11 +170,20 @@ class KnowledgeEngine
 	    res.nextAction = new CUAction(); // empty task
 	    return res;	    
 	}
-	if(at.getActionName().equals("finish_success") ||  at.getActionName().equals("finish_fail")) {
+	if(at.getActionName().equals("finish_success")) {
 	    currentTask = null;
 	    currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
 	    res.nextAction = new CUAction(); // empty task
+	    res.nextAction.status = 1;
+	    return res;	    
+	}
+	else if( at.getActionName().equals("finish_fail")) {
+	    currentTask = null;
+	    currentSessionId = 1;
+	    System.out.println("Reached the end of the task. No further action to be executed. ");
+	    res.nextAction = new CUAction(); // empty task
+	    res.nextAction.status = -1;
 	    return res;	    
 	}
 	

@@ -170,7 +170,7 @@ class intervention_base_pose(smach.State):
             call srs knowledge ros service for a new scanning or grasping position
             """
             userdata.intermediate_pose = "kitchen"   
-            return 'retry'
+            return 'no_more_retry'
             
 
 #get a interested region from UI or KB and then pass it to the object detector
@@ -311,7 +311,7 @@ class semantic_dm(smach.State):
             print len(current_task_info.last_step_info)
             len_step_info = len(current_task_info.last_step_info)
             
-            """
+        
             if not current_task_info.last_step_info:
                 print 'first action acquired ++++ '
                 result = (0, 0, 0)   ## first action. does not matter this. just to keep it filled
@@ -319,19 +319,21 @@ class semantic_dm(smach.State):
                 print '######### test ##########'
                 # convert to the format that knowledge_ros_service understands
                 result = (0, 0, 0)
-            elif current_task_info.last_step_info and current_task_info.last_step_info[len_step_info - 1].outcome == 'failed':
-                if current_task_info.last_step_info.step_name == 'navigation':
+            elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
+                print 'Result return failed'
+                if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_approach_pose_assisted':
                     result = (1, 0, 0)
-                elif current_task_info.last_step_info.step_name == 'detection':
+                elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_detect_asisted_pose_region':
                     result = (1, 1, 0)
-                elif current_task_info.last_step_info.step_name == 'simple_grasp':
+                elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_pick_object_asisted':
                     result = (0, 1, 1)
                 else:
                     result = (1, 1, 1)
-            """
+            
             
 
             ##### TEMPORARY PART ###############
+            """
             temp_last_step_info = raw_input('ENTER LAST STEP RESULT. s (success): f (fail) : newline (enter if na)')
             
             if  temp_last_step_info == '':
@@ -354,11 +356,11 @@ class semantic_dm(smach.State):
                         result = (1, 1, 1)
                 except:
                     result = (1,1,1)
-
+            """
             ##### END OF TEMPORARY PART ###############
 
             print result
-            print '########## mmmmmm ###########'
+            print '########## Result ###########'
 
             
 
@@ -376,20 +378,42 @@ class semantic_dm(smach.State):
             if resp1.nextAction.actionFlags == (0, 1, 1):
                 print '========'
                 nextStep = 'navigation'
-                userdata.target_base_pose = resp1.nextAction.ma.targetPose2D
+                #userdata.target_base_pose = resp1.nextAction.ma.targetPose2D
+                userdata.target_base_pose = [resp1.nextAction.ma.targetPose2D.x, resp1.nextAction.ma.targetPose2D.y, resp1.nextAction.ma.targetPose2D.theta]
+
             elif resp1.nextAction.actionFlags == (0, 0, 1):
                 print '---------------'
 
                 nextStep = 'detection'
-                userdata.target_base_pose = resp1.nextAction.ma.targetPose2D
+                userdata.target_base_pose = [resp1.nextAction.ma.targetPose2D.x, resp1.nextAction.ma.targetPose2D.y, resp1.nextAction.ma.targetPose2D.theta]
 
                 #TODO should confirm later if name or id used !!!!!!!!
-                userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id
+		####  HARD CODED FOR TESTING ##
+
+		if resp1.nextAction.pa.aboxObject.object_id == 1:
+			userdata.target_object_name = 'milk'	
+ 		else:
+			userdata.target_object_name = 'unknown'
+
+		####  END OF HARD CODED FOR TESTING ##
+
+                #userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id
                 # should be updated to object_id in future
             elif resp1.nextAction.actionFlags == (1, 0, 0):
                 nextStep = 'simple_grasp'
-                userdata.target_object_name = resp1.nextAction.pa.aboxObject.name
-                # should be updated to object_id in future            
+                #userdata.target_object_name = resp1.nextAction.pa.aboxObject.name
+
+		####  HARD CODED FOR TESTING ##
+
+		if resp1.nextAction.pa.aboxObject.object_id == 1:
+			userdata.target_object_name = 'milk'	
+ 		else:
+			userdata.target_object_name = 'unknown'
+
+		####  END OF HARD CODED FOR TESTING ##
+
+		#userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id                
+		# should be updated to object_id in future            
             else:
                 print 'No valid actionFlags'
                 print resp1.nextAction.actionFlags

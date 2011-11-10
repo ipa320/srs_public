@@ -151,7 +151,9 @@ class KnowledgeEngine
 		ros.logInfo("INFO: Task termintated");
 		
 		currentTask = null;
+		// TODO:
 		currentSessionId = 1;
+
 		res.nextAction = new CUAction();
 		return res;
 	    }
@@ -168,11 +170,20 @@ class KnowledgeEngine
 	    res.nextAction = new CUAction(); // empty task
 	    return res;	    
 	}
-	if(at.getActionName().equals("finish_success") ||  at.getActionName().equals("finish_fail")) {
+	if(at.getActionName().equals("finish_success")) {
 	    currentTask = null;
 	    currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
 	    res.nextAction = new CUAction(); // empty task
+	    res.nextAction.status = 1;
+	    return res;	    
+	}
+	else if( at.getActionName().equals("finish_fail")) {
+	    currentTask = null;
+	    currentSessionId = 1;
+	    System.out.println("Reached the end of the task. No further action to be executed. ");
+	    res.nextAction = new CUAction(); // empty task
+	    res.nextAction.status = -1;
 	    return res;	    
 	}
 	
@@ -292,14 +303,13 @@ class KnowledgeEngine
 	    InputStream is = new FileInputStream(configFile);
 	    conf.load(is);
 	
-	//////
-	//testTask(conf);
-	/////
-
+	    //////
+	    //testTask(conf);
+	    /////
 
 	    knowEng = new KnowledgeEngine(conf);
 
-	    
+	  
 	}
 	catch(IOException e){
 	    knowEng = new KnowledgeEngine("knowledge_srs_node", "../conf/house.owl");

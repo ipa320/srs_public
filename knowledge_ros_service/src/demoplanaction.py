@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import roslib;
-#roslib.load_manifest('beginner_tutorials')
 roslib.load_manifest('knowledge_ros_service')
 import sys
 import rospy
@@ -56,7 +55,7 @@ if __name__ == "__main__":
 
     #[0, 0, 0] means: success for move, perception, and grasp actions in the last step
     print testNextActionService([0,0,0])
-    print testNextActionService([0,1,0])
+    print testNextActionService([0,0,0])
     print testNextActionService([0,0,0])
     print testNextActionService([0,0,0])
 

@@ -292,8 +292,8 @@ class KnowledgeEngine
 	    configFile = args[0];
 	    System.out.println(configFile);
 	}
-	else  {
-	    configFile = "conf/srsknow.cfg";
+	else {
+	    configFile = "../conf/srsknow.cfg";
 	    System.out.println(configFile);
 	}
 
@@ -308,11 +308,11 @@ class KnowledgeEngine
 	    /////
 
 	    knowEng = new KnowledgeEngine(conf);
-
-	  
 	}
 	catch(IOException e){
-	    knowEng = new KnowledgeEngine("knowledge_srs_node", "../conf/house.owl");
+	    //knowEng = new KnowledgeEngine("knowledge_srs_node", "../conf/house.owl");
+	    System.out.println(e.getMessage());
+	    return;
 	}
 
 	//knowEng.loadPredefinedTasksForTest();

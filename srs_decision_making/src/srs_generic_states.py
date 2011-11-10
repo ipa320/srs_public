@@ -197,7 +197,7 @@ class intervention_key_region(smach.State):
             The key region is translated into the robot coordination to assist current detection
             """
             userdata.key_region = ""   
-            return 'failed'
+            return 'no_more_retry'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
@@ -205,7 +205,7 @@ class intervention_key_region(smach.State):
             call srs knowledge ros service for a key region. It is then translated into the robot coordination and assist current detection
             """
             userdata.key_region = ""   
-            return 'failed'
+            return 'no_more_retry'
             
         
 
@@ -234,7 +234,7 @@ class intervention_grasp_selection(smach.State):
             The configuration is passed to grasp 
             """
             userdata.grasp_conf = ""   
-            return 'retry'
+            return 'no_more_retry'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
@@ -242,7 +242,7 @@ class intervention_grasp_selection(smach.State):
             call srs knowledge ros service for a grasp conf. It is then pass to the grasp_general 
             """
             userdata.grasp_conf = ""   
-            return 'retry'
+            return 'no_more_retry'
             
         
 
@@ -264,7 +264,7 @@ class user_intervention_action_sequence(smach.State):
         updated action sequence for completing current task
         """
         userdata.action_sequence = ""   
-        return 'failed'  
+        return 'no_more_retry'  
 
 #connection to the srs knowledge_ros_service
 class semantic_dm(smach.State):
@@ -391,9 +391,9 @@ class semantic_dm(smach.State):
 		####  HARD CODED FOR TESTING ##
 
 		if resp1.nextAction.pa.aboxObject.object_id == 1:
-			userdata.target_object_name = 'milk'	
+			userdata.target_object_name = 'milk_box'	
  		else:
-			userdata.target_object_name = 'unknown'
+			userdata.target_object_name = 'milk_box'
 
 		####  END OF HARD CODED FOR TESTING ##
 
@@ -406,9 +406,9 @@ class semantic_dm(smach.State):
 		####  HARD CODED FOR TESTING ##
 
 		if resp1.nextAction.pa.aboxObject.object_id == 1:
-			userdata.target_object_name = 'milk'	
+			userdata.target_object_name = 'milk_box'	
  		else:
-			userdata.target_object_name = 'unknown'
+			userdata.target_object_name = 'milk_box'
 
 		####  END OF HARD CODED FOR TESTING ##
 

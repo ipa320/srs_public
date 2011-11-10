@@ -288,6 +288,8 @@ class SRS_DM_ACTION(object):
         #initialise task information for the state machine
         global current_task_info
         current_task_info.task_name = current_goal.action
+	if current_task_info.task_name==""
+		current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
         
         

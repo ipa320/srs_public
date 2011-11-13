@@ -377,6 +377,13 @@ class detect_object(smach.State):
         min_dist = 2 # start value in m
         obj = Detection()
 
+	"""	
+	self.listener = tf.TransformListener()
+	object_pose.header.stamp = self.listener.getLatestCommonTime("/base_link", object_pose_in.header.frame_id)
+
+	object_pose_bl = self.listener.transformPose("/base_link", object_pose_in)
+	"""
+
         for item in res.object_list.detections:
             dist = sqrt(item.pose.pose.position.x*item.pose.pose.position.x+item.pose.pose.position.y*item.pose.pose.position.y)
 	    print '$$$$$$$$$$$$$$$$$$$$$', dist
@@ -384,21 +391,26 @@ class detect_object(smach.State):
             if dist < min_dist:
                 min_dist = dist
                 obj = copy.deepcopy(item)
-        
+                print '================  ', obj
+            #else:
+            #    print 'Failed'
+            #    return 'failed'
         # check if an object could be found within the min_dist start value
+        
         if obj.header.frame_id == "":
             self.retries += 1
             return 'retry'
-
+        
         #check if label of object fits to requested object_name
         if obj.label != object_name:
             sss.say(["The object name doesn't fit."],False)
             self.retries += 1
             return 'retry'
-
+        
         # we succeeded to detect an object
         userdata.object = obj
         self.retries = 0
+        print 'RETURNED SUCCEEDED'
         return 'succeeded'
 
 

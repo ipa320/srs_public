@@ -1,4 +1,0 @@
----
-sensor_msgs/PointCloud2 pc
-sensor_msgs/PointCloud2 hull
-std_msgs/Float32[] plane_coeffs

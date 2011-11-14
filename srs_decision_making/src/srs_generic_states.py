@@ -9,6 +9,7 @@
 #################################################################
 # ROS imports
 import roslib; roslib.load_manifest('srs_decision_making')
+#roslib.load_manifest('knowledge_ros_service')
 
 import rospy
 import smach
@@ -23,7 +24,10 @@ from cob_srvs.srv import Trigger
 from geometry_msgs.msg import *
 
 import srs_decision_making.msg as xmsg
-import srs_decision_making.srv as xsrv
+
+from knowledge_ros_service.srv import *
+from knowledge_ros_service.msg import *
+
 
 """
 This file contains (or import) basic states for SRS high level state machines.
@@ -151,9 +155,7 @@ class intervention_base_pose(smach.State):
                     print "Service call failed: %s"%e           
                     self.pub_fb.publish(False)   
                     return 'failed'
-                print (s)   
-                
-                          
+                print (s)             
                 
                 if  (s.giveup == 1):
                     return 'no_more_retry'
@@ -167,8 +169,7 @@ class intervention_base_pose(smach.State):
             """
             call srs knowledge ros service for a new scanning or grasping position
             """
-            #userdata.intermediate_pose = "kitchen"   
-            #return 'retry'
+            userdata.intermediate_pose = "kitchen"   
             return 'no_more_retry'
             
 
@@ -196,7 +197,7 @@ class intervention_key_region(smach.State):
             The key region is translated into the robot coordination to assist current detection
             """
             userdata.key_region = ""   
-            return 'failed'
+            return 'no_more_retry'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
@@ -204,7 +205,7 @@ class intervention_key_region(smach.State):
             call srs knowledge ros service for a key region. It is then translated into the robot coordination and assist current detection
             """
             userdata.key_region = ""   
-            return 'failed'
+            return 'no_more_retry'
             
         
 
@@ -233,7 +234,7 @@ class intervention_grasp_selection(smach.State):
             The configuration is passed to grasp 
             """
             userdata.grasp_conf = ""   
-            return 'retry'
+            return 'no_more_retry'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
@@ -241,7 +242,7 @@ class intervention_grasp_selection(smach.State):
             call srs knowledge ros service for a grasp conf. It is then pass to the grasp_general 
             """
             userdata.grasp_conf = ""   
-            return 'retry'
+            return 'no_more_retry'
             
         
 
@@ -263,14 +264,14 @@ class user_intervention_action_sequence(smach.State):
         updated action sequence for completing current task
         """
         userdata.action_sequence = ""   
-        return 'failed'  
+        return 'no_more_retry'  
 
 #connection to the srs knowledge_ros_service
 class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','open_door','env_object_update', 'turn_head', 'simple_detect'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','open_door','env_object_update'],
                              input_keys=['target_object_name','target_base_pose','target_object_pose'],
                              output_keys=['target_object_name',
                                           'target_base_pose',
@@ -281,7 +282,7 @@ class semantic_dm(smach.State):
         self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)
         self.pub_fb2 = rospy.Publisher('fb_executing_state', String)
         self.count = 0
-        
+
     def execute(self,userdata):     
         global current_task_info
         
@@ -289,9 +290,150 @@ class semantic_dm(smach.State):
         
         #dummy code for testing
         userdata.semi_autonomous_mode=False
+
+        ##############################################
+        # get Next Action From Knowledge_ros_service
+        ##############################################
+        print 'Plan next Action service'
+        rospy.wait_for_service('plan_next_action')
+        try:
+            next_action = rospy.ServiceProxy('plan_next_action', PlanNextAction)
+
+            # decide result ()
+            # current_task_info.last_step_info.append(last_step_info)
+            # current_task_info.session_id = 123456
+
+            result = (1, 1, 1)
+            # print current_task_info.last_step_info
+            print '+++++++++++ action acquired ++++++++++++++'
+            print current_task_info.last_step_info;
+            print '+++++++++++ Last Step Info LEN+++++++++++++++'
+            print len(current_task_info.last_step_info)
+            len_step_info = len(current_task_info.last_step_info)
+            
         
+            if not current_task_info.last_step_info:
+                print 'first action acquired ++++ '
+                result = (0, 0, 0)   ## first action. does not matter this. just to keep it filled
+            elif current_task_info.last_step_info and current_task_info.last_step_info[len_step_info - 1].outcome == 'succeeded':
+                print '######### test ##########'
+                # convert to the format that knowledge_ros_service understands
+                result = (0, 0, 0)
+            elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
+                print 'Result return failed'
+                if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_approach_pose_assisted':
+                    result = (1, 0, 0)
+                elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_detect_asisted_pose_region':
+                    result = (1, 1, 0)
+                elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_pick_object_asisted':
+                    result = (0, 1, 1)
+                else:
+                    result = (1, 1, 1)
+            
+            
+
+            ##### TEMPORARY PART ###############
+            """
+            temp_last_step_info = raw_input('ENTER LAST STEP RESULT. s (success): f (fail) : newline (enter if na)')
+            
+            if  temp_last_step_info == '':
+                print 'first action acquired ++++ '
+                result = (0, 0, 0)   ## first action. does not matter this. just to keep it filled
+            elif temp_last_step_info == 's':
+                print '######### test ##########'
+                # convert to the format that knowledge_ros_service understands
+                result = (0, 0, 0)
+            elif temp_last_step_info == 'f':
+                try:
+                    ### TODO current_task_info.last_step_info.step_name not available?????????????????????????????????????????
+                    if current_task_info.last_step_info.step_name == 'navigation':
+                        result = (1, 0, 0)
+                    elif current_task_info.last_step_info.step_name == 'detection':
+                        result = (1, 1, 0)
+                    elif current_task_info.last_step_info.step_name == 'simple_grasp':
+                        result = (0, 1, 1)
+                    else:
+                        result = (1, 1, 1)
+                except:
+                    result = (1,1,1)
+            """
+            ##### END OF TEMPORARY PART ###############
+
+            print result
+            print '########## Result ###########'
+
+            
+
+            resp1 = next_action(current_task_info.session_id, result)
+            if resp1.nextAction.status == 1:
+                print 'succeeded'
+                return 'succeeded'
+            elif resp1.nextAction.status == -1:
+                print 'failed'
+                return 'failed'
+
+            print resp1.nextAction.actionFlags
+            print resp1.nextAction.ma
+            # else should be 0: then continue executing the following
+            if resp1.nextAction.actionFlags == (0, 1, 1):
+                print '========'
+                nextStep = 'navigation'
+                #userdata.target_base_pose = resp1.nextAction.ma.targetPose2D
+                userdata.target_base_pose = [resp1.nextAction.ma.targetPose2D.x, resp1.nextAction.ma.targetPose2D.y, resp1.nextAction.ma.targetPose2D.theta]
+
+            elif resp1.nextAction.actionFlags == (0, 0, 1):
+                print '---------------'
+
+                nextStep = 'detection'
+                userdata.target_base_pose = [resp1.nextAction.ma.targetPose2D.x, resp1.nextAction.ma.targetPose2D.y, resp1.nextAction.ma.targetPose2D.theta]
+
+                #TODO should confirm later if name or id used !!!!!!!!
+		####  HARD CODED FOR TESTING ##
+
+		if resp1.nextAction.pa.aboxObject.object_id == 1:
+			userdata.target_object_name = 'milk_box'	
+ 		else:
+			userdata.target_object_name = 'milk_box'
+
+		####  END OF HARD CODED FOR TESTING ##
+
+                #userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id
+                # should be updated to object_id in future
+            elif resp1.nextAction.actionFlags == (1, 0, 0):
+                nextStep = 'simple_grasp'
+                #userdata.target_object_name = resp1.nextAction.pa.aboxObject.name
+
+		####  HARD CODED FOR TESTING ##
+
+		if resp1.nextAction.pa.aboxObject.object_id == 1:
+			userdata.target_object_name = 'milk_box'	
+ 		else:
+			userdata.target_object_name = 'milk_box'
+
+		####  END OF HARD CODED FOR TESTING ##
+
+		#userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id                
+		# should be updated to object_id in future            
+            else:
+                print 'No valid actionFlags'
+                print resp1.nextAction.actionFlags
+                nextStep = 'No_corresponding_action???'
+                return 'failed'
+            #return resp1.nextAction
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e        
+            return 'failed'
+
+        return nextStep
+
+        ##############################################        
+        ### End of GetNextAction######################
+        ##############################################
+
+        
+        """
         if current_task_info.task_name=="get" and current_task_info.task_parameter=="milk":
-            userdata.target_base_pose="order"
+            userdata.target_base_pose="table1"
             userdata.target_object_name="milk_box1"    
                     
         else: 
@@ -303,7 +445,7 @@ class semantic_dm(smach.State):
         rospy.loginfo("self.count: %s", self.count)
         rospy.sleep(1)
         
-        if self.count>1:     
+        if self.count>0:     
             current_task_info.last_step_name = "semantic_dm"
 
             last_step_info = xmsg.Last_step_info()
@@ -314,28 +456,19 @@ class semantic_dm(smach.State):
             #recording the information of last step
             current_task_info.last_step_info.append(last_step_info)
             
-            return 'succeeded'        
+            return 'succeeded'
         else:
-            if self.count==1:
-                last_step_info = xmsg.Last_step_info()
-                last_step_info.step_name = "semantic_dm"
-                last_step_info.outcome = 'random'
-                last_step_info.semi_autonomous_mode = False
-                self.count+=1
-                current_task_info.last_step_info.append(last_step_info)
-                userdata.target_object_pose="kitchen"
-                return 'simple_detect'
-            else:
-                last_step_info = xmsg.Last_step_info()
-                last_step_info.step_name = "semantic_dm"
-                last_step_info.outcome = 'random'
-                last_step_info.semi_autonomous_mode = False
-                self.count+=1
-                #recording the information of last step
-                current_task_info.last_step_info.append(last_step_info)
+
+            last_step_info = xmsg.Last_step_info()
+            last_step_info.step_name = "semantic_dm"
+            last_step_info.outcome = 'random'
+            last_step_info.semi_autonomous_mode = False
+            self.count+=1
+            #recording the information of last step
+            current_task_info.last_step_info.append(last_step_info)
 
             return 'navigation'
-
+        """
 
 
 #initialisation for a given task
@@ -349,7 +482,7 @@ class initialise(smach.State):
         last_step_info = xmsg.Last_step_info()
         last_step_info.step_name = "initialise"
         last_step_info.outcome = 'succeeded'
-        last_step_info.semi_autonomous_mode = True
+        last_step_info.semi_autonomous_mode = False
         
         #recording the information of last step
         global current_task_info
@@ -388,4 +521,3 @@ class update_env_model(smach.State):
         """
         map_reference = ""   
         return 'succeeded'      
-

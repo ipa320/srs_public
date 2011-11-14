@@ -1,13 +1,13 @@
 # ROS imports
 import roslib; roslib.load_manifest('srs_decision_making')
-
+import copy
 import rospy
 import smach
 import smach_ros
 
 from std_msgs.msg import String, Bool, Int32
 from cob_srvs.srv import Trigger
-
+from math import *
 import time
 import tf
 from kinematics_msgs.srv import *
@@ -147,21 +147,26 @@ class approach_pose_without_retry(smach.State):
             if not resp.success.data: # robot stands still
                 if timeout > 10:
                     sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
-                    rospy.wait_for_service('base_controller/stop',10)
+		
                     try:
+                        rospy.wait_for_service('base_controller/stop',10)
                         stop = rospy.ServiceProxy('base_controller/stop',Trigger)
                         resp = stop()
                     except rospy.ServiceException, e:
                         error_message = "%s"%e
                         rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                    return 'failed'
+                    except rospy.ROSException, e:
+                        error_message = "%s"%e
+                        rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)		
+	            return 'failed'
                 else:
                     timeout = timeout + 1
                     rospy.sleep(1)
             else:
                 timeout = 0
         return 'failed'
-        
+
+
 
 ## Select grasp state
 #
@@ -224,7 +229,8 @@ class grasp_general(smach.State):
 
 
     def execute(self, userdata):
-        return 'failed'     
+        return 'succeeded'    
+        #return 'failed'     
 
 ## Open door state
 #
@@ -247,7 +253,7 @@ class open_door(smach.State):
 class put_object_on_tray(smach.State):
 
     def __init__(self):
-        smach.State.__init__(cob_object_detection,
+        smach.State.__init__(
             self,
             outcomes=['succeeded', 'failed'])
 
@@ -306,6 +312,9 @@ class detect_object(smach.State):
         self.torso_poses.append("back_left_extreme")
 
     def execute(self, userdata):
+
+        userdata.object = ""
+
         # determine object name
         if self.object_name != "":
             object_name = self.object_name
@@ -351,6 +360,7 @@ class detect_object(smach.State):
             detector_service = rospy.ServiceProxy('/object_detection/detect_object', DetectObjects)
             req = DetectObjectsRequest()
             req.object_name.data = object_name
+            print object_name
             res = detector_service(req)
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
@@ -364,30 +374,45 @@ class detect_object(smach.State):
             return 'retry'
         
         # select nearest object in x-y-plane in head_camera_left_link
+	# TODO transform object_pose using tf into /base_link and search for nearest object in base_link
         min_dist = 2 # start value in m
         obj = Detection()
+
+	"""	
+	self.listener = tf.TransformListener()
+	object_pose.header.stamp = self.listener.getLatestCommonTime("/base_link", object_pose_in.header.frame_id)
+
+	object_pose_bl = self.listener.transformPose("/base_link", object_pose_in)
+	"""
+
         for item in res.object_list.detections:
             dist = sqrt(item.pose.pose.position.x*item.pose.pose.position.x+item.pose.pose.position.y*item.pose.pose.position.y)
+	    print '$$$$$$$$$$$$$$$$$$$$$', dist
+	
             if dist < min_dist:
                 min_dist = dist
                 obj = copy.deepcopy(item)
-        
+                print '================  ', obj
+            #else:
+            #    print 'Failed'
+            #    return 'failed'
         # check if an object could be found within the min_dist start value
+        
         if obj.header.frame_id == "":
             self.retries += 1
             return 'retry'
-
+        
         #check if label of object fits to requested object_name
         if obj.label != object_name:
             sss.say(["The object name doesn't fit."],False)
             self.retries += 1
             return 'retry'
-
+        
         # we succeeded to detect an object
         userdata.object = obj
         self.retries = 0
+        print 'RETURNED SUCCEEDED'
         return 'succeeded'
-
 
 
 class move_head(smach.State):
@@ -407,3 +432,4 @@ class move_head(smach.State):
     def execute(self, userdata):
         sss.move("torso",userdata.torso_pose)
         return 'succeeded'
+

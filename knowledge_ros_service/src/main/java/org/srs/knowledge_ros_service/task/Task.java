@@ -47,9 +47,10 @@ public class Task
 		    currentAction = acts.get(i);
 		    currentActionLoc = i;
 		    System.out.println(i);
+		    System.out.println(currentAction.getCUAction().ma.targetPose2D.x);
 		    System.out.println(currentAction.getActionName());
 
-		    return acts.get(i);
+		    return currentAction;
 		}
 	    }
 	}
@@ -63,7 +64,7 @@ public class Task
 		    currentActionLoc = i;
 		    System.out.println(i);
 		    System.out.println(currentAction.getActionName());
-		    System.out.println("NLKJALKJ");
+		    
 		    return currentAction;
 		}
 	    }
@@ -118,12 +119,13 @@ public class Task
 	String[] actions;
 	CUAction ca = new CUAction();
 	actions = actionDesc.split(";");
-	if( actions.length != 8) {
+	if( actions.length != 9) {
 	    throw new Exception("Wrong format");
 	}
 	String actionName = actions[0];
 	int actionLevel = Integer.parseInt(actions[1]);
 	int actionId = Integer.parseInt(actions[2]);
+
 	int parentId = Integer.parseInt(actions[3]);
 	String cond = actions[4];
 	boolean condition = true;
@@ -134,9 +136,7 @@ public class Task
 	else {
 	    // condition = true;
 	    System.out.println("Wrong format.");
-	    
 	    throw new Exception("Wrong format");
-
 	}
 	
 	String moveAction = actions[5];
@@ -151,6 +151,9 @@ public class Task
 	ca.ga = ga;
 
 	ca.status = 0;
+
+	String actionFlags = actions[8];
+	ca.actionFlags = parseActionFlags(actionFlags);
 	
 	act.setCUAction(ca);
 	act.setActionName(actionName);
@@ -158,6 +161,15 @@ public class Task
 	act.setActionId(actionId);
 	act.setParentId(parentId);
 	act.setCondition(condition);
+
+
+	if(act.getActionName().equals("finish_success")){
+	    ca.status = 1;	    
+	}
+	if(act.getActionName().equals("finish_fail")) {
+	    ca.status = -1;
+	}
+
 	
 	return act;
     }
@@ -169,7 +181,30 @@ public class Task
 	double x = Double.parseDouble(parameters[0]);
 	double y = Double.parseDouble(parameters[1]);
 	double theta = Double.parseDouble(parameters[2]);
+	ma.targetPose2D.x = x;
+	ma.targetPose2D.y = y;
+	ma.targetPose2D.theta = theta;
+	//System.out.println("X is   " + ma.targetPose2D.x + "   Y is   " + ma.targetPose2D.y);
 	return ma;
+    }
+
+    private  static int[] parseActionFlags(String actionFlags) throws Exception
+    {
+	int[] _actionFlags = new int[3]; 
+	
+	String[] parameters = actionFlags.split(" ");
+	//System.out.println(parameters[0] + " -- " + parameters[1] + " -- " + parameters[2]);
+	_actionFlags[0] = Integer.parseInt(parameters[0].trim());
+	_actionFlags[1] = Integer.parseInt(parameters[1].trim());
+ 	_actionFlags[2] = Integer.parseInt(parameters[2].trim());
+
+	//System.out.println(actionFlags);
+	/*
+	for(int i = 0 ; i < 3; i++) {
+	    System.out.println(i + " :  " + _actionFlags[i]);
+	}
+	*/
+	return _actionFlags;
     }
 
     private static PerceptionAction parsePerceptionAction(String perceptionAction) throws Exception
@@ -178,6 +213,14 @@ public class Task
 	String[] parameters = perceptionAction.split(" ");
 	String detectType = parameters[0];
 	int id = Integer.parseInt(parameters[1]); // if detectType is object, then object id, and so on
+	/*
+	  string detectType
+	  
+	  ABoxObject aboxObject
+	  TBoxObject tboxClass
+	 */
+	pa.detectType = detectType;
+	pa.aboxObject.object_id = id;
 	return pa;
     }
 

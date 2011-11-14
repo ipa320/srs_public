@@ -31,6 +31,7 @@ class KnowledgeEngine
 {
     public KnowledgeEngine(String nodeName, String ontologyFile)
     {
+	this.defaultContextPath();
 	ontoDB = new OntologyDB(ontologyFile);
 	this.nodeName = nodeName;
 	//this.initROS();
@@ -38,7 +39,8 @@ class KnowledgeEngine
 
     public KnowledgeEngine(Properties conf)
     {
-	String ontoDBFile = conf.getProperty("ontologyFile", "/home/ze/ros_workspace/knowledge_ros_service/conf/house.owl");
+	this.defaultContextPath();
+	String ontoDBFile = conf.getProperty("ontologyFile", "house.owl");
 	ontoDB = new OntologyDB(ontoDBFile);
 
 	this.nodeName = conf.getProperty("nodename", "knowledge_srs_node");
@@ -51,9 +53,49 @@ class KnowledgeEngine
 	
 	//this.initROS();
     }
-
-    public boolean initROS()
+    
+    private void initProperties(String cfgFile) throws Exception
     {
+	InputStream is = new FileInputStream(this.confPath + cfgFile);
+	this.config = new Properties();
+	this.config.load(is);
+
+	String ontoDBFile = config.getProperty("ontologyFile", "house.owl");
+	ontoDB = new OntologyDB(this.confPath + ontoDBFile);
+
+	this.nodeName = config.getProperty("nodename", "knowledge_srs_node");
+
+	taskRequestService = config.getProperty("taskRequestService", "task_request");
+	planNextActionService = config.getProperty("planNextActionService", "plan_next_action");
+	generateSequenceService = config.getProperty("generateSequenceService", "generate_sequence");
+	querySparQLService = config.getProperty("querySparQLService", "query_sparql");
+    }
+
+    public KnowledgeEngine()
+    {
+	this.defaultContextPath();
+    }
+
+    public KnowledgeEngine(String contextPath)
+    {
+	this.setContextPath(contextPath);
+    }
+
+    public void setContextPath(String path)
+    {
+	this.confPath = path;
+    }
+
+    public boolean init(String cfgFile)
+    {
+	try {
+	    initProperties(cfgFile);
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	    return false;
+	}
+	
 	ros = Ros.getInstance();
 	ros.init(nodeName);
 	ros.logInfo("INFO: Start RosJava_JNI service");
@@ -151,7 +193,9 @@ class KnowledgeEngine
 		ros.logInfo("INFO: Task termintated");
 		
 		currentTask = null;
+		// TODO:
 		currentSessionId = 1;
+
 		res.nextAction = new CUAction();
 		return res;
 	    }
@@ -168,11 +212,20 @@ class KnowledgeEngine
 	    res.nextAction = new CUAction(); // empty task
 	    return res;	    
 	}
-	if(at.getActionName().equals("finish_success") ||  at.getActionName().equals("finish_fail")) {
+	if(at.getActionName().equals("finish_success")) {
 	    currentTask = null;
 	    currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
 	    res.nextAction = new CUAction(); // empty task
+	    res.nextAction.status = 1;
+	    return res;	    
+	}
+	else if( at.getActionName().equals("finish_fail")) {
+	    currentTask = null;
+	    currentSessionId = 1;
+	    System.out.println("Reached the end of the task. No further action to be executed. ");
+	    res.nextAction = new CUAction(); // empty task
+	    res.nextAction.status = -1;
 	    return res;	    
 	}
 	
@@ -233,7 +286,7 @@ class KnowledgeEngine
 	    currentTask = new Task(Task.TaskType.GET_OBJECT);
 	    String taskFile = config.getProperty("taskfile", "task1.seq");
 	    System.out.println(taskFile);
-	    if(currentTask.loadPredefinedSequence(taskFile))   {
+	    if(currentTask.loadPredefinedSequence(this.confPath + taskFile))   {
 		System.out.println("OK... ");
 	    }
 	    else  {
@@ -271,44 +324,59 @@ class KnowledgeEngine
 	}
     }
 
+    private String defaultContextPath()
+    {
+	 this.confPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();	
+	 this.confPath = this.confPath + "../conf/";
+	 return this.confPath;
+    }
     
-    
+    public String getContextPath()
+    {
+	return this.confPath;
+    }
+
     public static void main(String[] args)
     {
 	String configFile = new String();
 	System.out.print("There are " + args.length + " input arguments: ");
+
 	if(args.length == 1) {
 	    configFile = args[0];
 	    System.out.println(configFile);
 	}
-	else  {
-	    configFile = "conf/srsknow.cfg";
+	else {
+	    configFile = "srsknow.cfg";
 	    System.out.println(configFile);
 	}
 
 	Properties conf = new Properties();
-	KnowledgeEngine knowEng;
-	try{
-	    InputStream is = new FileInputStream(configFile);
-	    conf.load(is);
+	KnowledgeEngine knowEng;// = new KnowledgeEngine(conf);  // not necessary to be constructed. 
+    
+	//try{
+	//String path = knowEng.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+	//InputStream is = new FileInputStream(knowEng.getContextPath() + configFile);
+	//conf.load(is);
 	
 	//////
 	//testTask(conf);
 	/////
-
-
-	    knowEng = new KnowledgeEngine(conf);
-
-	    
-	}
-	catch(IOException e){
-	    knowEng = new KnowledgeEngine("knowledge_srs_node", "../conf/house.owl");
-	}
-
-	//knowEng.loadPredefinedTasksForTest();
-	knowEng.initROS();
-
 	
+	knowEng = new KnowledgeEngine();
+	//}
+	//catch(IOException e){
+	//knowEng = new KnowledgeEngine("knowledge_srs_node", "../conf/house.owl");
+	//System.out.println(e.getMessage());
+	//return;
+	//}
+	
+	//knowEng.loadPredefinedTasksForTest();
+	if (knowEng.init(configFile)) {
+	    System.out.println("OK");
+	}
+	else {
+	    System.out.println("Something wrong with initialisation");
+	}
     }
 
     private Task currentTask;
@@ -325,6 +393,7 @@ class KnowledgeEngine
     private String generateSequenceService = "generate_sequence";
     private String querySparQLService = "query_sparql";
 
+    private String confPath;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing
     int flag = 1;
 }

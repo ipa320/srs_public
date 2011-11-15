@@ -22,10 +22,14 @@
   <depend package="geometry_msgs"/>
   <depend package="srs_msgs"/>
   <depend package="kinematics_msgs"/>
-  <!--depend package="knowledge_ros_service"/-->
+  <depend package="knowledge_ros_service"/>
   <depend package="cob_object_detection_msgs"/>
   <depend package="cob_3d_mapping_msgs"/>
   <depend package="gazebo"/>
+  <!--depend package="cob_bringup_sim"/-->
+  <depend package="cob_2dnav"/>
+  <depend package="cob_linear_nav"/>
+  <depend package="cob_script_server"/>
 </package>
 
 

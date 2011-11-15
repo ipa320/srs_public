@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import roslib;
-#roslib.load_manifest('beginner_tutorials')
 roslib.load_manifest('knowledge_ros_service')
 import sys
 import rospy
@@ -52,13 +51,13 @@ if __name__ == "__main__":
     print requestNewTask()
 
     # get next action [0 0 0 ] is not used here as the first step. see explanation in the next call
-    print testNextActionService([0,0,0])
+    print '1-- ', testNextActionService([0,0,0])
 
     #[0, 0, 0] means: success for move, perception, and grasp actions in the last step
-    print testNextActionService([0,0,0])
-    print testNextActionService([0,1,0])
-    print testNextActionService([0,0,0])
-    print testNextActionService([0,0,0])
-
+    print '2-- ', testNextActionService([0,0,0])
+    print '3-- ', testNextActionService([0,1,0])
+    print '4-- ', testNextActionService([0,0,0])
+    print '5-- ', testNextActionService([0,0,0])
+    print '6-- ', testNextActionService([0,0,0])
     # to terminate current task, 
     print terminateCurrentTask();

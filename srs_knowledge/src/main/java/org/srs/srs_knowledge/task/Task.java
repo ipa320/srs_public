@@ -1,10 +1,10 @@
-package org.srs.knowledge_ros_service.task;
+package org.srs.srs_knowledge.task;
 
 import java.io.IOException;
 import java.io.*;
 //import org.apache.commons.logging.Log;
 import java.util.ArrayList;
-import ros.pkg.knowledge_ros_service.msg.*;
+import ros.pkg.srs_knowledge.msg.*;
 
 
 public class Task

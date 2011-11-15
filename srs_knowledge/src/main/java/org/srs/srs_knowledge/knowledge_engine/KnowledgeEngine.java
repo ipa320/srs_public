@@ -1,4 +1,4 @@
-package org.srs.knowledge_ros_service.knowledge_engine;
+package org.srs.srs_knowledge.knowledge_engine;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.*;
@@ -16,14 +16,14 @@ import java.util.ArrayList;
 
 import ros.*;
 import ros.communication.*;
-import ros.pkg.knowledge_ros_service.srv.AskForActionSequence;  // deprecated
-import ros.pkg.knowledge_ros_service.srv.GenerateSequence;
-import ros.pkg.knowledge_ros_service.srv.QuerySparQL;
-import ros.pkg.knowledge_ros_service.msg.*;
-import ros.pkg.knowledge_ros_service.srv.PlanNextAction;
-import ros.pkg.knowledge_ros_service.srv.TaskRequest;
+import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
+import ros.pkg.srs_knowledge.srv.GenerateSequence;
+import ros.pkg.srs_knowledge.srv.QuerySparQL;
+import ros.pkg.srs_knowledge.msg.*;
+import ros.pkg.srs_knowledge.srv.PlanNextAction;
+import ros.pkg.srs_knowledge.srv.TaskRequest;
 
-import org.srs.knowledge_ros_service.task.*;
+import org.srs.srs_knowledge.task.*;
 
 import java.util.Properties;
 

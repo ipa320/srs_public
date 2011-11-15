@@ -5,24 +5,29 @@
   
   </description>
   <author>Maintained by Georg Arbeiter</author>
-  <license>BSD,Fraunhofer IPA</license>  
+  <license>BSD,LGPL,Fraunhofer IPA</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs</url>
   <depend stack="arm_navigation" /> <!-- kinematics_msgs, arm_navigation_msgs -->
   <depend stack="bullet" /> <!-- bullet -->
+  <depend stack="client_rosjava_jni" /> <!-- rosjava_jni -->
   <depend stack="cob_command_tools" /> <!-- cob_script_server -->
-  <depend stack="cob_common" /> <!-- cob_srvs, cob_msgs -->
+  <depend stack="cob_common" /> <!-- cob_srvs -->
+  <depend stack="cob_environment_perception" /> <!-- cob_3d_mapping_msgs -->
   <depend stack="cob_navigation" /> <!-- cob_2dnav -->
+  <depend stack="cob_object_perception" /> <!-- cob_object_detection_msgs -->
   <depend stack="cob_robots" /> <!-- cob_bringup, cob_default_robot_config -->
   <depend stack="common" /> <!-- actionlib, bfl -->
   <depend stack="common_msgs" /> <!-- nav_msgs, actionlib_msgs, trajectory_msgs, sensor_msgs, geometry_msgs, visualization_msgs -->
   <depend stack="executive_smach" /> <!-- smach_ros, smach -->
   <depend stack="geometry" /> <!-- tf -->
   <depend stack="image_common" /> <!-- image_transport -->
+  <depend stack="knowrob" /> <!-- json_prolog -->
   <depend stack="laser_pipeline" /> <!-- laser_geometry -->
   <depend stack="perception_pcl" /> <!-- pcl, pcl_ros -->
   <depend stack="ros" /> <!-- roslib -->
   <depend stack="ros_comm" /> <!-- std_srvs, roscpp, message_filters, std_msgs, rospy, rosbag -->
+  <depend stack="simulator_gazebo" /> <!-- gazebo -->
   <depend stack="sql_database" /> <!-- database_interface -->
   <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
 

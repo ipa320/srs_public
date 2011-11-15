@@ -1,7 +1,0 @@
-#Trigger Plane Extraction
-#goal definition
----
-#result definition
----
-#feedback
-std_msgs/String currentStep

@@ -68,6 +68,8 @@ namespace laser_processor
     float intensity;
     float x;
     float y;
+    float variation; // used only in the class Background
+    int scans; // used only in the class Background to to averaging contains the number of scans that have gone into this scan
 
     static Sample* Extract(int ind, const sensor_msgs::LaserScan& scan);
 
@@ -100,9 +102,32 @@ namespace laser_processor
     void appendToCloud(sensor_msgs::PointCloud& cloud, int r = 0, int g = 0, int b = 0);
 
     tf::Point center();
+   
   };
 
-  //! A mask for filtering out Samples based on range 
+  
+class Background
+{
+SampleSet backgr_data;
+
+   bool filled; 
+   float    angle_min;
+   float    angle_max;
+   uint32_t size;
+
+public:
+   Background() : filled(false), angle_min(0), angle_max(0), size(0) { }
+
+   inline void clear() { backgr_data.clear(); filled = false; }
+   
+   void addScan(sensor_msgs::LaserScan& scan, float treshhold);
+
+   bool isSamplebelongstoBackgrond(Sample* s, float thresh);
+
+};
+
+
+//! A mask for filtering out Samples based on range 
   class ScanMask
   {
     SampleSet mask_;
@@ -135,6 +160,7 @@ namespace laser_processor
     std::list<SampleSet*>& getClusters() { return clusters_; }
 
     ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_, float mask_threshold = 0.03);
+    ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_, Background& background_ , float mask_threshold = 0.03 , float background_treshhold = 0.03);
 
     ~ScanProcessor();
 

@@ -56,12 +56,14 @@ using namespace std;
 using namespace laser_processor;
 using namespace ros;
 
-enum LoadType {LOADING_NONE, LOADING_POS, LOADING_NEG, LOADING_TEST};
+enum LoadType {LOADING_NONE, LOADING_POS, LOADING_NEG, LOADING_TEST, LOADING_BACKGROUND};
 
 class TrainLegDetector
 {
 public:
   ScanMask mask_;
+  Background background_;
+
   int mask_count_; // number of added scans to the mask
 
   vector< vector<float> > pos_data_;
@@ -75,16 +77,18 @@ public:
   int feat_count_;
 
   TrainLegDetector() : mask_count_(0), connected_thresh_(0.06), feat_count_(0)
-  {
-  }
+  {}
+
 
   void loadData(LoadType load, char* file)
   {
-   printf("In loadData ...\n");
+//   printf("In loadData ...\n");
     if (load != LOADING_NONE)
     {
       switch (load)
       {
+      case LOADING_BACKGROUND:
+        printf("Loading background data from file: %s\n",file); break;
       case LOADING_POS:
         printf("Loading positive training data from file: %s\n",file); break;
       case LOADING_NEG:
@@ -98,7 +102,6 @@ public:
 
   rosbag::Bag bag;
 
-
   bag.open(file, rosbag::bagmode::Read);
   
     std::vector<std::string> topics;
@@ -107,7 +110,7 @@ public:
 
 
    rosbag::View view(bag, rosbag::TopicQuery(topics));
-   printf("scan size %i:", view.size());
+   printf("file size %i scans \n", view.size());
       
 
    BOOST_FOREACH(rosbag::MessageInstance const m, view)
@@ -116,49 +119,60 @@ public:
            sensor_msgs::LaserScan::ConstPtr scanptr = m.instantiate<sensor_msgs::LaserScan>();
            
            if (scanptr != NULL)
-           
+           {
 
-   switch (load)
-      {
-      case LOADING_POS:
-        loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&pos_data_);
-        break;
-      case LOADING_NEG:
-        mask_count_ = 1000; // effectively disable masking
-        loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&neg_data_);
-        break;
-      case LOADING_TEST:
-       loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&test_data_);
-        break;
-      default:
-        break;
-      }
+           switch (load)   
+             {
+              case LOADING_BACKGROUND:
+               loadBackground ( &(sensor_msgs::LaserScan(*scanptr)));  
+               break;
 
-  //            printf("Laser data %i:",(*scanptr).ranges.size());
+              case LOADING_POS:
+               loadCbBackgroundremoved ( &(sensor_msgs::LaserScan(*scanptr)),&pos_data_); // take out the background
+             //  loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&pos_data_);
+               break;
+
+              case LOADING_NEG:
+               mask_count_ = 1000; // skips masking building --> no mask
+               loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&neg_data_);
+               break;
  
-           
-     }
-   
-       bag.close();
-
-
-
+             case LOADING_TEST:
+              loadCb ( &(sensor_msgs::LaserScan(*scanptr)),&test_data_);
+              break;
+             
+             default:
+              break;
+            }
+          }         
+          else 
+           printf ("loadData(), scanptr is NULL");
+          
     }
-  }
 
+   bag.close();
 
+   } // if (load != LOADING_NONE)
+
+ }
+
+void loadBackground(sensor_msgs::LaserScan* scan)
+ {
+  //  printf (",");
+    background_.addScan(*scan, 0.3); // scan + treshhold to know whether to merge them or not 
+ }
  
 void loadCb(sensor_msgs::LaserScan* scan, vector< vector<float> >* data)
  {
-    printf (".");
+  //  printf (".");
 
-    if (mask_count_++ < 20)  // for the first 20 scans it only builds the mask (expands it)
+    if (mask_count_++ < 20)  // for the first 20 scans it only builds the mask (start from the first scan and reduce it)
     {
       mask_.addScan(*scan);
     }
     else  // and then does the processing
     {
-      ScanProcessor processor(*scan,mask_);
+      ScanProcessor processor(*scan,mask_); //doesn't remove the backgrond
       processor.splitConnected(connected_thresh_);
       processor.removeLessThan(5);
     
@@ -169,9 +183,31 @@ void loadCb(sensor_msgs::LaserScan* scan, vector< vector<float> >* data)
     }
   }
 
-  void train()
+void loadCbBackgroundremoved(sensor_msgs::LaserScan* scan, vector< vector<float> >* data)
+ {
+   // printf (".");
+
+    if (mask_count_++ < 20)  // for the first 20 scans it only builds the mask (start from the first scan and reduce it)
+    {
+      mask_.addScan(*scan);
+    }
+    else  // and then does the processing
+    {
+      ScanProcessor processor(*scan,mask_); // do not remove background
+      //ScanProcessor processor(*scan,mask_,background_); //remove the background as well
+      processor.splitConnected(connected_thresh_);
+      processor.removeLessThan(5);
+    
+      for (list<SampleSet*>::iterator i = processor.getClusters().begin();
+           i != processor.getClusters().end();
+           i++)
+        data->push_back( calcLegFeatures(*i, *scan));
+    }
+  }
+
+  void traincl()
   {
-printf("In train()....");
+ //   printf("In traincl()....");
     int sample_size = pos_data_.size() + neg_data_.size();
     feat_count_ = pos_data_[0].size();
 
@@ -301,7 +337,7 @@ int main(int argc, char **argv)
 {
   if (argc < 2) 
     {
-     printf("Usage: train_leg_detector --train file1 --neg file2 --test file3 --save conf_file\n");
+     printf("Usage: train_leg_detector --background background_file --train file1 --neg file2 --test file3 --save conf_file\n");
      exit (0);
     }
 
@@ -315,7 +351,10 @@ int main(int argc, char **argv)
   printf("Loading data...\n");
   for (int i = 1; i < argc; i++)
   {
-    if (!strcmp(argv[i],"--train"))
+
+    if (!strcmp(argv[i],"--background"))
+      loading = LOADING_BACKGROUND;
+    else if (!strcmp(argv[i],"--train"))
       loading = LOADING_POS;
     else if (!strcmp(argv[i],"--neg"))
       loading = LOADING_NEG;
@@ -332,7 +371,8 @@ int main(int argc, char **argv)
   }
 
   printf("Training classifier...\n");
-  tld.train();
+  
+  tld.traincl();
 
   printf("Evlauating classifier...\n");
   tld.test();

@@ -1,13 +1,13 @@
 <package>
-  <description brief="knowledge_ros_service">
+  <description brief="srs_knowledge">
 
-     knowledge_ros_service
+     srs_knowledge
 
   </description>
   <author>Ze Ji</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/knowledge_ros_service</url>
+  <url>http://ros.org/wiki/srs_knowledge</url>
   <depend package="roslib"/>
   <depend package="rosjava_jni"/>
   <depend package="roscpp"/>

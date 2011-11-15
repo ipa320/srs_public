@@ -1,3 +1,1 @@
-To compile, make sure environment variable JENA_LIBS is set, directing to /path/to/jena/lib
-
-
+To compile, make sure environment variable JAVA_HOME 

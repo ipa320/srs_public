@@ -1,4 +1,4 @@
-package org.srs.knowledge_ros_service.knowledge_engine;
+package org.srs.srs_knowledge.knowledge_engine;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.*;

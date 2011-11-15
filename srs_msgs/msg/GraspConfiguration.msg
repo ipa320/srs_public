@@ -1,6 +1,7 @@
-std_msgs/Float32 object_id
-std_msgs/String hand_type
+float32 object_id
+string hand_type
 trajectory_msgs/JointTrajectory sconfiguration
 geometry_msgs/PoseStamped palm_pose
-std_msgs/String category
-std_msgs/Float32 score
+geometry_msgs/PoseStamped pre_grasp
+string category
+float32 score

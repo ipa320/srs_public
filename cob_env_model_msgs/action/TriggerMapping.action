@@ -1,0 +1,8 @@
+#Trigger Mapping
+#goal definition
+bool start
+---
+#result definition
+---
+#feedback
+std_msgs/String currentStep

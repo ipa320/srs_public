@@ -27,6 +27,6 @@
 	<include file="$(find srs_decision_making)/ros/launch/srs_decision_making.launch"/>
 
 	<!-- knowledge server -->
-	<include file="$(find knowledge_ros_service)/ros/launch/knowledge_ros_service.launch"/>
+	<include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
 
 </launch>

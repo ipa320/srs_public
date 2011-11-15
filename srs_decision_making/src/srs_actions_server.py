@@ -22,8 +22,8 @@ from actionlib.msg import *
 from smach import Iterator, StateMachine, CBState
 from smach_ros import ConditionState, IntrospectionServer
 
-from knowledge_ros_service.srv import *
-from knowledge_ros_service.msg import *
+from srs_knowledge.srv import *
+from srs_knowledge.msg import *
 
 """
 smach introspection server not working in electric yet, modify the executive_smach/smach_msgs/msg/SmachContainerStatus.msg below can bypass error:

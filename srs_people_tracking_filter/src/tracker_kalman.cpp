@@ -33,8 +33,9 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
+/* Modified by Alex Noyvirt for SRS */
 
-#include "people_tracking_filter/tracker_kalman.h"
+#include "srs_people_tracking_filter/tracker_kalman.h"
 
 using namespace MatrixWrapper;
 using namespace BFL;
@@ -183,7 +184,7 @@ bool TrackerKalman::updateCorrection(const tf::Vector3&  meas, const MatrixWrapp
   };
 
 
-  void TrackerKalman::getEstimate(people_msgs::PositionMeasurement& est) const
+  void TrackerKalman::getEstimate(srs_msgs::PositionMeasurement& est) const
   {
     ColumnVector tmp = filter_->PostGet()->ExpectedValueGet();
 

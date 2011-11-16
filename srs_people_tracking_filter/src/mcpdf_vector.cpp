@@ -33,13 +33,14 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
+/* modified for SRS by Alex Noyvirt*/
 
-#include "people_tracking_filter/mcpdf_vector.h"
-#include "people_tracking_filter/state_pos_vel.h"
+#include "srs_people_tracking_filter/mcpdf_vector.h"
+#include "srs_people_tracking_filter/state_pos_vel.h"
 #include <assert.h>
 #include <vector>
 #include <std_msgs/Float64.h>
-#include "people_tracking_filter/rgb.h"
+#include "srs_people_tracking_filter/rgb.h"
 
 
   using namespace MatrixWrapper;

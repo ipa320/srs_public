@@ -33,77 +33,47 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
+/* Modified by Alex Noyvirt for SRS */
 
-#include "people_tracking_filter/measmodel_vector.h"
+#ifndef UNIFORM_VECTOR_H
+#define UNIFORM_VECTOR_H
 
-using namespace std;
-using namespace BFL;
-using namespace tf;
-
-static const unsigned int NUM_MEASMODEL_VECTOR_COND_ARGS  = 1;
-static const unsigned int DIM_MEASMODEL_VECTOR            = 3;
-
-
-// Constructor
-MeasPdfVector::MeasPdfVector(const Vector3& sigma)
-  : ConditionalPdf<Vector3, Vector3>(DIM_MEASMODEL_VECTOR, NUM_MEASMODEL_VECTOR_COND_ARGS),
-    meas_noise_(Vector3(0,0,0), sigma)
-{}
-
-
-// Destructor
-MeasPdfVector::~MeasPdfVector()
-{}
+#include <pdf/pdf.h>
+#include <tf/tf.h>
 
 
 
-Probability 
-MeasPdfVector::ProbabilityGet(const Vector3& measurement) const
+namespace BFL
 {
-  return meas_noise_.ProbabilityGet(measurement - ConditionalArgumentGet(0));
-}
+  /// Class representing uniform vector
+  class UniformVector: public Pdf<tf::Vector3>
+    {
+    private:
+      tf::Vector3 mu_, size_;
+      double probability_;
+      
+    public:
+      /// Constructor
+      UniformVector (const tf::Vector3& mu, const tf::Vector3& size);
 
+      /// Destructor
+      virtual ~UniformVector();
 
+      /// output stream for UniformVector
+      friend std::ostream& operator<< (std::ostream& os, const UniformVector& g);
+    
+      // Redefinition of pure virtuals
+      virtual UniformVector* Clone() const;
 
-bool
-MeasPdfVector::SampleFrom (Sample<Vector3>& one_sample, int method, void *args) const
-{
-  cerr << "MeasPdfVector::SampleFrom Method not applicable" << endl;
-  assert(0);
-  return false;
-}
+      // Redefinition of pure virtuals
+      virtual Probability ProbabilityGet(const tf::Vector3& input) const;
+      bool SampleFrom (vector<Sample<tf::Vector3> >& list_samples, const int num_samples, int method=DEFAULT, void * args=NULL) const;
+      virtual bool SampleFrom (Sample<tf::Vector3>& one_sample, int method=DEFAULT, void * args=NULL) const;
 
+      virtual tf::Vector3 ExpectedValueGet() const;
+      virtual MatrixWrapper::SymmetricMatrix CovarianceGet() const;
 
+    };
 
-
-Vector3
-MeasPdfVector::ExpectedValueGet() const
-{
-  cerr << "MeasPdfVector::ExpectedValueGet Method not applicable" << endl;
-  Vector3 result;
-  assert(0);
-  return result;
-}
-
-
-
-
-SymmetricMatrix 
-MeasPdfVector::CovarianceGet() const
-{
-  cerr << "MeasPdfVector::CovarianceGet Method not applicable" << endl;
-  SymmetricMatrix Covar(DIM_MEASMODEL_VECTOR);
-  assert(0);
-  return Covar;
-}
-
-
-void
-MeasPdfVector::CovarianceSet(const MatrixWrapper::SymmetricMatrix& cov)
-{
-  Vector3 cov_vec(sqrt(cov(1,1)), sqrt(cov(2,2)),sqrt(cov(3,3)));
-  meas_noise_.sigmaSet(cov_vec);
-}
-
-
-
+} // end namespace
+#endif

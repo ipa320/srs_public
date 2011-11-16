@@ -33,9 +33,10 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
+/* Modified for SRS: Alex Noyvirt */
 
-#include "people_tracking_filter/detector_particle.h"
-#include "people_tracking_filter/uniform_vector.h"
+#include "srs_people_tracking_filter/detector_particle.h"
+#include "srs_people_tracking_filter/uniform_vector.h"
 
 using namespace MatrixWrapper;
 using namespace BFL;
@@ -136,7 +137,7 @@ namespace estimation
   }
 
 
-  void DetectorParticle::getEstimate(people_msgs::PositionMeasurement& est) const
+  void DetectorParticle::getEstimate(srs_msgs::PositionMeasurement& est) const
   {
     tf::Vector3 tmp = filter_->PostGet()->ExpectedValueGet();
 

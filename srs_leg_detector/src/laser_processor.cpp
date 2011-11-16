@@ -209,7 +209,7 @@ bool Background::isSamplebelongstoBackgrond(Sample* s, float thresh)
   {
     SampleSet::iterator b = backgr_data.find(s); 
     if ( b != backgr_data.end())
-      if ( s-> range > 29.8 || ((*b)->range + abs((*b)->variation) + thresh > s->range) &&  ((*b)->range - abs((*b)->variation) - thresh < s->range) ) // in other words s-range between what we have in the background +- allowances
+      if ( (s-> range > 29.8) || ( ((*b)->range + abs((*b)->variation) + thresh > s->range) &&  ((*b)->range - abs((*b)->variation) - thresh < s->range) ) ) // in other words s-range between what we have in the background +- allowances
         return true;
   }
 

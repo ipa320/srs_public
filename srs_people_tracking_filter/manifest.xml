@@ -1,10 +1,10 @@
 <package>
-  <description brief="people_tracking_filter">
+  <description brief="srs_people_tracking_filter">
 
      tracker
 
   </description>
-  <author>Caroline Pantofaru</author>
+  <author>Alex Noyvirt</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/filter</url>

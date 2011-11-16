@@ -33,9 +33,10 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
+/* Modified by Alex Noyvirt for SRS */
 
 
-#include "people_tracking_filter/gaussian_pos_vel.h"
+#include "srs_people_tracking_filter/gaussian_pos_vel.h"
 #include <wrappers/rng/rng.h>
 #include <cmath> 
 #include <cassert>

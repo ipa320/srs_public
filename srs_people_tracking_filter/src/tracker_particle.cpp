@@ -33,9 +33,10 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
+/* Modified by Alex Noyvirt for SRS */
 
-#include "people_tracking_filter/tracker_particle.h"
-#include "people_tracking_filter/gaussian_pos_vel.h"
+#include "srs_people_tracking_filter/tracker_particle.h"
+#include "srs_people_tracking_filter/gaussian_pos_vel.h"
 
 using namespace MatrixWrapper;
 using namespace BFL;
@@ -138,7 +139,7 @@ namespace estimation
   };
 
 
-  void TrackerParticle::getEstimate(people_msgs::PositionMeasurement& est) const
+  void TrackerParticle::getEstimate(srs_msgs::PositionMeasurement& est) const
   {
     StatePosVel tmp = filter_->PostGet()->ExpectedValueGet();
 

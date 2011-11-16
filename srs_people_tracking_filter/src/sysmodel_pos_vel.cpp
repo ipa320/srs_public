@@ -33,46 +33,80 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
-
-#ifndef UNIFORM_VECTOR_H
-#define UNIFORM_VECTOR_H
-
-#include <pdf/pdf.h>
-#include <tf/tf.h>
+/* Modified by Alex Noyvirt for SRS */
 
 
+#include "srs_people_tracking_filter/sysmodel_pos_vel.h"
 
-namespace BFL
+
+using namespace std;
+using namespace BFL;
+using namespace tf;
+
+
+static const unsigned int NUM_SYS_POS_VEL_COND_ARGS = 1;
+static const unsigned int DIM_SYS_POS_VEL           = 6;
+
+
+// Constructor
+SysPdfPosVel::SysPdfPosVel(const StatePosVel& sigma)
+  : ConditionalPdf<StatePosVel, StatePosVel>(DIM_SYS_POS_VEL, NUM_SYS_POS_VEL_COND_ARGS),
+    noise_(StatePosVel(Vector3(0,0,0), Vector3(0,0,0)), sigma)
+{}
+
+
+
+// Destructor
+SysPdfPosVel::~SysPdfPosVel()
+{}
+
+
+
+Probability 
+SysPdfPosVel::ProbabilityGet(const StatePosVel& state) const
 {
-  /// Class representing uniform vector
-  class UniformVector: public Pdf<tf::Vector3>
-    {
-    private:
-      tf::Vector3 mu_, size_;
-      double probability_;
-      
-    public:
-      /// Constructor
-      UniformVector (const tf::Vector3& mu, const tf::Vector3& size);
+  cerr << "SysPdfPosVel::ProbabilityGet Method not applicable" << endl;
+  assert(0);
+  return 0;
+}
 
-      /// Destructor
-      virtual ~UniformVector();
 
-      /// output stream for UniformVector
-      friend std::ostream& operator<< (std::ostream& os, const UniformVector& g);
-    
-      // Redefinition of pure virtuals
-      virtual UniformVector* Clone() const;
+bool
+SysPdfPosVel::SampleFrom (Sample<StatePosVel>& one_sample, int method, void *args) const
+{
+  StatePosVel& res = one_sample.ValueGet();
 
-      // Redefinition of pure virtuals
-      virtual Probability ProbabilityGet(const tf::Vector3& input) const;
-      bool SampleFrom (vector<Sample<tf::Vector3> >& list_samples, const int num_samples, int method=DEFAULT, void * args=NULL) const;
-      virtual bool SampleFrom (Sample<tf::Vector3>& one_sample, int method=DEFAULT, void * args=NULL) const;
+  // get conditional argument: state
+  res = this->ConditionalArgumentGet(0);
 
-      virtual tf::Vector3 ExpectedValueGet() const;
-      virtual MatrixWrapper::SymmetricMatrix CovarianceGet() const;
+  // apply system model
+  res.pos_ += (res.vel_ * dt_);
 
-    };
+  // add noise
+  Sample<StatePosVel> noise_sample;
+  noise_.SetDt(dt_);
+  noise_.SampleFrom(noise_sample, method, args);
+  res += noise_sample.ValueGet();
 
-} // end namespace
-#endif
+  return true;
+}
+
+
+StatePosVel
+SysPdfPosVel::ExpectedValueGet() const
+{
+  cerr << "SysPdfPosVel::ExpectedValueGet Method not applicable" << endl;
+  assert(0);
+  return StatePosVel();
+
+}
+
+SymmetricMatrix 
+SysPdfPosVel::CovarianceGet() const
+{
+  cerr << "SysPdfPosVel::CovarianceGet Method not applicable" << endl;
+  SymmetricMatrix Covar(DIM_SYS_POS_VEL);
+  assert(0);
+  return Covar;
+}
+

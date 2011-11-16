@@ -33,13 +33,14 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
+/* Modified by Alex Noyvirt for SRS */
 
-#include "people_tracking_filter/people_tracking_node.h"
-#include "people_tracking_filter/tracker_particle.h"
-#include "people_tracking_filter/tracker_kalman.h"
-#include "people_tracking_filter/state_pos_vel.h"
-#include "people_tracking_filter/rgb.h"
-#include <people_msgs/PositionMeasurement.h>
+#include "srs_people_tracking_filter/people_tracking_node.h"
+#include "srs_people_tracking_filter/tracker_particle.h"
+#include "srs_people_tracking_filter/tracker_kalman.h"
+#include "srs_people_tracking_filter/state_pos_vel.h"
+#include "srs_people_tracking_filter/rgb.h"
+#include <srs_msgs/PositionMeasurement.h>
 
 
 using namespace std;
@@ -82,7 +83,7 @@ namespace estimation
     local_nh.param("follow_one_person", follow_one_person_, false);
 
     // advertise filter output
-    people_filter_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("people_tracker_filter",10);
+    people_filter_pub_ = nh_.advertise<srs_msgs::PositionMeasurement>("people_tracker_filter",10);
 
     // advertise visualization
     people_filter_vis_pub_ = nh_.advertise<sensor_msgs::PointCloud>("people_tracker_filter_visualization",10);
@@ -109,7 +110,7 @@ namespace estimation
 
 
   // callback for messages
-  void PeopleTrackingNode::callbackRcv(const people_msgs::PositionMeasurement::ConstPtr& message)
+  void PeopleTrackingNode::callbackRcv(const srs_msgs::PositionMeasurement::ConstPtr& message)
   {
     ROS_DEBUG("Tracking node got a people position measurement (%f,%f,%f)",
 	      message->pos.x, message->pos.y, message->pos.z);
@@ -194,7 +195,7 @@ namespace estimation
 
 
   // callback for dropped messages
-  void PeopleTrackingNode::callbackDrop(const people_msgs::PositionMeasurement::ConstPtr& message)
+  void PeopleTrackingNode::callbackDrop(const srs_msgs::PositionMeasurement::ConstPtr& message)
   {
     ROS_INFO("DROPPED PACKAGE for %s from %s with delay %f !!!!!!!!!!!", 
 	     message->object_id.c_str(), message->name.c_str(), (ros::Time::now() - message->header.stamp).toSec());
@@ -226,7 +227,7 @@ namespace estimation
 	(*it)->updatePrediction(ros::Time::now().toSec() - sequencer_delay);
 
 	// publish filter result
-	people_msgs::PositionMeasurement est_pos;
+	srs_msgs::PositionMeasurement est_pos;
 	(*it)->getEstimate(est_pos);
 	est_pos.header.frame_id = fixed_frame_;
 

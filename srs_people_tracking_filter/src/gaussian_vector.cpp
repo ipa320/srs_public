@@ -33,8 +33,9 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
+/* modified for SRS by Alex Noyvirt */
 
-#include "people_tracking_filter/gaussian_vector.h"
+#include "srs_people_tracking_filter/gaussian_vector.h"
 #include <wrappers/rng/rng.h>
 #include <cmath> 
 #include <cassert>

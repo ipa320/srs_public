@@ -1,5 +1,0 @@
-string current_state
-uint32 exceptional_case_id
----
-string solution
-uint8  giveup

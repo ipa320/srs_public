@@ -7,11 +7,12 @@ import rospy
 import smach
 import smach_ros
 import actionlib
-
+import random
 
 from simple_script_server import *
 sss = simple_script_server()
 
+from kinematics_msgs.srv import *
 from srs_grasping.msg import *
 client = actionlib.SimpleActionClient('/grasp_server', GraspAction)
 
@@ -29,7 +30,6 @@ class Wait_grasp_server(smach.State):
 	
 	while not client.wait_for_server(rospy.Duration(1.0)):
         	rospy.logerr('Waiting for /grasp_server...')
-
 
 	rospy.loginfo('/grasp_server found')
 	return 'succeeded'
@@ -64,12 +64,24 @@ class Read_DB(smach.State):
 class Move_arm(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded','retry','failed'], input_keys=['grasp_configuration'])
+	self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
 	self.counter = 0
 
-    def get_joint_state(msg):
+    def get_joint_state(self, msg):
 	global current_joint_configuration
 	current_joint_configuration = list(msg.desired.positions)
 	rospy.spin()
+
+    def callIKSolver(self, current_pose, goal_pose):
+	req = GetPositionIKRequest()
+	req.ik_request.ik_link_name = "sdh_palm_link"
+	req.ik_request.ik_seed_state.joint_state.position = current_pose
+	req.ik_request.pose_stamped = goal_pose
+	resp = self.iks(req)
+	result = []
+	for o in resp.solution.joint_state.position:
+		result.append(o)
+	return (result, resp.error_code)
 
     def execute(self, userdata):
         rospy.loginfo('Executing state MOVE_ARM')
@@ -80,43 +92,65 @@ class Move_arm(smach.State):
 
         rospy.loginfo('Executing the grasp_configuration[%d]' %self.counter)
 
-	#sub = rospy.Subscriber("/sdh_controller/state", JointTrajectoryControllerState, get_joint_state)
-	#while sub.get_num_connections() == 0:
-	#	time.sleep(0.3)
-	#	continue
+	#current_joint_configuration
+	sub = rospy.Subscriber("/sdh_controller/state", JointTrajectoryControllerState, self.get_joint_state)
+	while sub.get_num_connections() == 0:
+		time.sleep(0.3)
+		continue
+	
+	pre_grasp_pose = userdata.grasp_configuration[self.counter].pre_grasp
+	grasp_pose = userdata.grasp_configuration[self.counter].palm_pose
 
-	#(conf1, pre_grasp_result) = ik_solver_function(current_joint_configuration, userdata.grasp_configuration[self.counter].pre_grasp)
-	#(conf2, grasp_result) = ik_solver_function(conf1, userdata.grasp_configuration[self.counter].palm_pose)
+	#TODO: Detect an object and transform its pose into base_link coordinates system.
+	#TODO: Transform palm_pose/pre_grasp in object coordinates system.
 
-	#------
-	pre_grasp_result = True	
-	grasp_result = True
-	#------
+	#Sometimes the IKSolver does not find solutions for a valid position. For that, we call it 20 times.
+	sol = False
+	for i in range(0,20):
+		(pre_grasp_conf, error_code) = self.callIKSolver(current_joint_configuration, pre_grasp_pose)		
+		if(error_code.val == error_code.SUCCESS):
+			sol = True
+			continue
+	if not sol:
+		rospy.logerr("Ik pre_grasp FAILED")
+		self.counter += 1
+		return 'retry'
+		
 
+	sol = False
+	for i in range(0,20):
+		(grasp_conf, error_code) = self.callIKSolver(pre_grasp_conf, grasp_pose)		
+		if(error_code.val == error_code.SUCCESS):
+			sol = True
+			continue
 
-	if (pre_grasp_result == False) or (grasp_result == False):
-		rospy.logerr('This configuration does not work.')
+	if not sol:
+		rospy.logerr("Ik grasp FAILED")
 		self.counter += 1
 		return 'retry'
 
 
-	rospy.loginfo('This configuration has worked.')
-	#move_arm_function(conf1)
-	#sss.move("sdh", "cylopen")
-	#move_arm_function(conf2)
+	# execute grasp
+	sss.say(["I am grasping the object now."], False)
+	handle_arm = sss.move("arm", [pre_grasp_conf , grasp_conf], False)
+	sss.move("sdh", "cylopen")
+	handle_arm.wait()
+
 	return 'succeeded'
 
 
 
-# define state MOVE_ARM
+# define state MOVE_HAND
 class Move_hand(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded','failed'])
 	
     def execute(self, userdata):
         rospy.loginfo('Executing state MOVE_HAND')
-	#sss.move("sdh", [list(userdata.grasp_configuration[userdata.grasp_index_in].sconfiguration.points[0].positions)])
-	#if move sdh fails: return 'failed'
+
+	#values = srs_grasping.ROS_to_script_server(list(res[self.retries].sconfiguration.points[0].positions))
+	values = grasping_functions.ROS_to_script_server(list(res[self.retries].sconfiguration.points[0].positions))
+	sss.move("sdh", [values])
 	return 'succeeded'
 
 
@@ -170,4 +204,4 @@ def main(object_id, pose_id):
 # ------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     rospy.init_node('grasp_state_machine')
-    main(0, "X")	#object_id = Milk, pose_id = X
+    main(1, "X")	#object_id = Milk, pose_id = X

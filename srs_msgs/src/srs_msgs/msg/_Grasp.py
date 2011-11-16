@@ -9,14 +9,14 @@ import srs_msgs.msg
 import std_msgs.msg
 
 class Grasp(roslib.message.Message):
-  _md5sum = "eab730440692481ec12770602c3365c8"
+  _md5sum = "f19658594ceb0d6a35cc8a7e3b06a8d2"
   _type = "srs_msgs/Grasp"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """srs_msgs/GraspConfiguration[] grasp_configuration
 
 ================================================================================
 MSG: srs_msgs/GraspConfiguration
-float32 object_id
+int32 object_id
 string hand_type
 trajectory_msgs/JointTrajectory sconfiguration
 geometry_msgs/PoseStamped palm_pose
@@ -123,7 +123,7 @@ float64 w
       length = len(self.grasp_configuration)
       buff.write(_struct_I.pack(length))
       for val1 in self.grasp_configuration:
-        buff.write(_struct_f.pack(val1.object_id))
+        buff.write(_struct_i.pack(val1.object_id))
         _x = val1.hand_type
         length = len(_x)
         buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
@@ -214,7 +214,7 @@ float64 w
         val1 = srs_msgs.msg.GraspConfiguration()
         start = end
         end += 4
-        (val1.object_id,) = _struct_f.unpack(str[start:end])
+        (val1.object_id,) = _struct_i.unpack(str[start:end])
         start = end
         end += 4
         (length,) = _struct_I.unpack(str[start:end])
@@ -363,7 +363,7 @@ float64 w
       length = len(self.grasp_configuration)
       buff.write(_struct_I.pack(length))
       for val1 in self.grasp_configuration:
-        buff.write(_struct_f.pack(val1.object_id))
+        buff.write(_struct_i.pack(val1.object_id))
         _x = val1.hand_type
         length = len(_x)
         buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
@@ -456,7 +456,7 @@ float64 w
         val1 = srs_msgs.msg.GraspConfiguration()
         start = end
         end += 4
-        (val1.object_id,) = _struct_f.unpack(str[start:end])
+        (val1.object_id,) = _struct_i.unpack(str[start:end])
         start = end
         end += 4
         (length,) = _struct_I.unpack(str[start:end])
@@ -594,7 +594,8 @@ float64 w
 
 _struct_I = roslib.message.struct_I
 _struct_f = struct.Struct("<f")
-_struct_2I = struct.Struct("<2I")
-_struct_4d = struct.Struct("<4d")
+_struct_i = struct.Struct("<i")
 _struct_2i = struct.Struct("<2i")
+_struct_4d = struct.Struct("<4d")
+_struct_2I = struct.Struct("<2I")
 _struct_3d = struct.Struct("<3d")

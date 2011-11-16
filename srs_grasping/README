@@ -1,0 +1,4 @@
+To do list:
+
+-Insert into the state machine the <Detect> state.
+-Transform the <pre_grasp/palm_pose> (regarding object coordinates system) in /base_link coordinates system.

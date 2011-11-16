@@ -2,12 +2,12 @@
 
 import roslib
 roslib.load_manifest('srs_grasping')
-import sys, time
+import sys
+import time
 import openravepy
 
 from xml.dom import minidom
 from numpy import *
-
 from tf.transformations import *
 from trajectory_msgs.msg import *
 from geometry_msgs.msg import *
@@ -15,14 +15,10 @@ from srs_grasping.msg import *
 from srs_msgs.msg import *
 from pr2_controllers_msgs.msg import *
 
+
 from simple_script_server import *
 sss = simple_script_server()
 
-import grasp_machine, generator
-
-pi = math.pi
-#package_path = rospy.get_param('/repoPath')
-package_path = roslib.packages.get_pkg_dir('srs_grasping')+"/DB/"
 
 
 #################################################################################################
@@ -104,7 +100,7 @@ def graspConfig_to_MSG(res):
 		jt.points.append(p)
 	
 		GC = GraspConfiguration()
-		GC.object_id = hash(res[i].object_id)
+		GC.object_id = (res[i].object_id)
 		GC.hand_type = str(res[i].hand_type)
 		GC.palm_pose = res[i].palm_pose
 		GC.pre_grasp = res[i].pre_grasp
@@ -158,16 +154,15 @@ def generateFile(targetName, gmodel, env):
 	# ------------------------ 
 	# <targetName>.xml
 	# ------------------------ 
-
-	f_name = targetName + ".xml"
-
+	f_name = "/tmp/"+targetName+".xml"
 	try:
-		f = open(package_path+f_name,'r')
+		f = open(f_name,'r')
 		print "There are a file with the same name. It will be rewritted."
 		raw_input("Continue...")
 		sys.exit()
 	except:
-		f = open(package_path+f_name,'w')
+
+		f = open(f_name,'w')
 		f.write("<?xml version=\"1.0\" ?>\n")
 		f.write("<GraspList>\n")
 		f.write("<object_id>"+targetName+"</object_id>\n")
@@ -180,7 +175,7 @@ def generateFile(targetName, gmodel, env):
 		cont = 0
 		print "Adding grasps to the new XML file..."
 		for i in range(0, len(gmodel.grasps)):
-			print str(i+1)+"/"+str(len(gmodel.grasps))
+			#print str(i+1)+"/"+str(len(gmodel.grasps))
 			try:
 
 	 			contacts,finalconfig,mindist,volume = gmodel.testGrasp(grasp=gmodel.grasps[i],translate=True,forceclosure=True)
@@ -303,7 +298,7 @@ def getGrasps(file_name, all_grasps=False, msg=False):
 			xmldoc = minidom.parse(file_name)  
 	
 			padres = ((xmldoc.firstChild)).getElementsByTagName('configuration')
-			object_id = ((xmldoc.firstChild)).getElementsByTagName('object_id')[0].firstChild.nodeValue
+			object_id = int(((xmldoc.firstChild)).getElementsByTagName('object_id')[0].firstChild.nodeValue)
 
 			res = []
 			for j in range(0, len(padres)):
@@ -433,16 +428,16 @@ def GraspIt(grasp):
 
 
 	rospy.loginfo('This configuration has worked.')
-	#move_arm_function(conf1)
+	#move_arm_function(conf1)	#pre-grasp
 	sss.move("sdh", "cylopen")
-	#move_arm_function(conf2)
+	#move_arm_function(conf2)	#grasp
 	sss.move("sdh", [list(grasp.sconfiguration.points[0].positions)])
 	return "succeeded"
 
 
 
 # -----------------------------------------------------------------------------------------------
-# Shows the grasps in OpenRAVE
+# Shows the grasps in OpenRAVE (obsolet)
 # -----------------------------------------------------------------------------------------------
 def showOR(env, grasps, gazebo=False, delay=0.5):
 
@@ -497,7 +492,9 @@ def showOR(env, grasps, gazebo=False, delay=0.5):
 
 
 
-
+# -----------------------------------------------------------------------------------------------
+# Shows the grasps in OpenRAVE (msg's)
+# -----------------------------------------------------------------------------------------------
 def showORmsg(env, grasps, gazebo=False, delay=0.5):
 
 	env.SetViewer('qtcoin')

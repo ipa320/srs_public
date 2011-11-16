@@ -4,17 +4,17 @@ import struct
 
 
 class UI_DMresp(roslib.message.Message):
-  _md5sum = "76a4493cc57271579688da26170b70a2"
+  _md5sum = "8a6185ebbeac9cd1ebbaa1b88e853b6f"
   _type = "srs_msgs/UI_DMresp"
   _has_header = False #flag to mark the presence of a Header object
-  _full_text = """# this message contains information to define the comunication between the Decision making (DM) and UI_Pri in case of unexpected error in executing an previously issued command
+  _full_text = """# this message contains information to define the comunication between the Decision making (DM) and UI_Pri when an unexpected error has occured in the execution of an previously issued command
 
 string solution   # currently supported comands from the user are: continue,give_up,move  
 string parameter   # used when the command is move to carry the position. Possible vaues are:kitchen, home, order, [1.2, 3.4, 0.8] which are the coordinates from user click on the map
-uint32 responceID  # the uniqie ID used by DM to distinguish which responce corresponds to which command. Note: the responceID MUST be the same as the requestID of the corresponding command
+uint32 responseID  # the uniqie ID used by DM to distinguish which responce corresponds to which command. Note: the responceID MUST be the same as the requestID of the corresponding command
 
 """
-  __slots__ = ['solution','parameter','responceID']
+  __slots__ = ['solution','parameter','responseID']
   _slot_types = ['string','string','uint32']
 
   def __init__(self, *args, **kwds):
@@ -25,7 +25,7 @@ uint32 responceID  # the uniqie ID used by DM to distinguish which responce corr
     changes.  You cannot mix in-order arguments and keyword arguments.
     
     The available fields are:
-       solution,parameter,responceID
+       solution,parameter,responseID
     
     @param args: complete set of field values, in .msg order
     @param kwds: use keyword arguments corresponding to message field names
@@ -38,12 +38,12 @@ uint32 responceID  # the uniqie ID used by DM to distinguish which responce corr
         self.solution = ''
       if self.parameter is None:
         self.parameter = ''
-      if self.responceID is None:
-        self.responceID = 0
+      if self.responseID is None:
+        self.responseID = 0
     else:
       self.solution = ''
       self.parameter = ''
-      self.responceID = 0
+      self.responseID = 0
 
   def _get_types(self):
     """
@@ -64,7 +64,7 @@ uint32 responceID  # the uniqie ID used by DM to distinguish which responce corr
       _x = self.parameter
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-      buff.write(_struct_I.pack(self.responceID))
+      buff.write(_struct_I.pack(self.responseID))
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -90,7 +90,7 @@ uint32 responceID  # the uniqie ID used by DM to distinguish which responce corr
       self.parameter = str[start:end]
       start = end
       end += 4
-      (self.responceID,) = _struct_I.unpack(str[start:end])
+      (self.responseID,) = _struct_I.unpack(str[start:end])
       return self
     except struct.error as e:
       raise roslib.message.DeserializationError(e) #most likely buffer underfill
@@ -111,7 +111,7 @@ uint32 responceID  # the uniqie ID used by DM to distinguish which responce corr
       _x = self.parameter
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
-      buff.write(_struct_I.pack(self.responceID))
+      buff.write(_struct_I.pack(self.responseID))
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -139,7 +139,7 @@ uint32 responceID  # the uniqie ID used by DM to distinguish which responce corr
       self.parameter = str[start:end]
       start = end
       end += 4
-      (self.responceID,) = _struct_I.unpack(str[start:end])
+      (self.responseID,) = _struct_I.unpack(str[start:end])
       return self
     except struct.error as e:
       raise roslib.message.DeserializationError(e) #most likely buffer underfill

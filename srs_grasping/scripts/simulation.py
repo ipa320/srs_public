@@ -4,7 +4,7 @@ import roslib;
 roslib.load_manifest('srs_grasping')
 import rospy
 import actionlib
-import sys
+import sys, os
 import openravepy
 
 from srs_grasping.msg import *
@@ -12,9 +12,10 @@ from tf.transformations import *
 
 
 import grasping_functions
+from srs_object_database.msg import *
+from srs_object_database.srv import *
 
-#package_path = rospy.get_param('/repoPath')
-package_path = roslib.packages.get_pkg_dir('srs_grasping')+"/DB/"
+
 ##################################################################################	
 class SCRIPT():###################################################################
 ##################################################################################	
@@ -22,50 +23,53 @@ class SCRIPT():#################################################################
 	# ------------------------------------------------------------------------------------
 	# ------------------------------------------------------------------------------------
 	def __init__(self):
+
 		self.robotName = 'robots/care-o-bot3.zae'
-		self.client = actionlib.SimpleActionClient('/grasp_server', GraspAction)
-		print "Waiting /grasp_server..."
-		self.client.wait_for_server()
-		print "/grasp_server has been found."
 
-		if (len(sys.argv)<=1):
-			self.targetName = 'Milk'
-			self.object_path = package_path+"obj/"+self.targetName+'.xml'
-
-
-		else:
-			self.targetName = sys.argv[1]
-
-			if self.targetName[len(self.targetName)-3:len(self.targetName)] == ".iv":
-				self.object_path = package_path+'obj/'+self.targetName;
-			else:
-				self.object_path = package_path+'obj/'+self.targetName+'.xml'
-
-
-		print "Loaded values: (%s, %s)" %(self.robotName, self.object_path)
 
 	# ------------------------------------------------------------------------------------
 	# ------------------------------------------------------------------------------------
 	def run(self):	
 
-		
 		env = openravepy.Environment()
+
 		try:
 	    		robot = env.ReadRobotXMLFile(self.robotName)
 			env.AddRobot(robot)
 		except:
-			print "The robot file '"+self.robotName+"' does not exists."
+			rospy.logerr("The robot file %s does not exists.", self.robotName)
+			return -1
+
+
+		object_id = (sys.argv[len(sys.argv)-1], 1)[len(sys.argv)==1]	#Operador ternario
+
+		rospy.loginfo("Waiting /get_model_mesh service...")
+		rospy.wait_for_service('/get_model_mesh')
+		rospy.loginfo("/get_model_mesh has been found!")
+
+		get_mesh = rospy.ServiceProxy('/get_model_mesh', GetMesh)
+		try:
+			resp = get_mesh(model_ids=[object_id])
+		except rospy.ServiceException, e:
+			rospy.logerr("Service did not process request: %s", str(e))
 			return -1
 
 		try:
-			target = env.ReadKinBodyXMLFile(self.object_path)
+			mesh_file = "/tmp/mesh.iv"
+			f = open(mesh_file, 'w')
+			f.write(resp.msg[0].data)
+			f.close()
+			target = env.ReadKinBodyXMLFile(mesh_file)
 			env.AddKinBody(target)
+			os.remove(mesh_file)
 		except:
-			print "The target file '"+self.targetName+"' does not exists."
+			rospy.logerr("The mesh data does not exist or does not work correctly.")
+			os.remove(mesh_file)
 			return -1
 
-	
-		file_name = package_path+self.targetName+".xml"
+
+
+		
 
 		repeat = True
 		while repeat:
@@ -113,10 +117,16 @@ class SCRIPT():#################################################################
 					sys.exit()
 
 
-				goal = GraspGoal(object_id=0, pose_id=pose_id)
-				self.client.send_goal(goal)
-				self.client.wait_for_result()
-				grasps = (self.client.get_result()).grasp_configuration
+
+				client = actionlib.SimpleActionClient('/grasp_server', GraspAction)
+				rospy.loginfo("Waiting /grasp_server...")
+				client.wait_for_server()
+				rospy.loginfo("/grasp_server has been found!")
+
+				goal = GraspGoal(object_id=object_id, pose_id=pose_id)
+				client.send_goal(goal)
+				client.wait_for_result()
+				grasps = (client.get_result()).grasp_configuration
 				
 				if filtered==True:
 					grasps = grasping_functions.filterAxis(grasps)
@@ -140,6 +150,7 @@ class SCRIPT():#################################################################
 
 		#grasping_functions.showOR(env, grasps, gazebo=gazebo, delay=None)	#GraspConfig
 		grasping_functions.showORmsg(env, grasps, gazebo=gazebo, delay=None)	#msg.GraspConfiguration
+
 
 		return 0
 		

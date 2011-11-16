@@ -8,10 +8,10 @@ import roslib.rostime
 import std_msgs.msg
 
 class GraspConfiguration(roslib.message.Message):
-  _md5sum = "a1206df281d1adfdf3cdaec4a57ad123"
+  _md5sum = "f1e80ea7ab7da5c201d60456d8ca5421"
   _type = "srs_msgs/GraspConfiguration"
   _has_header = False #flag to mark the presence of a Header object
-  _full_text = """float32 object_id
+  _full_text = """int32 object_id
 string hand_type
 trajectory_msgs/JointTrajectory sconfiguration
 geometry_msgs/PoseStamped palm_pose
@@ -78,7 +78,7 @@ float64 w
 
 """
   __slots__ = ['object_id','hand_type','sconfiguration','palm_pose','pre_grasp','category','score']
-  _slot_types = ['float32','string','trajectory_msgs/JointTrajectory','geometry_msgs/PoseStamped','geometry_msgs/PoseStamped','string','float32']
+  _slot_types = ['int32','string','trajectory_msgs/JointTrajectory','geometry_msgs/PoseStamped','geometry_msgs/PoseStamped','string','float32']
 
   def __init__(self, *args, **kwds):
     """
@@ -98,7 +98,7 @@ float64 w
       super(GraspConfiguration, self).__init__(*args, **kwds)
       #message fields cannot be None, assign default values for those that are
       if self.object_id is None:
-        self.object_id = 0.
+        self.object_id = 0
       if self.hand_type is None:
         self.hand_type = ''
       if self.sconfiguration is None:
@@ -112,7 +112,7 @@ float64 w
       if self.score is None:
         self.score = 0.
     else:
-      self.object_id = 0.
+      self.object_id = 0
       self.hand_type = ''
       self.sconfiguration = trajectory_msgs.msg.JointTrajectory()
       self.palm_pose = geometry_msgs.msg.PoseStamped()
@@ -133,7 +133,7 @@ float64 w
     @type  buff: StringIO
     """
     try:
-      buff.write(_struct_f.pack(self.object_id))
+      buff.write(_struct_i.pack(self.object_id))
       _x = self.hand_type
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
@@ -200,7 +200,7 @@ float64 w
       end = 0
       start = end
       end += 4
-      (self.object_id,) = _struct_f.unpack(str[start:end])
+      (self.object_id,) = _struct_i.unpack(str[start:end])
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
@@ -309,7 +309,7 @@ float64 w
     @type  numpy module
     """
     try:
-      buff.write(_struct_f.pack(self.object_id))
+      buff.write(_struct_i.pack(self.object_id))
       _x = self.hand_type
       length = len(_x)
       buff.write(struct.pack('<I%ss'%length, length, _x.encode()))
@@ -378,7 +378,7 @@ float64 w
       end = 0
       start = end
       end += 4
-      (self.object_id,) = _struct_f.unpack(str[start:end])
+      (self.object_id,) = _struct_i.unpack(str[start:end])
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
@@ -478,8 +478,9 @@ float64 w
       raise roslib.message.DeserializationError(e) #most likely buffer underfill
 
 _struct_I = roslib.message.struct_I
+_struct_7d = struct.Struct("<7d")
+_struct_f = struct.Struct("<f")
+_struct_i = struct.Struct("<i")
 _struct_7d3I = struct.Struct("<7d3I")
 _struct_3I = struct.Struct("<3I")
-_struct_7d = struct.Struct("<7d")
 _struct_2i = struct.Struct("<2i")
-_struct_f = struct.Struct("<f")

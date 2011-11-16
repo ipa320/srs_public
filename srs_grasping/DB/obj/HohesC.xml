@@ -1,7 +1,0 @@
-<KinBody name="HohesC">
-  <Body type="dynamic">
-    <Geom type="trimesh">
-      <Data>Model_HohesC.txt.iv</Data>
-    </Geom>      
-  </Body>
-</KinBody>

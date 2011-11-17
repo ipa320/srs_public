@@ -88,6 +88,7 @@ class approach_pose_without_retry(smach.State):
         else:
             return 'failed'
         """
+        
         # determine target position
         if self.pose != "":
             pose = self.pose

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- start srs knowledge service -->
+	<node pkg="srs_knowledge" type="knowledgeEngine" name="srs_knowledge" output="screen">
+        </node>
+
+</launch>

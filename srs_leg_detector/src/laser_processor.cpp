@@ -108,6 +108,58 @@ tf::Point SampleSet::center()
 }
 
 
+void Background::addScan(sensor_msgs::LaserScan& scan, float treshhold) // treshhold to know whether to merge them or to start from scrach
+{
+ if (!filled)
+  {
+    angle_min = scan.angle_min;
+    angle_max = scan.angle_max;
+    size      = scan.ranges.size();
+    filled    = true;
+  } else if (angle_min != scan.angle_min     ||  // min and max angles of the new scan have to be the same as previous
+             angle_max != scan.angle_max     ||
+             size      != scan.ranges.size())
+  {
+    throw std::runtime_error("laser_scan::Background::addScan: inconsistantly sized scans added to background");
+  }
+
+  for (uint32_t i = 0; i < scan.ranges.size(); i++)
+  {
+  
+   Sample* s = Sample::Extract(i, scan);
+   if (s != NULL)
+    {
+      s->scans = 1; // sets the number of scans 
+      SampleSet::iterator m = backgr_data.find(s);
+      if (m != backgr_data.end())  // there is such a scan 
+      {
+        if ( s->range > 29.8 || s->range < 0.1 || abs((*m)->range - s->range) > treshhold  )  // if the difference between the new sample and the old one is bigger then will it ignore the new one
+        {
+   
+    //        printf ("laser_scan::Background::addScan: too much movement %f - ignoring the new scan \n",(*m)->range - s->range); 
+            delete s;
+    //      backgr_data.erase(m);  // delete the sample from the mask
+    //      backgr_data.insert(s); // insert the new sample
+        } else { // if the movement is within the treshhold then just re-adjust the center and the variation of the while preserving the old scan
+      //    printf ("d:%f ", (*m)->range - s->range); 
+           (*m)->range = (((*m)->range*(*m)->scans)+ s->range)/ (++((*m)->scans)); // aritmetic average
+      //     printf ("r:%f ", (*m)->range); 
+      //     printf ("s:%i ", (*m)->scans);
+           (*m)->variation = ((*m)->range - s->range)/2+ (*m)->variation/2; // old variations are reduced in wegth
+      //     printf ("v:%f ", (*m)->variation);
+           delete s; 
+        }
+      }
+      else if (s->range < 29.8 && s->range > 0.1) // if there is no such sample in the background found and the range makes sence just insert the new sample
+      {
+        backgr_data.insert(s);
+      }  
+     } 
+  }
+
+}
+
+
 void ScanMask::addScan(sensor_msgs::LaserScan& scan)
 {
   if (!filled)
@@ -151,13 +203,26 @@ void ScanMask::addScan(sensor_msgs::LaserScan& scan)
 }
 
 
+bool Background::isSamplebelongstoBackgrond(Sample* s, float thresh)
+{
+  if (s != NULL)
+  {
+    SampleSet::iterator b = backgr_data.find(s); 
+    if ( b != backgr_data.end())
+      if ( (s-> range > 29.8) || ( ((*b)->range + abs((*b)->variation) + thresh > s->range) &&  ((*b)->range - abs((*b)->variation) - thresh < s->range) ) ) // in other words s-range between what we have in the background +- allowances
+        return true;
+  }
+
+  return false;
+}
+
 bool ScanMask::hasSample(Sample* s, float thresh)
 {
   if (s != NULL)
   {
     SampleSet::iterator m = mask_.find(s);
     if ( m != mask_.end())
-      if (((*m)->range - thresh) < s->range)
+      if ( s-> range > 29.8 || (((*m)->range - thresh) < s->range) )
         return true;
   }
   return false;
@@ -165,7 +230,7 @@ bool ScanMask::hasSample(Sample* s, float thresh)
 
 
 
-ScanProcessor::ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_, float mask_threshold)
+ScanProcessor::ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_, float mask_threshold) // constructor without background
 {
   scan_ = scan;
 
@@ -187,6 +252,61 @@ ScanProcessor::ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_
   }
 
   clusters_.push_back(cluster);
+
+}
+
+
+ScanProcessor::ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_, Background& background_ , float mask_threshold , float background_treshhold ) // constructor with background
+
+{
+
+
+scan_ = scan;
+
+int ib= 0;
+int im = 0;
+int iboth = 0;
+int ibnotim = 0;
+int imnotib = 0;
+
+  SampleSet* cluster = new SampleSet;
+
+  for (uint32_t i = 0; i < scan.ranges.size(); i++)
+  {
+    Sample* s = Sample::Extract(i, scan);
+
+    if (s != NULL)
+    {
+ 
+     if (mask_.hasSample(s, mask_threshold) )
+          im++;    // the sample is in the mask
+     if (background_.isSamplebelongstoBackgrond(s, background_treshhold))
+          ib++;    // the sample is in the background
+  
+      if (mask_.hasSample(s, mask_threshold) && background_.isSamplebelongstoBackgrond(s, background_treshhold))
+          iboth++; // the sample is in both
+
+      if (mask_.hasSample(s, mask_threshold) && !background_.isSamplebelongstoBackgrond(s, background_treshhold))
+          imnotib++; // in the mask but not in the background
+
+      if (!mask_.hasSample(s, mask_threshold) && background_.isSamplebelongstoBackgrond(s, background_treshhold))
+          ibnotim++; // in background but not in the mask
+     
+
+
+      if (  !mask_.hasSample(s, mask_threshold)  && !background_.isSamplebelongstoBackgrond(s, background_treshhold)) 
+      {
+        cluster->insert(s);
+      } else {
+        delete s;
+      }
+    }
+  
+ //if ( ibnotim > 0)  //printing the results of the checks
+ //  printf ("ib=%i, im=%i, iboth=%i, ibnotim=%i, imnotib=%i \n", ib, im, iboth, ibnotim, imnotib); // check for the work of the background and the mask filters
+ }
+
+  clusters_.push_back(cluster); 
 
 }
 
@@ -280,5 +400,5 @@ ScanProcessor::splitConnected(float thresh)
     clusters_.erase(c_iter++);
   }
 
-  clusters_.insert(clusters_.begin(), tmp_clusters.begin(), tmp_clusters.end()); // move back from temp clusters back into the clustrts_
+  clusters_.insert(clusters_.begin(), tmp_clusters.begin(), tmp_clusters.end()); // move back from temp clusters back into the clusters_
 }

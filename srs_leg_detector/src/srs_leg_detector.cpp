@@ -19,12 +19,12 @@
 #include "tf/message_filter.h"
 #include "message_filters/subscriber.h"
 
-#include "people_tracking_filter/tracker_kalman.h"
-//#include "people_tracking_filter/tracker_particle.h" // particle
-#include "people_tracking_filter/gaussian_pos_vel.h"
+#include "srs_people_tracking_filter/tracker_kalman.h"
+//#include "srs_people_tracking_filter/tracker_particle.h" // particle
+#include "srs_people_tracking_filter/gaussian_pos_vel.h"
 
-#include "people_tracking_filter/state_pos_vel.h"
-#include "people_tracking_filter/rgb.h"
+#include "srs_people_tracking_filter/state_pos_vel.h"
+#include "srs_people_tracking_filter/rgb.h"
 
 #include <algorithm>
 

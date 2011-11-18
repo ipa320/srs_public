@@ -1,4 +1,4 @@
-float32 object_id
+int32 object_id
 string hand_type
 trajectory_msgs/JointTrajectory sconfiguration
 geometry_msgs/PoseStamped palm_pose

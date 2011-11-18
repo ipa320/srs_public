@@ -251,11 +251,19 @@ class KnowledgeEngine
     
     private TaskRequest.Response handleTaskRequest( TaskRequest.Request request)
     {
+	String taskType = request.task;
+	String content = request.content;
+	
 	TaskRequest.Response res = new TaskRequest.Response();
 	
 	System.out.println("Received request for new task");
 	
-	this.loadPredefinedTasksForTest();
+	if(request.task.equals("move")) {
+	    currentTask = new Task("move", "kitchen", null);
+	}
+	else {
+	    this.loadPredefinedTasksForTest();
+	}
 
 	res.result = 0;
 	currentSessionId++; // TODO: generate unique id
@@ -279,6 +287,7 @@ class KnowledgeEngine
 	ServiceServer<TaskRequest.Request, TaskRequest.Response, TaskRequest> srv = n.advertiseService(taskRequestService, new TaskRequest(), scb);
     }
 
+
     public boolean loadPredefinedTasksForTest()
     {
 	try{
@@ -286,7 +295,7 @@ class KnowledgeEngine
 	    currentTask = new Task(Task.TaskType.GET_OBJECT);
 	    String taskFile = config.getProperty("taskfile", "task1.seq");
 	    System.out.println(taskFile);
-	    if(currentTask.loadPredefinedSequence(this.confPath + taskFile))   {
+	    if(currentTask.loadPredefinedSequence(this.confPath + taskFile)) {
 		System.out.println("OK... ");
 	    }
 	    else  {
@@ -298,7 +307,7 @@ class KnowledgeEngine
 	    System.out.println(e.getMessage());
 	    return false;
 	}
-	//    public ArrayList<ActionTuple> getActionSequence()
+
 	ArrayList<ActionTuple> acts = currentTask.getActionSequence();
 
 	System.out.println(acts.size());

@@ -5,11 +5,11 @@ import java.io.*;
 //import org.apache.commons.logging.Log;
 import java.util.ArrayList;
 import ros.pkg.srs_knowledge.msg.*;
-
+import ros.pkg.geometry_msgs.msg.Pose2D;
 
 public class Task
 {
-    public enum TaskType {GET_OBJECT, MOVETO_LOCATION, DETECT_OBJECT, SCAN_AROUND};
+    public enum TaskType {GET_OBJECT, MOVETO_LOCATION, SEARCH_OBJECT, SCAN_AROUND, UNSPECIFIED};
 
     public Task(TaskType type)
     {
@@ -19,6 +19,54 @@ public class Task
 	currentAction = null;
     }
 
+    public Task(String taskType, String targetContent, Pose2D userPose)
+    {
+	if(taskType.toLowerCase().equals("get")) {
+	    setTaskType(TaskType.GET_OBJECT);
+	}
+	else if(taskType.toLowerCase().equals("move")) {
+	    setTaskType(TaskType.MOVETO_LOCATION);
+	    setTaskTarget(targetContent);
+
+	    createSimpleMoveTask();
+	}
+	else if(taskType.toLowerCase().equals("search")) {
+	    setTaskType(TaskType.SEARCH_OBJECT);
+	}
+	else {
+	    setTaskType(TaskType.UNSPECIFIED);
+	}
+    }
+
+    public boolean createSimpleMoveTask()
+    {
+	//currentTask = new Task("move", "kitchen", null);
+	// boolean addNewActionTuple(ActionTuple act)
+	ActionTuple act = new ActionTuple();
+
+	CUAction ca = new CUAction();
+	MoveAction ma = new MoveAction();
+	PerceptionAction pa = new PerceptionAction();
+	GraspAction ga = new GraspAction();
+
+	// TODO: should obtain information from Ontology here. But here we use temporary hard coded info for testing
+	double x = 0;
+	double y = 0;
+	double theta = 0;
+	ma.targetPose2D.x = x;
+	ma.targetPose2D.y = y;
+	ma.targetPose2D.theta = theta;
+
+	ca.ma = ma;
+	ca.pa = pa;
+	ca.ga = ga;
+
+	act.setCUAction(ca);
+	addNewActionTuple(act);
+	return true;
+    }
+
+
     public void setTaskId(int id)
     {
 	this.taskId = id;
@@ -27,6 +75,17 @@ public class Task
     public int getTaskId()
     {
 	return taskId;
+    }
+
+
+    public void setTaskTarget(String target)
+    {
+	this.targetContent = target;
+    }
+
+    public String getTaskTarget()
+    {
+	return this.targetContent;
     }
 
     public void setTaskType(TaskType type)
@@ -246,9 +305,9 @@ public class Task
 	return ga;
     }
 
-    
 
     private TaskType taskType;
+    private String targetContent;
     private int taskId;
     //private ArrayList<CUAction> actionSequence;
     private ArrayList<ActionTuple> acts;

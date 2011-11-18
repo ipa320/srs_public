@@ -1,0 +1,626 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY house "http://www.semanticweb.org/ontologies/house.owl#" >
+]>
+
+
+<rdf:RDF xmlns="http://www.semanticweb.org/ontologies/house.owl#"
+     xml:base="http://www.semanticweb.org/ontologies/house.owl"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:house="http://www.semanticweb.org/ontologies/house.owl#">
+    <owl:Ontology rdf:about="http://www.semanticweb.org/ontologies/house.owl"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#actionOnObject -->
+
+    <owl:ObjectProperty rdf:about="&house;actionOnObject">
+        <rdfs:range rdf:resource="&house;Action"/>
+        <rdfs:domain rdf:resource="&house;Immobile"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#carryingObject -->
+
+    <owl:ObjectProperty rdf:about="&house;carryingObject">
+        <rdfs:subPropertyOf rdf:resource="&house;actionOnObject"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#closingObject -->
+
+    <owl:ObjectProperty rdf:about="&house;closingObject">
+        <rdfs:subPropertyOf rdf:resource="&house;actionOnObject"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#contains -->
+
+    <owl:ObjectProperty rdf:about="&house;contains"/>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#containsImmobileObjects -->
+
+    <owl:ObjectProperty rdf:about="&house;containsImmobileObjects">
+        <rdfs:subPropertyOf rdf:resource="&house;contains"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#fetchingObject -->
+
+    <owl:ObjectProperty rdf:about="&house;fetchingObject">
+        <rdfs:subPropertyOf rdf:resource="&house;actionOnObject"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#graspingObject -->
+
+    <owl:ObjectProperty rdf:about="&house;graspingObject">
+        <rdfs:subPropertyOf rdf:resource="&house;actionOnObject"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#openningObject -->
+
+    <owl:ObjectProperty rdf:about="&house;openningObject">
+        <rdfs:subPropertyOf rdf:resource="&house;actionOnObject"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#settingAction -->
+
+    <owl:ObjectProperty rdf:about="&house;settingAction">
+        <rdfs:subPropertyOf rdf:resource="&house;actionOnObject"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#coordinatePosition -->
+
+    <owl:DatatypeProperty rdf:about="&house;coordinatePosition"/>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#volume -->
+
+    <owl:DatatypeProperty rdf:about="&house;volume"/>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#xCoordinate -->
+
+    <owl:DatatypeProperty rdf:about="&house;xCoordinate">
+        <rdfs:subPropertyOf rdf:resource="&house;coordinatePosition"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#yCoordinate -->
+
+    <owl:DatatypeProperty rdf:about="&house;yCoordinate">
+        <rdfs:subPropertyOf rdf:resource="&house;coordinatePosition"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#zCoordinate -->
+
+    <owl:DatatypeProperty rdf:about="&house;zCoordinate">
+        <rdfs:subPropertyOf rdf:resource="&house;coordinatePosition"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Action -->
+
+    <owl:Class rdf:about="&house;Action"/>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Carry -->
+
+    <owl:Class rdf:about="&house;Carry">
+        <rdfs:subClassOf rdf:resource="&house;Action"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#ClosingFridge -->
+
+    <owl:Class rdf:about="&house;ClosingFridge">
+        <rdfs:subClassOf rdf:resource="&house;ClosingObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#ClosingMilkBox -->
+
+    <owl:Class rdf:about="&house;ClosingMilkBox">
+        <rdfs:subClassOf rdf:resource="&house;ClosingObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#ClosingObject -->
+
+    <owl:Class rdf:about="&house;ClosingObject">
+        <rdfs:subClassOf rdf:resource="&house;Action"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#ClosingOven -->
+
+    <owl:Class rdf:about="&house;ClosingOven">
+        <rdfs:subClassOf rdf:resource="&house;ClosingObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Cooker -->
+
+    <owl:Class rdf:about="&house;Cooker">
+        <rdfs:subClassOf rdf:resource="&house;KitchenObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Fetch -->
+
+    <owl:Class rdf:about="&house;Fetch">
+        <rdfs:subClassOf rdf:resource="&house;Action"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Fridge -->
+
+    <owl:Class rdf:about="&house;Fridge">
+        <rdfs:subClassOf rdf:resource="&house;KitchenObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&house;closingObject"/>
+                <owl:someValuesFrom rdf:resource="&house;ClosingFridge"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Grasp -->
+
+    <owl:Class rdf:about="&house;Grasp">
+        <rdfs:subClassOf rdf:resource="&house;HoldingAnObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#HoldingAnObject -->
+
+    <owl:Class rdf:about="&house;HoldingAnObject">
+        <rdfs:subClassOf rdf:resource="&house;Action"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Immobile -->
+
+    <owl:Class rdf:about="&house;Immobile">
+        <rdfs:subClassOf rdf:resource="&house;Object"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Kettle -->
+
+    <owl:Class rdf:about="&house;Kettle">
+        <rdfs:subClassOf rdf:resource="&house;KitchenObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Kitchen -->
+
+    <owl:Class rdf:about="&house;Kitchen">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&house;Room"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&house;containsImmobileObjects"/>
+                        <owl:someValuesFrom rdf:resource="&house;KitchenObject"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#KitchenObject -->
+
+    <owl:Class rdf:about="&house;KitchenObject">
+        <rdfs:subClassOf rdf:resource="&house;Immobile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#LivingRoom -->
+
+    <owl:Class rdf:about="&house;LivingRoom">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&house;Room"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&house;containsImmobileObjects"/>
+                        <owl:someValuesFrom rdf:resource="&house;LivingRoomObject"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#LivingRoomObject -->
+
+    <owl:Class rdf:about="&house;LivingRoomObject">
+        <rdfs:subClassOf rdf:resource="&house;Immobile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Microwave -->
+
+    <owl:Class rdf:about="&house;Microwave">
+        <rdfs:subClassOf rdf:resource="&house;KitchenObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#MilkBox -->
+
+    <owl:Class rdf:about="&house;MilkBox">
+        <rdfs:subClassOf rdf:resource="&house;KitchenObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&house;fetchingObject"/>
+                <owl:someValuesFrom rdf:resource="&house;Fetch"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&house;carryingObject"/>
+                <owl:someValuesFrom rdf:resource="&house;Carry"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Object -->
+
+    <owl:Class rdf:about="&house;Object">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&house;volume"/>
+                <owl:someValuesFrom rdf:resource="&xsd;integer"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#OpenningObject -->
+
+    <owl:Class rdf:about="&house;OpenningObject">
+        <rdfs:subClassOf rdf:resource="&house;Action"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Oven -->
+
+    <owl:Class rdf:about="&house;Oven">
+        <rdfs:subClassOf rdf:resource="&house;KitchenObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Position -->
+
+    <owl:Class rdf:about="&house;Position"/>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Room -->
+
+    <owl:Class rdf:about="&house;Room"/>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#RoundTable -->
+
+    <owl:Class rdf:about="&house;RoundTable">
+        <rdfs:subClassOf rdf:resource="&house;LivingRoomObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Setting -->
+
+    <owl:Class rdf:about="&house;Setting">
+        <rdfs:subClassOf rdf:resource="&house;Action"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#SettingTable -->
+
+    <owl:Class rdf:about="&house;SettingTable">
+        <rdfs:subClassOf rdf:resource="&house;Setting"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Sofa -->
+
+    <owl:Class rdf:about="&house;Sofa">
+        <rdfs:subClassOf rdf:resource="&house;LivingRoomObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#Table -->
+
+    <owl:Class rdf:about="&house;Table">
+        <rdfs:subClassOf rdf:resource="&house;KitchenObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#TvSet -->
+
+    <owl:Class rdf:about="&house;TvSet">
+        <rdfs:subClassOf rdf:resource="&house;LivingRoomObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#TvStand -->
+
+    <owl:Class rdf:about="&house;TvStand">
+        <rdfs:subClassOf rdf:resource="&house;LivingRoomObject"/>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#cooker0 -->
+
+    <owl:NamedIndividual rdf:about="&house;cooker0">
+        <rdf:type rdf:resource="&house;Cooker"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#cooker1 -->
+
+    <owl:NamedIndividual rdf:about="&house;cooker1">
+        <rdf:type rdf:resource="&house;Cooker"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#fridge1 -->
+
+    <owl:NamedIndividual rdf:about="&house;fridge1">
+        <rdf:type rdf:resource="&house;Fridge"/>
+        <closingObject rdf:resource="&house;fridge1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#kettle0 -->
+
+    <owl:NamedIndividual rdf:about="&house;kettle0">
+        <rdf:type rdf:resource="&house;Kettle"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#kettle1 -->
+
+    <owl:NamedIndividual rdf:about="&house;kettle1">
+        <rdf:type rdf:resource="&house;Kettle"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#kitchen0 -->
+
+    <owl:NamedIndividual rdf:about="&house;kitchen0">
+        <rdf:type rdf:resource="&house;Room"/>
+        <containsImmobileObjects rdf:resource="&house;cooker0"/>
+        <containsImmobileObjects rdf:resource="&house;kettle0"/>
+        <containsImmobileObjects rdf:resource="&house;milkBox0"/>
+        <containsImmobileObjects rdf:resource="&house;oven0"/>
+        <containsImmobileObjects rdf:resource="&house;table0"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#kitchen1 -->
+
+    <owl:NamedIndividual rdf:about="&house;kitchen1">
+        <rdf:type rdf:resource="&house;Room"/>
+        <containsImmobileObjects rdf:resource="&house;cooker1"/>
+        <containsImmobileObjects rdf:resource="&house;fridge1"/>
+        <containsImmobileObjects rdf:resource="&house;kettle1"/>
+        <containsImmobileObjects rdf:resource="&house;microwave1"/>
+        <containsImmobileObjects rdf:resource="&house;milkBox1"/>
+        <containsImmobileObjects rdf:resource="&house;oven1"/>
+        <containsImmobileObjects rdf:resource="&house;table1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#livingRoom -->
+
+    <owl:NamedIndividual rdf:about="&house;livingRoom">
+        <rdf:type rdf:resource="&house;Room"/>
+        <containsImmobileObjects rdf:resource="&house;tvSet"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#microwave1 -->
+
+    <owl:NamedIndividual rdf:about="&house;microwave1">
+        <rdf:type rdf:resource="&house;Microwave"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#milkBox0 -->
+
+    <owl:NamedIndividual rdf:about="&house;milkBox0">
+        <rdf:type rdf:resource="&house;MilkBox"/>
+        <graspingObject rdf:resource="&house;milkBox0"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#milkBox1 -->
+
+    <owl:NamedIndividual rdf:about="&house;milkBox1">
+        <rdf:type rdf:resource="&house;MilkBox"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#oven0 -->
+
+    <owl:NamedIndividual rdf:about="&house;oven0">
+        <rdf:type rdf:resource="&house;KitchenObject"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#oven1 -->
+
+    <owl:NamedIndividual rdf:about="&house;oven1">
+        <rdf:type rdf:resource="&house;Oven"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#table0 -->
+
+    <owl:NamedIndividual rdf:about="&house;table0">
+        <rdf:type rdf:resource="&house;Table"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#table1 -->
+
+    <owl:NamedIndividual rdf:about="&house;table1">
+        <rdf:type rdf:resource="&house;Table"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#tv -->
+
+    <owl:NamedIndividual rdf:about="&house;tv">
+        <rdf:type rdf:resource="&house;Object"/>
+        <rdf:type rdf:resource="&house;TvSet"/>
+        <volume rdf:datatype="&xsd;integer">22</volume>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/ontologies/house.owl#tvSet -->
+
+    <owl:NamedIndividual rdf:about="&house;tvSet">
+        <rdf:type rdf:resource="&house;TvSet"/>
+    </owl:NamedIndividual>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.2.3.1824) http://owlapi.sourceforge.net -->
+

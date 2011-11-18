@@ -5,48 +5,95 @@ roslib.load_manifest('srs_grasping')
 import time
 import rospy
 import actionlib
+import os
+
+import grasping_functions
+import generator
 
 from srs_grasping.msg import *
-import grasping_functions
+from srs_object_database.srv import *
 
 class grasp_action_server():
 
 	def __init__(self):
-		self.package_path = roslib.packages.get_pkg_dir('srs_grasping')
+
 		self.ns_global_prefix = "/grasp_server"
 		self.grasp_action_server = actionlib.SimpleActionServer(self.ns_global_prefix, GraspAction, self.execute_cb, True)
 		self.grasp_action_server.start()
+
+
 	
-	def execute_cb(self, server_goal):	
+	def execute_cb(self, server_goal):
+	
 		x = time.time()
 		server_result = GraspActionResult().result
 
+		rospy.loginfo("Waiting for /get_model_grasp service...")
+		rospy.wait_for_service('/get_model_grasp')
+		rospy.loginfo("/get_model_grasp service found!")
 
-		#SE DEBE IMPLEMENTAR UNA FUNCION QUE DADO UN INR object_id SEPA A QUE OBJETO SE CORRESPONDE
-		object_name = grasping_functions.getObjectName(server_goal.object_id)
+		get_grasp = rospy.ServiceProxy('/get_model_grasp', GetGrasp)
 
-		file_name = self.package_path+"/DB/"+object_name+"_all_grasps.xml"
+		try:
 
-		grasps = grasping_functions.getGrasps(file_name, msg=True)
-		GRASPS = grasping_functions.getGraspsByAxis(grasps, server_goal.pose_id)
+			resp = get_grasp(model_ids=[server_goal.object_id])
 
-		rospy.loginfo(str(len(GRASPS))+" grasping configuration for this object.")		
+			if len(resp.msg) == 0:
+				rospy.loginfo("There is no pre-generated info for this object. It will be generate.")
+				s = generator.SCRIPT()
+				ret = s.run(server_goal.object_id)
 
-		if len(GRASPS)>0:
-			server_result.grasp_configuration = GRASPS
-			self.grasp_action_server.set_succeeded(server_result)
-		else:
-			rospy.logerr("No grasping configurations for this object.")
-			server_result.grasp_configuration = []
-			self.grasp_action_server.set_aborted(server_result)
+				if ret == -1:
+					rospy.logerr("No grasping configurations for this object.")
+					server_result.grasp_configuration = []
+					self.grasp_action_server.set_aborted(server_result)
+				else:
+					resp = get_grasp(model_ids=[server_goal.object_id])
+
+			try:
+
+				grasp_file = "/tmp/grasp.xml"
+				f = open(grasp_file, 'w')
+				f.write(resp.msg[0].bs)
+				f.close()
+
+				grasps = grasping_functions.getGrasps(grasp_file, all_grasps=True, msg=True)
+				GRASPS = grasping_functions.getGraspsByAxis(grasps, server_goal.pose_id)
+				os.remove(grasp_file)
+
+				rospy.loginfo(str(len(GRASPS))+" grasping configuration for this object.")		
+
+				if len(GRASPS)>0:
+					server_result.grasp_configuration = GRASPS
+					self.grasp_action_server.set_succeeded(server_result)
+				else:
+					rospy.logerr("No grasping configurations for this object.")
+					server_result.grasp_configuration = []
+					self.grasp_action_server.set_aborted(server_result)
+			
+
+
+			except rospy.ServiceException, e:
+				rospy.logerr("Service did not process request: %s", str(e))
+				rospy.logerr("No grasping configurations for this object.")
+				server_result.grasp_configuration = []
+				self.grasp_action_server.set_aborted(server_result)
+
+		except rospy.ServiceException, e:
+					rospy.logerr("Service did not process request: %s", str(e))
+					rospy.logerr("No grasping configurations for this object.")
+					server_result.grasp_configuration = []
+					self.grasp_action_server.set_aborted(server_result)
 
 
 		print "Time employed: ",time.time()-x
-		print "-----"
+		print "-------------------------------"
+
 
 ## Main routine for running the grasp server
 if __name__ == '__main__':
-	rospy.init_node('get_grasps_action_server')
+	rospy.init_node('grasp_server')
+
 	SCRIPT = grasp_action_server()
 	rospy.loginfo("/grasp_server is running")
 	rospy.spin()

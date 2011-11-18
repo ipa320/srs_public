@@ -1,0 +1,16 @@
+<package>
+  <description brief="srs_jena">
+
+     srs_jena
+
+  </description>
+  <author>Ze Ji</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_jena</url>
+
+  <export>
+    <cpp cflags="-I${prefix}/common/lib"/>
+  </export>
+
+</package>

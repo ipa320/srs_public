@@ -11,7 +11,7 @@
   <depend package="actionlib"/>
   <depend package="rospy"/>
   <depend package="tf"/>
-  <depend package="openrave"/>
+  <!--depend package="openrave"/-->
   <depend package="smach"/>
   <depend package="smach_ros"/>
   <depend package="cob_script_server"/>
@@ -19,5 +19,8 @@
   <depend package="trajectory_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="kinematics_msgs"/>
+  <depend package="srs_object_database"/>
+  <depend package="cob_object_detection_msgs"/>
+
 
 </package>

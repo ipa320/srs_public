@@ -1,4 +1,4 @@
-float32 object_id
+int32 object_id
 string pose_id
 ---
 srs_msgs/GraspConfiguration[] grasp_configuration

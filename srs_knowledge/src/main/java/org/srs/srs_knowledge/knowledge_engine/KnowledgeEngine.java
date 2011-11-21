@@ -228,12 +228,11 @@ class KnowledgeEngine
 	    res.nextAction.status = -1;
 	    return res;	    
 	}
-	
 
 	ca = at.getCUAction();
 
 	res.nextAction = ca;
-	
+
 	//ros.logInfo("INFO: Generate sequence of length: ");
 	return res;
     }
@@ -248,8 +247,8 @@ class KnowledgeEngine
 	
 	ServiceServer<PlanNextAction.Request, PlanNextAction.Response, PlanNextAction> srv = n.advertiseService(planNextActionService, new PlanNextAction(), scb);
     }
-    
-    private TaskRequest.Response handleTaskRequest( TaskRequest.Request request)
+
+    private TaskRequest.Response handleTaskRequest(TaskRequest.Request request)
     {
 	String taskType = request.task;
 	String content = request.content;

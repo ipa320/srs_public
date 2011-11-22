@@ -2,6 +2,7 @@ package org.srs.srs_knowledge.task;
 
 import java.io.IOException;
 import java.io.*;
+import java.util.StringTokenizer;
 //import org.apache.commons.logging.Log;
 import java.util.ArrayList;
 import ros.pkg.srs_knowledge.msg.*;
@@ -21,13 +22,16 @@ public class Task
 
     public Task(String taskType, String targetContent, Pose2D userPose)
     {
+	acts = new ArrayList<ActionTuple>();
+	currentAction = null;
 	if(taskType.toLowerCase().equals("get")) {
 	    setTaskType(TaskType.GET_OBJECT);
 	}
 	else if(taskType.toLowerCase().equals("move")) {
 	    setTaskType(TaskType.MOVETO_LOCATION);
+	    
 	    setTaskTarget(targetContent);
-
+	    System.out.println("TASK.JAVA: Created CurrentTask " + "move" + targetContent);
 	    createSimpleMoveTask();
 	}
 	else if(taskType.toLowerCase().equals("search")) {
@@ -50,9 +54,24 @@ public class Task
 	GraspAction ga = new GraspAction();
 
 	// TODO: should obtain information from Ontology here. But here we use temporary hard coded info for testing
-	double x = 0;
-	double y = 0;
+	double x = 1;
+	double y = 1;
 	double theta = 0;
+
+	if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
+	    StringTokenizer st = new StringTokenizer(targetContent, " []");
+	    if(st.countTokens() == 3) {
+		try{
+		x = Double.parseDouble(st.nextToken());
+		y = Double.parseDouble(st.nextToken());
+		theta = Double.parseDouble(st.nextToken());
+		}
+		catch(Exception e){
+		    System.out.println(e.getMessage());
+		    return false;
+		}
+	    }
+	}
 	ma.targetPose2D.x = x;
 	ma.targetPose2D.y = y;
 	ma.targetPose2D.theta = theta;
@@ -62,7 +81,9 @@ public class Task
 	ca.ga = ga;
 
 	act.setCUAction(ca);
+	act.setActionId(1);
 	addNewActionTuple(act);
+	System.out.println("number of actions: " + acts.size());
 	return true;
     }
 

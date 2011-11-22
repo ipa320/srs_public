@@ -182,11 +182,10 @@ class KnowledgeEngine
 	}
 
 	ActionTuple at = null;
+
 	if(request.stateLastAction.length == 3) {
 	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
 		at = currentTask.getNextAction(true); // no error. generate new action
-		
-		
 	    }
 	    else if(request.stateLastAction[0] == 2 || request.stateLastAction[1] == 2 || request.stateLastAction[2] == 2) {
 		ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
@@ -250,22 +249,22 @@ class KnowledgeEngine
 
     private TaskRequest.Response handleTaskRequest(TaskRequest.Request request)
     {
-	String taskType = request.task;
-	String content = request.content;
-	
 	TaskRequest.Response res = new TaskRequest.Response();
 	
 	System.out.println("Received request for new task");
 	
 	if(request.task.equals("move")) {
-	    currentTask = new Task("move", "kitchen", null);
+	    currentTask = new Task(request.task, request.content, null);
+	    System.out.println("Created CurrentTask " + "move" + request.content);
 	}
 	else {
+	    // for other types of task, should be dealt separately. 
+	    // here is just for testing
 	    this.loadPredefinedTasksForTest();
 	}
 
 	res.result = 0;
-	currentSessionId++; // TODO: generate unique id
+	currentSessionId++;  // TODO: generate unique id
 	res.sessionId = currentSessionId;
 	res.description = "No";
 	//CUAction ca = new CUAction(); 

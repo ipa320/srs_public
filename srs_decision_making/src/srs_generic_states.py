@@ -487,7 +487,8 @@ class initialise(smach.State):
         #recording the information of last step
         global current_task_info
         current_task_info.last_step_info.append(last_step_info)
-        current_task_info.session_id = 123456
+                
+	#current_task_info.session_id = 123456
 
         return 'succeeded'
     

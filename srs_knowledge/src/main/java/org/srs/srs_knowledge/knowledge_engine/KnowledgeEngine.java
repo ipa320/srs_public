@@ -193,7 +193,7 @@ class KnowledgeEngine
 		
 		currentTask = null;
 		// TODO:
-		currentSessionId = 1;
+		//currentSessionId = 1;
 
 		res.nextAction = new CUAction();
 		return res;
@@ -205,7 +205,7 @@ class KnowledgeEngine
 	
 	if(at == null) {
 	    currentTask = null;
-	    currentSessionId = 1;
+	    //currentSessionId = 1;
 	    System.out.println("No further action can be planned. Terminate the task. ");
 
 	    res.nextAction = new CUAction(); // empty task
@@ -213,7 +213,7 @@ class KnowledgeEngine
 	}
 	if(at.getActionName().equals("finish_success")) {
 	    currentTask = null;
-	    currentSessionId = 1;
+	    //currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
 	    res.nextAction = new CUAction(); // empty task
 	    res.nextAction.status = 1;
@@ -221,7 +221,7 @@ class KnowledgeEngine
 	}
 	else if( at.getActionName().equals("finish_fail")) {
 	    currentTask = null;
-	    currentSessionId = 1;
+	    // currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
 	    res.nextAction = new CUAction(); // empty task
 	    res.nextAction.status = -1;
@@ -257,16 +257,32 @@ class KnowledgeEngine
 	    currentTask = new Task(request.task, request.content, null);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
-	else {
-	    // for other types of task, should be dealt separately. 
+	else if(request.task.equals("get") || request.task.equals("search")){
+	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    this.loadPredefinedTasksForTest();
 	}
+	else {
+	    // TODO: for other types of task, should be dealt separately. 
+	    // here is just for testing
+	    // task not created for some reason
+	    currentTask = new Task(request.task, request.content, null);
+	    res.result = 1;
+	    res.description = "No action";
+	}
 
-	res.result = 0;
-	currentSessionId++;  // TODO: generate unique id
-	res.sessionId = currentSessionId;
-	res.description = "No";
+	if(currentTask.getActionSequence().size() == 0) {
+	    // task not created for some reason
+	    res.result = 1;
+	    res.description = "No action";
+	}
+	else {
+	    res.result = 0;
+	    currentSessionId++;  // TODO: generate unique id
+	    res.sessionId = currentSessionId;
+	    res.description = "No";
+	    System.out.println("SESSION ID IS--> " + res.sessionId);
+	}
 	//CUAction ca = new CUAction(); 
 	//res.nextAction = ca;
 	//ros.logInfo("INFO: Generate sequence of length: ");

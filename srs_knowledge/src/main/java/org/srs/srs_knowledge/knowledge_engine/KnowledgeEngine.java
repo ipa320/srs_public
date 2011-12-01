@@ -255,7 +255,7 @@ class KnowledgeEngine
 	
 	if(request.task.equals("move")) {
 	    currentTask = new Task(request.task, request.content, null);
-	    System.out.println("Created CurrentTask " + "move" + request.content);
+	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
 	else {
 	    // for other types of task, should be dealt separately. 

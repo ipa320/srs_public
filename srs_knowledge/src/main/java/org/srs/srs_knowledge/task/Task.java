@@ -58,13 +58,40 @@ public class Task
 	double y = 1;
 	double theta = 0;
 
-	if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
+	/*TODO: Temporary: hard coded coordinate for predefined locations*/
+
+	/*
+	// cob_environments/cob_default_env_config/ipa-kitchen/navigation_goals.yaml 
+	  home: [0, 0, 0]
+	  order: [1, -0.5, -0.7]
+	  kitchen: [-2.04, 0.3, 0]
+	  new_kitchen: [-2.14, 0.0, 0]
+	  kitchen_backwards: [-2.04, 0.3, 3.14]
+	 */
+	
+	if (this.targetContent.equals("home")) {
+	    this.targetContent = "[0 0 0]";
+	}
+	else if (this.targetContent.equals("order")) {
+	    this.targetContent = "[1 -0.5 -0.7]";
+	}
+	else if (this.targetContent.equals("kitchen")) {
+	    this.targetContent = "[-2.04 0.3 0]";
+	}
+	else if (this.targetContent.equals("new_kitchen")) {
+	    this.targetContent = "[-2.14 0.0 0]";
+	}
+	else if (this.targetContent.equals("kitchen_backwards")) {
+	    this.targetContent = "[-2.04 0.3 3.14]";
+	}
+	else if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
 	    StringTokenizer st = new StringTokenizer(targetContent, " []");
 	    if(st.countTokens() == 3) {
 		try{
 		x = Double.parseDouble(st.nextToken());
 		y = Double.parseDouble(st.nextToken());
 		theta = Double.parseDouble(st.nextToken());
+		System.out.println(x + "  " + y + " " + theta);
 		}
 		catch(Exception e){
 		    System.out.println(e.getMessage());
@@ -72,6 +99,10 @@ public class Task
 		}
 	    }
 	}
+	else {
+	    return false;
+	}
+
 	ma.targetPose2D.x = x;
 	ma.targetPose2D.y = y;
 	ma.targetPose2D.theta = theta;

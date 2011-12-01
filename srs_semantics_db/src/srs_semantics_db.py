@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('srs_semantics_db'); roslib.load_manifest('json_prolog')
+import roslib; roslib.load_manifest('srs_semantics_db');
+#roslib.load_manifest('json_prolog')
 import rospy
 import json_prolog
 from srs_semantics_db.srv import *
@@ -13,17 +14,17 @@ class SRSSemanticsDB:
         rospy.init_node('test_json_prolog')
     
         self.prolog = json_prolog.Prolog()
-        query = self.prolog.query("member(A, [1,2,3,4]), B = ['x', A]")
-    
-        for sol in query.solutions():
-            print 'Found solution. A = %s, B = %s' %(sol['A'], sol['B'])
-        query.finish()
+        
+        #for sol in query.solutions():
+            #print 'Found solution. A = %s, B = %s' %(sol['A'], sol['B'])
+        #query.finish()
         
         query = self.prolog.query("owl_subclass_of(A, knowrob:'FoodOrDrink').")
         for sol in query.solutions():
             print 'Found solution. A = %s' %(sol['A'])
 
-        query.finish()
+        #query.finish()
+        query = self.prolog.query("owl_has(A, rdf:type, knowrob:'Oven').")
     
         self.insert_object_in_ontology()
         self.instances_of_class()

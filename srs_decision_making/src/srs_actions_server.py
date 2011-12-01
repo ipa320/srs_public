@@ -256,24 +256,6 @@ class SRS_DM_ACTION(object):
         
     def execute_cb(self, gh):
 
-        ### SHOULD IT BE HERE????? 
-        ##############################################
-        # taskrequest From Knowledge_ros_service
-        ##############################################
-        print '#######################   Action Accept Command'
-        print gh
-        print 'Request new task'
-        rospy.wait_for_service('task_request')
-        try:
-            requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
-            res = requestNewTask()
-            
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-        ##############################################
-        # END OF taskrequest From Knowledge_ros_service
-        ##############################################
-
         self._feedback.current_state = "initialisation"
         self._feedback.solution_required = False
         self._feedback.exceptional_case_id = 0
@@ -292,6 +274,26 @@ class SRS_DM_ACTION(object):
 	    current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
         
+
+
+        ##############################################
+        # taskrequest From Knowledge_ros_service
+        ##############################################
+        print '#######################   Action Accept Command'
+        print gh
+        print 'Request new task'
+        rospy.wait_for_service('task_request')
+        try:
+            requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
+            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
+            
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+        ##############################################
+        # END OF taskrequest From Knowledge_ros_service
+        ##############################################
+
+
         
         #initial internal state machine far task 
         # As action server, the SRSActionServer is also a state machine with basic priority handling ability by itself,

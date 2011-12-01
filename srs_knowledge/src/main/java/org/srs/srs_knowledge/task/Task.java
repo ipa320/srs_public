@@ -31,7 +31,7 @@ public class Task
 	    setTaskType(TaskType.MOVETO_LOCATION);
 	    
 	    setTaskTarget(targetContent);
-	    System.out.println("TASK.JAVA: Created CurrentTask " + "move" + targetContent);
+	    System.out.println("TASK.JAVA: Created CurrentTask " + "move " + targetContent);
 	    createSimpleMoveTask();
 	}
 	else if(taskType.toLowerCase().equals("search")) {
@@ -80,13 +80,19 @@ public class Task
 	ca.pa = pa;
 	ca.ga = ga;
 
+	try {
+	    ca.actionFlags = parseActionFlags("0 1 1");
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
 	act.setCUAction(ca);
 	act.setActionId(1);
 	addNewActionTuple(act);
 	System.out.println("number of actions: " + acts.size());
 	return true;
     }
-
 
     public void setTaskId(int id)
     {
@@ -97,7 +103,6 @@ public class Task
     {
 	return taskId;
     }
-
 
     public void setTaskTarget(String target)
     {

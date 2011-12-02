@@ -182,11 +182,10 @@ class KnowledgeEngine
 	}
 
 	ActionTuple at = null;
+
 	if(request.stateLastAction.length == 3) {
 	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
 		at = currentTask.getNextAction(true); // no error. generate new action
-		
-		
 	    }
 	    else if(request.stateLastAction[0] == 2 || request.stateLastAction[1] == 2 || request.stateLastAction[2] == 2) {
 		ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
@@ -194,7 +193,7 @@ class KnowledgeEngine
 		
 		currentTask = null;
 		// TODO:
-		currentSessionId = 1;
+		//currentSessionId = 1;
 
 		res.nextAction = new CUAction();
 		return res;
@@ -206,7 +205,7 @@ class KnowledgeEngine
 	
 	if(at == null) {
 	    currentTask = null;
-	    currentSessionId = 1;
+	    //currentSessionId = 1;
 	    System.out.println("No further action can be planned. Terminate the task. ");
 
 	    res.nextAction = new CUAction(); // empty task
@@ -214,7 +213,7 @@ class KnowledgeEngine
 	}
 	if(at.getActionName().equals("finish_success")) {
 	    currentTask = null;
-	    currentSessionId = 1;
+	    //currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
 	    res.nextAction = new CUAction(); // empty task
 	    res.nextAction.status = 1;
@@ -222,18 +221,17 @@ class KnowledgeEngine
 	}
 	else if( at.getActionName().equals("finish_fail")) {
 	    currentTask = null;
-	    currentSessionId = 1;
+	    // currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
 	    res.nextAction = new CUAction(); // empty task
 	    res.nextAction.status = -1;
 	    return res;	    
 	}
-	
 
 	ca = at.getCUAction();
 
 	res.nextAction = ca;
-	
+
 	//ros.logInfo("INFO: Generate sequence of length: ");
 	return res;
     }
@@ -248,19 +246,43 @@ class KnowledgeEngine
 	
 	ServiceServer<PlanNextAction.Request, PlanNextAction.Response, PlanNextAction> srv = n.advertiseService(planNextActionService, new PlanNextAction(), scb);
     }
-    
-    private TaskRequest.Response handleTaskRequest( TaskRequest.Request request)
+
+    private TaskRequest.Response handleTaskRequest(TaskRequest.Request request)
     {
 	TaskRequest.Response res = new TaskRequest.Response();
 	
 	System.out.println("Received request for new task");
 	
-	this.loadPredefinedTasksForTest();
+	if(request.task.equals("move")) {
+	    currentTask = new Task(request.task, request.content, null);
+	    System.out.println("Created CurrentTask " + "move " + request.content);
+	}
+	else if(request.task.equals("get") || request.task.equals("search")){
+	    // TODO: for other types of task, should be dealt separately. 
+	    // here is just for testing
+	    this.loadPredefinedTasksForTest();
+	}
+	else {
+	    // TODO: for other types of task, should be dealt separately. 
+	    // here is just for testing
+	    // task not created for some reason
+	    currentTask = new Task(request.task, request.content, null);
+	    res.result = 1;
+	    res.description = "No action";
+	}
 
-	res.result = 0;
-	currentSessionId++; // TODO: generate unique id
-	res.sessionId = currentSessionId;
-	res.description = "No";
+	if(currentTask.getActionSequence().size() == 0) {
+	    // task not created for some reason
+	    res.result = 1;
+	    res.description = "No action";
+	}
+	else {
+	    res.result = 0;
+	    currentSessionId++;  // TODO: generate unique id
+	    res.sessionId = currentSessionId;
+	    res.description = "No";
+	    System.out.println("SESSION ID IS--> " + res.sessionId);
+	}
 	//CUAction ca = new CUAction(); 
 	//res.nextAction = ca;
 	//ros.logInfo("INFO: Generate sequence of length: ");
@@ -279,6 +301,7 @@ class KnowledgeEngine
 	ServiceServer<TaskRequest.Request, TaskRequest.Response, TaskRequest> srv = n.advertiseService(taskRequestService, new TaskRequest(), scb);
     }
 
+
     public boolean loadPredefinedTasksForTest()
     {
 	try{
@@ -286,7 +309,7 @@ class KnowledgeEngine
 	    currentTask = new Task(Task.TaskType.GET_OBJECT);
 	    String taskFile = config.getProperty("taskfile", "task1.seq");
 	    System.out.println(taskFile);
-	    if(currentTask.loadPredefinedSequence(this.confPath + taskFile))   {
+	    if(currentTask.loadPredefinedSequence(this.confPath + taskFile)) {
 		System.out.println("OK... ");
 	    }
 	    else  {
@@ -298,7 +321,7 @@ class KnowledgeEngine
 	    System.out.println(e.getMessage());
 	    return false;
 	}
-	//    public ArrayList<ActionTuple> getActionSequence()
+
 	ArrayList<ActionTuple> acts = currentTask.getActionSequence();
 
 	System.out.println(acts.size());

@@ -108,7 +108,7 @@ class approach_pose_without_retry(smach.State):
         move_second = False
 
         timeout = 0
-        while True:
+        while not self.preempt_requested():
             try:
                 print "base_state = ", handle_base.get_state()
                 if (handle_base.get_state() == 3) and (not move_second):

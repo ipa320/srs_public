@@ -2,14 +2,15 @@ package org.srs.srs_knowledge.task;
 
 import java.io.IOException;
 import java.io.*;
+import java.util.StringTokenizer;
 //import org.apache.commons.logging.Log;
 import java.util.ArrayList;
 import ros.pkg.srs_knowledge.msg.*;
-
+import ros.pkg.geometry_msgs.msg.Pose2D;
 
 public class Task
 {
-    public enum TaskType {GET_OBJECT, MOVETO_LOCATION, DETECT_OBJECT, SCAN_AROUND};
+    public enum TaskType {GET_OBJECT, MOVETO_LOCATION, SEARCH_OBJECT, SCAN_AROUND, UNSPECIFIED};
 
     public Task(TaskType type)
     {
@@ -17,6 +18,111 @@ public class Task
 	//actionSequence = new ArrayList<CUAction>();
 	setTaskType(type);
 	currentAction = null;
+    }
+
+    public Task(String taskType, String targetContent, Pose2D userPose)
+    {
+	acts = new ArrayList<ActionTuple>();
+	currentAction = null;
+	if(taskType.toLowerCase().equals("get")) {
+	    setTaskType(TaskType.GET_OBJECT);
+	}
+	else if(taskType.toLowerCase().equals("move")) {
+	    setTaskType(TaskType.MOVETO_LOCATION);
+	    
+	    setTaskTarget(targetContent);
+	    System.out.println("TASK.JAVA: Created CurrentTask " + "move " + targetContent);
+	    createSimpleMoveTask();
+	}
+	else if(taskType.toLowerCase().equals("search")) {
+	    setTaskType(TaskType.SEARCH_OBJECT);
+	}
+	else {
+	    setTaskType(TaskType.UNSPECIFIED);
+	}
+    }
+
+    public boolean createSimpleMoveTask()
+    {
+	//currentTask = new Task("move", "kitchen", null);
+	// boolean addNewActionTuple(ActionTuple act)
+	ActionTuple act = new ActionTuple();
+
+	CUAction ca = new CUAction();
+	MoveAction ma = new MoveAction();
+	PerceptionAction pa = new PerceptionAction();
+	GraspAction ga = new GraspAction();
+
+	// TODO: should obtain information from Ontology here. But here we use temporary hard coded info for testing
+	double x = 1;
+	double y = 1;
+	double theta = 0;
+
+	/*TODO: Temporary: hard coded coordinate for predefined locations*/
+
+	/*
+	// cob_environments/cob_default_env_config/ipa-kitchen/navigation_goals.yaml 
+	  home: [0, 0, 0]
+	  order: [1, -0.5, -0.7]
+	  kitchen: [-2.04, 0.3, 0]
+	  new_kitchen: [-2.14, 0.0, 0]
+	  kitchen_backwards: [-2.04, 0.3, 3.14]
+	 */
+	
+	if (this.targetContent.equals("home")) {
+	    this.targetContent = "[0 0 0]";
+	}
+	else if (this.targetContent.equals("order")) {
+	    this.targetContent = "[1 -0.5 -0.7]";
+	}
+	else if (this.targetContent.equals("kitchen")) {
+	    this.targetContent = "[-2.04 0.3 0]";
+	}
+	else if (this.targetContent.equals("new_kitchen")) {
+	    this.targetContent = "[-2.14 0.0 0]";
+	}
+	else if (this.targetContent.equals("kitchen_backwards")) {
+	    this.targetContent = "[-2.04 0.3 3.14]";
+	}
+	else if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
+	    StringTokenizer st = new StringTokenizer(targetContent, " []");
+	    if(st.countTokens() == 3) {
+		try{
+		x = Double.parseDouble(st.nextToken());
+		y = Double.parseDouble(st.nextToken());
+		theta = Double.parseDouble(st.nextToken());
+		System.out.println(x + "  " + y + " " + theta);
+		}
+		catch(Exception e){
+		    System.out.println(e.getMessage());
+		    return false;
+		}
+	    }
+	}
+	else {
+	    return false;
+	}
+
+	ma.targetPose2D.x = x;
+	ma.targetPose2D.y = y;
+	ma.targetPose2D.theta = theta;
+
+	ca.ma = ma;
+	ca.pa = pa;
+	ca.ga = ga;
+
+	try {
+	    ca.actionFlags = parseActionFlags("0 1 1");
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+	act.setCUAction(ca);
+	act.setActionId(1);
+	addNewActionTuple(act);
+	System.out.println("number of actions: " + acts.size());
+	return true;
     }
 
     public void setTaskId(int id)
@@ -27,6 +133,16 @@ public class Task
     public int getTaskId()
     {
 	return taskId;
+    }
+
+    public void setTaskTarget(String target)
+    {
+	this.targetContent = target;
+    }
+
+    public String getTaskTarget()
+    {
+	return this.targetContent;
     }
 
     public void setTaskType(TaskType type)
@@ -246,9 +362,9 @@ public class Task
 	return ga;
     }
 
-    
 
     private TaskType taskType;
+    private String targetContent;
     private int taskId;
     //private ArrayList<CUAction> actionSequence;
     private ArrayList<ActionTuple> acts;

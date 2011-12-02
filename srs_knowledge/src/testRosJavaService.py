@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import roslib;
 #roslib.load_manifest('beginner_tutorials')
-roslib.load_manifest('knowledge_ros_service')
+roslib.load_manifest('srs_knowledge')
 import sys
 import rospy
 
-from knowledge_ros_service.srv import *
+from srs_knowledge.srv import *
 
 def querySparQL():
     rospy.wait_for_service('query_sparql')

@@ -1,8 +1,11 @@
 
 #input: command + target
 
-# task: get(fetch & carry task) 
+# task: get(fetch & carry task) , move, stop, search
 string task
+
+#temporary use here: kitchen, milk, [x, y, theta]
+string content
 
 # if to get an object (milk0) or any in the general class (eg. Milk)
 string objectOrClass 

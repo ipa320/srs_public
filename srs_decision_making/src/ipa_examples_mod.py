@@ -398,15 +398,15 @@ class detect_object(smach.State):
             #    return 'failed'
         # check if an object could be found within the min_dist start value
         
-        if obj.header.frame_id == "":
-            self.retries += 1
-            return 'retry'
+        #if obj.header.frame_id == "":
+        #    self.retries += 1
+        #    return 'retry'
         
         #check if label of object fits to requested object_name
-        if obj.label != object_name:
-            sss.say(["The object name doesn't fit."],False)
-            self.retries += 1
-            return 'retry'
+        #if obj.label != object_name:
+        #    sss.say(["The object name doesn't fit."],False)
+        #    self.retries += 1
+        #    return 'retry'
         
         # we succeeded to detect an object
         userdata.object = obj

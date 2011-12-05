@@ -371,6 +371,7 @@ class semantic_dm(smach.State):
             elif resp1.nextAction.status == -1:
                 print 'failed'
                 return 'failed'
+            
 
             print resp1.nextAction.actionFlags
             print resp1.nextAction.ma
@@ -391,7 +392,7 @@ class semantic_dm(smach.State):
 		####  HARD CODED FOR TESTING ##
 
 		if resp1.nextAction.pa.aboxObject.object_id == 1:
-			userdata.target_object_name = 'milk_box'	
+			userdata.target_object_name = 'milk_box'
  		else:
 			userdata.target_object_name = 'milk_box'
 
@@ -406,13 +407,13 @@ class semantic_dm(smach.State):
 		####  HARD CODED FOR TESTING ##
 
 		if resp1.nextAction.pa.aboxObject.object_id == 1:
-			userdata.target_object_name = 'milk_box'	
+			userdata.target_object_name = 'milk_box'
  		else:
 			userdata.target_object_name = 'milk_box'
 
 		####  END OF HARD CODED FOR TESTING ##
 
-		#userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id                
+		#userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id
 		# should be updated to object_id in future            
             else:
                 print 'No valid actionFlags'

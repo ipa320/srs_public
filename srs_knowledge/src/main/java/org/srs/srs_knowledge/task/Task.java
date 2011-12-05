@@ -84,7 +84,8 @@ public class Task
 	else if (this.targetContent.equals("kitchen_backwards")) {
 	    this.targetContent = "[-2.04 0.3 3.14]";
 	}
-	else if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
+	
+	if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
 	    StringTokenizer st = new StringTokenizer(targetContent, " []");
 	    if(st.countTokens() == 3) {
 		try {

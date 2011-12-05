@@ -224,11 +224,20 @@ class grasp_general(smach.State):
         smach.State.__init__(
             self,
             outcomes=['succeeded', 'retry', 'failed'],
-            input_keys=['object'],
-            output_keys=['grasp_conf'])
+            input_keys=['object', 'grasp_conf'])
 
 
     def execute(self, userdata):
+        
+        global sss
+        handle_tray = sss.move("tray", "down")
+        handle_tray.wait()
+        sss.move("arm", [[0.2, -0.2, 0.0], [0.0, 0.0, 0.0]])
+        sss.move("arm", "grasp-to-tray")
+        
+        sss.move("arm", "tray",False)
+        
+        
         return 'succeeded'    
         #return 'failed'     
 

@@ -265,13 +265,13 @@ class SRS_DM_ACTION(object):
         rospy.Subscriber("fb_executing_state", String, self.callback_fb_current_state)
         
         goal_handler = self._as.current_goal
-        current_goal = goal_handler.get_goal() 
+        current_goal = goal_handler.get_goal()      
         
         #initialise task information for the state machine
         global current_task_info
         current_task_info.task_name = current_goal.action
-	if current_task_info.task_name=="":
-	    current_task_info.task_name="get"
+        if current_task_info.task_name=="":
+	           current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
         
 

@@ -24,7 +24,9 @@ from geometry_msgs.msg import *
 from cob_object_detection_msgs.srv import *
 from cob_object_detection_msgs.msg import *
 from gazebo.srv import *
-
+import gazebo.msg as gazebo
+#import geometry_msgs.msg as geomery
+#from gazebo.srv import SetModelState
 
 """
 Below dummy generic states are copied and modified based on IPA examples for testing purpose
@@ -230,12 +232,55 @@ class grasp_general(smach.State):
     def execute(self, userdata):
         
         global sss
-        handle_tray = sss.move("tray", "down")
+        handle_tray = sss.move("tray", "up")
         handle_tray.wait()
-        sss.move("arm", [[0.2, -0.2, 0.0], [0.0, 0.0, 0.0]])
-        sss.move("arm", "grasp-to-tray")
+        handle_arm = sss.move("arm", "grasp")
+        handle_arm = sss.move("arm", "grasp-to-tray_top")
+        handle_arm.wait()   
+
+        start_pose = Pose()
+    
+        start_pose.position.x = -2.45;
+        start_pose.position.y = -0.2;
+        start_pose.position.z = 1.01;
+        start_pose.orientation.x = 0.0;
+        start_pose.orientation.y = 0.0;
+        start_pose.orientation.z = 0.0;
+        start_pose.orientation.w = 0.0;
         
-        sss.move("arm", "tray",False)
+        start_twist = Twist()
+        start_twist.linear.x = 0.0;
+        start_twist.linear.y = 0.0;
+        start_twist.linear.z = 0.0;
+        start_twist.angular.x = 0.0;
+        start_twist.angular.y = 0.0;
+        start_twist.angular.z = 0.0;
+        
+        modelstate = gazebo.ModelState
+        modelstate.model_name = "milk_box";
+        modelstate.reference_frame = "world";
+        modelstate.pose = start_pose;
+        modelstate.twist = start_twist;
+        
+        
+        move_milk = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
+        
+        #setmodelstate = gazebo
+        
+        #setmodelstate.request.model_state = modelstate
+        
+        move_milk(modelstate)
+        
+        handle_arm = sss.move("arm", "tray_top-to-folded")
+        handle_arm.wait()
+        #handle_arm = sss.move("arm", "tray",False)
+        #handle_arm.wait()
+
+        
+        
+        
+        
+        
         
         
         return 'succeeded'    
@@ -351,7 +396,7 @@ class detect_object(smach.State):
             handle_arm.wait()
             handle_head.wait()
             handle_torso.wait()
-        handle_torso = sss.move("torso",self.torso_poses[self.retries % len(self.torso_poses)]) # have an other viewing point for each retry
+        #handle_torso = sss.move("torso",self.torso_poses[self.retries % len(self.torso_poses)]) # have an other viewing point for each retry
         
         # move sdh as feedback
         sss.move("sdh","home",False)

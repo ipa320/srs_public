@@ -319,7 +319,7 @@ class SRS_DM_ACTION(object):
         rospy.loginfo("sm last step session ID: %s", current_task_info.session_id)
         
         #set outcomes based on the execution result       
-        """        
+                
         if self.preempt_check()==True:
             self._result.return_value=2
             self._as.set_preempted(self._result)
@@ -329,7 +329,7 @@ class SRS_DM_ACTION(object):
             self._result.return_value=3
             self._as.set_succeeded(self._result)
             return
-        """        
+                
         #for all other cases outcome == "task_aborted": 
         self._result.return_value=4
         self._as.set_aborted(self._result)

@@ -110,7 +110,7 @@ class approach_pose_without_retry(smach.State):
         timeout = 0
         while not self.preempt_requested():
             try:
-                print "base_state = ", handle_base.get_state()
+                #print "base_state = ", handle_base.get_state()
                 if (handle_base.get_state() == 3) and (not move_second):
                     # do a second movement to place the robot more exactly
                     handle_base = sss.move("base", pose, False, self.mode)

@@ -87,11 +87,11 @@ public class Task
 	else if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
 	    StringTokenizer st = new StringTokenizer(targetContent, " []");
 	    if(st.countTokens() == 3) {
-		try{
-		x = Double.parseDouble(st.nextToken());
-		y = Double.parseDouble(st.nextToken());
-		theta = Double.parseDouble(st.nextToken());
-		System.out.println(x + "  " + y + " " + theta);
+		try {
+		    x = Double.parseDouble(st.nextToken());
+		    y = Double.parseDouble(st.nextToken());
+		    theta = Double.parseDouble(st.nextToken());
+		    System.out.println(x + "  " + y + " " + theta);
 		}
 		catch(Exception e){
 		    System.out.println(e.getMessage());
@@ -121,6 +121,84 @@ public class Task
 	act.setCUAction(ca);
 	act.setActionId(1);
 	addNewActionTuple(act);
+
+
+	// add finish action __ success 
+
+	act = new ActionTuple();
+
+	ca = new CUAction();
+	ma = new MoveAction();
+	pa = new PerceptionAction();
+	ga = new GraspAction();
+
+	ca.ma = ma;
+	ca.pa = pa;
+	ca.ga = ga;
+
+	try {
+	    ca.actionFlags = parseActionFlags("0 1 1");
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+	act.setActionName("finish_success");
+
+	if(act.getActionName().equals("finish_success")){
+	    ca.status = 1;	    
+	}
+	if(act.getActionName().equals("finish_fail")) {
+	    ca.status = -1;
+	}
+
+	act.setCUAction(ca);
+	act.setActionId(2);
+	act.setParentId(1);
+	act.setCondition(true);
+	addNewActionTuple(act);
+
+	// add finish action __ fail 
+
+	act = new ActionTuple();
+
+	ca = new CUAction();
+	ma = new MoveAction();
+	pa = new PerceptionAction();
+	ga = new GraspAction();
+
+	ca.ma = ma;
+	ca.pa = pa;
+	ca.ga = ga;
+
+	try {
+	    ca.actionFlags = parseActionFlags("0 1 1");
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+	act.setActionName("finish_fail");
+
+	//ca.status = -1;
+	if(act.getActionName().equals("finish_success")){
+	    ca.status = 1;	    
+	}
+	if(act.getActionName().equals("finish_fail")) {
+	    ca.status = -1;
+	}
+
+	act.setCUAction(ca);
+	act.setActionId(3);
+	act.setParentId(1);
+	act.setCondition(false);
+	addNewActionTuple(act);
+
+
+
+
+
+
+
 	System.out.println("number of actions: " + acts.size());
 	return true;
     }
@@ -278,14 +356,21 @@ public class Task
 	act.setParentId(parentId);
 	act.setCondition(condition);
 
-
+	/*
 	if(act.getActionName().equals("finish_success")){
-	    ca.status = 1;	    
+	    ca.status = 1;
 	}
 	if(act.getActionName().equals("finish_fail")) {
 	    ca.status = -1;
 	}
+	*/
 
+	if(act.getActionName().indexOf("finish") != -1 && act.getCondition()){
+	    ca.status = 1;
+	}
+	if(act.getActionName().indexOf("finish") != -1 && !act.getCondition()) {
+	    ca.status = -1;
+	}
 	
 	return act;
     }
@@ -306,7 +391,7 @@ public class Task
 
     private  static int[] parseActionFlags(String actionFlags) throws Exception
     {
-	int[] _actionFlags = new int[3]; 
+	int[] _actionFlags = new int[3];
 	
 	String[] parameters = actionFlags.split(" ");
 	//System.out.println(parameters[0] + " -- " + parameters[1] + " -- " + parameters[2]);

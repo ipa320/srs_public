@@ -151,6 +151,29 @@ class SRS_DM_ACTION(object):
                 
         #self._as.register_goal_callback(self.goal_cb)
         self._as.register_preempt_callback(self.priority_cb)
+        
+
+        #initialisation of the robot
+        # move to initial positions
+        global sss
+        handle_torso = sss.move("torso", "back", False)
+        handle_tray = sss.move("tray", "down", False)
+        handle_arm = sss.move("arm", "folded", False)
+        handle_sdh = sss.move("sdh", "cylclosed", False)
+        handle_head = sss.move("head", "back", False)
+
+    
+        # wait for initial movements to finish
+        handle_torso.wait()
+        handle_tray.wait()
+        handle_arm.wait()
+        handle_sdh.wait()
+        handle_head.wait()
+        
+            
+        sss.wait_for_input(3)
+        
+        
         rospy.loginfo("Waiting for wake up the server ...")
 
         
@@ -265,13 +288,13 @@ class SRS_DM_ACTION(object):
         rospy.Subscriber("fb_executing_state", String, self.callback_fb_current_state)
         
         goal_handler = self._as.current_goal
-        current_goal = goal_handler.get_goal() 
+        current_goal = goal_handler.get_goal()      
         
         #initialise task information for the state machine
         global current_task_info
         current_task_info.task_name = current_goal.action
-	if current_task_info.task_name=="":
-	    current_task_info.task_name="get"
+        if current_task_info.task_name=="":
+	           current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
         
 
@@ -319,7 +342,7 @@ class SRS_DM_ACTION(object):
         rospy.loginfo("sm last step session ID: %s", current_task_info.session_id)
         
         #set outcomes based on the execution result       
-        """        
+                
         if self.preempt_check()==True:
             self._result.return_value=2
             self._as.set_preempted(self._result)
@@ -329,7 +352,7 @@ class SRS_DM_ACTION(object):
             self._result.return_value=3
             self._as.set_succeeded(self._result)
             return
-        """        
+                
         #for all other cases outcome == "task_aborted": 
         self._result.return_value=4
         self._as.set_aborted(self._result)

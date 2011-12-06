@@ -31,7 +31,7 @@ def DM_client():
     client.wait_for_result()
 
     # Prints out the result of executing the action
-    return client.get_result() 
+    return client.get_result()
 
 if __name__ == '__main__':
     try:

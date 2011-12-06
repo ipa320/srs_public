@@ -97,7 +97,7 @@ class approach_pose_without_retry(smach.State):
         elif type(userdata.base_pose) is str:
             pose = userdata.base_pose
         elif type(userdata.base_pose) is list:
-            pose = []-0.21
+            pose = []
             pose.append(userdata.base_pose[0])
             pose.append(userdata.base_pose[1])
             pose.append(userdata.base_pose[2])
@@ -130,7 +130,7 @@ class approach_pose_without_retry(smach.State):
             # check if service is available
             service_full_name = '/base_controller/is_moving'
             try:
-                rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))-0.21
+                rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
             except rospy.ROSException, e:
                 error_message = "%s"%e
                 rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)

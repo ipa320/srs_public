@@ -86,7 +86,7 @@ public class Task
 	}
 	
 	if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
-	    StringTokenizer st = new StringTokenizer(targetContent, " []");
+	    StringTokenizer st = new StringTokenizer(targetContent, " [],");
 	    if(st.countTokens() == 3) {
 		try {
 		    x = Double.parseDouble(st.nextToken());

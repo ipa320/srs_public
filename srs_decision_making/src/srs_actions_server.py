@@ -161,6 +161,7 @@ class SRS_DM_ACTION(object):
         handle_arm = sss.move("arm", "folded", False)
         handle_sdh = sss.move("sdh", "cylclosed", False)
         handle_head = sss.move("head", "back", False)
+
     
         # wait for initial movements to finish
         handle_torso.wait()
@@ -168,6 +169,7 @@ class SRS_DM_ACTION(object):
         handle_arm.wait()
         handle_sdh.wait()
         handle_head.wait()
+        
             
         sss.wait_for_input(3)
         

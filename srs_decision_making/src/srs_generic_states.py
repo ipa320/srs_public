@@ -476,30 +476,11 @@ class semantic_dm(smach.State):
 class initialise(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'])
-        self.count=0
+        #self.count=0
 
         
     def execute(self,userdata):
-        
-        if self.count<1:
-            self.count=self.count+1
-            #initialisation of the robot
-            # move to initial positions
-            global sss
-            handle_torso = sss.move("torso", "back", False)
-            handle_tray = sss.move("tray", "down", False)
-            handle_arm = sss.move("arm", "folded", False)
-            handle_sdh = sss.move("sdh", "cylclosed", False)
-            handle_head = sss.move("head", "back", False)
-    
-            # wait for initial movements to finish
-            handle_torso.wait()
-            handle_tray.wait()
-            handle_arm.wait()
-            handle_sdh.wait()
-            handle_head.wait()
-            
-        
+               
         last_step_info = xmsg.Last_step_info()
         last_step_info.step_name = "initialise"
         last_step_info.outcome = 'succeeded'
@@ -509,7 +490,7 @@ class initialise(smach.State):
         global current_task_info
         current_task_info.last_step_info.append(last_step_info)
                 
-	#current_task_info.session_id = 123456
+        #current_task_info.session_id = 123456
         
 
         return 'succeeded'

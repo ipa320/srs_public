@@ -69,7 +69,7 @@ def DM_client():
 
 
     _goal.action="move"
-    _goal.parameter="[1  -0.5  -0.785]"
+    _goal.parameter="[1.47 -0.7 0.75]"
     _goal.priority=0
     client.send_goal(_goal)  
     client.wait_for_result()

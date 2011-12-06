@@ -240,8 +240,8 @@ class grasp_general(smach.State):
 
         start_pose = Pose()
     
-        start_pose.position.x = -2.44;
-        start_pose.position.y = -0.22;
+        start_pose.position.x = -2.47;
+        start_pose.position.y = -0.23;
         start_pose.position.z = 1.01;
         start_pose.orientation.x = 0.0;
         start_pose.orientation.y = 0.0;

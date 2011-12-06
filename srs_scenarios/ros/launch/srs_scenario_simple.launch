@@ -22,9 +22,6 @@
 
 	<!-- table -->
 	<include file="$(find srs_scenarios)/ros/launch/table_ikea.launch"/>
-	
-	<!-- milk-->
-	<include file="$(find srs_scenarios)/ros/launch/milk_box_kitchen.launch"/>
 
 	<!-- decision making server-->
 	<include file="$(find srs_decision_making)/ros/launch/srs_decision_making.launch"/>

@@ -9,7 +9,7 @@
 #################################################################
 # ROS imports
 
-import roslib; roslib.load_manifest('srs_decision_making')
+import roslib; roslib.load_manifest('srs_decision_making_experimental')
 
 #roslib.load_manifest('knowledge_ros_service')
 

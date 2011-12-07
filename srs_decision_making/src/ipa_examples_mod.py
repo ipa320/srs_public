@@ -240,8 +240,8 @@ class grasp_general(smach.State):
 
         start_pose = Pose()
     
-        start_pose.position.x = -2.44;
-        start_pose.position.y = -0.22;
+        start_pose.position.x = -2.47;
+        start_pose.position.y = -0.23;
         start_pose.position.z = 1.01;
         start_pose.orientation.x = 0.0;
         start_pose.orientation.y = 0.0;
@@ -392,9 +392,9 @@ class detect_object(smach.State):
             sss.say(["I will now search for the " + object_name + "."],False)
             handle_arm = sss.move("arm","folded-to-look_at_table",False)
             handle_torso = sss.move("torso","shake",False)
-            handle_head = sss.move("head","back",False)
+            #handle_head = sss.move("head","back",False)
             handle_arm.wait()
-            handle_head.wait()
+            #handle_head.wait()
             handle_torso.wait()
         #handle_torso = sss.move("torso",self.torso_poses[self.retries % len(self.torso_poses)]) # have an other viewing point for each retry
         

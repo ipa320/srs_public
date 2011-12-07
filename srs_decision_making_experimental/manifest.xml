@@ -1,0 +1,33 @@
+<package>
+  <description brief="srs_decision_making">
+
+     srs_decision_making
+
+  </description>
+  <author>Renxi Qiu</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_decision_making</url>
+  <depend package="actionlib"/>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="roslib"/>
+  <depend package="std_msgs"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="smach"/>
+  <depend package="smach_ros"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="srs_msgs"/>
+  <depend package="kinematics_msgs"/>
+  <depend package="srs_knowledge"/>
+  <depend package="cob_object_detection_msgs"/>
+  <depend package="cob_3d_mapping_msgs"/>
+  <depend package="gazebo"/>
+  <depend package="cob_2dnav"/>
+  <depend package="cob_linear_nav"/>
+  <depend package="cob_script_server"/>
+  <depend package="srs_decision_making"/>
+</package>
+
+

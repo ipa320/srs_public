@@ -271,7 +271,7 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','open_door','env_object_update'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','env_object_update'],
                              input_keys=['target_object_name','target_base_pose','target_object_pose'],
                              output_keys=['target_object_name',
                                           'target_base_pose',

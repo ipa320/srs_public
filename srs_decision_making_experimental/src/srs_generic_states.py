@@ -23,8 +23,8 @@ from std_msgs.msg import String, Bool, Int32
 from cob_srvs.srv import Trigger
 from geometry_msgs.msg import *
 
-import srs_decision_making.msg as xmsg
-
+import srs_decision_making_experimental.msg as xmsg
+import srs_decision_making_experimental.srv as xsrv
 from srs_knowledge.srv import *
 from srs_knowledge.msg import *
 

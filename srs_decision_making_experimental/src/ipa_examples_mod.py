@@ -691,8 +691,10 @@ class detect_object(smach.State):
         self.torso_poses.append("back_right_extreme")
         self.torso_poses.append("back_extreme")
         self.torso_poses.append("back_left_extreme")
+        
 
     def execute(self, userdata):
+        userdata.object = ""
         # determine object name
         if self.object_name != "":
             object_name = self.object_name

@@ -82,7 +82,7 @@ public class Task
 	    this.targetContent = "[-2.14 0.0 0]";
 	}
 	else if (this.targetContent.equals("kitchen_backwards")) {
-	    this.targetContent = "[-2.04 0.3 3.14]";
+	    this.targetContent = "[-2.04 -0.3 3.14]";
 	}
 	
 	if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- start robot -->
+	<include file="$(find cob_bringup)/robot.launch"/>
+
+	<!-- start navigation omini-->
+	<include file="$(find cob_2dnav)/ros/launch/2dnav_dwa.launch"/>
+
+	<!-- start navigation linear-->
+	<include file="$(find cob_linear_nav)/ros/launch/linear_nav.launch"/>
+
+	<!-- start manipulation -->
+	<include file="$(find cob_manipulator)/ros/launch/kdl_solver.launch"/>  
+
+	<!-- upload parameters -->
+	<include file="$(find cob_default_robot_config)/upload_param.launch"/>	
+	<include file="$(find cob_default_env_config)/upload_param.launch"/>	
+
+	<!-- knowledge server -->
+    <include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+
+</launch>

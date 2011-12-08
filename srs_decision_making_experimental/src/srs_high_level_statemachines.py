@@ -349,8 +349,27 @@ class sm_get_object_on_tray(SRS_StateMachine):
                     transitions={'succeeded':'succeeded', 
                                 'failed':'failed'})           
             
-     
+            
 
+class sm_deliver_object(SRS_StateMachine):
+    def __init__(self):    
+        smach.StateMachine.__init__(self, 
+            outcomes=['succeeded', 'not_completed', 'failed'],
+            input_keys=['target_base_pose','semi_autonomous_mode'])        
+        self.customised_initial("sm_deliver_object")
+    
+        with self:
+            smach.StateMachine.add('MOVE_TO_ORDER', sm_approach_pose_assisted(),
+                    transitions={'succeeded':'DELIVER_OBJECT', 'not_completed':'not_completed', 'failed':'failed'},
+                    remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_base_pose':'target_base_pose'})
+                                                  
+            smach.StateMachine.add('DELIVER_OBJECT', deliver_object(),
+                    transitions={'succeeded':'succeeded', 
+                                 'retry':'not_completed',
+                                'failed':'failed'})           
+            
+     
+"""
 class sm_open_door(SRS_StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, 
@@ -367,4 +386,4 @@ class sm_open_door(SRS_StateMachine):
             smach.StateMachine.add('OPEN_DOOR', open_door(),
                 transitions={'succeeded':'succeeded', 'failed':'failed'})    
         
-            
+ """           

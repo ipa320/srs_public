@@ -207,6 +207,7 @@ class SRS_DM_ACTION(object):
                                                 'navigation':'SM_NAVIGATION',
                                                 'detection':'SM_DETECTION',
                                                 'simple_grasp':'SM_SIMPLE_GRASP',
+                                                'deliver_object':'SM_DELIVER_OBJECT',
                                                 'env_object_update':'SM_ENV_OBJECT_UPDATE'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',

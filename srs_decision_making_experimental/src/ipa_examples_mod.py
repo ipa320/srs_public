@@ -1,5 +1,6 @@
 # ROS imports
-import roslib; roslib.load_manifest('srs_decision_making_experimental')
+import roslib
+roslib.load_manifest('srs_decision_making_experimental')
 import copy
 import rospy
 import smach
@@ -15,7 +16,7 @@ from kinematics_msgs.srv import *
 import actionlib
 
 # include script server, to move the robot
-from simple_script_server import simple_script_server
+from simple_script_server import *
 sss = simple_script_server()
 
 # msg imports
@@ -28,6 +29,7 @@ import gazebo.msg as gazebo
 #import geometry_msgs.msg as geomery
 #from gazebo.srv import SetModelState
 from cob_mmcontroller.msg import *
+from kinematics_msgs.srv import *
 
 """
 Below dummy generic states are copied and modified based on IPA examples for testing purpose
@@ -796,4 +798,49 @@ class move_head(smach.State):
     def execute(self, userdata):
         sss.move("torso",userdata.torso_pose)
         return 'succeeded'
+
+
+
+
+## Deliver object state
+#
+# This state will deliver an object which should be on the tray.
+class deliver_object(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, 
+            outcomes=['succeeded', 'retry', 'failed'],
+            input_keys=['object_name'])
+
+    def execute(self, userdata):
+        sss.say(["Here is your " + userdata.object_name + ". Please help yourself."],False)
+        sss.move("torso","nod",False)
+        
+        try:
+            rospy.wait_for_service('/tray/check_occupied',10)
+        except rospy.ROSException, e:
+            print "Service not available: %s"%e
+            return 'failed'
+
+        time = rospy.Time.now().secs
+        loop_rate = rospy.Rate(5) #hz
+        while True:
+            if rospy.Time.now().secs-time > 20:
+                return 'retry'
+            try:
+                tray_service = rospy.ServiceProxy('/tray/check_occupied', CheckOccupied)            
+                req = CheckOccupiedRequest()
+                res = tray_service(req)
+                print "waiting for tray to be not occupied any more"
+                if(res.occupied.data == False):
+                    break
+            except rospy.ServiceException, e:
+                print "Service call failed: %s"%e
+                return 'failed'
+            loop_rate.sleep()
+        
+        sss.move("tray","down",False)
+        sss.move("torso","nod",False)
+        
+        return 'succeeded'
+
 

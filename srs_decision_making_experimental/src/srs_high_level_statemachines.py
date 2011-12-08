@@ -276,36 +276,42 @@ class sm_pick_object_asisted(SRS_StateMachine):
                 # object is the input key of the grasp
                 
 
-class sm_pick_object_ipa(smach.StateMachine):
+class sm_pick_object_ipa(SRS_StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, 
-            outcomes=['object_picked_top', 'object_picked_side', 'object_not_picked', 'failed'],
-            input_keys=['object_name'])
+            outcomes=['object_picked_top', 'object_picked_side', 'not_completed', 'failed'],
+            input_keys=['target_object_name','semi_autonomous_mode'],
+            output_keys=['target_object_pose'])
+        self.customised_initial("sm_pick_object_ipa")
+        self.userdata.target_object_pose=""
         
         with self:
-            smach.StateMachine.add('DETECT_OBJECT', detect_object(max_retries = 10),
+            smach.StateMachine.add('DETECT_OBJECT', sm_detect_asisted_pose(),
                 transitions={'succeeded':'SELECT_GRASP', 
-                            'retry':'DETECT_OBJECT', 
-                            'no_more_retries':'object_not_picked', 
-                            'failed':'failed'})
+                            'not_completed':'not_completed', 
+                            'failed':'failed'},
+                remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_object_name':'target_object_name','target_object_pose':'target_object_pose' })
+
 
             smach.StateMachine.add('SELECT_GRASP', select_grasp(),
                 transitions={'top':'GRASP_TOP', 
                             'side':'GRASP_SIDE', 
-                            'failed':'failed'})
+                            'failed':'failed'},
+                remapping={'object':'target_object_pose'})
             
-            smach.StateMachine.add('GRASP_SIDE', grasp_side(max_retries = 10),
+            smach.StateMachine.add('GRASP_SIDE', grasp_side(max_retries = 5),
                 transitions={'succeeded':'object_picked_side', 
                             'retry':'DETECT_OBJECT', 
-                            'no_more_retries':'object_not_picked', 
-                            'failed':'failed'})
-                
-            smach.StateMachine.add('GRASP_TOP', grasp_top(max_retries = 10),
+                            'no_more_retries':'not_completed', 
+                            'failed':'failed'},
+                remapping={'object':'target_object_pose'})
+            
+            smach.StateMachine.add('GRASP_TOP', grasp_top(max_retries = 5),
                 transitions={'succeeded':'object_picked_top', 
                             'retry':'DETECT_OBJECT', 
-                            'no_more_retries':'object_not_picked', 
-                            'failed':'failed'})
-            
+                            'no_more_retries':'not_completed', 
+                            'failed':'failed'},
+                remapping={'object':'target_object_pose'})
  
  
 class sm_get_object_on_tray(SRS_StateMachine):
@@ -322,24 +328,25 @@ class sm_get_object_on_tray(SRS_StateMachine):
             smach.StateMachine.add('SM_PICK_OBJECT', sm_pick_object_ipa(),
                 transitions={'object_picked_side':'MOVE_TO_POST_TABLE_SIDE', 
                             'object_picked_top':'MOVE_TO_POST_TABLE_TOP',  
-                            'object_not_picked':'not_completed', 
+                            'not_completed':'not_completed', 
                             'failed':'failed'},
-                remapping={'target_object_name':'object_name'})
+                remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_object_name':'target_object_name','target_object_pose':'object_pose' })
+
                             
-            smach.StateMachine.add('MOVE_TO_POST_TABLE_SIDE', approach_pose("post_kitchen", mode="linear"),
+            smach.StateMachine.add('MOVE_TO_POST_TABLE_SIDE', approach_pose_without_retry("kitchen"),
                 transitions={'succeeded':'PUT_OBJECT_ON_TRAY_SIDE', 
                             'failed':'failed'})
     
-            smach.StateMachine.add('MOVE_TO_POST_TABLE_TOP', approach_pose("post_kitchen", mode="linear"),
+            smach.StateMachine.add('MOVE_TO_POST_TABLE_TOP', approach_pose_without_retry("kitchen"),
                 transitions={'succeeded':'PUT_OBJECT_ON_TRAY_TOP', 
                             'failed':'failed'})
     
             smach.StateMachine.add('PUT_OBJECT_ON_TRAY_SIDE', put_object_on_tray_side(),
-                    transitions={'succeeded':'completed', 
+                    transitions={'succeeded':'succeeded', 
                                 'failed':'failed'})
                                                   
             smach.StateMachine.add('PUT_OBJECT_ON_TRAY_TOP', put_object_on_tray_top(),
-                    transitions={'succeeded':'completed', 
+                    transitions={'succeeded':'succeeded', 
                                 'failed':'failed'})           
             
      

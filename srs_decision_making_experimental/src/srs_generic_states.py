@@ -289,7 +289,7 @@ class semantic_dm(smach.State):
         #call srs ros knowledge service for solution
         
         #dummy code for testing
-        userdata.semi_autonomous_mode=False
+        userdata.semi_autonomous_mode=True
 
         ##############################################
         # get Next Action From Knowledge_ros_service

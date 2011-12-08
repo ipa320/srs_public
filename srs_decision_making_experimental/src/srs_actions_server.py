@@ -192,7 +192,7 @@ class SRS_DM_ACTION(object):
         #user intervention is possible or not. 
         #False, DM has to make all the decision by it self
         #True, suitable client has been connected, can be relied on
-        self.temp.semi_autonomous_mode=False
+        self.temp.semi_autonomous_mode=True
                 
     	# open the container
         with self.temp: 
@@ -225,7 +225,7 @@ class SRS_DM_ACTION(object):
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_pose':'target_object_pose'})
        
-            smach.StateMachine.add('SM_SIMPLE_GRASP', sm_pick_object_asisted(),
+            smach.StateMachine.add('SM_SIMPLE_GRASP', sm_get_object_on_tray(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',

@@ -819,8 +819,9 @@ class deliver_object(smach.State):
         try:
             rospy.wait_for_service('/tray/check_occupied',10)
         except rospy.ROSException, e:
-            print "Service not available: %s"%e
-	    inp = raw_input('If the task is completed, Please enter Yes/No - Y/N')
+            rospy.loginfo("\n\nService not available: %s", e)
+	    rospy.loginfo('\n\nIf the task is completed, Please enter Yes/No - Y/N')
+	    inp = raw_input()
 	    if inp == 'y' or inp == 'Y':
 	        
 		sss.move("tray","down",False)
@@ -842,7 +843,7 @@ class deliver_object(smach.State):
                 if(res.occupied.data == False):
                     break
             except rospy.ServiceException, e:
-                print "Service call failed: %s"%e
+                print "Service call failed: %s", e
                 return 'failed'
             sss.sleep(2)
         

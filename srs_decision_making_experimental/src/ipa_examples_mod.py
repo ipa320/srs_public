@@ -509,7 +509,7 @@ class open_door(smach.State):
         #door_hinge_pose_bl.pose.orientation.y = quat[1]
         #door_hinge_pose_bl.pose.orientation.z = quat[2]
         #door_hinge_pose_bl.pose.orientation.w = quat[3]
-
+	
         # pre door handle position
         pre_door_handle_pose_bl = copy.deepcopy(door_handle_pose_bl)
         pre_door_handle_pose_bl.pose.position.x = pre_door_handle_pose_bl.pose.position.x + 0.05 # x offset for pre door position
@@ -810,18 +810,24 @@ class move_head(smach.State):
 class deliver_object(smach.State):
     def __init__(self):
         smach.State.__init__(self, 
-            outcomes=['succeeded', 'retry', 'failed'],
-            input_keys=['object_name'])
+            outcomes=['succeeded', 'retry', 'failed'])
 
     def execute(self, userdata):
-        sss.say(["Here is your " + userdata.object_name + ". Please help yourself."],False)
+        #sss.say(["Here is your " + userdata.object_name + ". Please help yourself."],False)
         sss.move("torso","nod",False)
         
         try:
             rospy.wait_for_service('/tray/check_occupied',10)
         except rospy.ROSException, e:
             print "Service not available: %s"%e
-            return 'failed'
+	    inp = raw_input('If the task is completed, Please enter Yes/No - Y/N')
+	    if inp == 'y' or inp == 'Y':
+	        
+		sss.move("tray","down",False)
+                sss.move("torso","nod",False)
+		return  'succeeded'
+	    else:
+		return 'failed'
 
         time = rospy.Time.now().secs
         loop_rate = rospy.Rate(5) #hz
@@ -838,7 +844,7 @@ class deliver_object(smach.State):
             except rospy.ServiceException, e:
                 print "Service call failed: %s"%e
                 return 'failed'
-            loop_rate.sleep()
+            sss.sleep(2)
         
         sss.move("tray","down",False)
         sss.move("torso","nod",False)

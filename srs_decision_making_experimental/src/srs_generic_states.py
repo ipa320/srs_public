@@ -377,14 +377,15 @@ class semantic_dm(smach.State):
             print resp1.nextAction.ma
             # else should be 0: then continue executing the following
             if resp1.nextAction.actionFlags == (0, 1, 1):
-                print '========'
-                nextStep = 'navigation'
+                if resp1.nextAction.ma.ifWaitObjectTaken:
+			nextStep = 'deliver_object'
+		else:
+	                nextStep = 'navigation'
                 #userdata.target_base_pose = resp1.nextAction.ma.targetPose2D
                 userdata.target_base_pose = [resp1.nextAction.ma.targetPose2D.x, resp1.nextAction.ma.targetPose2D.y, resp1.nextAction.ma.targetPose2D.theta]
 
             elif resp1.nextAction.actionFlags == (0, 0, 1):
-                print '---------------'
-
+                
                 nextStep = 'detection'
                 userdata.target_base_pose = [resp1.nextAction.ma.targetPose2D.x, resp1.nextAction.ma.targetPose2D.y, resp1.nextAction.ma.targetPose2D.theta]
 

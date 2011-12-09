@@ -82,6 +82,7 @@ class approach_pose_without_retry(smach.State):
         self.pose = pose
         self.counter =0
         self.mode = "linear"
+        #self.mode = "omni"
 
     def execute(self, userdata):
         """
@@ -820,7 +821,7 @@ class deliver_object(smach.State):
             rospy.wait_for_service('/tray/check_occupied',10)
         except rospy.ROSException, e:
             rospy.loginfo("\n\nService not available: %s", e)
-	    rospy.loginfo('\n\nIf the task is completed, Please enter Yes/No - Y/N')
+	    rospy.loginfo('\n\nIf the tray has been emptied? Please enter Yes/No - Y/N')
 	    inp = raw_input()
 	    if inp == 'y' or inp == 'Y':
 	        

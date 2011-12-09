@@ -13,7 +13,9 @@
   <depend stack="bullet" /> <!-- bullet -->
   <depend stack="client_rosjava_jni" /> <!-- rosjava_jni -->
   <depend stack="cob_command_tools" /> <!-- cob_script_server -->
+  <depend stack="cob_driver" /> <!-- cob_tray_sensors -->
   <depend stack="cob_environment_perception" /> <!-- cob_3d_mapping_msgs, cob_3d_mapping_pipeline_fake -->
+  <depend stack="cob_manipulation" /> <!-- cob_mmcontroller, cob_manipulator -->
   <depend stack="cob_navigation" /> <!-- cob_linear_nav, cob_2dnav -->
   <depend stack="cob_object_perception" /> <!-- cob_object_detection_msgs, cob_object_detection_fake -->
   <depend stack="cob_robots" /> <!-- cob_bringup, cob_default_robot_config -->

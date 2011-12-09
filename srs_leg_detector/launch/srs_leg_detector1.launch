@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="srs_leg_detector" type="srs_leg_detector" name="srs_leg_detector" args="scan:=base_scan $(find srs_leg_detector)/config/conf_IPA.yaml" output="screen"/>
+</launch>
+

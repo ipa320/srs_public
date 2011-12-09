@@ -1,0 +1,17 @@
+<package>
+  <description brief="likelihood_calculation">
+
+     likelihood_calculation
+
+  </description>
+  <author>Administrator</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/likelihood_calculation</url>
+  <depend package="std_msgs"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+
+</package>
+
+

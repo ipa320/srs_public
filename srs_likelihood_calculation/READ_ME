@@ -1,0 +1,27 @@
+This package provide likelihood calculation service to DEM from learning
+
+HOW_TO:
+
+step1: roscd srs_likelihood_calculation
+
+step2: rosmake
+
+step3: to make sure there are historical data avaliable,run the mimic historical data generator,which will randomly generate historical data
+
+ rosrun srs_likelihood_calculation generate_get_milk_historical_data.py  
+
+step4: run the likelihood calculation service(in learning component), which can receive command and corresponding candidates from DEM and return likelihood
+	for the corresponding candidates based on the historical data, this srevice also receives the historical data from DEM and record them as a txt file
+	(now, if you want, you can shut down the generate_get_milk_historical_data node in step3 )
+
+   rosrun srs_likelihood_calculation server_likelihood.py
+
+step5: run the client, which is the interface for DEM to send request to learning, 
+	(in this stage, this service will prompt DEM to input command and candidates)
+    rosrun srs_likelihood_calculation client_likelihood.py
+
+ this client will receive the  likelihood feedback to DEM from learning
+
+step6: run step5 again to make another request, run step3 again to randomly generate more historical data
+
+for more details, please refer D3.1 Learning for decision-making on prioritising

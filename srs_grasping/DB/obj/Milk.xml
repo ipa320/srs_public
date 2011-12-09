@@ -1,7 +1,0 @@
-<KinBody name="Milk">
-  <Body type="dynamic">
-    <Geom type="trimesh">
-      <Data>Model_SRS_Milk.txt.iv</Data>
-    </Geom>      
-  </Body>
-</KinBody>

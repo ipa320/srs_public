@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import roslib;
-roslib.load_manifest('knowledge_ros_service')
+roslib.load_manifest('srs_knowledge')
 import sys
 import rospy
 
-from knowledge_ros_service.srv import *
+from srs_knowledge.srv import *
 
 def testNextActionService(result):
     print 'Plan next Action service'
@@ -41,6 +41,27 @@ def requestNewTask():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
+def requestNewTaskMove():
+    print 'Request new task'
+    rospy.wait_for_service('task_request')
+    try:
+        requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
+        res = requestNewTask('move', 'kitchen', None, None, None, None)
+        print 'send task request'
+        return res
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
+def requestNewTaskMove():
+    print 'Request new task'
+    rospy.wait_for_service('task_request')
+    try:
+        requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
+        res = requestNewTask('move', '[4 5 6]', None, None, None, None)
+        print 'send task request'
+        return res
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
 
 def usage():
     return "%s [x y]"%sys.argv[0]
@@ -48,16 +69,17 @@ def usage():
 if __name__ == "__main__":
 
     # request a new task
-    print requestNewTask()
-
+    #print requestNewTask()
+    print requestNewTaskMove()
     # get next action [0 0 0 ] is not used here as the first step. see explanation in the next call
     print '1-- ', testNextActionService([0,0,0])
 
     #[0, 0, 0] means: success for move, perception, and grasp actions in the last step
+
     print '2-- ', testNextActionService([0,0,0])
-    print '3-- ', testNextActionService([0,1,0])
-    print '4-- ', testNextActionService([0,0,0])
-    print '5-- ', testNextActionService([0,0,0])
-    print '6-- ', testNextActionService([0,0,0])
+    #print '3-- ', testNextActionService([0,1,0])
+    #print '4-- ', testNextActionService([0,0,0])
+    #print '5-- ', testNextActionService([0,0,0])
+    #print '6-- ', testNextActionService([0,0,0])
     # to terminate current task, 
-    print terminateCurrentTask();
+    #print terminateCurrentTask();

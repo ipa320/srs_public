@@ -5,28 +5,26 @@
 	<include file="$(find cob_bringup_sim)/launch/robot.launch"/>
 
 	<!-- start navigation omini-->
-	<include file="$(find cob_2dnav)/ros/launch/2dnav.launch"/>
+	<include file="$(find cob_2dnav)/ros/launch/2dnav_dwa.launch"/>
 
 	<!-- start navigation linear-->
 	<include file="$(find cob_linear_nav)/ros/launch/linear_nav.launch"/>
 
 	<!-- start object detection -->
 	<include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
-
-	<!-- start script server, not sure this is needed -->
-	<!--include file="$(find cob_script_server)/launch/script_server.launch"/-->
-
+	
+	<!-- start manipulation -->
+	<include file="$(find cob_manipulator)/ros/launch/kdl_solver.launch"/>  
+	
 	<!-- upload parameters -->
 	<include file="$(find cob_default_robot_config)/upload_param.launch"/>	
 	<include file="$(find cob_default_env_config)/upload_param.launch"/>	
+	
+	<!-- knowledge server -->
+    <include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+	
 
 	<!-- table -->
-	<include file="$(find srs_scenarios)/ros/launch/table_ikea.launch"/>
-
-	<!-- decision making server-->
-	<include file="$(find srs_decision_making)/ros/launch/srs_decision_making.launch"/>
-
-	<!-- knowledge server -->
-	<include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+	<include file="$(find srs_decision_making)/ros/launch/table_ikea.launch"/>
 
 </launch>

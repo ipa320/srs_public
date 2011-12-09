@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import roslib; roslib.load_manifest('srs_decision_making')
+import roslib; roslib.load_manifest('srs_decision_making_experimental')
 import rospy
 
 # Brings in the SimpleActionClient
@@ -22,7 +22,7 @@ def DM_client():
     # Creates a goal to send to the action server.
     _goal=xmsg.ExecutionGoal()
     _goal.action="move"
-    _goal.parameter="kitchen_backwards"
+    _goal.parameter="order"
     _goal.priority=1
     # Sends the goal to the action server.
     client.send_goal(_goal)

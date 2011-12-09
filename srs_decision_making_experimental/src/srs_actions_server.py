@@ -9,7 +9,7 @@
 #################################################################
 # ROS imports
 
-import roslib; roslib.load_manifest('srs_decision_making')
+import roslib; roslib.load_manifest('srs_decision_making_experimental')
 
 #roslib.load_manifest('knowledge_ros_service')
 
@@ -148,33 +148,34 @@ class SRS_DM_ACTION(object):
         self._parameter = ""
         self.customised_preempt_request = False
         self._as.start()
+        self.robot_initialised= False
                 
         #self._as.register_goal_callback(self.goal_cb)
         self._as.register_preempt_callback(self.priority_cb)
         
-
-        #initialisation of the robot
-        # move to initial positions
-        global sss
-        handle_torso = sss.move("torso", "home", False)
-        handle_tray = sss.move("tray", "down", False)
-        handle_arm = sss.move("arm", "folded", False)
-        handle_sdh = sss.move("sdh", "cylclosed", False)
-        handle_head = sss.move("head", "front", False)
-
-    
-        # wait for initial movements to finish
-        handle_torso.wait()
-        handle_tray.wait()
-        handle_arm.wait()
-        handle_sdh.wait()
-        handle_head.wait()
-        
-            
-        sss.wait_for_input(3)
-        
-        
         rospy.loginfo("Waiting for wake up the server ...")
+        
+    def robot_initialisation_process(self):
+        if not self.robot_initialised :
+            #initialisation of the robot
+            # move to initial positions
+            global sss
+            handle_torso = sss.move("torso", "home", False)
+            handle_tray = sss.move("tray", "down", False)
+            handle_arm = sss.move("arm", "folded", False)
+            handle_sdh = sss.move("sdh", "cylclosed", False)
+            handle_head = sss.move("head", "front", False)
+    
+        
+            # wait for initial movements to finish
+            handle_torso.wait()
+            handle_tray.wait()
+            handle_arm.wait()
+            handle_sdh.wait()
+            handle_head.wait()
+            self.robot_initialised = True
+            
+        
 
         
     def init_sm(self):
@@ -192,7 +193,7 @@ class SRS_DM_ACTION(object):
         #user intervention is possible or not. 
         #False, DM has to make all the decision by it self
         #True, suitable client has been connected, can be relied on
-        self.temp.semi_autonomous_mode=False
+        self.temp.semi_autonomous_mode=True
                 
     	# open the container
         with self.temp: 
@@ -207,7 +208,7 @@ class SRS_DM_ACTION(object):
                                                 'navigation':'SM_NAVIGATION',
                                                 'detection':'SM_DETECTION',
                                                 'simple_grasp':'SM_SIMPLE_GRASP',
-                                                'open_door':'SM_OPEN_DOOR',
+                                                'deliver_object':'SM_DELIVER_OBJECT',
                                                 'env_object_update':'SM_ENV_OBJECT_UPDATE'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
@@ -225,21 +226,27 @@ class SRS_DM_ACTION(object):
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_pose':'target_object_pose'})
        
-            smach.StateMachine.add('SM_SIMPLE_GRASP', sm_pick_object_asisted(),
+            smach.StateMachine.add('SM_SIMPLE_GRASP', sm_get_object_on_tray(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_pose':'target_object_pose'})
-                                
+            """                    
             smach.StateMachine.add('SM_OPEN_DOOR', sm_open_door(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'})
-            
+            """
             smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', sm_enviroment_object_update(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'target_base_pose':'target_base_pose',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_pose':'target_object_pose'})        
+            
+            smach.StateMachine.add('SM_DELIVER_OBJECT', sm_deliver_object(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   remapping={'target_base_pose':'target_base_pose',
+                                               'semi_autonomous_mode':'semi_autonomous_mode'})     
+                        
 	    """	
             smach.StateMachine.add('SM_DETECTION_SIMPLE', detect_object(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'retry':'SEMANTIC_DM', 'failed':'task_aborted','no_more_retries':'SEMANTIC_DM'},
@@ -296,6 +303,9 @@ class SRS_DM_ACTION(object):
         if current_task_info.task_name=="":
 	           current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
+        
+        if not self.robot_initialised:
+            self.robot_initialisation_process()
         
 
 

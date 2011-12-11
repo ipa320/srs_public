@@ -814,6 +814,7 @@ class deliver_object(smach.State):
             outcomes=['succeeded', 'retry', 'failed'])
 
     def execute(self, userdata):
+        """
         #sss.say(["Here is your " + userdata.object_name + ". Please help yourself."],False)
         sss.move("torso","nod",False)
         
@@ -850,7 +851,7 @@ class deliver_object(smach.State):
         
         sss.move("tray","down",False)
         sss.move("torso","nod",False)
-        
+        """
         return 'succeeded'
 
 

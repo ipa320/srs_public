@@ -73,7 +73,7 @@ public class Task
 	    this.targetContent = "[0 0 0]";
 	}
 	else if (this.targetContent.equals("order")) {
-	    this.targetContent = "[1 -0.5 -0.7]";
+	    this.targetContent = "[1.47 -0.7 0.75]";
 	}
 	else if (this.targetContent.equals("kitchen")) {
 	    this.targetContent = "[-2.04 0.3 0]";

@@ -49,35 +49,7 @@ def DM_client():
     # creates action sequence for the action server
     
     # Creates a goal to send to the action server.
-    _goal=xmsg.ExecutionGoal()
-    _goal.action="move"
-    _goal.parameter="[0.5 -1.6 1.57]"
-    _goal.priority=0
-    client.send_goal(_goal)  
-    client.wait_for_result()
-    print("ready to start")
-    sss.wait_for_input()
-
  
-    _goal.action="get"# msg imports
-    _goal.parameter="milk"
-    _goal.priority=0
-    client.send_goal(_goal)  
-    client.wait_for_result()
-    print("milk ready")
-    sss.wait_for_input()
-
-
-    _goal.action="move"
-    _goal.parameter="[1.47 -0.7 0.75]"
-    _goal.priority=0
-    client.send_goal(_goal)  
-    client.wait_for_result()
-    print("milk delivered")
-    sss.say(["Here is your milk, Please help yourself."],False)
-    sss.wait_for_input()
-    
-    
     start_pose = Pose()
     
     start_pose.position.x = -3.0;
@@ -102,27 +74,29 @@ def DM_client():
     modelstate.pose = start_pose;
     modelstate.twist = start_twist;
         
-        
-    move_milk = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
+    try:    
+        move_milk = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
+        move_milk(modelstate)  
+    except rospy.ServiceException, e:
+        error_message = "%s"%e
+        rospy.logerr("have you put the milk into the simulation?")
         
         #setmodelstate = gazebo
         
         #setmodelstate.request.model_state = modelstate
         
-    move_milk(modelstate)    
+      
        
-    print("confirm milk has been taken")
-    sss.wait_for_input()
-    client.wait_for_result()
     handle_tray = sss.move("tray", "down", False)  
     handle_tray.wait()
     
+    _goal=xmsg.ExecutionGoal()
     _goal.action="move"
-    _goal.parameter="[1 -1.6 1.57]"
+    _goal.parameter="[0.5 -1.6 1.57]"
     _goal.priority=0
     client.send_goal(_goal)  
-    #client.wait_for_result()
-    print("back to charge")
+    client.wait_for_result()
+    sss.say(["back to charging station, I am ready for new tasks"],False)
     
     return client.get_result()
 

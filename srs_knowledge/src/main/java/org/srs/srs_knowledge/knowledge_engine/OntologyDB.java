@@ -13,7 +13,7 @@ import com.hp.hpl.jena.query.QueryExecution;
 
 import java.io.*;
 
-class OntologyDB
+public class OntologyDB
 {
     public OntologyDB(String filename)
     {

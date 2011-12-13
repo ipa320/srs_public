@@ -27,8 +27,15 @@ import org.srs.srs_knowledge.task.*;
 
 import java.util.Properties;
 
+import java.io.IOException;
+import java.io.*;
+import java.util.StringTokenizer;
+//import org.apache.commons.logging.Log;
+import java.util.ArrayList;
+
 class KnowledgeEngine
 {
+    /*
     public KnowledgeEngine(String nodeName, String ontologyFile)
     {
 	this.defaultContextPath();
@@ -36,12 +43,16 @@ class KnowledgeEngine
 	this.nodeName = nodeName;
 	//this.initROS();
     }
-
+    */
+    /*
     public KnowledgeEngine(Properties conf)
     {
 	this.defaultContextPath();
 	String ontoDBFile = conf.getProperty("ontologyFile", "house.owl");
-	ontoDB = new OntologyDB(ontoDBFile);
+
+	ArrayList<String> nameList = parseOntologyFileNames(ontoDBFile);
+
+	ontoDB = new OntologyDB(nameList);
 
 	this.nodeName = conf.getProperty("nodename", "knowledge_srs_node");
 	this.config = conf;
@@ -53,24 +64,7 @@ class KnowledgeEngine
 	
 	//this.initROS();
     }
-    
-    private void initProperties(String cfgFile) throws Exception
-    {
-	InputStream is = new FileInputStream(this.confPath + cfgFile);
-	this.config = new Properties();
-	this.config.load(is);
-
-	String ontoDBFile = config.getProperty("ontologyFile", "house.owl");
-	ontoDB = new OntologyDB(this.confPath + ontoDBFile);
-
-	this.nodeName = config.getProperty("nodename", "knowledge_srs_node");
-
-	taskRequestService = config.getProperty("taskRequestService", "task_request");
-	planNextActionService = config.getProperty("planNextActionService", "plan_next_action");
-	generateSequenceService = config.getProperty("generateSequenceService", "generate_sequence");
-	querySparQLService = config.getProperty("querySparQLService", "query_sparql");
-    }
-
+    */
     public KnowledgeEngine()
     {
 	this.defaultContextPath();
@@ -99,10 +93,6 @@ class KnowledgeEngine
 	ros = Ros.getInstance();
 	ros.init(nodeName);
 	ros.logInfo("INFO: Start RosJava_JNI service");
-	//ros.logDebug("DEBUG");
-	//ros.logWarn("WARN");
-	//ros.logError("ERROR");
-	//ros.logFatal("FATAL");
 	
 	n = ros.createNodeHandle();
 
@@ -119,6 +109,43 @@ class KnowledgeEngine
 
 	ros.spin();
 	return true;
+    }
+
+    private ArrayList<String> parseOntologyFileNames(String names)
+    {
+	ArrayList<String> nameList = new ArrayList<String>();
+
+	StringTokenizer st = new StringTokenizer(names, " ");
+	
+	while(st.hasMoreTokens()) {
+	    nameList.add(this.confPath + st.nextToken());
+	}
+	for(String v: nameList) {
+	    System.out.println(v);
+	}
+	return nameList;
+    }
+    
+    private void initProperties(String cfgFile) throws Exception
+    {
+	InputStream is = new FileInputStream(this.confPath + cfgFile);
+	this.config = new Properties();
+	this.config.load(is);
+
+	String ontoDBFile = config.getProperty("ontologyFile", "house.owl");
+
+	ArrayList<String> nameList = parseOntologyFileNames(ontoDBFile);
+
+	ontoDB = new OntologyDB(nameList);
+
+	//ontoDB = new OntologyDB(this.confPath + ontoDBFile);
+
+	this.nodeName = config.getProperty("nodename", "knowledge_srs_node");
+
+	taskRequestService = config.getProperty("taskRequestService", "task_request");
+	planNextActionService = config.getProperty("planNextActionService", "plan_next_action");
+	generateSequenceService = config.getProperty("generateSequenceService", "generate_sequence");
+	querySparQLService = config.getProperty("querySparQLService", "query_sparql");
     }
 
     private GenerateSequence.Response handleGenerateSequence(GenerateSequence.Request request)
@@ -254,7 +281,10 @@ class KnowledgeEngine
 	System.out.println("Received request for new task");
 	
 	if(request.task.equals("move")) {
-	    currentTask = new Task(request.task, request.content, null);
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+	    currentTask = new Task(request.task, request.content, null, ontoDB);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
 	else if(request.task.equals("get") || request.task.equals("search")){

@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import org.srs.srs_knowledge.knowledge_engine.*;
+import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QuerySolution;
 
 public class Task
 {
@@ -23,9 +28,29 @@ public class Task
 
     public Task(String taskType, String targetContent, Pose2D userPose)
     {
+	ontoDB = new OntologyDB();
+	this.init(taskType, targetContent, userPose);
+    }
+
+    public Task(String taskType, String targetContent, Pose2D userPose, OntologyDB onto)
+    {
+	if(ontoDB != null) {
+	    System.out.println("SET ONTOLOGY DB");
+	}
+	else {
+	    System.out.println("NULL ---- SET ONTOLOGY DB");
+	    this.ontoDB = new OntologyDB();
+	}
+	this.ontoDB = onto;
+	this.init(taskType, targetContent, userPose);
+    }
+
+    public void init(String taskType, String targetContent, Pose2D userPose) 
+    {
 	acts = new ArrayList<ActionTuple>();
 	currentAction = null;
 	if(taskType.toLowerCase().equals("get")) {
+	    setTaskTarget(targetContent);
 	    setTaskType(TaskType.GET_OBJECT);
 	}
 	else if(taskType.toLowerCase().equals("move")) {
@@ -33,7 +58,7 @@ public class Task
 	    
 	    setTaskTarget(targetContent);
 	    System.out.println("TASK.JAVA: Created CurrentTask " + "move " + targetContent);
-	    createSimpleMoveTask();
+	    createSimpleMoveTaskNew();
 	}
 	else if(taskType.toLowerCase().equals("search")) {
 	    setTaskType(TaskType.SEARCH_OBJECT);
@@ -41,33 +66,21 @@ public class Task
 	else if(taskType.toLowerCase().equals("getn")) {
 	    // new implementation of get action, specifically for milkbox in this case
 	    setTaskType(TaskType.GET_OBJECT);
+	    setTaskTarget(targetContent);
 	    System.out.println("TASK.JAVA: Created CurrentTask " + " get " + targetContent);
 	    this.createGetObjectTask();
-	}
-	else if(taskType.toLowerCase().equals("moven")) {
-	    setTaskType(TaskType.MOVETO_LOCATION);
-	    
-	    setTaskTarget(targetContent);
-	    System.out.println("TASK.JAVA: Created CurrentTask " + "move " + targetContent);
-	    createSimpleMoveTaskNew();
 	}
 	else {
 	    setTaskType(TaskType.UNSPECIFIED);
 	}
     }
 
-    public Task(String taskType, String targetContent, Pose2D userPose, OntologyDB ontoDB)
-    {
-	this(taskType, targetContent, userPose);
-	this.ontoDB = ontoDB;
-    }
-
     public boolean createGetObjectTask()
-    {
-	
+    {	
 	return true;
     }
-
+    
+    /*
     public boolean createSimpleMoveTask()
     {
 	//currentTask = new Task("move", "kitchen", null);
@@ -84,17 +97,6 @@ public class Task
 	double y = 1;
 	double theta = 0;
 
-	/*TODO: Temporary: hard coded coordinate for predefined locations*/
-
-	/*
-	// cob_environments/cob_default_env_config/ipa-kitchen/navigation_goals.yaml 
-	  home: [0, 0, 0]
-	  order: [1, -0.5, -0.7]
-	  kitchen: [-2.04, 0.3, 0]
-	  new_kitchen: [-2.14, 0.0, 0]
-	  kitchen_backwards: [-2.04, 0.3, 3.14]
-	 */
-	
 	if (this.targetContent.equals("home")) {
 	    this.targetContent = "[0 0 0]";
 	}
@@ -222,6 +224,7 @@ public class Task
 	System.out.println("number of actions: " + acts.size());
 	return true;
     }
+    */
 
     public boolean createSimpleMoveTaskNew()
     {
@@ -238,16 +241,6 @@ public class Task
 	double y = 1;
 	double theta = 0;
 
-	/*
-	// cob_environments/cob_default_env_config/ipa-kitchen/navigation_goals.yaml 
-	  home: [0, 0, 0]
-	  order: [1, -0.5, -0.7]
-	  kitchen: [-2.04, 0.3, 0]
-	  new_kitchen: [-2.14, 0.0, 0]
-	  kitchen_backwards: [-2.04, 0.3, 3.14]
-	 */
-	
-
 	if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
 	    StringTokenizer st = new StringTokenizer(targetContent, " [],");
 	    if(st.countTokens() == 3) {
@@ -257,21 +250,66 @@ public class Task
 		    theta = Double.parseDouble(st.nextToken());
 		    System.out.println(x + "  " + y + " " + theta);
 		}
-		catch(Exception e){
+		catch(Exception e) {
 		    System.out.println(e.getMessage());
 		    return false;
 		}
 	    }
 	}
 	else {
+	    System.out.println("======MOVE COMMAND FORMAT=======");
 	    // TODO Ontology queries
-	    String prefix = "PREFIX srs:      <http://www.srs-project.eu/ontologies/srs.owl#>";
+	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n" +  
+		"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+		"PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n";
 	    String queryString = "SELECT ?x ?y ?theta WHERE { " 
-		+ targetContent + " srs:xCoordinate ?x . " 
-		+ targetContent + " srs:yCoordinate ?y . " 
-		+ targetContent + " srs:orientationTheta ?theta .}";
-	    String xres = ontoDB.executeQuery(queryString);
+		+ "ipa-kitchen-map:" + targetContent + " srs:xCoordinate ?x . " 
+		+ "ipa-kitchen-map:" + targetContent + " srs:yCoordinate ?y . " 
+		+ "ipa-kitchen-map:" + targetContent + " srs:orientationTheta ?theta .}";
+	    System.out.println(prefix + queryString + "\n");
+	    
+	    if(this.ontoDB == null) {
+		System.out.println("Ontology Database is NULL");
+		return false;
+	    }
 
+	    try {
+		ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix + queryString);
+		//ArrayList<String> reslist = (ArrayList)(rset.getResultVars());
+		//for(String v:reslist) {
+		//    System.out.println(v);
+		//}
+		try{
+		    if(rset.size() == 0) {
+			System.out.println("ERROR: No move target found from database");
+			return false;
+		    }
+		    else if(rset.size() == 1) {
+			System.out.println("INFO: OK info retrieved from DB... ");
+			QuerySolution qs = rset.get(0);
+			x = qs.getLiteral("x").getFloat();
+			y = qs.getLiteral("y").getFloat();
+			theta = qs.getLiteral("theta").getFloat();
+			System.out.println("x is " + x + ". y is  " + y + ". theta is " + theta);
+		    }
+		    else {
+			System.out.println("WARNING: Multiple options... ");
+			QuerySolution qs = rset.get(0);
+			x = qs.getLiteral("x").getFloat();
+			y = qs.getLiteral("y").getFloat();
+			theta = qs.getLiteral("theta").getFloat();
+			System.out.println("x is " + x + ". y is  " + y + ". theta is " + theta);
+		    }
+		}
+		catch(Exception e) {
+		    System.out.println(e.getMessage());
+		    return false;
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println("Exception -->  " +  e.getMessage());
+		return false;
+	    }
 	    //   return false;
 	}
 	
@@ -345,7 +383,7 @@ public class Task
 	    ca.actionFlags = parseActionFlags("0 1 1");
 	}
 	catch(Exception e) {
-	    System.out.println(e.getMessage());
+	    System.out.println("Exception -->  " + e.getMessage());
 	}
 
 	act.setActionName("finish_fail");

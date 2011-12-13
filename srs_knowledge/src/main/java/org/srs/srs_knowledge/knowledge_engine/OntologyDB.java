@@ -9,16 +9,57 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.QueryExecution;
-
+import com.hp.hpl.jena.sparql.engine.ResultSetStream;
 import java.io.*;
+import java.util.ArrayList;
 
 public class OntologyDB
 {
+    public OntologyDB()
+    {
+	// create an empty model
+	this.model = ModelFactory.createDefaultModel();
+    }
+
     public OntologyDB(String filename)
     {
-	this.modelFileName = filename;
-	this.reloadOWLFile(filename);
+	try {
+	    //String modelFileName = filename;
+	    this.reloadOWLFile(filename);
+	}
+	catch(IllegalArgumentException e) {
+	    System.out.println("Caught Exception : " + e.getMessage());
+	}
+    }
+
+    public OntologyDB(ArrayList<String> filenames)
+    {
+	// create an empty model
+	this.model = ModelFactory.createDefaultModel();
+	try {
+	    for(String filename : filenames) {
+		//String modelFileName = filename;
+		this.importOntology(filename);
+	    }
+	}
+	catch(IllegalArgumentException e) {
+	    System.out.println("Caught Exception : " + e.getMessage());
+	}
+    }
+
+    public void importOntology(String filename) 
+    {
+	System.out.println("Load OWL File: " + filename);
+	// use the FileManager to find the input file
+	InputStream in = FileManager.get().open(filename);
+	if (in == null) {
+	    throw new IllegalArgumentException("File: " + filename + " not found");
+	}
+	
+	// read the RDF/XML file
+	model.read(in, null);
     }
 
     public String executeQuery(String queryString)
@@ -43,6 +84,7 @@ public class OntologyDB
 	String r = "";
 	try{
 	    r = new String(ostream.toByteArray(), "UTF-8");
+	    System.out.println(r);
 	}
 	catch(Exception e){
 	    System.out.println(e.getMessage());
@@ -50,23 +92,65 @@ public class OntologyDB
 	qe.close();
 	return r;
     }
-
-    public Boolean reloadOWLFile(String file)
+    
+    public ArrayList<QuerySolution> executeQueryRaw(String queryString)
     {
-	System.out.println("Load OWL File: " + file);
+	/*
+	  String queryString = "PREFIX house: <http://www.semanticweb.org/ontologies/house.owl#> " + 
+	  "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " + 
+	  "SELECT ?room " + 
+	  "WHERE { " +
+	  "?room rdf:type house:Table . " +  
+	  "}";
+	*/
+	System.out.println(queryString);
+	Query query = QueryFactory.create(queryString);
+	
+	QueryExecution qe = QueryExecutionFactory.create(query, model);
+	ResultSet results = qe.execSelect();
+	/*
+	ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+	ResultSetFormatter.out(ostream, results, query);
+	//ResultSetFormatter.out(System.out, results, query);
+	String r = "";
+	try{
+	    r = new String(ostream.toByteArray(), "UTF-8");
+	    System.out.println(r);
+	}
+	catch(Exception e){
+	    System.out.println(e.getMessage());
+	}
+	*/
+	ArrayList<QuerySolution> resList = new ArrayList<QuerySolution>();
+	if(results.hasNext()) {
+	    //System.out.println(" <><><><><><><><><><><><><> ");
+	    QuerySolution qs = results.next();
+	    resList.add(qs);
+	    //double x = qs.getLiteral("x").getFloat();
+	    //Literal y = qs.getLiteral("y");
+	    //Literal theta = qs.getLiteral("theta");
+	    //System.out.println(" <><><><><><><><><><><><><> " + qs.toString() + "    " + x);
+	    //System.out.println("x is " + x + ". y is  " + y + ". theta is " + theta);
+	}
+
+	qe.close();
+	return resList; //results;
+    }
+
+    public void reloadOWLFile(String file)
+    {
 	// create an empty model
 	this.model = ModelFactory.createDefaultModel();
-	
+
+	System.out.println("Load OWL File: " + file);
 	// use the FileManager to find the input file
-	InputStream in = FileManager.get().open( file );
+	InputStream in = FileManager.get().open(file);
 	if (in == null) {
 	    throw new IllegalArgumentException("File: " + file + " not found");
 	}
 	
 	// read the RDF/XML file
 	model.read(in, null);
-	
-	return true;
     }
     
     public void printModel()
@@ -96,6 +180,6 @@ public class OntologyDB
 	*/
     }
 
-    private String modelFileName;    
+    //private String modelFileName;    
     private Model model;
 }

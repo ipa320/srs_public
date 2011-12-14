@@ -65,7 +65,13 @@ class SRS_StateMachine(smach.StateMachine):
         self.register_start_cb(self.start_cb, [])
 
     def start_cb(self, userdata, intial_state):
-        pass
+        global current_task_info
+        _feedback=xmsg.ExecutionFeedback()
+        _feedback.current_state = userdata.current_sub_task_name + ": started"
+        _feedback.solution_required = False
+        _feedback.exceptional_case_id = 0
+        current_task_info._as.publish_feedback(_feedback)
+        rospy.sleep(1)
     
     def transition_cb (self, userdata, active_states):
         pass
@@ -77,7 +83,12 @@ class SRS_StateMachine(smach.StateMachine):
         last_step_info.step_name = userdata.current_sub_task_name
         last_step_info.outcome = outcome
         current_task_info.last_step_info.append(last_step_info)
-
+        _feedback=xmsg.ExecutionFeedback()
+        _feedback.current_state = userdata.current_sub_task_name + ":" + outcome
+        _feedback.solution_required = False
+        _feedback.exceptional_case_id = 0
+        current_task_info._as.publish_feedback(_feedback)
+        rospy.sleep(1)
         
 #assisted navigation, operator or semantic KB could specify intermediate position for final goal
 #alternatively, use the approach_pose directly, where robot will re-retry by itself

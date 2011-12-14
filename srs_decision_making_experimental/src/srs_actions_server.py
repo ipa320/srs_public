@@ -306,6 +306,8 @@ class SRS_DM_ACTION(object):
         
         if not self.robot_initialised:
             self.robot_initialisation_process()
+            
+        current_task_info._as = copy.copy(self._as)
         
 
 

@@ -103,6 +103,9 @@ class goal_structure():
         #customised pre-empty signal received or not
         self.preemptied = False
         
+        #reference to the action server
+        self._as=""
+        
         ## backward compatible need to be revised after the integration meeting         
         #feedback publisher, intervention required
         self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)
@@ -136,17 +139,24 @@ class intervention_base_pose(smach.State):
         
         if userdata.semi_autonomous_mode == True:
             # user intervention is possible
-            while not rospy.is_shutdown():
+            while not (rospy.is_shutdown() or self.preempt_requested()) :
+                                
+                global current_task_info
+                _feedback=xmsg.ExecutionFeedback()
+                _feedback.current_state = "need user intervention for base pose"
+                _feedback.solution_required = True
+                _feedback.exceptional_case_id = 1
+                current_task_info._as.publish_feedback(_feedback)
+                rospy.sleep(1)
                 
-                self.pub_fb.publish(True)
-                rospy.sleep(1.0)
-                self.count += 1
-                self.pub_fb2.publish("need user intervention for base pose")    
+                self.count += 1 
                 rospy.loginfo("State : need user intervention for base pose")
-                current_state= 'need user intervention for base pose'
-                exceptional_case_id=1 # need user intervention for base pose
                 rospy.wait_for_service('message_errors')                       
                 s = xsrv.errorsResponse()
+                
+                current_state= 'need user intervention for base pose'
+                exceptional_case_id=1 # need user intervention for base pose
+                
                 try:
                     message_errors = rospy.ServiceProxy('message_errors',xsrv.errors)               
                     s = message_errors(current_state, exceptional_case_id)
@@ -163,6 +173,7 @@ class intervention_base_pose(smach.State):
                     userdata.intermediate_pose = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
                     rospy.loginfo("New intermediate target is :%s", s.solution.__str__())    
                     return 'retry'
+            return 'failed'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB

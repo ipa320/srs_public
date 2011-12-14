@@ -7,9 +7,12 @@ rosbuild_genmsg()
 rosbuild_gensrv()
 
 # find needed paths
-rosbuild_find_ros_package(srs_jena)
+# rosbuild_find_ros_package(srs_jena)
+rosbuild_find_ros_package(srs_pellet)
 
-add_jar_dir(${srs_jena_PACKAGE_PATH}/common/lib)
+#add_jar_dir(${srs_jena_PACKAGE_PATH}/common/lib)
+add_jar_dir(${srs_pellet_PACKAGE_PATH}/common/lib)
+add_jar_dir(${srs_pellet_PACKAGE_PATH}/common/lib/jena)
 #add_jar_dir(/usr/share/java)
 add_java_source_dir(${PROJECT_SOURCE_DIR}/src)
 

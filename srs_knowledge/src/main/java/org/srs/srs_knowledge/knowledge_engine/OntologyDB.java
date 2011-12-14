@@ -12,15 +12,21 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.sparql.engine.ResultSetStream;
+//import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
+
+import org.mindswap.pellet.jena.PelletReasonerFactory;
+
 import java.io.*;
 import java.util.ArrayList;
+
 
 public class OntologyDB
 {
     public OntologyDB()
     {
 	// create an empty model
-	this.model = ModelFactory.createDefaultModel();
+	this.model = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC);
+	this.reasoning();
     }
 
     public OntologyDB(String filename)
@@ -32,12 +38,15 @@ public class OntologyDB
 	catch(IllegalArgumentException e) {
 	    System.out.println("Caught Exception : " + e.getMessage());
 	}
+	this.reasoning();
     }
 
     public OntologyDB(ArrayList<String> filenames)
     {
 	// create an empty model
-	this.model = ModelFactory.createDefaultModel();
+	this.model = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC);
+
+	//this.model = ModelFactory.createDefaultModel();
 	try {
 	    for(String filename : filenames) {
 		//String modelFileName = filename;
@@ -47,6 +56,7 @@ public class OntologyDB
 	catch(IllegalArgumentException e) {
 	    System.out.println("Caught Exception : " + e.getMessage());
 	}
+	this.reasoning();
     }
 
     public void importOntology(String filename) 
@@ -60,6 +70,11 @@ public class OntologyDB
 	
 	// read the RDF/XML file
 	model.read(in, null);
+    }
+
+    public void reasoning()
+    {
+	return;
     }
 
     public String executeQuery(String queryString)
@@ -140,7 +155,8 @@ public class OntologyDB
     public void reloadOWLFile(String file)
     {
 	// create an empty model
-	this.model = ModelFactory.createDefaultModel();
+	//this.model = ModelFactory.createDefaultModel();
+	this.model = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC);
 
 	System.out.println("Load OWL File: " + file);
 	// use the FileManager to find the input file

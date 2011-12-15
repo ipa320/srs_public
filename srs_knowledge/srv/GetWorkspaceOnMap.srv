@@ -1,0 +1,16 @@
+#get_workspaces_on_map
+#mapID
+uint32 mapID
+#Time stamp for the period
+duration period # if empty then all the period
+
+string map
+
+---
+#list of object ID for possible workspace in current map
+uint32[] objectID
+#object classID for each object on the ma
+uint32[] classID
+
+string[] objects
+string[] classesOfObjects

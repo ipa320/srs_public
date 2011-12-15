@@ -11,7 +11,9 @@
   
   <depend package="srs_semantics_db"/>
   <depend package="gdatabase"/>
-
+  <depend package="cob_3d_mapping_msgs"/>
+  <depend package="pcl"/>
+  
 </package>
 
 

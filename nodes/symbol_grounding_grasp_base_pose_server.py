@@ -2,29 +2,47 @@
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 
 from srs_symbolic_grounding.srv import SymbolGroundingGraspBasePose
+from srs_symbolic_grounding.msg import *
 import rospy
 import math
 
+import tf
+from tf.transformations import euler_from_quaternion
+
+
+
 def handle_symbol_grounding_grasp_base_pose(req):
 	
-	gbp = list()
+	obj_x = req.obj_pose.position.x
+	obj_y = req.obj_pose.position.y
+	obj_rpy = tf.transformations.euler_from_quaternion([req.obj_pose.orientation.x, req.obj_pose.orientation.y, req.obj_pose.orientation.z, req.obj_pose.orientation.w])
+	obj_th = obj_rpy[2]
+	rospy.loginfo(obj_th)
+
+	rb_x = req.rb_pose.x
+	rb_y = req.rb_pose.y
+	rb_th = req.rb_pose.theta
+
+	gbp = Pose2D()
+
+
 	#right grasp
 	if req.grasp == 1:
 		
-		bgp_x = req.rb_x - 0.8*math.cos(req.rb_th) + 0.15*math.sin(req.rb_th)
-		bgp_y = req.rb_y + 0.15*math.cos(req.rb_th) - 0.8*math.sin(req.rb_th)
-		bgp_th = req.rb_th
-		delta_x = req.obj_x - bgp_x
-		delta_y = req.obj_y - bgp_y
-		delta_th = req.obj_th - bgp_th
-		gbp_x = req.obj_x + 0.8*math.cos(req.obj_th) - 0.15*math.sin(req.obj_th)
-		gbp_y = req.obj_y + 0.15*math.cos(req.obj_th) + 0.8*math.sin(req.obj_th)
-		gbp_th = req.obj_th
+		bgp_x = rb_x - 0.8*math.cos(rb_th) + 0.15*math.sin(rb_th)
+		bgp_y = rb_y + 0.15*math.cos(rb_th) - 0.8*math.sin(rb_th)
+		bgp_th = rb_th
+		delta_x = obj_x - bgp_x
+		delta_y = obj_y - bgp_y
+		delta_th = obj_th - bgp_th
+		gbp_x = obj_x + 0.8*math.cos(obj_th) - 0.15*math.sin(obj_th)
+		gbp_y = obj_y + 0.15*math.cos(obj_th) + 0.8*math.sin(obj_th)
+		gbp_th = obj_th
 		if delta_x > 0.1 or delta_x < -0.15:
 			reach = 0
 		elif delta_y > 0.15 or delta_y < -0.1:
 			reach = 0
-		elif delta_th > ((10 / 180) * math.pi) or delta_th < ((-10 / 180) * math.pi):
+		elif delta_th > (0.0556 * math.pi) or delta_th < (-0.0556 * math.pi):
 			reach = 0
 		else:
 			index_x = round(delta_x / 0.025) + 6
@@ -40,23 +58,23 @@ def handle_symbol_grounding_grasp_base_pose(req):
 			reach = min(member_x, member_y, member_th)
 			
 	#front grasp
-	elif req.grasp == 2:
+	elif grasp == 2:
 				
-		bgp_x = req.rb_x - 0.85*math.cos(req.rb_th) - 0.1*math.sin(req.rb_th)
-		bgp_y = req.rb_y - 0.1*math.cos(req.rb_th) - 0.85*math.sin(req.rb_th)
-		bgp_th = req.rb_th
-		delta_x = req.obj_x - bgp_x
-		delta_y = req.obj_y - bgp_y
-		delta_th = req.obj_th - bgp_th
-		gbp_x = req.obj_x + 0.85*math.cos(req.obj_th) + 0.1*math.sin(req.obj_th)
-		gbp_y = req.obj_y + 0.1*math.cos(req.obj_th) - 0.85*math.sin(req.obj_th)
-		gbp_th = req.obj_th
+		bgp_x = rb_x - 0.85*math.cos(rb_th) - 0.1*math.sin(rb_th)
+		bgp_y = rb_y - 0.1*math.cos(rb_th) - 0.85*math.sin(rb_th)
+		bgp_th = rb_th
+		delta_x = obj_x - bgp_x
+		delta_y = obj_y - bgp_y
+		delta_th = obj_th - bgp_th
+		gbp_x = obj_x + 0.85*math.cos(obj_th) + 0.1*math.sin(obj_th)
+		gbp_y = obj_y + 0.1*math.cos(obj_th) - 0.85*math.sin(obj_th)
+		gbp_th = obj_th
 		
 		if delta_x > 0.1 or delta_x < -0.15:
 			reach = 0
 		elif delta_y > 0.15 or delta_y < -0.1:
 			reach = 0
-		elif delta_th > (10 / 180 * math.pi) or delta_th < (-10 / 180 * math.pi):
+		elif delta_th > (0.0556 * math.pi) or delta_th < (-0.0556 * math.pi):
 			reach = 0
 		else:
 			index_x = round(delta_x / 0.025) + 6
@@ -74,13 +92,13 @@ def handle_symbol_grounding_grasp_base_pose(req):
 	#top grasp
 	elif req.grasp == 3:
 
-		bgp_x = req.rb_x - 0.8*math.cos(req.rb_th) - 0.1*math.sin(req.rb_th)
-		bgp_y = req.rb_y - 0.1*math.cos(req.rb_th) - 0.8*math.sin(req.rb_th)
-		delta_x = req.obj_x - bgp_x
-		delta_y = req.obj_y - bgp_y
-		gbp_x = req.obj_x + 0.8*math.cos(req.obj_th) + 0.1*math.sin(req.obj_th)
-		gbp_y = req.obj_y + 0.1*math.cos(req.obj_th) - 0.8*math.sin(req.obj_th)
-		gbp_th = math.atan((req.obj_y - gbp_y) / (gbp_x - req.obj_x))
+		bgp_x = rb_x - 0.8*math.cos(rb_th) - 0.1*math.sin(rb_th)
+		bgp_y = rb_y - 0.1*math.cos(rb_th) - 0.8*math.sin(rb_th)
+		delta_x = obj_x - bgp_x
+		delta_y = obj_y - bgp_y
+		gbp_x = obj_x + 0.8*math.cos(obj_th) + 0.1*math.sin(obj_th)
+		gbp_y = obj_y + 0.1*math.cos(obj_th) - 0.8*math.sin(obj_th)
+		gbp_th = math.atan((obj_y - gbp_y) / (gbp_x - obj_x))
 		
 		if delta_x > 0.1 or delta_x < -0.15:
 			reach = 0
@@ -97,9 +115,11 @@ def handle_symbol_grounding_grasp_base_pose(req):
 			#Apply the fuzzy rule.
 			reach = min(member_x, member_y)
 
-	gbp.append([reach, gbp_x, gbp_y, gbp_th])
+	gbp.x = gbp_x
+	gbp.y = gbp_y
+	gbp.theta = gbp_th
 	
-	return gbp
+	return reach, gbp
 	
 
 

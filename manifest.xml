@@ -10,6 +10,8 @@
   <url>http://ros.org/wiki/srs_symbolic_grounding</url>
   <depend package="std_msgs"/>
   <depend package="rospy"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
 
 </package>
 

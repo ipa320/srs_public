@@ -2,106 +2,148 @@
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 
 from srs_symbolic_grounding.srv import SymbolGroundingScanBasePose
+from srs_symbolic_grounding.msg import *
 import rospy
 import math
+import tf
+from tf.transformations import euler_from_quaternion
 
 
 
 def handle_symbol_grounding_scan_base_pose(req):
+	
+	table_x = req.furniture_geometry.pose.x
+	table_y = req.furniture_geometry.pose.y
+	table_th = req.furniture_geometry.pose.theta
+	table_length = req.furniture_geometry.l
+	table_width = req.furniture_geometry.w
+	table_height = req.furniture_geometry.h
+	sbps = list()
 
-	sbp = list()
 
-	if ((req.table_th >= 0) & (req.table_th <= (45 / 180 * math.pi))) | ((req.table_th >= (135 / 180 * math.pi)) & (req.table_th <= (225 / 180 * math.pi))) | ((req.table_th >= (315 / 180 * math.pi)) & (req.table_th <= 360)):
+	if ((table_th >= 0) & (table_th <= (45.0 / 180.0 * math.pi))) | ((table_th >= (135.0 / 180.0 * math.pi)) & (table_th <= (225.0 / 180.0 * math.pi))) | ((table_th >= (315.0 / 180.0 * math.pi)) & (table_th <= 360)):
 
-		if (req.table_x - 1.5 - math.sqrt((req.table_length * 0.5)**2+(req.table_width * 0.5)**2) * math.cos(math.atan(req.table_length / req.table_width) - req.table_th)) >= -3.2:
+		if (table_x - 1.5 - math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - table_th)) >= -3.2:
 
-			if (req.table_width > 1.5) & ((req.table_x + 1.5 + math.sqrt((req.table_length * 0.5)**2+(req.table_width * 0.5)**2) * math.cos(math.atan(req.table_length / req.table_width) - req.table_th)) <= 3.5):
+			if (table_width > 1.5) & ((table_x + 1.5 + math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - table_th)) <= 3.5):
 
-				for num in range(int(req.table_length + 0.99)):
+				for num in range(int(table_length + 0.99)):
 
-					sbp.append(req.table_x - (req.table_width * 0.5 + 0.5) * math.cos(req.table_th) - (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th))
-					sbp.append(req.table_y - (req.table_width * 0.5 + 0.5) * math.sin(req.table_th) + (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th))
-					sbp.append(req.table_th + math.pi)
+					sbp = Pose2D()
+					sbp.x = table_x - (table_width * 0.5 + 0.5) * math.cos(table_th) - (0.5 * table_length - 0.5 - num) * math.sin(table_th)
+					sbp.y = table_y - (table_width * 0.5 + 0.5) * math.sin(table_th) + (0.5 * table_length - 0.5 - num) * math.cos(table_th)
+					sbp.theta = table_th + math.pi
+					sbps.append(sbp)
 
-					sbp.append(req.table_x + (req.table_width * 0.5 + 0.5) * math.cos(req.table_th) + (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th))
-					sbp.append(req.table_y + (req.table_width * 0.5 + 0.5) * math.sin(req.table_th) - (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th))
-					sbp.append(req.table_th)
+				for num in range(int(table_length + 0.99)):
+
+					sbp = Pose2D()
+					sbp.x = table_x + (table_width * 0.5 + 0.5) * math.cos(table_th) + (0.5 * table_length - 0.5 - num) * math.sin(table_th)
+					sbp.y = table_y + (table_width * 0.5 + 0.5) * math.sin(table_th) - (0.5 * table_length - 0.5 - num) * math.cos(table_th)
+					sbp.theta = table_th
+					sbps.append(sbp)
 
 			else:
 
-				for num in range(int(req.table_length + 0.99)):
+				for num in range(int(table_length + 0.99)):
 
-					sbp.append(req.table_x - (req.table_width * 0.5 + 0.5) * math.cos(req.table_th) - (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th))
-					sbp.append(req.table_y - (req.table_width * 0.5 + 0.5) * math.sin(req.table_th) + (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th))
-					sbp.append(req.table_th + math.pi)
+					sbp = Pose2D()
+					sbp.x = table_x - (table_width * 0.5 + 0.5) * math.cos(table_th) - (0.5 * table_length - 0.5 - num) * math.sin(table_th)
+					sbp.y = table_y - (table_width * 0.5 + 0.5) * math.sin(table_th) + (0.5 * table_length - 0.5 - num) * math.cos(table_th)
+					sbp.theta = table_th + math.pi
+					sbps.append(sbp)
 
-		elif (req.table_width > 1.5) & ((req.table_x - 1.5 - math.sqrt((req.table_length * 0.5)**2+(req.table_width * 0.5)**2) * math.cos(math.atan(req.table_length / req.table_width) - req.table_th)) >= -3.2):
 
-			for num in range(int(req.table_length + 0.99)):
+		elif (table_width > 1.5) & ((table_x - 1.5 - math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - table_th)) >= -3.2):
 
-				sbp.append(req.table_x + (req.table_width * 0.5 + 0.5) * math.cos(req.table_th) + (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th))
-				sbp.append(req.table_y + (req.table_width * 0.5 + 0.5) * math.sin(req.table_th) - (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th))
-				sbp.append(req.table_th)
+			for num in range(int(table_length + 0.99)):
 
-				sbp.append(req.table_x - (req.table_width * 0.5 + 0.5) * math.cos(req.table_th) - (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th))
-				sbp.append(req.table_y - (req.table_width * 0.5 + 0.5) * math.sin(req.table_th) + (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th))
-				sbp.append(req.table_th + math.pi)
+				sbp = Pose2D()
+				sbp.x = table_x + (table_width * 0.5 + 0.5) * math.cos(table_th) + (0.5 * table_length - 0.5 - num) * math.sin(table_th)
+				sbp.y = table_y + (table_width * 0.5 + 0.5) * math.sin(table_th) - (0.5 * table_length - 0.5 - num) * math.cos(table_th)
+				sbp.theta = table_th
+				sbps.append(sbp)
 
+			for num in range(int(table_length + 0.99)):
+
+				sbp = Pose2D()
+				sbp.x = table_x - (table_width * 0.5 + 0.5) * math.cos(table_th) - (0.5 * table_length - 0.5 - num) * math.sin(table_th)
+				sbp.y = table_y - (table_width * 0.5 + 0.5) * math.sin(table_th) + (0.5 * table_length - 0.5 - num) * math.cos(table_th)
+				sbp.theta = table_th + math.pi
+				sbps.append(sbp)
+				
 		else:
 		
-			for num in range(int(req.table_length + 0.99)):
+			for num in range(int(table_length + 0.99)):
 
-				sbp.append(req.table_x + (req.table_width * 0.5 + 0.5) * math.cos(req.table_th) + (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th))
-				sbp.append(req.table_y + (req.table_width * 0.5 + 0.5) * math.sin(req.table_th) - (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th))
-				sbp.append(req.table_th)
+				sbp = Pose2D()
+				sbp.x = table_x + (table_width * 0.5 + 0.5) * math.cos(table_th) + (0.5 * table_length - 0.5 - num) * math.sin(table_th)
+				sbp.y = table_y + (table_width * 0.5 + 0.5) * math.sin(table_th) - (0.5 * table_length - 0.5 - num) * math.cos(table_th)
+				sbp.theta = table_th
+				sbps.append(sbp)
 
-	elif (req.table_y + 1.5 + math.sqrt((req.table_length * 0.5)**2+(req.table_width * 0.5)**2) * math.cos(math.atan(req.table_length / req.table_width) - (req.table_th - 90))) <= 2.1:
+	elif (table_y + 1.5 + math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - (table_th - 0.5*math.pi))) <= 2.1:
 
-		if (req.table_width > 1.5) & ((req.table_y - 1.5 - math.sqrt((req.table_length * 0.5)**2+(req.table_width * 0.5)**2) * math.cos(math.atan(req.table_length / req.table_width) - (req.table_th - 90))) >= -2.2):
+		if (table_width > 1.5) & ((table_y - 1.5 - math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - (table_th - 0.5*math.pi))) >= -2.2):
 
-			for num in range(int(req.table_length + 0.99)):
+			for num in range(int(table_length + 0.99)):
 
-				sbp.append(req.table_x - (req.table_width * 0.5 + 0.5) * math.sin(req.table_th - 90) + (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th - 90))
-				sbp.append(req.table_y + (req.table_width * 0.5 + 0.5) * math.cos(req.table_th - 90) - (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th - 90))
-				sbp.append(req.table_th)
-
+				sbp = Pose2D()
+				sbp.x = table_x - (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) + (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
+				sbp.y = table_y + (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
+				sbp.theta = table_th
+				sbps.append(sbp)
 				
-				sbp.append(req.table_x + (req.table_width * 0.5 + 0.5) * math.sin(req.table_th - 90) - (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th - 90))
-				sbp.append(req.table_y - (req.table_width * 0.5 + 0.5) * math.cos(req.table_th - 90) - (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th - 90))
-				sbp.append(req.table_th + math.pi)
+			for num in range(int(table_length + 0.99)):
+
+				sbp = Pose2D()
+				sbp.x = table_x + (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
+				sbp.y = table_y - (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
+				sbp.theta = table_th + math.pi
+				sbps.append(sbp)
 
 		else:
 
-			for num in range(int(req.table_length + 0.99)):
+			for num in range(int(table_length + 0.99)):
 
-				sbp.append(req.table_x - (req.table_width * 0.5 + 0.5) * math.sin(req.table_th - 90) + (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th - 90))
-				sbp.append(req.table_y + (req.table_width * 0.5 + 0.5) * math.cos(req.table_th - 90) - (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th - 90))
-				sbp.append(req.table_th)
+				sbp = Pose2D()
+				sbp.x = table_x - (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) + (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
+				sbp.y = table_y + (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
+				sbp.theta = table_th
+				sbps.append(sbp)
 
 
-	elif (req.table_width > 1.5) & ((req.table_y + 1.5 + math.sqrt((req.table_length * 0.5)**2+(req.table_width * 0.5)**2) * math.cos(math.atan(req.table_length / req.table_width) - (req.table_th - 90))) <= 2.1):
+	elif (table_width > 1.5) & ((table_y + 1.5 + math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - (table_th - 0.5*math.pi))) <= 2.1):
 
-		for num in range(int(req.table_length + 0.99)):
+		for num in range(int(table_length + 0.99)):
 
-			sbp.append(req.table_x + (req.table_width * 0.5 + 0.5) * math.sin(req.table_th - 90) - (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th - 90))
-			sbp.append(req.table_y - (req.table_width * 0.5 + 0.5) * math.cos(req.table_th - 90) - (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th - 90))
-			sbp.append(req.table_th + math.pi)
+			sbp = Pose2D()
+			sbp.x = table_x + (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
+			sbp.y = table_y - (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
+			sbp.theta = table_th + math.pi
+			sbps.append(sbp)
 
-			sbp.append(req.table_x - (req.table_width * 0.5 + 0.5) * math.sin(req.table_th - 90) + (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th - 90))
-			sbp.append(req.table_y + (req.table_width * 0.5 + 0.5) * math.cos(req.table_th - 90) - (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th - 90))
-			sbp.append(req.table_th)
+		for num in range(int(table_length + 0.99)):
+
+			sbp = Pose2D()
+			sbp.x = table_x - (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) + (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
+			sbp.y = table_y + (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
+			sbp.theta = table_th
+			sbps.append(sbp)
 
 	else:
 
-		for num in range(int(req.table_length + 0.99)):
+		for num in range(int(table_length + 0.99)):
 
-			sbp.append(req.table_x + (req.table_width * 0.5 + 0.5) * math.sin(req.table_th - 90) - (0.5 * req.table_length - 0.5 - num) * math.cos(req.table_th - 90))
-			sbp.append(req.table_y - (req.table_width * 0.5 + 0.5) * math.cos(req.table_th - 90) - (0.5 * req.table_length - 0.5 - num) * math.sin(req.table_th - 90))
-			sbp.append(req.table_th + math.pi)
+			sbp = Pose2D()
+			sbp.x = table_x + (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
+			sbp.y = table_y - (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
+			sbp.theta = table_th + math.pi
+			sbps.append(sbp)
 
-	sbp = [sbp]
-
-	return sbp
+	sbps = [sbps]
+	
+	return sbps
 
 
 

@@ -1,20 +1,23 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
-import rospy
+
 from srs_symbolic_grounding.srv import SymbolGroundingScanBasePose
+from srs_symbolic_grounding.msg import *
+import rospy
+import math
+import tf
+from tf.transformations import euler_from_quaternion
 
 
-
-def symbol_grounding_scan_base_pose_client(table_x, table_y, table_th, table_length, table_width):
+def symbol_grounding_scan_base_pose_client(furniture_geometry):
 
 	rospy.wait_for_service('symbol_grounding_scan_base_pose')
 	
 	symbol_grounding_scan_base_pose = rospy.ServiceProxy('symbol_grounding_scan_base_pose', SymbolGroundingScanBasePose)
 	
 	try:
-
 		resp = list()
-		resp.append(symbol_grounding_scan_base_pose(table_x, table_y, table_th, table_length, table_width))
+		resp.append(symbol_grounding_scan_base_pose(furniture_geometry))
 		return resp
 	
 	except rospy.ServiceException, e:
@@ -24,17 +27,19 @@ def symbol_grounding_scan_base_pose_client(table_x, table_y, table_th, table_len
 
 if __name__ == "__main__":
 	
-	table_x = -0.5
-	table_y = -0.3 
-	table_th = 0.15
-	table_length = 2.0
-	table_width = 1.6
+	furniture_geometry = SRSFurnitureGeometry()
+	furniture_geometry.pose.x = -0.5
+	furniture_geometry.pose.y = -0.3
+	furniture_geometry.pose.theta = 0.15
+	furniture_geometry.l = 2
+	furniture_geometry.w = 1.6
+	furniture_geometry.h = 1.0
 
 	print "Requesting scan base pose."
 	
-	sbp = symbol_grounding_scan_base_pose_client(table_x, table_y, table_th, table_length, table_width)
+	sbps = symbol_grounding_scan_base_pose_client(furniture_geometry)
 	
-	print sbp
+	print sbps
 		
 
 

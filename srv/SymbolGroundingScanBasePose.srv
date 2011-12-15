@@ -1,10 +1,6 @@
-float32 table_x
-float32 table_y
-float32 table_th
-float32 table_length
-float32 table_width
+SRSFurnitureGeometry furniture_geometry
 ---
-float32[] sbp
+Pose2D[] sbps
 
 
 

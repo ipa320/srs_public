@@ -1,6 +1,4 @@
-float32 obj_x
-float32 obj_y
-float32 obj_th
+Pose obj_pose
 ---
-float32[] pbp
+Pose2D pbp
 

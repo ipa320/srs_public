@@ -2,10 +2,11 @@
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 import rospy
 from srs_symbolic_grounding.srv import SymbolGroundingPrimitiveBasePose
+from srs_symbolic_grounding.msg import *
 
 
 
-def symbol_grounding_primitive_base_pose_client(obj_x, obj_y, obj_th):
+def symbol_grounding_primitive_base_pose_client(obj_pose):
 
 	rospy.wait_for_service('symbol_grounding_primitive_base_pose')
 
@@ -13,10 +14,9 @@ def symbol_grounding_primitive_base_pose_client(obj_x, obj_y, obj_th):
 	
 	try:
 		
-		resp = list()
-		resp.append(symbol_grounding_primitive_base_pose(obj_x, obj_y, obj_th))
+		resp = symbol_grounding_primitive_base_pose(obj_pose)
 		return resp
-	
+
 	except rospy.ServiceException, e:
 		
 		print "Service call failed: %s" %e
@@ -24,13 +24,22 @@ def symbol_grounding_primitive_base_pose_client(obj_x, obj_y, obj_th):
 
 if __name__ == "__main__":
 	
-	obj_x = 1.1
-	obj_y = 1.2
-	obj_th = 1.3
+	
+	
+	obj_pose = Pose()
+
+	obj_pose.position.x = 1.1
+	obj_pose.position.y = 1.2
+	obj_pose.position.z = 1.3
+
+	obj_pose.orientation.x = 1.4
+	obj_pose.orientation.y = 1.5
+	obj_pose.orientation.z = 1.6
+	obj_pose.orientation.w = 1.7
 
 	print "Requesting primitive base pose."		
 	
-	pbp = symbol_grounding_primitive_base_pose_client(obj_x, obj_y, obj_th)
+	pbp = symbol_grounding_primitive_base_pose_client(obj_pose)
 	
 	print pbp
 

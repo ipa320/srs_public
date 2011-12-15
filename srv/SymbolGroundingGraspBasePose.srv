@@ -1,11 +1,6 @@
 int32 grasp
-float32 rb_x
-float32 rb_y
-float32 rb_th
-float32 obj_x
-float32 obj_y
-float32 obj_th
+Pose obj_pose
+Pose2D rb_pose
 ---
-float32[] gbp
-
-
+float32 reach
+Pose2D gbp

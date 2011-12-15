@@ -3,6 +3,7 @@ import roslib; roslib.load_manifest('srs_symbolic_grounding')
 import rospy
 from srs_symbolic_grounding.srv import SymbolGroundingPrimitiveBasePose
 from srs_symbolic_grounding.msg import *
+from geometry_msgs.msg import *
 
 
 

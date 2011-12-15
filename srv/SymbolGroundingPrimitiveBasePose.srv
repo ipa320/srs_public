@@ -1,4 +1,4 @@
-Pose obj_pose
+geometry_msgs/Pose obj_pose
 ---
-Pose2D pbp
+geometry_msgs/Pose2D pbp
 

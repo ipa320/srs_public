@@ -1,6 +1,6 @@
 SRSFurnitureGeometry furniture_geometry
 ---
-Pose2D[] sbps
+geometry_msgs/Pose2D[] sbps
 
 
 

@@ -1,6 +1,6 @@
 int32 grasp
-Pose obj_pose
-Pose2D rb_pose
+geometry_msgs/Pose obj_pose
+geometry_msgs/Pose2D rb_pose
 ---
 float32 reach
-Pose2D gbp
+geometry_msgs/Pose2D gbp

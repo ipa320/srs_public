@@ -402,7 +402,7 @@ class KnowledgeEngine
 		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		    if(temp.getNameSpace().equals(mapNamespace)) {
 			re.objects.add(temp.getLocalName());
-			re.classesOfObjects.add(temp.getOntClass().getLocalName());
+			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
 		    }
 		}       
 	    }
@@ -483,14 +483,6 @@ class KnowledgeEngine
     }
 
 
-
-
-
-
-
-
-
-
     private GetWorkspaceOnMap.Response handleGetWorkspaceOnMap(GetWorkspaceOnMap.Request req)
     {
 	GetWorkspaceOnMap.Response re = new GetWorkspaceOnMap.Response();
@@ -517,7 +509,7 @@ class KnowledgeEngine
 		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		    if(temp.getNameSpace().equals(mapNamespace)) {
 			re.objects.add(temp.getLocalName());
-			re.classesOfObjects.add(temp.getOntClass().getLocalName());
+			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
 		    }
 		}       
 	    }
@@ -530,9 +522,6 @@ class KnowledgeEngine
 	catch(Exception e) {
 	    System.out.println(e.getMessage());
 	}
-
-
-
 
 	return re;
     }
@@ -548,12 +537,6 @@ class KnowledgeEngine
 	System.out.println(getWorkSpaceOnMapService);
 	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = n.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
     }
-
-
-
-
-
-
 
     private boolean loadPredefinedTasksForTest(GetObjectTask got)
     {

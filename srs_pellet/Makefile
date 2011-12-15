@@ -4,7 +4,6 @@ TARBALL		= build/pellet-2.3.0.zip
 TARBALL_URL 	= http://dl.clarkparsia.com/downloads/f2539fb8811e4de449a2e801e77d91f5/pellet-2.3.0.zip
 UNPACK_CMD  	= unzip -uo
 SOURCE_DIR 	= build/pellet-2.3.0
-# MD5SUM_FILE 	= jena-2.6.4.zip.md5sum
 
 include $(shell rospack find mk)/download_unpack_build.mk
 

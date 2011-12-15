@@ -1,0 +1,1034 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY srs2 "http://www.srs-project.eu/ontologies/2011/11/srs.owl#3" >
+    <!ENTITY srsaction "http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#" >
+]>
+
+
+<rdf:RDF xmlns="http://www.srs-project.eu/ontologies/2011/11/srs.owl#"
+     xml:base="http://www.srs-project.eu/ontologies/2011/11/srs.owl"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:srs2="http://www.srs-project.eu/ontologies/2011/11/srs.owl#3"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:srsaction="http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#">
+    <owl:Ontology rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#IfStateIs -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#IfStateIs"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasMovingMachanism -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasMovingMachanism">
+        <rdfs:subPropertyOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasNextAction -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasNextAction">
+        <owl:inverseOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#isNextActionOf"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasSubAction -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasSubAction">
+        <owl:inverseOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#subActionOf"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#isActionRequiredBy -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#isActionRequiredBy"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#isNextActionOf -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#isNextActionOf">
+        <rdfs:domain rdf:resource="&srsaction;RobotAction"/>
+        <rdfs:range rdf:resource="&srsaction;RobotAction"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#isStateRequiredBy -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#isStateRequiredBy"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#subActionOf -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#subActionOf"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#useRobotComponent -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#useRobotComponent"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#useSensor -->
+
+    <owl:ObjectProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#useSensor">
+        <rdfs:subPropertyOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#useRobotComponent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#hasHumanLikeArms -->
+
+    <owl:ObjectProperty rdf:about="&srsaction;hasHumanLikeArms">
+        <rdfs:subPropertyOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#hasHumanLikeFace -->
+
+    <owl:ObjectProperty rdf:about="&srsaction;hasHumanLikeFace">
+        <rdfs:subPropertyOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#hasHumanLikeLegs -->
+
+    <owl:ObjectProperty rdf:about="&srsaction;hasHumanLikeLegs">
+        <rdfs:subPropertyOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#hasLegs -->
+
+    <owl:ObjectProperty rdf:about="&srsaction;hasLegs">
+        <rdfs:subPropertyOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#hasManipulator -->
+
+    <owl:ObjectProperty rdf:about="&srsaction;hasManipulator">
+        <rdfs:subPropertyOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#hasWheels -->
+
+    <owl:ObjectProperty rdf:about="&srsaction;hasWheels">
+        <rdfs:subPropertyOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#isManipulatorOf -->
+
+    <owl:ObjectProperty rdf:about="&srsaction;isManipulatorOf">
+        <owl:inverseOf rdf:resource="&srsaction;hasManipulator"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#isTypeOf -->
+
+    <owl:ObjectProperty rdf:about="&srsaction;isTypeOf"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasInputDataType -->
+
+    <owl:DatatypeProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasInputDataType"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasOutputDataType -->
+
+    <owl:DatatypeProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasOutputDataType"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasQueryString -->
+
+    <owl:DatatypeProperty rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasQueryString"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#hasNumDegreeOfFreedom -->
+
+    <owl:DatatypeProperty rdf:about="&srsaction;hasNumDegreeOfFreedom"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#hasNumberOfWheels -->
+
+    <owl:DatatypeProperty rdf:about="&srsaction;hasNumberOfWheels">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#3DCamera -->
+
+    <owl:Class rdf:about="&srs2;DCamera">
+        <rdfs:subClassOf rdf:resource="&srsaction;Camera"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#BottomLayerAction -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#BottomLayerAction">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#NoAction"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasNextAction"/>
+                        <owl:allValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#NoAction"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#COBTraySensor -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#COBTraySensor">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotSensor"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#CheckStatus -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#CheckStatus">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotAction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#DynamicsState -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#DynamicsState">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotState"/>
+        <owl:disjointWith rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#StaticState"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#EnvironmentState -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#EnvironmentState">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#State"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#InitActionPoint -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#InitActionPoint">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#NoAction"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasNextAction"/>
+                        <owl:onClass rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#TopLayerAction"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#LaserRangeFinder -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#LaserRangeFinder">
+        <rdfs:subClassOf rdf:resource="&srsaction;RangeFinder"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#MentalAction -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#MentalAction">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotAction"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasQueryString"/>
+                <owl:allValuesFrom rdf:resource="&rdfs;Literal"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#MiddleLayerAction -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#MiddleLayerAction">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&srsaction;RobotAction"/>
+                    <owl:Class>
+                        <owl:intersectionOf rdf:parseType="Collection">
+                            <owl:Restriction>
+                                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasNextAction"/>
+                                <owl:someValuesFrom rdf:resource="&srsaction;RobotAction"/>
+                            </owl:Restriction>
+                            <owl:Restriction>
+                                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#isNextActionOf"/>
+                                <owl:someValuesFrom rdf:resource="&srsaction;RobotAction"/>
+                            </owl:Restriction>
+                        </owl:intersectionOf>
+                    </owl:Class>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#NoAction -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#NoAction">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotAction"/>
+        <rdfs:comment>Invented to represent no action concept. Only to be used to identify if an action is toplayer or endlayer, depending on if there is any parent or child layer of noaction or not. </rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#OntologyConcept -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#OntologyConcept"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryAllObjectIndividuals -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryAllObjectIndividuals">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#MentalAction"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasOutputDataType"/>
+                <owl:minCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:minCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryAllTables -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryAllTables">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryAllObjectIndividuals"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryContent -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryContent">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#OntologyConcept"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryInput -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryInput">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#OntologyConcept"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryObjectLocation -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryObjectLocation">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#MentalAction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryOutput -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#QueryOutput">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#OntologyConcept"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotMovingMechanism -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotMovingMechanism">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotComponents"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotState -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotState">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#State"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#State -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#State"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#StaticState -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#StaticState">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotState"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#TopLayerAction -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#TopLayerAction">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&srsaction;RobotAction"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#isNextActionOf"/>
+                        <owl:allValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#InitActionPoint"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#TorqueSensor -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#TorqueSensor">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotSensor"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#TrayFolded -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#TrayFolded">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotState"/>
+        <owl:disjointWith rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#TrayInFront"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#TrayInFront -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#TrayInFront">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotState"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srs.owl#UltrasonicSensor -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/2011/11/srs.owl#UltrasonicSensor">
+        <rdfs:subClassOf rdf:resource="&srsaction;RangeFinder"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#AeiralRobot -->
+
+    <owl:Class rdf:about="&srsaction;AeiralRobot">
+        <rdfs:subClassOf rdf:resource="&srsaction;MobileRobot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#AerialRobotWing -->
+
+    <owl:Class rdf:about="&srsaction;AerialRobotWing">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotFlyingMechanism"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#BaseMoveAction -->
+
+    <owl:Class rdf:about="&srsaction;BaseMoveAction">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotAction"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#useRobotComponent"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotMovingMechanism"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#BipedRobot -->
+
+    <owl:Class rdf:about="&srsaction;BipedRobot">
+        <rdfs:subClassOf rdf:resource="&srsaction;LeggedRobot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#Camera -->
+
+    <owl:Class rdf:about="&srsaction;Camera">
+        <rdfs:subClassOf rdf:resource="&srsaction;Vision"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#Care-O-Bot -->
+
+    <owl:Class rdf:about="&srsaction;Care-O-Bot">
+        <rdfs:subClassOf rdf:resource="&srsaction;NamedRobot"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&srsaction;hasWheels"/>
+                <owl:someValuesFrom rdf:resource="&srsaction;RobotOmniDirectionalWheel"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&srsaction;hasManipulator"/>
+                <owl:someValuesFrom rdf:resource="&srsaction;KukaManipulator"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#DetectObjectByIDAction -->
+
+    <owl:Class rdf:about="&srsaction;DetectObjectByIDAction">
+        <rdfs:subClassOf rdf:resource="&srsaction;PerceptionAction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#DetectObjectOnTray -->
+
+    <owl:Class rdf:about="&srsaction;DetectObjectOnTray">
+        <rdfs:subClassOf rdf:resource="&srsaction;PerceptionAction"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#useSensor"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#COBTraySensor"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#GraspAction -->
+
+    <owl:Class rdf:about="&srsaction;GraspAction">
+        <rdfs:subClassOf rdf:resource="&srsaction;ManipulatorAction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#HelicopterRotor -->
+
+    <owl:Class rdf:about="&srsaction;HelicopterRotor">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotFlyingMechanism"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#HumanoidRobot -->
+
+    <owl:Class rdf:about="&srsaction;HumanoidRobot">
+        <rdfs:subClassOf rdf:resource="&srsaction;Robot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#Kinect -->
+
+    <owl:Class rdf:about="&srsaction;Kinect">
+        <rdfs:subClassOf rdf:resource="&srsaction;Vision"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#KukaManipulator -->
+
+    <owl:Class rdf:about="&srsaction;KukaManipulator">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotManipulator"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&srsaction;hasNumDegreeOfFreedom"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">7</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#LeggedRobot -->
+
+    <owl:Class rdf:about="&srsaction;LeggedRobot">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&srsaction;MobileRobot"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&srsaction;hasLegs"/>
+                        <owl:someValuesFrom rdf:resource="&srsaction;RobotLeg"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#ManipulatorAction -->
+
+    <owl:Class rdf:about="&srsaction;ManipulatorAction">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotAction"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#useRobotComponent"/>
+                <owl:someValuesFrom rdf:resource="&srsaction;RobotManipulator"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#MiniatureRobot -->
+
+    <owl:Class rdf:about="&srsaction;MiniatureRobot">
+        <rdfs:subClassOf rdf:resource="&srsaction;Robot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#MobileRobot -->
+
+    <owl:Class rdf:about="&srsaction;MobileRobot">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&srsaction;Robot"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#hasRobotComponent"/>
+                        <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotMovingMechanism"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#MonoCamera -->
+
+    <owl:Class rdf:about="&srsaction;MonoCamera">
+        <rdfs:subClassOf rdf:resource="&srsaction;Camera"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#MoveByCoordinateAction -->
+
+    <owl:Class rdf:about="&srsaction;MoveByCoordinateAction">
+        <rdfs:subClassOf rdf:resource="&srsaction;BaseMoveAction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#MoveByPredefinedLocationAction -->
+
+    <owl:Class rdf:about="&srsaction;MoveByPredefinedLocationAction">
+        <rdfs:subClassOf rdf:resource="&srsaction;BaseMoveAction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#NamedRobot -->
+
+    <owl:Class rdf:about="&srsaction;NamedRobot">
+        <rdfs:subClassOf rdf:resource="&srsaction;Robot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#OpenDoor -->
+
+    <owl:Class rdf:about="&srsaction;OpenDoor">
+        <rdfs:subClassOf rdf:resource="&srsaction;ManipulatorAction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#OpenFridgeDoor -->
+
+    <owl:Class rdf:about="&srsaction;OpenFridgeDoor">
+        <rdfs:subClassOf rdf:resource="&srsaction;ManipulatorAction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#PerceptionAction -->
+
+    <owl:Class rdf:about="&srsaction;PerceptionAction">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&srsaction;RobotAction"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#useSensor"/>
+                        <owl:someValuesFrom rdf:resource="&srsaction;RobotSensor"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#PolarRobot -->
+
+    <owl:Class rdf:about="&srsaction;PolarRobot">
+        <rdfs:subClassOf rdf:resource="&srsaction;MobileRobot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#PutOnTrayAction -->
+
+    <owl:Class rdf:about="&srsaction;PutOnTrayAction">
+        <rdfs:subClassOf rdf:resource="&srsaction;ManipulatorAction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RangeFinder -->
+
+    <owl:Class rdf:about="&srsaction;RangeFinder">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotSensor"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#Robot -->
+
+    <owl:Class rdf:about="&srsaction;Robot"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RobotAction -->
+
+    <owl:Class rdf:about="&srsaction;RobotAction"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RobotComponents -->
+
+    <owl:Class rdf:about="&srsaction;RobotComponents">
+        <rdfs:subClassOf rdf:resource="&owl;Thing"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RobotFlyingMechanism -->
+
+    <owl:Class rdf:about="&srsaction;RobotFlyingMechanism">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotMovingMechanism"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RobotGeneralWheel -->
+
+    <owl:Class rdf:about="&srsaction;RobotGeneralWheel">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotWheel"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RobotLeg -->
+
+    <owl:Class rdf:about="&srsaction;RobotLeg">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotMovingMechanism"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RobotManipulator -->
+
+    <owl:Class rdf:about="&srsaction;RobotManipulator">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotComponents"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&srsaction;hasNumDegreeOfFreedom"/>
+                <owl:someValuesFrom rdf:resource="&xsd;integer"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RobotOmniDirectionalWheel -->
+
+    <owl:Class rdf:about="&srsaction;RobotOmniDirectionalWheel">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotWheel"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RobotSensor -->
+
+    <owl:Class rdf:about="&srsaction;RobotSensor">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotComponents"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#RobotWheel -->
+
+    <owl:Class rdf:about="&srsaction;RobotWheel">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/2011/11/srs.owl#RobotMovingMechanism"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&srsaction;hasNumberOfWheels"/>
+                <owl:someValuesFrom rdf:resource="&xsd;integer"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#SchunkManipulator -->
+
+    <owl:Class rdf:about="&srsaction;SchunkManipulator">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotManipulator"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&srsaction;hasNumDegreeOfFreedom"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">7</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:comment>number of dof is not real. need to check with real robot setting
+</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#Sound -->
+
+    <owl:Class rdf:about="&srsaction;Sound">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotSensor"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#StereoCamera -->
+
+    <owl:Class rdf:about="&srsaction;StereoCamera">
+        <rdfs:subClassOf rdf:resource="&srsaction;Camera"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#Tactile -->
+
+    <owl:Class rdf:about="&srsaction;Tactile">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotSensor"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#TakeObjectFromTray -->
+
+    <owl:Class rdf:about="&srsaction;TakeObjectFromTray">
+        <rdfs:subClassOf rdf:resource="&srsaction;UserInteraction"/>
+        <rdfs:comment>Action that a user takes the object on the tray of the robot, which is COB here specifically. But can be used for other similar robot with a tray.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#TrackRobot -->
+
+    <owl:Class rdf:about="&srsaction;TrackRobot">
+        <rdfs:subClassOf rdf:resource="&srsaction;MobileRobot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#UnderwaterRobot -->
+
+    <owl:Class rdf:about="&srsaction;UnderwaterRobot">
+        <rdfs:subClassOf rdf:resource="&srsaction;MobileRobot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#UserInput -->
+
+    <owl:Class rdf:about="&srsaction;UserInput">
+        <rdfs:subClassOf rdf:resource="&srsaction;UserInteraction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#UserInteraction -->
+
+    <owl:Class rdf:about="&srsaction;UserInteraction"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#Vision -->
+
+    <owl:Class rdf:about="&srsaction;Vision">
+        <rdfs:subClassOf rdf:resource="&srsaction;RobotSensor"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/2011/11/srsaction.owl#WheeledRobot -->
+
+    <owl:Class rdf:about="&srsaction;WheeledRobot">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&srsaction;Robot"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&srsaction;hasWheels"/>
+                        <owl:someValuesFrom rdf:resource="&srsaction;RobotWheel"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+        <rdfs:subClassOf rdf:resource="&srsaction;MobileRobot"/>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // General axioms
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="&srsaction;HumanoidRobot"/>
+            <rdf:Description rdf:about="&srsaction;MiniatureRobot"/>
+            <rdf:Description rdf:about="&srsaction;MobileRobot"/>
+        </owl:members>
+    </rdf:Description>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="&srsaction;AeiralRobot"/>
+            <rdf:Description rdf:about="&srsaction;LeggedRobot"/>
+            <rdf:Description rdf:about="&srsaction;UnderwaterRobot"/>
+            <rdf:Description rdf:about="&srsaction;WheeledRobot"/>
+        </owl:members>
+    </rdf:Description>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.2.3.1824) http://owlapi.sourceforge.net -->
+

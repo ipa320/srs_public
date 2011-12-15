@@ -15,10 +15,11 @@ import com.hp.hpl.jena.sparql.engine.ResultSetStream;
 //import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 
 import org.mindswap.pellet.jena.PelletReasonerFactory;
-
+import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.OntModel;
 import java.io.*;
 import java.util.ArrayList;
-
+import java.util.Iterator;
 
 public class OntologyDB
 {
@@ -196,6 +197,28 @@ public class OntologyDB
 	*/
     }
 
+    public Iterator getInstancesOfClass(String className) 
+    {
+	//ArrayList<String> res = new ArrayList<String>();
+
+	// get the instances of a class
+	OntClass onto = model.getOntClass( className );
+	
+	if(onto == null) {
+	    System.out.println("ONT CLASS IS NULL");
+	}
+	
+	Iterator instances = onto.listInstances();
+	return instances;
+    }
+
+    public String getNamespaceByPrefix(String namespacePrefix)
+    {
+	//http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#
+	return model.getNsPrefixURI(namespacePrefix);
+    }
+    
     //private String modelFileName;    
-    private Model model;
+    //private Model model;
+    private OntModel model;
 }

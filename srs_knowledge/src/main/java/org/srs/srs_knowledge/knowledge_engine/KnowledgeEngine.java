@@ -11,10 +11,10 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
-
+import com.hp.hpl.jena.ontology.Individual;
 import java.io.*;
 import java.util.ArrayList; 
-
+import java.util.Iterator;
 import ros.*;
 import ros.communication.*;
 import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
@@ -24,6 +24,7 @@ import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.srs_knowledge.srv.PlanNextAction;
 import ros.pkg.srs_knowledge.srv.TaskRequest;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;
+import ros.pkg.srs_knowledge.srv.GetWorkspaceOnMap;
 import org.srs.srs_knowledge.task.*;
 
 import java.util.Properties;
@@ -101,6 +102,7 @@ class KnowledgeEngine
 	    initPlanNextAction();
 	    initTaskRequest();
 	    initGetObjectsOnMap();
+	    initGetWorkspaceOnMap();
 	}
 	catch(RosException e){
 	    System.out.println(e.getMessage());
@@ -147,6 +149,38 @@ class KnowledgeEngine
 	generateSequenceService = config.getProperty("generateSequenceService", "generate_sequence");
 	querySparQLService = config.getProperty("querySparQLService", "query_sparql");
 	getObjectsOnMapService = config.getProperty("getObjectsOnMapService", "get_objects_on_map");
+	getWorkSpaceOnMapService = config.getProperty("getWorkSpaceOnMapService", "get_workspace_on_map");
+
+	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
+	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
+	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
+	}
+
+
+	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
+    }
+
+    public void testOnto(String className)
+    {
+	try{
+	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
+	    	      
+	    if(instances.hasNext()) {
+		while (instances.hasNext()) { 
+		    Individual temp = (Individual)instances.next();
+		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		}       
+	    }
+	    else
+		System.out.println("<EMPTY>");
+	        
+        System.out.println();
+
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
     }
 
     private GenerateSequence.Response handleGenerateSequence(GenerateSequence.Request request)
@@ -344,13 +378,64 @@ class KnowledgeEngine
     private GetObjectsOnMap.Response handleGetObjectsOnMap(GetObjectsOnMap.Request req)
     {
 	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
+
+	
+	String className = globalNamespace;
+	if(req.map != null) {
+	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
+		className = ontoDB.getNamespaceByPrefix(req.map);
+	    }
+	}
+	
+
+	className = className + "FoodVessel";
+
+	try{
+	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
+	    if(instances == null) {
+		return re;
+	    }
+
+	    if(instances.hasNext()) {
+		while (instances.hasNext()) { 
+		    Individual temp = (Individual)instances.next();
+		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		    if(temp.getNameSpace().equals(mapNamespace)) {
+			re.objects.add(temp.getLocalName());
+			re.classesOfObjects.add(temp.getOntClass().getLocalName());
+		    }
+		}       
+	    }
+	    else
+		System.out.println("<EMPTY>");
+	        
+        System.out.println();
+
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+
+
+
+
+	/*
+
 	String targetContent = "kitchen";
 	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
 	    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
 	    + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n"
 	    + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
-	String queryString = "SELECT ?objs WHERE { "
-	    + "?objs rdfs:subClassOf srs:Table";
+	String queryString = "SELECT ?objs ?x ?y ?z ?w ?h ?l WHERE { "
+	    + "?objs rdf:type srs:Dishwasher . "
+	    + "?objs srs:xCoord ?x . "
+	    + "?objs srs:yCoord ?y . " 
+	    + "?objs srs:zCoord ?z . " 
+	    + "?objs srs:widthOfObject ?w . " 
+	    + "?objs srs:heightOfObject ?h . " 
+	    + "?objs srs:lengthOfObject ?l . " 
+	    + "}";
 	System.out.println(prefix + queryString + "\n");
 	
 	if (this.ontoDB == null) {
@@ -381,10 +466,9 @@ class KnowledgeEngine
 	}
 
 	//re.result = ontoDB.executeQuery(queryString);
-
+	*/
 	return re;
     }
-
 
     private void initGetObjectsOnMap() throws RosException
     {
@@ -397,6 +481,78 @@ class KnowledgeEngine
 	System.out.println(getObjectsOnMapService);
 	ServiceServer<GetObjectsOnMap.Request, GetObjectsOnMap.Response, GetObjectsOnMap> srv = n.advertiseService(getObjectsOnMapService, new GetObjectsOnMap(), scb);
     }
+
+
+
+
+
+
+
+
+
+
+    private GetWorkspaceOnMap.Response handleGetWorkspaceOnMap(GetWorkspaceOnMap.Request req)
+    {
+	GetWorkspaceOnMap.Response re = new GetWorkspaceOnMap.Response();
+
+	String className = globalNamespace;
+	if(req.map != null) {
+	    System.out.println("<<<<  " + req.map + "  >>>>  ");
+	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
+		className = ontoDB.getNamespaceByPrefix(req.map);
+	    }
+	}
+
+	className = className + "FurniturePiece";
+	System.out.println(className);
+	try{
+	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
+	    if(instances == null) {
+		return re;
+	    }
+
+	    if(instances.hasNext()) {
+		while (instances.hasNext()) { 
+		    Individual temp = (Individual)instances.next();
+		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		    if(temp.getNameSpace().equals(mapNamespace)) {
+			re.objects.add(temp.getLocalName());
+			re.classesOfObjects.add(temp.getOntClass().getLocalName());
+		    }
+		}       
+	    }
+	    else
+		System.out.println("<EMPTY>");
+	        
+        System.out.println();
+
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+
+
+
+	return re;
+    }
+
+    private void initGetWorkspaceOnMap() throws RosException
+    {
+	ServiceServer.Callback<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response> scb = new ServiceServer.Callback<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response>() {
+            public GetWorkspaceOnMap.Response call(GetWorkspaceOnMap.Request request) {
+		return handleGetWorkspaceOnMap(request);
+            }
+	};
+	
+	System.out.println(getWorkSpaceOnMapService);
+	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = n.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
+    }
+
+
+
+
+
 
 
     private boolean loadPredefinedTasksForTest(GetObjectTask got)
@@ -502,6 +658,12 @@ class KnowledgeEngine
     private String generateSequenceService = "generate_sequence";
     private String querySparQLService = "query_sparql";
     private String getObjectsOnMapService = "get_objects_on_map";
+    private String getWorkSpaceOnMapService = "get_workspace_on_map";
+
+    private String mapNamespacePrefix = "ipa-kitchen-map";
+    private String mapNamespace = "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#";
+
+    private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
     private String confPath;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing

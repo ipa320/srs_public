@@ -218,7 +218,7 @@ public:
 
 int g_argc;
 char** g_argv;
-
+string scan_topic = "scan_front";
 
 
 
@@ -256,18 +256,21 @@ public:
 	tf::MessageFilter<srs_msgs::PositionMeasurement> people_notifier_;
 	tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
 
+        
 	LegDetector(ros::NodeHandle nh) :
 		nh_(nh),
 		mask_count_(0),
 		connected_thresh_(0.06),
 		feat_count_(0),
 		people_sub_(nh_,"people_tracker_filter",10),
-		//laser_sub_(nh_,"scan",10),
-		laser_sub_(nh_,"scan_front",10),
+	//	//laser_sub_(nh_,"scan",10),
+	        laser_sub_(nh_,scan_topic,10),
+        //	laser_sub_(nh_,"scan_front",10),
 		people_notifier_(people_sub_,tfl_,fixed_frame,10),
 		laser_notifier_(laser_sub_,tfl_,fixed_frame,10)
 	{
-		if (g_argc > 1) {
+		
+                if (g_argc > 1) {
 			forest.load(g_argv[1]);
 			feat_count_ = forest.get_active_var_mask()->cols;
 			printf("Loaded forest with %d features: %s\n", feat_count_, g_argv[1]);
@@ -278,7 +281,7 @@ public:
 
 		// advertise topics
 		//    leg_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("kalman_filt_cloud",10);
-		leg_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("particle_filt_cloud",10);
+		leg_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("tracked_people",10);
                 leg_detections_pub_ = nh_.advertise<sensor_msgs::PointCloud>("leg_detections_cloud",10);
 		tracker_measurements_pub_ = nh_.advertise<srs_msgs::PositionMeasurement>("people_tracker_measurements",1);
 
@@ -1028,7 +1031,7 @@ public:
 			}
 
 			// visualize all trackers
-			channel.name = "rgb";
+			channel.name = "laser";
 			channel.values = weights;
 			sensor_msgs::PointCloud  people_cloud;
                         sensor_msgs::PointCloud  detections_cloud;
@@ -1060,6 +1063,16 @@ int main(int argc, char **argv)
 	ros::init(argc, argv,"laser_processor");
 	g_argc = argc;
 	g_argv = argv;
+      
+        if (g_argc > 2) {
+			scan_topic = g_argv[2];
+			
+			printf("Listening on topic %s : \n", g_argv[2]);
+		} else {
+			printf("Please provide the input topic as a parameter,e.g. scan_front. Assuming scan_front ! \n");
+			shutdown();
+		}
+        
 	ros::NodeHandle nh;
 	LegDetector ld(nh);
 	ros::spin();

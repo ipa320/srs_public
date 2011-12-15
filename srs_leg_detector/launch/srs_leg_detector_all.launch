@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="srs_leg_detector" type="srs_leg_detector" name="srs_leg_detector_front" args="scan:=base_scan $(find srs_leg_detector)/config/trained_leg_detector.yaml front" output="screen"/>
+  <node pkg="srs_leg_detector" type="srs_leg_detector" name="srs_leg_detector_rear" args="scan:=base_scan $(find srs_leg_detector)/config/trained_leg_detector.yaml rear" output="screen"/>
+  <node pkg="srs_leg_detector" type="srs_leg_detector" name="srs_leg_detector_top" args="scan:=base_scan $(find srs_leg_detector)/config/trained_leg_detector.yaml  top" output="screen"/>
+</launch>
+

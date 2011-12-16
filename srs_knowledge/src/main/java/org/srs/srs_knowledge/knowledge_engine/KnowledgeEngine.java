@@ -21,10 +21,13 @@ import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
 import ros.pkg.srs_knowledge.srv.GenerateSequence;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
 import ros.pkg.srs_knowledge.msg.*;
+import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
+
 import ros.pkg.srs_knowledge.srv.PlanNextAction;
 import ros.pkg.srs_knowledge.srv.TaskRequest;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;
 import ros.pkg.srs_knowledge.srv.GetWorkspaceOnMap;
+import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
 
 import java.util.Properties;
@@ -510,6 +513,33 @@ class KnowledgeEngine
 		    if(temp.getNameSpace().equals(mapNamespace)) {
 			re.objects.add(temp.getLocalName());
 			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
+
+			if(req.ifGeometryInfo == true) { 
+			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
+			
+			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getDataPropertyOf(globalNamespace, "xCoord", temp);
+			    spatialInfo.point.x = getFloatOfStatement(stm);
+			    stm = ontoDB.getDataPropertyOf(globalNamespace, "yCoord", temp);
+			    spatialInfo.point.y = getFloatOfStatement(stm);
+			    stm = ontoDB.getDataPropertyOf(globalNamespace, "zCoord", temp);
+			    spatialInfo.point.z = getFloatOfStatement(stm);
+			    
+			    stm = ontoDB.getDataPropertyOf(globalNamespace, "widthOfObject", temp);
+			    spatialInfo.w = getFloatOfStatement(stm);
+			    stm = ontoDB.getDataPropertyOf(globalNamespace, "heightOfObject", temp);
+			    spatialInfo.h = getFloatOfStatement(stm);
+			    stm = ontoDB.getDataPropertyOf(globalNamespace, "lengthOfObject", temp);
+			    spatialInfo.l = getFloatOfStatement(stm);
+			    
+			    stm = ontoDB.getDataPropertyOf(globalNamespace, "r3d", temp);
+			    spatialInfo.angles.r = getFloatOfStatement(stm);
+			    stm = ontoDB.getDataPropertyOf(globalNamespace, "p3d", temp);
+			    spatialInfo.angles.p = getFloatOfStatement(stm);
+			    stm = ontoDB.getDataPropertyOf(globalNamespace, "y3d", temp);
+			    spatialInfo.angles.y = getFloatOfStatement(stm);
+			    
+			    re.objectsInfo.add(spatialInfo);
+			}
 		    }
 		}       
 	    }
@@ -524,6 +554,18 @@ class KnowledgeEngine
 	}
 
 	return re;
+    }
+
+    private float getFloatOfStatement(Statement stm) 
+    {
+	float t = -1000;
+	try { 
+	    t = stm.getFloat();
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+	return t;
     }
 
     private void initGetWorkspaceOnMap() throws RosException

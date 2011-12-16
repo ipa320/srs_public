@@ -16,6 +16,7 @@
   <depend package="std_msgs"/>
   <!-- depend package="srs_jena"/-->
   <depend package="srs_pellet"/>
+  <depend package="srs_symbolic_grounding"/>
   <!-- depend package="apache_xmlrpc" /-->
   <!-- depend package="apache_commons_util" /-->
 

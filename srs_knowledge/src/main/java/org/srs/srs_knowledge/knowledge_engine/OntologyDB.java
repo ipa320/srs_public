@@ -13,10 +13,13 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.sparql.engine.ResultSetStream;
 //import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
-
+import com.hp.hpl.jena.rdf.model.Property;
 import org.mindswap.pellet.jena.PelletReasonerFactory;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.ontology.Individual;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -216,6 +219,13 @@ public class OntologyDB
     {
 	//http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#
 	return model.getNsPrefixURI(namespacePrefix);
+    }
+
+    public com.hp.hpl.jena.rdf.model.Statement getDataPropertyOf(String proNameSpace, String proLocalName, Individual ind ) 
+    {
+	com.hp.hpl.jena.rdf.model.Property property = model.getProperty(proNameSpace, proLocalName);
+	com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(property);
+	return stm;
     }
     
     //private String modelFileName;    

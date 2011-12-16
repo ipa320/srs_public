@@ -411,8 +411,11 @@ class KnowledgeEngine
 			//System.out.println(" ===>  " + stm.getLiteral());
 			re.spatialRelation.add(stm.getPredicate().getLocalName());
 			re.spatialRelatedObject.add(stm.getObject().asResource().getLocalName());
+			
+			stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);			
+			re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
 		    }
-		}       
+		}
 	    }
 	    else
 		System.out.println("<EMPTY>");
@@ -572,6 +575,19 @@ class KnowledgeEngine
 	}
 	return t;
     }
+
+    private int getIntOfStatement(Statement stm)
+    {
+	int t = -1000;
+	try { 
+	    t = stm.getInt();
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+	return t;
+    }
+
 
     private void initGetWorkspaceOnMap() throws RosException
     {

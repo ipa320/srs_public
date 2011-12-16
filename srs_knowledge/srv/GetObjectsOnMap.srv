@@ -18,3 +18,4 @@ string[] objects
 string[] classesOfObjects
 string[] spatialRelation       # e.g. aboveOf, under, behind etc
 string[] spatialRelatedObject  # e.g. Table0,  Bed0,  Door0, etc   # 
+string[] houseHoldId

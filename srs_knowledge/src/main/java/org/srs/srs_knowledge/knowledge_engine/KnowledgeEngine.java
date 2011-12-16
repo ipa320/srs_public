@@ -517,25 +517,25 @@ class KnowledgeEngine
 			if(req.ifGeometryInfo == true) { 
 			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
 			
-			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getDataPropertyOf(globalNamespace, "xCoord", temp);
+			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
 			    spatialInfo.point.x = getFloatOfStatement(stm);
-			    stm = ontoDB.getDataPropertyOf(globalNamespace, "yCoord", temp);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
 			    spatialInfo.point.y = getFloatOfStatement(stm);
-			    stm = ontoDB.getDataPropertyOf(globalNamespace, "zCoord", temp);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
 			    spatialInfo.point.z = getFloatOfStatement(stm);
 			    
-			    stm = ontoDB.getDataPropertyOf(globalNamespace, "widthOfObject", temp);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "widthOfObject", temp);
 			    spatialInfo.w = getFloatOfStatement(stm);
-			    stm = ontoDB.getDataPropertyOf(globalNamespace, "heightOfObject", temp);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "heightOfObject", temp);
 			    spatialInfo.h = getFloatOfStatement(stm);
-			    stm = ontoDB.getDataPropertyOf(globalNamespace, "lengthOfObject", temp);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
 			    spatialInfo.l = getFloatOfStatement(stm);
 			    
-			    stm = ontoDB.getDataPropertyOf(globalNamespace, "r3d", temp);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "r3d", temp);
 			    spatialInfo.angles.r = getFloatOfStatement(stm);
-			    stm = ontoDB.getDataPropertyOf(globalNamespace, "p3d", temp);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "p3d", temp);
 			    spatialInfo.angles.p = getFloatOfStatement(stm);
-			    stm = ontoDB.getDataPropertyOf(globalNamespace, "y3d", temp);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "y3d", temp);
 			    spatialInfo.angles.y = getFloatOfStatement(stm);
 			    
 			    re.objectsInfo.add(spatialInfo);

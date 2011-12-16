@@ -26,6 +26,7 @@ from cob_object_detection_msgs.srv import *
 from cob_object_detection_msgs.msg import *
 from gazebo.srv import *
 import gazebo.msg as gazebo
+from cob_tray_sensors import *
 #import geometry_msgs.msg as geomery
 #from gazebo.srv import SetModelState
 from cob_mmcontroller.msg import *
@@ -814,6 +815,7 @@ class deliver_object(smach.State):
             outcomes=['succeeded', 'retry', 'failed'])
 
     def execute(self, userdata):
+        
         #sss.say(["Here is your " + userdata.object_name + ". Please help yourself."],False)
         sss.move("torso","nod",False)
         

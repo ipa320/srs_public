@@ -221,7 +221,13 @@ public class OntologyDB
 	return model.getNsPrefixURI(namespacePrefix);
     }
 
-    public com.hp.hpl.jena.rdf.model.Statement getDataPropertyOf(String proNameSpace, String proLocalName, Individual ind ) 
+    /**
+     * @param proNameSpace property namespace
+     * @param proLocalName property name
+     * @param ind individual object
+     * @return statement containing the property info 
+     */
+    public com.hp.hpl.jena.rdf.model.Statement getPropertyOf(String proNameSpace, String proLocalName, Individual ind ) 
     {
 	com.hp.hpl.jena.rdf.model.Property property = model.getProperty(proNameSpace, proLocalName);
 	com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(property);

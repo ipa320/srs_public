@@ -156,9 +156,9 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 		ca.ga = ga;
 
 		try {
-			ca.actionFlags = parseActionFlags("0 1 1");
+		    ca.actionFlags = parseActionFlags("0 1 1");
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+		    System.out.println(e.getMessage());
 		}
 		act.setActionName("finish_success");
 

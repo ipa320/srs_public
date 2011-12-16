@@ -381,7 +381,6 @@ class KnowledgeEngine
     private GetObjectsOnMap.Response handleGetObjectsOnMap(GetObjectsOnMap.Request req)
     {
 	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
-
 	
 	String className = globalNamespace;
 	if(req.map != null) {
@@ -407,8 +406,11 @@ class KnowledgeEngine
 			re.objects.add(temp.getLocalName());
 			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
 			
-			re.spatialRelation.add("");
-			re.spatialRelatedObject.add("");
+			com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "spatiallyRelated", temp);			
+			//System.out.println(" -->  " + stm);
+			//System.out.println(" ===>  " + stm.getLiteral());
+			re.spatialRelation.add(stm.getPredicate().getLocalName());
+			re.spatialRelatedObject.add(stm.getObject().asResource().getLocalName());
 		    }
 		}       
 	    }

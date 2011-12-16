@@ -22,30 +22,6 @@
     </owl:Ontology>
     
 
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Annotation properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    <owl:AnnotationProperty rdf:about="&srs;xCoord"/>
-    <owl:AnnotationProperty rdf:about="&srs;heightOfObject"/>
-    <owl:AnnotationProperty rdf:about="&srs;inFrontOf-Generally"/>
-    <owl:AnnotationProperty rdf:about="&srs;zCoord"/>
-    <owl:AnnotationProperty rdf:about="&srs;orientationTheta"/>
-    <owl:AnnotationProperty rdf:about="&srs;houseHoldObjectID"/>
-    <owl:AnnotationProperty rdf:about="&srs;xCoordinate"/>
-    <owl:AnnotationProperty rdf:about="&srs;lengthOfObject"/>
-    <owl:AnnotationProperty rdf:about="&srs;yCoord"/>
-    <owl:AnnotationProperty rdf:about="&srs;aboveOf"/>
-    <owl:AnnotationProperty rdf:about="&srs;widthOfObject"/>
-    <owl:AnnotationProperty rdf:about="&srs;yCoordinate"/>
-    
-
-
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //

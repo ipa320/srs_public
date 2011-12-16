@@ -282,7 +282,7 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','env_object_update','deliver_object'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','env_object_update','deliver_object','prepare_robot'],
                              input_keys=['target_object_name','target_base_pose','target_object_pose'],
                              output_keys=['target_object_name',
                                           'target_base_pose',
@@ -507,6 +507,46 @@ class initialise(smach.State):
 
         return 'succeeded'
     
+#prepare the robot for the task
+class prepare_robot(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'])
+        #self.count=0
+
+        
+    def execute(self,userdata):
+               
+        last_step_info = xmsg.Last_step_info()
+        last_step_info.step_name = "prepare_robot"
+        last_step_info.outcome = 'succeeded'
+        last_step_info.semi_autonomous_mode = False
+        
+        #recording the information of last step
+        global current_task_info
+        current_task_info.last_step_info.append(last_step_info)
+                
+        #current_task_info.session_id = 123456
+        
+        #initialisation of the robot
+        # move to initial positions
+        global sss
+        handle_torso = sss.move("torso", "home", False)
+        handle_tray = sss.move("tray", "down", False)
+        handle_arm = sss.move("arm", "folded", False)
+        handle_sdh = sss.move("sdh", "cylclosed", False)
+        handle_head = sss.move("head", "front", False)
+    
+        
+        # wait for initial movements to finish
+        handle_torso.wait()
+        handle_tray.wait()
+        handle_arm.wait()
+        handle_sdh.wait()
+        handle_head.wait()
+        
+        
+
+        return 'succeeded'
     
 #verify_object FROM PRO+IPA, the interface still need to be clarified 
 class verify_object(smach.State):

@@ -2,7 +2,7 @@
 #mapID
 # uint32 mapID  # deprecated
 #Time stamp for the period
-duration period # if empty then all the period
+#duration period # if empty then all the period
 
 string map
 

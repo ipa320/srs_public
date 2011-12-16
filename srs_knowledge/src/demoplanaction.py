@@ -63,6 +63,26 @@ def requestNewTaskMove():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
+
+def getObjectsOnMap():
+    print 'test get all objects from map'
+    try:
+        requestNewTask = rospy.ServiceProxy('get_objects_on_map', GetObjectsOnMap)
+        res = requestNewTask('ipa-kitchen-map')
+        return res
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
+def getWorkspaceOnMap():
+    print 'test get all workspace (furnitures basically here) from map'
+    try:
+        requestNewTask = rospy.ServiceProxy('get_workspace_on_map', GetWorkspaceOnMap)
+        res = requestNewTask('ipa-kitchen-map', True)
+        return res
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
+
 def usage():
     return "%s [x y]"%sys.argv[0]
 
@@ -82,4 +102,6 @@ if __name__ == "__main__":
     #print '5-- ', testNextActionService([0,0,0])
     #print '6-- ', testNextActionService([0,0,0])
     # to terminate current task, 
-    #print terminateCurrentTask();
+    #print terminateCurrentTask()
+    print getObjectsOnMap()
+    print getWorkspaceOnMap()

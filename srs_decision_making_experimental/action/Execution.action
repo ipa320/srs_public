@@ -1,0 +1,12 @@
+#define the goal, srs_msgs/srs_action[] action_sequence	#Specify what action sequence to be applied
+string action
+string parameter
+uint32 priority
+---
+#define the result
+uint32 return_value
+---
+#define a feedback message
+string current_state
+bool solution_required
+uint32 exceptional_case_id

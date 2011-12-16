@@ -82,7 +82,7 @@ public class Task
 	    this.targetContent = "[-2.14 0.0 0]";
 	}
 	else if (this.targetContent.equals("kitchen_backwards")) {
-	    this.targetContent = "[-2.04 0.3 3.14]";
+	    this.targetContent = "[-2.04 -0.3 3.14]";
 	}
 	
 	if(this.targetContent.charAt(0) == '[' && this.targetContent.charAt(targetContent.length() - 1) == ']') {
@@ -383,10 +383,19 @@ public class Task
 	double x = Double.parseDouble(parameters[0]);
 	double y = Double.parseDouble(parameters[1]);
 	double theta = Double.parseDouble(parameters[2]);
+
 	ma.targetPose2D.x = x;
 	ma.targetPose2D.y = y;
 	ma.targetPose2D.theta = theta;
+
+	String ifWaitForObjectTaken = parameters[3];
+	boolean ifWaitFOT = false;
+	if(ifWaitForObjectTaken.equals("true")) {
+	    ifWaitFOT = true;
+	}
+	ma.ifWaitObjectTaken = ifWaitFOT;
 	//System.out.println("X is   " + ma.targetPose2D.x + "   Y is   " + ma.targetPose2D.y);
+
 	return ma;
     }
 

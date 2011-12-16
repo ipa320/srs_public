@@ -148,33 +148,34 @@ class SRS_DM_ACTION(object):
         self._parameter = ""
         self.customised_preempt_request = False
         self._as.start()
+        self.robot_initialised= False
                 
         #self._as.register_goal_callback(self.goal_cb)
         self._as.register_preempt_callback(self.priority_cb)
         
-
-        #initialisation of the robot
-        # move to initial positions
-        global sss
-        handle_torso = sss.move("torso", "home", False)
-        handle_tray = sss.move("tray", "down", False)
-        handle_arm = sss.move("arm", "folded", False)
-        handle_sdh = sss.move("sdh", "cylclosed", False)
-        handle_head = sss.move("head", "front", False)
-
-    
-        # wait for initial movements to finish
-        handle_torso.wait()
-        handle_tray.wait()
-        handle_arm.wait()
-        handle_sdh.wait()
-        handle_head.wait()
-        
-            
-        sss.wait_for_input(3)
-        
-        
         rospy.loginfo("Waiting for wake up the server ...")
+        
+    def robot_initialisation_process(self):
+        if not self.robot_initialised :
+            #initialisation of the robot
+            # move to initial positions
+            global sss
+            handle_torso = sss.move("torso", "home", False)
+            handle_tray = sss.move("tray", "down", False)
+            handle_arm = sss.move("arm", "folded", False)
+            handle_sdh = sss.move("sdh", "cylclosed", False)
+            handle_head = sss.move("head", "front", False)
+    
+        
+            # wait for initial movements to finish
+            handle_torso.wait()
+            handle_tray.wait()
+            handle_arm.wait()
+            handle_sdh.wait()
+            handle_head.wait()
+            self.robot_initialised = True
+            
+        
 
         
     def init_sm(self):
@@ -302,6 +303,9 @@ class SRS_DM_ACTION(object):
         if current_task_info.task_name=="":
 	           current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
+        
+        if not self.robot_initialised:
+            self.robot_initialisation_process()
         
 
 

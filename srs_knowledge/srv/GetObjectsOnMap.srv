@@ -1,0 +1,18 @@
+#get_objects_map
+
+#mapID
+uint32 mapID    # deprecated
+
+#Time stamp for the period
+duration period # if empty then all the period
+
+string map
+
+---
+#list of object ID for possible object in current map
+uint32[] objectID     # deprecated
+#object classID for each object on the map 
+uint32[] classID      # deprecated
+
+string[] objects
+string[] classesOfObjects

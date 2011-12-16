@@ -5,6 +5,9 @@ import java.io.*;
 import java.util.ArrayList;
 import ros.pkg.srs_knowledge.msg.*;
 
+/**
+ * A container of CUAction and additional information
+ */
 public class ActionTuple
 {
     public ActionTuple()

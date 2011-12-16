@@ -9,16 +9,76 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.sparql.engine.ResultSetStream;
+//import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import org.mindswap.pellet.jena.PelletReasonerFactory;
+import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.ontology.Individual;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
-class OntologyDB
+public class OntologyDB
 {
+    public OntologyDB()
+    {
+	// create an empty model
+	this.model = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC);
+	this.reasoning();
+    }
+
     public OntologyDB(String filename)
     {
-	this.modelFileName = filename;
-	this.reloadOWLFile(filename);
+	try {
+	    //String modelFileName = filename;
+	    this.reloadOWLFile(filename);
+	}
+	catch(IllegalArgumentException e) {
+	    System.out.println("Caught Exception : " + e.getMessage());
+	}
+	this.reasoning();
+    }
+
+    public OntologyDB(ArrayList<String> filenames)
+    {
+	// create an empty model
+	this.model = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC);
+
+	//this.model = ModelFactory.createDefaultModel();
+	try {
+	    for(String filename : filenames) {
+		//String modelFileName = filename;
+		this.importOntology(filename);
+	    }
+	}
+	catch(IllegalArgumentException e) {
+	    System.out.println("Caught Exception : " + e.getMessage());
+	}
+	this.reasoning();
+    }
+
+    public void importOntology(String filename) 
+    {
+	System.out.println("Load OWL File: " + filename);
+	// use the FileManager to find the input file
+	InputStream in = FileManager.get().open(filename);
+	if (in == null) {
+	    throw new IllegalArgumentException("File: " + filename + " not found");
+	}
+	
+	// read the RDF/XML file
+	model.read(in, null);
+    }
+
+    public void reasoning()
+    {
+	return;
     }
 
     public String executeQuery(String queryString)
@@ -43,6 +103,7 @@ class OntologyDB
 	String r = "";
 	try{
 	    r = new String(ostream.toByteArray(), "UTF-8");
+	    System.out.println(r);
 	}
 	catch(Exception e){
 	    System.out.println(e.getMessage());
@@ -50,23 +111,66 @@ class OntologyDB
 	qe.close();
 	return r;
     }
-
-    public Boolean reloadOWLFile(String file)
+    
+    public ArrayList<QuerySolution> executeQueryRaw(String queryString)
     {
-	System.out.println("Load OWL File: " + file);
-	// create an empty model
-	this.model = ModelFactory.createDefaultModel();
+	/*
+	  String queryString = "PREFIX house: <http://www.semanticweb.org/ontologies/house.owl#> " + 
+	  "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " + 
+	  "SELECT ?room " + 
+	  "WHERE { " +
+	  "?room rdf:type house:Table . " +  
+	  "}";
+	*/
+	System.out.println(queryString);
+	Query query = QueryFactory.create(queryString);
 	
+	QueryExecution qe = QueryExecutionFactory.create(query, model);
+	ResultSet results = qe.execSelect();
+	/*
+	ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+	ResultSetFormatter.out(ostream, results, query);
+	//ResultSetFormatter.out(System.out, results, query);
+	String r = "";
+	try{
+	    r = new String(ostream.toByteArray(), "UTF-8");
+	    System.out.println(r);
+	}
+	catch(Exception e){
+	    System.out.println(e.getMessage());
+	}
+	*/
+	ArrayList<QuerySolution> resList = new ArrayList<QuerySolution>();
+	if(results.hasNext()) {
+	    //System.out.println(" <><><><><><><><><><><><><> ");
+	    QuerySolution qs = results.next();
+	    resList.add(qs);
+	    //double x = qs.getLiteral("x").getFloat();
+	    //Literal y = qs.getLiteral("y");
+	    //Literal theta = qs.getLiteral("theta");
+	    //System.out.println(" <><><><><><><><><><><><><> " + qs.toString() + "    " + x);
+	    //System.out.println("x is " + x + ". y is  " + y + ". theta is " + theta);
+	}
+
+	qe.close();
+	return resList; //results;
+    }
+
+    public void reloadOWLFile(String file)
+    {
+	// create an empty model
+	//this.model = ModelFactory.createDefaultModel();
+	this.model = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC);
+
+	System.out.println("Load OWL File: " + file);
 	// use the FileManager to find the input file
-	InputStream in = FileManager.get().open( file );
+	InputStream in = FileManager.get().open(file);
 	if (in == null) {
 	    throw new IllegalArgumentException("File: " + file + " not found");
 	}
 	
 	// read the RDF/XML file
 	model.read(in, null);
-	
-	return true;
     }
     
     public void printModel()
@@ -96,6 +200,35 @@ class OntologyDB
 	*/
     }
 
-    private String modelFileName;    
-    private Model model;
+    public Iterator getInstancesOfClass(String className) 
+    {
+	//ArrayList<String> res = new ArrayList<String>();
+
+	// get the instances of a class
+	OntClass onto = model.getOntClass( className );
+	
+	if(onto == null) {
+	    System.out.println("ONT CLASS IS NULL");
+	}
+	
+	Iterator instances = onto.listInstances();
+	return instances;
+    }
+
+    public String getNamespaceByPrefix(String namespacePrefix)
+    {
+	//http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#
+	return model.getNsPrefixURI(namespacePrefix);
+    }
+
+    public com.hp.hpl.jena.rdf.model.Statement getDataPropertyOf(String proNameSpace, String proLocalName, Individual ind ) 
+    {
+	com.hp.hpl.jena.rdf.model.Property property = model.getProperty(proNameSpace, proLocalName);
+	com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(property);
+	return stm;
+    }
+    
+    //private String modelFileName;    
+    //private Model model;
+    private OntModel model;
 }

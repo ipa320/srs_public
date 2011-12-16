@@ -406,6 +406,9 @@ class KnowledgeEngine
 		    if(temp.getNameSpace().equals(mapNamespace)) {
 			re.objects.add(temp.getLocalName());
 			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
+			
+			re.spatialRelation.add("");
+			re.spatialRelatedObject.add("");
 		    }
 		}       
 	    }

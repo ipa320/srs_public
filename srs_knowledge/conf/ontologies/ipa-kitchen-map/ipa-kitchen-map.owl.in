@@ -2,7 +2,6 @@
 
 
 <!DOCTYPE rdf:RDF [
-    <!ENTITY local_path 'file://@OWL_PATH_PREFIX@/conf/ontologies/'>
     <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
     <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
@@ -19,8 +18,31 @@
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:srs="http://www.srs-project.eu/ontologies/srs.owl#">
     <owl:Ontology rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl">
-        <owl:imports rdf:resource="&local_path;srs.owl"/>
+        <owl:imports rdf:resource="file://@OWL_PATH_PREFIX@/conf/ontologies/srs.owl"/>
     </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <owl:AnnotationProperty rdf:about="&srs;xCoord"/>
+    <owl:AnnotationProperty rdf:about="&srs;heightOfObject"/>
+    <owl:AnnotationProperty rdf:about="&srs;inFrontOf-Generally"/>
+    <owl:AnnotationProperty rdf:about="&srs;zCoord"/>
+    <owl:AnnotationProperty rdf:about="&srs;orientationTheta"/>
+    <owl:AnnotationProperty rdf:about="&srs;houseHoldObjectID"/>
+    <owl:AnnotationProperty rdf:about="&srs;xCoordinate"/>
+    <owl:AnnotationProperty rdf:about="&srs;lengthOfObject"/>
+    <owl:AnnotationProperty rdf:about="&srs;yCoord"/>
+    <owl:AnnotationProperty rdf:about="&srs;aboveOf"/>
+    <owl:AnnotationProperty rdf:about="&srs;widthOfObject"/>
+    <owl:AnnotationProperty rdf:about="&srs;yCoordinate"/>
     
 
 
@@ -32,6 +54,23 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#contains -->
+
+    <owl:ObjectProperty rdf:about="&srs;contains"/>
     
 
 
@@ -63,16 +102,82 @@
     
 
 
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Dishwasher -->
+
+    <owl:Class rdf:about="&srs;Dishwasher"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Kitchen -->
+
+    <owl:Class rdf:about="&srs;Kitchen"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#LivingRoom -->
+
+    <owl:Class rdf:about="&srs;LivingRoom"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Milk -->
+
+    <owl:Class rdf:about="&srs;Milk"/>
+    
+
+
     <!-- http://www.srs-project.eu/ontologies/srs.owl#MilkBox -->
 
-    <rdf:Description rdf:about="&srs;MilkBox">
+    <owl:Class rdf:about="&srs;MilkBox">
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&srs;contains"/>
                 <owl:allValuesFrom rdf:resource="&srs;Milk"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-    </rdf:Description>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Oven -->
+
+    <owl:Class rdf:about="&srs;Oven"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Point2D -->
+
+    <owl:Class rdf:about="&srs;Point2D"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Refrigerator-Freezer -->
+
+    <owl:Class rdf:about="&srs;Refrigerator-Freezer"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Sink -->
+
+    <owl:Class rdf:about="&srs;Sink"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Sofa-PieceOfFurniture -->
+
+    <owl:Class rdf:about="&srs;Sofa-PieceOfFurniture"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#StoveTop -->
+
+    <owl:Class rdf:about="&srs;StoveTop"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Table-PieceOfFurniture -->
+
+    <owl:Class rdf:about="&srs;Table-PieceOfFurniture"/>
     
 
 
@@ -258,10 +363,10 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#order">
         <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:yCoordinate rdf:datatype="&xsd;float">-0.5</srs:yCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">0.7</srs:orientationTheta>
-        <srs:xCoordinate rdf:datatype="&xsd;float">1</srs:xCoordinate>
-        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[1 -0.5 -0.7]</inSRSCoordinateFormat>
+        <srs:yCoordinate rdf:datatype="&xsd;float">-0.7</srs:yCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">0.75</srs:orientationTheta>
+        <srs:xCoordinate rdf:datatype="&xsd;float">1.47</srs:xCoordinate>
+        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[1.47 -0.7 0.75]</inSRSCoordinateFormat>
     </owl:NamedIndividual>
 </rdf:RDF>
 

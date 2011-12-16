@@ -2,6 +2,7 @@
 
 
 <!DOCTYPE rdf:RDF [
+    <!ENTITY local_path 'file://@OWL_PATH_PREFIX@/conf/ontologies/ipa-kitchen-map/'>
     <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
     <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
@@ -21,6 +22,7 @@
         <owl:imports rdf:resource="file://@OWL_PATH_PREFIX@/conf/ontologies/srs.owl"/>
     </owl:Ontology>
     
+
 
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -64,6 +66,24 @@
     <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#inSRSCoordinateFormat -->
 
     <owl:DatatypeProperty rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#inSRSCoordinateFormat"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#orientationTheta -->
+
+    <owl:DatatypeProperty rdf:about="&srs;orientationTheta"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#xCoordinate -->
+
+    <owl:DatatypeProperty rdf:about="&srs;xCoordinate"/>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#yCoordinate -->
+
+    <owl:DatatypeProperty rdf:about="&srs;yCoordinate"/>
     
 
 
@@ -165,6 +185,18 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#ChargingStation0 -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#ChargingStation0">
+        <rdf:type rdf:resource="&srs;Point2D"/>
+        <srs:yCoordinate rdf:datatype="&xsd;float">-1.6</srs:yCoordinate>
+        <srs:xCoordinate rdf:datatype="&xsd;float">1</srs:xCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">1.57</srs:orientationTheta>
+        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[1 -1.6 1.57]</inSRSCoordinateFormat>
+    </owl:NamedIndividual>
     
 
 

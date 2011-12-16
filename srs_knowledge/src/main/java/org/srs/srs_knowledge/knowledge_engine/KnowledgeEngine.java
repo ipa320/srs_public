@@ -338,11 +338,12 @@ class KnowledgeEngine
 	    this.loadPredefinedTasksForTest(got);
 	    currentTask = (Task)got;
 	}
-	else if(request.task.equals("charge") {
+	else if(request.task.equals("charging")) {
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new MoveToTask(null, null, ontoDB);
+	    currentTask = new ChargingTask(null, null, ontoDB);
+	    //currentTask = new MoveToTask(null, null, ontoDB);
 	    System.out.println("Created CurrentTask " + "charge ");
 	    
 	}

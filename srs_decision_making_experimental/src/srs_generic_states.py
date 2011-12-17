@@ -282,7 +282,7 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','env_object_update','deliver_object','prepare_robot'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','env_object_update','deliver_object','charging'],
                              input_keys=['target_object_name','target_base_pose','target_object_pose'],
                              output_keys=['target_object_name',
                                           'target_base_pose',
@@ -391,7 +391,7 @@ class semantic_dm(smach.State):
             if resp1.nextAction.actionType == 'generic':
                 if resp1.nextAction.generic.actionInfo[0] == 'charging':
                     nextStep = 'charging'
-                    userdata.target_base_pose = [resp1.nextAction.generic.actionInfo[1], resp1.nextAction.generic.actionInfo[2], resp1.nextAction.generic.actionInfo[3]]                    
+                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
                     return nextStep
 
             if resp1.nextAction.actionFlags == (0, 1, 1):

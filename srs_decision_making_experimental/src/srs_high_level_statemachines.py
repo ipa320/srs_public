@@ -377,9 +377,27 @@ class sm_deliver_object(SRS_StateMachine):
             smach.StateMachine.add('DELIVER_OBJECT', deliver_object(),
                     transitions={'succeeded':'succeeded', 
                                  'retry':'not_completed',
-                                'failed':'failed'})           
+                                'failed':'failed'})         
             
-     
+              
+            
+class charging(SRS_StateMachine):
+    def __init__(self):    
+        smach.StateMachine.__init__(self, 
+            outcomes=['succeeded',  'failed'],
+            input_keys=['target_base_pose','semi_autonomous_mode'])        
+        self.customised_initial("go_to_charging_station")
+    
+        with self:
+            smach.StateMachine.add('PREPARE_ROBOT', prepare_robot(),
+                    transitions={'succeeded':'MOVE_TO_CHARGING_STATION', 'failed':'failed'}
+                    )
+                                                  
+            smach.StateMachine.add('MOVE_TO_CHARGING_STATION', approach_pose_without_retry(),
+                    transitions={'succeeded':'succeeded', 'failed':'failed'},
+                    remapping={'base_pose':'target_base_pose'})
+            
+            
 """
 class sm_open_door(SRS_StateMachine):
     def __init__(self):    

@@ -1,0 +1,8 @@
+geometry_msgs/Pose target_obj_pose
+geometry_msgs/Pose2D rb_pose
+SRSFurnitureGeometry parent_obj_geometry
+SRSFurnitureGeometry[] furnitures_geometry
+---
+string obstacle_check
+float32 reach
+geometry_msgs/Pose2D grasp_base_pose

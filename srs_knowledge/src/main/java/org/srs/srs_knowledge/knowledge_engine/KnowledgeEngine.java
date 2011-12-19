@@ -556,6 +556,10 @@ class KnowledgeEngine
 			    spatialInfo.angles.y = getFloatOfStatement(stm);
 			    
 			    re.objectsInfo.add(spatialInfo);
+
+			    stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);
+			    re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
+
 			}
 		    }
 		}       

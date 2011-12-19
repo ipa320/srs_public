@@ -20,3 +20,4 @@ bool ifGeometryInfo
 string[] objects
 string[] classesOfObjects
 SRSSpatialInfo[] objectsInfo
+string[] houseHoldId

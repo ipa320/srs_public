@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- start srs actions server -->
+	<node pkg="srs_decision_making_experimental" type="srs_actions_server.py" name="srs_decision_making_actions" output="screen">
+        </node>
+
+</launch>

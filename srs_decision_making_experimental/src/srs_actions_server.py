@@ -209,7 +209,8 @@ class SRS_DM_ACTION(object):
                                                 'detection':'SM_DETECTION',
                                                 'simple_grasp':'SM_SIMPLE_GRASP',
                                                 'deliver_object':'SM_DELIVER_OBJECT',
-                                                'env_object_update':'SM_ENV_OBJECT_UPDATE'},
+                                                'env_object_update':'SM_ENV_OBJECT_UPDATE',
+                                                'charging':'CHARGING'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
                                                'target_object_pose':'target_object_pose',
@@ -246,6 +247,12 @@ class SRS_DM_ACTION(object):
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'})     
+            
+            smach.StateMachine.add('CHARGING', charging(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   remapping={'target_base_pose':'target_base_pose',
+                                               'semi_autonomous_mode':'semi_autonomous_mode'}
+                                   )    
                         
 	    """	
             smach.StateMachine.add('SM_DETECTION_SIMPLE', detect_object(),
@@ -306,6 +313,8 @@ class SRS_DM_ACTION(object):
         
         if not self.robot_initialised:
             self.robot_initialisation_process()
+            
+        current_task_info._as = copy.copy(self._as)
         
 
 

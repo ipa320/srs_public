@@ -9,3 +9,7 @@ int32[] actionFlags
 MoveAction ma
 PerceptionAction pa
 GraspAction ga
+GenericAction generic
+
+# move, perception, grasp, or generic
+string actionType

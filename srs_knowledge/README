@@ -1,1 +1,30 @@
 To compile, make sure environment variable JAVA_HOME 
+
+(Incomplete... only info about get_objects_on_map and get_workspace_on_map)
+
+Have a look at demoplanaction.py too..
+
+--> test service /get_objects_on_map
+
+% rosservice call /get_objects_on_map 1 ipa-kitchen-map
+
+argument: [map]
+map name, default is ipa-kitchen-map, if no valid name specified, use the default
+
+--> test service /get_workspace_on_map   (get all furnitures)
+
+% rosservice call /get_workspace_on_map 1 ipa-kitchen-map true
+
+argument: ['map', 'ifGeometryInfo']
+
+map is using default ipa-kitchen-map
+ifGeometryInfo: if true, also return the geometric information about the furnitures, including
+- location as a point, x, y, z
+- dimension as l, w, h
+- orientation as r, p, y 
+
+if information is not available, return -1000 instead. 
+
+(the above data is obtained from ontology file, and based on the ipa-kitchen world model)
+
+

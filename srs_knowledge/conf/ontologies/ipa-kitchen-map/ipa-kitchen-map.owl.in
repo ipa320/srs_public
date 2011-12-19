@@ -2,7 +2,6 @@
 
 
 <!DOCTYPE rdf:RDF [
-    <!ENTITY local_path 'file://@OWL_PATH_PREFIX@/conf/ontologies/ipa-kitchen-map/'>
     <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
     <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
@@ -228,9 +227,9 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Kitchen0 -->
+    <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Ipa-kitchen -->
 
-    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Kitchen0">
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Ipa-kitchen">
         <rdf:type rdf:resource="&srs;Kitchen"/>
     </owl:NamedIndividual>
     

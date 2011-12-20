@@ -12,9 +12,6 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
-import java.io.*;
-import java.util.ArrayList; 
-import java.util.Iterator;
 import ros.*;
 import ros.communication.*;
 import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
@@ -35,8 +32,9 @@ import java.util.Properties;
 import java.io.IOException;
 import java.io.*;
 import java.util.StringTokenizer;
+import java.util.ArrayList; 
+import java.util.Iterator;
 //import org.apache.commons.logging.Log;
-import java.util.ArrayList;
 
 class KnowledgeEngine
 {
@@ -533,13 +531,22 @@ class KnowledgeEngine
 
 			if(req.ifGeometryInfo == true) { 
 			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
-			
+
+			    /*
 			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
 			    spatialInfo.point.x = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
 			    spatialInfo.point.y = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
 			    spatialInfo.point.z = getFloatOfStatement(stm);
+			    */
+			    
+			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
+			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
+			    spatialInfo.pose.position.y = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
+			    spatialInfo.pose.position.z = getFloatOfStatement(stm);
 			    
 			    stm = ontoDB.getPropertyOf(globalNamespace, "widthOfObject", temp);
 			    spatialInfo.w = getFloatOfStatement(stm);
@@ -548,13 +555,24 @@ class KnowledgeEngine
 			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
 			    spatialInfo.l = getFloatOfStatement(stm);
 			    
+			    /*
 			    stm = ontoDB.getPropertyOf(globalNamespace, "r3d", temp);
 			    spatialInfo.angles.r = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "p3d", temp);
 			    spatialInfo.angles.p = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "y3d", temp);
 			    spatialInfo.angles.y = getFloatOfStatement(stm);
-			    
+			    */
+
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
+			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qx", temp);
+			    spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qy", temp);
+			    spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
+			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
+
 			    re.objectsInfo.add(spatialInfo);
 
 			    stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);

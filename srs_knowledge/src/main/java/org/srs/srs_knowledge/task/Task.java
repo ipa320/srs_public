@@ -37,6 +37,9 @@ public abstract class Task {
 	currentAction = null;
 	ontoDB = new OntologyDB();
     }
+
+    public abstract boolean replan(OntologyDB onto);
+
     /*
 	public Task(String taskType, String targetContent, Pose2D userPose) {
 		ontoDB = new OntologyDB();

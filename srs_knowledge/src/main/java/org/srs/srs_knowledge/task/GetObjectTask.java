@@ -45,6 +45,13 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     }
     
     private boolean createGetObjectTask() {
+	/*
+	// query for tables
+	// move to tables (near -- use grounding)
+	// detect milk
+	// grap milk
+	// back to user
+	*/
 	return true;
     }
     
@@ -56,4 +63,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			   + targetContent);
 	constructTask();
     }   
+
+    public boolean replan(OntologyDB onto) {
+	return false;
+    }
 }

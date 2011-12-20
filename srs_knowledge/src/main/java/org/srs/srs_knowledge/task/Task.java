@@ -38,7 +38,17 @@ public abstract class Task {
 	ontoDB = new OntologyDB();
     }
 
-    public abstract boolean replan(OntologyDB onto);
+    public abstract boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery);
+
+    /*
+    public boolean setOntoQueryUtil(OntoQueryUtil ontoQuery) {
+	if(ontoQuery == null) 
+	    return false;
+	
+	ontoQueryUtil = ontoQuery;
+	return true;
+    }
+    */
 
     /*
 	public Task(String taskType, String targetContent, Pose2D userPose) {
@@ -529,4 +539,5 @@ public abstract class Task {
 	protected ActionTuple currentAction;
 	protected int currentActionLoc = 0;
 	protected OntologyDB ontoDB;
+    protected OntoQueryUtil ontoQueryUtil;
 }

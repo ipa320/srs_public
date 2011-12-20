@@ -17,7 +17,7 @@ import org.srs.srs_knowledge.task.Task;
 
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    public GetObjectTask(String taskType, String targetContent, Pose2D userPose, OntologyDB onto) 
+    public GetObjectTask(String taskType, String targetContent, Pose2D userPose, OntologyDB onto, OntoQueryUtil ontoQueryUtil) 
     {
 	if (onto != null) {
 	    System.out.println("SET ONTOLOGY DB");
@@ -27,11 +27,20 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("NULL ---- SET ONTOLOGY DB");
 	    this.ontoDB = new OntologyDB();
 	}
+
+	if (ontoQueryUtil != null) {
+	    this.ontoQueryUtil = ontoQueryUtil;
+	} 
+	else {
+	    System.out.println("NULL ---- SET ONTOLOGY DB");
+	    this.ontoQueryUtil = new OntoQueryUtil("","");
+	}
 	
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent, userPose);
     }
     
+    /*
     public GetObjectTask(String taskType, String targetContent, Pose2D userPose) 
     {
 	this.ontoDB = new OntologyDB();
@@ -39,7 +48,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	this.initTask(targetContent, userPose);
 	setTaskType(TaskType.GET_OBJECT);
     }
-    
+    */
+
     protected boolean constructTask() {
 	return createGetObjectTask();
     }
@@ -52,6 +62,19 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	// grap milk
 	// back to user
 	*/
+	System.out.println("Create New GET OBJECT Task --- ");
+	try {
+	    System.out.println(this.targetContent);
+	    System.out.println(this.ontoQueryUtil.getObjectNameSpace());
+	    System.out.println(this.ontoQueryUtil.getGlobalNameSpace());
+	    ArrayList<String> workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
+	for(String u : workspaces) {
+	    System.out.println(u);
+	}
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage() + "\n" + e.toString());
+	}
 	return true;
     }
     
@@ -64,7 +87,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	constructTask();
     }   
 
-    public boolean replan(OntologyDB onto) {
+    public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {
 	return false;
     }
 }

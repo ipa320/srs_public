@@ -157,7 +157,8 @@ class KnowledgeEngine
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	}
 
-
+	ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
+	
 	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
     }
 
@@ -321,6 +322,7 @@ class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    currentTask = new MoveToTask(request.content, null, ontoDB);
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
 	else if(request.task.equals("get") || request.task.equals("search")){
@@ -328,12 +330,14 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB);
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil);
+
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    this.loadPredefinedTasksForTest(got);
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    currentTask = (Task)got;
 	}
 	else if(request.task.equals("charging")) {
@@ -343,13 +347,14 @@ class KnowledgeEngine
 	    currentTask = new ChargingTask(null, null, ontoDB);
 	    //currentTask = new MoveToTask(null, null, ontoDB);
 	    System.out.println("Created CurrentTask " + "charge ");
-	    
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
 	else {
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    // task not created for some reason
-	    currentTask = new GetObjectTask(request.task, request.content, null);
+	    currentTask = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil);
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    res.result = 1;
 	    res.description = "No action";
 	}
@@ -743,6 +748,7 @@ class KnowledgeEngine
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
     private String confPath;
+    private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing
     int flag = 1;
 }

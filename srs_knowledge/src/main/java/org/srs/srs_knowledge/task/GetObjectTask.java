@@ -68,12 +68,13 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println(this.ontoQueryUtil.getObjectNameSpace());
 	    System.out.println(this.ontoQueryUtil.getGlobalNameSpace());
 	    ArrayList<String> workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
-	for(String u : workspaces) {
-	    System.out.println(u);
-	}
+	    for(String u : workspaces) {
+		System.out.println(u);
+	    }
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage() + "\n" + e.toString());
+	    return false;
 	}
 	return true;
     }

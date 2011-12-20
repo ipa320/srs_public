@@ -29,12 +29,12 @@ def symbol_grounding_scan_base_pose_client(furniture_geometry):
 if __name__ == "__main__":
 	
 	furniture_geometry = SRSFurnitureGeometry()
-	furniture_geometry.pose.x = -0.5
-	furniture_geometry.pose.y = -0.3
-	furniture_geometry.pose.theta = 0.15
-	furniture_geometry.l = 2
-	furniture_geometry.w = 1.6
-	furniture_geometry.h = 1.0
+	furniture_geometry.pose.x = -3.2
+	furniture_geometry.pose.y = -0.54
+	furniture_geometry.pose.theta = 0
+	furniture_geometry.l = 0.6
+	furniture_geometry.w = 0.6
+	furniture_geometry.h = 0.85
 
 	print "Requesting scan base pose."
 	

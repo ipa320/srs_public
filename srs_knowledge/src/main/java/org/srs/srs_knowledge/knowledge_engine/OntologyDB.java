@@ -233,6 +233,10 @@ public class OntologyDB
 	com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(property);
 	return stm;
     }
+
+    public OntModel getModel() {
+	return model;
+    }
     
     //private String modelFileName;    
     //private Model model;

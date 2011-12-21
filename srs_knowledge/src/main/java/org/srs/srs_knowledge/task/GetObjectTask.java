@@ -12,7 +12,7 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
-
+import com.hp.hpl.jena.ontology.Individual;
 import org.srs.srs_knowledge.task.Task;
 
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
@@ -64,21 +64,39 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	*/
 	System.out.println("Create New GET OBJECT Task --- ");
 	try {
+	    /*
 	    System.out.println(this.targetContent);
 	    System.out.println(this.ontoQueryUtil.getObjectNameSpace());
 	    System.out.println(this.ontoQueryUtil.getGlobalNameSpace());
-	    ArrayList<String> workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
-	    for(String u : workspaces) {
-		System.out.println(u);
+	    */
+	    //ArrayList<String> workspaces = OntoQueryUtil.getWorkspaceNamesOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
+	    ArrayList<Individual> workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
+	    
+	    for(Individual u : workspaces) {
+		System.out.println(u.getLocalName());
+		createSubSequenceForSingleWorkspace(u);
+
 	    }
+
+
+
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage() + "\n" + e.toString());
 	    return false;
 	}
+
 	return true;
     }
     
+    private SubActionSequence createSubSequenceForSingleWorkspace(Individual workspace) {
+	SubActionSequence actionList = new SubActionSequence();
+
+	
+
+	return actionList;
+    }
+
     private void initTask(String targetContent, Pose2D userPose) {
 	acts = new ArrayList<ActionTuple>();
 	

@@ -204,14 +204,14 @@
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Dishwasher0">
         <rdf:type rdf:resource="&srs;Dishwasher"/>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">-1</srs:houseHoldObjectID>
-        <srs:yCoord rdf:datatype="&xsd;float">-3.2</srs:yCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
         <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
         <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:xCoord rdf:datatype="&xsd;float">0.16</srs:xCoord>
+        <srs:yCoord rdf:datatype="&xsd;float">0.16</srs:yCoord>
         <srs:zCoord rdf:datatype="&xsd;float">0.425</srs:zCoord>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.6</srs:lengthOfObject>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.6</srs:widthOfObject>

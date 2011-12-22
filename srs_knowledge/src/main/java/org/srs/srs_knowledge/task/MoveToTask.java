@@ -53,6 +53,7 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 		MoveAction ma = new MoveAction();
 		PerceptionAction pa = new PerceptionAction();
 		GraspAction ga = new GraspAction();
+		GenericAction genericAction = new GenericAction();
 
 		// TODO: should obtain information from Ontology here. But here we use
 		// temporary hard coded info for testing
@@ -131,6 +132,7 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 		ca.ma = ma;
 		ca.pa = pa;
 		ca.ga = ga;
+		ca.generic = genericAction;
 
 		try {
 			ca.actionFlags = parseActionFlags("0 1 1");
@@ -150,10 +152,13 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 		ma = new MoveAction();
 		pa = new PerceptionAction();
 		ga = new GraspAction();
-
+		genericAction = new GenericAction();
+		genericAction.actionInfo.add("finish_success");
+		
 		ca.ma = ma;
 		ca.pa = pa;
 		ca.ga = ga;
+		ca.generic = genericAction;
 
 		try {
 		    ca.actionFlags = parseActionFlags("0 1 1");
@@ -161,13 +166,15 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 		    System.out.println(e.getMessage());
 		}
 		act.setActionName("finish_success");
-
+		ca.status = 1;
+		/*
 		if (act.getActionName().equals("finish_success")) {
 			ca.status = 1;
 		}
 		if (act.getActionName().equals("finish_fail")) {
 			ca.status = -1;
 		}
+		*/
 
 		act.setCUAction(ca);
 		act.setActionId(2);
@@ -183,10 +190,13 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 		ma = new MoveAction();
 		pa = new PerceptionAction();
 		ga = new GraspAction();
-
+		genericAction = new GenericAction();
+		genericAction.actionInfo.add("finish_fail");
+		
 		ca.ma = ma;
 		ca.pa = pa;
 		ca.ga = ga;
+		ca.generic = genericAction;
 
 		try {
 			ca.actionFlags = parseActionFlags("0 1 1");
@@ -196,14 +206,15 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 
 		act.setActionName("finish_fail");
 
-		// ca.status = -1;
+		ca.status = -1;
+		/*
 		if (act.getActionName().equals("finish_success")) {
 			ca.status = 1;
 		}
 		if (act.getActionName().equals("finish_fail")) {
 			ca.status = -1;
 		}
-
+		*/
 		act.setCUAction(ca);
 		act.setActionId(3);
 		act.setParentId(1);

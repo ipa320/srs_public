@@ -327,7 +327,8 @@ class SRS_DM_ACTION(object):
         rospy.wait_for_service('task_request')
         try:
             requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
-            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
+            #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
+            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None)
 	    print res.sessionId
 	    current_task_info.session_id = res.sessionId
             if res.result == 1:

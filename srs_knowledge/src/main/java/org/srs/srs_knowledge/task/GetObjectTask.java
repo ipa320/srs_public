@@ -80,8 +80,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    for(Individual u : workspaces) {
 		System.out.println(u.getLocalName());
 		try{
-		    createSubSequenceForSingleWorkspace(u);
-
+		   SubActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
+		   allSubSeqs.add(subSeq);
 		}
 		catch(RosException e) {
 		    System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \n" + e.getMessage() + "\n" + e.toString());

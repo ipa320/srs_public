@@ -32,7 +32,8 @@ public abstract class Task {
 
     public Task() {
 	// empty constructor.
-	acts = new ArrayList<ActionTuple>();
+	acts = new ArrayList<ActionTuple>();     // to be deprecated and replaced with allSubSeqs
+	allSubSeqs = new ArrayList<SubActionSequence>();
 	// actionSequence = new ArrayList<CUAction>();
 	setTaskType(TaskType.UNSPECIFIED);
 	currentAction = null;
@@ -41,15 +42,6 @@ public abstract class Task {
 
     public abstract boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery);
 
-    /*
-    public boolean setOntoQueryUtil(OntoQueryUtil ontoQuery) {
-	if(ontoQuery == null) 
-	    return false;
-	
-	ontoQueryUtil = ontoQuery;
-	return true;
-    }
-    */
 
     /*
 	public Task(String taskType, String targetContent, Pose2D userPose) {
@@ -71,225 +63,10 @@ public abstract class Task {
 		this.init(taskType, targetContent, userPose);
 	}
     */	
-/*
-	private void init(String taskType, String targetContent, Pose2D userPose) {
-		acts = new ArrayList<ActionTuple>();
-		currentAction = null;
-		if (taskType.toLowerCase().equals("get")) {
-			setTaskTarget(targetContent);
-			setTaskType(TaskType.GET_OBJECT);
-			//constructTask();
-		} else if (taskType.toLowerCase().equals("move")) {
-			setTaskType(TaskType.MOVETO_LOCATION);
-
-			setTaskTarget(targetContent);
-			System.out.println("TASK.JAVA: Created CurrentTask " + "move "
-					+ targetContent);
-			//constructTask();
-			createSimpleMoveTaskNew();
-		} else if (taskType.toLowerCase().equals("search")) {
-			//constructTask();
-			setTaskType(TaskType.SEARCH_OBJECT);
-		} else if (taskType.toLowerCase().equals("stop")) {
-			//constructTask();
-			setTaskType(TaskType.STOP_TASK);
-		} else if (taskType.toLowerCase().equals("getn")) {
-			// new implementation of get action, specifically for milkbox in
-			// this case
-			setTaskType(TaskType.GET_OBJECT);
-			setTaskTarget(targetContent);
-			//System.out.println("TASK.JAVA: Created CurrentTask " + " get "
-			//		+ targetContent);
-			//this.createGetObjectTask();
-		} else {
-			setTaskType(TaskType.UNSPECIFIED);
-		}
-	}
-*/
 	protected boolean constructTask() {
 		return true;
 	}
-    /*
-	private boolean createSimpleMoveTaskNew() {
-		// boolean addNewActionTuple(ActionTuple act)
-		ActionTuple act = new ActionTuple();
 
-		CUAction ca = new CUAction();
-		MoveAction ma = new MoveAction();
-		PerceptionAction pa = new PerceptionAction();
-		GraspAction ga = new GraspAction();
-
-		// TODO: should obtain information from Ontology here. But here we use
-		// temporary hard coded info for testing
-		double x = 1;
-		double y = 1;
-		double theta = 0;
-
-		if (this.targetContent.charAt(0) == '['
-				&& this.targetContent.charAt(targetContent.length() - 1) == ']') {
-			StringTokenizer st = new StringTokenizer(targetContent, " [],");
-			if (st.countTokens() == 3) {
-				try {
-					x = Double.parseDouble(st.nextToken());
-					y = Double.parseDouble(st.nextToken());
-					theta = Double.parseDouble(st.nextToken());
-					System.out.println(x + "  " + y + " " + theta);
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-					return false;
-				}
-			}
-		} else {
-			System.out.println("======MOVE COMMAND FORMAT=======");
-			// TODO Ontology queries
-			String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
-					+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-					+ "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n";
-			String queryString = "SELECT ?x ?y ?theta WHERE { "
-					+ "ipa-kitchen-map:" + targetContent
-					+ " srs:xCoordinate ?x . " + "ipa-kitchen-map:"
-					+ targetContent + " srs:yCoordinate ?y . "
-					+ "ipa-kitchen-map:" + targetContent
-					+ " srs:orientationTheta ?theta .}";
-			System.out.println(prefix + queryString + "\n");
-
-			if (this.ontoDB == null) {
-				System.out.println("Ontology Database is NULL");
-				return false;
-			}
-
-			try {
-				ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix
-						+ queryString);
-				// ArrayList<String> reslist =
-				// (ArrayList)(rset.getResultVars());
-				// for(String v:reslist) {
-				// System.out.println(v);
-				// }
-				try {
-					if (rset.size() == 0) {
-						System.out
-								.println("ERROR: No move target found from database");
-						return false;
-					} else if (rset.size() == 1) {
-						System.out
-								.println("INFO: OK info retrieved from DB... ");
-						QuerySolution qs = rset.get(0);
-						x = qs.getLiteral("x").getFloat();
-						y = qs.getLiteral("y").getFloat();
-						theta = qs.getLiteral("theta").getFloat();
-						System.out.println("x is " + x + ". y is  " + y
-								+ ". theta is " + theta);
-					} else {
-						System.out.println("WARNING: Multiple options... ");
-						QuerySolution qs = rset.get(0);
-						x = qs.getLiteral("x").getFloat();
-						y = qs.getLiteral("y").getFloat();
-						theta = qs.getLiteral("theta").getFloat();
-						System.out.println("x is " + x + ". y is  " + y
-								+ ". theta is " + theta);
-					}
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-					return false;
-				}
-			} catch (Exception e) {
-				System.out.println("Exception -->  " + e.getMessage());
-				return false;
-			}
-			// return false;
-		}
-
-		ma.targetPose2D.x = x;
-		ma.targetPose2D.y = y;
-		ma.targetPose2D.theta = theta;
-
-		ca.ma = ma;
-		ca.pa = pa;
-		ca.ga = ga;
-
-		try {
-			ca.actionFlags = parseActionFlags("0 1 1");
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-
-		act.setCUAction(ca);
-		act.setActionId(1);
-		addNewActionTuple(act);
-
-		// add finish action __ success
-
-		act = new ActionTuple();
-
-		ca = new CUAction();
-		ma = new MoveAction();
-		pa = new PerceptionAction();
-		ga = new GraspAction();
-
-		ca.ma = ma;
-		ca.pa = pa;
-		ca.ga = ga;
-
-		try {
-			ca.actionFlags = parseActionFlags("0 1 1");
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-		act.setActionName("finish_success");
-
-		if (act.getActionName().equals("finish_success")) {
-			ca.status = 1;
-		}
-		if (act.getActionName().equals("finish_fail")) {
-			ca.status = -1;
-		}
-
-		act.setCUAction(ca);
-		act.setActionId(2);
-		act.setParentId(1);
-		act.setCondition(true);
-		addNewActionTuple(act);
-
-		// add finish action __ fail
-
-		act = new ActionTuple();
-
-		ca = new CUAction();
-		ma = new MoveAction();
-		pa = new PerceptionAction();
-		ga = new GraspAction();
-
-		ca.ma = ma;
-		ca.pa = pa;
-		ca.ga = ga;
-
-		try {
-			ca.actionFlags = parseActionFlags("0 1 1");
-		} catch (Exception e) {
-			System.out.println("Exception -->  " + e.getMessage());
-		}
-
-		act.setActionName("finish_fail");
-
-		// ca.status = -1;
-		if (act.getActionName().equals("finish_success")) {
-			ca.status = 1;
-		}
-		if (act.getActionName().equals("finish_fail")) {
-			ca.status = -1;
-		}
-
-		act.setCUAction(ca);
-		act.setActionId(3);
-		act.setParentId(1);
-		act.setCondition(false);
-		addNewActionTuple(act);
-
-		System.out.println("number of actions: " + acts.size());
-		return true;
-	}
-    */
 	public void setTaskId(int id) {
 		this.taskId = id;
 	}
@@ -314,15 +91,57 @@ public abstract class Task {
 		return acts;
 	}
 
+    public CUAction getNextCUAction(boolean stateLastAction) {
+	//CUAction ca = new CUAction();
+	if (currentAction == null) {
+	    for (int i = 0; i < acts.size(); i++) {
+		if (acts.get(i).getActionId() == 1) {
+		    currentAction = acts.get(i);
+		    currentActionLoc = i;
+		    //System.out.println(i);
+		    //System.out.println(currentAction.getCUAction().ma.targetPose2D.x);
+		    System.out.println(currentAction.getActionName());
+		    
+		    //return currentAction.getCUAction();
+		    if (currentAction != null) 
+			return currentAction.getCUAction();
+		    else 
+			return null;
+		}
+	    }
+	} else {
+	    // ActionTuple at;
+	    // int parentId = at.getParentId();
+	    for (int i = 0; i < acts.size(); i++) {
+		// if(acts.get(currentActionLoc).getId() ==
+		// acts.get(i).getParentId() && stateLastAction ==
+		// acts.get(i).getCondition()){
+		if (currentAction.getActionId() == acts.get(i).getParentId()
+		    && stateLastAction == acts.get(i).getCondition()) {
+		    currentAction = acts.get(i);
+		    currentActionLoc = i;
+		    System.out.println(i);
+		    System.out.println(currentAction.getActionName());
+		    if (currentAction != null) 
+			return currentAction.getCUAction();
+		    else 
+			return null;
+		}
+	    }
+	    System.out.println("no action found");
+	}	
+	
+	return null;
+    }
+
 	public ActionTuple getNextAction(boolean stateLastAction) {
 		if (currentAction == null) {
 			for (int i = 0; i < acts.size(); i++) {
 				if (acts.get(i).getActionId() == 1) {
 					currentAction = acts.get(i);
 					currentActionLoc = i;
-					System.out.println(i);
-					System.out
-							.println(currentAction.getCUAction().ma.targetPose2D.x);
+					//System.out.println(i);
+					//System.out.println(currentAction.getCUAction().ma.targetPose2D.x);
 					System.out.println(currentAction.getActionName());
 
 					return currentAction;
@@ -542,4 +361,5 @@ public abstract class Task {
 	protected OntologyDB ontoDB;
     protected OntoQueryUtil ontoQueryUtil;
     protected NodeHandle nodeHandle;
+    protected ArrayList<SubActionSequence> allSubSeqs;
 }

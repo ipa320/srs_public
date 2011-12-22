@@ -302,7 +302,7 @@ class KnowledgeEngine
 	return res;
 
     }
-
+    /*
     private PlanNextAction.Response handlePlanNextAction( PlanNextAction.Request request) throws NullPointerException
     {
 	PlanNextAction.Response res = new PlanNextAction.Response();
@@ -373,7 +373,7 @@ class KnowledgeEngine
 	//ros.logInfo("INFO: Generate sequence of length: ");
 	return res;
     }
-    
+    */
     private void initPlanNextAction() throws RosException
     {
 	ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response> scb = new ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response>() {

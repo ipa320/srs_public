@@ -43,17 +43,20 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 
 	int size = actionUnits.size(); 
 	nextActionMapIfFail = new int[size];
+	nextActionMapIfSuccess = new int[size];
 
 	for(int i = 0; i < size; i++) {
 	    if(actionUnits.get(i).actionInfo.get(0).equals("move")) {
+		nextActionMapIfSuccess[i] = i + 1;
 		nextActionMapIfFail[i] = i + 2;
 	    }
 	    else if(actionUnits.get(i).actionInfo.get(0).equals("detect")) {
+		nextActionMapIfSuccess[i] = COMPLETED_SUCCESS;    // 
 		nextActionMapIfFail[i] = i + 1;
 	    }
 	    if(nextActionMapIfFail[i] >= size) {
 		// out of bound, means this is the last step in this action unit. so -1 means there is no further solution to the current task within this actionunit
-		nextActionMapIfFail[i] = -1;  
+		nextActionMapIfFail[i] = COMPLETED_FAIL;  
 	    }	    
 	}
     }
@@ -62,6 +65,84 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	actionType = "MoveAndDetection";
 	return actionType;
     }
+
+    private int getNextCUActionIndex() {
+	return 0;
+    }
+
+    public CUAction getNextCUAction() {
+	int ind = getNextCUActionIndex();
+	CUAction ca = new CUAction(); 
+	MoveAction ma = new MoveAction();
+	PerceptionAction pa = new PerceptionAction();
+	GraspAction ga = new GraspAction();
+	
+	if(ind == COMPLETED_FAIL) {
+	    GenericAction genericAction = new GenericAction();
+	    genericAction.actionInfo.add("finish_fail");
+	    
+	    ca.ma = ma;
+	    ca.pa = pa;
+	    ca.ga = ga;
+	    ca.generic = genericAction;
+	    ca.actionType = "generic";
+	    
+	    int[] af =  {0, 1, 1};
+	    ca.actionFlags = af;
+	    
+	    //act.setActionName("finish_fail");
+	    
+	    ca.status = -1;
+	    
+	    return ca;
+	}
+	else if (ind == COMPLETED_SUCCESS){
+	    GenericAction genericAction = new GenericAction();
+	    genericAction.actionInfo.add("finish_success");
+	    
+	    ca.ma = ma;
+	    ca.pa = pa;
+	    ca.ga = ga;
+	    ca.generic = genericAction;
+	    ca.actionType = "generic";
+	    
+	    int[] af =  {0, 1, 1};
+	    ca.actionFlags = af;
+	    
+	    //act.setActionName("finish_fail");
+	    
+	    ca.status = 1;
+	    
+	    return ca;
+	}
+	else if (ind > 0 && ind < actionUnits.size()){
+	    GenericAction genericAction = actionUnits.get(ind);
+	    	    
+	    ca.ma = ma;
+	    ca.pa = pa;
+	    ca.ga = ga;
+	    ca.generic = genericAction;
+
+	    ca.actionType = "generic";
+	    return ca;
+	}
+	else {
+	    GenericAction genericAction = new GenericAction();
+	    genericAction.actionInfo.add("no_action");
+	    
+	    ca.ma = ma;
+	    ca.pa = pa;
+	    ca.ga = ga;
+	    ca.generic = genericAction;
+	    ca.actionType = "generic";
+	    
+	    int[] af =  {1, 1, 1};
+	    ca.actionFlags = af;
+	    
+	    return ca;
+	}
+    }
+
 
     /*
     private String actionType;

@@ -23,7 +23,9 @@ import org.srs.srs_knowledge.task.Task;
 
 public abstract class HighLevelActionUnit {    
     public abstract String getActionType();
-   
+    public final int COMPLETED_SUCCESS = -1;
+    public final int COMPLETED_FAIL = -2;
+
     public int getNumOfActions() {
 	return actionUnits.size();
     }
@@ -35,4 +37,5 @@ public abstract class HighLevelActionUnit {
     protected String actionType = "";
     protected ArrayList<GenericAction> actionUnits = new ArrayList<GenericAction>();
     protected int[] nextActionMapIfFail;
+    protected int[] nextActionMapIfSuccess;
 }

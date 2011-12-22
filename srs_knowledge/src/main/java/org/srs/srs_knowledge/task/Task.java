@@ -133,7 +133,7 @@ public abstract class Task {
 	
 	return null;
     }
-
+    /*
 	public ActionTuple getNextAction(boolean stateLastAction) {
 		if (currentAction == null) {
 			for (int i = 0; i < acts.size(); i++) {
@@ -168,7 +168,7 @@ public abstract class Task {
 		}
 		return null;
 	}
-
+    */
 	public boolean addNewActionTuple(ActionTuple act) {
 		return acts.add(act);
 	}

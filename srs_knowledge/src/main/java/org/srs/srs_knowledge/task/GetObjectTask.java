@@ -103,6 +103,17 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return true;
     }
     
+
+ public CUAction getNextCUAction(boolean stateLastAction) {
+     
+     System.out.println("===> Get Next CUACTION -- from GetObjectTask.java");
+     CUAction ca = new CUAction();
+     
+     
+
+     return ca;
+ }
+
     private SubActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
 	SubActionSequence actionList = new SubActionSequence();
 

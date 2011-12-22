@@ -13,138 +13,146 @@ from tf.transformations import euler_from_quaternion
 
 def handle_symbol_grounding_scan_base_pose(req):
 	
-	table_x = req.furniture_geometry.pose.x
-	table_y = req.furniture_geometry.pose.y
-	table_th = req.furniture_geometry.pose.theta
-	table_length = req.furniture_geometry.l
-	table_width = req.furniture_geometry.w
-	table_height = req.furniture_geometry.h
-	sbps = list()
+	parent_obj_x = req.parent_obj_geometry.pose.position.x
+	parent_obj_y = req.parent_obj_geometry.pose.position.y
+	parent_obj_rpy = tf.transformations.euler_from_quaternion([req.parent_obj_geometry.pose.orientation.x, req.parent_obj_geometry.pose.orientation.y, req.parent_obj_geometry.pose.orientation.z, req.parent_obj_geometry.pose.orientation.w])
+	parent_obj_th = parent_obj_rpy[2]
+	parent_obj_l = req.parent_obj_geometry.l
+	parent_obj_w = req.parent_obj_geometry.w
+	parent_obj_h = req.parent_obj_geometry.h
+
+	#transfrom list
+	index = 0
+	furniture_geometry_list = list()
+	while index < len(req.furniture_geometry_list):
+		furniture_geometry = FurnitureGeometry()
+		furniture_geometry.pose.x = req.furniture_geometry_list[index].pose.position.x
+		furniture_geometry.pose.y = req.furniture_geometry_list[index].pose.position.y
+		furniture_pose_rpy = tf.transformations.euler_from_quaternion([req.furniture_geometry_list[index].pose.orientation.x, req.furniture_geometry_list[index].pose.orientation.y, req.furniture_geometry_list[index].pose.orientation.z, req.furniture_geometry_list[index].pose.orientation.w])		
+		furniture_geometry.pose.theta = furniture_pose_rpy[2]
+		furniture_geometry.l = req.furniture_geometry_list[index].l
+		furniture_geometry.w = req.furniture_geometry_list[index].w
+		furniture_geometry.h = req.furniture_geometry_list[index].h
+		furniture_geometry_list.append(furniture_geometry)
+		index += 1
+	
+	scan_base_pose_list = list()
 
 
-	if ((table_th >= 0) & (table_th <= (45.0 / 180.0 * math.pi))) | ((table_th >= (135.0 / 180.0 * math.pi)) & (table_th <= (225.0 / 180.0 * math.pi))) | ((table_th >= (315.0 / 180.0 * math.pi)) & (table_th <= 360)):
+	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 
-		if (table_x - 1.5 - math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - table_th)) >= -3.2:
+		if parent_obj_w > 1.5:
 
-			if (table_width > 1.5) & ((table_x + 1.5 + math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - table_th)) <= 3.5):
+			for num in range(int(parent_obj_l + 0.99)):
 
-				for num in range(int(table_length + 0.99)):
+				scan_base_pose = Pose2D()
+				scan_base_pose.x = parent_obj_x - (parent_obj_w * 0.5 + 0.5) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 - num) * math.sin(parent_obj_th)
+				scan_base_pose.y = parent_obj_y - (parent_obj_w * 0.5 + 0.5) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 - num) * math.cos(parent_obj_th)
+				scan_base_pose.theta = parent_obj_th + math.pi
+				scan_base_pose_list.append(scan_base_pose)
 
-					sbp = Pose2D()
-					sbp.x = table_x - (table_width * 0.5 + 0.5) * math.cos(table_th) - (0.5 * table_length - 0.5 - num) * math.sin(table_th)
-					sbp.y = table_y - (table_width * 0.5 + 0.5) * math.sin(table_th) + (0.5 * table_length - 0.5 - num) * math.cos(table_th)
-					sbp.theta = table_th + math.pi
-					sbps.append(sbp)
+			for num in range(int(parent_obj_l + 0.99)):
 
-				for num in range(int(table_length + 0.99)):
+				scan_base_pose = Pose2D()
+				scan_base_pose.x = parent_obj_x + (parent_obj_w * 0.5 + 0.5) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 - num) * math.sin(parent_obj_th)
+				scan_base_pose.y = parent_obj_y + (parent_obj_w * 0.5 + 0.5) * math.sin(parent_obj_th) - (0.5 * parent_obj_l - 0.5 - num) * math.cos(parent_obj_th)
+				scan_base_pose.theta = parent_obj_th
+				scan_base_pose_list.append(scan_base_pose)
 
-					sbp = Pose2D()
-					sbp.x = table_x + (table_width * 0.5 + 0.5) * math.cos(table_th) + (0.5 * table_length - 0.5 - num) * math.sin(table_th)
-					sbp.y = table_y + (table_width * 0.5 + 0.5) * math.sin(table_th) - (0.5 * table_length - 0.5 - num) * math.cos(table_th)
-					sbp.theta = table_th
-					sbps.append(sbp)
+		elif (parent_obj_x - 1.5 - math.sqrt((parent_obj_l * 0.5)**2+(parent_obj_w * 0.5)**2) * math.cos(math.atan(parent_obj_l / parent_obj_w) - parent_obj_th)) >= -3.2:
 
-			else:
+			for num in range(int(parent_obj_l + 0.99)):
 
-				for num in range(int(table_length + 0.99)):
-
-					sbp = Pose2D()
-					sbp.x = table_x - (table_width * 0.5 + 0.5) * math.cos(table_th) - (0.5 * table_length - 0.5 - num) * math.sin(table_th)
-					sbp.y = table_y - (table_width * 0.5 + 0.5) * math.sin(table_th) + (0.5 * table_length - 0.5 - num) * math.cos(table_th)
-					sbp.theta = table_th + math.pi
-					sbps.append(sbp)
-
-
-		elif (table_width > 1.5) & ((table_x - 1.5 - math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - table_th)) >= -3.2):
-
-			for num in range(int(table_length + 0.99)):
-
-				sbp = Pose2D()
-				sbp.x = table_x + (table_width * 0.5 + 0.5) * math.cos(table_th) + (0.5 * table_length - 0.5 - num) * math.sin(table_th)
-				sbp.y = table_y + (table_width * 0.5 + 0.5) * math.sin(table_th) - (0.5 * table_length - 0.5 - num) * math.cos(table_th)
-				sbp.theta = table_th
-				sbps.append(sbp)
-
-			for num in range(int(table_length + 0.99)):
-
-				sbp = Pose2D()
-				sbp.x = table_x - (table_width * 0.5 + 0.5) * math.cos(table_th) - (0.5 * table_length - 0.5 - num) * math.sin(table_th)
-				sbp.y = table_y - (table_width * 0.5 + 0.5) * math.sin(table_th) + (0.5 * table_length - 0.5 - num) * math.cos(table_th)
-				sbp.theta = table_th + math.pi
-				sbps.append(sbp)
-				
-		else:
-		
-			for num in range(int(table_length + 0.99)):
-
-				sbp = Pose2D()
-				sbp.x = table_x + (table_width * 0.5 + 0.5) * math.cos(table_th) + (0.5 * table_length - 0.5 - num) * math.sin(table_th)
-				sbp.y = table_y + (table_width * 0.5 + 0.5) * math.sin(table_th) - (0.5 * table_length - 0.5 - num) * math.cos(table_th)
-				sbp.theta = table_th
-				sbps.append(sbp)
-
-	elif (table_y + 1.5 + math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - (table_th - 0.5*math.pi))) <= 2.1:
-
-		if (table_width > 1.5) & ((table_y - 1.5 - math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - (table_th - 0.5*math.pi))) >= -2.2):
-
-			for num in range(int(table_length + 0.99)):
-
-				sbp = Pose2D()
-				sbp.x = table_x - (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) + (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
-				sbp.y = table_y + (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
-				sbp.theta = table_th
-				sbps.append(sbp)
-				
-			for num in range(int(table_length + 0.99)):
-
-				sbp = Pose2D()
-				sbp.x = table_x + (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
-				sbp.y = table_y - (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
-				sbp.theta = table_th + math.pi
-				sbps.append(sbp)
+				scan_base_pose = Pose2D()
+				scan_base_pose.x = parent_obj_x - (parent_obj_w * 0.5 + 0.5) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 - num) * math.sin(parent_obj_th)
+				scan_base_pose.y = parent_obj_y - (parent_obj_w * 0.5 + 0.5) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 - num) * math.cos(parent_obj_th)
+				scan_base_pose.theta = parent_obj_th + math.pi
+				scan_base_pose_list.append(scan_base_pose)
 
 		else:
 
-			for num in range(int(table_length + 0.99)):
+			for num in range(int(parent_obj_l + 0.99)):
 
-				sbp = Pose2D()
-				sbp.x = table_x - (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) + (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
-				sbp.y = table_y + (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
-				sbp.theta = table_th
-				sbps.append(sbp)
+				scan_base_pose = Pose2D()
+				scan_base_pose.x = parent_obj_x + (parent_obj_w * 0.5 + 0.5) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 - num) * math.sin(parent_obj_th)
+				scan_base_pose.y = parent_obj_y + (parent_obj_w * 0.5 + 0.5) * math.sin(parent_obj_th) - (0.5 * parent_obj_l - 0.5 - num) * math.cos(parent_obj_th)
+				scan_base_pose.theta = parent_obj_th
+				scan_base_pose_list.append(scan_base_pose)
 
 
-	elif (table_width > 1.5) & ((table_y + 1.5 + math.sqrt((table_length * 0.5)**2+(table_width * 0.5)**2) * math.cos(math.atan(table_length / table_width) - (table_th - 0.5*math.pi))) <= 2.1):
+	elif parent_obj_w > 1.5:
 
-		for num in range(int(table_length + 0.99)):
+		for num in range(int(parent_obj_l + 0.99)):
 
-			sbp = Pose2D()
-			sbp.x = table_x + (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
-			sbp.y = table_y - (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
-			sbp.theta = table_th + math.pi
-			sbps.append(sbp)
+			scan_base_pose = Pose2D()
+			scan_base_pose.x = parent_obj_x - (parent_obj_w * 0.5 + 0.5) * math.sin(parent_obj_th - 0.5*math.pi) + (0.5 * parent_obj_l - 0.5 - num) * math.cos(parent_obj_th - 0.5*math.pi)
+			scan_base_pose.y = parent_obj_y + (parent_obj_w * 0.5 + 0.5) * math.cos(parent_obj_th - 0.5*math.pi) - (0.5 * parent_obj_l - 0.5 - num) * math.sin(parent_obj_th - 0.5*math.pi)
+			scan_base_pose.theta = parent_obj_th
+			scan_base_pose_list.append(scan_base_pose)
+				
+		for num in range(int(parent_obj_l + 0.99)):
 
-		for num in range(int(table_length + 0.99)):
+			scan_base_pose = Pose2D()
+			scan_base_pose.x = parent_obj_x + (parent_obj_w * 0.5 + 0.5) * math.sin(parent_obj_th - 0.5*math.pi) - (0.5 * parent_obj_l - 0.5 - num) * math.cos(parent_obj_th - 0.5*math.pi)
+			scan_base_pose.y = parent_obj_y - (parent_obj_w * 0.5 + 0.5) * math.cos(parent_obj_th - 0.5*math.pi) - (0.5 * parent_obj_l - 0.5 - num) * math.sin(parent_obj_th - 0.5*math.pi)
+			scan_base_pose.theta = parent_obj_th + math.pi
+			scan_base_pose_list.append(scan_base_pose)
 
-			sbp = Pose2D()
-			sbp.x = table_x - (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) + (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
-			sbp.y = table_y + (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
-			sbp.theta = table_th
-			sbps.append(sbp)
+	elif (parent_obj_y + 1.5 + math.sqrt((parent_obj_l * 0.5)**2+(parent_obj_w * 0.5)**2) * math.cos(math.atan(parent_obj_l / parent_obj_w) - (parent_obj_th - 0.5*math.pi))) <= 2.1:
+
+		for num in range(int(parent_obj_l + 0.99)):
+
+			scan_base_pose = Pose2D()
+			scan_base_pose.x = parent_obj_x - (parent_obj_w * 0.5 + 0.5) * math.sin(parent_obj_th - 0.5*math.pi) + (0.5 * parent_obj_l - 0.5 - num) * math.cos(parent_obj_th - 0.5*math.pi)
+			scan_base_pose.y = parent_obj_y + (parent_obj_w * 0.5 + 0.5) * math.cos(parent_obj_th - 0.5*math.pi) - (0.5 * parent_obj_l - 0.5 - num) * math.sin(parent_obj_th - 0.5*math.pi)
+			scan_base_pose.theta = parent_obj_th
+			scan_base_pose_list.append(scan_base_pose)
 
 	else:
 
-		for num in range(int(table_length + 0.99)):
+		for num in range(int(parent_obj_l + 0.99)):
 
-			sbp = Pose2D()
-			sbp.x = table_x + (table_width * 0.5 + 0.5) * math.sin(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.cos(table_th - 0.5*math.pi)
-			sbp.y = table_y - (table_width * 0.5 + 0.5) * math.cos(table_th - 0.5*math.pi) - (0.5 * table_length - 0.5 - num) * math.sin(table_th - 0.5*math.pi)
-			sbp.theta = table_th + math.pi
-			sbps.append(sbp)
+			scan_base_pose = Pose2D()
+			scan_base_pose.x = parent_obj_x + (parent_obj_w * 0.5 + 0.5) * math.sin(parent_obj_th - 0.5*math.pi) - (0.5 * parent_obj_l - 0.5 - num) * math.cos(parent_obj_th - 0.5*math.pi)
+			scan_base_pose.y = parent_obj_y - (parent_obj_w * 0.5 + 0.5) * math.cos(parent_obj_th - 0.5*math.pi) - (0.5 * parent_obj_l - 0.5 - num) * math.sin(parent_obj_th - 0.5*math.pi)
+			scan_base_pose.theta = parent_obj_th + math.pi
+			scan_base_pose_list.append(scan_base_pose)
 
-	sbps = [sbps]
 	
-	return sbps
+	#obstacle check
+	wall_checked_scan_base_pose_list = list()
+	obstacle_checked_scan_base_pose_list = list()
+
+
+	index = 0
+	while index < len(scan_base_pose_list):
+		if (-2.7 <= scan_base_pose_list[index].x <= 3.2) and (-1.7 <= scan_base_pose_list[index].y <= 1.6):
+			wall_checked_scan_base_pose_list.append(scan_base_pose_list[index])
+		index += 1
+		
+	rospy.loginfo(wall_checked_scan_base_pose_list)
+	if not wall_checked_scan_base_pose_list:
+		reach = 0
+		obstacle_check = 1
+
+	else:
+		index_1 = 0
+		while index_1 < len(wall_checked_scan_base_pose_list):
+			index_2 = 0
+			while index_2 < len(furniture_geometry_list):
+				delta_x = math.sqrt((wall_checked_scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_scan_base_pose_list[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+				delta_y = math.sqrt((wall_checked_scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_scan_base_pose_list[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+				if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+					index_2 += 1
+				else:
+					index_1 += 1
+					break
+			obstacle_checked_scan_base_pose_list.append(wall_checked_scan_base_pose_list[index_1])
+			index_1 += 1
+
+	scan_base_pose_list = [obstacle_checked_scan_base_pose_list]
+	
+	return scan_base_pose_list
 
 
 

@@ -23,7 +23,7 @@ public class SubActionSequence {
 
     //public void 
 
-    public void appendSingleAction(HighLevelActionUnit actUnit) {
+    public void appendHighLevelAction(HighLevelActionUnit actUnit) {
 	highLevelActionList.add(actUnit);
     }
     

@@ -15,9 +15,13 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
 import org.srs.srs_knowledge.task.Task;
 
+import ros.pkg.srs_symbolic_grounding.srv.*;
+import ros.*;
+import ros.communication.*;
+
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    public GetObjectTask(String taskType, String targetContent, Pose2D userPose, OntologyDB onto, OntoQueryUtil ontoQueryUtil) 
+    public GetObjectTask(String taskType, String targetContent, Pose2D userPose, OntologyDB onto, OntoQueryUtil ontoQueryUtil, NodeHandle n) 
     {
 	if (onto != null) {
 	    System.out.println("SET ONTOLOGY DB");
@@ -36,6 +40,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    this.ontoQueryUtil = new OntoQueryUtil("","");
 	}
 	
+	this.nodeHandle = n;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent, userPose);
     }
@@ -74,10 +79,19 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    
 	    for(Individual u : workspaces) {
 		System.out.println(u.getLocalName());
-		createSubSequenceForSingleWorkspace(u);
+		try{
+		    createSubSequenceForSingleWorkspace(u);
 
+		}
+		catch(RosException e) {
+		    System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \n" + e.getMessage() + "\n" + e.toString());
+		    
+		}
+		catch(Exception e) {
+		    System.out.println(e.getMessage());
+		    System.out.println(e.toString());
+		}
 	    }
-
 
 
 	}
@@ -89,12 +103,73 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return true;
     }
     
-    private SubActionSequence createSubSequenceForSingleWorkspace(Individual workspace) {
+    private SubActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
 	SubActionSequence actionList = new SubActionSequence();
 
+	// create MoveAndDetectionActionUnit
+	SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
+	com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "xCoord",  workspace);
+	spatialInfo.pose.position.x = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "yCoord",  workspace);
+	spatialInfo.pose.position.y = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "zCoord",  workspace);
+	spatialInfo.pose.position.z = stm.getFloat();
+			 
+	
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "widthOfObject",  workspace);
+	spatialInfo.w = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "heightOfObject",  workspace);
+	spatialInfo.h = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "lengthOfObject",  workspace);
+	spatialInfo.l = stm.getFloat();
+	
+	
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qu",  workspace);
+	spatialInfo.pose.orientation.w = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qx",  workspace);
+	spatialInfo.pose.orientation.x = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qy",  workspace);
+	spatialInfo.pose.orientation.y = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qz",  workspace);
+	spatialInfo.pose.orientation.z = stm.getFloat();
+
+	
+	// call symbolic grounding service for target pose
+	ArrayList<Pose2D> posList;
+	try {
+	    posList = calculateScanPositions(spatialInfo);
+	}
+	catch(RosException e) {
+	    throw e;
+	}
+
+	// TODO:
+	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, "MilkBox0", 1);
+	
+	// create MoveAndGraspActionUnit
+	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, "MilkBox", 1, null);
+
+	// create PutOnTrayActionUnit
 	
 
+
+	// create BackToUserActionUnit
+
+	actionList.appendHighLevelAction(mdAction);
+	actionList.appendHighLevelAction(mgAction);
+	
 	return actionList;
+    }
+
+    private ArrayList<Pose2D> calculateScanPositions(SRSSpatialInfo furnitureInfo) throws RosException {
+	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
+	ServiceClient<SymbolGroundingScanBasePose.Request, SymbolGroundingScanBasePose.Response, SymbolGroundingScanBasePose> sc =
+	    nodeHandle.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
+	
+	SymbolGroundingScanBasePose.Request rq = new SymbolGroundingScanBasePose.Request();
+	SymbolGroundingScanBasePose.Response res = sc.call(rq);
+	sc.shutdown();
+	return posList;
     }
 
     private void initTask(String targetContent, Pose2D userPose) {
@@ -109,4 +184,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {
 	return false;
     }
+
+    
 }

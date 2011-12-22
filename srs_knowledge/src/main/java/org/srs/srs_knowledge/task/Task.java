@@ -1,6 +1,5 @@
 package org.srs.srs_knowledge.task;
 
-import java.io.IOException;
 import java.io.*;
 import java.util.StringTokenizer;
 //import org.apache.commons.logging.Log;
@@ -13,6 +12,8 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
+import ros.*;
+import ros.communication.*;
 
 public abstract class Task {
 	public enum TaskType {
@@ -540,4 +541,5 @@ public abstract class Task {
 	protected int currentActionLoc = 0;
 	protected OntologyDB ontoDB;
     protected OntoQueryUtil ontoQueryUtil;
+    protected NodeHandle nodeHandle;
 }

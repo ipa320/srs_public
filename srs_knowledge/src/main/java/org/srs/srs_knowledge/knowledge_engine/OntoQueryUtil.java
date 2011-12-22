@@ -123,10 +123,12 @@ public class OntoQueryUtil
 	System.out.println("Create OntoQueryUtil: this.objectNameSpace is : " + this.objectNameSpace + "  this.globalNameSpace is  : " + this.globalNameSpace );
     }
 
+
+    // return ipa-kitchen in the srs project. 
     public String getObjectNameSpace() {
 	return this.objectNameSpace;
     }
-
+    // return srs namespace
     public String getGlobalNameSpace() {
 	return this.globalNameSpace;
     }

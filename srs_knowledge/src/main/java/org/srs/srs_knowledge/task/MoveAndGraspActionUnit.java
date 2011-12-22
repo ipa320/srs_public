@@ -21,7 +21,7 @@ import com.hp.hpl.jena.ontology.Individual;
  * An ActionUnit is a container of GenericAction. 
  * Unit does not have to be containing only one action. e.g. an action of detection an object on a table can contain a few steps, move to pos1, detect, move to pos2, detect, move to pos3, detect, etc. 
  */
-public abstract class MoveAndGraspActionUnit extends HighLevelActionUnit {
+public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 
     public MoveAndGraspActionUnit(Pose2D position, String objectClassName, int houseHoldId, Pose objectPose) {
 	    GenericAction ga = new GenericAction();

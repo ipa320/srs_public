@@ -29,7 +29,6 @@ import org.srs.srs_knowledge.task.*;
 
 import java.util.Properties;
 
-import java.io.IOException;
 import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList; 
@@ -330,7 +329,7 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil);
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
 
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
@@ -353,7 +352,7 @@ class KnowledgeEngine
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    // task not created for some reason
-	    currentTask = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil);
+	    currentTask = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    res.result = 1;
 	    res.description = "No action";

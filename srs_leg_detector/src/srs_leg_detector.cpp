@@ -233,7 +233,8 @@ string scan_topic = "scan_front";
 // actual legdetector node
 class LegDetector
 {
-
+ typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client;
+ srs_decision_making::ExecutionGoal goal;  // goal that will be sent to the actionserver
   
 
 public:
@@ -270,8 +271,7 @@ public:
 
 
     
-	actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> client("srs_decision_making_actions", true);  // action lib client to DM Action Server;
-        srs_decision_making::ExecutionGoal goal;  // goal that will be sent
+	           
 
 
 
@@ -310,17 +310,7 @@ public:
 
 		feature_id_ = 0;
 	
-                
-
-                if (!client.waitForServer(ros::Duration(5)))
-                                   
- 
-                   {
-                      printf(" Unable to establish connection with ActionServer in DM !!! Sending goals to DM when person is detected is disabled\n");
-                   }      
-
-        
-   
+              
 
 
         
@@ -330,6 +320,50 @@ public:
 	~LegDetector()
 	{
 	}
+
+
+
+   bool sentActionLibGoal()
+        {
+
+// actionlib
+             
+              
+
+              Client client ("srs_decision_making_actions",true);
+
+
+                if (!client.waitForServer(ros::Duration(5)))
+                                   
+ 
+                   {
+                      printf(" Unable to establish connection with ActionServer in DM !!! Sending goals to DM when person is detected is disabled\n");
+                      return false;
+                   }   
+   
+                goal.action="move";
+                goal.parameter="kitchen_backwards";
+                goal.priority=1;
+                client.sendGoal(goal);
+
+           //wait for the action to return
+                bool finished_before_timeout = client.waitForResult(ros::Duration(30.0));
+
+               if (finished_before_timeout)
+                {
+                 actionlib::SimpleClientGoalState state = client.getState();
+                 ROS_INFO("Action call to DM finished with state: %s",state.toString().c_str());
+                 return true;
+                }
+              else
+                ROS_INFO("Action call to DM did not finish before timeout");
+              
+            return false;
+
+       }
+
+              
+
 
 
 
@@ -822,13 +856,7 @@ public:
 			Point pos=(*i)->center();
 			positions.push_back(pos);
 
-                     printf ("Distance %f" , (*i)->center());  // test for the call to DM with the distance of the human *****************************************************************************************
-             
-                goal.action="move";
-                goal.parameter="kitchen_backwards";
-                goal.priority=1;
-                client.sendGoal(goal);
-
+             //        printf ("Distance %f" , (*i)->center());  // test for the call to DM with the distance of the human 
                  }
 
 		// Build up the set of pair of closest positions
@@ -1113,7 +1141,13 @@ int main(int argc, char **argv)
 			printf("Please provide the input topic as a parameter,e.g. scan_front. Assuming scan_front ! \n");
 			shutdown();
 		}
+       
+      
+       
+
         
+
+
 	ros::NodeHandle nh;
 	LegDetector ld(nh);
         

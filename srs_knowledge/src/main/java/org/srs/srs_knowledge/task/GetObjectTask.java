@@ -68,6 +68,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	// back to user
 	*/
 	System.out.println("Create New GET OBJECT Task --- ");
+	ArrayList<Individual> workspaces;
 	try {
 	    /*
 	    System.out.println(this.targetContent);
@@ -75,32 +76,38 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println(this.ontoQueryUtil.getGlobalNameSpace());
 	    */
 	    //ArrayList<String> workspaces = OntoQueryUtil.getWorkspaceNamesOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
-	    ArrayList<Individual> workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
-	    
-	    for(Individual u : workspaces) {
-		System.out.println(u.getLocalName());
-		try{
-		   SubActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
-		   allSubSeqs.add(subSeq);
-		}
-		catch(RosException e) {
-		    System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \n" + e.getMessage() + "\n" + e.toString());
-		    
-		}
-		catch(Exception e) {
-		    System.out.println(e.getMessage());
-		    System.out.println(e.toString());
-		}
-	    }
-
+	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
 
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage() + "\n" + e.toString());
 	    return false;
 	}
-
-	return true;
+	
+	for(Individual u : workspaces) {
+	    System.out.println(u.getLocalName());
+	    try{
+		SubActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
+		allSubSeqs.add(subSeq);
+	    }
+	    catch(RosException e) {
+		System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \n" + e.getMessage() + "\n" + e.toString());
+		
+	    }
+	    catch(Exception e) {
+		System.out.println(e.getMessage());
+		System.out.println(e.toString());
+	    }
+	}	
+	
+	if(allSubSeqs.size() > 0) {
+	    currentSubAction = 0;
+	    return true;
+	}
+	else {
+	    currentSubAction = -1; // no sub_highlevel_action in list
+	    return false;
+	}
     }
     
 
@@ -108,8 +115,11 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
      
      System.out.println("===> Get Next CUACTION -- from GetObjectTask.java");
      CUAction ca = new CUAction();
-     
-     
+     if(currentSubAction >= 0 && currentSubAction < allSubSeqs.size()) {
+	 
+     }
+     else if (currentSubAction == -1) {
+     }
 
      return ca;
  }
@@ -196,5 +206,5 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return false;
     }
 
-    
+    private int currentSubAction;
 }

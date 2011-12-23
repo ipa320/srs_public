@@ -63,9 +63,9 @@ public abstract class Task {
 		this.init(taskType, targetContent, userPose);
 	}
     */	
-	protected boolean constructTask() {
-		return true;
-	}
+    protected abstract boolean constructTask();// {
+    //		return true;
+    //	}
 
 	public void setTaskId(int id) {
 		this.taskId = id;

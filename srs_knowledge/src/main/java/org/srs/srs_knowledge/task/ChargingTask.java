@@ -55,15 +55,12 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 		GraspAction ga = new GraspAction();
 		GenericAction genericAction = new GenericAction();
 		ca.actionType = "generic";
-		
-		// TODO: should obtain information from Ontology here. But here we use
-		// temporary hard coded info for testing
+
 		double x = 0;
 		double y = 0;
 		double theta = 0;
 
 		targetContent = "ChargingStation0";
-		// TODO Ontology queries
 		String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
 		    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
 		    + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n";
@@ -143,13 +140,8 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 		    System.out.println(e.getMessage());
 		}
 		act.setActionName("finish_success");
-		
-		if (act.getActionName().equals("finish_success")) {
-		    ca.status = 1;
-		}
-		if (act.getActionName().equals("finish_fail")) {
-		    ca.status = -1;
-		}
+
+		ca.status = 1;
 		
 		act.setCUAction(ca);
 		act.setActionId(2);
@@ -180,13 +172,7 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 		
 		act.setActionName("finish_fail");
 		
-		// ca.status = -1;
-		if (act.getActionName().equals("finish_success")) {
-		    ca.status = 1;
-		}
-		if (act.getActionName().equals("finish_fail")) {
-		    ca.status = -1;
-		}
+		ca.status = -1;
 		
 		act.setCUAction(ca);
 		act.setActionId(3);
@@ -198,90 +184,6 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 		return true;
 	}
     
-    
-/*
-	 * public boolean createSimpleMoveTask() { //currentTask = new Task("move",
-	 * "kitchen", null); // boolean addNewActionTuple(ActionTuple act)
-	 * ActionTuple act = new ActionTuple();
-	 * 
-	 * CUAction ca = new CUAction(); MoveAction ma = new MoveAction();
-	 * PerceptionAction pa = new PerceptionAction(); GraspAction ga = new
-	 * GraspAction();
-	 * 
-	 * // TODO: should obtain information from Ontology here. But here we use
-	 * temporary hard coded info for testing double x = 1; double y = 1; double
-	 * theta = 0;
-	 * 
-	 * if (this.targetContent.equals("home")) { this.targetContent = "[0 0 0]";
-	 * } else if (this.targetContent.equals("order")) { this.targetContent =
-	 * "[1 -0.5 -0.7]"; } else if (this.targetContent.equals("kitchen")) {
-	 * this.targetContent = "[-2.04 0.3 0]"; } else if
-	 * (this.targetContent.equals("new_kitchen")) { this.targetContent =
-	 * "[-2.14 0.0 0]"; } else if
-	 * (this.targetContent.equals("kitchen_backwards")) { this.targetContent =
-	 * "[-2.04 -0.3 3.14]"; }
-	 * 
-	 * if(this.targetContent.charAt(0) == '[' &&
-	 * this.targetContent.charAt(targetContent.length() - 1) == ']') {
-	 * StringTokenizer st = new StringTokenizer(targetContent, " [],");
-	 * if(st.countTokens() == 3) { try { x = Double.parseDouble(st.nextToken());
-	 * y = Double.parseDouble(st.nextToken()); theta =
-	 * Double.parseDouble(st.nextToken()); System.out.println(x + "  " + y + " "
-	 * + theta); } catch(Exception e){ System.out.println(e.getMessage());
-	 * return false; } } } else { return false; }
-	 * 
-	 * ma.targetPose2D.x = x; ma.targetPose2D.y = y; ma.targetPose2D.theta =
-	 * theta;
-	 * 
-	 * ca.ma = ma; ca.pa = pa; ca.ga = ga;
-	 * 
-	 * try { ca.actionFlags = parseActionFlags("0 1 1"); } catch(Exception e) {
-	 * System.out.println(e.getMessage()); }
-	 * 
-	 * act.setCUAction(ca); act.setActionId(1); addNewActionTuple(act);
-	 * 
-	 * // add finish action __ success
-	 * 
-	 * act = new ActionTuple();
-	 * 
-	 * ca = new CUAction(); ma = new MoveAction(); pa = new PerceptionAction();
-	 * ga = new GraspAction();
-	 * 
-	 * ca.ma = ma; ca.pa = pa; ca.ga = ga;
-	 * 
-	 * try { ca.actionFlags = parseActionFlags("0 1 1"); } catch(Exception e) {
-	 * System.out.println(e.getMessage()); }
-	 * act.setActionName("finish_success");
-	 * 
-	 * if(act.getActionName().equals("finish_success")){ ca.status = 1; }
-	 * if(act.getActionName().equals("finish_fail")) { ca.status = -1; }
-	 * 
-	 * act.setCUAction(ca); act.setActionId(2); act.setParentId(1);
-	 * act.setCondition(true); addNewActionTuple(act);
-	 * 
-	 * // add finish action __ fail
-	 * 
-	 * act = new ActionTuple();
-	 * 
-	 * ca = new CUAction(); ma = new MoveAction(); pa = new PerceptionAction();
-	 * ga = new GraspAction();
-	 * 
-	 * ca.ma = ma; ca.pa = pa; ca.ga = ga;
-	 * 
-	 * try { ca.actionFlags = parseActionFlags("0 1 1"); } catch(Exception e) {
-	 * System.out.println(e.getMessage()); }
-	 * 
-	 * act.setActionName("finish_fail");
-	 * 
-	 * //ca.status = -1; if(act.getActionName().equals("finish_success")){
-	 * ca.status = 1; } if(act.getActionName().equals("finish_fail")) {
-	 * ca.status = -1; }
-	 * 
-	 * act.setCUAction(ca); act.setActionId(3); act.setParentId(1);
-	 * act.setCondition(false); addNewActionTuple(act);
-	 * 
-	 * System.out.println("number of actions: " + acts.size()); return true; }
-	 */
     public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {
 	return false;
     }

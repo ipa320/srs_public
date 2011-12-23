@@ -29,6 +29,10 @@
 
 #include <algorithm>
 
+
+#include "actionlib/client/simple_action_client.h"
+#include "srs_decision_making/ExecutionAction.h"
+
 using namespace std;
 using namespace laser_processor;
 using namespace ros;
@@ -47,6 +51,10 @@ static const double leg_pair_separation_m    = 0.5;
 static const string fixed_frame              = "/base_link";
 //
 //static const unsigned int num_particles=100; // particle
+
+
+
+
 
 class SavedFeature
 {
@@ -225,6 +233,9 @@ string scan_topic = "scan_front";
 // actual legdetector node
 class LegDetector
 {
+
+  
+
 public:
 	NodeHandle nh_;
 
@@ -256,7 +267,14 @@ public:
 	tf::MessageFilter<srs_msgs::PositionMeasurement> people_notifier_;
 	tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
 
-        
+
+
+    
+	actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> client("srs_decision_making_actions", true);  // action lib client to DM Action Server;
+        srs_decision_making::ExecutionGoal goal;  // goal that will be sent
+
+
+
 	LegDetector(ros::NodeHandle nh) :
 		nh_(nh),
 		mask_count_(0),
@@ -291,7 +309,22 @@ public:
 		laser_notifier_.setTolerance(ros::Duration(0.01));
 
 		feature_id_ = 0;
-	}
+	
+                
+
+                if (!client.waitForServer(ros::Duration(5)))
+                                   
+ 
+                   {
+                      printf(" Unable to establish connection with ActionServer in DM !!! Sending goals to DM when person is detected is disabled\n");
+                   }      
+
+        
+   
+
+
+        
+        }
 
 
 	~LegDetector()
@@ -788,7 +821,15 @@ public:
 		{
 			Point pos=(*i)->center();
 			positions.push_back(pos);
-		}
+
+                     printf ("Distance %f" , (*i)->center());  // test for the call to DM with the distance of the human *****************************************************************************************
+             
+                goal.action="move";
+                goal.parameter="kitchen_backwards";
+                goal.priority=1;
+                client.sendGoal(goal);
+
+                 }
 
 		// Build up the set of pair of closest positions
 		list<Pair*> candidates;
@@ -1075,7 +1116,10 @@ int main(int argc, char **argv)
         
 	ros::NodeHandle nh;
 	LegDetector ld(nh);
-	ros::spin();
+        
+
+        ros::spin();
+        
 
 	return 0;
 }

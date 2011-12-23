@@ -21,6 +21,7 @@ import ros.communication.*;
 
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
+   
     public GetObjectTask(String taskType, String targetContent, Pose2D userPose, OntologyDB onto, OntoQueryUtil ontoQueryUtil, NodeHandle n) 
     {
 	if (onto != null) {
@@ -115,6 +116,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
      
      System.out.println("===> Get Next CUACTION -- from GetObjectTask.java");
      CUAction ca = new CUAction();
+     if(allSubSeqs.size() == 0 ) {
+	 
+     }
      if(currentSubAction >= 0 && currentSubAction < allSubSeqs.size()) {
 	 
      }
@@ -203,6 +207,19 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     }   
 
     public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {
+	return false;
+    }
+
+    public boolean isEmpty() {
+	try {
+	    if(allSubSeqs.size() == 0) {
+		return true;
+	    }
+	}
+	catch(NullPointerException e) {
+	    System.out.println(e.getMessage() + "\n" + e.toString());
+	    return true;
+	}
 	return false;
     }
 

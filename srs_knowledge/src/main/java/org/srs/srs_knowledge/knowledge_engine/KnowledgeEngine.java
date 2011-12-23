@@ -427,16 +427,25 @@ class KnowledgeEngine
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    // task not created for some reason
-	    currentTask = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
+	    //currentTask = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
+	    currentTask = null;
 	    res.result = 1;
 	    res.description = "No action";
 	}
 
-	if(currentTask.getActionSequence().size() == 0) {
+	//if(currentTask.getActionSequence().size() == 0) {
+	if(currentTask == null) {
 	    // task not created for some reason
 	    res.result = 1;
 	    res.description = "No action";
+	    System.out.println("No action. Task is null");
+	}
+	else if(currentTask.isEmpty()) {
+	    // task not created for some reason
+	    res.result = 1;
+	    res.description = "No action";
+	    System.out.println("No action. Task is empty");
 	}
 	else {
 	    res.result = 0;
@@ -734,7 +743,7 @@ class KnowledgeEngine
 	    return false;
 	}
 
-	ArrayList<ActionTuple> acts = currentTask.getActionSequence();
+	//ArrayList<ActionTuple> acts = currentTask.getActionSequence();
 
 	return true;
     }

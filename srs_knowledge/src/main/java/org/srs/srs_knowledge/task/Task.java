@@ -87,10 +87,11 @@ public abstract class Task {
 		this.taskType = type;
 	}
 
+/*
 	public ArrayList<ActionTuple> getActionSequence() {
 		return acts;
 	}
-
+*/
     public CUAction getNextCUAction(boolean stateLastAction) {
 	//CUAction ca = new CUAction();
 	if (currentAction == null) {
@@ -349,6 +350,20 @@ public abstract class Task {
 
 		return ga;
 	}
+
+    public boolean isEmpty() {
+	try {
+	    if(allSubSeqs.size() == 0 && acts.size() == 0) {
+		return true;
+	    }
+	}
+	catch(NullPointerException e) {
+	    System.out.println(e.getMessage() + "\n" + e.toString());
+	    return true;
+	}
+	return false;
+    }
+
 
 	protected TaskType taskType;
 	protected String targetContent;

@@ -23,19 +23,27 @@ import org.srs.srs_knowledge.task.Task;
 
 public abstract class HighLevelActionUnit {    
     public abstract String getActionType();
-    public final int COMPLETED_SUCCESS = -1;
-    public final int COMPLETED_FAIL = -2;
+    public static final int COMPLETED_SUCCESS = -1;
+    public static final int COMPLETED_FAIL = -2;
+    public static final int INVALID_INDEX = -100;
 
     public int getNumOfActions() {
 	return actionUnits.size();
     }
 
-    public void addNewGenericAction(GenericAction gact) {
-	actionUnits.add(gact);
+    public void addNewGenericAction(GenericAction gAct) {
+	actionUnits.add(gAct);
     }
+
+    //public abstract boolean hasNextGenericAction(boolean statusLastStep);
+
+    //public abstract GenericAction getNextGenericAction(boolean statusLastStep);
+    public abstract int getNextCUActionIndex(boolean statusLastStep);
+    public abstract CUAction getNextCUAction(int ind);
 
     protected String actionType = "";
     protected ArrayList<GenericAction> actionUnits = new ArrayList<GenericAction>();
     protected int[] nextActionMapIfFail;
     protected int[] nextActionMapIfSuccess;
+    protected int currentActionInd = -1;
 }

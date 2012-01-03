@@ -17,8 +17,9 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
 
-public class SubActionSequence {
-    public SubActionSequence() {
+public class HighLevelActionSequence {
+    public HighLevelActionSequence() {
+	indOfCurrent = -1;
     }
 
     //public void 
@@ -30,8 +31,30 @@ public class SubActionSequence {
     public int getSizeOfHighLevelActionList() {
 	return highLevelActionList.size();
     }
+    
+    public boolean hasNextHighLevelActionUnit() {
+	if(indOfCurrent + 1 < getSizeOfHighLevelActionList() && indOfCurrent + 1 >= 0) { 
+	    return true;
+	}
+	else {
+	    return false;
+	}
+    }
 
-    protected int indOfCurrent = 0;
+    public HighLevelActionUnit getNextHighLevelActionUnit() {
+	HighLevelActionUnit ha;
+	try{ 
+	    ha = highLevelActionList.get(indOfCurrent + 1);
+	    indOfCurrent = indOfCurrent + 1;
+	}
+	catch(NullPointerException ne) {
+	    System.out.println(ne.getMessage());
+	    return null;
+	}
+	return ha;
+    }
+
+    protected int indOfCurrent;
     
     protected ArrayList<HighLevelActionUnit> highLevelActionList = new ArrayList<HighLevelActionUnit>();
 }

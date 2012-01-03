@@ -66,31 +66,38 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	return actionType;
     }
 
-    private int getNextCUActionIndex() {
-	return 0;
+    public int getNextCUActionIndex(boolean statusLastStep) {
+
+	currentActionInd++;
+
+	if ( currentActionInd >= 0 && currentActionInd < actionUnits.size() ) {
+	    if(statusLastStep) {
+		return nextActionMapIfSuccess[currentActionInd];
+	    }
+	    else {
+		return nextActionMapIfFail[currentActionInd];
+	    }
+	}
+	else {
+	    return INVALID_INDEX;
+	}
     }
 
-    public CUAction getNextCUAction() {
-	int ind = getNextCUActionIndex();
+    public CUAction getNextCUAction(int ind) {
+	//int ind = getNextCUActionIndex(statusLastStep);
 	CUAction ca = new CUAction(); 
+	/*
 	MoveAction ma = new MoveAction();
 	PerceptionAction pa = new PerceptionAction();
 	GraspAction ga = new GraspAction();
-	
+	*/
+
 	if(ind == COMPLETED_FAIL) {
 	    GenericAction genericAction = new GenericAction();
 	    genericAction.actionInfo.add("finish_fail");
 	    
-	    ca.ma = ma;
-	    ca.pa = pa;
-	    ca.ga = ga;
 	    ca.generic = genericAction;
 	    ca.actionType = "generic";
-	    
-	    int[] af =  {0, 1, 1};
-	    ca.actionFlags = af;
-	    
-	    //act.setActionName("finish_fail");
 	    
 	    ca.status = -1;
 	    
@@ -100,47 +107,30 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	    GenericAction genericAction = new GenericAction();
 	    genericAction.actionInfo.add("finish_success");
 	    
-	    ca.ma = ma;
-	    ca.pa = pa;
-	    ca.ga = ga;
 	    ca.generic = genericAction;
 	    ca.actionType = "generic";
-	    
-	    int[] af =  {0, 1, 1};
-	    ca.actionFlags = af;
-	    
-	    //act.setActionName("finish_fail");
 	    
 	    ca.status = 1;
 	    
 	    return ca;
 	}
-	else if (ind > 0 && ind < actionUnits.size()){
-	    GenericAction genericAction = actionUnits.get(ind);
-	    	    
-	    ca.ma = ma;
-	    ca.pa = pa;
-	    ca.ga = ga;
-	    ca.generic = genericAction;
-
-	    ca.actionType = "generic";
-	    return ca;
-	}
-	else {
+	else if (ind == INVALID_INDEX) {
 	    GenericAction genericAction = new GenericAction();
 	    genericAction.actionInfo.add("no_action");
 	    
-	    ca.ma = ma;
-	    ca.pa = pa;
-	    ca.ga = ga;
 	    ca.generic = genericAction;
 	    ca.actionType = "generic";
 	    
-	    int[] af =  {1, 1, 1};
-	    ca.actionFlags = af;
-	    
+	    ca.status = -1;
 	    return ca;
 	}
+
+	GenericAction genericAction = actionUnits.get(ind);
+	
+	ca.generic = genericAction;
+	
+	ca.actionType = "generic";
+	return ca;
     }
 
 

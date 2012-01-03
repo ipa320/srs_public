@@ -8,6 +8,8 @@ int32 sessionId
 # then stateLastAction = [0, 1, 2]
 int32[] stateLastAction
 
+string[] genericFeedBack
+
 ---
 
 # int16 sessionId

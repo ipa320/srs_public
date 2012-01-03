@@ -60,6 +60,14 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	return actionType;
     }
 
+    public int getNextCUActionIndex(boolean statusLastStep) {
+	return 0;
+    }
+
+    public CUAction getNextCUAction(int ind) {
+	return null;
+    }
+    
     /*
     private String actionType;
 

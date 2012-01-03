@@ -13,7 +13,7 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
-import org.srs.srs_knowledge.task.Task;
+import org.srs.srs_knowledge.task.*;
 
 import ros.pkg.srs_symbolic_grounding.srv.*;
 import ros.*;
@@ -88,7 +88,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	for(Individual u : workspaces) {
 	    System.out.println(u.getLocalName());
 	    try{
-		SubActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
+		HighLevelActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
 		allSubSeqs.add(subSeq);
 	    }
 	    catch(RosException e) {
@@ -120,7 +120,40 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	 
      }
      if(currentSubAction >= 0 && currentSubAction < allSubSeqs.size()) {
-	 
+	 // get the current SubActionSequence item
+	 HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
+
+	 // decide if the current SubActionSequence is finished or stuck somewhere? 
+
+	 // if successfully finished, then finished
+
+	 // if stuck (fail), move to the next subActionSequence
+
+	 if(subActSeq.hasNextHighLevelActionUnit()) {
+	     
+	     HighLevelActionUnit highAct = subActSeq.getNextHighLevelActionUnit();
+	     if(highAct != null) {
+		 int ni = highAct.getNextCUActionIndex(stateLastAction); 
+		 switch(ni) {
+		 case HighLevelActionUnit.COMPLETED_SUCCESS:
+		     break;
+		 default: 
+		     return highAct.getNextCUAction(ni);
+		 
+		     //break;
+		 } 
+
+	     }
+	     else {
+		 return null;
+	     }
+
+	 }
+	 else {
+	 }
+
+	 // or if still pending CUAction is available, return CUAction
+
      }
      else if (currentSubAction == -1) {
      }
@@ -128,8 +161,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
      return ca;
  }
 
-    private SubActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
-	SubActionSequence actionList = new SubActionSequence();
+    private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
+	HighLevelActionSequence actionList = new HighLevelActionSequence();
 
 	// create MoveAndDetectionActionUnit
 	SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
@@ -169,7 +202,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 
 	// TODO:
-	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, "MilkBox0", 1);
+	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, "MilkBox", 1);
 	
 	// create MoveAndGraspActionUnit
 	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, "MilkBox", 1, null);

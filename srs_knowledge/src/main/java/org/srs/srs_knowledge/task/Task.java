@@ -33,7 +33,7 @@ public abstract class Task {
     public Task() {
 	// empty constructor.
 	acts = new ArrayList<ActionTuple>();     // to be deprecated and replaced with allSubSeqs
-	allSubSeqs = new ArrayList<SubActionSequence>();
+	allSubSeqs = new ArrayList<HighLevelActionSequence>();
 	// actionSequence = new ArrayList<CUAction>();
 	setTaskType(TaskType.UNSPECIFIED);
 	currentAction = null;
@@ -376,5 +376,5 @@ public abstract class Task {
 	protected OntologyDB ontoDB;
     protected OntoQueryUtil ontoQueryUtil;
     protected NodeHandle nodeHandle;
-    protected ArrayList<SubActionSequence> allSubSeqs;
+    protected ArrayList<HighLevelActionSequence> allSubSeqs;
 }

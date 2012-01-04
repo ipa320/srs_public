@@ -36,10 +36,13 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	    GenericAction detAct = new GenericAction();
 	    detAct.actionInfo.add("detect");
 	    detAct.actionInfo.add(Integer.toString(houseHoldId));
-	    detAct.actionInfo.add("objectClassName");
+	    detAct.actionInfo.add(objectClassName);
 
 	    actionUnits.add(detAct);
 	}
+
+	// this actionunit is always set with sufficient parameters
+	ifParametersSet = true;
 
 	int size = actionUnits.size(); 
 	nextActionMapIfFail = new int[size];
@@ -133,6 +136,16 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	return ca;
     }
 
+    // a not very safe, but flexible way to assign parameters, using arraylist<string> 
+    // set robot move target and object pose etc.
+    public boolean setParameters(ArrayList<String> para) {
+	boolean res = ifParametersSet;
+	return res;
+    }
+
+    public boolean ifParametersSet() {
+	return ifParametersSet;
+    }
 
     /*
     private String actionType;

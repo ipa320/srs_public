@@ -40,10 +40,15 @@ public abstract class HighLevelActionUnit {
     //public abstract GenericAction getNextGenericAction(boolean statusLastStep);
     public abstract int getNextCUActionIndex(boolean statusLastStep);
     public abstract CUAction getNextCUAction(int ind);
+    
+    // a not very safe, but flexible way to assign parameters, using arraylist<string> 
+    public abstract boolean setParameters(ArrayList<String> para);
+    public abstract boolean ifParametersSet();
 
     protected String actionType = "";
     protected ArrayList<GenericAction> actionUnits = new ArrayList<GenericAction>();
     protected int[] nextActionMapIfFail;
     protected int[] nextActionMapIfSuccess;
     protected int currentActionInd = -1;
+    protected boolean ifParametersSet;
 }

@@ -33,8 +33,7 @@ public abstract class Task {
     public Task() {
 	// empty constructor.
 	acts = new ArrayList<ActionTuple>();     // to be deprecated and replaced with allSubSeqs
-	allSubSeqs = new ArrayList<HighLevelActionSequence>();
-	// actionSequence = new ArrayList<CUAction>();
+	
 	setTaskType(TaskType.UNSPECIFIED);
 	currentAction = null;
 	ontoDB = new OntologyDB();
@@ -92,7 +91,7 @@ public abstract class Task {
 		return acts;
 	}
 */
-    public CUAction getNextCUAction(boolean stateLastAction) {
+    public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
 	//CUAction ca = new CUAction();
 	if (currentAction == null) {
 	    for (int i = 0; i < acts.size(); i++) {
@@ -271,22 +270,22 @@ public abstract class Task {
 		return act;
 	}
 
-	private static MoveAction parseMoveAction(String moveAction)
-			throws Exception {
-		MoveAction ma = new MoveAction();
-		String[] parameters = moveAction.split(" ");
-		double x = Double.parseDouble(parameters[0]);
-		double y = Double.parseDouble(parameters[1]);
-		double theta = Double.parseDouble(parameters[2]);
-
-		ma.targetPose2D.x = x;
-		ma.targetPose2D.y = y;
+    private static MoveAction parseMoveAction(String moveAction)
+	throws Exception {
+	MoveAction ma = new MoveAction();
+	String[] parameters = moveAction.split(" ");
+	double x = Double.parseDouble(parameters[0]);
+	double y = Double.parseDouble(parameters[1]);
+	double theta = Double.parseDouble(parameters[2]);
+	
+	ma.targetPose2D.x = x;
+	ma.targetPose2D.y = y;
 		ma.targetPose2D.theta = theta;
 
 		String ifWaitForObjectTaken = parameters[3];
 		boolean ifWaitFOT = false;
 		if (ifWaitForObjectTaken.equals("true")) {
-			ifWaitFOT = true;
+		    ifWaitFOT = true;
 		}
 		ma.ifWaitObjectTaken = ifWaitFOT;
 		// System.out.println("X is   " + ma.targetPose2D.x + "   Y is   " +
@@ -376,5 +375,5 @@ public abstract class Task {
 	protected OntologyDB ontoDB;
     protected OntoQueryUtil ontoQueryUtil;
     protected NodeHandle nodeHandle;
-    protected ArrayList<HighLevelActionSequence> allSubSeqs;
+    protected ArrayList<HighLevelActionSequence> allSubSeqs = new ArrayList<HighLevelActionSequence>();
 }

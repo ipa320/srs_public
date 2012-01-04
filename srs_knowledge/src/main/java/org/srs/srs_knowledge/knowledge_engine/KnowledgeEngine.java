@@ -247,7 +247,8 @@ class KnowledgeEngine
 
 	if(request.stateLastAction.length == 3) {
 	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
-		ca = currentTask.getNextCUAction(true); // no error. generate new action
+		ArrayList<String> feedback = request.genericFeedBack;
+		ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
 	    }
 	    else if(request.stateLastAction[0] == 2 || request.stateLastAction[1] == 2 || request.stateLastAction[2] == 2) {
 		ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
@@ -261,7 +262,7 @@ class KnowledgeEngine
 		return res;
 	    }
 	    else{
-		ca = currentTask.getNextCUAction(false);
+		ca = currentTask.getNextCUAction(false, null);
 	    }
 	}
 	

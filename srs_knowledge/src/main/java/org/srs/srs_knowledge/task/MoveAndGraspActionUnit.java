@@ -23,7 +23,7 @@ import com.hp.hpl.jena.ontology.Individual;
  */
 public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 
-    public MoveAndGraspActionUnit(Pose2D position, String objectClassName, int houseHoldId, Pose objectPose) {
+    public MoveAndGraspActionUnit(Pose2D position, String objectClassName, int houseHoldId) {
 	    GenericAction ga = new GenericAction();
 	    ga.actionInfo.add("move");
 	    ga.actionInfo.add(Double.toString(position.x));
@@ -35,7 +35,8 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    GenericAction graspAct = new GenericAction();
 	    graspAct.actionInfo.add("grasp");
 	    graspAct.actionInfo.add(Integer.toString(houseHoldId));
-	    graspAct.actionInfo.add("objectClassName");
+	    graspAct.actionInfo.add(objectClassName);
+	    /*
 	    graspAct.actionInfo.add(Double.toString(objectPose.position.x));
 	    graspAct.actionInfo.add(Double.toString(objectPose.position.y));
 	    graspAct.actionInfo.add(Double.toString(objectPose.position.z));
@@ -43,9 +44,12 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    graspAct.actionInfo.add(Double.toString(objectPose.orientation.y));
 	    graspAct.actionInfo.add(Double.toString(objectPose.orientation.z));
 	    graspAct.actionInfo.add(Double.toString(objectPose.orientation.w));
+	    */
 
 	    actionUnits.add(graspAct);
 
+	    //ifObjectPoseSet = true;
+	    ifParametersSet = true;
 
 	    int size = actionUnits.size(); 
 	    nextActionMapIfFail = new int[size];
@@ -68,10 +72,63 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	return null;
     }
     
+    // a not very safe, but flexible way to assign parameters, using arraylist<string> 
+    // set robot move target and object pose etc.
+    public boolean setParameters(ArrayList<String> para) {
+	boolean res = ifParametersSet;
+
+	
+
+	return res;
+    }
+
+    private void setBasePose(ArrayList<String> pose) throws IllegalArgument {
+
+	GenericAction ga = actionUnits.get(0);
+
+	if( ga.actionInfo.get(0).equals("move")) {
+	    //actionUnits.get(0).clear();
+	    actionUnits.set(0, pose);
+	}
+	else {
+	    throw new IllegalArgumentException("Wrong format exception -- when setting Base Pose with arrayList");
+	}
+    }
+
+    // objInfo should be in format as defined in constructor
+    private void setGraspInfo(ArrayList<String> objInfo) {
+	GenericAction ga = actionUnits.get(1);
+
+	if( ga.actionInfo.get(0).equals("grasp")) {
+	    //actionUnits.get(0).clear();
+	    actionUnits.set(1, objInfo);
+	    /*
+	    GenericAction graspAct = new GenericAction();
+	    graspAct.actionInfo.add("grasp");
+	    graspAct.actionInfo.add(Integer.toString(houseHoldId));
+	    graspAct.actionInfo.add(objectClassName);
+	    */
+	}
+	else {
+	    throw new IllegalArgumentException("Wrong format exception -- when setting Object Info with arrayList");
+	}
+    }
+
+    private boolean setObjectPose(ArrayList<String> objPose) {
+    }
+
+    public boolean ifParametersSet() {
+	return ifParametersSet;
+    }
+
     /*
     private String actionType;
 
     private ArrayList<GenericAction> actionUnits = new ArrayList<GenericAction>();
     private int[] nextActionMapIfFail;
     */
+    private boolean ifObjectPoseSet = false;
+    private boolean ifBasePoseSet = false;
+    private boolean ifObjectIDSet = false;
+    private boolean ifObjectNameSet = false;
 }

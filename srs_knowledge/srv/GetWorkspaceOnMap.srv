@@ -1,0 +1,23 @@
+#get_workspaces_on_map
+#mapID
+# uint32 mapID  # deprecated
+#Time stamp for the period
+#duration period # if empty then all the period
+
+string map
+
+# flag: if need objectsInfo. False: objectsInfo will be empty. 
+# when SRSFurnitureGeometry unavailable, corresponding items (e.g. x, y, z) will be set -1000 which is certainly invalid for srs. Or the whole will be set null
+# default: true
+bool ifGeometryInfo
+
+---
+#list of object ID for possible workspace in current map
+# uint32[] objectID    # deprecated
+#object classID for each object on the ma
+# uint32[] classID     # deprecated
+
+string[] objects
+string[] classesOfObjects
+SRSSpatialInfo[] objectsInfo
+string[] houseHoldId

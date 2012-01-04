@@ -1,0 +1,9 @@
+PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>
+SELECT ?objs ?x 
+WHERE {
+?objs rdf:type srs:MilkBox .
+?x srs:xCoord ?objs .
+}
+

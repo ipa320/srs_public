@@ -103,6 +103,9 @@ class goal_structure():
         #customised pre-empty signal received or not
         self.preemptied = False
         
+        #reference to the action server
+        self._as=""
+        
         ## backward compatible need to be revised after the integration meeting         
         #feedback publisher, intervention required
         self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)
@@ -136,17 +139,24 @@ class intervention_base_pose(smach.State):
         
         if userdata.semi_autonomous_mode == True:
             # user intervention is possible
-            while not rospy.is_shutdown():
+            while not (rospy.is_shutdown() or self.preempt_requested()) :
+                                
+                global current_task_info
+                _feedback=xmsg.ExecutionFeedback()
+                _feedback.current_state = "need user intervention for base pose"
+                _feedback.solution_required = True
+                _feedback.exceptional_case_id = 1
+                current_task_info._as.publish_feedback(_feedback)
+                rospy.sleep(1)
                 
-                self.pub_fb.publish(True)
-                rospy.sleep(1.0)
-                self.count += 1
-                self.pub_fb2.publish("need user intervention for base pose")    
+                self.count += 1 
                 rospy.loginfo("State : need user intervention for base pose")
-                current_state= 'need user intervention for base pose'
-                exceptional_case_id=1 # need user intervention for base pose
                 rospy.wait_for_service('message_errors')                       
                 s = xsrv.errorsResponse()
+                
+                current_state= 'need user intervention for base pose'
+                exceptional_case_id=1 # need user intervention for base pose
+                
                 try:
                     message_errors = rospy.ServiceProxy('message_errors',xsrv.errors)               
                     s = message_errors(current_state, exceptional_case_id)
@@ -163,6 +173,7 @@ class intervention_base_pose(smach.State):
                     userdata.intermediate_pose = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
                     rospy.loginfo("New intermediate target is :%s", s.solution.__str__())    
                     return 'retry'
+            return 'failed'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
@@ -271,7 +282,7 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','env_object_update','deliver_object'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','env_object_update','deliver_object','charging'],
                              input_keys=['target_object_name','target_base_pose','target_object_pose'],
                              output_keys=['target_object_name',
                                           'target_base_pose',
@@ -376,6 +387,13 @@ class semantic_dm(smach.State):
             print resp1.nextAction.actionFlags
             print resp1.nextAction.ma
             # else should be 0: then continue executing the following
+
+            if resp1.nextAction.actionType == 'generic':
+                if resp1.nextAction.generic.actionInfo[0] == 'charging':
+                    nextStep = 'charging'
+                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
+                    return nextStep
+
             if resp1.nextAction.actionFlags == (0, 1, 1):
                 if resp1.nextAction.ma.ifWaitObjectTaken:
 			nextStep = 'deliver_object'
@@ -496,6 +514,46 @@ class initialise(smach.State):
 
         return 'succeeded'
     
+#prepare the robot for the task
+class prepare_robot(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'])
+        #self.count=0
+
+        
+    def execute(self,userdata):
+               
+        last_step_info = xmsg.Last_step_info()
+        last_step_info.step_name = "prepare_robot"
+        last_step_info.outcome = 'succeeded'
+        last_step_info.semi_autonomous_mode = False
+        
+        #recording the information of last step
+        global current_task_info
+        current_task_info.last_step_info.append(last_step_info)
+                
+        #current_task_info.session_id = 123456
+        
+        #initialisation of the robot
+        # move to initial positions
+        global sss
+        handle_torso = sss.move("torso", "home", False)
+        handle_tray = sss.move("tray", "down", False)
+        handle_arm = sss.move("arm", "folded", False)
+        handle_sdh = sss.move("sdh", "cylclosed", False)
+        handle_head = sss.move("head", "front", False)
+    
+        
+        # wait for initial movements to finish
+        handle_torso.wait()
+        handle_tray.wait()
+        handle_arm.wait()
+        handle_sdh.wait()
+        handle_head.wait()
+        
+        
+
+        return 'succeeded'
     
 #verify_object FROM PRO+IPA, the interface still need to be clarified 
 class verify_object(smach.State):

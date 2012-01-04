@@ -1,0 +1,18 @@
+<package>
+  <description brief="srs_pellet">
+
+     srs_pellet
+
+  </description>
+  <author>Ze Ji</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_pellet</url>
+
+  <export>
+    <cpp cflags="-I${prefix}/common/lib"/>
+  </export>
+
+</package>
+
+

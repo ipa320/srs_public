@@ -82,13 +82,20 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	return res;
     }
 
-    private void setBasePose(ArrayList<String> pose) throws IllegalArgument {
+    private void setBasePose(ArrayList<String> pose) throws IllegalArgumentException {
 
 	GenericAction ga = actionUnits.get(0);
 
 	if( ga.actionInfo.get(0).equals("move")) {
 	    //actionUnits.get(0).clear();
-	    actionUnits.set(0, pose);
+	    //GenericAction ga = new GenericAction();
+	    ga.actionInfo.set(0, "move");
+	    ga.actionInfo.set(1, pose.get(1));
+	    ga.actionInfo.set(2, pose.get(2));
+	    ga.actionInfo.set(3, pose.get(3));
+
+
+	    //actionUnits.set(0, pose);
 	}
 	else {
 	    throw new IllegalArgumentException("Wrong format exception -- when setting Base Pose with arrayList");
@@ -101,7 +108,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 
 	if( ga.actionInfo.get(0).equals("grasp")) {
 	    //actionUnits.get(0).clear();
-	    actionUnits.set(1, objInfo);
+	    //actionUnits.set(1, objInfo);
 	    /*
 	    GenericAction graspAct = new GenericAction();
 	    graspAct.actionInfo.add("grasp");
@@ -115,6 +122,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     }
 
     private boolean setObjectPose(ArrayList<String> objPose) {
+	return false;
     }
 
     public boolean ifParametersSet() {

@@ -13,6 +13,8 @@
 //#include "rosbag/bag.h"
 
 #include "srs_msgs/PositionMeasurement.h"
+#include "srs_msgs/HS_distance.h"
+
 #include "sensor_msgs/LaserScan.h"
 #include "std_msgs/Header.h"
 
@@ -235,7 +237,12 @@ class LegDetector
 {
  typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client;
  srs_decision_making::ExecutionGoal goal;  // goal that will be sent to the actionserver
-  
+ 
+
+ bool pauseSent;
+ srs_msgs::HS_distance  distance_msg;
+        
+   
 
 public:
 	NodeHandle nh_;
@@ -259,7 +266,7 @@ public:
 
 	int feature_id_;
 
-	ros::Publisher leg_cloud_pub_ , leg_detections_pub_;
+	ros::Publisher leg_cloud_pub_ , leg_detections_pub_ , human_distance_pub_ ;
 
 	ros::Publisher tracker_measurements_pub_;
 
@@ -302,18 +309,17 @@ public:
 		leg_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("tracked_people",10);
                 leg_detections_pub_ = nh_.advertise<sensor_msgs::PointCloud>("leg_detections_cloud",10);
 		tracker_measurements_pub_ = nh_.advertise<srs_msgs::PositionMeasurement>("people_tracker_measurements",1);
-
+                human_distance_pub_= nh_.advertise<srs_msgs::HS_distance>("HS_distance",10);                
+ 
 		//		people_notifier_.registerCallback(boost::bind(&LegDetector::peopleCallback, this, _1));
 		people_notifier_.setTolerance(ros::Duration(0.01));
 		laser_notifier_.registerCallback(boost::bind(&LegDetector::laserCallback, this, _1));
 		laser_notifier_.setTolerance(ros::Duration(0.01));
 
 		feature_id_ = 0;
+                pauseSent = false;
 	
-              
-
-
-        
+                       
         }
 
 
@@ -322,15 +328,16 @@ public:
 	}
 
 
-
-   bool sentActionLibGoal()
+// actionlib Pause Call
+   bool sendActionLibGoalPause()
         {
+         if (pauseSent) // Pause Action has been  sent already
+                return true;
 
-// actionlib
-             
+         
               
 
-              Client client ("srs_decision_making_actions",true);
+             Client client ("srs_decision_making_actions",true);
 
 
                 if (!client.waitForServer(ros::Duration(5)))
@@ -341,19 +348,20 @@ public:
                       return false;
                    }   
    
+
                 goal.action="move";
                 goal.parameter="kitchen_backwards";
                 goal.priority=1;
                 client.sendGoal(goal);
-
+                pauseSent = true;
            //wait for the action to return
-                bool finished_before_timeout = client.waitForResult(ros::Duration(30.0));
+                bool finished_before_timeout = client.waitForResult(ros::Duration(5.0));
 
                if (finished_before_timeout)
                 {
                  actionlib::SimpleClientGoalState state = client.getState();
-                 ROS_INFO("Action call to DM finished with state: %s",state.toString().c_str());
-                 return true;
+                 ROS_INFO("Action call to DM finished with state: %s",state.toString().c_str()); 
+                return true;
                 }
               else
                 ROS_INFO("Action call to DM did not finish before timeout");
@@ -362,7 +370,71 @@ public:
 
        }
 
+
+
+
+// alerts when the distance is bigger that a specified treshold              
+void measure_distance (double dist) {  
+                      printf ("Distance %f \n" , dist);  // the distance to the detected human
+                       
+                       distance_msg.distance = dist*100;
+                       human_distance_pub_.publish(distance_msg);
+                      
+                       if ( !pauseSent && dist < 1.5 )
+                          {
+                            printf ("Local user too close ! Sending Pause ActionLibGoal to the server \n"); 
+                            sendActionLibGoalPause();
+                           } 
+                        else if ( dist > 2.5 && pauseSent ) {
+                            printf ("Local user is far away now ! Sending Resume ActionLibGoal to the server \n"); 
+                            sendActionLibGoalResume();
+
+                           }
+
+}
+
+// actionlib Resume Call
+ bool sendActionLibGoalResume()
+        {
+         if (pauseSent = false) // Resume Action has been  sent already
+                return true;
+
+
+            
               
+
+             Client client ("srs_decision_making_actions",true);
+
+
+                if (!client.waitForServer(ros::Duration(5)))
+                                   
+ 
+                   {
+                      printf(" Unable to establish connection with ActionServer in DM !!! Sending goals to DM when person is detected is disabled\n");
+                      return false;
+                   }   
+   
+
+                goal.action="move";
+                goal.parameter="kitchen";
+                goal.priority=1;
+                client.sendGoal(goal);
+                pauseSent = false;
+           //wait for the action to return
+                bool finished_before_timeout = client.waitForResult(ros::Duration(5.0));
+
+               if (finished_before_timeout)
+                {
+                 actionlib::SimpleClientGoalState state = client.getState();
+                 ROS_INFO("Action call to DM finished with state: %s",state.toString().c_str()); 
+                return true;
+                }
+              else
+                ROS_INFO("Action call to DM did not finish before timeout");
+              
+            return false;
+
+       }
 
 
 
@@ -540,7 +612,7 @@ public:
 	dist_between_legs = dest_loc.length();
 
 	// Ensure that this pair of legs is the closest pair to the tracker, and that the distance between the legs isn't too large.
-	if ( (*it1)->dist_to_person_+(*it2)->dist_to_person_ < closest_pair_dist && dist_between_legs < leg_pair_separation_m )
+	if ( (*it1)->dist_to_person_+(*it2)->dist_to_person_ < closest_pair_dist && dist_between_legs < leg_pair_separation_m )typedef btVector3 tf::Point 
 	{
 	  closest_pair_dist = (*it1)->dist_to_person_+(*it2)->dist_to_person_;
 	  closest1 = it1;
@@ -627,7 +699,7 @@ public:
     }
 
 
-    // For each candidate, find the closest tracker (within threshold) and add to the match list
+    // For each candidate, find the closest tradistance_msgcker (within threshold) and add to the match list
     // If no tracker is found, start a new one
     multiset<MatchedFeature> matches;
     for (list<SampleSet*>::iterator cf_iter = candidates.begin();
@@ -716,7 +788,7 @@ public:
 
         list<SavedFeature*>::iterator closest = propagated.end();
         float closest_dist = max_track_jump_m;
-
+xpected primary-expression before ‘)’ t
         for (list<SavedFeature*>::iterator remain_iter = propagated.begin();
              remain_iter != propagated.end();
              remain_iter++)
@@ -787,7 +859,7 @@ public:
 
     // visualize all trackers
     channel.name = "rgb";
-	channel.values = weights;
+	channel.values = weights;distance_msg
 	sensor_msgs::PointCloud  people_cloud;
 	people_cloud.channels.push_back(channel);
 	people_cloud.header.frame_id = fixed_frame;//scan_.header.frame_id;
@@ -855,9 +927,9 @@ public:
 		{
 			Point pos=(*i)->center();
 			positions.push_back(pos);
-
-             //        printf ("Distance %f" , (*i)->center());  // test for the call to DM with the distance of the human 
-                 }
+             
+                        measure_distance ((*i)->center().distance(Point(0,0,0)));
+                }
 
 		// Build up the set of pair of closest positions
 		list<Pair*> candidates;

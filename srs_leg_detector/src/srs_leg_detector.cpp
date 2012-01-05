@@ -35,6 +35,8 @@
 #include "actionlib/client/simple_action_client.h"
 #include "srs_decision_making/ExecutionAction.h"
 
+typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client;
+
 using namespace std;
 using namespace laser_processor;
 using namespace ros;
@@ -235,12 +237,16 @@ string scan_topic = "scan_front";
 // actual legdetector node
 class LegDetector
 {
- typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client;
+ 
+ 
  srs_decision_making::ExecutionGoal goal;  // goal that will be sent to the actionserver
  
 
  bool pauseSent;
+ int counter;
  srs_msgs::HS_distance  distance_msg;
+ 
+ Client client;
         
    
 
@@ -292,7 +298,8 @@ public:
 	        laser_sub_(nh_,scan_topic,10),
         //	laser_sub_(nh_,"scan_front",10),
 		people_notifier_(people_sub_,tfl_,fixed_frame,10),
-		laser_notifier_(laser_sub_,tfl_,fixed_frame,10)
+		laser_notifier_(laser_sub_,tfl_,fixed_frame,10),
+                client ("srs_decision_making_actions",true)
 	{
 		
                 if (g_argc > 1) {
@@ -318,6 +325,8 @@ public:
 
 		feature_id_ = 0;
                 pauseSent = false;
+                counter = 1;
+                
 	
                        
         }
@@ -337,10 +346,10 @@ public:
          
               
 
-             Client client ("srs_decision_making_actions",true);
+       //      Client client ("srs_decision_making_actions",true);
 
 
-                if (!client.waitForServer(ros::Duration(5)))
+                if (!client.waitForServer()) // ros::Duration(5)
                                    
  
                    {
@@ -349,13 +358,13 @@ public:
                    }   
    
 
-                goal.action="move";
-                goal.parameter="kitchen_backwards";
-                goal.priority=1;
+                goal.action="pause";
+                goal.parameter="";
+                goal.priority=counter++;
                 client.sendGoal(goal);
                 pauseSent = true;
            //wait for the action to return
-                bool finished_before_timeout = client.waitForResult(ros::Duration(5.0));
+                bool finished_before_timeout = client.waitForResult(ros::Duration(2));
 
                if (finished_before_timeout)
                 {
@@ -403,10 +412,10 @@ void measure_distance (double dist) {
             
               
 
-             Client client ("srs_decision_making_actions",true);
+   //          Client client ("srs_decision_making_actions",true);
 
 
-                if (!client.waitForServer(ros::Duration(5)))
+                if (!client.waitForServer())  // ros::Duration(5)
                                    
  
                    {
@@ -415,13 +424,13 @@ void measure_distance (double dist) {
                    }   
    
 
-                goal.action="move";
-                goal.parameter="kitchen";
-                goal.priority=1;
+                goal.action="resume";
+                goal.parameter="";
+                goal.priority=counter++;
                 client.sendGoal(goal);
                 pauseSent = false;
            //wait for the action to return
-                bool finished_before_timeout = client.waitForResult(ros::Duration(5.0));
+                bool finished_before_timeout = client.waitForResult(ros::Duration(2));
 
                if (finished_before_timeout)
                 {

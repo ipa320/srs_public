@@ -23,19 +23,50 @@ import com.hp.hpl.jena.ontology.Individual;
  */
 public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 
-    public MoveAndGraspActionUnit(Pose2D position, String objectClassName, int houseHoldId) {
+    public MoveAndGraspActionUnit(Pose2D position, String objectClassName, int houseHoldId, String graspConfig) {
 	    GenericAction ga = new GenericAction();
 	    ga.actionInfo.add("move");
-	    ga.actionInfo.add(Double.toString(position.x));
-	    ga.actionInfo.add(Double.toString(position.y));
-	    ga.actionInfo.add(Double.toString(position.theta));
+	    if(position != null) {
+		ga.actionInfo.add(Double.toString(position.x));
+		ga.actionInfo.add(Double.toString(position.y));
+		ga.actionInfo.add(Double.toString(position.theta));
+		ifBasePoseSet = true;
+	    }
+	    else {
+		ga.actionInfo.add("");
+		ga.actionInfo.add("");
+		ga.actionInfo.add("");
+		ifBasePoseSet = false;
+	    }
 
 	    actionUnits.add(ga);
 
 	    GenericAction graspAct = new GenericAction();
 	    graspAct.actionInfo.add("grasp");
-	    graspAct.actionInfo.add(Integer.toString(houseHoldId));
-	    graspAct.actionInfo.add(objectClassName);
+
+	    if (objectClassName != null || objectClassName.equals("")) {
+		graspAct.actionInfo.add(objectClassName);
+		graspAct.actionInfo.add(Integer.toString(houseHoldId));
+		ifObjectInfoSet = true;
+	    }
+	    else {
+		graspAct.actionInfo.add("");
+		graspAct.actionInfo.add(Integer.toString(houseHoldId));
+		ifObjectInfoSet = false;
+	    }
+
+	    if (graspConfig != null || graspConfig.equals("")) {
+		// side, top etc
+		graspAct.actionInfo.add(graspConfig);
+		ifObjectInfoSet = true && ifObjectInfoSet;
+	    }
+	    else {
+		graspAct.actionInfo.add("");
+		ifObjectInfoSet = false;
+	    }
+
+
+
 	    /*
 	    graspAct.actionInfo.add(Double.toString(objectPose.position.x));
 	    graspAct.actionInfo.add(Double.toString(objectPose.position.y));
@@ -49,8 +80,8 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    actionUnits.add(graspAct);
 
 	    //ifObjectPoseSet = true;
-	    ifParametersSet = true;
-
+	    ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
+	    
 	    int size = actionUnits.size(); 
 	    nextActionMapIfFail = new int[size];
 	    
@@ -103,8 +134,9 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    ga.actionInfo.set(2, pose.get(2));
 	    ga.actionInfo.set(3, pose.get(3));
 	    */
-	    ifBasePoseSet = true;
 	    actionUnits.set(0, nga);
+	    ifBasePoseSet = true;
+	    ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
 	}
 	else {
 	    throw new IllegalArgumentException("Wrong format exception -- when setting Base Pose with arrayList");
@@ -129,6 +161,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    
 	    actionUnits.set(1, nga);
 	    ifObjectInfoSet = true;
+	    ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
 	}
 	else {
 	    throw new IllegalArgumentException("Wrong format exception -- when setting Object Info with arrayList");
@@ -140,6 +173,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     }
 
     public boolean ifParametersSet() {
+	ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
 	return ifParametersSet;
     }
 
@@ -149,9 +183,9 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     private ArrayList<GenericAction> actionUnits = new ArrayList<GenericAction>();
     private int[] nextActionMapIfFail;
     */
-    private boolean ifObjectPoseSet = false;
+    //private boolean ifObjectPoseSet = false;
     private boolean ifBasePoseSet = false;
-    private boolean ifObjectIDSet = false;
-    private boolean ifObjectNameSet = false;
     private boolean ifObjectInfoSet = false;
+    //private boolean ifObjectIDSet = false;
+    //private boolean ifObjectNameSet = false;
 }

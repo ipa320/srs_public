@@ -92,6 +92,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    try{
 		HighLevelActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
 		allSubSeqs.add(subSeq);
+	       
 	    }
 	    catch(RosException e) {
 		System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \n" + e.getMessage() + "\n" + e.toString());
@@ -201,6 +202,27 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return ca;
     }
     
+    /**
+     * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
+     */
+    private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
+	Pose pos = new Pose();
+	// check if feedback is for the last action issued
+	
+	if(!feedback.get(0).equals(lastActionType)) {
+	    throw new IllegalArgumentException("Incompatible type");
+	}
+	
+	pos.position.x = Integer.valueOf(feedback.get(1));
+	pos.position.y = Integer.valueOf(feedback.get(2));
+	pos.position.z = Integer.valueOf(feedback.get(3));
+	pos.orientation.x = Integer.valueOf(feedback.get(4));	    
+	pos.orientation.y = Integer.valueOf(feedback.get(5));	    
+	pos.orientation.z = Integer.valueOf(feedback.get(6));	    
+	pos.orientation.w = Integer.valueOf(feedback.get(7));
+	return pos;
+    }
+
     private CUAction handleFailedMessage() {
 	
 	HighLevelActionSequence nextHLActSeq = allSubSeqs.get(currentSubAction);
@@ -261,6 +283,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	ArrayList<Pose2D> posList;
 	try {
 	    posList = calculateScanPositions(spatialInfo);
+	    System.out.println(posList.size());
 	}
 	catch(RosException e) {
 	    System.out.println(e.toString()); 
@@ -272,17 +295,23 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, "MilkBox", 1);
 	
 	// create MoveAndGraspActionUnit
-	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, "MilkBox", 1);
+	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, "MilkBox", 1, "side");
 
 	// create PutOnTrayActionUnit
-	
+	PutOnTrayActionUnit trayAction = new PutOnTrayActionUnit("side");
 
+	// FoldArmActionUnit
+	FoldArmActionUnit foldArmAction = new FoldArmActionUnit();
 
 	// create BackToUserActionUnit
+	
 
 	actionList.appendHighLevelAction(mdAction);
 	actionList.appendHighLevelAction(mgAction);
-	
+	actionList.appendHighLevelAction(trayAction);
+	actionList.appendHighLevelAction(foldArmAction);
+		
+	System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
 	return actionList;
     }
     
@@ -377,5 +406,5 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     private ArrayList<Individual> workspaces = new ArrayList<Individual>();
     private int currentSubAction;
     private Pose recentDetectedObject;    // required by MoveAndGraspActionUnit
-    private String lastActionType;    // used to handle feedback from last action executed
+    private String lastActionType;        // used to handle feedback from last action executed
 }

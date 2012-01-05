@@ -8,6 +8,8 @@ int32 sessionId
 # then stateLastAction = [0, 1, 2]
 int32[] stateLastAction
 
+### for action "detection", 
+### feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9)  
 string[] genericFeedBack
 
 ---

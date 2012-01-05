@@ -71,7 +71,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	// back to user
 	*/
 	System.out.println("Create New GET OBJECT Task --- ");
-	ArrayList<Individual> workspaces;
+
 	try {
 	    /*
 	    System.out.println(this.targetContent);
@@ -148,8 +148,33 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			currentSubAction++;
 			return handleFailedMessage();
 		    default: 
-			if(highAct.getActionType().equals("MoveAndGrasp")) {
-			    
+			if(highAct.getActionType().equals("MoveAndGrasp") && !highAct.ifParametersSet()) {
+			    // call symbol grounding to get parameters for the MoveAndGrasp action
+			    try {
+				SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
+				// TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
+				Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
+				ArrayList<String> posInArray = new ArrayList<String>();
+				posInArray.add("move");
+				posInArray.add(Double.toString(pos.x));
+				posInArray.add(Double.toString(pos.y));
+				posInArray.add(Double.toString(pos.theta));
+				if(highAct.setParameters(posInArray)) {
+				    System.out.println("MoveAndGrasp action move action parameters are set...  " + posInArray.toString());
+				}
+				else {
+				    System.out.println("MoveAndGrasp action move action parameters are not set...  " + posInArray.toString());
+				    currentSubAction++;
+				    return handleFailedMessage();		
+				}
+			    } 
+			    catch(RosException e) {
+				System.out.println(e.toString());
+			    }
+			    catch(Exception e) {
+				System.out.println(e.toString());
+			    }
+				//private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
 			}
 			ca = highAct.getNextCUAction(ni);
 
@@ -260,6 +285,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	
 	return actionList;
     }
+    
 
     private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
@@ -294,6 +320,33 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return pos;
     }
 
+    private SRSFurnitureGeometry getFurnitureGeometryOf(Individual workspace) {
+	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+	com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "xCoord",  workspace);
+	spatialInfo.pose.position.x = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "yCoord",  workspace);
+	spatialInfo.pose.position.y = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "zCoord",  workspace);
+	spatialInfo.pose.position.z = stm.getFloat();
+			 
+	
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "widthOfObject",  workspace);
+	spatialInfo.w = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "heightOfObject",  workspace);
+	spatialInfo.h = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "lengthOfObject",  workspace);
+	spatialInfo.l = stm.getFloat();
+	
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qu",  workspace);
+	spatialInfo.pose.orientation.w = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qx",  workspace);
+	spatialInfo.pose.orientation.x = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qy",  workspace);
+	spatialInfo.pose.orientation.y = stm.getFloat();
+	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qz",  workspace);
+	spatialInfo.pose.orientation.z = stm.getFloat();
+	return spatialInfo;
+    }
 
     private void initTask(String targetContent, Pose2D userPose) {
 	acts = new ArrayList<ActionTuple>();
@@ -321,6 +374,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return false;
     }
 
+    private ArrayList<Individual> workspaces = new ArrayList<Individual>();
     private int currentSubAction;
     private Pose recentDetectedObject;    // required by MoveAndGraspActionUnit
     private String lastActionType;    // used to handle feedback from last action executed

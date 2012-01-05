@@ -76,9 +76,15 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     // set robot move target and object pose etc.
     public boolean setParameters(ArrayList<String> para) {
 	boolean res = ifParametersSet;
-
-	
-
+	try {
+	    setBasePose(para);
+	    setGraspInfo(para);
+	    ifParametersSet = true;
+	}
+	catch(IllegalArgumentException e) {
+	    System.out.println(e.getMessage());
+	    return false;
+	}
 	return res;
     }
 
@@ -86,16 +92,19 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 
 	GenericAction ga = actionUnits.get(0);
 
-	if( ga.actionInfo.get(0).equals("move")) {
+	if( ga.actionInfo.get(0).equals("move") && pose.get(0).equals("move") && pose.size() == ga.actionInfo.size()) {
 	    //actionUnits.get(0).clear();
-	    //GenericAction ga = new GenericAction();
+	    
+	    GenericAction nga = new GenericAction();
+	    nga.actionInfo = pose;
+	    /*
 	    ga.actionInfo.set(0, "move");
 	    ga.actionInfo.set(1, pose.get(1));
 	    ga.actionInfo.set(2, pose.get(2));
 	    ga.actionInfo.set(3, pose.get(3));
-
-
-	    //actionUnits.set(0, pose);
+	    */
+	    ifBasePoseSet = true;
+	    actionUnits.set(0, nga);
 	}
 	else {
 	    throw new IllegalArgumentException("Wrong format exception -- when setting Base Pose with arrayList");
@@ -106,8 +115,10 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     private void setGraspInfo(ArrayList<String> objInfo) {
 	GenericAction ga = actionUnits.get(1);
 
-	if( ga.actionInfo.get(0).equals("grasp")) {
+	if( ga.actionInfo.get(0).equals("grasp") && objInfo.get(0).equals("grasp") && objInfo.size() == ga.actionInfo.size()) {
 	    //actionUnits.get(0).clear();
+	    GenericAction nga = new GenericAction();
+	    nga.actionInfo = objInfo;
 	    //actionUnits.set(1, objInfo);
 	    /*
 	    GenericAction graspAct = new GenericAction();
@@ -115,6 +126,9 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    graspAct.actionInfo.add(Integer.toString(houseHoldId));
 	    graspAct.actionInfo.add(objectClassName);
 	    */
+	    
+	    actionUnits.set(1, nga);
+	    ifObjectInfoSet = true;
 	}
 	else {
 	    throw new IllegalArgumentException("Wrong format exception -- when setting Object Info with arrayList");
@@ -139,4 +153,5 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     private boolean ifBasePoseSet = false;
     private boolean ifObjectIDSet = false;
     private boolean ifObjectNameSet = false;
+    private boolean ifObjectInfoSet = false;
 }

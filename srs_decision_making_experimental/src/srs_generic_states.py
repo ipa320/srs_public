@@ -127,7 +127,7 @@ current_task_info = goal_structure()
 class intervention_base_pose(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed'],
+        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed', ],
                                 input_keys=['semi_autonomous_mode'],
                                 output_keys=['intermediate_pose'])
         global current_task_info         
@@ -218,7 +218,6 @@ class intervention_key_region(smach.State):
             userdata.key_region = ""   
             return 'no_more_retry'
             
-        
 
 # get a grasp configuration from UI or KB and then pass it to the manipulation module
 # user intervention on specific configuration for grasp

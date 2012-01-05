@@ -146,7 +146,9 @@ class SRS_DM_ACTION(object):
         self._result = xmsg.ExecutionResult()
         self._task = ""
         self._parameter = ""
-        self.customised_preempt_request = False
+        self.customised_preempt_required = False
+        self.pause_required = False
+        self.stop_required = False
         self._as.start()
         self.robot_initialised= False
                 
@@ -217,18 +219,18 @@ class SRS_DM_ACTION(object):
                                                'semi_autonomous_mode':'semi_autonomous_mode'}
                                    )                                   
             smach.StateMachine.add('SM_NAVIGATION', sm_approach_pose_assisted(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'})            
 
             smach.StateMachine.add('SM_DETECTION', sm_detect_asisted_pose_region(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_pose':'target_object_pose'})
        
             smach.StateMachine.add('SM_SIMPLE_GRASP', sm_get_object_on_tray(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_pose':'target_object_pose'})
@@ -237,19 +239,19 @@ class SRS_DM_ACTION(object):
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'})
             """
             smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', sm_enviroment_object_update(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_object_name':'target_object_name',
                                               'target_base_pose':'target_base_pose',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_pose':'target_object_pose'})        
             
             smach.StateMachine.add('SM_DELIVER_OBJECT', sm_deliver_object(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'})     
             
             smach.StateMachine.add('CHARGING', charging(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'}
                                    )    

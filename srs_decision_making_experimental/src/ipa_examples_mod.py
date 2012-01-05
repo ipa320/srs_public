@@ -171,6 +171,9 @@ class approach_pose_without_retry(smach.State):
                     rospy.sleep(1)
             else:
                 timeout = 0
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
         return 'failed'
 
 

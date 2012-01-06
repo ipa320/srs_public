@@ -112,6 +112,28 @@ class goal_structure():
         #feedback publisher, operational state
         self.pub_fb2 = rospy.Publisher('fb_executing_state', String)
         ## backward compatible need to be revised after the integration meeting  
+        
+        self.object_in_hand = False
+        
+        # this can be replaced by the tray service with real robot
+        self.object_on_tray = False
+        
+        self.arm_folded_ready_for_transfer = False
+    
+    #checking if the current atomic operation can be stopped or not
+    #true can be stopped in the middle
+    def stopable(self):
+        #List of conditions which robot should not be stopped in the middle
+        
+        #condition 1:
+        #If a object has been grasped, operation should not be stopped until the object is released or arm is folded ready for transfer
+        if self.object_in_hand and not self.arm_folded_ready_for_transfer:
+            return False
+        #The condition can be expanded 
+        
+        #in all other cases, atomic action can be stopped in the middle
+        else:
+            return True
     
     def reset(self):
         

@@ -396,7 +396,7 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new MoveToTask(request.content, null, ontoDB);
+	    currentTask = new MoveTask(request.content, null, ontoDB);
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
@@ -411,7 +411,7 @@ class KnowledgeEngine
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
-	    this.loadPredefinedTasksForTest(got);
+	    //this.loadPredefinedTasksForTest(got);
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    currentTask = (Task)got;
 	}

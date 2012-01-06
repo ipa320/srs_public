@@ -209,6 +209,7 @@ public class OntologyDB
 	
 	if(onto == null) {
 	    System.out.println("ONT CLASS IS NULL");
+	    return (new ArrayList()).iterator();
 	}
 	
 	Iterator instances = onto.listInstances();

@@ -327,7 +327,6 @@ class semantic_dm(smach.State):
                 print 'first action acquired ++++ '
                 result = (0, 0, 0)   ## first action. does not matter this. just to keep it filled
             elif current_task_info.last_step_info and current_task_info.last_step_info[len_step_info - 1].outcome == 'succeeded':
-                print '######### test ##########'
                 # convert to the format that knowledge_ros_service understands
                 result = (0, 0, 0)
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
@@ -340,42 +339,14 @@ class semantic_dm(smach.State):
                     result = (0, 1, 1)
                 else:
                     result = (1, 1, 1)
-            
-            
 
-            ##### TEMPORARY PART ###############
-            """
-            temp_last_step_info = raw_input('ENTER LAST STEP RESULT. s (success): f (fail) : newline (enter if na)')
-            
-            if  temp_last_step_info == '':
-                print 'first action acquired ++++ '
-                result = (0, 0, 0)   ## first action. does not matter this. just to keep it filled
-            elif temp_last_step_info == 's':
-                print '######### test ##########'
-                # convert to the format that knowledge_ros_service understands
-                result = (0, 0, 0)
-            elif temp_last_step_info == 'f':
-                try:
-                    ### TODO current_task_info.last_step_info.step_name not available?????????????????????????????????????????
-                    if current_task_info.last_step_info.step_name == 'navigation':
-                        result = (1, 0, 0)
-                    elif current_task_info.last_step_info.step_name == 'detection':
-                        result = (1, 1, 0)
-                    elif current_task_info.last_step_info.step_name == 'simple_grasp':
-                        result = (0, 1, 1)
-                    else:
-                        result = (1, 1, 1)
-                except:
-                    result = (1,1,1)
-            """
-            ##### END OF TEMPORARY PART ###############
 
             print result
             print '########## Result ###########'
 
             
 
-            resp1 = next_action(current_task_info.session_id, result)
+            resp1 = next_action(current_task_info.session_id, result, None)
             if resp1.nextAction.status == 1:
                 print 'succeeded'
                 return 'succeeded'
@@ -383,9 +354,7 @@ class semantic_dm(smach.State):
                 print 'failed'
                 return 'failed'
             
-
-            print resp1.nextAction.actionFlags
-            print resp1.nextAction.ma
+            print resp1.nextAction
             # else should be 0: then continue executing the following
 
             if resp1.nextAction.actionType == 'generic':
@@ -393,7 +362,31 @@ class semantic_dm(smach.State):
                     nextStep = 'charging'
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
                     return nextStep
+                elif resp1.nextAction.generic.actionInfo[0] == 'move':
+                    nextStep = 'navigation'
+                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
+                    return nextStep
+                elif resp1.nextAction.generic.actionInfo[0] == 'deliver_object':
+                    nextStep = 'deliver_object'
+                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
+                    return nextStep
+                else:
+                    print 'No valid actionFlags'
+                    print resp1.nextAction.actionFlags
+                    #nextStep = 'No_corresponding_action???'
+                    nextStep = 'failed'
+                    return 'failed'
+            else:
+                print 'No valid actionFlags'
+                print resp1.nextAction.actionFlags
+                #nextStep = 'No_corresponding_action???'
+                nextStep = 'failed'
+                return 'failed'
 
+
+
+
+                """
             if resp1.nextAction.actionFlags == (0, 1, 1):
                 if resp1.nextAction.ma.ifWaitObjectTaken:
 			nextStep = 'deliver_object'
@@ -440,6 +433,7 @@ class semantic_dm(smach.State):
                 nextStep = 'No_corresponding_action???'
                 return 'failed'
             #return resp1.nextAction
+                """
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e        
             return 'failed'

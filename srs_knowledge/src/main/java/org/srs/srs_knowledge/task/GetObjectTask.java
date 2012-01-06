@@ -139,7 +139,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			//CUAction ca = new CUAction();
 			ca.status = 1;
 			return ca;
-			//break;
+			
 		    case HighLevelActionUnit.COMPLETED_FAIL:
 			// The whole task finished (failure). Should move to a HighLevelActionUnit in subActSeq of finsihing
 			currentSubAction++;

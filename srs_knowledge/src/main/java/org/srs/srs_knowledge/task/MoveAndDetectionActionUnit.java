@@ -140,10 +140,4 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	return ifParametersSet;
     }
 
-    /*
-    private String actionType;
-
-    private ArrayList<GenericAction> actionUnits = new ArrayList<GenericAction>();
-    private int[] nextActionMapIfFail;
-    */
 }

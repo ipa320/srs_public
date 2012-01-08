@@ -98,25 +98,12 @@ class co_sm_post_conf(smach.Concurrence):
         with self: 
             smach.concurrence.add('State_Checking_During_Operation', state_checking_during_operation())
             smach.concurrence.add('MAIN_OPERATION', post_conf())
-    
-    
-    
-    
-    
 
-class srs_navigation(smach.StateMachine):
-    
-    def __init__(self):    
-        smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
-                                    input_keys=['target_base_pose','semi_autonomous_mode'])
-        
-        with self:
+
+def add_common_states(self):
+    with self:
             smach.StateMachine.add('PRE_CONFIG', co_sm_pre_conf(),
                     transitions={'succeeded':'ACTION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
-        
-            smach.StateMachine.add('ACTION', co_sm_navigation(),
-                    transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
-                    remapping={'semi_autonomous_mode':'semi_autonomous_mode','target_base_pose':'target_base_pose'})
         
             smach.StateMachine.add('POST_CONFIG', co_sm_post_conf(),
                     transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
@@ -128,7 +115,20 @@ class srs_navigation(smach.StateMachine):
                     transitions={'resume':'ACTION','preempted':'preempted', 'stopped':'stopped'})
             
             smach.StateMachine.add('PAUSED_DURING_POST_CONFIG', state_checking_during_paused(),
-                    transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})
+                    transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})    
+            
+
+class srs_navigation(smach.StateMachine):
+    
+    def __init__(self):    
+        smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
+                                    input_keys=['target_base_pose','semi_autonomous_mode'])
+        add_common_states(self)
+        
+        with self:
+            smach.StateMachine.add('ACTION', co_sm_navigation(),
+                    transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
+                    remapping={'semi_autonomous_mode':'semi_autonomous_mode','target_base_pose':'target_base_pose'})
 
 
 class srs_detection(smach.StateMachine):
@@ -137,28 +137,12 @@ class srs_detection(smach.StateMachine):
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
                                     output_keys=['target_object_pose'])
+        add_common_states(self)
         
         with self:
-            smach.StateMachine.add('PRE_CONFIG', co_sm_pre_conf(),
-                    transitions={'succeeded':'ACTION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
-        
             smach.StateMachine.add('ACTION', co_sm_detection(),
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
                     remapping={'semi_autonomous_mode':'semi_autonomous_mode','target_object_name':'target_object_name','target_object_pose':'target_object_pose' })
-        
-            smach.StateMachine.add('POST_CONFIG', co_sm_post_conf(),
-                    transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
-        
-            smach.StateMachine.add('PAUSED_DURING_PRE_CONFIG', state_checking_during_paused(),
-                    transitions={'resume':'PRE_CONFIG','preempted':'preempted', 'stopped':'stopped'})
-            
-            smach.StateMachine.add('PAUSED_DURING_ACTION', state_checking_during_paused(),
-                    transitions={'resume':'ACTION','preempted':'preempted', 'stopped':'stopped'})
-            
-            smach.StateMachine.add('PAUSED_DURING_POST_CONFIG', state_checking_during_paused(),
-                    transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})
-
-
 
 class srs_grasp(smach.StateMachine):
     
@@ -166,26 +150,12 @@ class srs_grasp(smach.StateMachine):
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
                                     output_keys=['target_object_old_pose', 'grasp_catogorisation'])
+        add_common_states(self)
         
         with self:
-            smach.StateMachine.add('PRE_CONFIG', co_sm_pre_conf(),
-                    transitions={'succeeded':'ACTION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
-        
             smach.StateMachine.add('ACTION', co_sm_grasp(),
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
                     remapping={'target_object_name':'target_object_name','semi_autonomous_mode':'semi_autonomous_mode','target_object_old_pose':'target_object_old_pose','grasp_catogorisation':'grasp_catogorisation'})
-        
-            smach.StateMachine.add('POST_CONFIG', co_sm_post_conf(),
-                    transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
-        
-            smach.StateMachine.add('PAUSED_DURING_PRE_CONFIG', state_checking_during_paused(),
-                    transitions={'resume':'PRE_CONFIG','preempted':'preempted', 'stopped':'stopped'})
-            
-            smach.StateMachine.add('PAUSED_DURING_ACTION', state_checking_during_paused(),
-                    transitions={'resume':'ACTION','preempted':'preempted', 'stopped':'stopped'})
-            
-            smach.StateMachine.add('PAUSED_DURING_POST_CONFIG', state_checking_during_paused(),
-                    transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})
 
 
 class srs_put_on_tray(smach.StateMachine):
@@ -193,27 +163,12 @@ class srs_put_on_tray(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['grasp_catogorisation'])
-        self.userdata.resume_point =""
+        add_common_states(self)
         
         with self:
-            smach.StateMachine.add('PRE_CONFIG', co_sm_pre_conf(),
-                    transitions={'succeeded':'OPERATION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
-        
-            smach.StateMachine.add('OPERATION', co_sm_transfer_to_tray(),
-                    transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_MAIN_OPERATION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
+            smach.StateMachine.add('ACTION', co_sm_transfer_to_tray(),
+                    transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
                     remapping={'grasp_catogorisation':'grasp_catogorisation'})
-        
-            smach.StateMachine.add('POST_CONFIG', co_sm_post_conf(),
-                    transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
-        
-            smach.StateMachine.add('PAUSED_DURING_PRE_CONFIG', state_checking_during_paused(),
-                    transitions={'resume':'PRE_CONFIG','preempted':'preempted', 'stopped':'stopped'})
-            
-            smach.StateMachine.add('PAUSED_DURING_MAIN_OPERATION', state_checking_during_paused(),
-                    transitions={'resume':'OPERATION','preempted':'preempted', 'stopped':'stopped'})
-            
-            smach.StateMachine.add('PAUSED_DURING_POST_CONFIG', state_checking_during_paused(),
-                    transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})
 
 
 class srs_enviroment_object_update(smach.StateMachine):
@@ -222,26 +177,13 @@ class srs_enviroment_object_update(smach.StateMachine):
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
                                     output_keys=['target_object_pose'])
+        add_common_states(self)
         
         with self:
-            smach.StateMachine.add('PRE_CONFIG', co_sm_pre_conf(),
-                    transitions={'succeeded':'OPERATION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
-        
-            smach.StateMachine.add('OPERATION', co_sm_grasp(),
-                    transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_MAIN_OPERATION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
+            smach.StateMachine.add('ACTION', co_sm_grasp(),
+                    transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
                     remapping={'target_object_name':'target_object_name','semi_autonomous_mode':'semi_autonomous_mode', 'target_object_pose':'target_object_pose'})
-        
-            smach.StateMachine.add('POST_CONFIG', co_sm_post_conf(),
-                    transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
-        
-            smach.StateMachine.add('PAUSED_DURING_PRE_CONFIG', state_checking_during_paused(),
-                    transitions={'resume':'PRE_CONFIG','preempted':'preempted', 'stopped':'stopped'})
-            
-            smach.StateMachine.add('PAUSED_DURING_MAIN_OPERATION', state_checking_during_paused(),
-                    transitions={'resume':'OPERATION','preempted':'preempted', 'stopped':'stopped'})
-            
-            smach.StateMachine.add('PAUSED_DURING_POST_CONFIG', state_checking_during_paused(),
-                    transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})
+
 
 
 

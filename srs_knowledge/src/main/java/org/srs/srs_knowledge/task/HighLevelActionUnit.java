@@ -43,7 +43,12 @@ public abstract class HighLevelActionUnit {
 
 
     public int getNextCUActionIndex(boolean statusLastStep) {
+	
+	if(currentActionInd == -1) {
+	    return 0;
+	}
 	currentActionInd++;
+
 	if ( currentActionInd >= 0 && currentActionInd < actionUnits.size() ) {
 	    if(statusLastStep) {
 		return nextActionMapIfSuccess[currentActionInd];

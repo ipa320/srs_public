@@ -63,6 +63,9 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
     }
 
     public int getNextCUActionIndex(boolean statusLastStep) {
+	if(currentActionInd == -1) {
+	    return 0;
+	}
 
 	currentActionInd++;
 

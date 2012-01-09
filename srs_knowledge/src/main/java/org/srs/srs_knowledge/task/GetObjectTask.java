@@ -120,41 +120,53 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	System.out.println("===> Get Next CUACTION -- from GetObjectTask.java");
 	CUAction ca = new CUAction();
 	if(allSubSeqs.size() == 0 ) {
-	    
+	    System.out.println("Sequence size is zero");
+	    return null;   // ??? 
 	}
 	if(currentSubAction >= 0 && currentSubAction < allSubSeqs.size()) {
 	    // get the current SubActionSequence item
+	    System.out.println("Sequence size is " + allSubSeqs.size());
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
 	    // if stuck (fail), move to the next subActionSequence
 	    if(subActSeq.hasNextHighLevelActionUnit()) {
-		
 		HighLevelActionUnit highAct = subActSeq.getNextHighLevelActionUnit();
 		if(highAct != null) {
 		    int ni = highAct.getNextCUActionIndex(stateLastAction); 
 		    switch(ni) {
 		    case HighLevelActionUnit.COMPLETED_SUCCESS:
 			//CUAction ca = new CUAction();
+			System.out.println(".COMPLETED_SUCCESS");
+
 			ca.status = 1;
 			return ca;
 			
 		    case HighLevelActionUnit.COMPLETED_FAIL:
 			// The whole task finished (failure). Should move to a HighLevelActionUnit in subActSeq of finsihing
+			System.out.println(".COMPLETED_FAIL");
 			currentSubAction++;
 			return handleFailedMessage();
 		    case HighLevelActionUnit.INVALID_INDEX:
 			// The whole task finished failure. Should move to a HighLevelActionUnit in subActSeq of finsihing
+			System.out.println("INVALID_INDEX");
 			currentSubAction++;
 			return handleFailedMessage();
 		    default: 
-			if(highAct.getActionType().equals("MoveAndGrasp") && !highAct.ifParametersSet()) {
+			System.out.println(highAct.getActionType() + " ===== ");
+			if(highAct.ifParametersSet()) {
+			    System.out.println("OK. Parameters set");
+			}
+			if(highAct.getActionType().equals("MoveAndGrasp") && highAct.ifParametersSet()) {
+			    System.out.println("OK  default");
 			    // call symbol grounding to get parameters for the MoveAndGrasp action
 			    try {
 				SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
 				// TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
 				Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
+				System.out.println("OK  default");
+
 				ArrayList<String> posInArray = new ArrayList<String>();
 				posInArray.add("move");
 				posInArray.add(Double.toString(pos.x));
@@ -177,12 +189,66 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			    }
 				//private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
 			}
-			ca = highAct.getNextCUAction(ni);
+			else {
+			    return null;
+			}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//////// Only for testing ///////////////////
+			/*
+			ArrayList<String> posInArray = new ArrayList<String>();
+			posInArray.add("move");
+			posInArray.add("0");
+			posInArray.add("0");
+			posInArray.add("0");
+			if(highAct.setParameters(posInArray)) {
+			    System.out.println("MoveAndGrasp action move action parameters are set...  " + posInArray.toString());
+			}
+			else {
+			    System.out.println("MoveAndGrasp action move action parameters are not set...  " + posInArray.toString());
+			    currentSubAction++;
+			    return handleFailedMessage();		
+			}
+			*/
+			///////////////////////////
+
+
+
+
+
+
+
+
+
+
+			System.out.println("HERE??");
+			ca = highAct.getNextCUAction(ni);
+			System.out.println("HERE????");
 			// since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 			// WARNING: No error checking here
 			lastActionType = ca.generic.actionInfo.get(0);
-		       		
+			System.out.println("HERE??????");
 			return ca;
 		    } 
 		}

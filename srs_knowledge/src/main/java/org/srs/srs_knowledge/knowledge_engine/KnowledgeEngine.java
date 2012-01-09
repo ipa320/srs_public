@@ -247,6 +247,7 @@ class KnowledgeEngine
 
 	if(request.stateLastAction.length == 3) {
 	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
+		//ArrayList<String> feedback = new ArrayList<String>();
 		ArrayList<String> feedback = request.genericFeedBack;
 		ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
 	    }

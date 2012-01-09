@@ -19,7 +19,7 @@ import com.hp.hpl.jena.ontology.Individual;
 
 public class HighLevelActionSequence {
     public HighLevelActionSequence() {
-	indOfCurrent = -1;
+	indOfCurrent = 0;
     }
 
     //public void 
@@ -52,6 +52,27 @@ public class HighLevelActionSequence {
 	    return null;
 	}
 	return ha;
+    }
+
+    public HighLevelActionUnit getCurrentHighLevelActionUnit() {
+	//HighLevelActionUnit ha;
+	try{ 
+	    return highLevelActionList.get(indOfCurrent);
+	}
+	catch(Exception ne) {
+	    System.out.println(ne.getMessage());
+	    return null;
+	}
+	//return ha;
+    }
+
+    public boolean shiftToNextActionUnit() {
+	HighLevelActionUnit ha;
+	if((indOfCurrent + 1 )< highLevelActionList.size()) {
+	    indOfCurrent++;
+	    return true;
+	}  
+	return false;
     }
 
     protected int indOfCurrent;

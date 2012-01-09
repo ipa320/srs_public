@@ -47,14 +47,14 @@ public abstract class HighLevelActionUnit {
 	if(currentActionInd == -1) {
 	    return 0;
 	}
-	currentActionInd++;
+	//currentActionInd++;
 
-	if ( currentActionInd >= 0 && currentActionInd < actionUnits.size() ) {
+	if ( currentActionInd+1 >= 0 && currentActionInd+1 < actionUnits.size() ) {
 	    if(statusLastStep) {
-		return nextActionMapIfSuccess[currentActionInd];
+		return nextActionMapIfSuccess[currentActionInd+1];
 	    }
 	    else {
-		return nextActionMapIfFail[currentActionInd];
+		return nextActionMapIfFail[currentActionInd+1];
 	    }
 	}
 	else {
@@ -63,6 +63,7 @@ public abstract class HighLevelActionUnit {
     }
 
     public CUAction getNextCUAction(int ind) {
+	currentActionInd = ind;
 	CUAction ca = new CUAction(); 
 
 	if(ind == COMPLETED_FAIL) {

@@ -63,17 +63,20 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
     }
 
     public int getNextCUActionIndex(boolean statusLastStep) {
+	//currentActionInd++;
+
 	if(currentActionInd == -1) {
 	    return 0;
 	}
 
-	currentActionInd++;
 
 	if ( currentActionInd >= 0 && currentActionInd < actionUnits.size() ) {
 	    if(statusLastStep) {
+		System.out.println("NEXT ACTION IND (if Successful): " + currentActionInd);
 		return nextActionMapIfSuccess[currentActionInd];
 	    }
 	    else {
+		System.out.println("NEXT ACTION IND (if Failed): " + currentActionInd);
 		return nextActionMapIfFail[currentActionInd];
 	    }
 	}
@@ -84,6 +87,7 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 
     public CUAction getNextCUAction(int ind) {
 	//int ind = getNextCUActionIndex(statusLastStep);
+	currentActionInd = ind;
 	CUAction ca = new CUAction(); 
 	/*
 	MoveAction ma = new MoveAction();

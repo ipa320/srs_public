@@ -128,6 +128,106 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("Sequence size is " + allSubSeqs.size());
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
+
+
+
+
+
+	System.out.println("===> DEBUG 1 -- from GetObjectTask.java");
+
+
+	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
+	System.out.println("===> DEBUG 2 -- from GetObjectTask.java");
+
+
+	    // decide if the current SubActionSequence is finished or stuck somewhere? 
+	    // if successfully finished, then finished
+	    // if stuck (fail), move to the next subActionSequence
+	    if(highAct != null) {
+	System.out.println("===> DEBUG 3 -- from GetObjectTask.java");
+		int ni = highAct.getNextCUActionIndex(stateLastAction); 
+		System.out.println("=========>>>>  " + ni);
+		switch(ni) {
+		case HighLevelActionUnit.COMPLETED_SUCCESS:
+		    //CUAction ca = new CUAction();
+		    System.out.println(".COMPLETED_SUCCESS");
+		    
+		    //ca.status = 1;
+		    return handleSuccessMessage();
+		    
+		case HighLevelActionUnit.COMPLETED_FAIL:
+		    // The whole task finished (failure). Should move to a HighLevelActionUnit in subActSeq of finsihing
+		    System.out.println(".COMPLETED_FAIL");
+		    //currentSubAction++;
+		    return handleFailedMessage();
+		case HighLevelActionUnit.INVALID_INDEX:
+		    // The whole task finished failure. Should move to a HighLevelActionUnit in subActSeq of finsihing
+		    System.out.println("INVALID_INDEX");
+		    //currentSubAction++;
+		    return handleFailedMessage();
+		default: 
+
+		    System.out.println(highAct.getActionType() + " ===== ");
+		    if(highAct.ifParametersSet()) {
+			System.out.println("OK. Parameters set");
+		    }
+
+		    if(highAct.getActionType().equals("MoveAndGrasp") && highAct.ifParametersSet()) {
+			System.out.println("OK  default");
+			// call symbol grounding to get parameters for the MoveAndGrasp action
+			try {
+			    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
+			    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
+			    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
+			    System.out.println("OK  default");
+			    
+			    ArrayList<String> posInArray = new ArrayList<String>();
+			    posInArray.add("move");
+			    posInArray.add(Double.toString(pos.x));
+			    posInArray.add(Double.toString(pos.y));
+			    posInArray.add(Double.toString(pos.theta));
+			    if(highAct.setParameters(posInArray)) {
+				System.out.println("MoveAndGrasp action move action parameters are set...  " + posInArray.toString());
+			    }
+			    else {
+				System.out.println("MoveAndGrasp action move action parameters are not set...  " + posInArray.toString());
+				currentSubAction++;
+				return handleFailedMessage();		
+			    }
+			} 
+			catch(RosException e) {
+			    System.out.println(e.toString());
+			}
+			catch(Exception e) {
+			    System.out.println(e.toString());
+			}
+			//private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
+		    }
+		    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			/*
+
+
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
 	    // if stuck (fail), move to the next subActionSequence
@@ -193,71 +293,24 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			    return null;
 			}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			//////// Only for testing ///////////////////
-			/*
-			ArrayList<String> posInArray = new ArrayList<String>();
-			posInArray.add("move");
-			posInArray.add("0");
-			posInArray.add("0");
-			posInArray.add("0");
-			if(highAct.setParameters(posInArray)) {
-			    System.out.println("MoveAndGrasp action move action parameters are set...  " + posInArray.toString());
-			}
-			else {
-			    System.out.println("MoveAndGrasp action move action parameters are not set...  " + posInArray.toString());
-			    currentSubAction++;
-			    return handleFailedMessage();		
-			}
 			*/
-			///////////////////////////
 
 
 
 
-
-
-
-
-
-
-			System.out.println("HERE??");
-			ca = highAct.getNextCUAction(ni);
-			System.out.println("HERE????");
-			// since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
-			// WARNING: No error checking here
-			lastActionType = ca.generic.actionInfo.get(0);
-			System.out.println("HERE??????");
-			return ca;
-		    } 
-		}
-		else {
-		    return null;
-		}
+		    
+		    ca = highAct.getNextCUAction(ni);
+		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
+		    // WARNING: No error checking here
+		    lastActionType = ca.generic.actionInfo.get(0);
+		    System.out.println("HERE??????");
+		    return ca;
+		} 
 	    }
 	    else {
+		return null;
 	    }
+	    
 	    
 	    // or if still pending CUAction is available, return CUAction
 	    
@@ -271,7 +324,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     /**
      * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
      */
-    private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
+private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
 	Pose pos = new Pose();
 	// check if feedback is for the last action issued
 	
@@ -290,23 +343,59 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     }
 
     private CUAction handleFailedMessage() {
-	
+	currentSubAction++;
 	HighLevelActionSequence nextHLActSeq = allSubSeqs.get(currentSubAction);
 	
 	if(nextHLActSeq.hasNextHighLevelActionUnit()) {
 	    HighLevelActionUnit nextHighActUnit = nextHLActSeq.getNextHighLevelActionUnit();
-	    
 	    if(nextHighActUnit != null) {
-		
+	    		
 		int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
 		// TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
 		// SO STUPID CODE HERE
 		
-		if(tempI != HighLevelActionUnit.COMPLETED_SUCCESS || tempI != HighLevelActionUnit.COMPLETED_FAIL || tempI != HighLevelActionUnit.INVALID_INDEX) {
+		if(tempI == HighLevelActionUnit.COMPLETED_SUCCESS || tempI == HighLevelActionUnit.COMPLETED_FAIL || tempI == HighLevelActionUnit.INVALID_INDEX) {
 		    CUAction ca = new CUAction();
 		    ca.status = -1;
 		    return ca;
 		}
+		else {
+		    System.out.println("GET NEXT CU ACTION AT:  " + tempI);
+		    CUAction ca = nextHighActUnit.getNextCUAction(tempI);
+		    if(ca == null) {
+			System.out.println("CUACTION IS NULL.......");
+		    }
+		    return ca;
+		}
+	    }
+	}
+	    	
+	return null;
+    }
+
+    private CUAction handleSuccessMessage() {
+
+	// TODO: 
+	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
+	
+	if(currentHLActSeq.hasNextHighLevelActionUnit()) {
+	    HighLevelActionUnit nextHighActUnit = currentHLActSeq.getNextHighLevelActionUnit();
+  
+	    if(nextHighActUnit != null) {
+		int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
+		// TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
+		// SO STUPID CODE HERE
+		
+		if(tempI == HighLevelActionUnit.COMPLETED_SUCCESS) {
+		    CUAction ca = new CUAction();
+		    ca.status = 1;
+		    return ca;
+		}
+		else if(tempI == HighLevelActionUnit.COMPLETED_FAIL || tempI == HighLevelActionUnit.INVALID_INDEX) {
+		    CUAction ca = new CUAction();
+		    ca.status = -1;
+		    return ca;
+		}		
 		else {
 		    return nextHighActUnit.getNextCUAction(tempI);
 		}

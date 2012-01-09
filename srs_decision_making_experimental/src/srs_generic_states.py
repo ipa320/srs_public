@@ -370,12 +370,21 @@ class semantic_dm(smach.State):
                     nextStep = 'deliver_object'
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
                     return nextStep
-                else:
-                    print 'No valid actionFlags'
-                    print resp1.nextAction.actionFlags
-                    #nextStep = 'No_corresponding_action???'
-                    nextStep = 'failed'
-                    return 'failed'
+                elif resp1.nextAction.generic.actionInfo[0] == 'detect':
+                                      
+                    nextStep = 'detection'
+                    #TODO should confirm later if name or id used !!!!!!!!
+		    ####  HARD CODED FOR TESTING ##
+
+                    userdata.target_object_name = 'milk_box'
+                    return nextStep
+		    ####  END OF HARD CODED FOR TESTING ##
+
+                    #userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id
+                    # should be updated to object_id in future
+
+
+                
             else:
                 print 'No valid actionFlags'
                 print resp1.nextAction.actionFlags

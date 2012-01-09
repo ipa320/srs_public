@@ -37,6 +37,7 @@ public abstract class Task {
 	setTaskType(TaskType.UNSPECIFIED);
 	currentAction = null;
 	ontoDB = new OntologyDB();
+
     }
 
     public abstract boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery);
@@ -376,4 +377,5 @@ public abstract class Task {
     protected OntoQueryUtil ontoQueryUtil;
     protected NodeHandle nodeHandle;
     protected ArrayList<HighLevelActionSequence> allSubSeqs = new ArrayList<HighLevelActionSequence>();
+
 }

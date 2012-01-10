@@ -26,12 +26,15 @@ class Ddict(dict):
     
 component_list = ['torso','tray','arm','sdh','head']
     
-robot_config = Ddict(dict)
+    
+robot_config_pre = Ddict(dict)
+
+robot_config_post = Ddict(dict)
 
 #DM = doesn't matter
 #NC = no change required
 #CALCULATION = need to be calculated on-line, 
-#in this program CALCULATION is same as NC, as the calculation is carried out during action, the is no change required for pre post check. 
+#in this program CALCULATION is same as NC, as the calculation is carried out already during action, the is no change required for pre post check. 
 # 
 robot_config_need_no_action = ['DM','NC','CALCULATION']
 
@@ -78,7 +81,7 @@ robot_config_post['navigation_object_in_sdh']['tray']='NC'
 robot_config_post['navigation_object_in_sdh']['arm']='NC'
 robot_config_post['navigation_object_in_sdh']['sdh']='NC'  #should be closed, but the exact location is calculated early
 robot_config_post['navigation_object_in_sdh']['head']='front'
-#Instead of hold we could also use folded, this depends on the object we are handling. In any cases the arm has to be “close” 
+#Instead of hold we could also use folded, this depends on the object we are handling. In any cases the arm has to be closed 
 #to the torso so that nothing is out of the rectangular footprint of the robot
 #we should be able to check what object need to be hold or hold
 
@@ -136,7 +139,7 @@ robot_config_pre['grasp']['head']='back'
 #post-config
 robot_config_post['grasp']['torso']='home'
 robot_config_post['grasp']['tray']='NC'
-robot_config_post['grasp']['arm']='hold' # can be used for both put object on tray and  hold object
+robot_config_post['grasp']['arm']='CALCULATION' # can be used for both put object on tray and  hold object
 robot_config_post['grasp']['sdh']='CALCULATION'  #should be closed, but the exact location should have been calculated
 robot_config_post['grasp']['head']='DM'
 

@@ -89,18 +89,18 @@ def robot_configuration(parent, action_name, action_stage):
             #initial the sss handles
             for index in range(len(component_list)):
                 if robot_config_pre[action_name][component_list[index]] in robot_config_need_no_action: 
-                    handles[index] = None
+                    handles.append(None)
                 else:
-                    handles[index] = sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False)
+                    handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
                     
         #bring robot into the post-configuration state     
         if action_stage == 'post-config':
             #initial the sss handles
             for index in range(len(component_list)):
-                if robot_config_pre[action_name][component_list[index]] in robot_config_need_no_action: 
-                    handles[index] = None
+                if robot_config_post[action_name][component_list[index]] in robot_config_need_no_action: 
+                    handles.append(None)
                 else:
-                    handles[index] = sss.move(component_list[index], robot_config_post[action_name][component_list[index]], False)                
+                    handles.append(sss.move(component_list[index], robot_config_post[action_name][component_list[index]], False))                
                     
     except KeyError:
         print("dictionary key is not found in the set of existing keys")    
@@ -115,7 +115,7 @@ def robot_configuration(parent, action_name, action_stage):
     #wait for action to finish
     for index in range(len(component_list)):
         if handles[index] != None:
-            if parent.preempt_requested():
+            if parent.preempt_requested():  
                 parent.service_preempt()    
                 return 'preempted'
             else:                
@@ -214,7 +214,7 @@ class srs_detection(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
-                                    output_keys=['target_object_pose'])
+                                    output_keys=['target_object'])
         add_common_states(self,'detection')
         
         with self:
@@ -227,13 +227,13 @@ class srs_grasp(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
-                                    output_keys=['target_object_old_pose', 'grasp_catogorisation'])
+                                    output_keys=['grasp_categorisation', 'target_object'])
         add_common_states(self, 'grasp')
         
         with self:
             smach.StateMachine.add('ACTION', co_sm_grasp(),
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
-                    remapping={'target_object_name':'target_object_name','semi_autonomous_mode':'semi_autonomous_mode','target_object_old_pose':'target_object_old_pose','grasp_catogorisation':'grasp_catogorisation'})
+                    remapping={'target_object_name':'target_object_name','semi_autonomous_mode':'semi_autonomous_mode','target_object':'target_object','grasp_categorisation':'grasp_categorisation'})
 
 
 class srs_put_on_tray(smach.StateMachine):
@@ -246,7 +246,7 @@ class srs_put_on_tray(smach.StateMachine):
         with self:
             smach.StateMachine.add('ACTION', co_sm_transfer_to_tray(),
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
-                    remapping={'grasp_catogorisation':'grasp_catogorisation'})
+                    remapping={'grasp_categorisation':'grasp_categorisation'})
 
 
 class srs_enviroment_object_update(smach.StateMachine):
@@ -258,7 +258,7 @@ class srs_enviroment_object_update(smach.StateMachine):
         add_common_states(self, 'enviroment_update')
         
         with self:
-            smach.StateMachine.add('ACTION', co_sm_grasp(),
+            smach.StateMachine.add('ACTION', co_sm_enviroment_object_update(),
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
                     remapping={'target_object_name':'target_object_name','semi_autonomous_mode':'semi_autonomous_mode', 'target_object_pose':'target_object_pose'})
 

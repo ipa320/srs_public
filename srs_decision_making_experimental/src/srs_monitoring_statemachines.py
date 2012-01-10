@@ -14,14 +14,12 @@ from smach import Concurrence
 
 
 """
-This file contains concurrent state machines for parallel state checking during the operation.
-It ensure robot act upon interruptions raised during the operation 
+This file contains concurrent state machines which provide parallel interruption checking during the operation.
 """
 
 #checking termination request for operation, the state will be terminated if:
 # 1  the current operation is stoppable
-# 2  a termination request such as stop or customised_preempty is received
-# 3  a preempty is triggered by the main operation (in this case, the main operation is completed)  
+# 2  and a termination request such as stop or customised_preempty is received or the main operation is completed (in this case, a preempty is triggered by the main operation)
 class state_checking_during_operation (smach.State):
     def __init__(self):
         smach.State.__init__(self , outcomes =['stopped', 'customised_preempted', 'preempted'])
@@ -172,7 +170,7 @@ class co_sm_grasp(smach.Concurrence):
                             remapping={'target_object_name':'target_object_name',
                                        'semi_autonomous_mode':'semi_autonomous_mode',
                                        'target_object_old_pose':'target_object_old_pose',
-                                       'grasp_catogorisation':'grasp_catogorisation'})
+                                       'grasp_categorisation':'grasp_categorisation'})
 
 
 ###################################################
@@ -181,7 +179,7 @@ class co_sm_grasp(smach.Concurrence):
 
 class co_sm_transfer_to_tray(smach.Concurrence):
     def __init__(self):
-        smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
+        smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'preempted', 'paused'],
                  default_outcome='failed',
                  input_keys=['grasp_catogorisation'],
                  child_termination_cb = common_child_term_cb,
@@ -191,7 +189,7 @@ class co_sm_transfer_to_tray(smach.Concurrence):
         with self:
             smach.concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
             smach.concurrence.add('MAIN_OPERATION', sm_transfer_object_to_tray(),
-                            remapping={'grasp_catogorisation':'grasp_catogorisation'})
+                            remapping={'grasp_categorisation':'grasp_categorisation'})
     
 ###################################################
 # creating the concurrence state machine environment object update
@@ -201,8 +199,8 @@ class co_sm_enviroment_object_update(smach.Concurrence):
     def __init__(self):
         smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['target_object_name', 'semi_autonomous_mode'],
-                 output_keys=['target_object_pose'],
+                 input_keys=['target_object_name_list', 'scan_pose_list'],
+                 output_keys=['target_object_pose_list'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
                  #detection can be stopped at any time
@@ -210,9 +208,9 @@ class co_sm_enviroment_object_update(smach.Concurrence):
         with self:
             smach.concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
             smach.concurrence.add('MAIN_OPERATION', sm_enviroment_object_update(),
-                            remapping={'target_object_name':'target_object_name',
-                                       'semi_autonomous_mode':'semi_autonomous_mode',
-                                       'target_object_pose':'target_object_pose'})
+                            remapping={'target_object_name_list':'target_object_name_list',
+                                       'target_object_pose_list':'target_object_pose_list',
+                                       'scan_pose_list':'scan_pose_list',})
 
     
 

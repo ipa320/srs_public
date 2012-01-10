@@ -176,12 +176,14 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','env_object_update','deliver_object','charging'],
-                             input_keys=['target_object_name','target_base_pose','target_object_pose'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','put_on_tray','env_object_update'],
+                             input_keys=['target_object_name','target_base_pose','target_object_pose','grasp_categorisation','target_object_pose_list'],
                              output_keys=['target_object_name',
                                           'target_base_pose',
                                           'semi_autonomous_mode',
-                                          'target_object_pose'])
+                                          'grasp_categorisation',                                          
+                                          'target_object_pose',
+                                          'scan_pose_list'])
         
         
         self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)

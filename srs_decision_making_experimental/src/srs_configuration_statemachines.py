@@ -253,14 +253,14 @@ class srs_enviroment_object_update(smach.StateMachine):
     
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
-                                    input_keys=['target_object_name','semi_autonomous_mode'],
-                                    output_keys=['target_object_pose'])
+                                    input_keys=['target_object_name_list', 'scan_pose_list'],
+                                    output_keys=['target_object_pose_list'])
         add_common_states(self, 'enviroment_update')
         
         with self:
             smach.StateMachine.add('ACTION', co_sm_enviroment_object_update(),
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
-                    remapping={'target_object_name':'target_object_name','semi_autonomous_mode':'semi_autonomous_mode', 'target_object_pose':'target_object_pose'})
+                    remapping={'target_object_name_list':'target_object_name_list', 'target_object_pose_list':'target_object_pose_list', 'scan_pose_list':'scan_pose_list'})
 
 
 

@@ -89,7 +89,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		System.out.println(e.toString());
 	    }
 	}	
-
 	
 	if(allSubSeqs.size() > 0) {
 	    currentSubAction = 0;
@@ -115,8 +114,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
 
-	HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
-
+	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
+	    
 
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
@@ -144,7 +143,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    return handleFailedMessage();
 		default: 
 
-		    System.out.println(highAct.getActionType() + " ===== ");
+		    System.out.println(highAct.getActionType());
 		    if(highAct.ifParametersSet()) {
 			System.out.println("OK. Parameters set");
 		    }
@@ -186,7 +185,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
 		    lastActionType = ca.generic.actionInfo.get(0);
-		    System.out.println("HERE??????");
+		    
 		    return ca;
 		} 
 	    }
@@ -194,20 +193,17 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		return null;
 	    }
 	    
-	    
 	    // or if still pending CUAction is available, return CUAction
-	    
 	}
 	else if (currentSubAction == -1) {
 	}
-	
 	return ca;
     }
     
     /**
      * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
      */
-private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
+    private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
 	Pose pos = new Pose();
 	// check if feedback is for the last action issued
 	
@@ -227,19 +223,17 @@ private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
 
     private CUAction handleFailedMessage() {
 	currentSubAction++;
-
+	
 	System.out.println("HANDLE FAILED MESSAGE.... CURRENTSUBACTION IS AT:  " + currentSubAction);
-
+	
 	if(currentSubAction >= allSubSeqs.size()) {
 	    return null;
 	}
 	HighLevelActionSequence nextHLActSeq = allSubSeqs.get(currentSubAction);
-
-
+		
 	//	if(nextHLActSeq.hasNextHighLevelActionUnit()) {
 	HighLevelActionUnit nextHighActUnit = nextHLActSeq.getCurrentHighLevelActionUnit();
 	if(nextHighActUnit != null) {
-	    
 	    int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
 	    // TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
 	    // SO STUPID CODE HERE
@@ -258,19 +252,17 @@ private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
 		return ca;
 	    }
 	}
-	//}
 	
 	return null;
     }
-
+    
     private CUAction handleSuccessMessage() {
-
 	// TODO: 
 	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
 	
 	if(currentHLActSeq.hasNextHighLevelActionUnit()) {
 	    HighLevelActionUnit nextHighActUnit = currentHLActSeq.getNextHighLevelActionUnit();
-  
+	    
 	    if(nextHighActUnit != null) {
 		int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
 		// TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
@@ -293,10 +285,10 @@ private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
 	}
 	return null;
     }
-
+    
     private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
 	HighLevelActionSequence actionList = new HighLevelActionSequence();
-
+	
 	// create MoveAndDetectionActionUnit
 	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
 	com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "xCoord",  workspace);
@@ -306,7 +298,7 @@ private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
 	spatialInfo.pose.position.y = stm.getFloat();
 	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "zCoord",  workspace);
 	spatialInfo.pose.position.z = stm.getFloat();
-			 
+	
 	
 	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "widthOfObject",  workspace);
 	spatialInfo.w = stm.getFloat();

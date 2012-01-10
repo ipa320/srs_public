@@ -15,14 +15,15 @@ import com.hp.hpl.jena.query.QuerySolution;
 import ros.*;
 import ros.communication.*;
 
-public class TestTask extends Task {
+public class StopTask extends Task {
 
-    public TestTask() {
+    public StopTask(OntologyDB onto) {
 	// empty constructor.
 	acts = new ArrayList<ActionTuple>();     // to be deprecated and replaced with allSubSeqs
 	
 	setTaskType(TaskType.UNSPECIFIED);
 	currentAction = null;
+	ontoDB = onto;
     }
 
     public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {

@@ -65,18 +65,6 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 		ifObjectInfoSet = false;
 	    }
 
-
-
-	    /*
-	    graspAct.actionInfo.add(Double.toString(objectPose.position.x));
-	    graspAct.actionInfo.add(Double.toString(objectPose.position.y));
-	    graspAct.actionInfo.add(Double.toString(objectPose.position.z));
-	    graspAct.actionInfo.add(Double.toString(objectPose.orientation.x));
-	    graspAct.actionInfo.add(Double.toString(objectPose.orientation.y));
-	    graspAct.actionInfo.add(Double.toString(objectPose.orientation.z));
-	    graspAct.actionInfo.add(Double.toString(objectPose.orientation.w));
-	    */
-
 	    actionUnits.add(graspAct);
 
 	    //ifObjectPoseSet = true;
@@ -96,11 +84,62 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     }
 
     public int getNextCUActionIndex(boolean statusLastStep) {
-	return 0;
+	if(currentActionInd == -1) {
+	    return 0;
+	}
+
+	if ( currentActionInd >= 0 && currentActionInd < actionUnits.size() ) {
+	    if(statusLastStep) {
+		System.out.println("NEXT ACTION IND (if Successful): " + nextActionMapIfSuccess[currentActionInd]);
+		return nextActionMapIfSuccess[currentActionInd];
+	    }
+	    else {
+		System.out.println("NEXT ACTION IND (if Failed): " + nextActionMapIfFail[currentActionInd]);
+		return nextActionMapIfFail[currentActionInd];
+	    }
+	}
+	else {
+	    return INVALID_INDEX;
+	}
     }
 
     public CUAction getNextCUAction(int ind) {
-	return null;
+	currentActionInd = ind;
+	CUAction ca = new CUAction(); 
+
+	if(ind == COMPLETED_FAIL) {
+	    GenericAction genericAction = new GenericAction();
+	    genericAction.actionInfo.add("finish_fail");
+	    
+	    ca.generic = genericAction;
+	    ca.actionType = "generic";	    
+	    ca.status = -1;
+	    
+	    return ca;
+	}
+	else if (ind == COMPLETED_SUCCESS){
+	    GenericAction genericAction = new GenericAction();
+	    genericAction.actionInfo.add("finish_success");
+	    
+	    ca.generic = genericAction;
+	    ca.actionType = "generic";
+	    ca.status = 1;
+	    return ca;
+	}
+	else if (ind == INVALID_INDEX) {
+	    GenericAction genericAction = new GenericAction();
+	    genericAction.actionInfo.add("no_action");
+	    
+	    ca.generic = genericAction;
+	    ca.actionType = "generic";
+	    ca.status = -1;
+	    return ca;
+	}
+
+	GenericAction genericAction = actionUnits.get(ind);
+	ca.generic = genericAction;
+	ca.actionType = "generic";
+	return ca;
     }
     
     // a not very safe, but flexible way to assign parameters, using arraylist<string> 
@@ -177,13 +216,6 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	return ifParametersSet;
     }
 
-    /*
-    private String actionType;
-
-    private ArrayList<GenericAction> actionUnits = new ArrayList<GenericAction>();
-    private int[] nextActionMapIfFail;
-    */
-    //private boolean ifObjectPoseSet = false;
     private boolean ifBasePoseSet = false;
     private boolean ifObjectInfoSet = false;
     //private boolean ifObjectIDSet = false;

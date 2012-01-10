@@ -424,7 +424,6 @@ class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    currentTask = new MoveTask(request.content, null, ontoDB);
-	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
 	else if(request.task.equals("get") || request.task.equals("search")){
@@ -432,26 +431,32 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
-	    currentTask = (Task)got;
+	    //GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
+	    //currentTask = (Task)got;
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    
-	    //currentTask = new TestTask();
-	    //this.loadPredefinedTasksForTest();
+	    currentTask = new TestTask();
+	    this.loadPredefinedTasksForTest();
 	    
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
-	    
 	}
 	else if(request.task.equals("charging")) {
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    currentTask = new ChargingTask(ontoDB);
-	    //currentTask = new MoveToTask(null, null, ontoDB);
 	    System.out.println("Created CurrentTask " + "charge ");
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
+	}
+	else if(request.task.equals("charging")) {
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+	    currentTask = new StopTask(ontoDB);
+	    System.out.println("Created CurrentTask " + " STOP ");
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
 	else {

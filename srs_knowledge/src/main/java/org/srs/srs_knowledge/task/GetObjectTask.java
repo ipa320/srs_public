@@ -47,16 +47,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent, userPose);
     }
-    
-    /*
-    public GetObjectTask(String taskType, String targetContent, Pose2D userPose) 
-    {
-	this.ontoDB = new OntologyDB();
-	
-	this.initTask(targetContent, userPose);
-	setTaskType(TaskType.GET_OBJECT);
-    }
-    */
 
     protected boolean constructTask() {
 	return createGetObjectTask();
@@ -73,11 +63,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	System.out.println("Create New GET OBJECT Task --- ");
 
 	try {
-	    /*
-	    System.out.println(this.targetContent);
-	    System.out.println(this.ontoQueryUtil.getObjectNameSpace());
-	    System.out.println(this.ontoQueryUtil.getGlobalNameSpace());
-	    */
 	    //ArrayList<String> workspaces = OntoQueryUtil.getWorkspaceNamesOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
 	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
 
@@ -90,6 +75,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	for(Individual u : workspaces) {
 	    System.out.println(u.getLocalName());
 	    try{
+		System.out.println("Created HLActionSeq ");
 		HighLevelActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
 		allSubSeqs.add(subSeq);
 	       
@@ -129,22 +115,13 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
 
-
-
-
-
-	System.out.println("===> DEBUG 1 -- from GetObjectTask.java");
-
-
-	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
-	System.out.println("===> DEBUG 2 -- from GetObjectTask.java");
+	HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
 
 
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
 	    // if stuck (fail), move to the next subActionSequence
 	    if(highAct != null) {
-	System.out.println("===> DEBUG 3 -- from GetObjectTask.java");
 		int ni = highAct.getNextCUActionIndex(stateLastAction); 
 		System.out.println("=========>>>>  " + ni);
 		switch(ni) {
@@ -203,100 +180,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			}
 			//private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
 		    }
-		    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			/*
-
-
-	    // decide if the current SubActionSequence is finished or stuck somewhere? 
-	    // if successfully finished, then finished
-	    // if stuck (fail), move to the next subActionSequence
-	    if(subActSeq.hasNextHighLevelActionUnit()) {
-		HighLevelActionUnit highAct = subActSeq.getNextHighLevelActionUnit();
-		if(highAct != null) {
-		    int ni = highAct.getNextCUActionIndex(stateLastAction); 
-		    switch(ni) {
-		    case HighLevelActionUnit.COMPLETED_SUCCESS:
-			//CUAction ca = new CUAction();
-			System.out.println(".COMPLETED_SUCCESS");
-
-			ca.status = 1;
-			return ca;
-			
-		    case HighLevelActionUnit.COMPLETED_FAIL:
-			// The whole task finished (failure). Should move to a HighLevelActionUnit in subActSeq of finsihing
-			System.out.println(".COMPLETED_FAIL");
-			currentSubAction++;
-			return handleFailedMessage();
-		    case HighLevelActionUnit.INVALID_INDEX:
-			// The whole task finished failure. Should move to a HighLevelActionUnit in subActSeq of finsihing
-			System.out.println("INVALID_INDEX");
-			currentSubAction++;
-			return handleFailedMessage();
-		    default: 
-			System.out.println(highAct.getActionType() + " ===== ");
-			if(highAct.ifParametersSet()) {
-			    System.out.println("OK. Parameters set");
-			}
-			if(highAct.getActionType().equals("MoveAndGrasp") && highAct.ifParametersSet()) {
-			    System.out.println("OK  default");
-			    // call symbol grounding to get parameters for the MoveAndGrasp action
-			    try {
-				SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
-				// TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
-				Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
-				System.out.println("OK  default");
-
-				ArrayList<String> posInArray = new ArrayList<String>();
-				posInArray.add("move");
-				posInArray.add(Double.toString(pos.x));
-				posInArray.add(Double.toString(pos.y));
-				posInArray.add(Double.toString(pos.theta));
-				if(highAct.setParameters(posInArray)) {
-				    System.out.println("MoveAndGrasp action move action parameters are set...  " + posInArray.toString());
-				}
-				else {
-				    System.out.println("MoveAndGrasp action move action parameters are not set...  " + posInArray.toString());
-				    currentSubAction++;
-				    return handleFailedMessage();		
-				}
-			    } 
-			    catch(RosException e) {
-				System.out.println(e.toString());
-			    }
-			    catch(Exception e) {
-				System.out.println(e.toString());
-			    }
-				//private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
-			}
-			else {
-			    return null;
-			}
-
-			*/
-
-
-
 
 		    
 		    ca = highAct.getNextCUAction(ni);
@@ -344,32 +227,39 @@ private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
 
     private CUAction handleFailedMessage() {
 	currentSubAction++;
+
+	System.out.println("HANDLE FAILED MESSAGE.... CURRENTSUBACTION IS AT:  " + currentSubAction);
+
+	if(currentSubAction >= allSubSeqs.size()) {
+	    return null;
+	}
 	HighLevelActionSequence nextHLActSeq = allSubSeqs.get(currentSubAction);
-	
-	if(nextHLActSeq.hasNextHighLevelActionUnit()) {
-	    HighLevelActionUnit nextHighActUnit = nextHLActSeq.getNextHighLevelActionUnit();
-	    if(nextHighActUnit != null) {
-	    		
-		int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
-		// TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
-		// SO STUPID CODE HERE
-		
-		if(tempI == HighLevelActionUnit.COMPLETED_SUCCESS || tempI == HighLevelActionUnit.COMPLETED_FAIL || tempI == HighLevelActionUnit.INVALID_INDEX) {
-		    CUAction ca = new CUAction();
-		    ca.status = -1;
-		    return ca;
+
+
+	//	if(nextHLActSeq.hasNextHighLevelActionUnit()) {
+	HighLevelActionUnit nextHighActUnit = nextHLActSeq.getCurrentHighLevelActionUnit();
+	if(nextHighActUnit != null) {
+	    
+	    int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
+	    // TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
+	    // SO STUPID CODE HERE
+	    
+	    if(tempI == HighLevelActionUnit.COMPLETED_SUCCESS || tempI == HighLevelActionUnit.COMPLETED_FAIL || tempI == HighLevelActionUnit.INVALID_INDEX) {
+		CUAction ca = new CUAction();
+		ca.status = -1;
+		return ca;
+	    }
+	    else {
+		System.out.println("GET NEXT CU ACTION AT:  " + tempI);
+		CUAction ca = nextHighActUnit.getNextCUAction(tempI);
+		if(ca == null) {
+		    System.out.println("CUACTION IS NULL.......");
 		}
-		else {
-		    System.out.println("GET NEXT CU ACTION AT:  " + tempI);
-		    CUAction ca = nextHighActUnit.getNextCUAction(tempI);
-		    if(ca == null) {
-			System.out.println("CUACTION IS NULL.......");
-		    }
-		    return ca;
-		}
+		return ca;
 	    }
 	}
-	    	
+	//}
+	
 	return null;
     }
 
@@ -410,6 +300,7 @@ private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
 	// create MoveAndDetectionActionUnit
 	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
 	com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "xCoord",  workspace);
+	
 	spatialInfo.pose.position.x = stm.getFloat();
 	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "yCoord",  workspace);
 	spatialInfo.pose.position.y = stm.getFloat();

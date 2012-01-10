@@ -44,7 +44,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    GenericAction graspAct = new GenericAction();
 	    graspAct.actionInfo.add("grasp");
 
-	    if (objectClassName != null || objectClassName.equals("")) {
+	    if (objectClassName != null || !objectClassName.equals("")) {
 		graspAct.actionInfo.add(objectClassName);
 		graspAct.actionInfo.add(Integer.toString(houseHoldId));
 		ifObjectInfoSet = true;
@@ -55,7 +55,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 		ifObjectInfoSet = false;
 	    }
 
-	    if (graspConfig != null || graspConfig.equals("")) {
+	    if (graspConfig != null || !graspConfig.equals("")) {
 		// side, top etc
 		graspAct.actionInfo.add(graspConfig);
 		ifObjectInfoSet = true && ifObjectInfoSet;

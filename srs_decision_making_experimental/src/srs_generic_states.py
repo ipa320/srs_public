@@ -314,39 +314,39 @@ class semantic_dm(smach.State):
             # current_task_info.last_step_info.append(last_step_info)
             # current_task_info.session_id = 123456
 
-            result = (1, 1, 1)
+            #result = (1, 1, 1)
             # print current_task_info.last_step_info
             print '+++++++++++ action acquired ++++++++++++++'
             print current_task_info.last_step_info;
             print '+++++++++++ Last Step Info LEN+++++++++++++++'
             print len(current_task_info.last_step_info)
             len_step_info = len(current_task_info.last_step_info)
-            
-        
+                    
             if not current_task_info.last_step_info:
                 print 'first action acquired ++++ '
-                result = (0, 0, 0)   ## first action. does not matter this. just to keep it filled
+
+                ## first action. does not matter this. just to keep it filled
+                resultLastStep = 0
             elif current_task_info.last_step_info and current_task_info.last_step_info[len_step_info - 1].outcome == 'succeeded':
                 # convert to the format that knowledge_ros_service understands
-                result = (0, 0, 0)
+                resultLastStep = 0
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
                 print 'Result return failed'
-                if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_approach_pose_assisted':
-                    result = (1, 0, 0)
-                elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_detect_asisted_pose_region':
-                    result = (1, 1, 0)
-                elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_pick_object_asisted':
-                    result = (0, 1, 1)
-                else:
-                    result = (1, 1, 1)
+                resultLastStep = 1
+                #if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_approach_pose_assisted':
+                #    result = (1, 0, 0)
+                #elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_detect_asisted_pose_region':
+                #    result = (1, 1, 0)
+                #elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_pick_object_asisted':
+                #    result = (0, 1, 1)
+                #else:
+                #    result = (1, 1, 1)
 
 
-            print result
+            print resultLastStep
             print '########## Result ###########'
 
-            
-
-            resp1 = next_action(current_task_info.session_id, result, None)
+            resp1 = next_action(current_task_info.session_id, resultLastStep, None)
             if resp1.nextAction.status == 1:
                 print 'succeeded'
                 return 'succeeded'
@@ -380,69 +380,23 @@ class semantic_dm(smach.State):
                     return nextStep
 		    ####  END OF HARD CODED FOR TESTING ##
 
-                    #userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id
-                    # should be updated to object_id in future
-
-
-                
+                elif resp1.nextAction.generic.actionInfo[0] == 'grasp':
+                    nextStep = 'simple_grasp'
+                    
+                    userdata.target_object_name = 'milk_box'
+                    return nextStep
+                else:
+                    print 'No valid action'
+                    nextStep = 'failed'
+                    return nextStep
+                    
             else:
                 print 'No valid actionFlags'
-                print resp1.nextAction.actionFlags
+                #print resp1.nextAction.actionFlags
                 #nextStep = 'No_corresponding_action???'
                 nextStep = 'failed'
                 return 'failed'
 
-
-
-
-                """
-            if resp1.nextAction.actionFlags == (0, 1, 1):
-                if resp1.nextAction.ma.ifWaitObjectTaken:
-			nextStep = 'deliver_object'
-		else:
-	                nextStep = 'navigation'
-                #userdata.target_base_pose = resp1.nextAction.ma.targetPose2D
-                userdata.target_base_pose = [resp1.nextAction.ma.targetPose2D.x, resp1.nextAction.ma.targetPose2D.y, resp1.nextAction.ma.targetPose2D.theta]
-
-            elif resp1.nextAction.actionFlags == (0, 0, 1):
-                
-                nextStep = 'detection'
-                userdata.target_base_pose = [resp1.nextAction.ma.targetPose2D.x, resp1.nextAction.ma.targetPose2D.y, resp1.nextAction.ma.targetPose2D.theta]
-
-                #TODO should confirm later if name or id used !!!!!!!!
-		####  HARD CODED FOR TESTING ##
-
-		if resp1.nextAction.pa.aboxObject.object_id == 1:
-			userdata.target_object_name = 'milk_box'
- 		else:
-			userdata.target_object_name = 'milk_box'
-
-		####  END OF HARD CODED FOR TESTING ##
-
-                #userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id
-                # should be updated to object_id in future
-            elif resp1.nextAction.actionFlags == (1, 0, 0):
-                nextStep = 'simple_grasp'
-                #userdata.target_object_name = resp1.nextAction.pa.aboxObject.name
-
-		####  HARD CODED FOR TESTING ##
-
-		if resp1.nextAction.pa.aboxObject.object_id == 1:
-			userdata.target_object_name = 'milk_box'
- 		else:
-			userdata.target_object_name = 'milk_box'
-
-		####  END OF HARD CODED FOR TESTING ##
-
-		#userdata.target_object_name = resp1.nextAction.pa.aboxObject.object_id
-		# should be updated to object_id in future            
-            else:
-                print 'No valid actionFlags'
-                print resp1.nextAction.actionFlags
-                nextStep = 'No_corresponding_action???'
-                return 'failed'
-            #return resp1.nextAction
-                """
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e        
             return 'failed'

@@ -47,6 +47,7 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 
 	private boolean createSimpleMoveTaskNew() {
 		// boolean addNewActionTuple(ActionTuple act)
+	    /*
 		ActionTuple act = new ActionTuple();
 
 		CUAction ca = new CUAction();
@@ -167,14 +168,6 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 		}
 		act.setActionName("finish_success");
 		ca.status = 1;
-		/*
-		if (act.getActionName().equals("finish_success")) {
-			ca.status = 1;
-		}
-		if (act.getActionName().equals("finish_fail")) {
-			ca.status = -1;
-		}
-		*/
 
 		act.setCUAction(ca);
 		act.setActionId(2);
@@ -207,14 +200,7 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 		act.setActionName("finish_fail");
 
 		ca.status = -1;
-		/*
-		if (act.getActionName().equals("finish_success")) {
-			ca.status = 1;
-		}
-		if (act.getActionName().equals("finish_fail")) {
-			ca.status = -1;
-		}
-		*/
+
 		act.setCUAction(ca);
 		act.setActionId(3);
 		act.setParentId(1);
@@ -222,6 +208,7 @@ public class MoveToTask extends org.srs.srs_knowledge.task.Task
 		addNewActionTuple(act);
 
 		System.out.println("number of actions: " + acts.size());
+		*/
 		return true;
 	}
 

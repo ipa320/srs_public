@@ -43,6 +43,7 @@ public class HighLevelActionSequence {
 
     public HighLevelActionUnit getNextHighLevelActionUnit() {
 	HighLevelActionUnit ha;
+	System.out.println("++++++++ >>   " + indOfCurrent + "   SIZE: " + highLevelActionList.size());
 	try{ 
 	    ha = highLevelActionList.get(indOfCurrent + 1);
 	    indOfCurrent = indOfCurrent + 1;
@@ -53,7 +54,7 @@ public class HighLevelActionSequence {
 	}
 	return ha;
     }
-
+    
     public HighLevelActionUnit getCurrentHighLevelActionUnit() {
 	//HighLevelActionUnit ha;
 	try{ 
@@ -65,7 +66,7 @@ public class HighLevelActionSequence {
 	}
 	//return ha;
     }
-
+    
     public boolean shiftToNextActionUnit() {
 	HighLevelActionUnit ha;
 	if((indOfCurrent + 1 )< highLevelActionList.size()) {

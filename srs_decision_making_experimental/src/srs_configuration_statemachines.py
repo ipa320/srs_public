@@ -176,7 +176,7 @@ class co_sm_post_conf(smach.Concurrence):
             smach.concurrence.add('State_Checking_During_Operation', state_checking_during_operation())
             smach.concurrence.add('MAIN_OPERATION', post_conf(self.action_name))
 
-
+"""
 def add_common_states(parent, action_name):
     with parent:
             smach.StateMachine.add('PRE_CONFIG', co_sm_pre_conf(action_name),
@@ -193,7 +193,7 @@ def add_common_states(parent, action_name):
             
             smach.StateMachine.add('PAUSED_DURING_POST_CONFIG', state_checking_during_paused(),
                     transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})    
-            
+"""      
 
 
 class srs_navigation(smach.StateMachine):
@@ -201,13 +201,30 @@ class srs_navigation(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_base_pose','semi_autonomous_mode'])
-        add_common_states(self,'navigation')
+        self.action_name = 'navigation'
+        #add_common_states(self,'navigation')
         
         with self:
-            smach.StateMachine.add('ACTION', co_sm_navigation(),
+
+            smach.Concurrence.add('PRE_CONFIG', co_sm_pre_conf(self.action_name),
+                    transitions={'succeeded':'ACTION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
+            
+            smach.Concurrence.add('ACTION', co_sm_navigation(),
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
                     remapping={'semi_autonomous_mode':'semi_autonomous_mode','target_base_pose':'target_base_pose'})
-
+        
+            smach.Concurrence.add('POST_CONFIG', co_sm_post_conf(self.action_name),
+                    transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
+            
+            smach.StateMachine.add('PAUSED_DURING_PRE_CONFIG', state_checking_during_paused(),
+                    transitions={'resume':'PRE_CONFIG','preempted':'preempted', 'stopped':'stopped'})
+            
+            smach.StateMachine.add('PAUSED_DURING_ACTION', state_checking_during_paused(),
+                    transitions={'resume':'ACTION','preempted':'preempted', 'stopped':'stopped'})
+            
+            smach.StateMachine.add('PAUSED_DURING_POST_CONFIG', state_checking_during_paused(),
+                    transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})   
+            
 
 class srs_detection(smach.StateMachine):
     

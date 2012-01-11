@@ -29,9 +29,9 @@ class state_checking_during_operation (smach.State):
         global current_task_info
         while not self.preempt_requested():
             #if stop command has been received
-            if current_task_info._as.stop_required:
+            if current_task_info._srs_as.stop_required:
                 #reset the flag to normal after the request has been received
-                current_task_info._as.stop_required = False
+                current_task_info._srs_as.stop_required = False
                 
                 #update the final outcome to stopped
                 self.state_checking_outcome  = 'stopped'
@@ -42,9 +42,9 @@ class state_checking_during_operation (smach.State):
                     return self.state_checking_outcome
             
             #if another command with higher priority received
-            if current_task_info._as.customised_preempt_required:
+            if current_task_info._srs_as.customised_preempt_required:
                 #reset the flag to normal after the request has been received
-                current_task_info._as.customised_preempt_required = False
+                current_task_info._srs_as.customised_preempt_required = False
 
                 #update the final outcome to customised_preempted
                 self.state_checking_outcome  = 'customised_preempted'
@@ -100,7 +100,7 @@ def common_out_cb(outcome_map):
     #check if the termination is triggered by time out during pause.
     if outcome_map['MAIN_OPERATION'] == 'time_out':   
         global current_task_info
-        if current_task_info._as.pause_required:
+        if current_task_info._srs_as.pause_required:
             return 'paused'
         else:
             return 'not_completed' 
@@ -219,7 +219,7 @@ class co_sm_grasp(smach.Concurrence):
 # creating the concurrence state machine put object on tray
 # this process can be paused but not stoppable until object is on the tray, robot has to put the target  in a stable position
 
-co_sm_transfer_to_tray = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'preempted', 'paused'],
+co_sm_transfer_to_tray = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
                  input_keys=['grasp_catogorisation'],
                  child_termination_cb = common_child_term_cb,

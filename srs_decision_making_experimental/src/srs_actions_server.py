@@ -106,7 +106,8 @@ from srs_configuration_statemachines import *
 #Customised Action sever designed for overwriting SimpleActionServer pre-empty sequence
 class SRSActionServer(SimpleActionServer):
     def _init_(self, name, ActionSpec, execute_cb, auto_start):
-        super(SRSActionServer, self).__init__(name, ActionSpec, execute_cb, auto_start)        
+        super(SRSActionServer, self).__init__(name, ActionSpec, execute_cb, auto_start)       
+
     
     def accept_new_goal(self):
         with self.lock:
@@ -146,11 +147,11 @@ class SRS_DM_ACTION(object):
         self._result = xmsg.ExecutionResult()
         self._task = ""
         self._parameter = ""
-        self.customised_preempt_required = False
-        self.pause_required = False
-        self.stop_required = False
         self._as.start()
         self.robot_initialised= False
+        self.customised_preempt_required = False
+        self.pause_required = False
+        self.stop_required = False 
                 
         #self._as.register_goal_callback(self.goal_cb)
         self._as.register_preempt_callback(self.priority_cb)
@@ -275,8 +276,8 @@ class SRS_DM_ACTION(object):
             self._sm_srs.request_preempt()             
                 
     def preempt_check(self):
-        if self.customised_preempt_request:
-            self.customised_preempt_request = False;
+        if self.customised_preempt_required:
+            self.customised_preempt_required = False;
             return True;
         return False;
    
@@ -304,7 +305,7 @@ class SRS_DM_ACTION(object):
         if not self.robot_initialised:
             self.robot_initialisation_process()
             
-        current_task_info._as = copy.copy(self._as)
+        current_task_info._srs_as = copy.copy(self)
         
 
 

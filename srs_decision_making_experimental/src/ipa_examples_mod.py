@@ -61,7 +61,7 @@ class goal_structure():
         self.preemptied = False
         
         #reference to the action server
-        self._as=""
+        self._srs_as=""
         
         ## backward compatible need to be revised after the integration meeting         
         #feedback publisher, intervention required

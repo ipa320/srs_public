@@ -66,7 +66,7 @@ class SRS_StateMachine(smach.StateMachine):
         _feedback.current_state = userdata.current_sub_task_name + ": started"
         _feedback.solution_required = False
         _feedback.exceptional_case_id = 0
-        current_task_info._as.publish_feedback(_feedback)
+        current_task_info._srs_as._as.publish_feedback(_feedback)
         rospy.sleep(1)
     
     def transition_cb (self, userdata, active_states):
@@ -83,7 +83,7 @@ class SRS_StateMachine(smach.StateMachine):
         _feedback.current_state = userdata.current_sub_task_name + ":" + outcome
         _feedback.solution_required = False
         _feedback.exceptional_case_id = 0
-        current_task_info._as.publish_feedback(_feedback)
+        current_task_info._srs_as._as.publish_feedback(_feedback)
         rospy.sleep(1)
 
 ####################################################################################

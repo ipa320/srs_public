@@ -48,7 +48,7 @@ and
              # Publish message
              self._status_pub.publish(state_msg)
 """
-from srs_high_level_statemachines import *
+from srs_configuration_statemachines import *
             
 """
                 sub-statemachines in use:
@@ -146,7 +146,9 @@ class SRS_DM_ACTION(object):
         self._result = xmsg.ExecutionResult()
         self._task = ""
         self._parameter = ""
-        self.customised_preempt_request = False
+        self.customised_preempt_required = False
+        self.pause_required = False
+        self.stop_required = False
         self._as.start()
         self.robot_initialised= False
                 
@@ -207,60 +209,48 @@ class SRS_DM_ACTION(object):
                                                 'preempted':'task_preempted',
                                                 'navigation':'SM_NAVIGATION',
                                                 'detection':'SM_DETECTION',
-                                                'simple_grasp':'SM_SIMPLE_GRASP',
-                                                'deliver_object':'SM_DELIVER_OBJECT',
-                                                'env_object_update':'SM_ENV_OBJECT_UPDATE',
-                                                'charging':'CHARGING'},
+                                                'simple_grasp':'SM_GRASP',
+                                                'put_on_tray':'SM_PUT_ON_TRAY',
+                                                'env_object_update':'SM_ENV_OBJECT_UPDATE'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
-                                               'target_object_pose':'target_object_pose',
-                                               'semi_autonomous_mode':'semi_autonomous_mode'}
-                                   )                                   
-            smach.StateMachine.add('SM_NAVIGATION', sm_approach_pose_assisted(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                               'target_object':'target_object',
+                                               'semi_autonomous_mode':'semi_autonomous_mode',
+                                               'grasp_categorisation':'grasp_categorisation',
+                                               'target_object_name_list':'target_object_name_list',
+                                              'scan_pose_list':'scan_pose_list',
+                                              'target_object_pose_list':'target_object_pose_list'})   
+            
+            smach.StateMachine.add('SM_NAVIGATION', srs_navigation(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'})            
 
-            smach.StateMachine.add('SM_DETECTION', sm_detect_asisted_pose_region(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+            smach.StateMachine.add('SM_DETECTION', srs_detection(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_pose':'target_object_pose'})
+                                              'target_object':'target_object'})
        
-            smach.StateMachine.add('SM_SIMPLE_GRASP', sm_get_object_on_tray(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+            smach.StateMachine.add('SM_GRASP', srs_grasp(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_pose':'target_object_pose'})
-            """                    
-            smach.StateMachine.add('SM_OPEN_DOOR', sm_open_door(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'})
-            """
-            smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', sm_enviroment_object_update(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
-                                   remapping={'target_object_name':'target_object_name',
-                                              'target_base_pose':'target_base_pose',
-                                              'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_pose':'target_object_pose'})        
+                                              'target_object_pose':'target_object_pose',
+                                              'grasp_categorisation':'grasp_categorisation' })
             
-            smach.StateMachine.add('SM_DELIVER_OBJECT', sm_deliver_object(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
-                                   remapping={'target_base_pose':'target_base_pose',
-                                               'semi_autonomous_mode':'semi_autonomous_mode'})     
-            
-            smach.StateMachine.add('CHARGING', charging(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'failed':'task_aborted'},
-                                   remapping={'target_base_pose':'target_base_pose',
-                                               'semi_autonomous_mode':'semi_autonomous_mode'}
-                                   )    
+            smach.StateMachine.add('SM_PUT_ON_TRAY', srs_put_on_tray(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
+                                   remapping={'grasp_categorisation':'grasp_categorisation' })
+
+            smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', srs_enviroment_object_update(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
+                                   remapping={'target_object_name_list':'target_object_name_list',
+                                              'scan_pose_list':'scan_pose_list',
+                                              'target_object_pose_list':'target_object_pose_list'})        
+
                         
-	    """	
-            smach.StateMachine.add('SM_DETECTION_SIMPLE', detect_object(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'retry':'SEMANTIC_DM', 'failed':'task_aborted','no_more_retries':'SEMANTIC_DM'},
-                                   remapping={'object_name':'target_object_name',
-                                              'semi_autonomous_mode':'semi_autonomous_mode'})
-		
-	    """
+
         return self.temp
                     
             
@@ -327,7 +317,8 @@ class SRS_DM_ACTION(object):
         rospy.wait_for_service('task_request')
         try:
             requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
-            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
+            #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
+            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None)
 	    print res.sessionId
 	    current_task_info.session_id = res.sessionId
             if res.result == 1:

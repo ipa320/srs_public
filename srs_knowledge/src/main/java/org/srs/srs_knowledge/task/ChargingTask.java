@@ -282,5 +282,7 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 	 * 
 	 * System.out.println("number of actions: " + acts.size()); return true; }
 	 */
-
+    public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {
+	return false;
+    }
 }

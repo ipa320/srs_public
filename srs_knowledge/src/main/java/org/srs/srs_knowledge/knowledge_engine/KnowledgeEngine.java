@@ -12,9 +12,6 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
-import java.io.*;
-import java.util.ArrayList; 
-import java.util.Iterator;
 import ros.*;
 import ros.communication.*;
 import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
@@ -35,8 +32,9 @@ import java.util.Properties;
 import java.io.IOException;
 import java.io.*;
 import java.util.StringTokenizer;
+import java.util.ArrayList; 
+import java.util.Iterator;
 //import org.apache.commons.logging.Log;
-import java.util.ArrayList;
 
 class KnowledgeEngine
 {
@@ -159,7 +157,8 @@ class KnowledgeEngine
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	}
 
-
+	ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
+	
 	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
     }
 
@@ -323,6 +322,7 @@ class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    currentTask = new MoveToTask(request.content, null, ontoDB);
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
 	else if(request.task.equals("get") || request.task.equals("search")){
@@ -330,12 +330,14 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB);
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil);
+
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    this.loadPredefinedTasksForTest(got);
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    currentTask = (Task)got;
 	}
 	else if(request.task.equals("charging")) {
@@ -345,13 +347,14 @@ class KnowledgeEngine
 	    currentTask = new ChargingTask(null, null, ontoDB);
 	    //currentTask = new MoveToTask(null, null, ontoDB);
 	    System.out.println("Created CurrentTask " + "charge ");
-	    
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
 	else {
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    // task not created for some reason
-	    currentTask = new GetObjectTask(request.task, request.content, null);
+	    currentTask = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil);
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	    res.result = 1;
 	    res.description = "No action";
 	}
@@ -533,13 +536,22 @@ class KnowledgeEngine
 
 			if(req.ifGeometryInfo == true) { 
 			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
-			
+
+			    /*
 			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
 			    spatialInfo.point.x = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
 			    spatialInfo.point.y = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
 			    spatialInfo.point.z = getFloatOfStatement(stm);
+			    */
+			    
+			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
+			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
+			    spatialInfo.pose.position.y = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
+			    spatialInfo.pose.position.z = getFloatOfStatement(stm);
 			    
 			    stm = ontoDB.getPropertyOf(globalNamespace, "widthOfObject", temp);
 			    spatialInfo.w = getFloatOfStatement(stm);
@@ -548,13 +560,24 @@ class KnowledgeEngine
 			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
 			    spatialInfo.l = getFloatOfStatement(stm);
 			    
+			    /*
 			    stm = ontoDB.getPropertyOf(globalNamespace, "r3d", temp);
 			    spatialInfo.angles.r = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "p3d", temp);
 			    spatialInfo.angles.p = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "y3d", temp);
 			    spatialInfo.angles.y = getFloatOfStatement(stm);
-			    
+			    */
+
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
+			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qx", temp);
+			    spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qy", temp);
+			    spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
+			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
+
 			    re.objectsInfo.add(spatialInfo);
 
 			    stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);
@@ -725,6 +748,7 @@ class KnowledgeEngine
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
     private String confPath;
+    private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing
     int flag = 1;
 }

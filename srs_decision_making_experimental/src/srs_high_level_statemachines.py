@@ -149,7 +149,7 @@ class sm_detect_asisted_region(SRS_StateMachine):
 class sm_detect_asisted_pose_region(SRS_StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, 
-                                    outcomes=['succeeded', 'not_completed', 'failed', 'time_out', 'preempted'],
+                                    outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
                                     output_keys=['target_object'])
         self.customised_initial("sm_detect_asisted_pose_region")
@@ -162,11 +162,11 @@ class sm_detect_asisted_pose_region(SRS_StateMachine):
                     remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_object_name':'target_object_name','target_object':'target_object' })
                 
             smach.StateMachine.add('INTERVENTION', intervention_base_pose(),
-                    transitions={'retry':'INTERMEDIATE_MOVE', 'no_more_retry':'not_completed','failed':'failed','preempted':'preempted', 'stopped':'stopped'},
+                    transitions={'retry':'INTERMEDIATE_MOVE', 'no_more_retry':'not_completed','failed':'failed','preempted':'preempted'},
                     remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'intermediate_pose':'intermediate_pose'})
                 
             smach.StateMachine.add('INTERMEDIATE_MOVE', approach_pose_without_retry(),
-                    transitions={'succeeded':'DETECT_OBJECT', 'not_completed':'INTERVENTION', 'failed':'failed','preempted':'preempted', 'stopped':'stopped'},
+                    transitions={'succeeded':'DETECT_OBJECT', 'not_completed':'INTERVENTION', 'failed':'failed','preempted':'preempted'},
                     remapping={'base_pose':'intermediate_pose'})    
             
 
@@ -205,7 +205,7 @@ class sm_pick_object_asisted(SRS_StateMachine):
 #
 #
 ################################################################################
-class sm_get_object_on_tray(SRS_StateMachine):
+class sm_transfer_object_to_tray(SRS_StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, 
             outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
@@ -218,7 +218,7 @@ class sm_get_object_on_tray(SRS_StateMachine):
                 transitions={'succeeded':'MOVE_TO_POST_TABLE_POS','failed':'failed','preempted':'preempted'},
                 remapping={'post_table_pos':'post_table_pos'})               
             smach.StateMachine.add('MOVE_TO_POST_TABLE_POS', approach_pose_without_retry(),
-                transitions={'succeeded':'PUT_OBJECT_ON_TRAY','failed':'failed','preempted':'preempted', 'time_out':'time_out'},
+                transitions={'succeeded':'PUT_OBJECT_ON_TRAY','failed':'failed','preempted':'preempted'},
                 remapping={'base_pose':'post_table_pos'})                              
             smach.StateMachine.add('PUT_OBJECT_ON_TRAY', put_object_on_tray(),
                 transitions={'succeeded':'succeeded', 'failed':'failed','preempted':'preempted'},
@@ -233,7 +233,7 @@ class sm_get_object_on_tray(SRS_StateMachine):
 class sm_enviroment_model_update(SRS_StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self,
-                                    outcomes=['succeeded', 'not_completed', 'failed', 'time_out', 'preempted'],
+                                    outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
                                     input_keys=['target_base_pose_list'],
                                     output_keys=['reference_to_map']
                                     )
@@ -245,7 +245,7 @@ class sm_enviroment_model_update(SRS_StateMachine):
                     transitions={'got_to_next_pose':'APPROACH_POSE', 'no_more_pose':'succeeded', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'base_pose':'current_target_base_pose','target_base_pose_list':'target_base_pose_list'})   
             smach.StateMachine.add('APPROACH_POSE', approach_pose_without_retry(),
-                    transitions={'succeeded':'UPDATE_ENVIROMENT', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted', 'time_out':'time_out'},
+                    transitions={'succeeded':'UPDATE_ENVIROMENT', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'base_pose':'target_base_pose'})     
             smach.StateMachine.add('UPDATE_ENVIROMENT', update_env_model(),
                     transitions={'succeeded':'SELECT_POSE', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
@@ -255,7 +255,7 @@ class sm_enviroment_model_update(SRS_StateMachine):
 class sm_enviroment_object_update(SRS_StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self,
-                                    outcomes=['succeeded', 'not_completed', 'failed', 'preempted', 'time_out'],
+                                    outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
                                     input_keys=['target_object_name_list','scan_pose_list'],
                                     output_keys=['target_object_pose_list']
                                     )
@@ -266,7 +266,7 @@ class sm_enviroment_object_update(SRS_StateMachine):
         with self:
             
             smach.StateMachine.add('MOVE_AND_UPDATE_ENVIROMENT', sm_enviroment_model_update(),
-                    transitions={'succeeded':'VERIFY_OBJECT', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted', 'time_out':'time_out'},
+                    transitions={'succeeded':'VERIFY_OBJECT', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'scan_pose_list':'scan_pose_list','reference_to_map':'reference_to_map'})     
             
             smach.StateMachine.add('VERIFY_OBJECT', verify_object(),

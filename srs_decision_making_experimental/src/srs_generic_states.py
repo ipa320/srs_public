@@ -82,7 +82,7 @@ from ipa_examples_mod import *
 class intervention_base_pose(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed', ],
+        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed', 'preempted' ],
                                 input_keys=['semi_autonomous_mode'],
                                 output_keys=['intermediate_pose'])
         global current_task_info         
@@ -144,7 +144,7 @@ class intervention_base_pose(smach.State):
 class intervention_key_region(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed'],
+        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed','preempted'],
                                 input_keys=['semi_autonomous_mode'],
                                 output_keys=['key_region'])
         global current_task_info         
@@ -179,7 +179,7 @@ class intervention_key_region(smach.State):
 class intervention_grasp_selection(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed'],
+        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed','preempted'],
                                 input_keys=['semi_autonomous_mode'],                                
                                 output_keys=['grasp_conf'])
         global current_task_info         
@@ -216,7 +216,7 @@ class intervention_grasp_selection(smach.State):
 class user_intervention_action_sequence(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed'],
+        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed','preempted'],
                                 output_keys=['action_sequence'])
         global current_task_info         
         self.pub_fb = current_task_info.pub_fb
@@ -511,32 +511,3 @@ class prepare_robot(smach.State):
 
         return 'succeeded'
     
-#verify_object FROM PRO+IPA, the interface still need to be clarified 
-class verify_object(smach.State):
-
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['object_verified','no_object_verified','failed'],
-                                input_keys=['reference_to_map','object_name'],
-                                output_keys=['updated_object'])
-        
-    def execute(self,userdata):
-        # user specify key region on interface device for detection
-        """
-        Extract objects from current point map
-        """
-        updated_object = ""   #updated pose information about the object
-        return 'failed'  
-
-#scan environment from IPA, the interface still need to be clarified    
-class update_env_model(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','failed'],
-                                output_keys=['reference_to_map'])
-        
-    def execute(self,userdata):
-        # user specify key region on interface device for detection
-        """
-        Get current point map
-        """
-        map_reference = ""   
-        return 'succeeded'      

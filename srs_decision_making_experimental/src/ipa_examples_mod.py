@@ -131,7 +131,7 @@ class approach_pose_without_retry(smach.State):
     def __init__(self, pose = ""):
         smach.State.__init__(
             self,
-            outcomes=['succeeded', 'failed', 'preempted'],
+            outcomes=['succeeded', 'not_completed','failed', 'preempted'],
             input_keys=['base_pose'])
 
         self.pose = pose
@@ -422,7 +422,7 @@ class grasp_general(smach.State):
     def __init__(self, max_retries = 1):
         smach.State.__init__(
             self,
-            outcomes=['succeeded', 'retry', 'no_more_retries', 'failed'],
+            outcomes=['succeeded', 'retry', 'no_more_retries', 'failed', 'preempted'],
             input_keys=['object','grasp_categorisation'])
         
         self.max_retries = max_retries
@@ -592,6 +592,21 @@ class grasp_general(smach.State):
             self.retries = 0     
             return 'succeeded'
 
+class select_post_table_pose(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed','preempted'], output_keys=['post_table_pos'])
+    def execute(self, userdata):
+        userdata.post_table_pos='home'
+        return 'succeeded'
+        
+
+class select_pose(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['got_to_next_pose', 'no_more_pose', 'failed','preempted'], 
+                             input_keys=['target_base_pose_list'], output_keys=['current_target_base_pose'])
+    def execute(self, userdata):
+        userdata.current_target_base_pose='home'
+        return 'got_to_next_pose'
 
 
 ## Put object on tray side state
@@ -602,7 +617,7 @@ class put_object_on_tray(smach.State):
     def __init__(self):
         smach.State.__init__(
             self,
-            outcomes=['succeeded', 'failed'],
+            outcomes=['succeeded', 'failed' ,'preempted'],
             input_keys=['grasp_categorisation'])
         
     def execute(self, userdata):
@@ -639,6 +654,35 @@ class put_object_on_tray(smach.State):
             return 'succeeded'
 
 
+#verify_object FROM PRO+IPA, the interface still need to be clarified 
+class verify_object(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['object_verified','no_object_verified','failed','preempted'],
+                                input_keys=['reference_to_map','object_name_list'],
+                                output_keys=['updated_object_list'])
+        
+    def execute(self,userdata):
+        # user specify key region on interface device for detection
+        """
+        Extract objects from current point map
+        """
+        updated_object = ""   #updated pose information about the object
+        return 'failed'  
+
+#scan environment from IPA, the interface still need to be clarified    
+class update_env_model(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
+                                output_keys=['reference_to_map'])
+        
+    def execute(self,userdata):
+        # user specify key region on interface device for detection
+        """
+        Get current point map
+        """
+        map_reference = ""   
+        return 'succeeded'      
 
 
     

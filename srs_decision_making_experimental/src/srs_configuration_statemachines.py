@@ -134,23 +134,42 @@ def robot_configuration(parent, action_name, action_stage):
 
 
 class pre_conf(smach.State):
-    def __init__(self, action_name):
-        smach.State.__init__(self , outcomes=['succeeded', 'failed', 'preempted'])
-        self.action_name=action_name
+    def __init__(self):
+        smach.State.__init__(self , outcomes=['succeeded', 'failed', 'preempted'], input_keys=['action_name'])
     
     def execute (self, userdata):    
-        return robot_configuration(self, self.action_name, 'pre-config')
+        return robot_configuration(self, userdata.action_name, 'pre-config')
     
         
 class post_conf(smach.State):
-    def __init__(self, action_name):
-        smach.State.__init__(self , outcomes=['succeeded', 'failed',  'preempted'])
-        self.action_name=action_name
+    def __init__(self):
+        smach.State.__init__(self , outcomes=['succeeded', 'failed',  'preempted'], input_keys=['action_name'])
     
     def execute (self, userdata):    
-        return robot_configuration(self, self.action_name, 'post-config')
+        return robot_configuration(self, userdata.action_name, 'post-config')
 
 
+co_sm_pre_conf = smach.Concurrence (outcomes=['succeeded', 'failed', 'stopped', 'preempted', 'paused'],
+                 default_outcome='failed',
+                 input_keys=['action_name'],
+                 child_termination_cb = common_child_term_cb,
+                 outcome_cb = common_out_cb)
+with co_sm_pre_conf: 
+            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())
+            smach.Concurrence.add('MAIN_OPERATION', pre_conf(),
+                                  remapping={'action_name':'action_name'})
+            
+co_sm_post_conf = smach.Concurrence  (outcomes=['succeeded', 'failed', 'stopped', 'preempted', 'paused'],
+                 default_outcome='failed',
+                 input_keys=['action_name'],
+                 child_termination_cb = common_child_term_cb,
+                 outcome_cb = common_out_cb)
+with co_sm_post_conf: 
+            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())
+            smach.Concurrence.add('MAIN_OPERATION', post_conf(),
+                                  remapping={'action_name':'action_name'})
+
+"""
 #It is impossible to reach paused state as the sss used in pre/post conf checking the pause by itself, and will never return time-out 
 class co_sm_pre_conf(smach.Concurrence):
     def __init__(self, action_name=''):
@@ -161,8 +180,8 @@ class co_sm_pre_conf(smach.Concurrence):
         self.action_name=action_name
                                   
         with self: 
-            smach.concurrence.add('State_Checking_During_Operation', state_checking_during_operation())
-            smach.concurrence.add('MAIN_OPERATION', preconf(self.action_name))
+            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())
+            smach.Concurrence.add('MAIN_OPERATION', preconf(self.action_name))
     
 #It is impossible to reach paused state as the sss used in pre/post conf checking the pause by itself, and will never return time-out 
 class co_sm_post_conf(smach.Concurrence):
@@ -174,19 +193,21 @@ class co_sm_post_conf(smach.Concurrence):
         self.action_name=action_name
                                   
         with self: 
-            smach.concurrence.add('State_Checking_During_Operation', state_checking_during_operation())
-            smach.concurrence.add('MAIN_OPERATION', post_conf(self.action_name))
-            
+            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())
+            smach.Concurrence.add('MAIN_OPERATION', post_conf(self.action_name))
+"""            
 
 
 
-def add_common_states(parent, action_name):
+def add_common_states(parent):
     with parent:
-            smach.StateMachine.add('PRE_CONFIG', co_sm_pre_conf(action_name),
-                    transitions={'succeeded':'ACTION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
+            smach.StateMachine.add('PRE_CONFIG', co_sm_pre_conf(),
+                    transitions={'succeeded':'ACTION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
+                    remapping={'action_name':'action_name'})
         
-            smach.StateMachine.add('POST_CONFIG', co_sm_post_conf(action_name),
-                    transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'})
+            smach.StateMachine.add('POST_CONFIG', co_sm_post_conf(),
+                    transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
+                    remapping={'action_name':'action_name'})
             
             smach.StateMachine.add('PAUSED_DURING_PRE_CONFIG', state_checking_during_paused(),
                     transitions={'resume':'PRE_CONFIG','preempted':'preempted', 'stopped':'stopped'})
@@ -205,7 +226,8 @@ class srs_navigation(smach.StateMachine):
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_base_pose','semi_autonomous_mode'])
         #self.action_name = 'navigation'
-        add_common_states(self,'navigation')
+        self.userdata.action_name = 'navigation'
+        add_common_states(self)
         
         with self:
             smach.StateMachine.add('ACTION', co_sm_navigation(),
@@ -219,7 +241,8 @@ class srs_detection(smach.StateMachine):
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
                                     output_keys=['target_object'])
-        add_common_states(self,'detection')
+        self.userdata.action_name = 'detection'
+        add_common_states(self)
         
         with self:
             smach.StateMachine.add('ACTION', co_sm_detection(),
@@ -232,7 +255,8 @@ class srs_grasp(smach.StateMachine):
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
                                     output_keys=['grasp_categorisation', 'target_object'])
-        add_common_states(self, 'grasp')
+        self.userdata.action_name = 'grasp'
+        add_common_states(self)
         
         with self:
             smach.StateMachine.add('ACTION', co_sm_grasp(),
@@ -245,7 +269,8 @@ class srs_put_on_tray(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['grasp_catogorisation'])
-        add_common_states(self, 'put_on_tray')
+        self.userdata.action_name = 'put_on_tray'
+        add_common_states(self)
         
         with self:
             smach.StateMachine.add('ACTION', co_sm_transfer_to_tray(),
@@ -259,7 +284,8 @@ class srs_enviroment_object_update(smach.StateMachine):
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name_list', 'scan_pose_list'],
                                     output_keys=['target_object_pose_list'])
-        add_common_states(self, 'enviroment_update')
+        self.userdata.action_name = 'enviroment_update'
+        add_common_states(self)
         
         with self:
             smach.StateMachine.add('ACTION', co_sm_enviroment_object_update(),

@@ -101,66 +101,7 @@ class goal_structure():
 current_task_info = goal_structure() 
 
 
-# get a new base pose from UI, this can be used to adjust scan position, grasp position or as a intermediate goal for navigation 
-# output is a intermediate pose for navigation or a new scan position
-class intervention_base_pose(smach.State):
 
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed', ],
-                                input_keys=['semi_autonomous_mode'],
-                                output_keys=['intermediate_pose'])
-        global current_task_info         
-        self.pub_fb = current_task_info.pub_fb
-        self.pub_fb2 = current_task_info.pub_fb2
-        self.count = 0
-
-    def execute(self,userdata):
-        
-        if userdata.semi_autonomous_mode == True:
-            # user intervention is possible
-            while not (rospy.is_shutdown() or self.preempt_requested()) :
-                                
-                global current_task_info
-                _feedback=xmsg.ExecutionFeedback()
-                _feedback.current_state = "need user intervention for base pose"
-                _feedback.solution_required = True
-                _feedback.exceptional_case_id = 1
-                current_task_info._as.publish_feedback(_feedback)
-                rospy.sleep(1)
-                
-                self.count += 1 
-                rospy.loginfo("State : need user intervention for base pose")
-                rospy.wait_for_service('message_errors')                       
-                s = xsrv.errorsResponse()
-                
-                current_state= 'need user intervention for base pose'
-                exceptional_case_id=1 # need user intervention for base pose
-                
-                try:
-                    message_errors = rospy.ServiceProxy('message_errors',xsrv.errors)               
-                    s = message_errors(current_state, exceptional_case_id)
-                    print s.solution
-                except rospy.ServiceException, e:
-                    print "Service call failed: %s"%e           
-                    self.pub_fb.publish(False)   
-                    return 'failed'
-                print (s)             
-                
-                if  (s.giveup == 1):
-                    return 'no_more_retry'
-                else:
-                    userdata.intermediate_pose = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
-                    rospy.loginfo("New intermediate target is :%s", s.solution.__str__())    
-                    return 'retry'
-            return 'failed'
-        else:
-            # no user intervention, UI is not connected or not able to handle current situation 
-            # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
-            """
-            call srs knowledge ros service for a new scanning or grasping position
-            """
-            userdata.intermediate_pose = "kitchen"   
-            return 'no_more_retry'
             
 
 """

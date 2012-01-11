@@ -30,7 +30,7 @@ def semantics_db_list_objects(class_id):
     print "Service call failed: %s"%e
   return object_poses
 
-    
+
 def map_list_objects(class_id):
   rospy.wait_for_service('get_objects_of_class')
   try:
@@ -41,7 +41,7 @@ def map_list_objects(class_id):
     return res
   except rospy.ServiceException, e:
     print "Service call failed: %s"%e
-    
+
 def verify_table(object_pose, table_list_map):
   d_min = 10000
   d_th = 0.5
@@ -55,19 +55,18 @@ def verify_table(object_pose, table_list_map):
     return closest_table
   else:
     return False
-        
-        
+
+
 if __name__ == "__main__":
   class_id =1 #tables
   object_poses = semantics_db_list_objects(class_id)
   for i in range(0,2):
     object_to_search = object_poses[i]
-    print "Searching for object at " + str(object_to_search.position.x) + ", " + str(object_to_search.position.x)
-    object_list_map = map_list_objects(class_id) 
+    print "Searching for object at " + str(object_to_search.position.x) + ", " + str(object_to_search.position.y)
+    object_list_map = map_list_objects(class_id)
     if class_id == 1:
       closest_table = verify_table(object_to_search, object_list_map)
       if closest_table:
         print "table " + str(object_to_search.position.x) + "," + str(object_to_search.position.y) + " found at " + str(closest_table.params[4]) + "," + str(closest_table.params[5])
       else:
         print "table " + str(object_to_search.position.x) + "," + str(object_to_search.position.y) + " not found"
-  

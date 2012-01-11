@@ -19,17 +19,17 @@ def list_service_cb(req):
   res = ListInstancesOfClassResponse()
   res.list = [table1,table2]
   return res
-  
+
 def info_service_cb(req):
   res = GetInfoObjectResponse()
   if req.objectID == 0:
-    res.objectName = "table0"
-    res.objectPose = Pose(position=Point(0,0,0), orientation=Quaternion(0,0,0,0))
+    res.objectName = "kitchen"
+    res.objectPose = Pose(position=Point(-3.2,0.055,0.9), orientation=Quaternion(0,0,0,0))
     res.classID = 1
   elif req.objectID == 1:
     res.objectName = "table1"
     res.objectPose = Pose(position=Point(10,10,0), orientation=Quaternion(0,0,0,0))
-    res.classID = 1 
+    res.classID = 1
   else:
     print "Object info not found"
     return False

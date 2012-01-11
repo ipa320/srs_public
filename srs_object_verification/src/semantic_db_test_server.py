@@ -28,7 +28,7 @@ def info_service_cb(req):
     res.classID = 1
   elif req.objectID == 1:
     res.objectName = "table1"
-    res.objectPose = Pose(position=Point(10,10,0), orientation=Quaternion(0,0,0,0))
+    res.objectPose = Pose(position=Point(0.67,1.26,0.74), orientation=Quaternion(0,0,0,0))
     res.classID = 1
   else:
     print "Object info not found"

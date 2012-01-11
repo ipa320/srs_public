@@ -24,8 +24,17 @@ import ros.communication.*;
 
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    public GetObjectTask(String taskType, String targetContent, Pose2D userPose, OntologyDB onto, OntoQueryUtil ontoQueryUtil, NodeHandle n) 
+    public GetObjectTask(String taskType, String targetContent, String userPose, NodeHandle n) 
     {
+	/*
+	  // NOT WORKING... FOR TESTING ONLY
+	System.out.println("HAHAHAHAHAHAHA");
+
+	System.out.println(RosUtil.getRobotCurrentPose().position.x);
+
+	System.out.println("HAHAHAHAHAHAHA");
+	*/
+	/*
 	if (onto != null) {
 	    System.out.println("SET ONTOLOGY DB");
 	    this.ontoDB = onto;
@@ -34,7 +43,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("NULL ---- SET ONTOLOGY DB");
 	    this.ontoDB = new OntologyDB();
 	}
-
+	
 	if (ontoQueryUtil != null) {
 	    this.ontoQueryUtil = ontoQueryUtil;
 	} 
@@ -42,10 +51,11 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("NULL ---- SET ONTOLOGY DB");
 	    this.ontoQueryUtil = new OntoQueryUtil("","");
 	}
-	
+	*/
 	this.nodeHandle = n;
+	this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
-	this.initTask(targetContent, userPose);
+	this.initTask(targetContent, this.userPose);
     }
 
     protected boolean constructTask() {
@@ -64,8 +74,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 
 	try {
 	    //ArrayList<String> workspaces = OntoQueryUtil.getWorkspaceNamesOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
-	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
-
+	    //	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, OntoQueryUtilthis.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), KnowledgeEngine.ontoDB);
+	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, OntoQueryUtil.ObjectNameSpace, OntoQueryUtil.GlobalNameSpace, KnowledgeEngine.ontoDB);
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage() + "\n" + e.toString());
@@ -113,10 +123,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("Sequence size is " + allSubSeqs.size());
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
-
 	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
 	    
-
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
 	    // if stuck (fail), move to the next subActionSequence
@@ -179,7 +187,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			}
 			//private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
 		    }
-
 		    
 		    ca = highAct.getNextCUAction(ni);
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
@@ -291,29 +298,29 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	
 	// create MoveAndDetectionActionUnit
 	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
-	com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "xCoord",  workspace);
+	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
 	
 	spatialInfo.pose.position.x = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "yCoord",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord",  workspace);
 	spatialInfo.pose.position.y = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "zCoord",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord",  workspace);
 	spatialInfo.pose.position.z = stm.getFloat();
 	
 	
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "widthOfObject",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "widthOfObject",  workspace);
 	spatialInfo.w = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "heightOfObject",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "heightOfObject",  workspace);
 	spatialInfo.h = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "lengthOfObject",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "lengthOfObject",  workspace);
 	spatialInfo.l = stm.getFloat();
 	
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qu",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qu",  workspace);
 	spatialInfo.pose.orientation.w = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qx",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qx",  workspace);
 	spatialInfo.pose.orientation.x = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qy",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qy",  workspace);
 	spatialInfo.pose.orientation.y = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qz",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qz",  workspace);
 	spatialInfo.pose.orientation.z = stm.getFloat();
 
 	
@@ -339,15 +346,26 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	PutOnTrayActionUnit trayAction = new PutOnTrayActionUnit("side");
 
 	// FoldArmActionUnit
-	FoldArmActionUnit foldArmAction = new FoldArmActionUnit();
+	//FoldArmActionUnit foldArmAction = new FoldArmActionUnit();
 
 	// create BackToUserActionUnit
+	System.out.println("Create MoveActionUnit 1");
+	Pose2D posUser = OntoQueryUtil.parsePose2D(userPose);
+	System.out.println("Create MoveActionUnit 2");
+	MoveActionUnit mau = new MoveActionUnit(posUser);
+	System.out.println("Create MoveActionUnit 3");
+
+	//TODO: RE_ORDERED FOR TESTING
+
 	
+	//MoveActionUnit mau1 = new MoveActionUnit(OntoQueryUtil.parsePose2D("home"));
+	//actionList.appendHighLevelAction(mau1);
 
 	actionList.appendHighLevelAction(mdAction);
 	actionList.appendHighLevelAction(mgAction);
 	actionList.appendHighLevelAction(trayAction);
-	actionList.appendHighLevelAction(foldArmAction);
+	//actionList.appendHighLevelAction(foldArmAction);
+	actionList.appendHighLevelAction(mau);
 		
 	System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
 	return actionList;
@@ -389,33 +407,33 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 
     private SRSFurnitureGeometry getFurnitureGeometryOf(Individual workspace) {
 	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
-	com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "xCoord",  workspace);
+	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
 	spatialInfo.pose.position.x = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "yCoord",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord",  workspace);
 	spatialInfo.pose.position.y = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "zCoord",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord",  workspace);
 	spatialInfo.pose.position.z = stm.getFloat();
 			 
 	
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "widthOfObject",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "widthOfObject",  workspace);
 	spatialInfo.w = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "heightOfObject",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "heightOfObject",  workspace);
 	spatialInfo.h = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "lengthOfObject",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "lengthOfObject",  workspace);
 	spatialInfo.l = stm.getFloat();
 	
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qu",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qu",  workspace);
 	spatialInfo.pose.orientation.w = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qx",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qx",  workspace);
 	spatialInfo.pose.orientation.x = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qy",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qy",  workspace);
 	spatialInfo.pose.orientation.y = stm.getFloat();
-	stm = ontoDB.getPropertyOf(ontoQueryUtil.getGlobalNameSpace(), "qz",  workspace);
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qz",  workspace);
 	spatialInfo.pose.orientation.z = stm.getFloat();
 	return spatialInfo;
     }
 
-    private void initTask(String targetContent, Pose2D userPose) {
+    private void initTask(String targetContent, String userPose) {
 	acts = new ArrayList<ActionTuple>();
 	
 	setTaskTarget(targetContent);
@@ -445,4 +463,5 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     private int currentSubAction;
     private Pose recentDetectedObject;    // required by MoveAndGraspActionUnit
     private String lastActionType;        // used to handle feedback from last action executed
+    private String userPose;
 }

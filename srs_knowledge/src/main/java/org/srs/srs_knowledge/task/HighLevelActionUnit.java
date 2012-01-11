@@ -49,12 +49,12 @@ public abstract class HighLevelActionUnit {
 	}
 	//currentActionInd++;
 
-	if ( currentActionInd+1 >= 0 && currentActionInd+1 < actionUnits.size() ) {
+	if ( currentActionInd >= 0 && currentActionInd < actionUnits.size() ) {
 	    if(statusLastStep) {
-		return nextActionMapIfSuccess[currentActionInd+1];
+		return nextActionMapIfSuccess[currentActionInd];
 	    }
 	    else {
-		return nextActionMapIfFail[currentActionInd+1];
+		return nextActionMapIfFail[currentActionInd];
 	    }
 	}
 	else {

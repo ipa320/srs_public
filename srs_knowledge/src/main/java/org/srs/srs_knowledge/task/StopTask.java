@@ -17,13 +17,13 @@ import ros.communication.*;
 
 public class StopTask extends Task {
 
-    public StopTask(OntologyDB onto) {
+    public StopTask() {
 	// empty constructor.
 	acts = new ArrayList<ActionTuple>();     // to be deprecated and replaced with allSubSeqs
 	
 	setTaskType(TaskType.UNSPECIFIED);
 	currentAction = null;
-	ontoDB = onto;
+	//ontoDB = onto;
     }
 
     public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {

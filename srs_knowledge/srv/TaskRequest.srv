@@ -15,7 +15,8 @@ string content
 
 # Or other task information
 
-geometry_msgs/Pose2D userPose
+# geometry_msgs/Pose2D userPose
+string userPose
 
 ---
 

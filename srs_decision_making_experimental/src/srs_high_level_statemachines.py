@@ -127,20 +127,22 @@ class sm_detect_asisted_region(SRS_StateMachine):
         smach.StateMachine.__init__(self,
                                     outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
-                                    output_keys=['target_object'])
+                                    output_keys=['target_object','target_object_pose'])
         self.customised_initial("sm_detect_asisted_region")
-        self.userdata.key_region=""
+        self.userdata.key_region=''
+        self.userdata.target_object=''
+        self.userdata.target_object_pose=''
 
         with self:
-            smach.StateMachine.add('DETECT_OBJECT', detect_object(),
-                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT', 'no_more_retries':'INTERVENTION', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'object_name':'target_object_name', 'object':'target_object'})
+            smach.StateMachine.add('DETECT_OBJECT-2', detect_object(),
+                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-2', 'no_more_retries':'INTERVENTION', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose','key_region':'key_region' })
                     # detection need to be updated to take the key region
                     # remapping={'object_name':'target_object_name', 'object':'target_object_pose', 'key_region':'key_region'})
                     
                     
             smach.StateMachine.add('INTERVENTION', intervention_key_region(),
-                    transitions={'retry':'DETECT_OBJECT', 'no_more_retry':'not_completed','failed':'failed', 'preempted':'preempted'},
+                    transitions={'retry':'DETECT_OBJECT-2', 'no_more_retry':'not_completed','failed':'failed', 'preempted':'preempted'},
                     remapping={'semi_autonomous_mode':'semi_autonomous_mode','key_region':'key_region'})
         
                                    
@@ -151,22 +153,22 @@ class sm_detect_asisted_pose_region(SRS_StateMachine):
         smach.StateMachine.__init__(self, 
                                     outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
-                                    output_keys=['target_object'])
+                                    output_keys=['target_object','target_object_pose'])
         self.customised_initial("sm_detect_asisted_pose_region")
         self.userdata.intermediate_pose=""
             
       
         with self:
-            smach.StateMachine.add('DETECT_OBJECT', sm_detect_asisted_region(),
+            smach.StateMachine.add('DETECT_OBJECT-1', sm_detect_asisted_region(),
                     transitions={'succeeded':'succeeded', 'not_completed':'INTERVENTION', 'failed':'failed','preempted':'preempted'},
-                    remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_object_name':'target_object_name','target_object':'target_object' })
+                    remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_object_name':'target_object_name','target_object':'target_object','target_object_pose':'target_object_pose' })
                 
             smach.StateMachine.add('INTERVENTION', intervention_base_pose(),
                     transitions={'retry':'INTERMEDIATE_MOVE', 'no_more_retry':'not_completed','failed':'failed','preempted':'preempted'},
                     remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'intermediate_pose':'intermediate_pose'})
                 
             smach.StateMachine.add('INTERMEDIATE_MOVE', approach_pose_without_retry(),
-                    transitions={'succeeded':'DETECT_OBJECT', 'not_completed':'INTERVENTION', 'failed':'failed','preempted':'preempted'},
+                    transitions={'succeeded':'DETECT_OBJECT-1', 'not_completed':'INTERVENTION', 'failed':'failed','preempted':'preempted'},
                     remapping={'base_pose':'intermediate_pose'})    
             
 
@@ -180,16 +182,16 @@ class sm_pick_object_asisted(SRS_StateMachine):
         smach.StateMachine.__init__(self, 
             outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
-                                    output_keys=['target_object','grasp_categorisation'])
+                                    output_keys=['target_object', 'target_object_old_pose', 'grasp_categorisation'])
         
         self.customised_initial("sm_pick_object_asisted")
-        self.userdata.grasp_catogorisation=""
+        self.userdata.grasp_categorisation=""
         self.userdata.target_object_old_pose=""
         
         with self:
             smach.StateMachine.add('DETECT_OBJECT', sm_detect_asisted_pose_region(),
                     transitions={'succeeded':'SELECT_GRASP', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_object_name':'target_object_name','target_object':'target_object'})
+                    remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_object_name':'target_object_name','target_object':'target_object', 'target_object_pose':'target_object_old_pose'})
     
             smach.StateMachine.add('SELECT_GRASP', select_grasp(),
                     transitions={'succeeded':'GRASP_GENERAL', 'failed':'failed', 'preempted':'preempted'},

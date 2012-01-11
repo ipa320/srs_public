@@ -240,28 +240,28 @@ class srs_detection(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
-                                    output_keys=['target_object'])
+                                    output_keys=['target_object_pose'])
         self.userdata.action_name = 'detection'
         add_common_states(self)
         
         with self:
             smach.StateMachine.add('ACTION', co_sm_detection,
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
-                    remapping={'semi_autonomous_mode':'semi_autonomous_mode','target_object_name':'target_object_name','target_object_pose':'target_object_pose' })
+                    remapping={'semi_autonomous_mode':'semi_autonomous_mode','target_object_name':'target_object_name','target_object_pose':'target_object_pose'  })
 
 class srs_grasp(smach.StateMachine):
     
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','semi_autonomous_mode'],
-                                    output_keys=['grasp_categorisation', 'target_object'])
+                                    output_keys=['grasp_categorisation', 'target_object_old_pose'])
         self.userdata.action_name = 'grasp'
         add_common_states(self)
         
         with self:
             smach.StateMachine.add('ACTION', co_sm_grasp,
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
-                    remapping={'target_object_name':'target_object_name','semi_autonomous_mode':'semi_autonomous_mode','target_object':'target_object','grasp_categorisation':'grasp_categorisation'})
+                    remapping={'target_object_name':'target_object_name','semi_autonomous_mode':'semi_autonomous_mode','target_object_old_pose':'target_object_old_pose','grasp_categorisation':'grasp_categorisation'})
 
 
 class srs_put_on_tray(smach.StateMachine):

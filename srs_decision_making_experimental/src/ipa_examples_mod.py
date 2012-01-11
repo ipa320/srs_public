@@ -240,8 +240,8 @@ class detect_object(smach.State):
         smach.State.__init__(
             self,
             outcomes=['succeeded','retry','no_more_retries','failed','preempted'],
-            input_keys=['object_name'],
-            output_keys=['object'])
+            input_keys=['object_name','key_region'],
+            output_keys=['object','object_pose'])
 
         self.object_list = DetectionArray()
         self.max_retries = max_retries
@@ -253,7 +253,7 @@ class detect_object(smach.State):
         self.torso_poses.append("back_right_extreme")
         self.torso_poses.append("back_extreme")
         self.torso_poses.append("back_left_extreme")
-        
+        self.listener = tf.TransformListener()
 
     def execute(self, userdata):
         
@@ -261,7 +261,16 @@ class detect_object(smach.State):
             self.service_preempt()
             return 'preempted'
         
+        # checking extra information
+        if userdata.key_region == '':
+            pass #normal detection
+        else:
+            pass #detection in bounding box specified by key_region
+        
+        #add initial value to output keys
         userdata.object = ""
+        userdata.object_pose=""
+        
         # determine object name
         if self.object_name != "":
             object_name = self.object_name
@@ -356,7 +365,21 @@ class detect_object(smach.State):
 
         # we succeeded to detect an object
         userdata.object = obj
+        object_pose_map = PoseStamped()
         self.retries = 0
+        
+        try:
+            #transform object_pose into base_link
+            object_pose_in = obj.pose
+            object_pose_in.header.stamp = self.listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
+            object_pose_map = self.listener.transformPose("/map", object_pose_in)
+        except rospy.ROSException, e:
+            print "Transformation not possible: %s"%e
+            return 'failed'
+        
+        print object_pose_map
+        
+        userdata.object_pose=object_pose_map
         
         if self.preempt_requested():
             self.service_preempt()

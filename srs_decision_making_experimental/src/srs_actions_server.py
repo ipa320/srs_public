@@ -215,7 +215,7 @@ class SRS_DM_ACTION(object):
                                                 'env_object_update':'SM_ENV_OBJECT_UPDATE'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
-                                               'target_object':'target_object',
+                                               'target_object_pose':'target_object_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode',
                                                'grasp_categorisation':'grasp_categorisation',
                                                'target_object_name_list':'target_object_name_list',
@@ -231,13 +231,13 @@ class SRS_DM_ACTION(object):
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object':'target_object'})
+                                               'target_object_pose':'target_object_pose' })
        
             smach.StateMachine.add('SM_GRASP', srs_grasp(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_pose':'target_object_pose',
+                                              'target_object_old_pose':'target_object_pose',
                                               'grasp_categorisation':'grasp_categorisation' })
             
             smach.StateMachine.add('SM_PUT_ON_TRAY', srs_put_on_tray(),

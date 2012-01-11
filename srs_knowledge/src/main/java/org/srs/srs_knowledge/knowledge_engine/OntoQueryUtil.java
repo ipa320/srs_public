@@ -48,10 +48,22 @@ import java.util.Set;
  */
 public class OntoQueryUtil 
 {
+    public static ArrayList<Individual> getWorkspaceOfObject(String objectClassName, String objectNameSpace, String globalNameSpace, OntologyDB onto) { 
+	// TODO: 
+	ArrayList<String> workspaceList = getWorkspaceNamesOfObject(objectClassName, objectNameSpace, globalNameSpace, onto);
+	ArrayList<Individual> workspaceIndList = new ArrayList<Individual>();
+
+	for(String s : workspaceList) {
+	    workspaceIndList.add(onto.getModel().getIndividual(objectNameSpace + s));
+	}
+
+	return workspaceIndList;
+    }
+
     /**
      * e.g. get workspace of milk box
      */
-    public static ArrayList<String> getWorkspaceOfObject(String objectClassName, String objectNameSpace, String globalNameSpace, OntologyDB onto) { 
+    public static ArrayList<String> getWorkspaceNamesOfObject(String objectClassName, String objectNameSpace, String globalNameSpace, OntologyDB onto) { 
 	ArrayList<String> workspaceList = new ArrayList<String>();
 
 	String className = globalNameSpace + objectClassName; 
@@ -69,7 +81,7 @@ public class OntoQueryUtil
 	
 	// list possible workspace(s), e.g. tables
 	ArrayList<String> otherWorkspaces = tempGetFurnituresLinkedToObject(objectClassName);
-	workspaceList.addAll(otherWorkspaces);
+	//workspaceList.addAll(otherWorkspaces);
 
 	Iterator<Individual> otherInstances;
 	for(int i = 0; i < otherWorkspaces.size(); i++) {
@@ -111,10 +123,12 @@ public class OntoQueryUtil
 	System.out.println("Create OntoQueryUtil: this.objectNameSpace is : " + this.objectNameSpace + "  this.globalNameSpace is  : " + this.globalNameSpace );
     }
 
+
+    // return ipa-kitchen in the srs project. 
     public String getObjectNameSpace() {
 	return this.objectNameSpace;
     }
-
+    // return srs namespace
     public String getGlobalNameSpace() {
 	return this.globalNameSpace;
     }

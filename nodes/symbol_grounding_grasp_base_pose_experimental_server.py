@@ -12,7 +12,28 @@ from tf.transformations import euler_from_quaternion
 
 
 
+	
+
+
 def handle_symbol_grounding_grasp_base_pose_experimental(req):
+
+
+	#get robot base pose
+	listener = tf.TransformListener()
+	listener.waitForTransform("/map", "/base_link", rospy.Time(0), rospy.Duration(4.0))
+	rospy.sleep(1.0)
+	(trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
+		
+
+
+	rb_pose = Pose2D()
+	rb_pose.x = trans[0]
+	rb_pose.y = trans[1]
+	rb_pose_rpy = tf.transformations.euler_from_quaternion(rot)
+	rb_pose.theta = rb_pose_rpy[2]
+	print rb_pose
+
+
 
 	#membership functions
 	mf1_x = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.75, 0.5, 0.25, 0]
@@ -34,9 +55,9 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	target_obj_th = target_obj_rpy[2]
 	#rospy.loginfo(target_obj_th)
 
-	robot_base_pose_x = req.rb_pose.x
-	robot_base_pose_y = req.rb_pose.y
-	robot_base_pose_th = req.rb_pose.theta
+	robot_base_pose_x = rb_pose.x
+	robot_base_pose_y = rb_pose.y
+	robot_base_pose_th = rb_pose.theta
 
 	parent_obj_x = req.parent_obj_geometry.pose.position.x
 	parent_obj_y = req.parent_obj_geometry.pose.position.y
@@ -74,13 +95,14 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	delta_y = math.sqrt((target_obj_x - best_grasp_pose_x) ** 2 + (target_obj_y - best_grasp_pose_y) ** 2) * math.sin(target_obj_th - robot_base_pose_th) 
 	delta_th = robot_base_pose_th - parent_obj_th
 
+
 	if 80.0 / 180.0 * math.pi <= delta_th <= 100.0 / 180.0 * math.pi:
 		delta_th = delta_th - 0.5 * math.pi
 	elif 170.0 / 180.0 * math.pi <= delta_th <= 190.0 / 180.0 * math.pi:
 		delta_th = delta_th - math.pi
 	elif 260.0 / 180.0 * math.pi <= delta_th <= 280.0 / 180.0 * math.pi:
 		delta_th = delta_th - 1.5 * math.pi
-	#rospy.loginfo([delta_x, delta_y, delta_th])
+	rospy.loginfo([delta_x, delta_y, delta_th])
 
 	#grasp base pose list for right grasp
 	right_grasp_base_pose_list = list()
@@ -254,6 +276,7 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 
 	#the overall reachability will be the maximum of three grasp reachabilities.
 	reach = max(right_grasp_reach, front_grasp_reach, top_grasp_reach)
+
 	
 	grasp_base_pose_list = list()
 	if right_grasp_reach == reach:
@@ -342,4 +365,4 @@ def symbol_grounding_grasp_base_pose_experimental_server():
 
 
 if __name__ == "__main__":
-    symbol_grounding_grasp_base_pose_experimental_server()
+	symbol_grounding_grasp_base_pose_experimental_server()

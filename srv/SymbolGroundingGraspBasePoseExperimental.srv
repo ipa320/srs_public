@@ -1,5 +1,4 @@
 geometry_msgs/Pose target_obj_pose
-geometry_msgs/Pose2D rb_pose
 SRSFurnitureGeometry parent_obj_geometry
 SRSFurnitureGeometry[] furniture_geometry_list
 ---

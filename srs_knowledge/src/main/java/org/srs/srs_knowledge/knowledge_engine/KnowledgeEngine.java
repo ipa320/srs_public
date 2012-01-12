@@ -35,8 +35,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 //import org.apache.commons.logging.Log;
 
-class KnowledgeEngine
+public class KnowledgeEngine
 {
+    public static Ros ros;
+    public static OntologyDB ontoDB;
+
+    public static NodeHandle n;
+
     /*
     public KnowledgeEngine(String nodeName, String ontologyFile)
     {
@@ -110,6 +115,7 @@ class KnowledgeEngine
 	}
 
 	ros.spin();
+
 	return true;
     }
 
@@ -156,9 +162,12 @@ class KnowledgeEngine
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	}
 
-	ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
+	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
+	OntoQueryUtil.ObjectNameSpace = mapNamespace;
+	OntoQueryUtil.GlobalNameSpace = globalNamespace;
 	
 	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
+
     }
 
     public void testOnto(String className)
@@ -299,6 +308,7 @@ class KnowledgeEngine
 	    System.out.println("No further action can be planned. Terminate the task. ");
 
 	    res.nextAction = new CUAction(); // empty task
+	    //res.nextAction.status = 0;
 	    return res;	    
 	}
 	//if(at.getActionName().equals("finish_success")) {
@@ -423,7 +433,7 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new MoveTask(request.content, null, ontoDB);
+	    currentTask = new MoveTask(request.content, null);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
 	else if(request.task.equals("get") || request.task.equals("search")){
@@ -431,15 +441,16 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    //GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
-	    //currentTask = (Task)got;
+
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, n);
+	    currentTask = (Task)got;
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    
-	    currentTask = new TestTask();
-	    this.loadPredefinedTasksForTest();
+	    //currentTask = new TestTask();
+	    //this.loadPredefinedTasksForTest();
 	    
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
@@ -447,15 +458,15 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new ChargingTask(ontoDB);
+	    currentTask = new ChargingTask();
 	    System.out.println("Created CurrentTask " + "charge ");
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
-	else if(request.task.equals("charging")) {
+	else if(request.task.equals("stop")) {
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new StopTask(ontoDB);
+	    currentTask = new StopTask();
 	    System.out.println("Created CurrentTask " + " STOP ");
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
@@ -840,6 +851,7 @@ class KnowledgeEngine
 	//knowEng.loadPredefinedTasksForTest();
 	if (knowEng.init(configFile)) {
 	    System.out.println("OK");
+	
 	}
 	else {
 	    System.out.println("Something wrong with initialisation");
@@ -848,9 +860,6 @@ class KnowledgeEngine
 
     private Task currentTask;
     private int currentSessionId = 1;
-    private OntologyDB ontoDB;
-    private Ros ros;
-    private NodeHandle n;
     private String nodeName;
 
     private Properties config;

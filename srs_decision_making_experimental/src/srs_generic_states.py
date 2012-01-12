@@ -289,6 +289,29 @@ class semantic_dm(smach.State):
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
                 print 'Result return failed'
                 resultLastStep = 1
+
+            elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stop' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preemptied':
+
+
+
+
+                rospy.wait_for_service('task_request')
+                try:
+                    requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
+                    #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
+                    res = requestNewTask('stop', None, None)
+                    print res.sessionId
+                    current_task_info.session_id = res.sessionId
+                    if res.result == 1:
+                        return 'failed'
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s"%e
+                    return 'failed'
+                resultLastStep = 0
+
+
+                
+                
                 #if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_approach_pose_assisted':
                 #    result = (1, 0, 0)
                 #elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_detect_asisted_pose_region':

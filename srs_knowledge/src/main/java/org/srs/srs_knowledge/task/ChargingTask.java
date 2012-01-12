@@ -17,8 +17,9 @@ import org.srs.srs_knowledge.task.Task;
 
 public class ChargingTask extends org.srs.srs_knowledge.task.Task
 {
-    public ChargingTask(OntologyDB onto) 
+    public ChargingTask() 
     {
+	/*
 	if (onto != null) {
 	    System.out.println("SET ONTOLOGY DB");
 	    this.ontoDB = onto;
@@ -27,7 +28,7 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("NULL ---- SET ONTOLOGY DB");
 	    this.ontoDB = new OntologyDB();
 	}
-	
+	*/
 	this.initTask();
 	setTaskType(TaskType.MOVETO_LOCATION);
     }
@@ -68,13 +69,13 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 	    + "ipa-kitchen-map:" + targetContent
 	    + " srs:orientationTheta ?theta .}";
 	
-	if (this.ontoDB == null) {
+	if (KnowledgeEngine.ontoDB == null) {
 	    System.out.println("Ontology Database is NULL");
 	    return false;
 	}
 	
 	try {
-	    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix
+	    ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix
 								   + queryString);
 	    if (rset.size() == 0) {
 		System.out.println("ERROR: No move target found from database");

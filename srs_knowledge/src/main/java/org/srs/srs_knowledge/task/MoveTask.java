@@ -17,8 +17,9 @@ import org.srs.srs_knowledge.task.Task;
 
 public class MoveTask extends org.srs.srs_knowledge.task.Task
 {
-	public MoveTask(String targetContent, Pose2D userPose, OntologyDB onto) 
+	public MoveTask(String targetContent, Pose2D userPose) 
 	{
+	    /*
 	    if (onto != null) {
 		System.out.println("SET ONTOLOGY DB");
 		this.ontoDB = onto;
@@ -27,7 +28,7 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 		System.out.println("NULL ---- SET ONTOLOGY DB");
 		this.ontoDB = new OntologyDB();
 	    }
-	    
+	    */
 	    this.initTask(targetContent, userPose);
 	    setTaskType(TaskType.MOVETO_LOCATION);
 	}
@@ -89,13 +90,13 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 					+ " srs:orientationTheta ?theta .}";
 			System.out.println(prefix + queryString + "\n");
 
-			if (this.ontoDB == null) {
+			if (KnowledgeEngine.ontoDB == null) {
 				System.out.println("Ontology Database is NULL");
 				return false;
 			}
 
 			try {
-			    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix
+			    ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix
 										   + queryString);
 			    if (rset.size() == 0) {
 				System.out.println("ERROR: No move target found from database");

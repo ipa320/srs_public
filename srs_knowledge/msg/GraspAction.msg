@@ -1,6 +1,6 @@
 bool ifGrasp
 
-Point32 rough_center
+geometry_msgs/Point32 rough_center
 float32 confidence_level
 float32 radius_region
 

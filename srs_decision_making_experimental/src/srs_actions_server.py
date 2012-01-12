@@ -340,7 +340,7 @@ class SRS_DM_ACTION(object):
         try:
             requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
-            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None)
+            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
 	    print res.sessionId
 	    current_task_info.session_id = res.sessionId
             if res.result == 1:

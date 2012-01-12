@@ -268,7 +268,7 @@ class srs_put_on_tray(smach.StateMachine):
     
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
-                                    input_keys=['grasp_catogorisation'])
+                                    input_keys=['grasp_categorisation'])
         self.userdata.action_name = 'put_on_tray'
         add_common_states(self)
         

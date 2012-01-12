@@ -7,21 +7,25 @@ import tf
 from geometry_msgs.msg import *
 import time
 
+rospy.init_node('test')
 
-robot_pose = PoseStamped()
-zero_pose = PoseStamped()
+listener = tf.TransformListener()
+
+rospy.sleep(5)
+
+try:
+    (trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
+except rospy.ROSException, e:
+    print "Transformation not possible: %s"%e
+
+rb_pose = Pose2D()
+rb_pose.x = trans[0]
+rb_pose.y = trans[1]
+rb_pose_rpy = tf.transformations.euler_from_quaternion(rot)
+rb_pose.theta = rb_pose_rpy[2]
+print rb_pose
 
 
-
-zero_pose.pose.position.x = 0.0;
-zero_pose.pose.position.y = 0.0;
-zero_pose.pose.position.z = 0.0;
-zero_pose.pose.orientation = [0,0,0,1]
-zero_pose.header.frame_id = 'base_link'
-
-robot_pose = tf.TransformListener().transformPose('/base_laser', zero_pose)
-
-print robot_pose
 
 """
 

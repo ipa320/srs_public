@@ -184,7 +184,7 @@ class co_sm_detection(smach.Concurrence):
 co_sm_grasp = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
                  input_keys=['target_object_name', 'semi_autonomous_mode'],
-                 output_keys=['target_object_old_pose', 'grasp_catogorisation'],
+                 output_keys=['target_object_old_pose', 'grasp_categorisation'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
 
@@ -201,7 +201,7 @@ class co_sm_grasp(smach.Concurrence):
         smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
                  input_keys=['target_object_name', 'semi_autonomous_mode'],
-                 output_keys=['target_object_old_pose', 'grasp_catogorisation'],
+                 output_keys=['target_object_old_pose', 'grasp_categorisation'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
                  #detection can be stopped at any time
@@ -221,7 +221,7 @@ class co_sm_grasp(smach.Concurrence):
 
 co_sm_transfer_to_tray = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['grasp_catogorisation'],
+                 input_keys=['grasp_categorisation'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
 with co_sm_transfer_to_tray:
@@ -234,7 +234,7 @@ class co_sm_transfer_to_tray(smach.Concurrence):
     def __init__(self):
         smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['grasp_catogorisation'],
+                 input_keys=['grasp_categorisation'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
                  #detection can be stopped at any time

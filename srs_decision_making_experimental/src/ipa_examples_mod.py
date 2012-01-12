@@ -43,6 +43,7 @@ smach is slow on passing large amount of userdata. Hence they are stored under g
 srs_dm_action perform one task at a time and maintain a unique session id.  
 """
 
+listener = tf.TransformListener()
 
 class goal_structure():   
     
@@ -96,6 +97,22 @@ class goal_structure():
         
         self.__init__()
         gc.collect()
+        
+    def get_robot_pos(self):
+        try:
+            (trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
+        except rospy.ROSException, e:
+            print "Transformation not possible: %s"%e
+            return None
+            
+        rb_pose = Pose2D()
+        rb_pose.x = trans[0]
+        rb_pose.y = trans[1]
+        rb_pose_rpy = tf.transformations.euler_from_quaternion(rot)
+        rb_pose.theta = rb_pose_rpy[2]
+        
+        return rb_pose
+
         
 
 current_task_info = goal_structure() 
@@ -253,7 +270,7 @@ class detect_object(smach.State):
         self.torso_poses.append("back_right_extreme")
         self.torso_poses.append("back_extreme")
         self.torso_poses.append("back_left_extreme")
-        self.listener = tf.TransformListener()
+        #self.listener = tf.TransformListener()
 
     def execute(self, userdata):
         
@@ -368,11 +385,13 @@ class detect_object(smach.State):
         object_pose_map = PoseStamped()
         self.retries = 0
         
+        global listener
+        
         try:
             #transform object_pose into base_link
             object_pose_in = obj.pose
-            object_pose_in.header.stamp = self.listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
-            object_pose_map = self.listener.transformPose("/map", object_pose_in)
+            object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
+            object_pose_map = listener.transformPose("/map", object_pose_in)
         except rospy.ROSException, e:
             print "Transformation not possible: %s"%e
             return 'failed'
@@ -408,19 +427,20 @@ class select_grasp(smach.State):
         """
         self.height_switch = 0.5 # Switch to select top or side grasp using the height of the object over the ground in [m].
         
-        self.listener = tf.TransformListener()
+        #self.listener = tf.TransformListener()
         
         #default grasp categorisation
         self.grasp_categorisation = 'side'
 
     def execute(self, userdata):
         
+        global listener
         try:
             # transform object_pose into base_link
             object_pose_in = userdata.object.pose
             print object_pose_in
-            object_pose_in.header.stamp = self.listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
-            object_pose_bl = self.listener.transformPose("/base_link", object_pose_in)
+            object_pose_in.header.stamp = listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
+            object_pose_bl = listener.transformPose("/base_link", object_pose_in)
         except rospy.ROSException, e:
             print "Transformation not possible: %s"%e
             return 'failed'
@@ -451,7 +471,7 @@ class grasp_general(smach.State):
         self.max_retries = max_retries
         self.retries = 0
         self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
-        self.listener = tf.TransformListener()
+        #self.listener = tf.TransformListener()
         self.stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 
     def callIKSolver(self, current_pose, goal_pose):
@@ -472,6 +492,7 @@ class grasp_general(smach.State):
             self.service_preempt()
             return 'preempted'
         
+        global listener
         # check if maximum retries reached
         if self.retries > self.max_retries:
             self.retries = 0
@@ -479,8 +500,8 @@ class grasp_general(smach.State):
         
         # transform object_pose into base_link
         object_pose_in = userdata.object.pose
-        object_pose_in.header.stamp = self.listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
-        object_pose_bl = self.listener.transformPose("/base_link", object_pose_in)
+        object_pose_in.header.stamp = listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
+        object_pose_bl = listener.transformPose("/base_link", object_pose_in)
         
         
         if userdata.grasp_categorisation == 'side':
@@ -619,8 +640,17 @@ class select_post_table_pose(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed','preempted'], output_keys=['post_table_pos'])
     def execute(self, userdata):
-        userdata.post_table_pos='home'
-        return 'succeeded'
+        global current_task_info
+        pos=current_task_info.get_robot_pos()
+        
+        if pos ==None:
+            userdata.post_table_pos=''
+            return 'failed'
+        else:
+            pos.x = pos.x + 0.5 * cos(pos.theta)
+            pos.y = pos.y + 0.5 * sin(pos.theta)
+            userdata.post_table_pos = pos
+            return 'succeeded'
         
 
 class select_pose(smach.State):

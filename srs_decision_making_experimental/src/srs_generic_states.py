@@ -77,57 +77,12 @@ They should be imported from other SRS components in the future
 from ipa_examples_mod import *
 
 
-
-"""
-current_task_info is a global shared memory for exchanging task information among statuses 
-
-smach is slow on passing large amount of userdata. Hence they are stored under goal_structure as global variable
-
-srs_dm_action perform one task at a time and maintain a unique session id.  
-"""
-
-
-class goal_structure():   
-	
-    def __init__(self):
-        
-        #goal of the high level task
-        self.task_name =""
-        
-        #task parameter
-        self.task_parameter=""
-        
-        #Information about last step, use Last_step_info_msg 
-        self.last_step_info = list()
-        
-        #customised pre-empty signal received or not
-        self.preemptied = False
-        
-        #reference to the action server
-        self._as=""
-        
-        ## backward compatible need to be revised after the integration meeting         
-        #feedback publisher, intervention required
-        self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)
-        #feedback publisher, operational state
-        self.pub_fb2 = rospy.Publisher('fb_executing_state', String)
-        ## backward compatible need to be revised after the integration meeting  
-    
-    def reset(self):
-        
-        self.__init__()
-        gc.collect()
-        
-
-current_task_info = goal_structure() 
-
-
 # get a new base pose from UI, this can be used to adjust scan position, grasp position or as a intermediate goal for navigation 
 # output is a intermediate pose for navigation or a new scan position
 class intervention_base_pose(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed'],
+        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed', 'preempted' ],
                                 input_keys=['semi_autonomous_mode'],
                                 output_keys=['intermediate_pose'])
         global current_task_info         
@@ -146,7 +101,7 @@ class intervention_base_pose(smach.State):
                 _feedback.current_state = "need user intervention for base pose"
                 _feedback.solution_required = True
                 _feedback.exceptional_case_id = 1
-                current_task_info._as.publish_feedback(_feedback)
+                current_task_info._srs_as._as.publish_feedback(_feedback)
                 rospy.sleep(1)
                 
                 self.count += 1 
@@ -182,14 +137,14 @@ class intervention_base_pose(smach.State):
             """
             userdata.intermediate_pose = "kitchen"   
             return 'no_more_retry'
-            
+
 
 #get a interested region from UI or KB and then pass it to the object detector
 #intervention to highlight key interested region
 class intervention_key_region(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed'],
+        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed','preempted'],
                                 input_keys=['semi_autonomous_mode'],
                                 output_keys=['key_region'])
         global current_task_info         
@@ -218,14 +173,13 @@ class intervention_key_region(smach.State):
             userdata.key_region = ""   
             return 'no_more_retry'
             
-        
 
 # get a grasp configuration from UI or KB and then pass it to the manipulation module
 # user intervention on specific configuration for grasp
 class intervention_grasp_selection(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed'],
+        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed','preempted'],
                                 input_keys=['semi_autonomous_mode'],                                
                                 output_keys=['grasp_conf'])
         global current_task_info         
@@ -262,7 +216,7 @@ class intervention_grasp_selection(smach.State):
 class user_intervention_action_sequence(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed'],
+        smach.State.__init__(self, outcomes=['retry','no_more_retry','failed','preempted'],
                                 output_keys=['action_sequence'])
         global current_task_info         
         self.pub_fb = current_task_info.pub_fb
@@ -282,12 +236,14 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','env_object_update','deliver_object','charging'],
-                             input_keys=['target_object_name','target_base_pose','target_object_pose'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','put_on_tray','env_object_update'],
+                             input_keys=['target_object_name','target_base_pose','target_object_pose','grasp_categorisation','target_object_pose_list'],
                              output_keys=['target_object_name',
                                           'target_base_pose',
                                           'semi_autonomous_mode',
-                                          'target_object_pose'])
+                                          'grasp_categorisation',                                          
+                                          'target_object_pose',
+                                          'scan_pose_list'])
         
         
         self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)
@@ -512,32 +468,3 @@ class prepare_robot(smach.State):
 
         return 'succeeded'
     
-#verify_object FROM PRO+IPA, the interface still need to be clarified 
-class verify_object(smach.State):
-
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['object_verified','no_object_verified','failed'],
-                                input_keys=['reference_to_map','object_name'],
-                                output_keys=['updated_object'])
-        
-    def execute(self,userdata):
-        # user specify key region on interface device for detection
-        """
-        Extract objects from current point map
-        """
-        updated_object = ""   #updated pose information about the object
-        return 'failed'  
-
-#scan environment from IPA, the interface still need to be clarified    
-class update_env_model(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','failed'],
-                                output_keys=['reference_to_map'])
-        
-    def execute(self,userdata):
-        # user specify key region on interface device for detection
-        """
-        Get current point map
-        """
-        map_reference = ""   
-        return 'succeeded'      

@@ -254,10 +254,6 @@ public class KnowledgeEngine
 
 	//ActionTuple at = null;
 
-
-
-
-
 	/*
 	if(request.stateLastAction.length == 3) {
 	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {

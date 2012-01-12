@@ -27,6 +27,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import ros.pkg.geometry_msgs.msg.Pose;
+import ros.pkg.std_msgs.msg.String;
 import java.util.Properties;
 
 import java.io.*;
@@ -66,4 +67,36 @@ public class RosUtil {
 	}
 	return pos;
     }
+    
+    public static void testPub(java.lang.String c) throws RosException,Exception{
+
+    	Publisher<ros.pkg.std_msgs.msg.String> pub =
+    	       KnowledgeEngine.n.advertise("/pub", new ros.pkg.std_msgs.msg.String(), 100);
+
+    	  ros.pkg.std_msgs.msg.String m = new ros.pkg.std_msgs.msg.String();
+    	  m.data = c;
+	  for (int i = 0; i < 1000; i++) 
+	      {
+		  pub.publish(m);
+		  Thread.sleep(1000);
+	      }
+    	  pub.shutdown();
+	 
+    }
+    public static java.lang.String testSub() throws RosException,Exception {
+	Subscriber.QueueingCallback<ros.pkg.std_msgs.msg.String> callback =
+	    new Subscriber.QueueingCallback<ros.pkg.std_msgs.msg.String>();
+	Subscriber<ros.pkg.std_msgs.msg.String> sub =
+	    KnowledgeEngine.n.subscribe("/topic_name", new ros.pkg.std_msgs.msg.String(), callback, 10);
+	
+	KnowledgeEngine.n.spinOnce();
+	java.lang.String ret = "";
+	while (!callback.isEmpty()) {
+	    ret = callback.pop().data;
+	    System.out.println(ret);
+	}
+	sub.shutdown();
+	return ret;
+    }
+
 }

@@ -115,6 +115,7 @@ public class KnowledgeEngine
 	}
 
 	ros.spin();
+
 	return true;
     }
 
@@ -166,6 +167,7 @@ public class KnowledgeEngine
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
 	
 	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
+
     }
 
     public void testOnto(String className)
@@ -848,6 +850,7 @@ public class KnowledgeEngine
 	//knowEng.loadPredefinedTasksForTest();
 	if (knowEng.init(configFile)) {
 	    System.out.println("OK");
+	
 	}
 	else {
 	    System.out.println("Something wrong with initialisation");

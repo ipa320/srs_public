@@ -26,14 +26,18 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
     public GetObjectTask(String taskType, String targetContent, String userPose, NodeHandle n) 
     {
-	/*
+	
 	  // NOT WORKING... FOR TESTING ONLY
 	System.out.println("HAHAHAHAHAHAHA");
-
-	System.out.println(RosUtil.getRobotCurrentPose().position.x);
-
+	try{
+	RosUtil.testPub("Test ROSJAVA_PUB");
+	System.out.println(RosUtil.testSub());
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	}
 	System.out.println("HAHAHAHAHAHAHA");
-	*/
+	
 	/*
 	if (onto != null) {
 	    System.out.println("SET ONTOLOGY DB");

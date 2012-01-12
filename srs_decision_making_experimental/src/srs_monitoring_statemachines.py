@@ -22,7 +22,7 @@ This file contains concurrent state machines which provide parallel interruption
 # 2  and a termination request such as stop or customised_preempty is received or the main operation is completed (in this case, a preempty is triggered by the main operation)
 class state_checking_during_operation (smach.State):
     def __init__(self):
-        smach.State.__init__(self , outcomes =['stopped', 'customised_preempted', 'preempted'])
+        smach.State.__init__(self , outcomes =['stopped', 'customised_preempted', 'paused', 'preempted'])
         self.state_checking_outcome = 'preempted'  #default outcome
     
     def execute (self, userdata):
@@ -30,35 +30,48 @@ class state_checking_during_operation (smach.State):
         while not self.preempt_requested():
             #if stop command has been received
             if current_task_info._srs_as.stop_required:
-                #reset the flag to normal after the request has been received
-                current_task_info._srs_as.stop_required = False
-                
+
                 #update the final outcome to stopped
                 self.state_checking_outcome  = 'stopped'
                 
                 #if the current action can be stopped in the middle, terminate the checking and trigger preempty to the operation state
                 #otherwise wait for the main operation which is not stoppable to be completed
                 if current_task_info.stopable():
+                    #acknowledge the request
+                    current_task_info._srs_as.stop_acknowledged =True
                     return self.state_checking_outcome
+                
+            elif current_task_info._srs_as.pause_required:
+                #update the final outcome to stopped
+                self.state_checking_outcome  = 'paused'
+                return self.state_checking_outcome
             
             #if another command with higher priority received
-            if current_task_info._srs_as.customised_preempt_required:
-                #reset the flag to normal after the request has been received
-                current_task_info._srs_as.customised_preempt_required = False
+            elif current_task_info._srs_as.customised_preempt_required:
 
                 #update the final outcome to customised_preempted
                 self.state_checking_outcome  = 'customised_preempted'
-                                
+                                                
                 #if the current action can be stopped in the middle, terminate the checking and trigger preempty to the operation state
                 #otherwise wait for the main operation which is not stoppable to be completed
                 if current_task_info.stopable():
+                    #acknowledge the request
+                    current_task_info._srs_as.customised_preempt_acknowledged  = True
                     return self.state_checking_outcome
+                
+            elif rospy.is_shutdown:
+                return 'preempted' 
             
             #sleep 1 sec and check again
             rospy.sleep(1)
         
         #preempted by system        
         self.service_preempt()
+        
+        if self.state_checking_outcome == 'stopped':
+            current_task_info._srs_as.stop_acknowledged =True
+        if self.state_checking_outcome == 'customised_preempted':
+            current_task_info._srs_as.customised_preempt_acknowledged  = True
         
         return self.state_checking_outcome
 
@@ -79,7 +92,16 @@ def common_child_term_cb(outcome_map):
     if outcome_map['State_Checking_During_Operation'] == 'customised_preempted':
         return True
     
+    #pause command received
+    if outcome_map['State_Checking_During_Operation'] == 'paused':
+        return True
+    
+    #preempty or shutdown command received
+    if outcome_map['State_Checking_During_Operation'] == 'preempted':
+        return True
+    
     # in all other case, just keep running, don't terminate anything
+    # There is no another case yet, just for complete
     return False
 
 
@@ -93,17 +115,13 @@ def common_out_cb(outcome_map):
         if outcome_map['State_Checking_During_Operation'] == 'stopped':
             return 'stopped'
             
-        #operation terminated by external high priority command
-        if outcome_map['State_Checking_During_Operation'] == 'customised_preempted':
-            return 'preempted'
-        
-    #check if the termination is triggered by time out during pause.
-    if outcome_map['MAIN_OPERATION'] == 'time_out':   
-        global current_task_info
-        if current_task_info._srs_as.pause_required:
+        #pause is required
+        elif outcome_map['State_Checking_During_Operation'] == 'paused':
             return 'paused'
-        else:
-            return 'not_completed' 
+        
+        else:            
+            #operation terminated by external high priority command, ctrl-c or preempty trigger by the client for the same goal
+            return 'preempted'
             
     #operation completed by the main operation. The outcome of the main operation is returned accordingly    
     return outcome_map['MAIN_OPERATION'] 
@@ -125,21 +143,7 @@ with co_sm_navigation:
             smach.Concurrence.add('MAIN_OPERATION', sm_approach_pose_assisted(),
                             remapping={'semi_autonomous_mode':'semi_autonomous_mode','target_base_pose':'target_base_pose'})
 
-"""
-class co_sm_navigation(smach.Concurrence):
-    def __init__(self):
-        smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
-                 default_outcome='failed',
-                 input_keys=['target_base_pose','semi_autonomous_mode'],
-                 child_termination_cb = common_child_term_cb,
-                 outcome_cb = common_out_cb)
-                 #navigation can be stopped at any time
-                                  
-        with self:
-            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_approach_pose_assisted(),
-                            remapping={'semi_autonomous_mode':'semi_autonomous_mode','target_base_pose':'target_base_pose'})
-"""
+
 ###################################################
 # creating the concurrence state machine detection
 
@@ -158,24 +162,6 @@ with co_sm_detection:
                                        'semi_autonomous_mode':'semi_autonomous_mode',
                                        'target_object_pose':'target_object_pose'})
 
-"""
-class co_sm_detection(smach.Concurrence):
-    def __init__(self):
-        smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
-                 default_outcome='failed',
-                 input_keys=['target_object_name', 'semi_autonomous_mode'],
-                 output_keys=['target_object_pose'],
-                 child_termination_cb = common_child_term_cb,
-                 outcome_cb = common_out_cb)
-                 #detection can be stopped at any time
-                                  
-        with self:
-            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_detect_asisted_pose_region(),
-                            remapping={'target_object_name':'target_object_name',
-                                       'semi_autonomous_mode':'semi_autonomous_mode',
-                                       'target_object_pose':'target_object_pose'})
-"""
 
 ###################################################
 # creating the concurrence state machine grasp
@@ -195,25 +181,7 @@ with co_sm_grasp:
                                        'semi_autonomous_mode':'semi_autonomous_mode',
                                        'target_object_old_pose':'target_object_old_pose',
                                        'grasp_categorisation':'grasp_categorisation'})
-"""
-class co_sm_grasp(smach.Concurrence):
-    def __init__(self):
-        smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
-                 default_outcome='failed',
-                 input_keys=['target_object_name', 'semi_autonomous_mode'],
-                 output_keys=['target_object_old_pose', 'grasp_categorisation'],
-                 child_termination_cb = common_child_term_cb,
-                 outcome_cb = common_out_cb)
-                 #detection can be stopped at any time
-                                  
-        with self:
-            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_pick_object_asisted(),
-                            remapping={'target_object_name':'target_object_name',
-                                       'semi_autonomous_mode':'semi_autonomous_mode',
-                                       'target_object_old_pose':'target_object_old_pose',
-                                       'grasp_categorisation':'grasp_categorisation'})
-"""
+
 
 ###################################################
 # creating the concurrence state machine put object on tray
@@ -229,21 +197,7 @@ with co_sm_transfer_to_tray:
             smach.Concurrence.add('MAIN_OPERATION', sm_transfer_object_to_tray(),
                             remapping={'grasp_categorisation':'grasp_categorisation'})
 
-"""
-class co_sm_transfer_to_tray(smach.Concurrence):
-    def __init__(self):
-        smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'preempted', 'paused'],
-                 default_outcome='failed',
-                 input_keys=['grasp_categorisation'],
-                 child_termination_cb = common_child_term_cb,
-                 outcome_cb = common_out_cb)
-                 #detection can be stopped at any time
-                                  
-        with self:
-            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_transfer_object_to_tray(),
-                            remapping={'grasp_categorisation':'grasp_categorisation'})
-"""    
+
 ###################################################
 # creating the concurrence state machine environment object update
 
@@ -261,21 +215,3 @@ with co_sm_enviroment_object_update:
                                        'target_object_pose_list':'target_object_pose_list',
                                        'scan_pose_list':'scan_pose_list',})
 
-"""
-class co_sm_enviroment_object_update(smach.Concurrence):
-    def __init__(self):
-        smach.Concurrence.__init__(outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
-                 default_outcome='failed',
-                 input_keys=['target_object_name_list', 'scan_pose_list'],
-                 output_keys=['target_object_pose_list'],
-                 child_termination_cb = common_child_term_cb,
-                 outcome_cb = common_out_cb)
-                 #detection can be stopped at any time
-                                  
-        with self:
-            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_enviroment_object_update(),
-                            remapping={'target_object_name_list':'target_object_name_list',
-                                       'target_object_pose_list':'target_object_pose_list',
-                                       'scan_pose_list':'scan_pose_list',})
-"""

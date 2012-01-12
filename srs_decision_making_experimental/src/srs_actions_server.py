@@ -111,16 +111,27 @@ class SRSActionServer(SimpleActionServer):
     
     def accept_new_goal(self):
         with self.lock:
-             if not self.new_goal or not self.next_goal.get_goal():
+            if not self.new_goal or not self.next_goal.get_goal():
                 rospy.loginfo("Attempting to accept the next goal when a new goal is not available");
                 return None;
+             
+            if self.current_goal:
+                print "current goal"
+                print self.current_goal.get_goal()
+                print self.current_goal.get_goal_status()
+             
+            if self.next_goal:
+                print "next goal"
+                print self.next_goal.get_goal()
+                print self.next_goal.get_goal_status()
+             
  
-             #check if we need to send a preempted message for the goal that we're currently pursuing
-             if self.is_active() and self.current_goal.get_goal() and self.current_goal != self.next_goal:
-                 #self.current_goal.set_canceled(None, "This goal was cancelled because another goal was received by the simple action server");
-                 self.next_goal.set_rejected(None, "This goal was rejected because the server is busy with another task")
-                 rospy.loginfo("Postpone a new goal")
-             else:
+            #check if we need to send a preempted message for the goal that we're currently pursuing
+            if self.is_active() and self.current_goal.get_goal() and self.current_goal != self.next_goal:
+                #self.current_goal.set_canceled(None, "This goal was cancelled because another goal was received by the simple action server");
+                self.next_goal.set_rejected(None, "This goal was rejected because the server is busy with another task")
+                rospy.loginfo("Postpone a new goal")
+            else:
                 #accept the next goal
                 rospy.loginfo("Receiving a new goal")
                 self.current_goal = self.next_goal
@@ -135,7 +146,7 @@ class SRSActionServer(SimpleActionServer):
                 self.current_goal.set_accepted("This goal has been accepted by the simple action server");
                 
  
-             return self.current_goal.get_goal()
+            return self.current_goal.get_goal()
          
 class SRS_DM_ACTION(object):
     #action server for taking tasks 
@@ -150,8 +161,11 @@ class SRS_DM_ACTION(object):
         self._as.start()
         self.robot_initialised= False
         self.customised_preempt_required = False
+        self.customised_preempt_acknowledged = False
         self.pause_required = False
         self.stop_required = False 
+        self.stop_acknowledged = False
+         
                 
         #self._as.register_goal_callback(self.goal_cb)
         self._as.register_preempt_callback(self.priority_cb)
@@ -265,14 +279,21 @@ class SRS_DM_ACTION(object):
         #checking if there is a new goal and comparing the priority    
         if self._as.next_goal.get_goal() and self._as.new_goal:
             #new goal exist
-            if self._as.next_goal.get_goal().priority > self._as.current_goal.get_goal().priority:
-                self.customised_preempt_request = True
-                self._sm_srs.request_preempt()
-            else:
-                self.customised_preempt_request = False # overwrite the default preempt policy of the simple action server
+            if self._as.next_goal.get_goal().action == 'stop':
+                self.stop_required = True
+            elif self._as.next_goal.get_goal().action == 'pause':
+                self.pause_required = True 
+                self._as.next_goal.set_succeeded(None, 'pause acknowledged')
+            elif self._as.new_goal.get_goal().action == 'resume':
+                if self.pause_required == True:   # already paused
+                    self.pause_required  = False
+                    self._ac.next_goal.set_succeeded(None, 'resume acknowledged')
+                else:
+                    self._ac.next_goal.set_aborted(None, 'not paused, no need for resuming') 
+            elif self._as.next_goal.get_goal().priority > self._as.current_goal.get_goal().priority:
+                self.customised_preempt_required = True
         else:
             # pre-empty request is come from the same goal 
-            self.customised_preempt_request = True
             self._sm_srs.request_preempt()             
                 
     def preempt_check(self):

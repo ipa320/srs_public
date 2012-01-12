@@ -101,7 +101,7 @@ class intervention_base_pose(smach.State):
                 _feedback.current_state = "need user intervention for base pose"
                 _feedback.solution_required = True
                 _feedback.exceptional_case_id = 1
-                current_task_info._as.publish_feedback(_feedback)
+                current_task_info._srs_as._as.publish_feedback(_feedback)
                 rospy.sleep(1)
                 
                 self.count += 1 

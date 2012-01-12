@@ -16,7 +16,13 @@ public class ActionFeedback extends ArrayList<String> {
     }
     
     public static Pose toPose(ActionFeedback fb) {
+	if(fb.size() < 9) {
+	    System.out.println("List array length smaller than 9.    " + fb.size());
+	    System.out.println(fb);
+	    return null;
+	}
 	if(!fb.get(0).equals("detect")) {
+	    System.out.println("First item is not detect... Format error");
 	    return null;
 	}
 	try {

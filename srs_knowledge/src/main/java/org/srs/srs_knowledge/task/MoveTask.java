@@ -2,7 +2,6 @@ package org.srs.srs_knowledge.task;
 
 import java.io.*;
 import java.util.StringTokenizer;
-//import org.apache.commons.logging.Log;
 import java.util.ArrayList;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
@@ -19,16 +18,6 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 {
 	public MoveTask(String targetContent, Pose2D userPose) 
 	{
-	    /*
-	    if (onto != null) {
-		System.out.println("SET ONTOLOGY DB");
-		this.ontoDB = onto;
-	    }
-	    else {
-		System.out.println("NULL ---- SET ONTOLOGY DB");
-		this.ontoDB = new OntologyDB();
-	    }
-	    */
 	    this.initTask(targetContent, userPose);
 	    setTaskType(TaskType.MOVETO_LOCATION);
 	}
@@ -51,11 +40,6 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 		ActionTuple act = new ActionTuple();
 
 		CUAction ca = new CUAction();
-		/*
-		  MoveAction ma = new MoveAction();
-		PerceptionAction pa = new PerceptionAction();
-		GraspAction ga = new GraspAction();
-		*/
 		GenericAction genericAction = new GenericAction();
 
 		double x = 1;
@@ -125,26 +109,13 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 			}
 		}
 
-		//ma.targetPose2D.x = x;
-		//ma.targetPose2D.y = y;
-		//ma.targetPose2D.theta = theta;
-
 		genericAction.actionInfo.add("move");
 		genericAction.actionInfo.add(Double.toString(x));
 		genericAction.actionInfo.add(Double.toString(y));
 		genericAction.actionInfo.add(Double.toString(theta));
 
-		//ca.ma = ma;
-		//ca.pa = pa;
-		//ca.ga = ga;
 		ca.generic = genericAction;
 		ca.actionType = "generic";
-
-		//try {
-		//	ca.actionFlags = parseActionFlags("0 1 1");
-		//} catch (Exception e) {
-		//	System.out.println(e.getMessage());
-		//}
 
 		act.setCUAction(ca);
 		act.setActionId(1);
@@ -155,33 +126,14 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 		act = new ActionTuple();
 
 		ca = new CUAction();
-		//ma = new MoveAction();
-		//pa = new PerceptionAction();
-		//ga = new GraspAction();
 		genericAction = new GenericAction();
 		genericAction.actionInfo.add("finish_success");
 		
-		//ca.ma = ma;
-		//ca.pa = pa;
-		//ca.ga = ga;
 		ca.generic = genericAction;
 		ca.actionType = "generic";
 
-		//try {
-		//    ca.actionFlags = parseActionFlags("0 1 1");
-		//} catch (Exception e) {
-		//   System.out.println(e.getMessage());
-		//}
 		act.setActionName("finish_success");
 		ca.status = 1;
-		/*
-		if (act.getActionName().equals("finish_success")) {
-			ca.status = 1;
-		}
-		if (act.getActionName().equals("finish_fail")) {
-			ca.status = -1;
-		}
-		*/
 
 		act.setCUAction(ca);
 		act.setActionId(2);
@@ -194,23 +146,11 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 		act = new ActionTuple();
 
 		ca = new CUAction();
-		//ma = new MoveAction();
-		//pa = new PerceptionAction();
-		//ga = new GraspAction();
 		genericAction = new GenericAction();
 		genericAction.actionInfo.add("finish_fail");
 		
-		//ca.ma = ma;
-		//ca.pa = pa;
-		//ca.ga = ga;
 		ca.generic = genericAction;
 		ca.actionType = "generic";
-
-		//try {
-		//	ca.actionFlags = parseActionFlags("0 1 1");
-		//} catch (Exception e) {
-		//	System.out.println("Exception -->  " + e.getMessage());
-		//}
 
 		act.setActionName("finish_fail");
 

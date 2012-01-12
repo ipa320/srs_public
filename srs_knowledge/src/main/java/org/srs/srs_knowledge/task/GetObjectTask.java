@@ -150,7 +150,14 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		case HighLevelActionUnit.COMPLETED_SUCCESS:
 		    System.out.println(".COMPLETED_SUCCESS");
 		    lastStepActUnit = highAct;
-		    return handleSuccessMessage();
+		    	    
+		    //HighLevelActionUnit curActUnit = subActSeq.getCurrentHighLevelActionUnit();
+		    //  Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
+		    // private HighLevelActionUnit setParametersGraspPos(Pose2D pos, HighLevelActionUnit mgActUnit)
+		    //curActUnit.setParameters(basePos);
+		    CUAction retact = handleSuccessMessage(new ActionFeedback(feedback)); 
+		    
+		    return retact; 
 		    
 		case HighLevelActionUnit.COMPLETED_FAIL:
 		    // The whole task finished (failure). 
@@ -178,6 +185,12 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
 			    System.out.println("OK  default");
 			    
+			    if(pos == null) {
+				lastStepActUnit = null;
+				System.out.println(".COMPLETED_FAIL");
+				return handleFailedMessage();
+			    }
+
 			    ArrayList<String> posInArray = new ArrayList<String>();
 			    posInArray.add("move");
 			    posInArray.add(Double.toString(pos.x));
@@ -217,6 +230,68 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	return ca;
     }
+
+    private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
+	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
+	System.out.println("OK  default");
+	// call symbol grounding to get parameters for the MoveAndGrasp action
+	try {
+	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
+	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
+	    recentDetectedObject = ActionFeedback.toPose(fb);
+	    if(recentDetectedObject == null) {
+		return null;
+	    }
+	    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
+	    return pos;
+	}
+	catch (Exception e) {
+	    return null;
+	}
+	
+    }
+    
+    private ArrayList<String> constructArrayFromPose2D(Pose2D pos) {
+	try {
+	    ArrayList<String> l = new ArrayList<String>();
+	    l.add("move");
+	    l.add(Double.toString(pos.x));
+	    l.add(Double.toString(pos.y));
+	    l.add(Double.toString(pos.theta));
+	    return l;
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	    return null;
+	}
+    }
+    /*
+    private HighLevelActionUnit setParametersGraspPos(Pose2D pos, HighLevelActionUnit mgActUnit) throws NullPointerException, Exception {
+	if(pos == null) {
+	    lastStepActUnit = null;
+	    System.out.println(".COMPLETED_FAIL");
+	    throw new NullPointerException("pos is null");
+	}
+	    
+	ArrayList<String> posInArray = new ArrayList<String>();
+	posInArray.add("move");
+	posInArray.add(Double.toString(pos.x));
+	posInArray.add(Double.toString(pos.y));
+	posInArray.add(Double.toString(pos.theta));
+	if(mgActUnit.setParameters(posInArray)) {
+	    System.out.println("MoveAndGrasp action move action parameters are set...  " + posInArray.toString());
+	    return mgActUnit;
+	}
+	else {
+	    System.out.println("MoveAndGrasp action move action parameters are not set...  " + posInArray.toString());
+	    return null;
+	    
+	    //   currentSubAction++;
+	    //   return handleFailedMessage();		
+	    
+	}
+    }
+*/
     
     /**
      * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
@@ -229,17 +304,19 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    throw new IllegalArgumentException("Incompatible type");
 	}
 	
-	pos.position.x = Integer.valueOf(feedback.get(1));
-	pos.position.y = Integer.valueOf(feedback.get(2));
-	pos.position.z = Integer.valueOf(feedback.get(3));
-	pos.orientation.x = Integer.valueOf(feedback.get(4));	    
-	pos.orientation.y = Integer.valueOf(feedback.get(5));	    
-	pos.orientation.z = Integer.valueOf(feedback.get(6));	    
-	pos.orientation.w = Integer.valueOf(feedback.get(7));
+	pos.position.x = Integer.valueOf(feedback.get(2));
+	pos.position.y = Integer.valueOf(feedback.get(3));
+	pos.position.z = Integer.valueOf(feedback.get(4));
+	pos.orientation.x = Integer.valueOf(feedback.get(5));	    
+	pos.orientation.y = Integer.valueOf(feedback.get(6));	    
+	pos.orientation.z = Integer.valueOf(feedback.get(7));	    
+	pos.orientation.w = Integer.valueOf(feedback.get(8));
 	return pos;
     }
 
-    private CUAction handleFailedMessage() {
+
+
+private CUAction handleFailedMessage() {
 	currentSubAction++;
 	
 	System.out.println("HANDLE FAILED MESSAGE.... CURRENTSUBACTION IS AT:  " + currentSubAction);
@@ -274,13 +351,23 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return null;
     }
     
-    private CUAction handleSuccessMessage() {
+private CUAction handleSuccessMessage(ActionFeedback fb) {
 	// TODO: 
 	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
 	
 	if(currentHLActSeq.hasNextHighLevelActionUnit()) {
 	    HighLevelActionUnit nextHighActUnit = currentHLActSeq.getNextHighLevelActionUnit();
 	    
+	    // set feedback? 
+	    if(nextHighActUnit.getActionType().equals("MoveAndGrasp") && nextHighActUnit.ifParametersSet()) {
+		Pose2D posBase = calculateGraspPosFromFB(fb);
+		ArrayList<String> basePos = constructArrayFromPose2D(posBase);
+		if(!nextHighActUnit.setParameters(basePos)) {
+		    //currentSubAction++;
+		    return handleFailedMessage();		
+	       }
+	    }
+
 	    if(nextHighActUnit != null) {
 		int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
 		// TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
@@ -304,7 +391,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return null;
     }
     
-    private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
+private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
 	HighLevelActionSequence actionList = new HighLevelActionSequence();
 	
 	// create MoveAndDetectionActionUnit
@@ -382,11 +469,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return actionList;
     }
     
-    private void setParameters(ActionFeedback fb) {
-	
-    }
+    
 
-    private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
+
+private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
 	ServiceClient<SymbolGroundingScanBasePose.Request, SymbolGroundingScanBasePose.Response, SymbolGroundingScanBasePose> sc =
 	    nodeHandle.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
@@ -400,9 +486,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return posList;
     }
 
-    private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
+private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
 	Pose2D pos = new Pose2D();
-
+	
 	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc =
 	    nodeHandle.serviceClient("symbol_grounding_grasp_base_pose" , new SymbolGroundingGraspBasePoseExperimental(), false);
 	
@@ -416,6 +502,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	pos = res.grasp_base_pose;
 
 	sc.shutdown();
+	if(obstacleCheck) {
+	    return null;
+	}
 	return pos;
     }
 
@@ -427,7 +516,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	spatialInfo.pose.position.y = stm.getFloat();
 	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord",  workspace);
 	spatialInfo.pose.position.z = stm.getFloat();
-			 
 	
 	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "widthOfObject",  workspace);
 	spatialInfo.w = stm.getFloat();

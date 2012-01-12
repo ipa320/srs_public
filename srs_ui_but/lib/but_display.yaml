@@ -1,0 +1,14 @@
+name: BUT_rviz
+library: but_rviz
+displays:
+  -
+    class_name: BUT_Display
+    display_name: BUT_Display
+    description: |
+      This demonstrational display shows only basic geometry.
+  -
+    class_name: CButPointCloud
+    display_name: CButPointCloud
+    description: |
+      Show pointclouds display
+

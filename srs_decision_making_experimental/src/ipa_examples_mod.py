@@ -43,7 +43,7 @@ smach is slow on passing large amount of userdata. Hence they are stored under g
 srs_dm_action perform one task at a time and maintain a unique session id.  
 """
 
-listener = tf.TransformListener()
+listener = None
 
 class goal_structure():   
     

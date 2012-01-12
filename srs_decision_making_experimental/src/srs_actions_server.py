@@ -408,3 +408,6 @@ if __name__ == '__main__':
     rospy.init_node('srs_decision_making_actions')
     SRS_DM_ACTION(rospy.get_name())
     rospy.spin()
+    global listener    
+    listener = tf.TransformListener()
+

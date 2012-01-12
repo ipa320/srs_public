@@ -28,6 +28,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     {
 	
 	  // NOT WORKING... FOR TESTING ONLY
+	/*
 	System.out.println("HAHAHAHAHAHAHA");
 	try{
 	RosUtil.testPub("Test ROSJAVA_PUB");
@@ -37,7 +38,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println(e.toString());
 	}
 	System.out.println("HAHAHAHAHAHAHA");
-	
+	*/
 	/*
 	if (onto != null) {
 	    System.out.println("SET ONTOLOGY DB");
@@ -128,7 +129,17 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
 	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
-	    
+	    if(stateLastAction) {
+		if(feedback != null && feedback.size() > 0) {
+		    if(highAct.addFeedback(feedback.get(0), new ActionFeedback(feedback))) {
+			System.out.println("Feedback added: " + feedback.get(0));
+		    }
+		    else {
+			System.out.println("Feedback not added due to null feedback. ");
+		    }
+		}
+	    }
+
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
 	    // if stuck (fail), move to the next subActionSequence
@@ -137,24 +148,22 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		System.out.println("=========>>>>  " + ni);
 		switch(ni) {
 		case HighLevelActionUnit.COMPLETED_SUCCESS:
-		    //CUAction ca = new CUAction();
 		    System.out.println(".COMPLETED_SUCCESS");
-		    
-		    //ca.status = 1;
+		    lastStepActUnit = highAct;
 		    return handleSuccessMessage();
 		    
 		case HighLevelActionUnit.COMPLETED_FAIL:
-		    // The whole task finished (failure). Should move to a HighLevelActionUnit in subActSeq of finsihing
+		    // The whole task finished (failure). 
+		    lastStepActUnit = null;
 		    System.out.println(".COMPLETED_FAIL");
-		    //currentSubAction++;
 		    return handleFailedMessage();
 		case HighLevelActionUnit.INVALID_INDEX:
 		    // The whole task finished failure. Should move to a HighLevelActionUnit in subActSeq of finsihing
+		    lastStepActUnit = null;
 		    System.out.println("INVALID_INDEX");
 		    //currentSubAction++;
 		    return handleFailedMessage();
 		default: 
-
 		    System.out.println(highAct.getActionType());
 		    if(highAct.ifParametersSet()) {
 			System.out.println("OK. Parameters set");
@@ -189,7 +198,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			catch(Exception e) {
 			    System.out.println(e.toString());
 			}
-			//private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
 		    }
 		    
 		    ca = highAct.getNextCUAction(ni);
@@ -202,8 +210,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    }
 	    else {
 		return null;
-	    }
-	    
+	    }	    
 	    // or if still pending CUAction is available, return CUAction
 	}
 	else if (currentSubAction == -1) {
@@ -375,6 +382,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return actionList;
     }
     
+    private void setParameters(ActionFeedback fb) {
+	
+    }
 
     private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
@@ -468,4 +478,5 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     private Pose recentDetectedObject;    // required by MoveAndGraspActionUnit
     private String lastActionType;        // used to handle feedback from last action executed
     private String userPose;
+    private HighLevelActionUnit lastStepActUnit;
 }

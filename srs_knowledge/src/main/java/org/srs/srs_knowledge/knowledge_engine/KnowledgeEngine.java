@@ -308,6 +308,7 @@ public class KnowledgeEngine
 	    System.out.println("No further action can be planned. Terminate the task. ");
 
 	    res.nextAction = new CUAction(); // empty task
+	    //res.nextAction.status = 0;
 	    return res;	    
 	}
 	//if(at.getActionName().equals("finish_success")) {

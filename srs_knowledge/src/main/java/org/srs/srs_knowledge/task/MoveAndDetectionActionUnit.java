@@ -61,7 +61,7 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	actionType = "MoveAndDetection";
 	return actionType;
     }
-
+    /*
     public int getNextCUActionIndex(boolean statusLastStep) {
 	//currentActionInd++;
 
@@ -89,11 +89,6 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	//int ind = getNextCUActionIndex(statusLastStep);
 	currentActionInd = ind;
 	CUAction ca = new CUAction(); 
-	/*
-	MoveAction ma = new MoveAction();
-	PerceptionAction pa = new PerceptionAction();
-	GraspAction ga = new GraspAction();
-	*/
 
 	if(ind == COMPLETED_FAIL) {
 	    GenericAction genericAction = new GenericAction();
@@ -135,7 +130,7 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	ca.actionType = "generic";
 	return ca;
     }
-
+    */
     // a not very safe, but flexible way to assign parameters, using arraylist<string> 
     // set robot move target and object pose etc.
     public boolean setParameters(ArrayList<String> para) {

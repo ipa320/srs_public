@@ -8,6 +8,7 @@ import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import org.srs.srs_knowledge.knowledge_engine.*;
 import org.srs.srs_knowledge.task.Task;
+import java.util.HashMap;
 
 /**
  * An ActionUnit is a container of GenericAction. 
@@ -24,23 +25,6 @@ public abstract class HighLevelActionUnit {
     public int getNumOfActions() {
 	return actionUnits.size();
     }
-
-    /*
-    public void addNewGenericAction(GenericAction gAct) {
-	actionUnits.add(gAct);
-    }
-    */
-
-    //public abstract boolean hasNextGenericAction(boolean statusLastStep);
-
-    //public abstract GenericAction getNextGenericAction(boolean statusLastStep);
-    //public abstract int getNextCUActionIndex(boolean statusLastStep);
-    //public abstract CUAction getNextCUAction(int ind);
-    
-
-
-
-
 
     public int getNextCUActionIndex(boolean statusLastStep) {
 	
@@ -108,8 +92,17 @@ public abstract class HighLevelActionUnit {
 
     }
 
+    public boolean addFeedback(String key, ActionFeedback fb) {
+	if(fb == null) {
+	    return false;
+	}
+	feedbacks.put(key, fb);
+	return true;
+    }
 
-
+    public ActionFeedback getFeedback(String key) {
+	return feedbacks.get(key);
+    }
 
     // a not very safe, but flexible way to assign parameters, using arraylist<string> 
     public abstract boolean setParameters(ArrayList<String> para);
@@ -119,6 +112,8 @@ public abstract class HighLevelActionUnit {
     protected ArrayList<GenericAction> actionUnits = new ArrayList<GenericAction>();
     protected int[] nextActionMapIfFail;
     protected int[] nextActionMapIfSuccess;
+    protected HashMap<String, ActionFeedback> feedbacks;
+
     protected int currentActionInd = -1;
     protected boolean ifParametersSet;
 }

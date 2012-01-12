@@ -19,18 +19,82 @@ public class StopTask extends Task {
 
     public StopTask() {
 	// empty constructor.
-	acts = new ArrayList<ActionTuple>();     // to be deprecated and replaced with allSubSeqs
-	
-	setTaskType(TaskType.UNSPECIFIED);
-	currentAction = null;
-	//ontoDB = onto;
+	this.initTask();
     }
+
+    private void initTask() {
+	acts = new ArrayList<ActionTuple>();
+	
+	System.out.println("TASK.JAVA: Created CurrentTask " + "stop ");
+	constructTask();
+    }
+	
+    protected boolean constructTask() {
+	return createSimpleMoveTaskNew();
+    }
+    
+    private boolean createSimpleMoveTaskNew() {
+	// boolean addNewActionTuple(ActionTuple act)
+	ActionTuple act = new ActionTuple();
+	
+	CUAction ca = new CUAction();
+	GenericAction genericAction = new GenericAction();
+	
+	genericAction.actionInfo.add("stop");
+	ca.generic = genericAction;
+	ca.actionType = "generic";
+	
+	act.setCUAction(ca);
+	act.setActionId(1);
+	addNewActionTuple(act);
+	
+	// add finish action __ success
+	
+	act = new ActionTuple();
+	
+	ca = new CUAction();
+	genericAction = new GenericAction();
+	genericAction.actionInfo.add("finish_success");
+	
+	ca.generic = genericAction;
+	ca.actionType = "generic";
+	
+	act.setActionName("finish_success");
+	ca.status = 1;
+	
+	act.setCUAction(ca);
+	act.setActionId(2);
+	act.setParentId(1);
+	act.setCondition(true);
+	addNewActionTuple(act);
+	
+	// add finish action __ fail
+	
+	act = new ActionTuple();
+	
+	ca = new CUAction();
+	genericAction = new GenericAction();
+	genericAction.actionInfo.add("finish_fail");
+	
+	ca.generic = genericAction;
+	ca.actionType = "generic";
+	
+	act.setActionName("finish_fail");
+	
+	ca.status = -1;
+	act.setCUAction(ca);
+	act.setActionId(3);
+	act.setParentId(1);
+	act.setCondition(false);
+	addNewActionTuple(act);
+	
+	System.out.println("number of actions: " + acts.size());
+	return true;
+    }
+
 
     public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {
 	return false;
     }
 
-    protected boolean constructTask() {
-    	return true;
     }
-}

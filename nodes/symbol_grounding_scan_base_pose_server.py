@@ -118,6 +118,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose.theta = parent_obj_th + math.pi
 			scan_base_pose_list.append(scan_base_pose)
 
+
+	#rospy.loginfo(scan_base_pose_list)
 	
 	#obstacle check
 	wall_checked_scan_base_pose_list = list()
@@ -130,7 +132,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 			wall_checked_scan_base_pose_list.append(scan_base_pose_list[index])
 		index += 1
 		
-	rospy.loginfo(wall_checked_scan_base_pose_list)
+	#rospy.loginfo(wall_checked_scan_base_pose_list)
 	if not wall_checked_scan_base_pose_list:
 		reach = 0
 		obstacle_check = 1

@@ -3,6 +3,7 @@ import roslib; roslib.load_manifest('srs_symbolic_grounding')
 
 from srs_symbolic_grounding.srv import SymbolGroundingGraspBasePoseExperimental
 from srs_symbolic_grounding.msg import *
+from std_msgs.msg import *
 from geometry_msgs.msg import *
 import rospy
 import math
@@ -12,28 +13,15 @@ from tf.transformations import euler_from_quaternion
 
 
 
-	
-
 
 def handle_symbol_grounding_grasp_base_pose_experimental(req):
 
 
-	#get robot base pose
-	listener = tf.TransformListener()
-	listener.waitForTransform("/map", "/base_link", rospy.Time(0), rospy.Duration(4.0))
-	rospy.sleep(1.0)
-	(trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
 		
 
-
 	rb_pose = Pose2D()
-	rb_pose.x = trans[0]
-	rb_pose.y = trans[1]
-	rb_pose_rpy = tf.transformations.euler_from_quaternion(rot)
-	rb_pose.theta = rb_pose_rpy[2]
-	print rb_pose
-
-
+	rospy.Subscriber("robot_base_pose", Pose2D)
+	#print rb_pose.x
 
 	#membership functions
 	mf1_x = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.75, 0.5, 0.25, 0]
@@ -102,7 +90,7 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 		delta_th = delta_th - math.pi
 	elif 260.0 / 180.0 * math.pi <= delta_th <= 280.0 / 180.0 * math.pi:
 		delta_th = delta_th - 1.5 * math.pi
-	rospy.loginfo([delta_x, delta_y, delta_th])
+	#rospy.loginfo([delta_x, delta_y, delta_th])
 
 	#grasp base pose list for right grasp
 	right_grasp_base_pose_list = list()

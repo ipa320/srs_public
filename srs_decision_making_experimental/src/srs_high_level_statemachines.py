@@ -214,6 +214,7 @@ class sm_transfer_object_to_tray(SRS_StateMachine):
                                     input_keys=['grasp_categorisation'])
         
         self.customised_initial("sm_get_object_on_tray")
+        #self.userdata.post_table_pos=""
     
         with self:
             smach.StateMachine.add("SELECT_POST_TABLE_POS", select_post_table_pose(),

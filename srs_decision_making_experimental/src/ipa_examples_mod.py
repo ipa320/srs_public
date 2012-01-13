@@ -43,7 +43,7 @@ smach is slow on passing large amount of userdata. Hence they are stored under g
 srs_dm_action perform one task at a time and maintain a unique session id.  
 """
 
-listener = None
+listener = tf.TransformListener()
 
 class goal_structure():   
     
@@ -710,7 +710,7 @@ class grasp_general(smach.State):
 
 class select_post_table_pose(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed','preempted'], output_keys=['post_table_pos'])
+        smach.State.__init__(self, outcomes=['succeeded', 'failed','preempted'], input_keys=['post_table_pos'], output_keys=['post_table_pos'])
     def execute(self, userdata):
         global current_task_info
         pos=current_task_info.get_robot_pos()
@@ -719,9 +719,12 @@ class select_post_table_pose(smach.State):
             userdata.post_table_pos=''
             return 'failed'
         else:
-            pos.x = pos.x + 0.5 * cos(pos.theta)
-            pos.y = pos.y + 0.5 * sin(pos.theta)
-            userdata.post_table_pos = pos
+            pos.x = pos.x + 0.3 * cos(pos.theta)
+            pos.y = pos.y + 0.3 * sin(pos.theta)
+            userdata.post_table_pos = list()
+            userdata.post_table_pos.append(pos.x)
+            userdata.post_table_pos.append(pos.y)
+            userdata.post_table_pos.append(pos.theta)
             return 'succeeded'
         
 

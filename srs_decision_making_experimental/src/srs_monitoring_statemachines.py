@@ -67,6 +67,7 @@ class state_checking_during_operation (smach.State):
         
         #preempted by system        
         self.service_preempt()
+        print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         
         if self.state_checking_outcome == 'stopped':
             current_task_info._srs_as.stop_acknowledged =True
@@ -81,24 +82,26 @@ def common_child_term_cb(outcome_map):
     #checking if the termination is triggered by the completion of the main function
     #This will pre-empty the state_checking_during_operation state
     if outcome_map['MAIN_OPERATION'] is not None:   
-        return True
+        
     
-    #termination is triggered by the checking state 
-    #stop command received
-    if outcome_map['State_Checking_During_Operation'] == 'stopped':      
-        return True
+        if outcome_map['MAIN_OPERATION'] == 'preempted':  
     
-    #another command with higher priority received
-    if outcome_map['State_Checking_During_Operation'] == 'customised_preempted':
-        return True
-    
-    #pause command received
-    if outcome_map['State_Checking_During_Operation'] == 'paused':
-        return True
-    
-    #preempty or shutdown command received
-    if outcome_map['State_Checking_During_Operation'] == 'preempted':
-        return True
+            #termination is triggered by the checking state 
+            #stop command received
+            if outcome_map['State_Checking_During_Operation'] == 'stopped':      
+                return True
+            
+            #another command with higher priority received
+            if outcome_map['State_Checking_During_Operation'] == 'customised_preempted':
+                return True
+            
+            #pause command received
+            if outcome_map['State_Checking_During_Operation'] == 'paused':
+                return True
+            
+            #preempty or shutdown command received
+            if outcome_map['State_Checking_During_Operation'] == 'preempted':
+                return False
     
     # in all other case, just keep running, don't terminate anything
     # There is no another case yet, just for complete

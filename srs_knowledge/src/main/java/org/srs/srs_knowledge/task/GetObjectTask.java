@@ -181,7 +181,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    // if stuck (fail), move to the next subActionSequence
 	    if(highAct != null) {
 
-		System.out.println("DEBUG >>> 2 ");
+		// TODO:
+		updateDBObjectPose();
+				
 		int ni = highAct.getNextCUActionIndex(stateLastAction); 
 		System.out.println("=========>>>>  " + ni);
 		switch(ni) {
@@ -194,9 +196,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    // private HighLevelActionUnit setParametersGraspPos(Pose2D pos, HighLevelActionUnit mgActUnit)
 		    //curActUnit.setParameters(basePos);
 		    CUAction retact = handleSuccessMessage(new ActionFeedback(feedback)); 
-		    
 		    return retact; 
-		    
 		case HighLevelActionUnit.COMPLETED_FAIL:
 		    // The whole task finished (failure). 
 		    lastStepActUnit = null;
@@ -313,6 +313,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return null;
     }
     
+    private boolean updateDBObjectPose() {
+	
+	return true;
+    }
     
     private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
 	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)

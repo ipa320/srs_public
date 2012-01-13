@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+	<node pkg="srs_symbolic_grounding" type="robot_base_pose_publisher.py" name="robot_base_pose_publisher" output="screen">
+        </node>
+
+	<node pkg="srs_symbolic_grounding" type="symbol_grounding_scan_base_pose_server.py" name="symbol_grounding_scan_base_pose_server" output="screen">
+        </node>
+
+	<node pkg="srs_symbolic_grounding" type="symbol_grounding_grasp_base_pose_experimental_server.py" name="symbol_grounding_grasp_base_pose_experimental_server" output="screen">
+        </node>
+
+</launch>

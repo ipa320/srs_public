@@ -21,7 +21,7 @@ def DM_client():
 
     # Creates a goal to send to the action server.
     _goal=xmsg.ExecutionGoal()
-    _goal.action="resume"
+    _goal.action="stop"
     _goal.parameter=""
     _goal.priority=1
     # Sends the goal to the action server.

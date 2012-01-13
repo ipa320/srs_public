@@ -39,7 +39,7 @@ public class StopTask extends Task {
 	
 	CUAction ca = new CUAction();
 	GenericAction genericAction = new GenericAction();
-	
+	/*	
 	genericAction.actionInfo.add("stop");
 	ca.generic = genericAction;
 	ca.actionType = "generic";
@@ -47,13 +47,13 @@ public class StopTask extends Task {
 	act.setCUAction(ca);
 	act.setActionId(1);
 	addNewActionTuple(act);
-	
+	*/
 	// add finish action __ success
 	
-	act = new ActionTuple();
+	//act = new ActionTuple();
 	
-	ca = new CUAction();
-	genericAction = new GenericAction();
+	//ca = new CUAction();
+	//genericAction = new GenericAction();
 	genericAction.actionInfo.add("finish_success");
 	
 	ca.generic = genericAction;
@@ -63,16 +63,16 @@ public class StopTask extends Task {
 	ca.status = 1;
 	
 	act.setCUAction(ca);
-	act.setActionId(2);
-	act.setParentId(1);
-	act.setCondition(true);
+	act.setActionId(1);
+	//act.setParentId(1);
+	//act.setCondition(true);
 	addNewActionTuple(act);
 	
 	// add finish action __ fail
-	
+	/*	
 	act = new ActionTuple();
 	
-	ca = new CUAction();
+	ca = new CUAction(); 
 	genericAction = new GenericAction();
 	genericAction.actionInfo.add("finish_fail");
 	
@@ -87,7 +87,7 @@ public class StopTask extends Task {
 	act.setParentId(1);
 	act.setCondition(false);
 	addNewActionTuple(act);
-	
+	*/
 	System.out.println("number of actions: " + acts.size());
 	return true;
     }

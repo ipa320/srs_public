@@ -84,6 +84,83 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
     }
 
+    
+    private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
+	HighLevelActionSequence actionList = new HighLevelActionSequence();
+	
+	// create MoveAndDetectionActionUnit
+	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
+	
+	spatialInfo.pose.position.x = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord",  workspace);
+	spatialInfo.pose.position.y = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord",  workspace);
+	spatialInfo.pose.position.z = stm.getFloat();
+	
+	
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "widthOfObject",  workspace);
+	spatialInfo.w = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "heightOfObject",  workspace);
+	spatialInfo.h = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "lengthOfObject",  workspace);
+	spatialInfo.l = stm.getFloat();
+	
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qu",  workspace);
+	spatialInfo.pose.orientation.w = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qx",  workspace);
+	spatialInfo.pose.orientation.x = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qy",  workspace);
+	spatialInfo.pose.orientation.y = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qz",  workspace);
+	spatialInfo.pose.orientation.z = stm.getFloat();
+	
+	// call symbolic grounding service for target pose
+	ArrayList<Pose2D> posList;
+	try {
+	    posList = calculateScanPositions(spatialInfo);
+	    System.out.println(posList.size());
+	}
+	catch(RosException e) {
+	    System.out.println(e.toString()); 
+	    System.out.println(e.getMessage());
+	    throw e;
+	}
+
+	// TODO:
+	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, "MilkBox", 1);
+	
+	// create MoveAndGraspActionUnit
+	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, "MilkBox", 1, "side");
+
+	// create PutOnTrayActionUnit
+	PutOnTrayActionUnit trayAction = new PutOnTrayActionUnit("side");
+
+	// FoldArmActionUnit
+	//FoldArmActionUnit foldArmAction = new FoldArmActionUnit();
+
+	// create BackToUserActionUnit
+	
+	Pose2D posUser = OntoQueryUtil.parsePose2D(userPose);
+	MoveActionUnit mau = new MoveActionUnit(posUser);
+	
+	// create FinishActionUnit
+	FinishActionUnit fau = new FinishActionUnit(true);
+	//MoveActionUnit mau1 = new MoveActionUnit(OntoQueryUtil.parsePose2D("home"));
+	//actionList.appendHighLevelAction(mau1);
+
+	actionList.appendHighLevelAction(mdAction);
+	actionList.appendHighLevelAction(mgAction);
+	actionList.appendHighLevelAction(trayAction);
+	//actionList.appendHighLevelAction(foldArmAction);
+	actionList.appendHighLevelAction(mau);
+	actionList.appendHighLevelAction(fau);
+		
+	System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
+	return actionList;
+    }
+    
+    
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
      
 	System.out.println("===> Get Next CUACTION -- from GetObjectTask.java");
@@ -139,45 +216,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			lastStepActUnit = null;
 			return handleFailedMessage();
 		    }
-		    /*
-		    if(highAct.getActionType().equals("MoveAndGrasp") && !highAct.ifParametersSet()) {
-			System.out.println("OK  default");
-			// call symbol grounding to get parameters for the MoveAndGrasp action
-			try {
-			    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
-			    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
-			    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
-			    System.out.println("OK  default");
-			    
-			    if(pos == null) {
-				lastStepActUnit = null;
-				System.out.println(".COMPLETED_FAIL");
-				return handleFailedMessage();
-			    }
-
-			    ArrayList<String> posInArray = new ArrayList<String>();
-			    posInArray.add("move");
-			    posInArray.add(Double.toString(pos.x));
-			    posInArray.add(Double.toString(pos.y));
-			    posInArray.add(Double.toString(pos.theta));
-			    if(highAct.setParameters(posInArray)) {
-				System.out.println("MoveAndGrasp action move action parameters are set...  " + posInArray.toString());
-			    }
-			    else {
-				System.out.println("MoveAndGrasp action move action parameters are not set...  " + posInArray.toString());
-				currentSubAction++;
-				return handleFailedMessage();		
-			    }
-			} 
-			catch(RosException e) {
-			    System.out.println(e.toString());
-			}
-			catch(Exception e) {
-			    System.out.println(e.toString());
-			}
-		    }
-		    */
-
 		    ca = highAct.getNextCUAction(ni);
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
@@ -194,97 +232,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	else if (currentSubAction == -1) {
 	}
 	return ca;
-    }
-
-    private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
-	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
-	System.out.println("DEBUG --- 0");
-	// call symbol grounding to get parameters for the MoveAndGrasp action
-	try {
-	    System.out.println("DEBUG --- 1");
-	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
-	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
-	    System.out.println("DEBUG --- 2");
-	    recentDetectedObject = ActionFeedback.toPose(fb);
-	    System.out.println("DEBUG --- 3");
-	    if(recentDetectedObject == null) {
-	    System.out.println("DEBUG --- 4");
-		return null;
-	    }
-	    System.out.println("DEBUG --- 5");
-
-	    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
-	    System.out.println("DEBUG --- 6");
-	    return pos;
-	}
-	catch (Exception e) {
-	    System.out.println("DEBUG --- 7   " + e.toString());
-	    return null;
-	}
-	
-    }
-    
-    private ArrayList<String> constructArrayFromPose2D(Pose2D pos) {
-	try {
-	    ArrayList<String> l = new ArrayList<String>();
-	    l.add("move");
-	    l.add(Double.toString(pos.x));
-	    l.add(Double.toString(pos.y));
-	    l.add(Double.toString(pos.theta));
-	    return l;
-	}
-	catch(Exception e) {
-	    System.out.println(e.toString());
-	    return null;
-	}
-    }
-    /*
-    private HighLevelActionUnit setParametersGraspPos(Pose2D pos, HighLevelActionUnit mgActUnit) throws NullPointerException, Exception {
-	if(pos == null) {
-	    lastStepActUnit = null;
-	    System.out.println(".COMPLETED_FAIL");
-	    throw new NullPointerException("pos is null");
-	}
-	    
-	ArrayList<String> posInArray = new ArrayList<String>();
-	posInArray.add("move");
-	posInArray.add(Double.toString(pos.x));
-	posInArray.add(Double.toString(pos.y));
-	posInArray.add(Double.toString(pos.theta));
-	if(mgActUnit.setParameters(posInArray)) {
-	    System.out.println("MoveAndGrasp action move action parameters are set...  " + posInArray.toString());
-	    return mgActUnit;
-	}
-	else {
-	    System.out.println("MoveAndGrasp action move action parameters are not set...  " + posInArray.toString());
-	    return null;
-	    
-	    //   currentSubAction++;
-	    //   return handleFailedMessage();		
-	    
-	}
-	}
-    */
-    
-    /**
-     * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
-     */
-    private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
-	Pose pos = new Pose();
-	// check if feedback is for the last action issued
-	
-	if(!feedback.get(0).equals(lastActionType)) {
-	    throw new IllegalArgumentException("Incompatible type");
-	}
-	
-	pos.position.x = Integer.valueOf(feedback.get(2));
-	pos.position.y = Integer.valueOf(feedback.get(3));
-	pos.position.z = Integer.valueOf(feedback.get(4));
-	pos.orientation.x = Integer.valueOf(feedback.get(5));	    
-	pos.orientation.y = Integer.valueOf(feedback.get(6));	    
-	pos.orientation.z = Integer.valueOf(feedback.get(7));	    
-	pos.orientation.w = Integer.valueOf(feedback.get(8));
-	return pos;
     }
 
     private CUAction handleFailedMessage() {
@@ -367,85 +314,72 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return null;
     }
     
-    private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
-	HighLevelActionSequence actionList = new HighLevelActionSequence();
-	
-	// create MoveAndDetectionActionUnit
-	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
-	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
-	
-	spatialInfo.pose.position.x = stm.getFloat();
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord",  workspace);
-	spatialInfo.pose.position.y = stm.getFloat();
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord",  workspace);
-	spatialInfo.pose.position.z = stm.getFloat();
-	
-	
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "widthOfObject",  workspace);
-	spatialInfo.w = stm.getFloat();
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "heightOfObject",  workspace);
-	spatialInfo.h = stm.getFloat();
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "lengthOfObject",  workspace);
-	spatialInfo.l = stm.getFloat();
-	
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qu",  workspace);
-	spatialInfo.pose.orientation.w = stm.getFloat();
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qx",  workspace);
-	spatialInfo.pose.orientation.x = stm.getFloat();
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qy",  workspace);
-	spatialInfo.pose.orientation.y = stm.getFloat();
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qz",  workspace);
-	spatialInfo.pose.orientation.z = stm.getFloat();
-	
-	// call symbolic grounding service for target pose
-	ArrayList<Pose2D> posList;
+    
+    private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
+	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
+	System.out.println("DEBUG --- 0");
+	// call symbol grounding to get parameters for the MoveAndGrasp action
 	try {
-	    posList = calculateScanPositions(spatialInfo);
-	    System.out.println(posList.size());
+	    System.out.println("DEBUG --- 1");
+	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
+	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
+	    System.out.println("DEBUG --- 2");
+	    recentDetectedObject = ActionFeedback.toPose(fb);
+	    System.out.println("DEBUG --- 3");
+	    if(recentDetectedObject == null) {
+	    System.out.println("DEBUG --- 4");
+		return null;
+	    }
+	    System.out.println("DEBUG --- 5");
+
+	    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
+	    System.out.println("DEBUG --- 6");
+	    return pos;
 	}
-	catch(RosException e) {
-	    System.out.println(e.toString()); 
-	    System.out.println(e.getMessage());
-	    throw e;
+	catch (Exception e) {
+	    System.out.println("DEBUG --- 7   " + e.toString());
+	    return null;
 	}
-
-	// TODO:
-	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, "MilkBox", 1);
 	
-	// create MoveAndGraspActionUnit
-	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, "MilkBox", 1, "side");
-
-	// create PutOnTrayActionUnit
-	PutOnTrayActionUnit trayAction = new PutOnTrayActionUnit("side");
-
-	// FoldArmActionUnit
-	//FoldArmActionUnit foldArmAction = new FoldArmActionUnit();
-
-	// create BackToUserActionUnit
-	
-	Pose2D posUser = OntoQueryUtil.parsePose2D(userPose);
-	MoveActionUnit mau = new MoveActionUnit(posUser);
-	
-
-	// create FinishActionUnit
-	FinishActionUnit fau = new FinishActionUnit(true);
-	//MoveActionUnit mau1 = new MoveActionUnit(OntoQueryUtil.parsePose2D("home"));
-	//actionList.appendHighLevelAction(mau1);
-
-	actionList.appendHighLevelAction(mdAction);
-	actionList.appendHighLevelAction(mgAction);
-	actionList.appendHighLevelAction(trayAction);
-	//actionList.appendHighLevelAction(foldArmAction);
-	actionList.appendHighLevelAction(mau);
-	actionList.appendHighLevelAction(fau);
-		
-	System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
-	return actionList;
     }
     
+    private ArrayList<String> constructArrayFromPose2D(Pose2D pos) {
+	try {
+	    ArrayList<String> l = new ArrayList<String>();
+	    l.add("move");
+	    l.add(Double.toString(pos.x));
+	    l.add(Double.toString(pos.y));
+	    l.add(Double.toString(pos.theta));
+	    return l;
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	    return null;
+	}
+    }
+     
+    /**
+     * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
+     */
+    private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
+	Pose pos = new Pose();
+	// check if feedback is for the last action issued
+	
+	if(!feedback.get(0).equals(lastActionType)) {
+	    throw new IllegalArgumentException("Incompatible type");
+	}
+	
+	pos.position.x = Integer.valueOf(feedback.get(2));
+	pos.position.y = Integer.valueOf(feedback.get(3));
+	pos.position.z = Integer.valueOf(feedback.get(4));
+	pos.orientation.x = Integer.valueOf(feedback.get(5));	    
+	pos.orientation.y = Integer.valueOf(feedback.get(6));	    
+	pos.orientation.z = Integer.valueOf(feedback.get(7));	    
+	pos.orientation.w = Integer.valueOf(feedback.get(8));
+	return pos;
+    }
+
     
-
-
     private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
 	ServiceClient<SymbolGroundingScanBasePose.Request, SymbolGroundingScanBasePose.Response, SymbolGroundingScanBasePose> sc =

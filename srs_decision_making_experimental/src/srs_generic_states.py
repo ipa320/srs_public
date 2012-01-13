@@ -292,8 +292,14 @@ class semantic_dm(smach.State):
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'failed':
                 print 'Result return failed'
                 resultLastStep = 2
-            elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stop' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preemptied':
-
+            elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stopped' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preemptied':
+                print 'task stopped'
+                #nextStep = 'stop'
+                #return nextStep
+                #resultLastStep = 3
+                return 'preemptied'
+            
+                """
                 rospy.wait_for_service('task_request')
                 try:
                     requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
@@ -307,6 +313,7 @@ class semantic_dm(smach.State):
                     print "Service call failed: %s"%e
                     return 'failed'
                 resultLastStep = 0
+                """
                 
                 
                 #if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_approach_pose_assisted':

@@ -34,18 +34,6 @@ client = actionlib.SimpleActionClient('/grasp_server', GraspAction)
 class Wait_grasp_server(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded'])
-	print quaternion_from_euler(0.78, 0,0, axes='sxyz')
-	"""
-	print quaternion_from_euler(90,0,0, axes='sxyz')
-	q = []
-	q.append(0)
-	q.append(0.85090352)
-	q.append(0)
-	q.append(0.52532199)
-	e = euler_from_quaternion(q, axes='sxyz')
-	print e 
-	raw_input("Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-	"""
 
     def execute(self, userdata):
         rospy.loginfo('Executing state WAIT_GRASP_SERVER')
@@ -79,7 +67,6 @@ class Read_DB(smach.State):
 		rospy.loginfo("%d grasping configuration for this object." %len(grasp_configuration))	
 		userdata.grasp_configuration = grasp_configuration
 	        return 'succeeded'
-
 
 
 # define state MOVE_ARM
@@ -123,24 +110,6 @@ class Move_arm(smach.State):
 	m = matrix([[m[0][0], m[0][1], m[0][2], m[0][3]], [m[1][0], m[1][1], m[1][2], m[1][3]], [m[2][0], m[2][1], m[2][2], m[2][3]], [m[3][0], m[3][1], m[3][2], m[3][3]]])
 	return m
 
-    def getTransformation(self, object_pose):
-
-	#OpenRAVE object position.
-	OR_pose = PoseStamped()
-	OR_pose.header.stamp = rospy.Time.now()
-	OR_pose.header.frame_id = "/map"
-	OR_pose.pose.position.x = 0
-	OR_pose.pose.position.y = 0
-	OR_pose.pose.position.z = 0
-	OR_pose.pose.orientation.x = 0
-	OR_pose.pose.orientation.y = 0
-	OR_pose.pose.orientation.z = 0
-	OR_pose.pose.orientation.w = 1
-
-	inicial = self.matrix_from_graspPose(OR_pose)
-	final = self.matrix_from_graspPose(object_pose)
-	transformation = final*inicial.I
-	return transformation
 
 
     def execute(self, userdata):
@@ -158,7 +127,7 @@ class Move_arm(smach.State):
 	while sub.get_num_connections() == 0:
 		time.sleep(0.3)
 		continue
-	"""
+	
 	#Detect
 	self.srv_name_object_detection = '/object_detection/detect_object'
 	detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
@@ -174,32 +143,14 @@ class Move_arm(smach.State):
 		index = int(raw_input("Select object to grasp: "))
 
 	Object_pose = listener.transformPose("/base_link", res.object_list.detections[index].pose)
-	"""
-
-	########### [chapuza hasta que la deteccion funcione]
-	#x = ((float(int(random.uniform(-1,0)*100)))/100)
-	#y = ((float(int(random.uniform(-0.5,0.5)*100)))/100)
-
-	Object_pose = PoseStamped()
-	Object_pose.header.stamp = rospy.Time.now()
-	Object_pose.header.frame_id = "/map"
-	Object_pose.pose.position.x = -0.6
-	Object_pose.pose.position.y = 0
-	Object_pose.pose.position.z = 0.55 
-	Object_pose.pose.orientation.x = 0
-	Object_pose.pose.orientation.y = 0
-	Object_pose.pose.orientation.z = 0
-	Object_pose.pose.orientation.w = 1
-	Object_pose = listener.transformPose("/base_link", Object_pose)
-	print Object_pose
-	########### [/chapuza hasta que la deteccion funcione]
+	
 
 	pre_grasp_pose = userdata.grasp_configuration[self.counter].pre_grasp
 	grasp_pose = userdata.grasp_configuration[self.counter].palm_pose
-	tf_matrix = self.getTransformation(Object_pose)
 
-	pre_trans = tf_matrix*self.matrix_from_graspPose(pre_grasp_pose)
-	grasp_trans = tf_matrix*self.matrix_from_graspPose(grasp_pose)
+	# TODO: Obtener matriz de transformacion
+	pre_trans = self.matrix_from_graspPose(Object_pose) * self.matrix_from_graspPose(pre_grasp_pose)
+	grasp_trans = self.matrix_from_graspPose(Object_pose) * self.matrix_from_graspPose(grasp_pose)
 
 	t = translation_from_matrix(pre_trans)
 	q = quaternion_from_matrix(pre_trans)
@@ -241,7 +192,6 @@ class Move_arm(smach.State):
 	g.pose.position.z += offset_z
 	
 
-	#Sometimes the IKSolver does not find solutions for a valid position. For that, we call it 20 times.
 	sol = False
 	for i in range(0,10):
 		(pre_grasp_conf, error_code) = self.callIKSolver(current_joint_configuration, pre)		
@@ -281,7 +231,6 @@ class Move_arm(smach.State):
 	raw_input("ARM: Grasp...")
 	sss.move("arm", [grasp_conf])
 
-
 	userdata.grasp_config = userdata.grasp_configuration[self.counter]
 	return 'succeeded'
 
@@ -300,7 +249,6 @@ class Move_hand(smach.State):
 	#values = grasping_functions.ROS_to_script_server()
 	sss.move("sdh", [list(userdata.grasp_config.sconfiguration.points[0].positions)])
 	return 'succeeded'
-
 
 
 

@@ -17,7 +17,7 @@ from simple_script_server import *
 
 
 from numpy import matrix
-import grasping_functions
+
 from cob_object_detection_msgs.msg import *
 from cob_object_detection_msgs.srv import *
 from srs_object_database.msg import *
@@ -33,15 +33,14 @@ class GraspScript(script):
 		# initialize components (not needed for simulation)
 		self.sss = simple_script_server()
 
-		"""
 		self.sss.init("tray")
 		self.sss.init("torso")
 		self.sss.init("arm")
 		self.sss.init("sdh")
 		self.sss.init("base")
-		"""
+		
 		# move to initial positions
-		"""
+		
 		handle_arm = self.sss.move("arm","folded",False)
 		handle_torso = self.sss.move("torso","home",False)
 		handle_sdh = self.sss.move("sdh","home",False)
@@ -51,8 +50,8 @@ class GraspScript(script):
 		handle_sdh.wait()
 		if not self.sss.parse:
 			print "Please localize the robot with rviz"
-		#self.sss.wait_for_input()
-		"""
+		self.sss.wait_for_input()
+		
 		
 		self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
 		self.grasp_client = actionlib.SimpleActionClient('/grasp_server', GraspAction)
@@ -63,10 +62,10 @@ class GraspScript(script):
 		rospy.sleep(2)
 	
 		# prepare for grasping
-		#self.sss.move("base","kitchen")
+		self.sss.move("base","kitchen")
 		self.sss.move("arm","pregrasp")
-		#handle_sdh = self.sss.move("sdh","cylopen",False)
-		#handle_sdh.wait()
+		handle_sdh = self.sss.move("sdh","cylopen",False)
+		handle_sdh.wait()
 
 
 		#current_joint_configuration
@@ -77,7 +76,6 @@ class GraspScript(script):
 
 		
 		#Detect
-		#raw_input("...")
 		self.srv_name_object_detection = '/object_detection/detect_object'
 		detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
 		req = DetectObjectsRequest()
@@ -86,11 +84,11 @@ class GraspScript(script):
 
 		for i in range(0,len(res.object_list.detections)):
 			print str(i)+": "+res.object_list.detections[i].label
-		"""
+		
 		index = -1
 		while (index < 0):
 			index = int(raw_input("Select object to grasp: "))
-		"""
+		
 		index = 1
 
 		obj = listener.transformPose("/base_link", res.object_list.detections[index].pose)
@@ -100,9 +98,8 @@ class GraspScript(script):
         		rospy.logerr('Waiting for /grasp_server...')
 		rospy.loginfo('/grasp_server found')
 
-		object_id = 1 #Milk_box
-		pose_id = "-X"
-		#pose_id = raw_input("pose_id: ")
+		object_id = 1 #getID("milk")
+		pose_id = raw_input("pose_id: ")
 
 		goal = GraspGoal(object_id=object_id, pose_id=pose_id)
 		self.grasp_client.send_goal(goal)
@@ -117,37 +114,24 @@ class GraspScript(script):
 			grasp_pose = grasp_configuration[i].palm_pose
 
 
-			########################### TRANSFORMATION ########################## 
-			inicial = self.matrix_from_graspPose(PoseStamped())
-			final = self.matrix_from_graspPose(obj)
 
-			pre_matrix = self.matrix_from_graspPose(pre_grasp_pose)
-			final[0,3] = 0
-			final[1,3] = 0
-			final[2,3] = 0
-			pre_matrix[0,3] = 0
-			pre_matrix[1,3] = 0
-			pre_matrix[2,3] = 0
+			# TODO: Transform into /base_link pose --------------------------------
+			pre_trans = self.matrix_from_graspPose(obj) * self.matrix_from_graspPose(pre_grasp_pose) 
+			grasp_trans = self.matrix_from_graspPose(obj) *  self.matrix_from_graspPose(grasp_pose)
+			# ---------------------------------------------------------------------
 
-			rotacion = final * inicial.I
-
-			pre_trans = pre_matrix * rotacion
-			########################### /TRANSFORMATION ######################### 
-
-			grasp_trans = pre_trans	
 
 			t = translation_from_matrix(pre_trans)
 			q = quaternion_from_matrix(pre_trans)
 			tg = translation_from_matrix(grasp_trans)
 			qg = quaternion_from_matrix(grasp_trans)
 
-
 			pre = PoseStamped()
 			pre.header.stamp = rospy.Time.now()
 			pre.header.frame_id = "/base_link"
-			pre.pose.position.x = -0.5
-			pre.pose.position.y = -0.0
-			pre.pose.position.z = 0.65 
+			pre.pose.position.x = t[0]
+			pre.pose.position.y = t[1]
+			pre.pose.position.z = t[2] 
 			pre.pose.orientation.x = q[0]
 			pre.pose.orientation.y = q[1]
 			pre.pose.orientation.z = q[2]
@@ -157,23 +141,20 @@ class GraspScript(script):
 			g = PoseStamped()
 			g.header.stamp = rospy.Time.now()
 			g.header.frame_id = "/base_link"
-			g.pose.position.x = -0.5
-			g.pose.position.y = -0.0
-			g.pose.position.z = 0.65
+			g.pose.position.x = tg[0]
+			g.pose.position.y = tg[1]
+			g.pose.position.z = tg[2]
 			g.pose.orientation.x = qg[0]
 			g.pose.orientation.y = qg[1]
 			g.pose.orientation.z = qg[2]
 			g.pose.orientation.w = qg[3]
 
 	
-			offset_x = (g.pose.position.x - pre.pose.position.x)/2
-			offset_y = (g.pose.position.y - pre.pose.position.y)/2
-			offset_z = (g.pose.position.z - pre.pose.position.z)/2
-
-			offset_x = 0
-			offset_y = 0
-			offset_z = 0
+			offset_x = 0 #(g.pose.position.x - pre.pose.position.x)/2
+			offset_y = 0 #(g.pose.position.y - pre.pose.position.y)/2
+			offset_z = 0 #(g.pose.position.z - pre.pose.position.z)/2
 	
+
 			pre.pose.position.x += offset_x
 			pre.pose.position.y += offset_y
 			pre.pose.position.z += offset_z
@@ -181,11 +162,6 @@ class GraspScript(script):
 			g.pose.position.y += offset_y
 			g.pose.position.z += offset_z
 
-
-			print pre.pose.orientation
-			print "----"
-
-			#Sometimes the IKSolver does not find solutions for a valid position. For that, we call it 10 times.
 			sol = False
 			for w in range(0,10):
 				(pre_grasp_conf, error_code) = self.callIKSolver(current_joint_configuration, pre)		
@@ -201,20 +177,19 @@ class GraspScript(script):
 
 
 			if sol:
-				rospy.loginfo(str(i)+": Ik found")
-				#res = raw_input("Execute this grasp? (y/n): ")
-				res = "y"
+				res = raw_input("Execute this grasp? (y/n): ")
+
 				if res != "y" or i<2 :
 					continue
 				else:
 					# execute grasp
-					#self.sss.say(["I am grasping the object now."], False)
+					self.sss.say(["I am grasping the object now."], False)
 					handle_arm = self.sss.move("arm", [pre_grasp_conf], False)
-					#self.sss.move("sdh", "cylopen")
+					self.sss.move("sdh", "cylopen")
 					handle_arm.wait()
-					#self.sss.move("arm", [grasp_conf])
-					#self.sss.move("sdh", [list(grasp_configuration[i].sconfiguration.points[0].positions)])
-					"""
+					self.sss.move("arm", [grasp_conf])
+					self.sss.move("sdh", [list(grasp_configuration[i].sconfiguration.points[0].positions)])
+					
 					# place obj on tray
 					handle01 = self.sss.move("arm","grasp-to-tray",False)
 					self.sss.move("tray","up")
@@ -230,9 +205,8 @@ class GraspScript(script):
 					#self.sss.move("base","order")
 					self.sss.say("Here's your drink.")
 					self.sss.move("torso","nod")
-					"""
+					
 					return 0
-
 
 			else:
 				rospy.logerr(str(i)+": Ik grasp FAILED")
@@ -255,8 +229,6 @@ class GraspScript(script):
 		for o in resp.solution.joint_state.position:
 			result.append(o)
 		return (result, resp.error_code)
-
-
 
 
 

@@ -47,14 +47,14 @@ public class RosUtil {
 	Subscriber.QueueingCallback<ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped> callback =
 	    new Subscriber.QueueingCallback<ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped>();
 	Subscriber<ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped> sub =
-	    KnowledgeEngine.nodehandle.subscribe("/robot_pose_ekf/odom_combined", new ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped(), callback, 10);
+	    KnowledgeEngine.nodeHandle.subscribe("/robot_pose_ekf/odom_combined", new ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped(), callback, 10);
 	
-	KnowledgeEngine.nodehandle.spinOnce();
+	KnowledgeEngine.nodeHandle.spinOnce();
 	while (!callback.isEmpty()) {
 	    pos = callback.pop().pose.pose;
 	    System.out.println(pos);
 	}
-	KnowledgeEngine.nodehandle.shutdown();
+	KnowledgeEngine.nodeHandle.shutdown();
 	sub.shutdown();
 	}
 	catch(RosException e) {

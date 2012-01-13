@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
 
-	<!-- send table urdf to param server -->
-	<param name="table_description" command="$(find xacro)/xacro.py $(find cob_gazebo_worlds)/objects/table_ikea.urdf.xacro" />
+<!-- send cup to param server -->
+<param name="milk_box" textfile="$(find cob_gazebo_worlds)/objects/milk_box.model" />
 
-	<!-- push table_description to factory and spawn robot in gazebo -->
-	<node name="spawn_table" pkg="gazebo" type="spawn_model" args="-urdf -param table_description -x 0.67 -y 1.26 -z 0.74 -model table_model" respawn="false" output="screen" />
+<!-- spawn model in gazebo -->
+<node name="spawn_milk_box" pkg="gazebo" type="spawn_model" args="-gazebo -param milk_box -x 2.5 -y -1.5 -z 1.02 -R 0 -P 0 -Y 0 -model milk_box" respawn="false" output="screen" />
 
 </launch>

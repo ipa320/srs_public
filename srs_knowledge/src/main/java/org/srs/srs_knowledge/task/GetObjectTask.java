@@ -172,11 +172,13 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    return handleFailedMessage();
 		default: 
 		    System.out.println(highAct.getActionType());
-		    if(highAct.ifParametersSet()) {
-			System.out.println("OK. Parameters set");
+		    if(!highAct.ifParametersSet()) {
+			System.out.println("Parameters not set");
+			lastStepActUnit = null;
+			return handleFailedMessage();
 		    }
-
-		    if(highAct.getActionType().equals("MoveAndGrasp") && highAct.ifParametersSet()) {
+		    /*
+		    if(highAct.getActionType().equals("MoveAndGrasp") && !highAct.ifParametersSet()) {
 			System.out.println("OK  default");
 			// call symbol grounding to get parameters for the MoveAndGrasp action
 			try {
@@ -212,7 +214,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			    System.out.println(e.toString());
 			}
 		    }
-		    
+		    */
+
 		    ca = highAct.getNextCUAction(ni);
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
@@ -233,19 +236,27 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 
     private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
 	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
-	System.out.println("OK  default");
+		    System.out.println("DEBUG --- 0");
 	// call symbol grounding to get parameters for the MoveAndGrasp action
 	try {
+	    System.out.println("DEBUG --- 1");
 	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
 	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
+	    System.out.println("DEBUG --- 2");
 	    recentDetectedObject = ActionFeedback.toPose(fb);
+	    System.out.println("DEBUG --- 3");
 	    if(recentDetectedObject == null) {
+	    System.out.println("DEBUG --- 4");
 		return null;
 	    }
+	    System.out.println("DEBUG --- 5");
+
 	    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
+	    System.out.println("DEBUG --- 6");
 	    return pos;
 	}
 	catch (Exception e) {
+	    System.out.println("DEBUG --- 7   " + e.toString());
 	    return null;
 	}
 	
@@ -290,8 +301,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    //   return handleFailedMessage();		
 	    
 	}
-    }
-*/
+	}
+    */
     
     /**
      * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
@@ -314,9 +325,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return pos;
     }
 
-
-
-private CUAction handleFailedMessage() {
+    private CUAction handleFailedMessage() {
 	currentSubAction++;
 	
 	System.out.println("HANDLE FAILED MESSAGE.... CURRENTSUBACTION IS AT:  " + currentSubAction);
@@ -351,16 +360,21 @@ private CUAction handleFailedMessage() {
 	return null;
     }
     
-private CUAction handleSuccessMessage(ActionFeedback fb) {
+    private CUAction handleSuccessMessage(ActionFeedback fb) {
 	// TODO: 
+    
 	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
 	
 	if(currentHLActSeq.hasNextHighLevelActionUnit()) {
 	    HighLevelActionUnit nextHighActUnit = currentHLActSeq.getNextHighLevelActionUnit();
-	    
 	    // set feedback? 
-	    if(nextHighActUnit.getActionType().equals("MoveAndGrasp") && nextHighActUnit.ifParametersSet()) {
+	    if(nextHighActUnit.getActionType().equals("MoveAndGrasp") && !nextHighActUnit.ifParametersSet()) {
+
 		Pose2D posBase = calculateGraspPosFromFB(fb);
+		if(posBase == null) {
+		    return handleFailedMessage();		
+		}
+
 		ArrayList<String> basePos = constructArrayFromPose2D(posBase);
 		if(!nextHighActUnit.setParameters(basePos)) {
 		    //currentSubAction++;
@@ -420,7 +434,6 @@ private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual w
 	spatialInfo.pose.orientation.y = stm.getFloat();
 	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qz",  workspace);
 	spatialInfo.pose.orientation.z = stm.getFloat();
-
 	
 	// call symbolic grounding service for target pose
 	ArrayList<Pose2D> posList;
@@ -453,9 +466,6 @@ private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual w
 	MoveActionUnit mau = new MoveActionUnit(posUser);
 	System.out.println("Create MoveActionUnit 3");
 
-	//TODO: RE_ORDERED FOR TESTING
-
-	
 	//MoveActionUnit mau1 = new MoveActionUnit(OntoQueryUtil.parsePose2D("home"));
 	//actionList.appendHighLevelAction(mau1);
 
@@ -472,7 +482,7 @@ private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual w
     
 
 
-private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
+    private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
 	ServiceClient<SymbolGroundingScanBasePose.Request, SymbolGroundingScanBasePose.Response, SymbolGroundingScanBasePose> sc =
 	    nodeHandle.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
@@ -490,7 +500,7 @@ private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose t
 	Pose2D pos = new Pose2D();
 	
 	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc =
-	    nodeHandle.serviceClient("symbol_grounding_grasp_base_pose" , new SymbolGroundingGraspBasePoseExperimental(), false);
+	    nodeHandle.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
 	
 	SymbolGroundingGraspBasePoseExperimental.Request rq = new SymbolGroundingGraspBasePoseExperimental.Request();
 	rq.parent_obj_geometry = furnitureInfo;

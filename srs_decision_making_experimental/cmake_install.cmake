@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Install script for directory: /home/renxi/git/care-o-bot/srs/srs_decision_making_experimental
+=======
+# Install script for directory: /home/ze/git/care-o-bot/srs/srs_decision_making_experimental
+>>>>>>> jizecn/master
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -38,7 +42,13 @@ ELSE(CMAKE_INSTALL_COMPONENT)
   SET(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 ENDIF(CMAKE_INSTALL_COMPONENT)
 
+<<<<<<< HEAD
 FILE(WRITE "/home/renxi/git/care-o-bot/srs/srs_decision_making_experimental/${CMAKE_INSTALL_MANIFEST}" "")
 FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
   FILE(APPEND "/home/renxi/git/care-o-bot/srs/srs_decision_making_experimental/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+=======
+FILE(WRITE "/home/ze/git/care-o-bot/srs/srs_decision_making_experimental/${CMAKE_INSTALL_MANIFEST}" "")
+FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
+  FILE(APPEND "/home/ze/git/care-o-bot/srs/srs_decision_making_experimental/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+>>>>>>> jizecn/master
 ENDFOREACH(file)

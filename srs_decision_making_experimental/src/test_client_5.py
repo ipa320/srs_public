@@ -37,7 +37,7 @@ if __name__ == '__main__':
     try:
         # Initializes a rospy node so that the SimpleActionClient can
         # publish and subscribe over ROS.
-        rospy.init_node('dm_client1')
+        rospy.init_node('dm_client5')
         result = DM_client()
         rospy.loginfo('result %s',result)
         # print ("Result:" result)

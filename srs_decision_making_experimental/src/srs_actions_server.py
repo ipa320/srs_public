@@ -449,10 +449,6 @@ class SRS_DM_ACTION(object):
             self._as.set_succeeded(self._result)
             return
         if outcome == "task_preempted":
-            current_task_info.set_customised_preempt_acknowledged(False)
-            current_task_info.set_customised_preempt_required(False)
-            current_task_info.set_stop_acknowledged(False)
-            current_task_info.set_stop_acknowledged(False)
             self._result.return_value=2
             self._as.set_preempted(result, "stopped before complete or preempted by another task")
         #for all other cases outcome == "task_aborted": 

@@ -28,6 +28,11 @@ class state_checking_during_operation (smach.State):
     def execute (self, userdata):
         global current_task_info
         
+        print "##########################"
+        print current_task_info.get_stop_required()
+        print self.state_checking_outcome
+        print "##########################"
+
         
 
         

@@ -259,6 +259,11 @@ class semantic_dm(smach.State):
             #nextStep = 'stop'
             #return nextStep
             #resultLastStep = 3
+            
+            current_task_info.set_customised_preempt_acknowledged(False)
+            current_task_info.set_customised_preempt_required(False)
+            current_task_info.set_stop_acknowledged(False)
+            current_task_info.set_stop_required(False)
             return 'preempted'
         
         #call srs ros knowledge service for solution

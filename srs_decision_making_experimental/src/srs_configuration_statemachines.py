@@ -36,26 +36,26 @@ class state_checking_during_paused (smach.State):
         
         while not self.preempt_requested():
             #if stop command has been received during the pause
-            if current_task_info._as.stop_required:
+            if current_task_info.get_stop_required():
                 #reset the flag to normal
-                current_task_info._as.stop_acknowledged = True
+                current_task_info.set_stop_acknowledged(True)
                 #complete the state and return stop
                 return 'stopped'
             
             #if another command with higher priority received during the pause
-            elif current_task_info._as.customised_preempt_required:
+            elif current_task_info.get_customised_preempt_required():
                 #reset the flag to normal
-                current_task_info._as.customised_preempt_acknowledged = True
+                current_task_info.set_customised_preempt_acknowledged(True)
                 #complete the state and return customised_preempted
                 return 'preempted'
             
             #if task is resumed
-            elif not current_task_info._as.customised_pause_required:
+            elif not current_task_info.get_pause_required():
                 #return to last operation
                 return 'resume'
                         
-            elif rospy.is_shutdown:
-                return 'preempted' 
+            #elif rospy.is_shutdown:
+            #    return 'preempted' 
             
             #sleep 1 sec and check again
             rospy.sleep(1)

@@ -16,7 +16,7 @@ import roslib; roslib.load_manifest('srs_decision_making_experimental')
 import rospy
 import smach
 import smach_ros
-import sys, os, traceback, optparse, time, string
+import sys, os, traceback, optparse, time, string, threading
 from actionlib import *
 from actionlib.msg import *
 from smach import Iterator, StateMachine, CBState
@@ -160,17 +160,15 @@ class SRS_DM_ACTION(object):
         self._parameter = ""
         self._as.start()
         self.robot_initialised= False
-        self.customised_preempt_required = False
-        self.customised_preempt_acknowledged = False
-        self.pause_required = False
-        self.stop_required = False 
-        self.stop_acknowledged = False
          
                 
         #self._as.register_goal_callback(self.goal_cb)
         self._as.register_preempt_callback(self.priority_cb)
         
         rospy.loginfo("Waiting for wake up the server ...")
+        
+    
+
         
     def robot_initialisation_process(self):
         if not self.robot_initialised :
@@ -276,31 +274,41 @@ class SRS_DM_ACTION(object):
         # this function override the default policy by compare the priority 
         self._as.preempt_request = False # overwrite the default preempt policy of the simple action server
         
+        global current_task_info
+        
+        print "00000000000000000000000000"
         #checking if there is a new goal and comparing the priority    
         if self._as.next_goal.get_goal() and self._as.new_goal:
+            print "111111111111111111111111111"
+            print self._as.next_goal.get_goal()
+            print self._as.new_goal
+            
             #new goal exist
             if self._as.next_goal.get_goal().action == 'stop':
-                self.stop_required = True
+                current_task_info.set_stop_required(True)
             elif self._as.next_goal.get_goal().action == 'pause':
-                self.pause_required = True 
+                current_task_info.set_pause_required(True) 
+                self._as.next_goal.set_accepted("")
                 self._as.next_goal.set_succeeded(None, 'pause acknowledged')
-            elif self._as.new_goal.get_goal().action == 'resume':
-                if self.pause_required == True:   # already paused
-                    self.pause_required  = False
-                    self._ac.next_goal.set_succeeded(None, 'resume acknowledged')
+            elif self._as.next_goal.get_goal().action == 'resume':
+                if current_task_info.get_pause_required() == True:   # already paused
+                    current_task_info.set_pause_required(False)
+                    self._as.next_goal.set_accepted("")
+                    self._as.next_goal.set_succeeded(None, 'resume acknowledged')
                 else:
-                    self._ac.next_goal.set_aborted(None, 'not paused, no need for resuming') 
+                    self._as.next_goal.set_aborted(None, 'not paused, no need for resuming') 
             elif self._as.next_goal.get_goal().priority > self._as.current_goal.get_goal().priority:
-                self.customised_preempt_required = True
+                current_task_info.set_customised_preempt_required(True)
         else:
             # pre-empty request is come from the same goal 
+            print "222222222222222222222222222"
             self._sm_srs.request_preempt()             
                 
-    def preempt_check(self):
-        if self.customised_preempt_required:
-            self.customised_preempt_required = False;
-            return True;
-        return False;
+    #def preempt_check(self):
+    #    if self.get_customised_preempt_required()==True:
+    #        self.set_customised_preempt_required(False)
+    #        return True
+    #    return False
    
         
     def execute_cb(self, gh):
@@ -375,10 +383,10 @@ class SRS_DM_ACTION(object):
         
         #set outcomes based on the execution result       
                 
-        if self.preempt_check()==True:
-            self._result.return_value=2
-            self._as.set_preempted(self._result)
-            return
+        #if self.preempt_check()==True:
+        #    self._result.return_value=2
+        #    self._as.set_preempted(self._result)
+        #    return
         
         if outcome == "task_succeeded": 
             self._result.return_value=3

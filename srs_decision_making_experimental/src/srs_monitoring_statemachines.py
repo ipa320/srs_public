@@ -23,13 +23,32 @@ This file contains concurrent state machines which provide parallel interruption
 class state_checking_during_operation (smach.State):
     def __init__(self):
         smach.State.__init__(self , outcomes =['stopped', 'customised_preempted', 'paused', 'preempted'])
-        self.state_checking_outcome = 'preempted'  #default outcome
+        self.state_checking_outcome = ''  #default outcome
     
     def execute (self, userdata):
         global current_task_info
-        while not self.preempt_requested():
+        
+        
+
+        
+        while (not self.preempt_requested()):
+            
+            print '###########################################'
+            print "preempt requested"
+            print self.preempt_requested()
+            print "stop required"
+            print current_task_info.stop_required
+            print "pause required"
+            print current_task_info.pause_required
+            print "customised_preempt_required"
+            print current_task_info.customised_preempt_required
+            print "outcome"
+            print self.state_checking_outcome
+            print '###########################################'
+            #while True:
+            rospy.sleep(1)
             #if stop command has been received
-            if current_task_info._srs_as.stop_required:
+            if current_task_info.get_stop_required()==True:
 
                 #update the final outcome to stopped
                 self.state_checking_outcome  = 'stopped'
@@ -38,16 +57,16 @@ class state_checking_during_operation (smach.State):
                 #otherwise wait for the main operation which is not stoppable to be completed
                 if current_task_info.stopable():
                     #acknowledge the request
-                    current_task_info._srs_as.stop_acknowledged =True
+                    current_task_info.set_stop_acknowledged(True)
                     return self.state_checking_outcome
                 
-            elif current_task_info._srs_as.pause_required:
+            elif current_task_info.get_pause_required()==True:
                 #update the final outcome to stopped
                 self.state_checking_outcome  = 'paused'
                 return self.state_checking_outcome
             
             #if another command with higher priority received
-            elif current_task_info._srs_as.customised_preempt_required:
+            elif current_task_info.get_customised_preempt_required()==True:
 
                 #update the final outcome to customised_preempted
                 self.state_checking_outcome  = 'customised_preempted'
@@ -56,24 +75,37 @@ class state_checking_during_operation (smach.State):
                 #otherwise wait for the main operation which is not stoppable to be completed
                 if current_task_info.stopable():
                     #acknowledge the request
-                    current_task_info._srs_as.customised_preempt_acknowledged  = True
+                    current_task_info.set_customised_preempt_acknowledged(True)
                     return self.state_checking_outcome
                 
-            elif rospy.is_shutdown:
-                return 'preempted' 
+            #elif rospy.is_shutdown:
+            #    return 'preempted' 
+
+        if (self.preempt_requested()):
+            #preempted by system        
+            self.service_preempt()
+            self.state_checking_outcome = 'preempted'
+            print '??????????????????????????????????????'
+            print ('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+            print '??????????????????????????????????????'
+            print '###########################################'
+            print "preempt requested"
+            print self.preempt_requested()
+            print "stop required"
+            print current_task_info.stop_required
+            print "pause required"
+            print current_task_info.pause_required
+            print "customised_preempt_required"
+            print current_task_info.customised_preempt_required            
+            print "outcome"
+            print self.state_checking_outcome
+            print '###########################################'
             
-            #sleep 1 sec and check again
-            rospy.sleep(1)
-        
-        #preempted by system        
-        self.service_preempt()
-        
-        if self.state_checking_outcome == 'stopped':
-            current_task_info._srs_as.stop_acknowledged =True
-        if self.state_checking_outcome == 'customised_preempted':
-            current_task_info._srs_as.customised_preempt_acknowledged  = True
-        
-        return self.state_checking_outcome
+            if self.state_checking_outcome == 'stopped':
+                current_task_info.set_stop_acknowledged(True)
+            if self.state_checking_outcome == 'customised_preempted':
+                current_task_info.set_customised_preempt_acknowledged(True)
+            return self.state_checking_outcome
 
 # gets called when ANY child state terminates
 def common_child_term_cb(outcome_map):

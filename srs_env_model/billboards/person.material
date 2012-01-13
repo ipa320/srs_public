@@ -1,0 +1,15 @@
+material Material.Person
+{
+        technique
+        {
+                pass
+                {
+                        depth_write off
+
+                        texture_unit
+                        {
+                                texture images/person.png
+                        }
+                }
+        }
+}

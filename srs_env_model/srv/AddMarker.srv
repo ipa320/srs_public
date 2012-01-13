@@ -1,0 +1,8 @@
+string frame_id             # Fixed Frame
+string name                 # Marker name
+string description          # Marker description
+uint8 type                  # Marker type
+geometry_msgs/Pose pose     # position and orientation of the marker 
+geometry_msgs/Vector3 scale # scale of the marker
+std_msgs/ColorRGBA color    # color of the marker
+--- 

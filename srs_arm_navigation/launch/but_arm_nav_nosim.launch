@@ -1,0 +1,8 @@
+<launch>
+
+  <include file="$(find srs_arm_navigation)/launch/planning_scene_warehouse_viewer_cob3.launch" />
+  <include file="$(find srs_arm_navigation_percp)/launch/kinect-obst-perception.launch"/>
+  <!--<include file="$(find cob_bringup)/tools/dashboard.launch" />-->
+
+</launch>
+

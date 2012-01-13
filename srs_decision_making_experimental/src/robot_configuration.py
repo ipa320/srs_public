@@ -40,7 +40,7 @@ robot_config_need_no_action = ['DM','NC','CALCULATION']
 
 #Navigation with no object 
 #pre-config
-robot_config_pre['navigation_no_object']['torso']='DM'
+robot_config_pre['navigation_no_object']['torso']='home'
 robot_config_pre['navigation_no_object']['tray']='down'
 robot_config_pre['navigation_no_object']['arm']='folded'
 robot_config_pre['navigation_no_object']['sdh']='DM'
@@ -55,7 +55,7 @@ robot_config_post['navigation_no_object']['head']='front'
 
 #Navigation with object on tray and no object in sdh
 #pre-config
-robot_config_pre['navigation_object_on_tray']['torso']='DM'
+robot_config_pre['navigation_object_on_tray']['torso']='home'
 robot_config_pre['navigation_object_on_tray']['tray']='up'
 robot_config_pre['navigation_object_on_tray']['arm']='folded'
 robot_config_pre['navigation_object_on_tray']['sdh']='DM'
@@ -70,7 +70,7 @@ robot_config_post['navigation_object_on_tray']['head']='front'
 
 #Navigation with no object on tray but with object in sdh
 #pre-config
-robot_config_pre['navigation_object_in_sdh']['torso']='DM'
+robot_config_pre['navigation_object_in_sdh']['torso']='home'
 robot_config_pre['navigation_object_in_sdh']['tray']='down'
 robot_config_pre['navigation_object_in_sdh']['arm']='hold'
 robot_config_pre['navigation_object_in_sdh']['sdh']='NC'  #should be closed, but the exact location is calculated early during grasp
@@ -87,7 +87,7 @@ robot_config_post['navigation_object_in_sdh']['head']='front'
 
 #Navigation with  object on tray and object in sdh
 #pre-config
-robot_config_pre['navigation_object_on_tray_and_sdh']['torso']='DM'
+robot_config_pre['navigation_object_on_tray_and_sdh']['torso']='home'
 robot_config_pre['navigation_object_on_tray_and_sdh']['tray']='up'
 robot_config_pre['navigation_object_on_tray_and_sdh']['arm']='hold'
 robot_config_pre['navigation_object_on_tray_and_sdh']['sdh']='NC'  #should be closed, but the exact location is calculated early during grasp

@@ -27,9 +27,15 @@ class state_checking_during_operation (smach.State):
     
     def execute (self, userdata):
         global current_task_info
-        while not self.preempt_requested():
+        
+        
+
+        
+        while (not self.preempt_requested()):
+
+            rospy.sleep(1)
             #if stop command has been received
-            if current_task_info._srs_as.stop_required:
+            if current_task_info.get_stop_required()==True:
 
                 #update the final outcome to stopped
                 self.state_checking_outcome  = 'stopped'
@@ -38,16 +44,16 @@ class state_checking_during_operation (smach.State):
                 #otherwise wait for the main operation which is not stoppable to be completed
                 if current_task_info.stopable():
                     #acknowledge the request
-                    current_task_info._srs_as.stop_acknowledged =True
+                    current_task_info.set_stop_acknowledged(True)
                     return self.state_checking_outcome
                 
-            elif current_task_info._srs_as.pause_required:
+            elif current_task_info.get_pause_required()==True:
                 #update the final outcome to stopped
                 self.state_checking_outcome  = 'paused'
                 return self.state_checking_outcome
             
             #if another command with higher priority received
-            elif current_task_info._srs_as.customised_preempt_required:
+            elif current_task_info.get_customised_preempt_required()==True:
 
                 #update the final outcome to customised_preempted
                 self.state_checking_outcome  = 'customised_preempted'
@@ -56,24 +62,19 @@ class state_checking_during_operation (smach.State):
                 #otherwise wait for the main operation which is not stoppable to be completed
                 if current_task_info.stopable():
                     #acknowledge the request
-                    current_task_info._srs_as.customised_preempt_acknowledged  = True
+                    current_task_info.set_customised_preempt_acknowledged(True)
                     return self.state_checking_outcome
                 
-            elif rospy.is_shutdown:
-                return 'preempted' 
-            
-            #sleep 1 sec and check again
-            rospy.sleep(1)
-        
-        #preempted by system        
+            #elif rospy.is_shutdown:
+            #    return 'preempted' 
+
+        #preempted
         self.service_preempt()
-        print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        
+            
         if self.state_checking_outcome == 'stopped':
-            current_task_info._srs_as.stop_acknowledged =True
+            current_task_info.set_stop_acknowledged(True)
         if self.state_checking_outcome == 'customised_preempted':
-            current_task_info._srs_as.customised_preempt_acknowledged  = True
-        
+            current_task_info.set_customised_preempt_acknowledged(True)
         return self.state_checking_outcome
 
 # gets called when ANY child state terminates
@@ -82,26 +83,24 @@ def common_child_term_cb(outcome_map):
     #checking if the termination is triggered by the completion of the main function
     #This will pre-empty the state_checking_during_operation state
     if outcome_map['MAIN_OPERATION'] is not None:   
-        
+        return True
     
-        if outcome_map['MAIN_OPERATION'] == 'preempted':  
+    #termination is triggered by the checking state 
+    #stop command received
+    if outcome_map['State_Checking_During_Operation'] == 'stopped':      
+        return True
     
-            #termination is triggered by the checking state 
-            #stop command received
-            if outcome_map['State_Checking_During_Operation'] == 'stopped':      
-                return True
-            
-            #another command with higher priority received
-            if outcome_map['State_Checking_During_Operation'] == 'customised_preempted':
-                return True
-            
-            #pause command received
-            if outcome_map['State_Checking_During_Operation'] == 'paused':
-                return True
-            
-            #preempty or shutdown command received
-            if outcome_map['State_Checking_During_Operation'] == 'preempted':
-                return False
+    #another command with higher priority received
+    if outcome_map['State_Checking_During_Operation'] == 'customised_preempted':
+        return True
+    
+    #pause command received
+    if outcome_map['State_Checking_During_Operation'] == 'paused':
+        return True
+    
+    #preempty or shutdown command received
+    if outcome_map['State_Checking_During_Operation'] == 'preempted':
+        return True
     
     # in all other case, just keep running, don't terminate anything
     # There is no another case yet, just for complete

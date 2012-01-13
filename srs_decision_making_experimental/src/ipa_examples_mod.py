@@ -5,7 +5,7 @@ import copy
 import rospy
 import smach
 import smach_ros
-
+import threading
 from std_msgs.msg import String, Bool, Int32
 from cob_srvs.srv import Trigger
 from math import *
@@ -77,21 +77,93 @@ class goal_structure():
         self.object_on_tray = False
         
         self.arm_folded_ready_for_transfer = False    #arm in hold or folded position
+        
+        self.lock = threading.Lock()
+        
+        self.customised_preempt_required = False
+        
+        self.customised_preempt_acknowledged = False
+        
+        self.pause_required = False
+        
+        self.stop_required = False 
+        
+        self.stop_acknowledged = False
+
+    def get_pause_required(self):
+        self.lock.acquire()
+        value = self.pause_required
+        self.lock.release()
+        return value 
+    
+    def get_customised_preempt_required(self):
+        self.lock.acquire()
+        value = self.customised_preempt_required
+        self.lock.release()
+        return value 
+    
+    def get_customised_preempt_acknowledged(self):
+        self.lock.acquire()
+        value = self.customised_preempt_acknowledged
+        self.lock.release()
+        return value 
+        
+    def get_stop_required(self):
+        self.lock.acquire()
+        value = self.stop_required
+        self.lock.release()
+        return value 
+
+    def get_stop_acknowledged(self):
+        self.lock.acquire()
+        value = self.acknowledged
+        self.lock.release()
+        return value 
+    
+    def set_pause_required(self,value):
+        self.lock.acquire()
+        self.pause_required = value
+        self.lock.release()
+
+    def set_customised_preempt_required(self,value):
+        self.lock.acquire()
+        self.customised_preempt_required = value
+        self.lock.release()
+
+    
+    def set_customised_preempt_acknowledged(self, value):
+        self.lock.acquire()
+        self.customised_preempt_acknowledged = value
+        self.lock.release()
+
+        
+    def set_stop_required(self, value):
+        self.lock.acquire()
+        self.stop_required = value
+        self.lock.release()
+        return value 
+
+    def set_stop_acknowledged(self, value):
+        self.lock.acquire()
+        self.acknowledged = value
+        self.lock.release()
+        return value 
     
     #checking if the current atomic operation can be stopped or not
     #true can be stopped in the middle
     def stopable(self):
         #List of conditions which robot should not be stopped in the middle
-        
+        self.lock.acquire()
         #condition 1:
         #If a object has been grasped, operation should not be stopped until the object is released or arm is folded ready for transfer
         if self.object_in_hand and not self.arm_folded_ready_for_transfer:
-            return False
-        #The condition can be expanded 
-        
-        #in all other cases, atomic action can be stopped in the middle
+            outcome = False
         else:
-            return True
+            outcome = True
+        self.lock.release()
+        
+        return outcome
+
     
     def reset(self):
         

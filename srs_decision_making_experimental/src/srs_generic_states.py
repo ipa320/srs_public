@@ -270,30 +270,26 @@ class semantic_dm(smach.State):
             # current_task_info.last_step_info.append(last_step_info)
             # current_task_info.session_id = 123456
 
-            #result = (1, 1, 1)
-            # print current_task_info.last_step_info
             print '+++++++++++ action acquired ++++++++++++++'
             print current_task_info.last_step_info;
             print '+++++++++++ Last Step Info LEN+++++++++++++++'
-            print len(current_task_info.last_step_info)
             len_step_info = len(current_task_info.last_step_info)
                     
+            feedback = None
             if not current_task_info.last_step_info:
-                print 'first action acquired ++++ '
-
                 ## first action. does not matter this. just to keep it filled
                 resultLastStep = 0
             elif current_task_info.last_step_info and current_task_info.last_step_info[len_step_info - 1].outcome == 'succeeded':
                 # convert to the format that knowledge_ros_service understands
                 resultLastStep = 0
+                if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_detect_asisted_pose_region':
+                    print userdata.target_object_pose
+                    feedback = pose_to_list(userdata)
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
                 print 'Result return failed'
                 resultLastStep = 1
 
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stop' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preemptied':
-
-
-
 
                 rospy.wait_for_service('task_request')
                 try:
@@ -325,7 +321,7 @@ class semantic_dm(smach.State):
             print resultLastStep
             print '########## Result ###########'
 
-            resp1 = next_action(current_task_info.session_id, resultLastStep, None)
+            resp1 = next_action(current_task_info.session_id, resultLastStep, feedback)
             if resp1.nextAction.status == 1:
                 print 'succeeded'
                 return 'succeeded'
@@ -491,3 +487,10 @@ class prepare_robot(smach.State):
 
         return 'succeeded'
     
+
+
+def pose_to_list(userdata):
+    # userdata.target_object_name
+    poseList = ('detect', userdata.target_object_name, str(userdata.target_object_pose.pose.position.x), str(userdata.target_object_pose.pose.position.y), str(userdata.target_object_pose.pose.position.z), str(userdata.target_object_pose.pose.orientation.x), str(userdata.target_object_pose.pose.orientation.y), str(userdata.target_object_pose.pose.orientation.z), str(userdata.target_object_pose.pose.orientation.w))
+    
+    return poseList

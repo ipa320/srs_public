@@ -8,14 +8,15 @@ string task
 string content
 
 # if to get an object (milk0) or any in the general class (eg. Milk)
-string objectOrClass 
+#string objectOrClass 
 
-ABoxObject aboxObject
-TBoxObject tboxObject
+#ABoxObject aboxObject
+#TBoxObject tboxObject
 
 # Or other task information
 
-geometry_msgs/Pose2D userPose
+# geometry_msgs/Pose2D userPose
+string userPose
 
 ---
 

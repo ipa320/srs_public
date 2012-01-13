@@ -12,9 +12,6 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
-import java.io.*;
-import java.util.ArrayList; 
-import java.util.Iterator;
 import ros.*;
 import ros.communication.*;
 import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
@@ -32,14 +29,19 @@ import org.srs.srs_knowledge.task.*;
 
 import java.util.Properties;
 
-import java.io.IOException;
 import java.io.*;
 import java.util.StringTokenizer;
+import java.util.ArrayList; 
+import java.util.Iterator;
 //import org.apache.commons.logging.Log;
-import java.util.ArrayList;
 
-class KnowledgeEngine
+public class KnowledgeEngine
 {
+    public static Ros ros;
+    public static OntologyDB ontoDB;
+
+    public static NodeHandle n;
+
     /*
     public KnowledgeEngine(String nodeName, String ontologyFile)
     {
@@ -113,6 +115,7 @@ class KnowledgeEngine
 	}
 
 	ros.spin();
+
 	return true;
     }
 
@@ -159,8 +162,12 @@ class KnowledgeEngine
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	}
 
-
+	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
+	OntoQueryUtil.ObjectNameSpace = mapNamespace;
+	OntoQueryUtil.GlobalNameSpace = globalNamespace;
+	
 	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
+
     }
 
     public void testOnto(String className)
@@ -234,6 +241,91 @@ class KnowledgeEngine
 	ServiceServer<QuerySparQL.Request, QuerySparQL.Response, QuerySparQL> srv = n.advertiseService( querySparQLService , new QuerySparQL(), scb);
     }
 
+    private PlanNextAction.Response newHandlePlanNextAction( PlanNextAction.Request request) throws NullPointerException {
+	PlanNextAction.Response res = new PlanNextAction.Response();
+	CUAction ca = new CUAction(); 
+	
+	if(currentTask == null) {
+	    System.out.println("Current Task is NULL. Send task request first");
+	    res.nextAction = new CUAction(); // empty task
+	    return res;
+	    //throw new NullPointerException("Current Task is NULL. Send task request first");
+	}
+
+	/*
+	if(request.stateLastAction.length == 3) {
+	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
+		//ArrayList<String> feedback = new ArrayList<String>();
+		ArrayList<String> feedback = request.genericFeedBack;
+		ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
+	    }
+	    else if(request.stateLastAction[0] == 2 || request.stateLastAction[1] == 2 || request.stateLastAction[2] == 2) {
+		ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
+		ros.logInfo("INFO: Task termintated");
+		
+		currentTask = null;
+		// TODO:
+		//currentSessionId = 1;
+
+		res.nextAction = new CUAction();
+		return res;
+	    }
+	    else{
+		ca = currentTask.getNextCUAction(false, null);
+	    }
+	}
+	*/
+
+	if(request.resultLastAction == 0) {
+	    ArrayList<String> feedback = request.genericFeedBack;
+	    ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
+	}
+	else if (request.resultLastAction == 2) {
+	    ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
+	    ros.logInfo("INFO: Task termintated");
+	    
+	    currentTask = null;
+	    // TODO:
+	    //currentSessionId = 1;
+	    
+	    res.nextAction = new CUAction();
+	    return res;
+	}
+	else{
+	    ca = currentTask.getNextCUAction(false, null);
+	}
+	
+	if(ca == null) {
+	    currentTask = null;
+	    System.out.println("No further action can be planned. Terminate the task. ");
+
+	    res.nextAction = new CUAction(); // empty task
+	    //res.nextAction.status = 0;
+	    return res;	    
+	}
+	//if(at.getActionName().equals("finish_success")) {
+	if(ca.status == 1) {
+	    currentTask = null;
+	    //currentSessionId = 1;
+	    System.out.println("Reached the end of the task. No further action to be executed. ");
+	    res.nextAction = ca;
+	    return res;	    
+	}
+	else if( ca.status == -1) {
+	    currentTask = null;
+
+	    System.out.println("Reached the end of the task. No further action to be executed. ");
+	    res.nextAction = ca;	    
+	    return res;	    
+	}
+
+	res.nextAction = ca;
+
+	//ros.logInfo("INFO: Generate sequence of length: ");
+	return res;
+
+    }
+    /*
     private PlanNextAction.Response handlePlanNextAction( PlanNextAction.Request request) throws NullPointerException
     {
 	PlanNextAction.Response res = new PlanNextAction.Response();
@@ -276,20 +368,24 @@ class KnowledgeEngine
 	    res.nextAction = new CUAction(); // empty task
 	    return res;	    
 	}
-	if(at.getActionName().equals("finish_success")) {
+	//if(at.getActionName().equals("finish_success")) {
+	if(at.getCUAction().status == 1) {
 	    currentTask = null;
 	    //currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
-	    res.nextAction = new CUAction(); // empty task
-	    res.nextAction.status = 1;
+	    //res.nextAction = new CUAction(); // empty task
+	    //res.nextAction.status = 1;
+	    res.nextAction = at.getCUAction();
 	    return res;	    
 	}
-	else if( at.getActionName().equals("finish_fail")) {
+	//else if( at.getActionName().equals("finish_fail")) {
+	else if( at.getCUAction().status == -1) {
 	    currentTask = null;
 	    // currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
-	    res.nextAction = new CUAction(); // empty task
-	    res.nextAction.status = -1;
+	    //res.nextAction = new CUAction(); // empty task
+	    //res.nextAction.status = -1;
+	    res.nextAction = at.getCUAction();	    
 	    return res;	    
 	}
 
@@ -300,12 +396,12 @@ class KnowledgeEngine
 	//ros.logInfo("INFO: Generate sequence of length: ");
 	return res;
     }
-    
+    */
     private void initPlanNextAction() throws RosException
     {
 	ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response> scb = new ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response>() {
             public PlanNextAction.Response call(PlanNextAction.Request request) {
-		return handlePlanNextAction(request);
+		return newHandlePlanNextAction(request);
             }
 	};
 	
@@ -322,7 +418,7 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new MoveToTask(request.content, null, ontoDB);
+	    currentTask = new MoveTask(request.content, null);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
 	else if(request.task.equals("get") || request.task.equals("search")){
@@ -330,36 +426,58 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB);
+
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, n);
+	    currentTask = (Task)got;
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
-	    this.loadPredefinedTasksForTest(got);
-	    currentTask = (Task)got;
+	    
+	    //currentTask = new TestTask();
+	    //this.loadPredefinedTasksForTest();
+	    
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
 	else if(request.task.equals("charging")) {
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new ChargingTask(null, null, ontoDB);
-	    //currentTask = new MoveToTask(null, null, ontoDB);
+	    currentTask = new ChargingTask();
 	    System.out.println("Created CurrentTask " + "charge ");
-	    
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
+	}
+	else if(request.task.equals("stop")) {
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+	    currentTask = new StopTask();
+	    System.out.println("Created CurrentTask " + " STOP ");
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
 	else {
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    // task not created for some reason
-	    currentTask = new GetObjectTask(request.task, request.content, null);
+	    //currentTask = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
+	    currentTask = null;
 	    res.result = 1;
 	    res.description = "No action";
 	}
 
-	if(currentTask.getActionSequence().size() == 0) {
+	//if(currentTask.getActionSequence().size() == 0) {
+	if(currentTask == null) {
 	    // task not created for some reason
 	    res.result = 1;
 	    res.description = "No action";
+	    System.out.println("No action. Task is null");
+	}
+	else if(currentTask.isEmpty()) {
+	    // task not created for some reason
+	    res.result = 1;
+	    res.description = "No action";
+	    System.out.println("No action. Task is empty");
 	}
 	else {
 	    res.result = 0;
@@ -533,13 +651,22 @@ class KnowledgeEngine
 
 			if(req.ifGeometryInfo == true) { 
 			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
-			
+
+			    /*
 			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
 			    spatialInfo.point.x = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
 			    spatialInfo.point.y = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
 			    spatialInfo.point.z = getFloatOfStatement(stm);
+			    */
+			    
+			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
+			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
+			    spatialInfo.pose.position.y = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
+			    spatialInfo.pose.position.z = getFloatOfStatement(stm);
 			    
 			    stm = ontoDB.getPropertyOf(globalNamespace, "widthOfObject", temp);
 			    spatialInfo.w = getFloatOfStatement(stm);
@@ -548,13 +675,24 @@ class KnowledgeEngine
 			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
 			    spatialInfo.l = getFloatOfStatement(stm);
 			    
+			    /*
 			    stm = ontoDB.getPropertyOf(globalNamespace, "r3d", temp);
 			    spatialInfo.angles.r = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "p3d", temp);
 			    spatialInfo.angles.p = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "y3d", temp);
 			    spatialInfo.angles.y = getFloatOfStatement(stm);
-			    
+			    */
+
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
+			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qx", temp);
+			    spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qy", temp);
+			    spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
+			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
+
 			    re.objectsInfo.add(spatialInfo);
 
 			    stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);
@@ -614,7 +752,7 @@ class KnowledgeEngine
 	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = n.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
     }
 
-    private boolean loadPredefinedTasksForTest(GetObjectTask got)
+    private boolean loadPredefinedTasksForTest()
     {
 	try{
 	    System.out.println("Create Task Object");
@@ -622,9 +760,10 @@ class KnowledgeEngine
 	    //currentTask = new GetObjectTask("get", null, null);
 	    String taskFile = config.getProperty("taskfile", "task1.seq");
 	    System.out.println(taskFile);
+	    System.out.println(this.confPath);	    
 	    
 	    //if(currentTask.loadPredefinedSequence(this.confPath + taskFile)) {
-	    if(got.loadPredefinedSequence(this.confPath + taskFile)) {
+	    if(currentTask.loadPredefinedSequence(this.confPath + taskFile)) {
 		System.out.println("OK... ");
 	    }
 	    else  {
@@ -637,7 +776,7 @@ class KnowledgeEngine
 	    return false;
 	}
 
-	ArrayList<ActionTuple> acts = currentTask.getActionSequence();
+	//ArrayList<ActionTuple> acts = currentTask.getActionSequence();
 
 	return true;
     }
@@ -697,6 +836,7 @@ class KnowledgeEngine
 	//knowEng.loadPredefinedTasksForTest();
 	if (knowEng.init(configFile)) {
 	    System.out.println("OK");
+	
 	}
 	else {
 	    System.out.println("Something wrong with initialisation");
@@ -705,9 +845,6 @@ class KnowledgeEngine
 
     private Task currentTask;
     private int currentSessionId = 1;
-    private OntologyDB ontoDB;
-    private Ros ros;
-    private NodeHandle n;
     private String nodeName;
 
     private Properties config;
@@ -725,6 +862,7 @@ class KnowledgeEngine
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
     private String confPath;
+    private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing
     int flag = 1;
 }

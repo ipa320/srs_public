@@ -57,7 +57,7 @@ def requestNewTaskMove():
     rospy.wait_for_service('task_request')
     try:
         requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
-        res = requestNewTask('move', '[4 5 6]', None, None, None, None)
+        res = requestNewTask('move', '[4 5 6]', None)
         print 'send task request'
         return res
     except rospy.ServiceException, e:

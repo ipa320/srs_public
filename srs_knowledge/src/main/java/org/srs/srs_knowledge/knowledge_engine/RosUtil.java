@@ -47,14 +47,14 @@ public class RosUtil {
 	Subscriber.QueueingCallback<ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped> callback =
 	    new Subscriber.QueueingCallback<ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped>();
 	Subscriber<ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped> sub =
-	    KnowledgeEngine.n.subscribe("/robot_pose_ekf/odom_combined", new ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped(), callback, 10);
+	    KnowledgeEngine.nodehandle.subscribe("/robot_pose_ekf/odom_combined", new ros.pkg.geometry_msgs.msg.PoseWithCovarianceStamped(), callback, 10);
 	
-	KnowledgeEngine.n.spinOnce();
+	KnowledgeEngine.nodehandle.spinOnce();
 	while (!callback.isEmpty()) {
 	    pos = callback.pop().pose.pose;
 	    System.out.println(pos);
 	}
-	KnowledgeEngine.n.shutdown();
+	KnowledgeEngine.nodehandle.shutdown();
 	sub.shutdown();
 	}
 	catch(RosException e) {
@@ -71,7 +71,7 @@ public class RosUtil {
     public static void testPub(java.lang.String c) throws RosException,Exception{
 
     	Publisher<ros.pkg.std_msgs.msg.String> pub =
-    	       KnowledgeEngine.n.advertise("/pub", new ros.pkg.std_msgs.msg.String(), 100);
+    	       KnowledgeEngine.nodeHandle.advertise("/pub", new ros.pkg.std_msgs.msg.String(), 100);
 
     	  ros.pkg.std_msgs.msg.String m = new ros.pkg.std_msgs.msg.String();
     	  m.data = c;
@@ -87,9 +87,9 @@ public class RosUtil {
 	Subscriber.QueueingCallback<ros.pkg.std_msgs.msg.String> callback =
 	    new Subscriber.QueueingCallback<ros.pkg.std_msgs.msg.String>();
 	Subscriber<ros.pkg.std_msgs.msg.String> sub =
-	    KnowledgeEngine.n.subscribe("/topic_name", new ros.pkg.std_msgs.msg.String(), callback, 10);
+	    KnowledgeEngine.nodeHandle.subscribe("/topic_name", new ros.pkg.std_msgs.msg.String(), callback, 10);
 	
-	KnowledgeEngine.n.spinOnce();
+	KnowledgeEngine.nodeHandle.spinOnce();
 	java.lang.String ret = "";
 	while (!callback.isEmpty()) {
 	    ret = callback.pop().data;

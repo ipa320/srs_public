@@ -2,7 +2,6 @@ package org.srs.srs_knowledge.task;
 
 import java.io.*;
 import java.util.StringTokenizer;
-//import org.apache.commons.logging.Log;
 import java.util.ArrayList;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
@@ -383,7 +382,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
 	ServiceClient<SymbolGroundingScanBasePose.Request, SymbolGroundingScanBasePose.Response, SymbolGroundingScanBasePose> sc =
-	    KnowledgeEngine.n.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
+	    KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
 	
 	SymbolGroundingScanBasePose.Request rq = new SymbolGroundingScanBasePose.Request();
 	rq.parent_obj_geometry = furnitureInfo;
@@ -398,7 +397,7 @@ private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose t
 	Pose2D pos = new Pose2D();
 	
 	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc =
-	   KnowledgeEngine.n.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
+	   KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
 	
 	SymbolGroundingGraspBasePoseExperimental.Request rq = new SymbolGroundingGraspBasePoseExperimental.Request();
 	rq.parent_obj_geometry = furnitureInfo;

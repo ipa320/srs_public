@@ -40,7 +40,7 @@ public class KnowledgeEngine
     public static Ros ros;
     public static OntologyDB ontoDB;
 
-    public static NodeHandle n;
+    public static NodeHandle nodeHandle;
 
     /*
     public KnowledgeEngine(String nodeName, String ontologyFile)
@@ -99,7 +99,7 @@ public class KnowledgeEngine
 	ros.init(nodeName);
 	ros.logInfo("INFO: Start RosJava_JNI service");
 	
-	n = ros.createNodeHandle();
+	nodeHandle = ros.createNodeHandle();
 
 	try{
 	    initGenerateSequence();
@@ -217,7 +217,7 @@ public class KnowledgeEngine
             }
 	};
 
-	ServiceServer<GenerateSequence.Request,GenerateSequence.Response,GenerateSequence> srv = n.advertiseService(generateSequenceService, new GenerateSequence(), scb);
+	ServiceServer<GenerateSequence.Request,GenerateSequence.Response,GenerateSequence> srv = nodeHandle.advertiseService(generateSequenceService, new GenerateSequence(), scb);
     }
 
     private QuerySparQL.Response handleQuerySparQL(QuerySparQL.Request req)
@@ -238,7 +238,7 @@ public class KnowledgeEngine
             }
 	};
 
-	ServiceServer<QuerySparQL.Request, QuerySparQL.Response, QuerySparQL> srv = n.advertiseService( querySparQLService , new QuerySparQL(), scb);
+	ServiceServer<QuerySparQL.Request, QuerySparQL.Response, QuerySparQL> srv = nodeHandle.advertiseService( querySparQLService , new QuerySparQL(), scb);
     }
 
     private PlanNextAction.Response newHandlePlanNextAction( PlanNextAction.Request request) throws NullPointerException {
@@ -405,7 +405,7 @@ public class KnowledgeEngine
             }
 	};
 	
-	ServiceServer<PlanNextAction.Request, PlanNextAction.Response, PlanNextAction> srv = n.advertiseService(planNextActionService, new PlanNextAction(), scb);
+	ServiceServer<PlanNextAction.Request, PlanNextAction.Response, PlanNextAction> srv = nodeHandle.advertiseService(planNextActionService, new PlanNextAction(), scb);
     }
 
     private TaskRequest.Response handleTaskRequest(TaskRequest.Request request)
@@ -427,7 +427,7 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, n);
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 	    currentTask = (Task)got;
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
@@ -501,7 +501,7 @@ public class KnowledgeEngine
 	};
 
 	System.out.println(taskRequestService);
-	ServiceServer<TaskRequest.Request, TaskRequest.Response, TaskRequest> srv = n.advertiseService(taskRequestService, new TaskRequest(), scb);
+	ServiceServer<TaskRequest.Request, TaskRequest.Response, TaskRequest> srv = nodeHandle.advertiseService(taskRequestService, new TaskRequest(), scb);
     }
 
 
@@ -617,7 +617,7 @@ public class KnowledgeEngine
 	};
 	
 	System.out.println(getObjectsOnMapService);
-	ServiceServer<GetObjectsOnMap.Request, GetObjectsOnMap.Response, GetObjectsOnMap> srv = n.advertiseService(getObjectsOnMapService, new GetObjectsOnMap(), scb);
+	ServiceServer<GetObjectsOnMap.Request, GetObjectsOnMap.Response, GetObjectsOnMap> srv = nodeHandle.advertiseService(getObjectsOnMapService, new GetObjectsOnMap(), scb);
     }
 
 
@@ -749,7 +749,7 @@ public class KnowledgeEngine
 	};
 	
 	System.out.println(getWorkSpaceOnMapService);
-	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = n.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
+	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = nodeHandle.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
     }
 
     private boolean loadPredefinedTasksForTest()

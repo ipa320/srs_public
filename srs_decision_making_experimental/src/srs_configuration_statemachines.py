@@ -34,11 +34,17 @@ class state_checking_during_paused (smach.State):
 
         global current_task_info
         
+        
         while not self.preempt_requested():
             #if stop command has been received during the pause
             if current_task_info.get_stop_required():
                 #reset the flag to normal
                 current_task_info.set_stop_acknowledged(True)
+                try:
+                    sss.say(["I am stopping."],False)
+                except:
+                    print sys.exc_info()
+                    
                 #complete the state and return stop
                 return 'stopped'
             
@@ -52,6 +58,10 @@ class state_checking_during_paused (smach.State):
             #if task is resumed
             elif not current_task_info.get_pause_required():
                 #return to last operation
+                try:
+                    sss.say(["I am resuming the task."],False)
+                except:
+                    print sys.exc_info()                
                 return 'resume'
                         
             #elif rospy.is_shutdown:

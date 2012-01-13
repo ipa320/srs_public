@@ -34,6 +34,7 @@ class state_checking_during_operation (smach.State):
         while (not self.preempt_requested()):
 
             rospy.sleep(1)
+            
             #if stop command has been received
             if current_task_info.get_stop_required()==True:
 
@@ -45,11 +46,19 @@ class state_checking_during_operation (smach.State):
                 if current_task_info.stopable():
                     #acknowledge the request
                     current_task_info.set_stop_acknowledged(True)
+                    try:
+                        sss.say(["I am stopping."],False)
+                    except:
+                        print sys.exc_info()
                     return self.state_checking_outcome
                 
             elif current_task_info.get_pause_required()==True:
                 #update the final outcome to stopped
                 self.state_checking_outcome  = 'paused'
+                try:
+                    sss.say(["I am pausing."],False)
+                except:
+                    print sys.exc_info()
                 return self.state_checking_outcome
             
             #if another command with higher priority received
@@ -72,7 +81,11 @@ class state_checking_during_operation (smach.State):
         self.service_preempt()
             
         if self.state_checking_outcome == 'stopped':
-            current_task_info.set_stop_acknowledged(True)
+            try:
+                sss.say(["I am stopping."],False)
+                current_task_info.set_stop_acknowledged(True)
+            except:
+                print sys.exc_info()
         if self.state_checking_outcome == 'customised_preempted':
             current_task_info.set_customised_preempt_acknowledged(True)
         return self.state_checking_outcome

@@ -17,9 +17,13 @@
   <depend package="ogre"/>
   <depend package="srs_env_model"/>
 
-<export>
+<!--export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros"/>
     <cpp os="osx" cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,-L${prefix}lib -lrosthread -framework CoreServices"/>
+  </export-->
+
+  <export>
+    <rviz plugin="${prefix}/lib/but_gui.yaml"/>
   </export>
 
 </package>

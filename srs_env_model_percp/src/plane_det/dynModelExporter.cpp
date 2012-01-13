@@ -1,5 +1,5 @@
 /**
- * $Id: dynModelExporter.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: dynModelExporter.cpp 153 2012-01-13 13:06:26Z ihulik $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Rostislav Hulik (ihulik@fit.vutbr.cz)
@@ -72,7 +72,7 @@ void DynModelExporter::update(std::vector<Plane<float> > & planes, PointCloud<Po
 	}
 
 	// fill in header and send
-	planeSrv.request.plane_array.header.frame_id = "/map";
+	planeSrv.request.plane_array.header.frame_id = "/head_cam3d_link";
 	planeSrv.request.plane_array.header.stamp = ros::Time::now();
 
 	plane.call(planeSrv);
@@ -93,7 +93,7 @@ bool DynModelExporter::getCenterAndScale(Plane<float> &plane, PointCloud<PointXY
 	for (PointCloud<PointXYZRGB>::iterator it = scene_cloud->begin(); it != scene_cloud->end(); ++it)
 	{
 		 // 1cm
-		 if (plane.distance(cv::Vec3f(it->x, it->y, it->z)) < 0.005)
+		 if (plane.distance(cv::Vec3f(it->x, it->y, it->z)) < 0.01)
 		 {
 			 center.x += it->x;
 			 center.y += it->y;
@@ -110,7 +110,7 @@ bool DynModelExporter::getCenterAndScale(Plane<float> &plane, PointCloud<PointXY
 		 }
 	}
 
-	if (size != 0)
+	if (size > 10)
 	{
 		center.x /= size;
 		center.y /= size;

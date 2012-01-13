@@ -1,5 +1,5 @@
 /**
- * $Id: bb_estimator_client.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: bb_estimator_client.cpp 138 2012-01-12 23:56:08Z xhodan04 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Hodan (xhodan04@stud.fit.vutbr.cz)
@@ -324,9 +324,24 @@ void sendRequest(Point2i p1, Point2i p2)
  */
 void scaleDepth()
 {
+    // Do not consider large ("infinity") values
+    Mat infMask;
+    if(subVariant == SV_1) {
+        infMask = currentDepth > 20000; // Pixels
+    }
+    else if(subVariant == SV_2) {
+        infMask = currentDepth > 20; // Meters
+    }
+    
+    // Get mask of known values
+    Mat knownMask = (infMask == 0);
+
     double maxDepth;
-    minMaxLoc(currentDepth, 0, &maxDepth);
+    minMaxLoc(currentDepth, NULL, &maxDepth, NULL, NULL, knownMask);
     currentDepth.convertTo(currentDepth, CV_8U, 255.0 / maxDepth);
+    
+    // Set color of "infinity" values
+    currentDepth.setTo(255, infMask);
 }
 
 /*==============================================================================
@@ -547,15 +562,15 @@ int main(int argc, char **argv)
     // Enters a loop
     //--------------------------------------------------------------------------
     while(ros::ok()) {
-        int key = waitKey(10); // Process window events (i.e. also mouse events)
+        char key = waitKey(10); // Process window events (i.e. also mouse events)
         
         // If the key D was pressed -> change the display mode
-        if(key == 'd') {
+        if(key == 'd' || key == 'D') {
             displayMode = (displayMode == RGB) ? DEPTH : RGB;
             redrawWindows(); // Redraw windows (with input video and bounding box)
         }
         // If the key E was pressed -> change the estimation mode
-        else if(key == 'e') {
+        else if(key == 'e' || key == 'E') {
             estimationMode = (estimationMode == 3) ? 1 : (estimationMode + 1);
             ROS_INFO("Estimation mode %d activated.", estimationMode);
             sendRequest(roiP1, roiP2);

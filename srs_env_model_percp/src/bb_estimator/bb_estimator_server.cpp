@@ -1,5 +1,5 @@
 /**
- * $Id: bb_estimator_server.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: bb_estimator_server.cpp 138 2012-01-12 23:56:08Z xhodan04 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Hodan (xhodan04@stud.fit.vutbr.cz)
@@ -163,7 +163,9 @@ bool calcStats(Mat &m, float *mean, float *stdDev)
 {
     // Get the mask of known values (the unknown are represented by 0, the
     // known by 255)
-    Mat_<uchar> knownMask = m > 0;
+    Mat negMask = m <= 0; // Negative values
+    Mat infMask = m > 20000; // "Infinite" values (more than 20 meters)
+    Mat knownMask = ((negMask + infMask) == 0);
 
     // Mean and standard deviation
     Scalar meanS, stdDevS;
@@ -213,7 +215,7 @@ bool calcStats(Mat &m, float *mean, float *stdDev)
         minMaxLoc(m, &min, &max, 0, 0, knownMask);
 
         // Print the calculated statistics
-        std::cerr << "DEPTH STATISTICS "
+        std::cout << "DEPTH STATISTICS "
                   << "- Mean: " << *mean << ", StdDev: " << *stdDev
                   << ", Min: " << min << ", Max: " << max << std::endl;
     }
@@ -371,7 +373,9 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
         
         for(int y = 0; y < (int)cloud.height; y++) {
             for(int x = 0; x < (int)cloud.width; x++) {
-                depthMap.at<float>(y, x) = cloud.points[y * cloud.width + x].z;
+                float z = cloud.points[y * cloud.width + x].z;
+                if(cvIsNaN(z)) z = 0;
+                depthMap.at<float>(y, x) = z;
             }
         }
         

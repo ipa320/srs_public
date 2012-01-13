@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: UnknownObject.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: UnknownObject.cpp 146 2012-01-13 10:23:10Z spanel $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -236,7 +236,7 @@ void UnknownObject::createBox()
   box.type = Marker::MESH_RESOURCE;
   box.mesh_use_embedded_materials = true;
   box.scale = scale;
-  box.mesh_resource = "package://but_gui/meshes/unknown_object.mesh.xml";
+  box.mesh_resource = "package://srs_env_model/meshes/unknown_object.mesh.xml";
 }
 
 void UnknownObject::createUnknownBox()

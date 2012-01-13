@@ -35,7 +35,8 @@
 
 // Services
 #include "laser_assembler/AssembleScans.h"
-#include "pr2_arm_navigation_perception/BuildCloudAngle.h"
+//#include "pr2_arm_navigation_perception/BuildCloudAngle.h"
+#include "srs_arm_navigation_percp/BuildCloudAngle.h"
 #include "pr2_msgs/SetPeriodicCmd.h"
 
 // Messages
@@ -76,8 +77,10 @@ public:
     laser_time_ = Time().fromSec(0);
   }
 
-  bool buildSingleSweepCloud(pr2_arm_navigation_perception::BuildCloudAngle::Request &req,
-                             pr2_arm_navigation_perception::BuildCloudAngle::Response &res)
+//  bool buildSingleSweepCloud(pr2_arm_navigation_perception::BuildCloudAngle::Request &req,
+//                             pr2_arm_navigation_perception::BuildCloudAngle::Response &res)
+  bool buildSingleSweepCloud(srs_arm_navigation_percp::BuildCloudAngle::Request &req,
+                             srs_arm_navigation_percp::BuildCloudAngle::Response &res)
   {
     // send command to tilt laser scanner
     pr2_msgs::SetPeriodicCmd::Request scan_req;

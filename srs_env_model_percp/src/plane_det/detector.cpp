@@ -1,5 +1,5 @@
 /**
- * $Id: detector.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: detector.cpp 151 2012-01-13 12:25:29Z ihulik $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Rostislav Hulik (ihulik@fit.vutbr.cz)
@@ -74,6 +74,7 @@ void callback(const PointCloud2ConstPtr& cloud, const CameraInfoConstPtr& cam_in
 
 	// Control out
 	std::cerr << "Recieved frame..." << std::endl;
+	std::cerr << "Topic: " << pointcloud.header.frame_id << std::endl;
 	std::cerr << "Width: " << pointcloud.width << " height: " << pointcloud.height << std::endl;
 	std::cerr << "=========================================================" << endl;
 
@@ -84,7 +85,7 @@ void callback(const PointCloud2ConstPtr& cloud, const CameraInfoConstPtr& cam_in
 	}
 
 	// Compute normals and HT
-	but_scenemodel::Normals normal(depth, cam_info);
+	but_scenemodel::Normals normal(depth, cam_info, but_scenemodel::NormalType::LSQAROUND);
 	but_scenemodel::SceneModel model(depth, cam_info, normal);
 
 	// send scene cloud and HT cloud if necessary

@@ -1,5 +1,5 @@
 /**
- * $Id: but_server.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: but_server.cpp 145 2012-01-13 09:48:58Z ihulik $
  *
  * Modified by dcgm-robotics@FIT group
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
@@ -1111,6 +1111,10 @@ void CButServer::addPlaneSrvCall( const srs_env_model::PlaneDesc & plane, const 
     addPlaneSrv.request.frame_id = m_planesFrameId;
     addPlaneSrv.request.pose = plane.pose;
     addPlaneSrv.request.scale = plane.scale;
+    addPlaneSrv.request.color.r = 1.0;
+    addPlaneSrv.request.color.g = 0.0;
+    addPlaneSrv.request.color.b = 0.0;
+    addPlaneSrv.request.color.a = 0.8;
 
     m_addInteractivePlaneService.call( addPlaneSrv );
 

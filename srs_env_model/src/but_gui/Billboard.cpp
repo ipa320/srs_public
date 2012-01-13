@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: Billboard.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: Billboard.cpp 146 2012-01-13 10:23:10Z spanel $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -140,13 +140,13 @@ void Billboard::createMesh()
   mesh.scale.z = scale.y;
 
   if (type == BillboardType::CHAIR)
-    mesh.mesh_resource = "package://but_gui/billboards/chair.mesh.xml";
+    mesh.mesh_resource = "package://srs_env_model/billboards/chair.mesh.xml";
   else if (type == BillboardType::MILK)
-    mesh.mesh_resource = "package://but_gui/billboards/milk.mesh.xml";
+    mesh.mesh_resource = "package://srs_env_model/billboards/milk.mesh.xml";
   else if (type == BillboardType::TABLE)
-    mesh.mesh_resource = "package://but_gui/billboards/table.mesh.xml";
+    mesh.mesh_resource = "package://srs_env_model/billboards/table.mesh.xml";
   else if (type == BillboardType::PERSON)
-    mesh.mesh_resource = "package://but_gui/billboards/person.mesh.xml";
+    mesh.mesh_resource = "package://srs_env_model/billboards/person.mesh.xml";
   else
     ROS_ERROR("UNKNOWN BILLBOARD TYPE!");
 }

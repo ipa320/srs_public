@@ -1,5 +1,5 @@
 /**
- * $Id: normals.h 134 2012-01-12 13:52:36Z spanel $
+ * $Id: normals.h 152 2012-01-13 12:49:57Z ihulik $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Rostislav Hulik (ihulik@fit.vutbr.cz)
@@ -81,6 +81,14 @@ class Plane
 			c = C;
 			d = D;
 			norm = sqrt(a*a + b*b + c*c);
+
+			if (norm != 0)
+			{
+				a /= norm;
+				b /= norm;
+				c /= norm;
+				d /= norm;
+			}
 		}
 
 		/**
@@ -127,7 +135,7 @@ class Plane
 			Scalar angle = acos(a*0 + b*0 + c*1) * sign;
 
 			Eigen::Quaternion<Scalar> q;
-			q = Eigen::AngleAxis<Scalar>(angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
+			q = Eigen::AngleAxis<Scalar>(-angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
 
 			x = q.x();
 			y = q.y();

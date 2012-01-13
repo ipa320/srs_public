@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: Plane.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: Plane.cpp 146 2012-01-13 10:23:10Z spanel $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -146,7 +146,7 @@ void Plane::create()
   mesh.color = color;
   // Todo switch x and y ?
   mesh.scale = scale;
-  mesh.mesh_resource = "package://but_gui/meshes/plane.mesh.xml";
+  mesh.mesh_resource = "package://srs_env_model/meshes/plane.mesh.xml";
 
   control.always_visible = true;
   control.interaction_mode = InteractiveMarkerControl::BUTTON;

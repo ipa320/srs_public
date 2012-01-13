@@ -1,5 +1,5 @@
 /**
- * $Id: sceneModel.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: sceneModel.cpp 151 2012-01-13 12:25:29Z ihulik $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Rostislav Hulik (ihulik@fit.vutbr.cz)
@@ -38,7 +38,7 @@ SceneModel::SceneModel(Mat &depth, const CameraInfoConstPtr& cam_info, Normals &
 	minMaxLoc(reg.m_regionMatrix, &min, &max);
 	double indexFactor = 1.0;
 
-	ParameterSpace space(-M_PI, M_PI, -20.0, 20.0, 512, 400);
+	ParameterSpace space(-M_PI, M_PI, -5.0, 5.0, 512, 512);
 	std::cout << "Parameter space size: " << space.m_size / 1000000.0 << " MB" << std::endl;
 	std::cout << "Parameter shift step: " << space.m_shiftStep << std::endl;
 	std::cout << "Parameter angle step: " << space.m_angleStep << std::endl;

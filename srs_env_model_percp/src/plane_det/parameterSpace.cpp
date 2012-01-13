@@ -1,7 +1,7 @@
 /**
- * $Id: parameterSpace.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: parameterSpace.cpp 152 2012-01-13 12:49:57Z ihulik $
  *
- * $Id: parameterSpace.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: parameterSpace.cpp 152 2012-01-13 12:49:57Z ihulik $
  * Developed by dcgm-robotics@FIT group
  * Author: Rostislav Hulik (ihulik@fit.vutbr.cz)
  * Date: dd.mm.2012 (version 1.0)
@@ -154,53 +154,130 @@ void ParameterSpace::generateGaussIn(double angleSigma, double shiftSigma)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int ParameterSpace::findMaxima(std::vector<Plane<float> > &indices)
 {
-	int around = 1;
+	int around = 2;
 	float a, b, c;
 	int maxind = -1;
 	float max = -1;
+
+//	/////////////////////////////////////////////////
 	for (int shift=around; shift < m_shiftSize-around; ++shift)
-	{
-		for (int angle2=around; angle2 < m_angleSize-around; ++angle2)
 		{
-			for (int angle1=around; angle1 < m_angleSize-around; ++angle1)
+			for (int angle2=around; angle2 < m_angleSize-around; ++angle2)
 			{
-				double val = this->operator ()(angle1, angle2, shift);
-				if (val > this->operator()(angle1-around, angle2, shift) &&
-					val > this->operator()(angle1+around, angle2, shift) &&
-					val > this->operator()(angle1, angle2-around, shift) &&
-					val > this->operator()(angle1, angle2+around, shift) &&
-					val > this->operator()(angle1, angle2, shift+around) &&
-					val > this->operator()(angle1, angle2, shift-around) &&
-					val > 500)
+				for (int angle1=around; angle1 < m_angleSize-around; ++angle1)
 				{
-
-					toEuklid(getAngle(angle1), getAngle(angle2), a, b, c);
-
-
-					indices.push_back(Plane<float>(a, b, c, getShift(shift)));
-					if (val > max)
+					double val = this->operator ()(angle1, angle2, shift);
+					if (val > 1500)
 					{
-						max = val;
-						maxind = indices.size() - 1;
-					}
-					//std::cout << angle1 << " " << angle2 << " " << shift << std::endl;
+						val += this->operator()(angle1-1, angle2, shift) +
+							   this->operator()(angle1+1, angle2, shift) +
+							   this->operator()(angle1, angle2-1, shift) +
+							   this->operator()(angle1, angle2+1, shift) +
+							   this->operator()(angle1, angle2, shift+1) +
+							   this->operator()(angle1, angle2, shift-1);
 
+						bool ok = true;
+						double aux;
+						int xx, yy, zz;
+						for (int x = -1; x <= 1; ++x)
+						for (int y = -1; y <= 1; ++y)
+						for (int z = -1; z <= 1; ++z)
+						{
+							xx = angle1 + x;
+							yy = angle2 + y;
+							zz = shift + z;
+							aux = this->operator()(xx, yy, zz) +
+								  this->operator()(xx-1, yy, zz) +
+								  this->operator()(xx+1, yy, zz) +
+								  this->operator()(xx, yy-1, zz) +
+								  this->operator()(xx, yy+1, zz) +
+								  this->operator()(xx, yy, zz+1) +
+								  this->operator()(xx, yy, zz-1);
+							if (val < aux)
+							{
+								ok = false;
+								break;
+							}
+						}
+
+						if (ok)
+						{
+							double aroundx = 0;
+							double aroundy = 0;
+							double aroundz = 0;
+							double arounds = 0;
+							for (int x = -1; x <= 1; ++x)
+							for (int y = -1; y <= 1; ++y)
+							for (int z = -1; z <= 1; ++z)
+							{
+								xx = angle1 + x;
+								yy = angle2 + y;
+								zz = shift + z;
+								toEuklid(getAngle(xx), getAngle(yy), a, b, c);
+								aroundx += a;
+								aroundy += b;
+								aroundz += c;
+								arounds += getShift(zz);
+							}
+							aroundx /= 7.0;
+							aroundy /= 7.0;
+							aroundz /= 7.0;
+							arounds /= 7.0;
+							std::cout << "Found plane size: " << val << " eq: " << aroundx <<" "<< aroundy <<" "<< aroundz <<" "<< arounds <<" "<< std::endl;
+							indices.push_back(Plane<float>(aroundx, aroundy, aroundz, arounds));
+							if (val > max)
+							{
+								max = val;
+								maxind = indices.size() - 1;
+							}
+						}
+					}
 				}
 			}
 		}
-	}
+//	for (int shift=around; shift < m_shiftSize-around; ++shift)
+//	{
+//		for (int angle2=around; angle2 < m_angleSize-around; ++angle2)
+//		{
+//			for (int angle1=around; angle1 < m_angleSize-around; ++angle1)
+//			{
+//				double val = this->operator ()(angle1, angle2, shift);
+//				if (val > 1500)
+//				if (val > this->operator()(angle1-around, angle2, shift) &&
+//					val > this->operator()(angle1+around, angle2, shift) &&
+//					val > this->operator()(angle1, angle2-around, shift) &&
+//					val > this->operator()(angle1, angle2+around, shift) &&
+//					val > this->operator()(angle1, angle2, shift+around) &&
+//					val > this->operator()(angle1, angle2, shift-around))
+//				{
+//
+//					toEuklid(getAngle(angle1), getAngle(angle2), a, b, c);
+//
+//
+//					indices.push_back(Plane<float>(a, b, c, getShift(shift)));
+//					if (val > max)
+//					{
+//						max = val;
+//						maxind = indices.size() - 1;
+//					}
+//					//std::cout << angle1 << " " << angle2 << " " << shift << std::endl;
+//
+//				}
+//			}
+//		}
+//	}
 	//std::cout << "=========" << std::endl;
 	for(int i = 0; i < indices.size(); ++i)
 	{
 		int a1, a2, s;
 		toAngles(indices[i].a,indices[i].b, indices[i].c, a, b);
 		getIndex((double)a, (double)b, (double)indices[i].d, a1, a2, s);
-		this->operator()(a1-around, a2, s) = 0;
-		this->operator()(a1+around, a2, s) = 0;
-		this->operator()(a1, a2-around, s) = 0;
-		this->operator()(a1, a2+around, s) = 0;
-		this->operator()(a1, a2, s+around) = 0;
-		this->operator()(a1, a2, s-around) = 0;
+		this->operator()(a1-1, a2, s) = 0;
+		this->operator()(a1+1, a2, s) = 0;
+		this->operator()(a1, a2-1, s) = 0;
+		this->operator()(a1, a2+1, s) = 0;
+		this->operator()(a1, a2, s+1) = 0;
+		this->operator()(a1, a2, s-1) = 0;
 		//std::cout << a1 << " " << a2 << " " << s << std::endl;
 	}
 	return maxind;

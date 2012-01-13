@@ -25,38 +25,7 @@ import ros.communication.*;
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
     public GetObjectTask(String taskType, String targetContent, String userPose, NodeHandle n) 
-    {
-	
-	  // NOT WORKING... FOR TESTING ONLY
-	/*
-	System.out.println("HAHAHAHAHAHAHA");
-	try{
-	RosUtil.testPub("Test ROSJAVA_PUB");
-	System.out.println(RosUtil.testSub());
-	}
-	catch(Exception e) {
-	    System.out.println(e.toString());
-	}
-	System.out.println("HAHAHAHAHAHAHA");
-	*/
-	/*
-	if (onto != null) {
-	    System.out.println("SET ONTOLOGY DB");
-	    this.ontoDB = onto;
-	} 
-	else {
-	    System.out.println("NULL ---- SET ONTOLOGY DB");
-	    this.ontoDB = new OntologyDB();
-	}
-	
-	if (ontoQueryUtil != null) {
-	    this.ontoQueryUtil = ontoQueryUtil;
-	} 
-	else {
-	    System.out.println("NULL ---- SET ONTOLOGY DB");
-	    this.ontoQueryUtil = new OntoQueryUtil("","");
-	}
-	*/
+    {	
 	this.nodeHandle = n;
 	this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
@@ -128,22 +97,15 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("Sequence size is " + allSubSeqs.size());
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
+	    System.out.println("DEBUG >>> 0 ");
 	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
-	    if(stateLastAction) {
-		if(feedback != null && feedback.size() > 0) {
-		    if(highAct.addFeedback(feedback.get(0), new ActionFeedback(feedback))) {
-			System.out.println("Feedback added: " + feedback.get(0));
-		    }
-		    else {
-			System.out.println("Feedback not added due to null feedback. ");
-		    }
-		}
-	    }
-
+	    System.out.println("DEBUG >>> 1 ");
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
 	    // if stuck (fail), move to the next subActionSequence
 	    if(highAct != null) {
+
+		System.out.println("DEBUG >>> 2 ");
 		int ni = highAct.getNextCUActionIndex(stateLastAction); 
 		System.out.println("=========>>>>  " + ni);
 		switch(ni) {
@@ -236,7 +198,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 
     private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
 	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
-		    System.out.println("DEBUG --- 0");
+	System.out.println("DEBUG --- 0");
 	// call symbol grounding to get parameters for the MoveAndGrasp action
 	try {
 	    System.out.println("DEBUG --- 1");
@@ -405,7 +367,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return null;
     }
     
-private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
+    private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual workspace) throws RosException, Exception {
 	HighLevelActionSequence actionList = new HighLevelActionSequence();
 	
 	// create MoveAndDetectionActionUnit
@@ -460,12 +422,13 @@ private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual w
 	//FoldArmActionUnit foldArmAction = new FoldArmActionUnit();
 
 	// create BackToUserActionUnit
-	System.out.println("Create MoveActionUnit 1");
+	
 	Pose2D posUser = OntoQueryUtil.parsePose2D(userPose);
-	System.out.println("Create MoveActionUnit 2");
 	MoveActionUnit mau = new MoveActionUnit(posUser);
-	System.out.println("Create MoveActionUnit 3");
+	
 
+	// create FinishActionUnit
+	FinishActionUnit fau = new FinishActionUnit(true);
 	//MoveActionUnit mau1 = new MoveActionUnit(OntoQueryUtil.parsePose2D("home"));
 	//actionList.appendHighLevelAction(mau1);
 
@@ -474,6 +437,7 @@ private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual w
 	actionList.appendHighLevelAction(trayAction);
 	//actionList.appendHighLevelAction(foldArmAction);
 	actionList.appendHighLevelAction(mau);
+	actionList.appendHighLevelAction(fau);
 		
 	System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
 	return actionList;
@@ -485,7 +449,7 @@ private HighLevelActionSequence createSubSequenceForSingleWorkspace(Individual w
     private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
 	ServiceClient<SymbolGroundingScanBasePose.Request, SymbolGroundingScanBasePose.Response, SymbolGroundingScanBasePose> sc =
-	    nodeHandle.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
+	    KnowledgeEngine.n.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
 	
 	SymbolGroundingScanBasePose.Request rq = new SymbolGroundingScanBasePose.Request();
 	rq.parent_obj_geometry = furnitureInfo;
@@ -500,7 +464,7 @@ private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose t
 	Pose2D pos = new Pose2D();
 	
 	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc =
-	    nodeHandle.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
+	   KnowledgeEngine.n.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
 	
 	SymbolGroundingGraspBasePoseExperimental.Request rq = new SymbolGroundingGraspBasePoseExperimental.Request();
 	rq.parent_obj_geometry = furnitureInfo;

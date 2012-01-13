@@ -286,9 +286,12 @@ class semantic_dm(smach.State):
                     print userdata.target_object_pose
                     feedback = pose_to_list(userdata)
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
-                print 'Result return failed'
+                print 'Result return not_completed'
                 resultLastStep = 1
 
+            elif current_task_info.last_step_info[len_step_info - 1].outcome == 'failed':
+                print 'Result return failed'
+                resultLastStep = 2
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stop' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preemptied':
 
                 rospy.wait_for_service('task_request')
@@ -304,8 +307,6 @@ class semantic_dm(smach.State):
                     print "Service call failed: %s"%e
                     return 'failed'
                 resultLastStep = 0
-
-
                 
                 
                 #if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_approach_pose_assisted':
@@ -341,12 +342,21 @@ class semantic_dm(smach.State):
                     nextStep = 'navigation'
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
                     return nextStep
+                elif resp1.nextAction.generic.actionInfo[0] == 'put_on_tray':
+                    nextStep = 'put_on_tray'
+                    #userdata.grasp_conf = resp1.nextAction.generic.actionInfo[1]
+                    return nextStep
                 elif resp1.nextAction.generic.actionInfo[0] == 'deliver_object':
                     nextStep = 'deliver_object'
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
                     return nextStep
+                elif resp1.nextAction.generic.actionInfo[0] == 'finish_success':
+                    nextStep = 'succeeded'
+                    return nextStep
+                elif resp1.nextAction.generic.actionInfo[0] == 'finish_fail':
+                    nextStep = 'failed'
+                    return nextStep
                 elif resp1.nextAction.generic.actionInfo[0] == 'detect':
-                                      
                     nextStep = 'detection'
                     #TODO should confirm later if name or id used !!!!!!!!
 		    ####  HARD CODED FOR TESTING ##

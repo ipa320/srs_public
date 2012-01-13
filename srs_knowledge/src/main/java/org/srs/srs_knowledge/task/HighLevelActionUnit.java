@@ -18,8 +18,8 @@ import java.util.HashMap;
 
 public abstract class HighLevelActionUnit {    
     public abstract String getActionType();
-    public static final int COMPLETED_SUCCESS = -1;
-    public static final int COMPLETED_FAIL = -2;
+    public static final int COMPLETED_SUCCESS = -10;
+    public static final int COMPLETED_FAIL = -11;
     public static final int INVALID_INDEX = -100;
 
     public int getNumOfActions() {

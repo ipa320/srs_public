@@ -252,8 +252,6 @@ public class KnowledgeEngine
 	    //throw new NullPointerException("Current Task is NULL. Send task request first");
 	}
 
-	//ActionTuple at = null;
-
 	/*
 	if(request.stateLastAction.length == 3) {
 	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
@@ -279,7 +277,6 @@ public class KnowledgeEngine
 	*/
 
 	if(request.resultLastAction == 0) {
-	    //ArrayList<String> feedback = new ArrayList<String>();
 	    ArrayList<String> feedback = request.genericFeedBack;
 	    ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
 	}
@@ -300,7 +297,6 @@ public class KnowledgeEngine
 	
 	if(ca == null) {
 	    currentTask = null;
-	    //currentSessionId = 1;
 	    System.out.println("No further action can be planned. Terminate the task. ");
 
 	    res.nextAction = new CUAction(); // empty task
@@ -312,23 +308,16 @@ public class KnowledgeEngine
 	    currentTask = null;
 	    //currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
-	    //res.nextAction = new CUAction(); // empty task
-	    //res.nextAction.status = 1;
 	    res.nextAction = ca;
 	    return res;	    
 	}
-	//else if( at.getActionName().equals("finish_fail")) {
 	else if( ca.status == -1) {
 	    currentTask = null;
-	    // currentSessionId = 1;
+
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
-	    //res.nextAction = new CUAction(); // empty task
-	    //res.nextAction.status = -1;
 	    res.nextAction = ca;	    
 	    return res;	    
 	}
-
-	//ca = at.getCUAction();
 
 	res.nextAction = ca;
 

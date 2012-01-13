@@ -391,11 +391,11 @@ void measure_distance (double dist) {
                       
                        if ( !pauseSent && dist < 1.5 )
                           {
-                            printf ("Local user too close ! Sending Pause ActionLibGoal to the server \n"); 
+                            printf ("Local user too close ! Sending Pause ActionLibGoal to the server. Waiting for Action server responce \n"); 
                             sendActionLibGoalPause();
                            } 
                         else if ( dist > 2.5 && pauseSent ) {
-                            printf ("Local user is far away now ! Sending Resume ActionLibGoal to the server \n"); 
+                            printf ("Local user is far away now ! Sending Resume ActionLibGoal to the server. Waiting for Action server responce \n"); 
                             sendActionLibGoalResume();
 
                            }

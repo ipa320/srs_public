@@ -13,6 +13,7 @@ import org.srs.srs_knowledge.task.Task;
 public class ActionFeedback extends ArrayList<String> {
     public ActionFeedback(ArrayList<String> genericFeedback) {
 	super(genericFeedback);
+	System.out.println("Constructor: extents ArrayList of size: " + this.size());
     }
     
     public static Pose toPose(ActionFeedback fb) {

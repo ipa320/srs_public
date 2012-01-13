@@ -253,6 +253,14 @@ class semantic_dm(smach.State):
     def execute(self,userdata):     
         global current_task_info
         
+        
+        if current_task_info.last_step_info[len(current_task_info.last_step_info) - 1].outcome == 'stopped' or current_task_info.last_step_info[len(current_task_info.last_step_info) - 1].outcome == 'preempted':
+            print 'task stopped'
+            #nextStep = 'stop'
+            #return nextStep
+            #resultLastStep = 3
+            return 'preempted'
+        
         #call srs ros knowledge service for solution
         
         #dummy code for testing
@@ -286,11 +294,20 @@ class semantic_dm(smach.State):
                     print userdata.target_object_pose
                     feedback = pose_to_list(userdata)
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
-                print 'Result return failed'
+                print 'Result return not_completed'
                 resultLastStep = 1
 
-            elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stop' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preemptied':
-
+            elif current_task_info.last_step_info[len_step_info - 1].outcome == 'failed':
+                print 'Result return failed'
+                resultLastStep = 2
+            elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stopped' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preempted':
+                print 'task stopped'
+                #nextStep = 'stop'
+                #return nextStep
+                #resultLastStep = 3
+                return 'preempted'
+            
+                """
                 rospy.wait_for_service('task_request')
                 try:
                     requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
@@ -304,8 +321,7 @@ class semantic_dm(smach.State):
                     print "Service call failed: %s"%e
                     return 'failed'
                 resultLastStep = 0
-
-
+                """
                 
                 
                 #if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_approach_pose_assisted':
@@ -315,7 +331,7 @@ class semantic_dm(smach.State):
                 #elif current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_pick_object_asisted':
                 #    result = (0, 1, 1)
                 #else:
-                #    result = (1, 1, 1)
+                #  move  result = (1, 1, 1)
 
 
             print resultLastStep
@@ -341,12 +357,21 @@ class semantic_dm(smach.State):
                     nextStep = 'navigation'
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
                     return nextStep
+                elif resp1.nextAction.generic.actionInfo[0] == 'put_on_tray':
+                    nextStep = 'put_on_tray'
+                    #userdata.grasp_conf = resp1.nextAction.generic.actionInfo[1]
+                    return nextStep
                 elif resp1.nextAction.generic.actionInfo[0] == 'deliver_object':
                     nextStep = 'deliver_object'
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
                     return nextStep
+                elif resp1.nextAction.generic.actionInfo[0] == 'finish_success':
+                    nextStep = 'succeeded'
+                    return nextStep
+                elif resp1.nextAction.generic.actionInfo[0] == 'finish_fail':
+                    nextStep = 'failed'
+                    return nextStep
                 elif resp1.nextAction.generic.actionInfo[0] == 'detect':
-                                      
                     nextStep = 'detection'
                     #TODO should confirm later if name or id used !!!!!!!!
 		    ####  HARD CODED FOR TESTING ##

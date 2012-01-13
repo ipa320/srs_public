@@ -68,14 +68,30 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    actionUnits.add(graspAct);
 
 	    //ifObjectPoseSet = true;
-	    ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
-	    
+	    //ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
+	    // object not considered here
+	    ifParametersSet = ifBasePoseSet;
+
 	    int size = actionUnits.size(); 
 	    nextActionMapIfFail = new int[size];
+	    nextActionMapIfSuccess = new int[size];
 	    
 	    for(int i = 0; i < size; i++) {
-		nextActionMapIfFail[i] = -1;  
-	    }
+		if(actionUnits.get(i).actionInfo.get(0).equals("move")) {
+		    nextActionMapIfSuccess[i] = i + 1;
+		    nextActionMapIfFail[i] = i + 2;
+		}
+		else if(actionUnits.get(i).actionInfo.get(0).equals("grasp")) {
+		    nextActionMapIfSuccess[i] = COMPLETED_SUCCESS;    // 
+		    nextActionMapIfFail[i] = i + 1;
+		}
+		if(nextActionMapIfFail[i] >= size) {
+		    // out of bound, means this is the last step in this action unit. so -1 means there is no further solution to the current task within this actionunit
+		    nextActionMapIfFail[i] = COMPLETED_FAIL;  
+		}	    
+	}
+
+
     }
     
     public String getActionType() {
@@ -84,12 +100,18 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     }
 
     public int getNextCUActionIndex(boolean statusLastStep) {
+	System.out.println(" ==> DEBUG 0");
 	if(currentActionInd == -1) {
+	    System.out.println(" ==> DEBUG 1");
 	    return 0;
 	}
+	System.out.println(" ==> DEBUG 2");
 
 	if ( currentActionInd >= 0 && currentActionInd < actionUnits.size() ) {
+	    System.out.println(" ==> DEBUG 3");
+
 	    if(statusLastStep) {
+		
 		System.out.println("NEXT ACTION IND (if Successful): " + nextActionMapIfSuccess[currentActionInd]);
 		return nextActionMapIfSuccess[currentActionInd];
 	    }
@@ -145,17 +167,17 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     // a not very safe, but flexible way to assign parameters, using arraylist<string> 
     // set robot move target and object pose etc.
     public boolean setParameters(ArrayList<String> para) {
-	boolean res = ifParametersSet;
+	//boolean res = ifParametersSet;
 	try {
 	    setBasePose(para);
-	    setGraspInfo(para);
+	    //setGraspInfo(para);
 	    ifParametersSet = true;
 	}
 	catch(IllegalArgumentException e) {
 	    System.out.println(e.getMessage());
 	    return false;
 	}
-	return res;
+	return ifParametersSet;
     }
 
     private void setBasePose(ArrayList<String> pose) throws IllegalArgumentException {
@@ -167,17 +189,15 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    
 	    GenericAction nga = new GenericAction();
 	    nga.actionInfo = pose;
-	    /*
-	    ga.actionInfo.set(0, "move");
-	    ga.actionInfo.set(1, pose.get(1));
-	    ga.actionInfo.set(2, pose.get(2));
-	    ga.actionInfo.set(3, pose.get(3));
-	    */
 	    actionUnits.set(0, nga);
 	    ifBasePoseSet = true;
 	    ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
 	}
 	else {
+	    System.out.println(ga.actionInfo.get(0));
+	    System.out.println(pose.get(0).equals("move"));
+	    System.out.println(pose.size());
+	    System.out.println(ga.actionInfo.size());
 	    throw new IllegalArgumentException("Wrong format exception -- when setting Base Pose with arrayList");
 	}
     }

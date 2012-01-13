@@ -2,8 +2,10 @@
 import roslib;
 #roslib.load_manifest('beginner_tutorials')
 roslib.load_manifest('srs_knowledge')
+roslib.load_manifest('geometry_msgs')
 import sys
 import rospy
+from geometry_msgs.msg import *
 
 from srs_knowledge.srv import *
 
@@ -47,8 +49,12 @@ def requestNewTask():
     print 'Request new task'
     rospy.wait_for_service('task_request')
     try:
+	p = Pose2D()
+	p.x = 1
+	p.y = 1
+	p.theta = 0
         requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
-        res = requestNewTask()
+        res = requestNewTask('get', 'MilkBox', None)
         return res
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
@@ -59,7 +65,7 @@ def usage():
 
 if __name__ == "__main__":
     print querySparQL()
-    #print requestNewTask()
+    print requestNewTask()
     #print testNextActionService([0,0,0])
     #print testNextActionService([0,0,0])
     #print testNextActionService([0,1,0])

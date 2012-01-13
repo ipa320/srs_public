@@ -21,8 +21,8 @@ def DM_client():
 
     # Creates a goal to send to the action server.
     _goal=xmsg.ExecutionGoal()
-    _goal.action="move"
-    _goal.parameter="order"
+    _goal.action="pause"
+    _goal.parameter=""
     _goal.priority=1
     # Sends the goal to the action server.
     client.send_goal(_goal)
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     try:
         # Initializes a rospy node so that the SimpleActionClient can
         # publish and subscribe over ROS.
-        rospy.init_node('dm_client2')
+        rospy.init_node('dm_client4')
         result = DM_client()
         rospy.loginfo('result %s',result)
         # print ("Result:" result)

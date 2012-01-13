@@ -23,7 +23,7 @@
 	<!-- knowledge server -->
     <include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
 	
-
+	<include file="$(find srs_symbolic_grounding)/ros/launch/start_symbol_grounding.launch"/>	
 	<!-- table -->
 	<include file="$(find srs_decision_making)/ros/launch/table_ikea.launch"/>
 

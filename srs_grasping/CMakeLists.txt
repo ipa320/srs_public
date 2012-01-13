@@ -16,7 +16,7 @@ genaction()
 
 rosbuild_init()
 rosbuild_genmsg()
-#rosbuild_gensrv()
+rosbuild_gensrv()
 
 
 #set the default path for built executables to the "bin" directory

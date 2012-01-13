@@ -4,11 +4,11 @@
 int32 status
 
 # [ifNavigate, ifDetect, ifGrasp]. 0: yes, 1: no, 2: others (undefined)
-int32[] actionFlags
+#int32[] actionFlags
 
-MoveAction ma
-PerceptionAction pa
-GraspAction ga
+#MoveAction ma
+#PerceptionAction pa
+#GraspAction ga
 GenericAction generic
 
 # move, perception, grasp, or generic

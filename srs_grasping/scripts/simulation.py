@@ -147,10 +147,7 @@ class SCRIPT():#################################################################
 
 
 
-
-		#grasping_functions.showOR(env, grasps, gazebo=gazebo, delay=None)	#GraspConfig
-		grasping_functions.showORmsg(env, grasps, gazebo=gazebo, delay=None)	#msg.GraspConfiguration
-
+		grasping_functions.showORmsg(env, grasps, gazebo=gazebo, delay=None)
 
 		return 0
 		

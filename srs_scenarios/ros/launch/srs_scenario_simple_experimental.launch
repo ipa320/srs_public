@@ -27,7 +27,14 @@
 	<include file="$(find srs_decision_making_experimental)/ros/launch/dm_server.launch"/>
 
 
+	<!-- ui tpoics-->
+	<include file="$(find srs_decision_making_experimental)/ros/launch/ui_topics.launch"/>
+
+
 	<!-- knowledge server -->
 	<include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+
+	<!-- symbol grounding -->
+	<include file="$(find srs_symbolic_grounding)/ros/launch/start_symbol_grounding.launch"/>	
 
 </launch>

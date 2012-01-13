@@ -394,6 +394,37 @@ class srs_enviroment_object_update(smach.StateMachine):
                     transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})    
 
 
+#Simple object verification developed for Stuttgart integration meeting, it should be replaced by environment object update later on
+class srs_object_verification_simple(smach.StateMachine):
+    
+    def __init__(self):    
+        smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
+                                    input_keys=['target_object_name', 'target_object_hh_id', 'scan_pose', 'target_object_pose'],
+                                    output_keys=['verified_target_object_pose'])
+        self.userdata.action_name = 'enviroment_update'
+        #add_common_states(self)
+        
+        with self:
+            smach.StateMachine.add('PRE_CONFIG', co_sm_pre_conf,
+                    transitions={'succeeded':'ACTION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
+                    remapping={'action_name':'action_name'})
+
+            smach.StateMachine.add('ACTION', co_sm_enviroment_object_verification_simple,
+                    transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
+                    remapping={'target_object_name':'target_object_name', 'target_object_hh_id':'target_object_hh_id', 'target_object_pose':'target_object_pose', 'scan_pose':'scan_pose', 'verified_target_object_pose':'verified_target_object_pose'})
+        
+            smach.StateMachine.add('POST_CONFIG', co_sm_post_conf,
+                    transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
+                    remapping={'action_name':'action_name'})
+            
+            smach.StateMachine.add('PAUSED_DURING_PRE_CONFIG', state_checking_during_paused(),
+                    transitions={'resume':'PRE_CONFIG','preempted':'preempted', 'stopped':'stopped'})
+            
+            smach.StateMachine.add('PAUSED_DURING_ACTION', state_checking_during_paused(),
+                    transitions={'resume':'ACTION','preempted':'preempted', 'stopped':'stopped'})
+            
+            smach.StateMachine.add('PAUSED_DURING_POST_CONFIG', state_checking_during_paused(),
+                    transitions={'resume':'POST_CONFIG','preempted':'preempted', 'stopped':'stopped'})   
 
 
 

@@ -225,8 +225,8 @@ class approach_pose_without_retry(smach.State):
 
         self.pose = pose
         self.counter =0
-        self.mode = "linear"
-        #self.mode = "omni"
+        #self.mode = "linear"
+        self.mode = "omni"
 
     def execute(self, userdata):
         

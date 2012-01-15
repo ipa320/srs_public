@@ -214,12 +214,12 @@ class sm_transfer_object_to_tray(SRS_StateMachine):
                                     input_keys=['grasp_categorisation'])
         
         self.customised_initial("sm_get_object_on_tray")
-        #self.userdata.post_table_pos=""
+        self.userdata.post_table_pos=""
     
         with self:
             smach.StateMachine.add("SELECT_POST_TABLE_POS", select_post_table_pose(),
                 transitions={'succeeded':'MOVE_TO_POST_TABLE_POS','failed':'failed','preempted':'preempted'},
-                remapping={'post_table_pos':'post_table_pos'})               
+                remapping={'post_table_pos': 'post_table_pos'})               
             smach.StateMachine.add('MOVE_TO_POST_TABLE_POS', approach_pose_without_retry(),
                 transitions={'succeeded':'PUT_OBJECT_ON_TRAY','failed':'failed','preempted':'preempted'},
                 remapping={'base_pose':'post_table_pos'})                              

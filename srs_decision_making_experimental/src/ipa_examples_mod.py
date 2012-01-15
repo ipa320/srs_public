@@ -711,21 +711,28 @@ class grasp_general(smach.State):
 class select_post_table_pose(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed','preempted'], input_keys=['post_table_pos'], output_keys=['post_table_pos'])
+        #self.counter = 0
+    
     def execute(self, userdata):
-        global current_task_info
-        pos=current_task_info.get_robot_pos()
-        
-        if pos ==None:
-            userdata.post_table_pos=''
-            return 'failed'
-        else:
-            pos.x = pos.x + 0.3 * cos(pos.theta)
-            pos.y = pos.y + 0.3 * sin(pos.theta)
-            userdata.post_table_pos = list()
-            userdata.post_table_pos.append(pos.x)
-            userdata.post_table_pos.append(pos.y)
-            userdata.post_table_pos.append(pos.theta)
+        if userdata.post_table_pos !='':
+            #already adjusted, not need for change again
             return 'succeeded'
+        else:
+            self.counter=self.counter+1
+            global current_task_info
+            pos=current_task_info.get_robot_pos()
+        
+            if pos ==None:
+                userdata.post_table_pos=''
+                return 'failed'
+            else:
+                pos.x = pos.x + 0.15 * cos(pos.theta)
+                pos.y = pos.y + 0.15 * sin(pos.theta)
+                userdata.post_table_pos = list()
+                userdata.post_table_pos.append(pos.x)
+                userdata.post_table_pos.append(pos.y)
+                userdata.post_table_pos.append(pos.theta)
+                return 'succeeded'
         
 
 class select_pose(smach.State):
@@ -756,6 +763,12 @@ class put_object_on_tray(smach.State):
         sss.sleep(2)
         sss.move("tray","up")
         handle_arm.wait()
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+        else:
+            return 'succeeded'
+
         
         # release object
         if userdata.grasp_categorisation == 'side':

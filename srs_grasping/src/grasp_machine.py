@@ -94,21 +94,14 @@ class Move_arm(smach.State):
 	return (result, resp.error_code)
 
 
-    def matrix_from_graspPose(self,gp):
-	q = []
-	q.append(gp.pose.orientation.x)
-	q.append(gp.pose.orientation.y)
-	q.append(gp.pose.orientation.z)
-	q.append(gp.pose.orientation.w)
-	e = euler_from_quaternion(q, axes='sxyz')
+	
+    def pose_to_mat(self, p): 
+        quat = [p.pose.orientation.x, p.pose.orientation.y, p.pose.orientation.z, p.pose.orientation.w] 
+        pos = scipy.matrix([p.pose.position.x, p.pose.position.y, p.pose.position.z]).T 
+        mat = scipy.matrix(quaternion_matrix(quat)) 
+        mat[0:3, 3] = pos 
 
-	m = euler_matrix(e[0],e[1],e[2] ,axes='sxyz')
-	m[0][3] = gp.pose.position.x
-	m[1][3] = gp.pose.position.y
-	m[2][3] = gp.pose.position.z
-
-	m = matrix([[m[0][0], m[0][1], m[0][2], m[0][3]], [m[1][0], m[1][1], m[1][2], m[1][3]], [m[2][0], m[2][1], m[2][2], m[2][3]], [m[3][0], m[3][1], m[3][2], m[3][3]]])
-	return m
+        return mat 
 
 
 
@@ -132,7 +125,7 @@ class Move_arm(smach.State):
 	self.srv_name_object_detection = '/object_detection/detect_object'
 	detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
 	req = DetectObjectsRequest()
-	req.object_name.data = "detected_object"
+	req.object_name.data = "milk"
 	res = detector_service(req)
 
 	for i in range(0,len(res.object_list.detections)):
@@ -148,9 +141,13 @@ class Move_arm(smach.State):
 	pre_grasp_pose = userdata.grasp_configuration[self.counter].pre_grasp
 	grasp_pose = userdata.grasp_configuration[self.counter].palm_pose
 
-	# TODO: Obtener matriz de transformacion
-	pre_trans = self.matrix_from_graspPose(Object_pose) * self.matrix_from_graspPose(pre_grasp_pose)
-	grasp_trans = self.matrix_from_graspPose(Object_pose) * self.matrix_from_graspPose(grasp_pose)
+	# TODO: ----
+	e = euler_from_quaternion([Object_pose.pose.orientation.x, Object_pose.pose.orientation.y, Object_pose.pose.orientation.z, Object_pose.pose.orientation.w],axes='sxzy')
+	rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz')
+
+	pre_trans = rotacion * self.pose_to_mat(pre_grasp_pose)
+	grasp_trans = rotacion * self.pose_to_mat(grasp_pose)
+	# ---------
 
 	t = translation_from_matrix(pre_trans)
 	q = quaternion_from_matrix(pre_trans)
@@ -180,9 +177,9 @@ class Move_arm(smach.State):
 	g.pose.orientation.w = qg[3]
 
 	
-	offset_x = (g.pose.position.x - pre.pose.position.x)/2
-	offset_y = (g.pose.position.y - pre.pose.position.y)/2
-	offset_z = (g.pose.position.z - pre.pose.position.z)/2
+	offset_x = 0#(g.pose.position.x - pre.pose.position.x)/2
+	offset_y = 0#(g.pose.position.y - pre.pose.position.y)/2
+	offset_z = 0#(g.pose.position.z - pre.pose.position.z)/2
 	
 	pre.pose.position.x += offset_x
 	pre.pose.position.y += offset_y
@@ -244,9 +241,6 @@ class Move_hand(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state MOVE_HAND')
 	raw_input("Execute grasp:")
-	print list(userdata.grasp_config.sconfiguration.points[0].positions)
-	print "--------------------"
-	#values = grasping_functions.ROS_to_script_server()
 	sss.move("sdh", [list(userdata.grasp_config.sconfiguration.points[0].positions)])
 	return 'succeeded'
 
@@ -293,6 +287,7 @@ def main(object_id, pose_id):
     #smach_viewer.stop()
 
     return outcome
+
 
 
 

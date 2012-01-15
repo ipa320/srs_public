@@ -497,7 +497,7 @@ class select_grasp(smach.State):
         Very simple grasp selection
         This need to be transfered into symbolic grounding service
         """
-        self.height_switch = 0.5 # Switch to select top or side grasp using the height of the object over the ground in [m].
+        self.height_switch = 0.7 # Switch to select top or side grasp using the height of the object over the ground in [m].
         
         #self.listener = tf.TransformListener()
         

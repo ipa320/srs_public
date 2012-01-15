@@ -23,11 +23,11 @@ This file contains concurrent state machines which provide parallel interruption
 class state_checking_during_operation (smach.State):
     def __init__(self):
         smach.State.__init__(self , outcomes =['stopped', 'customised_preempted', 'paused', 'preempted'])
-        self.state_checking_outcome = 'preempted'  #default outcome
+        #self.state_checking_outcome = 'preempted'  #default outcome
     
     def execute (self, userdata):
         global current_task_info
-        
+        self.state_checking_outcome = 'preempted'  #reset the outcome to default
         print "##########################"
         print current_task_info.get_stop_required()
         print self.state_checking_outcome
@@ -38,7 +38,8 @@ class state_checking_during_operation (smach.State):
         
         while (not self.preempt_requested()):
 
-            rospy.sleep(1)
+            #rospy.sleep(1)
+            time.sleep(1)
             
             #if stop command has been received
             if current_task_info.get_stop_required()==True:

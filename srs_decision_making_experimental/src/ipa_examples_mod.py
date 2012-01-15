@@ -225,8 +225,8 @@ class approach_pose_without_retry(smach.State):
 
         self.pose = pose
         self.counter =0
-        #self.mode = "linear"
-        self.mode = "omni"
+        self.mode = "linear"
+        #self.mode = "omni"
 
     def execute(self, userdata):
         
@@ -812,6 +812,30 @@ class update_env_model(smach.State):
         map_reference = ""   
         return 'succeeded'      
 
+
+#verify_object FROM PRO+IPA, the interface still need to be clarified 
+#for integration meeting
+class object_verification_simple(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['object_verified','no_object_verified','failed','preempted'],
+                                input_keys=['target_object_name','target_object_hh_id','target_object_pose'],
+                                output_keys=['verified_target_object_pose'])
+        #object verified: the expected object has been found, the revised pose is in the output_put key verified_target_object_pose
+        #no_object_verified: no object found, given up
+        
+                
+    def execute(self,userdata):
+        # user specify key region on interface device for detection
+        
+        
+        
+        #dummy code for testing
+        #verified object is in the exact expected position
+        #return object_verfied
+        
+        userdata.verified_target_object_pose = userdata.target_object_pose
+        return 'object_verified'  
 
     
 """

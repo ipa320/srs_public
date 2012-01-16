@@ -118,11 +118,13 @@ class GraspScript(script):
 			# TODO:  --------------------------------
 			e = euler_from_quaternion([obj.pose.orientation.x, obj.pose.orientation.y, obj.pose.orientation.z, obj.pose.orientation.w],axes='sxzy')
 			rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz')
+			rotacion[0,3] = obj.pose.position.x
+			rotacion[1,3] = obj.pose.position.y
+			rotacion[2,3] = obj.pose.position.z
+			# -----------------------------------------
 
 			pre_trans = rotacion * self.pose_to_mat(pre_grasp_pose)  
 			grasp_trans = self.pose_to_mat(obj) *  self.pose_to_mat(grasp_pose)
-			# -----------------------------------------
-
 
 			t = translation_from_matrix(pre_trans)
 			q = quaternion_from_matrix(pre_trans)

@@ -11,6 +11,7 @@ import random
 import tf
 import time
 import math
+import scipy
 
 from simple_script_server import *
 sss = simple_script_server()
@@ -107,6 +108,7 @@ class Move_arm(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state MOVE_ARM')
+	
 	listener = tf.TransformListener(True, rospy.Duration(10.0))
 
 	if self.counter >= len(userdata.grasp_configuration):
@@ -131,12 +133,11 @@ class Move_arm(smach.State):
 	for i in range(0,len(res.object_list.detections)):
 		print str(i)+": "+res.object_list.detections[i].label
 
-	index = 0
-	while (index < 0) and (index >= res.object_list.detections):
+	index = -1
+	while (index < 0) or (index >= len(res.object_list.detections)):
 		index = int(raw_input("Select object to grasp: "))
-
-	Object_pose = listener.transformPose("/base_link", res.object_list.detections[index].pose)
 	
+	Object_pose = listener.transformPose("/base_link", res.object_list.detections[index].pose)
 
 	pre_grasp_pose = userdata.grasp_configuration[self.counter].pre_grasp
 	grasp_pose = userdata.grasp_configuration[self.counter].palm_pose
@@ -144,10 +145,13 @@ class Move_arm(smach.State):
 	# TODO: ----
 	e = euler_from_quaternion([Object_pose.pose.orientation.x, Object_pose.pose.orientation.y, Object_pose.pose.orientation.z, Object_pose.pose.orientation.w],axes='sxzy')
 	rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz')
+	rotacion[0,3] = Object_pose.pose.position.x
+	rotacion[1,3] = Object_pose.pose.position.y
+	rotacion[2,3] = Object_pose.pose.position.z-0.1
+	# ---------
 
 	pre_trans = rotacion * self.pose_to_mat(pre_grasp_pose)
 	grasp_trans = rotacion * self.pose_to_mat(grasp_pose)
-	# ---------
 
 	t = translation_from_matrix(pre_trans)
 	q = quaternion_from_matrix(pre_trans)

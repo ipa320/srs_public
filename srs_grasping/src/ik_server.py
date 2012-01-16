@@ -5,17 +5,21 @@ roslib.load_manifest('srs_grasping')
 import time
 import rospy
 import actionlib
-import os
 
-import grasping_functions
-import generator
 
 from srs_grasping.msg import *
 from srs_object_database.srv import *
+from pr2_controllers_msgs.msg import *
+from kinematics_msgs.srv import *
+from kinematics_msgs.msg import *
 
 class ik_action_server():
 
 	def __init__(self):
+
+		rospy.loginfo("Waiting /arm_kinematics/get_ik service...")
+		self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
+		rospy.loginfo("/arm_kinematics/get_ik found.")
 
 		self.ns_global_prefix = "/ik_server"
 		self.ik_action_server = actionlib.SimpleActionServer(self.ns_global_prefix, IKAction, self.execute_cb, True)
@@ -33,24 +37,6 @@ class ik_action_server():
 		for o in resp.solution.joint_state.position:
 			result.append(o)
 		return (result, resp.error_code)
-
-
-    	def matrix_from_graspPose(self,gp):
-		q = []
-		q.append(gp.pose.orientation.x)
-		q.append(gp.pose.orientation.y)
-		q.append(gp.pose.orientation.z)
-		q.append(gp.pose.orientation.w)
-		e = euler_from_quaternion(q, axes='sxyz')
-
-		m = euler_matrix(e[0],e[1],e[2] ,axes='sxyz')
-		m[0][3] = gp.pose.position.x
-		m[1][3] = gp.pose.position.y
-		m[2][3] = gp.pose.position.z
-
-		m = matrix([[m[0][0], m[0][1], m[0][2], m[0][3]], [m[1][0], m[1][1], m[1][2], m[1][3]], [m[2][0], m[2][1], m[2][2], m[2][3]], [m[3][0], m[3][1], m[3][2], m[3][3]]])
-		return m
-
 
     	def get_joint_state(self, msg):
 		global current_joint_configuration
@@ -72,24 +58,26 @@ class ik_action_server():
 
 		sol = False
 		for w in range(0,10):
-			(pre_grasp_conf, error_code) = self.callIKSolver(current_joint_configuration, server_goal.pre_pose)		
+			(pre_grasp_conf, error_code) = self.callIKSolver(current_joint_configuration, server_goal.pre_pose)
 			if(error_code.val == error_code.SUCCESS):
 				for k in range(0,10):
 					(grasp_conf, error_code) = self.callIKSolver(pre_grasp_conf, server_goal.g_pose)
-					if(error_code.val == error_code.SUCCESS):		
-						print str(i)+": IK solution found"
+					if(error_code.val == error_code.SUCCESS):
 						sol = True
 						break
 				if sol:
+					rospy.loginfo("IK solution found.")
 					server_result.pre_position = pre_grasp_conf
 					server_result.g_position = grasp_conf
 					self.ik_action_server.set_succeeded(server_result)
-				else:
+					break
 
-					server_result.pre_position = []
-					server_result.g_position = []
-					self.ik_action_server.set_aborted(server_result)
 
+		if not sol:
+			rospy.loginfo("IK solution NOT found")
+			server_result.pre_position = []
+			server_result.g_position = []
+			self.ik_action_server.set_aborted(server_result)
 
 		print "Time employed: ",time.time()-x
 		print "-------------------------------"

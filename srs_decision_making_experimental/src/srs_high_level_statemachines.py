@@ -214,12 +214,12 @@ class sm_transfer_object_to_tray(SRS_StateMachine):
                                     input_keys=['grasp_categorisation'])
         
         self.customised_initial("sm_get_object_on_tray")
-        #self.userdata.post_table_pos=""
+        self.userdata.post_table_pos=""
     
         with self:
             smach.StateMachine.add("SELECT_POST_TABLE_POS", select_post_table_pose(),
                 transitions={'succeeded':'MOVE_TO_POST_TABLE_POS','failed':'failed','preempted':'preempted'},
-                remapping={'post_table_pos':'post_table_pos'})               
+                remapping={'post_table_pos': 'post_table_pos'})               
             smach.StateMachine.add('MOVE_TO_POST_TABLE_POS', approach_pose_without_retry(),
                 transitions={'succeeded':'PUT_OBJECT_ON_TRAY','failed':'failed','preempted':'preempted'},
                 remapping={'base_pose':'post_table_pos'})                              
@@ -274,9 +274,34 @@ class sm_enviroment_object_update(SRS_StateMachine):
             
             smach.StateMachine.add('VERIFY_OBJECT', verify_object(),
                     transitions={'object_verified':'succeeded', 'no_object_verified':'not_completed', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'reference_to_map':'reference_to_map','object_name_list':'target_object_name_list','updated_object_list':'target_object_pose_list'})               
+                    remapping={'reference_to_map':'reference_to_map','object_name_list':'target_object_name_list','updated_object_list':'target_object_pose_list'})      
+            
+################################################################################
+#verify an object update at a single position
+#
+#
+################################################################################    
 
-
+            
+class sm_enviroment_object_verification_simple(SRS_StateMachine):
+    def __init__(self):    
+        smach.StateMachine.__init__(self,
+                                    outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
+                                    input_keys=['target_object_name', 'target_object_hh_id', 'scan_pose', 'target_object_pose'],
+                                    output_keys=['verified_target_object_pose']
+                                    )
+        self.customised_initial("sm_enviroment_object_verification")
+        
+        with self:
+            smach.StateMachine.add('APPROACH_POSE', approach_pose_without_retry(),
+                    transitions={'succeeded':'VERIFY_OBJECT', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'base_pose':'scan_pose'})     
+            smach.StateMachine.add('VERIFY_OBJECT', object_verification_simple(),
+                    transitions={'object_verified':'succeeded', 'no_object_verified':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'target_object_name':'target_object_name',
+                               'target_object_hh_id':'target_object_hh_id',
+                               'target_object_pose':'target_object_pose',
+                               'verified_target_object_pose':'verified_target_object_pose'})           
             
 """
 OLD STATE MACHINES

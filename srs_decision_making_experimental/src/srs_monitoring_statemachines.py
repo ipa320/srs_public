@@ -23,11 +23,11 @@ This file contains concurrent state machines which provide parallel interruption
 class state_checking_during_operation (smach.State):
     def __init__(self):
         smach.State.__init__(self , outcomes =['stopped', 'customised_preempted', 'paused', 'preempted'])
-        self.state_checking_outcome = 'preempted'  #default outcome
+        #self.state_checking_outcome = 'preempted'  #default outcome
     
     def execute (self, userdata):
         global current_task_info
-        
+        self.state_checking_outcome = 'preempted'  #reset the outcome to default
         print "##########################"
         print current_task_info.get_stop_required()
         print self.state_checking_outcome
@@ -38,7 +38,8 @@ class state_checking_during_operation (smach.State):
         
         while (not self.preempt_requested()):
 
-            rospy.sleep(1)
+            #rospy.sleep(1)
+            time.sleep(1)
             
             #if stop command has been received
             if current_task_info.get_stop_required()==True:
@@ -233,5 +234,25 @@ with co_sm_enviroment_object_update:
             smach.Concurrence.add('MAIN_OPERATION', sm_enviroment_object_update(),
                             remapping={'target_object_name_list':'target_object_name_list',
                                        'target_object_pose_list':'target_object_pose_list',
-                                       'scan_pose_list':'scan_pose_list',})
+                                       'scan_pose_list':'scan_pose_list'})
+
+
+###################################################
+# creating the concurrence state machine environment object update
+
+
+co_sm_enviroment_object_verification_simple = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
+                 default_outcome='failed',
+                 input_keys=['target_object_name', 'target_object_hh_id', 'scan_pose', 'target_object_pose'],
+                 output_keys=['verified_target_object_pose'],
+                 child_termination_cb = common_child_term_cb,
+                 outcome_cb = common_out_cb)
+with co_sm_enviroment_object_update:
+            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
+            smach.Concurrence.add('MAIN_OPERATION', sm_enviroment_object_verification_simple(),
+                            remapping={'target_object_name':'target_object_name',
+                                       'target_object_hh_id':'target_object_hh_id',
+                                       'scan_pose':'scan_pose',
+                                       'target_object_pose':'target_object_pose',
+                                       'verified_target_object_pose':'verified_target_object_pose'})
 

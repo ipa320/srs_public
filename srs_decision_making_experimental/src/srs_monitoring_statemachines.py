@@ -40,6 +40,7 @@ class state_checking_during_operation (smach.State):
 
             #rospy.sleep(1)
             time.sleep(1)
+            _feedback=xmsg.ExecutionFeedback()
             
             #if stop command has been received
             if current_task_info.get_stop_required()==True:
@@ -54,6 +55,12 @@ class state_checking_during_operation (smach.State):
                     current_task_info.set_stop_acknowledged(True)
                     try:
                         sss.say(["I am stopping."],False)
+
+
+		        _feedback.current_state =  "the task has been stopped"
+		        _feedback.solution_required = False
+		        _feedback.exceptional_case_id = 0
+		        current_task_info._srs_as._as.publish_feedback(_feedback)
                     except:
                         print sys.exc_info()
                     return self.state_checking_outcome
@@ -62,6 +69,10 @@ class state_checking_during_operation (smach.State):
                 #update the final outcome to stopped
                 self.state_checking_outcome  = 'paused'
                 try:
+
+		    _feedback.current_state =  "the task has been paused"
+		    _feedback.solution_required = False
+		    _feedback.exceptional_case_id = 0
                     sss.say(["I am pausing."],False)
                 except:
                     print sys.exc_info()
@@ -72,7 +83,11 @@ class state_checking_during_operation (smach.State):
 
                 #update the final outcome to customised_preempted
                 self.state_checking_outcome  = 'customised_preempted'
-                                                
+
+		_feedback.current_state =  "the task has been replaced by another task request with higher priority"
+		_feedback.solution_required = False
+		_feedback.exceptional_case_id = 0
+                 
                 #if the current action can be stopped in the middle, terminate the checking and trigger preempty to the operation state
                 #otherwise wait for the main operation which is not stoppable to be completed
                 if current_task_info.stopable():
@@ -89,10 +104,16 @@ class state_checking_during_operation (smach.State):
         if self.state_checking_outcome == 'stopped':
             try:
                 sss.say(["I am stopping."],False)
+		_feedback.current_state =  "the task has been stopped"
+		_feedback.solution_required = False
+		_feedback.exceptional_case_id = 0
+
                 current_task_info.set_stop_acknowledged(True)
             except:
                 print sys.exc_info()
         if self.state_checking_outcome == 'customised_preempted':
+
+
             current_task_info.set_customised_preempt_acknowledged(True)
         return self.state_checking_outcome
 

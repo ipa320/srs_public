@@ -2620,13 +2620,13 @@ See also xAxisPredicateOfSystem and yAxisPredicateOfSystem.</rdfs:comment>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Cracking"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Pouring-PourFromOneContainerIntoAnother"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Pouring-PourFromOneContainerIntoAnother"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Cracking"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -3038,8 +3038,8 @@ See also xAxisPredicateOfSystem and yAxisPredicateOfSystem.</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#CookingFood"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Boiled"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#deviceUsed"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Burner"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -3050,8 +3050,8 @@ See also xAxisPredicateOfSystem and yAxisPredicateOfSystem.</rdfs:comment>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#deviceUsed"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Burner"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Boiled"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">Cooking food by immersing it in boiling water.</rdfs:comment>
@@ -3529,13 +3529,13 @@ Cf. PolarCoordinateSystem.</rdfs:comment>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ReleasingGraspOfSomething"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ClosingADoor"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ClosingADoor"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ReleasingGraspOfSomething"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -3549,13 +3549,13 @@ Cf. PolarCoordinateSystem.</rdfs:comment>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ClosingADrawer"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ReleasingGraspOfSomething"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ReleasingGraspOfSomething"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ClosingADrawer"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -3669,13 +3669,13 @@ Cf. PolarCoordinateSystem.</rdfs:comment>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#servesCuisine"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#restaurantTypeSpecializingInCuisine"/>
                 <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Coffee-Beverage"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#restaurantTypeSpecializingInCuisine"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#servesCuisine"/>
                 <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Coffee-Beverage"/>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -3812,14 +3812,14 @@ Cf. PolarCoordinateSystem.</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#StateOfMatterChangeEvent"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#LiquidTangibleThing"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#inputsDestroyed"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#GaseousTangibleThing"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#inputsDestroyed"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#GaseousTangibleThing"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#LiquidTangibleThing"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -3930,14 +3930,14 @@ Cf. PolarCoordinateSystem.</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#PhysicalDevice"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#causes-Underspecified"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Event"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typePrimaryFunction-deviceUsed"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ControllingSomething"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typePrimaryFunction-deviceUsed"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ControllingSomething"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#causes-Underspecified"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Event"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">ControlDevice is a specialization of ControlStructure-Physical and PhysicalDevice. Each instance of ControlDevice is a device whose primaryFunction is to control the behavior/functioning/properties of another thing (usually another instance of PhysicalDevice). Obvious instances of ControlDevice include: the remote control for one&#39;s TV (an instance of RemoteControlDevice), the brake pedal on one&#39;s car (an instance of Pedal-ControlDevice), the light switch on one&#39;s bedroom wall (an instance of ElectricalSwitch); a less obvious instance of ControlDevice is HooverDam (an instance of Dam).</rdfs:comment>
@@ -4179,14 +4179,14 @@ The two most common types of coordinate systems are CartesianCoordinateSystems a
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Box-Container"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#lispClass"/>
-                <owl:hasValue rdf:datatype="&xsd;string">cupboard</owl:hasValue>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typePrimaryFunction-StoragePlaceFor"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#FoodVessel"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typePrimaryFunction-StoragePlaceFor"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#FoodVessel"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#lispClass"/>
+                <owl:hasValue rdf:datatype="&xsd;string">cupboard</owl:hasValue>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -4805,7 +4805,7 @@ The two most common types of coordinate systems are CartesianCoordinateSystems a
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#RestaurantOrg-WithoutWaitstaff"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#servesCuisine"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#restaurantTypeSpecializingInCuisine"/>
                 <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#AmericanStyleFastFoodCuisine"/>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -4817,7 +4817,7 @@ The two most common types of coordinate systems are CartesianCoordinateSystems a
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#restaurantTypeSpecializingInCuisine"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#servesCuisine"/>
                 <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#AmericanStyleFastFoodCuisine"/>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -6196,6 +6196,12 @@ For predicates that relate things to measurable quantities that characterize the
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#StateOfMatterChangeEvent"/>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#LiquidTangibleThing"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#minTempForProcess"/>
                 <owl:hasValue rdf:datatype="&xsd;integer">0</owl:hasValue>
             </owl:Restriction>
@@ -6204,12 +6210,6 @@ For predicates that relate things to measurable quantities that characterize the
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#inputsDestroyed"/>
                 <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Frozen"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#LiquidTangibleThing"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -6265,14 +6265,14 @@ For predicates that relate things to measurable quantities that characterize the
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#CookingFood"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Microwaved"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#deviceUsed"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#MicrowaveOven"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#deviceUsed"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#MicrowaveOven"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Microwaved"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">A specialization of CookingFood: a collection of events in which a MicrowaveOven is used to heat food (or drink).</rdfs:comment>
@@ -6338,13 +6338,13 @@ For predicates that relate things to measurable quantities that characterize the
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#AddingSth"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Stirring"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Stirring"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#AddingSth"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment>two or more substances are combined to form a Mixture</rdfs:comment>
@@ -6605,13 +6605,13 @@ For predicates that relate things to measurable quantities that characterize the
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Reaching"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#OpeningADoor"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#OpeningADoor"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Reaching"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -6625,13 +6625,13 @@ For predicates that relate things to measurable quantities that characterize the
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Reaching"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#OpeningADrawer"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#OpeningADrawer"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Reaching"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -6669,14 +6669,14 @@ For predicates that relate things to measurable quantities that characterize the
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#IntrinsicStateChangeEvent"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#fromState"/>
-                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ObjectStateClosed"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#toState"/>
+                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ObjectStateOpen"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#toState"/>
-                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ObjectStateOpen"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#fromState"/>
+                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ObjectStateClosed"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -7063,6 +7063,12 @@ For predicates that relate things to measurable quantities that characterize the
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Movement-TranslationEvent"/>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#lispClass"/>
+                <owl:hasValue rdf:datatype="&xsd;string">entity-picked-up</owl:hasValue>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
                 <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Reaching"/>
             </owl:Restriction>
@@ -7071,12 +7077,6 @@ For predicates that relate things to measurable quantities that characterize the
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
                 <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#TakingSomething"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#lispClass"/>
-                <owl:hasValue rdf:datatype="&xsd;string">entity-picked-up</owl:hasValue>
             </owl:Restriction>
         </rdfs:subClassOf>
         <owl:disjointWith rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#PuttingDownAnObject"/>
@@ -7383,6 +7383,12 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#PhysicalTransformationEvent"/>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#objectActedOn"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#FoodOrDrinkOrIngredient"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#eventOccursAt"/>
                 <owl:someValuesFrom>
                     <owl:Class>
@@ -7394,12 +7400,14 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
                 </owl:someValuesFrom>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#objectActedOn"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#FoodOrDrinkOrIngredient"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Pringle -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Pringle">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#FoodVessel"/>
     </owl:Class>
     
 
@@ -7473,14 +7481,14 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ReleasingGraspOfSomething"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#lispClass"/>
+                <owl:hasValue rdf:datatype="&xsd;string">entity-put-down</owl:hasValue>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#lispClass"/>
-                <owl:hasValue rdf:datatype="&xsd;string">entity-put-down</owl:hasValue>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#ReleasingGraspOfSomething"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -7557,7 +7565,7 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#PuttingDownAnObject"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#PickingUpAnObject"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -7568,14 +7576,14 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#orderingConstraints"/>
-                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#SubEventOrderingPuttingSomethingSomewhere1"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#PuttingDownAnObject"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#subAction"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#PickingUpAnObject"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#orderingConstraints"/>
+                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#SubEventOrderingPuttingSomethingSomewhere1"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -7705,8 +7713,8 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#RefrigeratedStorageDevice"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typePrimaryFunction-deviceUsed"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#CoolingProcess"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typePrimaryFunction-StoragePlaceFor"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Perishable"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -7717,8 +7725,8 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typePrimaryFunction-StoragePlaceFor"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Perishable"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typePrimaryFunction-deviceUsed"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#CoolingProcess"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">The collection of devices used for cold storage, for example, knowrob refrigerators used for keeping food cold.</rdfs:comment>
@@ -7982,13 +7990,13 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#RotationMatrix"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#matrixNumColumns"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#matrixNumRows"/>
                 <owl:hasValue rdf:datatype="&xsd;integer">3</owl:hasValue>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#matrixNumRows"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#matrixNumColumns"/>
                 <owl:hasValue rdf:datatype="&xsd;integer">3</owl:hasValue>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -8002,13 +8010,13 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#RotationMatrix"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#matrixNumColumns"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#matrixNumRows"/>
                 <owl:hasValue rdf:datatype="&xsd;integer">4</owl:hasValue>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#matrixNumRows"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#matrixNumColumns"/>
                 <owl:hasValue rdf:datatype="&xsd;integer">4</owl:hasValue>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -8026,6 +8034,14 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
                 <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#VegetarianCuisine"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Salt -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Salt">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#FoodVessel"/>
     </owl:Class>
     
 
@@ -8243,14 +8259,14 @@ Examples include the location of the center of mass of the Milky Way galaxy at t
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#FurniturePiece"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typeIntendedBehaviorCapable-DeviceUsed"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#WashingDishes"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#lispClass"/>
+                <owl:hasValue rdf:datatype="&xsd;string">sink</owl:hasValue>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#lispClass"/>
-                <owl:hasValue rdf:datatype="&xsd;string">sink</owl:hasValue>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#typeIntendedBehaviorCapable-DeviceUsed"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#WashingDishes"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">The container found in knowrobs, bathrooms, utility rooms etc which holds water, dishes, etc.. The Sink is the whole of which the basin, faucets, etc, are a part.</rdfs:comment>
@@ -8660,14 +8676,14 @@ Note that a fictional or imaginary object (such as Frodo, Captain Queeg, or HAL9
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#StateOfMatterChangeEvent"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#inputsDestroyed"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#GaseousTangibleThing"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#SolidTangibleThing"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputsCreated"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#SolidTangibleThing"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#inputsDestroyed"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#GaseousTangibleThing"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -9222,12 +9238,6 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#RegulatingFluidFlow"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#fromState"/>
-                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#DeviceStateOn"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#toState"/>
                 <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#DeviceStateOff"/>
             </owl:Restriction>
@@ -9236,6 +9246,12 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#deviceUsed"/>
                 <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Tap-PlumbingFixture"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#fromState"/>
+                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#DeviceStateOn"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">The collection of events in which a tap is closed and water can no longer flow through it.</rdfs:comment>
@@ -9249,14 +9265,14 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#TurningOnPoweredDevice"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputs"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#HeatSource"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#objectActedOn"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#HeatingDevice"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#objectActedOn"/>
-                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#HeatingDevice"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#outputs"/>
+                <owl:someValuesFrom rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#HeatSource"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -9285,14 +9301,14 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
         <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#RegulatingFluidFlow"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#toState"/>
-                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#DeviceStateOn"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#fromState"/>
+                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#DeviceStateOff"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#fromState"/>
-                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#DeviceStateOff"/>
+                <owl:onProperty rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#toState"/>
+                <owl:hasValue rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#DeviceStateOn"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -9777,18 +9793,28 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
     <rdf:Description>
         <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CleaningSubstance"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#DomesticCleaningTool"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Napkin"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#PaperTowel"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CarvingKnife"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Fork-SilverwarePiece"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Scissors"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Spatula"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Spoon-SilverwarePiece"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#TableKnife"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Tongs"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WireWhisk"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WoodenSpoon"/>
         </owl:members>
     </rdf:Description>
     <rdf:Description>
         <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CounterTop"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Person-SupportingFurniture"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Table-PieceOfFurniture"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#AnimalBodyPart"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CleaningDevice"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#ConstructionArtifact"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#ControlDevice"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FoodOrDrinkOrIngredient"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FoodVessel"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#HandTool"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#TableCovering"/>
         </owl:members>
     </rdf:Description>
     <rdf:Description>
@@ -9804,11 +9830,39 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
     <rdf:Description>
         <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FrameOfReference"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Matrix"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#RelationalStructure"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Tuple"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Vector"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Dishwasher"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#MicrowaveOven"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Refrigerator"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Refrigerator-Freezer"/>
+        </owl:members>
+    </rdf:Description>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CleaningARoom"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#DryingDishes"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#DryingLaundry"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#MoppingAFloor"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#SweepingAnArea"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#TakingOutTheGarbage"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Vacuuming"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WashingClothesInAMachine"/>
+        </owl:members>
+    </rdf:Description>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CounterTop"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Person-SupportingFurniture"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Table-PieceOfFurniture"/>
+        </owl:members>
+    </rdf:Description>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Bowl-Eating"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#DinnerPlate"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Saucer"/>
         </owl:members>
     </rdf:Description>
     <rdf:Description>
@@ -9834,42 +9888,21 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
     <rdf:Description>
         <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Bowl-Serving"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Pitcher"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Platter"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Broom"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Mop"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#VacuumCleaner"/>
         </owl:members>
     </rdf:Description>
     <rdf:Description>
         <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#ConstructionArtifact"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FoodOrDrinkOrIngredient"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FoodVessel"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#HandTool"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#RefrigeratedStorageDevice"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#TableCovering"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Tray"/>
-        </owl:members>
-    </rdf:Description>
-    <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
-        <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#AirCoolingDevice"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Refrigerator"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Refrigerator-Freezer"/>
-        </owl:members>
-    </rdf:Description>
-    <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
-        <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#AnimalBodyPart"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CleaningDevice"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#ConstructionArtifact"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#ControlDevice"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FoodOrDrinkOrIngredient"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FoodVessel"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#HandTool"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#TableCovering"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#BlackColor"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#BlueColor"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#GreenColor"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#OrangeColor"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#RedColor"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WhiteColor"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#YellowColor"/>
         </owl:members>
     </rdf:Description>
     <rdf:Description>
@@ -9882,31 +9915,6 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
             <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#MeasuringCup"/>
             <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#ServingVessel"/>
             <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Thermos"/>
-        </owl:members>
-    </rdf:Description>
-    <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
-        <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Bowl-Eating"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#DinnerPlate"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Saucer"/>
-        </owl:members>
-    </rdf:Description>
-    <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
-        <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#BottleOpener"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CakePan"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CanOpener"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CoffeeMaker"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Colander"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#ElectricMixer"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#MicrowaveOven"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Spatula"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#StoveTopCookingPot"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Tongs"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WireWhisk"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WoodenSpoon"/>
         </owl:members>
     </rdf:Description>
     <rdf:Description>
@@ -9950,24 +9958,9 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
     <rdf:Description>
         <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#IndexFinger"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#LittleFinger"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#MiddleFinger"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#RingFinger"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Thumb"/>
-        </owl:members>
-    </rdf:Description>
-    <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
-        <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CleaningARoom"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#DryingDishes"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#DryingLaundry"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#MoppingAFloor"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#SweepingAnArea"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#TakingOutTheGarbage"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Vacuuming"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WashingClothesInAMachine"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#AirCoolingDevice"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Refrigerator"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Refrigerator-Freezer"/>
         </owl:members>
     </rdf:Description>
     <rdf:Description>
@@ -9982,44 +9975,67 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
     <rdf:Description>
         <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Dishwasher"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#MicrowaveOven"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Refrigerator"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Refrigerator-Freezer"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CleaningSubstance"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#DomesticCleaningTool"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Napkin"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#PaperTowel"/>
         </owl:members>
     </rdf:Description>
     <rdf:Description>
         <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CarvingKnife"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Fork-SilverwarePiece"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Scissors"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Bowl-Serving"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Pitcher"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Platter"/>
+        </owl:members>
+    </rdf:Description>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#ConstructionArtifact"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FoodOrDrinkOrIngredient"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FoodVessel"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#HandTool"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#RefrigeratedStorageDevice"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#TableCovering"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Tray"/>
+        </owl:members>
+    </rdf:Description>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#IndexFinger"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#LittleFinger"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#MiddleFinger"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#RingFinger"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Thumb"/>
+        </owl:members>
+    </rdf:Description>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#FrameOfReference"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Matrix"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#RelationalStructure"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Tuple"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Vector"/>
+        </owl:members>
+    </rdf:Description>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#BottleOpener"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CakePan"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CanOpener"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#CoffeeMaker"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Colander"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#ElectricMixer"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#MicrowaveOven"/>
             <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Spatula"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Spoon-SilverwarePiece"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#TableKnife"/>
+            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#StoveTopCookingPot"/>
             <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Tongs"/>
             <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WireWhisk"/>
             <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WoodenSpoon"/>
-        </owl:members>
-    </rdf:Description>
-    <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
-        <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Broom"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Mop"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#VacuumCleaner"/>
-        </owl:members>
-    </rdf:Description>
-    <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
-        <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#BlackColor"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#BlueColor"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#GreenColor"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#OrangeColor"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#RedColor"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#WhiteColor"/>
-            <rdf:Description rdf:about="http://www.srs-project.eu/ontologies/srs.owl#YellowColor"/>
         </owl:members>
     </rdf:Description>
 </rdf:RDF>

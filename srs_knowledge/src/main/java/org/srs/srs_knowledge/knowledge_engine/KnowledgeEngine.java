@@ -24,6 +24,7 @@ import ros.pkg.srs_knowledge.srv.PlanNextAction;
 import ros.pkg.srs_knowledge.srv.TaskRequest;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;
 import ros.pkg.srs_knowledge.srv.GetWorkspaceOnMap;
+import ros.pkg.srs_knowledge.srv.GetObjectsOnTray;
 import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
 
@@ -108,6 +109,7 @@ public class KnowledgeEngine
 	    initTaskRequest();
 	    initGetObjectsOnMap();
 	    initGetWorkspaceOnMap();
+	    initGetObjectsOnTray();
 	}
 	catch(RosException e){
 	    System.out.println(e.getMessage());
@@ -156,7 +158,7 @@ public class KnowledgeEngine
 	querySparQLService = config.getProperty("querySparQLService", "query_sparql");
 	getObjectsOnMapService = config.getProperty("getObjectsOnMapService", "get_objects_on_map");
 	getWorkSpaceOnMapService = config.getProperty("getWorkSpaceOnMapService", "get_workspace_on_map");
-
+	getObjectsOnTrayService = config.getProperty("getObjectsOnTrayService", "get_objects_on_tray");
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
@@ -519,12 +521,12 @@ public class KnowledgeEngine
 
 	className = className + "FoodVessel";
 
-	try{
-	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
-	    if(instances == null) {
-		return re;
-	    }
+	Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
+	if(instances == null) {
+	    return re;
+	}
 
+	try{
 	    if(instances.hasNext()) {
 		while (instances.hasNext()) { 
 		    Individual temp = (Individual)instances.next();
@@ -544,11 +546,11 @@ public class KnowledgeEngine
 		    }
 		}
 	    }
-	    else
+	    else {
 		System.out.println("<EMPTY>");
-	        
-        System.out.println();
+	    }
 
+	    System.out.println();
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage());
@@ -752,6 +754,88 @@ public class KnowledgeEngine
 	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = nodeHandle.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
     }
 
+
+    private GetObjectsOnTray.Response handleGetObjectsOnTray(GetObjectsOnTray.Request request)
+    {
+	GetObjectsOnTray.Response res = new GetObjectsOnTray.Response();
+
+
+
+
+
+
+
+
+
+
+
+
+
+	String targetContent = "kitchen";
+	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+	    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+	    + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n"
+	    + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
+	String queryString = "SELECT ?objs ?tray WHERE { "
+	    + "?tray rdf:type srs:CobTray . "
+	    + "?objs srs:SpatiallyRelated ?tray . "
+	    + "}";
+
+	//System.out.println(prefix + queryString + "\n");
+	
+	if (this.ontoDB == null) {
+	    ros.logInfo("INFO: Ontology Database is NULL. Nothing executed. ");
+	    return res;
+	}
+	
+	try {
+	    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix
+								   + queryString);
+	    
+	    if (rset.size() == 0) {
+		ros.logInfo("No found from database");
+	    }
+	    else {
+		System.out.println("WARNING: Multiple options... ");
+		QuerySolution qs = rset.get(0);
+		String objName = qs.getLiteral("objs").getString();
+		
+		//y = qs.getLiteral("y").getFloat();
+		//theta = qs.getLiteral("theta").getFloat();
+		//System.out.println("x is " + x + ". y is  " + y
+		//		   + ". theta is " + theta);
+	    }
+	    
+	} catch (Exception e) {
+	    System.out.println("Exception -->  " + e.getMessage());
+	    
+	}
+
+
+
+
+
+
+
+
+
+
+	return res;
+    }
+    
+    private void initGetObjectsOnTray() throws RosException
+    {
+	ServiceServer.Callback<GetObjectsOnTray.Request, GetObjectsOnTray.Response> scb = new ServiceServer.Callback<GetObjectsOnTray.Request, GetObjectsOnTray.Response>() {
+            public GetObjectsOnTray.Response call(GetObjectsOnTray.Request request) {
+		return handleGetObjectsOnTray(request);
+            }
+	};
+
+	ServiceServer<GetObjectsOnTray.Request,GetObjectsOnTray.Response,GetObjectsOnTray> srv = nodeHandle.advertiseService(getObjectsOnTrayService, new GetObjectsOnTray(), scb);
+    }
+
+
+
     private boolean loadPredefinedTasksForTest()
     {
 	try{
@@ -852,6 +936,7 @@ public class KnowledgeEngine
     private String taskRequestService = "task_request";
     private String planNextActionService = "plan_next_action";
     private String generateSequenceService = "generate_sequence";
+    private String getObjectsOnTrayService = "get_objects_on_tray"; 
     private String querySparQLService = "query_sparql";
     private String getObjectsOnMapService = "get_objects_on_map";
     private String getWorkSpaceOnMapService = "get_workspace_on_map";

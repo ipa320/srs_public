@@ -215,7 +215,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			lastStepActUnit = null;
 			return handleFailedMessage();
 		    }
-		    ca = highAct.getNextCUAction(ni);
+		    ca = highAct.getCUActionAt(ni);
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
 		    lastActionType = ca.generic.actionInfo.get(0);
@@ -257,7 +257,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    }
 	    else {
 		System.out.println("GET NEXT CU ACTION AT:  " + tempI);
-		CUAction ca = nextHighActUnit.getNextCUAction(tempI);
+		CUAction ca = nextHighActUnit.getCUActionAt(tempI);
 		if(ca == null) {
 		    System.out.println("CUACTION IS NULL.......");
 		}
@@ -306,7 +306,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    return ca;
 		}		
 		else {
-		    return nextHighActUnit.getNextCUAction(tempI);
+		    return nextHighActUnit.getCUActionAt(tempI);
 		}
 	    }
 	}

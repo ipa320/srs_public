@@ -2,7 +2,6 @@ package org.srs.srs_knowledge.task;
 
 import java.io.*;
 import java.util.StringTokenizer;
-//import org.apache.commons.logging.Log;
 import java.util.ArrayList;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
@@ -182,7 +181,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    // if stuck (fail), move to the next subActionSequence
 	    if(highAct != null) {
 
-		System.out.println("DEBUG >>> 2 ");
+		// TODO:
+		updateDBObjectPose();
+				
 		int ni = highAct.getNextCUActionIndex(stateLastAction); 
 		System.out.println("=========>>>>  " + ni);
 		switch(ni) {
@@ -195,9 +196,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    // private HighLevelActionUnit setParametersGraspPos(Pose2D pos, HighLevelActionUnit mgActUnit)
 		    //curActUnit.setParameters(basePos);
 		    CUAction retact = handleSuccessMessage(new ActionFeedback(feedback)); 
-		    
 		    return retact; 
-		    
 		case HighLevelActionUnit.COMPLETED_FAIL:
 		    // The whole task finished (failure). 
 		    lastStepActUnit = null;
@@ -216,7 +215,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			lastStepActUnit = null;
 			return handleFailedMessage();
 		    }
-		    ca = highAct.getNextCUAction(ni);
+		    ca = highAct.getCUActionAt(ni);
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
 		    lastActionType = ca.generic.actionInfo.get(0);
@@ -258,7 +257,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    }
 	    else {
 		System.out.println("GET NEXT CU ACTION AT:  " + tempI);
-		CUAction ca = nextHighActUnit.getNextCUAction(tempI);
+		CUAction ca = nextHighActUnit.getCUActionAt(tempI);
 		if(ca == null) {
 		    System.out.println("CUACTION IS NULL.......");
 		}
@@ -307,13 +306,17 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    return ca;
 		}		
 		else {
-		    return nextHighActUnit.getNextCUAction(tempI);
+		    return nextHighActUnit.getCUActionAt(tempI);
 		}
 	    }
 	}
 	return null;
     }
     
+    private boolean updateDBObjectPose() {
+	
+	return true;
+    }
     
     private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
 	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
@@ -383,7 +386,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
 	ServiceClient<SymbolGroundingScanBasePose.Request, SymbolGroundingScanBasePose.Response, SymbolGroundingScanBasePose> sc =
-	    KnowledgeEngine.n.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
+	    KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
 	
 	SymbolGroundingScanBasePose.Request rq = new SymbolGroundingScanBasePose.Request();
 	rq.parent_obj_geometry = furnitureInfo;
@@ -398,7 +401,7 @@ private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose t
 	Pose2D pos = new Pose2D();
 	
 	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc =
-	   KnowledgeEngine.n.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
+	   KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
 	
 	SymbolGroundingGraspBasePoseExperimental.Request rq = new SymbolGroundingGraspBasePoseExperimental.Request();
 	rq.parent_obj_geometry = furnitureInfo;

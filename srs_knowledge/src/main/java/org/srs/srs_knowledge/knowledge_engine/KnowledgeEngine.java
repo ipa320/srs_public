@@ -24,6 +24,7 @@ import ros.pkg.srs_knowledge.srv.PlanNextAction;
 import ros.pkg.srs_knowledge.srv.TaskRequest;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;
 import ros.pkg.srs_knowledge.srv.GetWorkspaceOnMap;
+import ros.pkg.srs_knowledge.srv.GetObjectsOnTray;
 import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
 
@@ -40,7 +41,7 @@ public class KnowledgeEngine
     public static Ros ros;
     public static OntologyDB ontoDB;
 
-    public static NodeHandle n;
+    public static NodeHandle nodeHandle;
 
     /*
     public KnowledgeEngine(String nodeName, String ontologyFile)
@@ -99,7 +100,7 @@ public class KnowledgeEngine
 	ros.init(nodeName);
 	ros.logInfo("INFO: Start RosJava_JNI service");
 	
-	n = ros.createNodeHandle();
+	nodeHandle = ros.createNodeHandle();
 
 	try{
 	    initGenerateSequence();
@@ -108,6 +109,7 @@ public class KnowledgeEngine
 	    initTaskRequest();
 	    initGetObjectsOnMap();
 	    initGetWorkspaceOnMap();
+	    initGetObjectsOnTray();
 	}
 	catch(RosException e){
 	    System.out.println(e.getMessage());
@@ -156,7 +158,7 @@ public class KnowledgeEngine
 	querySparQLService = config.getProperty("querySparQLService", "query_sparql");
 	getObjectsOnMapService = config.getProperty("getObjectsOnMapService", "get_objects_on_map");
 	getWorkSpaceOnMapService = config.getProperty("getWorkSpaceOnMapService", "get_workspace_on_map");
-
+	getObjectsOnTrayService = config.getProperty("getObjectsOnTrayService", "get_objects_on_tray");
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
@@ -217,7 +219,7 @@ public class KnowledgeEngine
             }
 	};
 
-	ServiceServer<GenerateSequence.Request,GenerateSequence.Response,GenerateSequence> srv = n.advertiseService(generateSequenceService, new GenerateSequence(), scb);
+	ServiceServer<GenerateSequence.Request,GenerateSequence.Response,GenerateSequence> srv = nodeHandle.advertiseService(generateSequenceService, new GenerateSequence(), scb);
     }
 
     private QuerySparQL.Response handleQuerySparQL(QuerySparQL.Request req)
@@ -238,7 +240,7 @@ public class KnowledgeEngine
             }
 	};
 
-	ServiceServer<QuerySparQL.Request, QuerySparQL.Response, QuerySparQL> srv = n.advertiseService( querySparQLService , new QuerySparQL(), scb);
+	ServiceServer<QuerySparQL.Request, QuerySparQL.Response, QuerySparQL> srv = nodeHandle.advertiseService( querySparQLService , new QuerySparQL(), scb);
     }
 
     private PlanNextAction.Response newHandlePlanNextAction( PlanNextAction.Request request) throws NullPointerException {
@@ -405,7 +407,7 @@ public class KnowledgeEngine
             }
 	};
 	
-	ServiceServer<PlanNextAction.Request, PlanNextAction.Response, PlanNextAction> srv = n.advertiseService(planNextActionService, new PlanNextAction(), scb);
+	ServiceServer<PlanNextAction.Request, PlanNextAction.Response, PlanNextAction> srv = nodeHandle.advertiseService(planNextActionService, new PlanNextAction(), scb);
     }
 
     private TaskRequest.Response handleTaskRequest(TaskRequest.Request request)
@@ -427,7 +429,7 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, n);
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 	    currentTask = (Task)got;
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
@@ -501,7 +503,7 @@ public class KnowledgeEngine
 	};
 
 	System.out.println(taskRequestService);
-	ServiceServer<TaskRequest.Request, TaskRequest.Response, TaskRequest> srv = n.advertiseService(taskRequestService, new TaskRequest(), scb);
+	ServiceServer<TaskRequest.Request, TaskRequest.Response, TaskRequest> srv = nodeHandle.advertiseService(taskRequestService, new TaskRequest(), scb);
     }
 
 
@@ -519,45 +521,105 @@ public class KnowledgeEngine
 
 	className = className + "FoodVessel";
 
-	try{
-	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
-	    if(instances == null) {
-		return re;
-	    }
-
-	    if(instances.hasNext()) {
-		while (instances.hasNext()) { 
-		    Individual temp = (Individual)instances.next();
-		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
-		    if(temp.getNameSpace().equals(mapNamespace)) {
-			re.objects.add(temp.getLocalName());
-			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
+	System.out.println(className + " ---");
+	Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
+	if(instances == null) {
+	    return re;
+	}
+	com.hp.hpl.jena.rdf.model.Statement stm;
+	if(instances.hasNext()) {
+	    while (instances.hasNext()) { 
+		Individual temp = (Individual)instances.next();
+		System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		if(temp.getNameSpace().equals(mapNamespace)) {
+		    re.objects.add(temp.getLocalName());
+		    re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
+		    try{
 			
-			com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "spatiallyRelated", temp);			
-			//System.out.println(" -->  " + stm);
-			//System.out.println(" ===>  " + stm.getLiteral());
+			stm = ontoDB.getPropertyOf(globalNamespace, "spatiallyRelated", temp);			
 			re.spatialRelation.add(stm.getPredicate().getLocalName());
 			re.spatialRelatedObject.add(stm.getObject().asResource().getLocalName());
-			
+		    }
+		    catch(Exception e) {
+			System.out.println("CAUGHT exception: " + e.toString());
+			re.spatialRelation.add("NA");
+			re.spatialRelatedObject.add("NA");
+		    }
+		    try{
 			stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);			
 			re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
 		    }
+		    catch(Exception e) {
+			System.out.println("CAUGHT exception: " + e.toString());
+			re.houseHoldId.add("NA");
+		    }
+		    if(req.ifGeometryInfo == true) { 
+			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
+			try{
+			    
+			    stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
+			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
+			    spatialInfo.pose.position.y = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
+			    spatialInfo.pose.position.z = getFloatOfStatement(stm);
+			    
+			    stm = ontoDB.getPropertyOf(globalNamespace, "widthOfObject", temp);
+			    spatialInfo.w = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "heightOfObject", temp);
+			    spatialInfo.h = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
+			    spatialInfo.l = getFloatOfStatement(stm);
+			    
+			    /*
+			    stm = ontoDB.getPropertyOf(globalNamespace, "r3d", temp);
+			    spatialInfo.angles.r = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "p3d", temp);
+			    spatialInfo.angles.p = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "y3d", temp);
+			    spatialInfo.angles.y = getFloatOfStatement(stm);
+			    */
+
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
+			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qx", temp);
+			    spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qy", temp);
+			    spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
+			    stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
+			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
+			}
+			
+			catch(Exception e) {
+			    System.out.println("CAUGHT exception: " + e.getMessage()+ ".. added invalid values");
+			    
+			    spatialInfo.pose.position.x = -1000;
+			    spatialInfo.pose.position.y = -1000;
+			    spatialInfo.pose.position.z = -1000;
+			    
+			    spatialInfo.w = -1000;
+			    spatialInfo.h = -1000;
+			    spatialInfo.l = -1000;
+
+			    spatialInfo.pose.orientation.w = -1000;
+			    spatialInfo.pose.orientation.x = -1000;
+			    spatialInfo.pose.orientation.y = -1000;
+			    spatialInfo.pose.orientation.z = -1000;
+			}
+
+			re.objectsInfo.add(spatialInfo);
+		    }
+		    
 		}
 	    }
-	    else
-		System.out.println("<EMPTY>");
-	        
-        System.out.println();
-
 	}
-	catch(Exception e) {
-	    System.out.println(e.getMessage());
+	else {
+	    System.out.println("<EMPTY>");
 	}
+	
+	
 
-
-
-
-
+	
 	/*
 
 	String targetContent = "kitchen";
@@ -617,7 +679,7 @@ public class KnowledgeEngine
 	};
 	
 	System.out.println(getObjectsOnMapService);
-	ServiceServer<GetObjectsOnMap.Request, GetObjectsOnMap.Response, GetObjectsOnMap> srv = n.advertiseService(getObjectsOnMapService, new GetObjectsOnMap(), scb);
+	ServiceServer<GetObjectsOnMap.Request, GetObjectsOnMap.Response, GetObjectsOnMap> srv = nodeHandle.advertiseService(getObjectsOnMapService, new GetObjectsOnMap(), scb);
     }
 
 
@@ -749,8 +811,90 @@ public class KnowledgeEngine
 	};
 	
 	System.out.println(getWorkSpaceOnMapService);
-	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = n.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
+	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = nodeHandle.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
     }
+
+
+    private GetObjectsOnTray.Response handleGetObjectsOnTray(GetObjectsOnTray.Request request)
+    {
+	GetObjectsOnTray.Response res = new GetObjectsOnTray.Response();
+
+
+
+
+
+
+
+
+
+
+
+
+
+	String targetContent = "kitchen";
+	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+	    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+	    + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n"
+	    + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
+	String queryString = "SELECT ?objs ?tray WHERE { "
+	    + "?tray rdf:type srs:CobTray . "
+	    + "?objs srs:SpatiallyRelated ?tray . "
+	    + "}";
+
+	//System.out.println(prefix + queryString + "\n");
+	
+	if (this.ontoDB == null) {
+	    ros.logInfo("INFO: Ontology Database is NULL. Nothing executed. ");
+	    return res;
+	}
+	
+	try {
+	    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix
+								   + queryString);
+	    
+	    if (rset.size() == 0) {
+		ros.logInfo("No found from database");
+	    }
+	    else {
+		System.out.println("WARNING: Multiple options... ");
+		QuerySolution qs = rset.get(0);
+		String objName = qs.getLiteral("objs").getString();
+		
+		//y = qs.getLiteral("y").getFloat();
+		//theta = qs.getLiteral("theta").getFloat();
+		//System.out.println("x is " + x + ". y is  " + y
+		//		   + ". theta is " + theta);
+	    }
+	    
+	} catch (Exception e) {
+	    System.out.println("Exception -->  " + e.getMessage());
+	    
+	}
+
+
+
+
+
+
+
+
+
+
+	return res;
+    }
+    
+    private void initGetObjectsOnTray() throws RosException
+    {
+	ServiceServer.Callback<GetObjectsOnTray.Request, GetObjectsOnTray.Response> scb = new ServiceServer.Callback<GetObjectsOnTray.Request, GetObjectsOnTray.Response>() {
+            public GetObjectsOnTray.Response call(GetObjectsOnTray.Request request) {
+		return handleGetObjectsOnTray(request);
+            }
+	};
+
+	ServiceServer<GetObjectsOnTray.Request,GetObjectsOnTray.Response,GetObjectsOnTray> srv = nodeHandle.advertiseService(getObjectsOnTrayService, new GetObjectsOnTray(), scb);
+    }
+
+
 
     private boolean loadPredefinedTasksForTest()
     {
@@ -852,6 +996,7 @@ public class KnowledgeEngine
     private String taskRequestService = "task_request";
     private String planNextActionService = "plan_next_action";
     private String generateSequenceService = "generate_sequence";
+    private String getObjectsOnTrayService = "get_objects_on_tray"; 
     private String querySparQLService = "query_sparql";
     private String getObjectsOnMapService = "get_objects_on_map";
     private String getWorkSpaceOnMapService = "get_workspace_on_map";

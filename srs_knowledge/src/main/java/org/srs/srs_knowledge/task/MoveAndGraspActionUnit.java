@@ -125,7 +125,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	}
     }
 
-    public CUAction getNextCUAction(int ind) {
+    public CUAction getCUActionAt(int ind) {
 	currentActionInd = ind;
 	CUAction ca = new CUAction(); 
 

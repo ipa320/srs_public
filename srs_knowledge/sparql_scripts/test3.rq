@@ -1,8 +1,0 @@
-PREFIX house: <http://www.semanticweb.org/ontologies/house.owl#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT ?t ?all
-WHERE {
-house:oven1 rdf:type+ ?t .
-?t rdfs:subClassOf+ ?all .
-}

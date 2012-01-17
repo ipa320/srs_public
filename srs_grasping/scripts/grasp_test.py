@@ -8,6 +8,7 @@ import rospy
 import tf
 import math
 import random
+import scipy
 
 from geometry_msgs.msg import *
 from srs_grasping.msg import *
@@ -32,7 +33,7 @@ class GraspScript(script):
 
 		# initialize components (not needed for simulation)
 		self.sss = simple_script_server()
-
+		
 		self.sss.init("tray")
 		self.sss.init("torso")
 		self.sss.init("arm")
@@ -52,20 +53,22 @@ class GraspScript(script):
 			print "Please localize the robot with rviz"
 		self.sss.wait_for_input()
 		
-		
+	
 		self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
 		self.grasp_client = actionlib.SimpleActionClient('/grasp_server', GraspAction)
+
 
 	def execute(self):
 
 		listener = tf.TransformListener(True, rospy.Duration(10.0))
 		rospy.sleep(2)
-	
+		
 		# prepare for grasping
 		self.sss.move("base","kitchen")
 		self.sss.move("arm","pregrasp")
 		handle_sdh = self.sss.move("sdh","cylopen",False)
 		handle_sdh.wait()
+		
 
 
 		#current_joint_configuration
@@ -79,18 +82,17 @@ class GraspScript(script):
 		self.srv_name_object_detection = '/object_detection/detect_object'
 		detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
 		req = DetectObjectsRequest()
-		req.object_name.data = "detected_object"
+		req.object_name.data = "milk"
 		res = detector_service(req)
 
 		for i in range(0,len(res.object_list.detections)):
 			print str(i)+": "+res.object_list.detections[i].label
 		
+		
 		index = -1
 		while (index < 0):
 			index = int(raw_input("Select object to grasp: "))
 		
-		index = 1
-
 		obj = listener.transformPose("/base_link", res.object_list.detections[index].pose)
 
 
@@ -113,13 +115,16 @@ class GraspScript(script):
 			pre_grasp_pose = grasp_configuration[i].pre_grasp
 			grasp_pose = grasp_configuration[i].palm_pose
 
+			# TODO:  --------------------------------
+			e = euler_from_quaternion([obj.pose.orientation.x, obj.pose.orientation.y, obj.pose.orientation.z, obj.pose.orientation.w],axes='sxzy')
+			rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz')
+			rotacion[0,3] = obj.pose.position.x
+			rotacion[1,3] = obj.pose.position.y
+			rotacion[2,3] = obj.pose.position.z
+			# -----------------------------------------
 
-
-			# TODO: Transform into /base_link pose --------------------------------
-			pre_trans = self.matrix_from_graspPose(obj) * self.matrix_from_graspPose(pre_grasp_pose) 
-			grasp_trans = self.matrix_from_graspPose(obj) *  self.matrix_from_graspPose(grasp_pose)
-			# ---------------------------------------------------------------------
-
+			pre_trans = rotacion * self.pose_to_mat(pre_grasp_pose)  
+			grasp_trans = self.pose_to_mat(obj) *  self.pose_to_mat(grasp_pose)
 
 			t = translation_from_matrix(pre_trans)
 			q = quaternion_from_matrix(pre_trans)
@@ -162,6 +167,7 @@ class GraspScript(script):
 			g.pose.position.y += offset_y
 			g.pose.position.z += offset_z
 
+
 			sol = False
 			for w in range(0,10):
 				(pre_grasp_conf, error_code) = self.callIKSolver(current_joint_configuration, pre)		
@@ -179,12 +185,13 @@ class GraspScript(script):
 			if sol:
 				res = raw_input("Execute this grasp? (y/n): ")
 
-				if res != "y" or i<2 :
+				if res != "y":
 					continue
 				else:
 					# execute grasp
 					self.sss.say(["I am grasping the object now."], False)
 					handle_arm = self.sss.move("arm", [pre_grasp_conf], False)
+					
 					self.sss.move("sdh", "cylopen")
 					handle_arm.wait()
 					self.sss.move("arm", [grasp_conf])
@@ -231,22 +238,14 @@ class GraspScript(script):
 		return (result, resp.error_code)
 
 
+    	def pose_to_mat(self, p): 
 
-    	def matrix_from_graspPose(self,gp):
-		q = []
-		q.append(gp.pose.orientation.x)
-		q.append(gp.pose.orientation.y)
-		q.append(gp.pose.orientation.z)
-		q.append(gp.pose.orientation.w)
-		e = euler_from_quaternion(q, axes='sxyz')
+ 	        quat = [p.pose.orientation.x, p.pose.orientation.y, p.pose.orientation.z, p.pose.orientation.w] 
+ 	        pos = scipy.matrix([p.pose.position.x, p.pose.position.y, p.pose.position.z]).T 
+ 	        mat = scipy.matrix(quaternion_matrix(quat)) 
+ 	        mat[0:3, 3] = pos 
 
-		m = euler_matrix(e[0],e[1],e[2] ,axes='sxyz')
-		m[0][3] = gp.pose.position.x
-		m[1][3] = gp.pose.position.y
-		m[2][3] = gp.pose.position.z
-
-		m = matrix([[m[0][0], m[0][1], m[0][2], m[0][3]], [m[1][0], m[1][1], m[1][2], m[1][3]], [m[2][0], m[2][1], m[2][2], m[2][3]], [m[3][0], m[3][1], m[3][2], m[3][3]]])
-		return m
+ 	        return mat 
 
 
     	def get_joint_state(self, msg):

@@ -263,6 +263,16 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#MilkBox0">
         <rdf:type rdf:resource="&srs;MilkBox"/>
+        <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
+        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
+        <srs:yCoord rdf:datatype="&xsd;float">0.16</srs:yCoord>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
+        <srs:zCoord rdf:datatype="&xsd;float">0.90</srs:zCoord>
+        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">1</srs:houseHoldObjectID>
         <srs:aboveOf rdf:resource="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Dishwasher0"/>
     </owl:NamedIndividual>

@@ -96,8 +96,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	spatialInfo.pose.position.y = stm.getFloat();
 	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord",  workspace);
 	spatialInfo.pose.position.z = stm.getFloat();
-	
-	
+		
 	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "widthOfObject",  workspace);
 	spatialInfo.w = stm.getFloat();
 	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "heightOfObject",  workspace);
@@ -127,10 +126,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 
 	// TODO:
-	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, "MilkBox", 1);
+	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, targetContent, 9);
 	
 	// create MoveAndGraspActionUnit
-	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, "MilkBox", 1, "side");
+	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, targetContent, 9, "side");
 
 	// create PutOnTrayActionUnit
 	PutOnTrayActionUnit trayAction = new PutOnTrayActionUnit("side");

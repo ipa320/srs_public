@@ -1,0 +1,7 @@
+#Needed for remote_lab
+geometry_msgs/PoseStamped pre_pose
+geometry_msgs/PoseStamped g_pose
+---
+float64[] pre_position
+float64[] g_position
+---

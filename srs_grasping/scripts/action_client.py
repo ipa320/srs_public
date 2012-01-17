@@ -14,7 +14,7 @@ def grasp_action_client():
 	client = actionlib.SimpleActionClient('/grasp_server', GraspAction)
 	client.wait_for_server()
 
-	goal = GraspGoal(object_id=1, pose_id="X")	#Milk, 5 X-axis configurations
+	goal = GraspGoal(object_id=1, pose_id="-X")	#Milk, 5 -X axis configurations
 	client.send_goal(goal)
 	client.wait_for_result()
 	y = time.time()

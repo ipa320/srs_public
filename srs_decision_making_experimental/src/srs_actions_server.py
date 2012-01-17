@@ -16,7 +16,7 @@ import roslib; roslib.load_manifest('srs_decision_making_experimental')
 import rospy
 import smach
 import smach_ros
-import sys, os, traceback, optparse, time, string
+import sys, os, traceback, optparse, time, string, threading
 from actionlib import *
 from actionlib.msg import *
 from smach import Iterator, StateMachine, CBState
@@ -48,7 +48,7 @@ and
              # Publish message
              self._status_pub.publish(state_msg)
 """
-from srs_high_level_statemachines import *
+from srs_configuration_statemachines import *
             
 """
                 sub-statemachines in use:
@@ -103,23 +103,39 @@ from srs_high_level_statemachines import *
 """
 
 
+
 #Customised Action sever designed for overwriting SimpleActionServer pre-empty sequence
 class SRSActionServer(SimpleActionServer):
     def _init_(self, name, ActionSpec, execute_cb, auto_start):
-        super(SRSActionServer, self).__init__(name, ActionSpec, execute_cb, auto_start)        
+        super(SRSActionServer, self).__init__(name, ActionSpec, execute_cb, auto_start)       
+
+    def take_next_goal(self):
+        #accept the next goal
+        rospy.loginfo("Receiving a new goal")
+        self.current_goal = self.next_goal
+        self.new_goal = False
+        #set preempt to request to equal the preempt state of the new goal
+        rospy.loginfo("preempt_request %s", self.preempt_request)
+        rospy.loginfo("new_goal preempt_request %s", self.new_goal_preempt_request)
+        self.preempt_request = self.new_goal_preempt_request
+        self.new_goal_preempt_request = False
+        #set the status of the current goal to be active
+        self.current_goal.set_accepted("This goal has been accepted by the simple action server");
+        return self.current_goal.get_goal()
+
     
     def accept_new_goal(self):
         with self.lock:
-             if not self.new_goal or not self.next_goal.get_goal():
+            if not self.new_goal or not self.next_goal.get_goal():
                 rospy.loginfo("Attempting to accept the next goal when a new goal is not available");
                 return None;
  
              #check if we need to send a preempted message for the goal that we're currently pursuing
-             if self.is_active() and self.current_goal.get_goal() and self.current_goal != self.next_goal:
+            if self.is_active() and self.current_goal.get_goal() and self.current_goal != self.next_goal:
                  #self.current_goal.set_canceled(None, "This goal was cancelled because another goal was received by the simple action server");
                  self.next_goal.set_rejected(None, "This goal was rejected because the server is busy with another task")
                  rospy.loginfo("Postpone a new goal")
-             else:
+            else:
                 #accept the next goal
                 rospy.loginfo("Receiving a new goal")
                 self.current_goal = self.next_goal
@@ -134,7 +150,55 @@ class SRSActionServer(SimpleActionServer):
                 self.current_goal.set_accepted("This goal has been accepted by the simple action server");
                 
  
-             return self.current_goal.get_goal()
+            return self.current_goal.get_goal()
+        
+        
+        """
+        with self.lock:
+            if not self.new_goal or not self.next_goal.get_goal():
+                rospy.loginfo("Attempting to accept the next goal when a new goal is not available");
+            
+            global current_task_info
+            
+            _result = xmsg.ExecutionResult()
+            _result.return_value=3
+            
+            
+            #check if we need to send a preempted message for the goal that we're currently pursuing
+            if self.is_active() and self.current_goal.get_goal() and self.current_goal != self.next_goal:
+                #self.current_goal.set_canceled(None, "This goal was cancelled because another goal was received by the simple action server");
+                self.next_goal.set_rejected(None, "This goal was rejected because the server is busy with another task")
+                rospy.loginfo("Postpone a new goal")  
+       
+            elif self.next_goal.get_goal().action == 'pause':
+                current_task_info.set_pause_required(True) 
+                self.next_goal.set_accepted("")
+                self.next_goal.set_succeeded(_result, 'pause acknowledged')
+
+            elif self.next_goal.get_goal().action == 'resume':
+                if current_task_info.get_pause_required() == True:   # already paused
+                    current_task_info.set_pause_required(False)
+                    self.next_goal.set_accepted("")
+                    self.next_goal.set_succeeded(_result, 'resume acknowledged')
+                else:
+                    _result.return_value = 2
+                    self.next_goal.set_aborted(_result, 'not paused, no need for resuming')
+                    pass 
+
+            else:
+                if not self.current_goal.get_goal():
+                    # current goal is null
+                    return self.take_next_goal()
+                if self.next_goal.get_goal().action == 'stop':
+                    current_task_info.set_stop_required(True) 
+                    return self.take_next_goal()
+                if self.next_goal.get_goal().priority > self.current_goal.get_goal().priority:                             
+                    current_task_info.set_customised_preempt_required(True)   
+                    return self.take_next_goal()
+            
+            return None
+        """
+
          
 class SRS_DM_ACTION(object):
     #action server for taking tasks 
@@ -146,14 +210,17 @@ class SRS_DM_ACTION(object):
         self._result = xmsg.ExecutionResult()
         self._task = ""
         self._parameter = ""
-        self.customised_preempt_request = False
         self._as.start()
         self.robot_initialised= False
+         
                 
         #self._as.register_goal_callback(self.goal_cb)
         self._as.register_preempt_callback(self.priority_cb)
         
         rospy.loginfo("Waiting for wake up the server ...")
+        
+    
+
         
     def robot_initialisation_process(self):
         if not self.robot_initialised :
@@ -207,60 +274,48 @@ class SRS_DM_ACTION(object):
                                                 'preempted':'task_preempted',
                                                 'navigation':'SM_NAVIGATION',
                                                 'detection':'SM_DETECTION',
-                                                'simple_grasp':'SM_SIMPLE_GRASP',
-                                                'deliver_object':'SM_DELIVER_OBJECT',
-                                                'env_object_update':'SM_ENV_OBJECT_UPDATE',
-                                                'charging':'CHARGING'},
+                                                'simple_grasp':'SM_GRASP',
+                                                'put_on_tray':'SM_PUT_ON_TRAY',
+                                                'env_object_update':'SM_ENV_OBJECT_UPDATE'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
                                                'target_object_pose':'target_object_pose',
-                                               'semi_autonomous_mode':'semi_autonomous_mode'}
-                                   )                                   
-            smach.StateMachine.add('SM_NAVIGATION', sm_approach_pose_assisted(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+                                               'semi_autonomous_mode':'semi_autonomous_mode',
+                                               'grasp_categorisation':'grasp_categorisation',
+                                               'target_object_name_list':'target_object_name_list',
+                                              'scan_pose_list':'scan_pose_list',
+                                              'target_object_pose_list':'target_object_pose_list'})   
+            
+            smach.StateMachine.add('SM_NAVIGATION', srs_navigation(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'})            
 
-            smach.StateMachine.add('SM_DETECTION', sm_detect_asisted_pose_region(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+            smach.StateMachine.add('SM_DETECTION', srs_detection(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_pose':'target_object_pose'})
+                                               'target_object_pose':'target_object_pose' })
        
-            smach.StateMachine.add('SM_SIMPLE_GRASP', sm_get_object_on_tray(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
+            smach.StateMachine.add('SM_GRASP', srs_grasp(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_pose':'target_object_pose'})
-            """                    
-            smach.StateMachine.add('SM_OPEN_DOOR', sm_open_door(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'})
-            """
-            smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', sm_enviroment_object_update(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
-                                   remapping={'target_object_name':'target_object_name',
-                                              'target_base_pose':'target_base_pose',
-                                              'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_pose':'target_object_pose'})        
+                                              'target_object_old_pose':'target_object_pose',
+                                              'grasp_categorisation':'grasp_categorisation' })
             
-            smach.StateMachine.add('SM_DELIVER_OBJECT', sm_deliver_object(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'task_aborted'},
-                                   remapping={'target_base_pose':'target_base_pose',
-                                               'semi_autonomous_mode':'semi_autonomous_mode'})     
-            
-            smach.StateMachine.add('CHARGING', charging(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'failed':'task_aborted'},
-                                   remapping={'target_base_pose':'target_base_pose',
-                                               'semi_autonomous_mode':'semi_autonomous_mode'}
-                                   )    
+            smach.StateMachine.add('SM_PUT_ON_TRAY', srs_put_on_tray(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
+                                   remapping={'grasp_categorisation':'grasp_categorisation' })
+
+            smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', srs_enviroment_object_update(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
+                                   remapping={'target_object_name_list':'target_object_name_list',
+                                              'scan_pose_list':'scan_pose_list',
+                                              'target_object_pose_list':'target_object_pose_list'})        
+
                         
-	    """	
-            smach.StateMachine.add('SM_DETECTION_SIMPLE', detect_object(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'retry':'SEMANTIC_DM', 'failed':'task_aborted','no_more_retries':'SEMANTIC_DM'},
-                                   remapping={'object_name':'target_object_name',
-                                              'semi_autonomous_mode':'semi_autonomous_mode'})
-		
-	    """
+
         return self.temp
                     
             
@@ -271,24 +326,45 @@ class SRS_DM_ACTION(object):
         # this function override the default policy by compare the priority 
         self._as.preempt_request = False # overwrite the default preempt policy of the simple action server
         
+        global current_task_info
+        result = xmsg.ExecutionResult()
+        result.return_value=3
         #checking if there is a new goal and comparing the priority    
         if self._as.next_goal.get_goal() and self._as.new_goal:
+            print self._as.next_goal.get_goal()
+            print self._as.new_goal
+            
             #new goal exist
-            if self._as.next_goal.get_goal().priority > self._as.current_goal.get_goal().priority:
-                self.customised_preempt_request = True
-                self._sm_srs.request_preempt()
-            else:
-                self.customised_preempt_request = False # overwrite the default preempt policy of the simple action server
+            if self._as.next_goal.get_goal().action == 'stop':
+                current_task_info.set_stop_required(True)
+            elif self._as.next_goal.get_goal().action == 'pause':
+                current_task_info.set_pause_required(True) 
+                self._as.next_goal.set_accepted("")
+                self._as.next_goal.set_succeeded(result, 'pause acknowledged')
+                self._as.new_goal=False
+                self._as.new_goal_preempt_request = False
+            elif self._as.next_goal.get_goal().action == 'resume':
+                if current_task_info.get_pause_required() == True:   # already paused
+                    current_task_info.set_pause_required(False)
+                    self._as.next_goal.set_accepted("")
+                    self._as.next_goal.set_succeeded(result, 'resume acknowledged')
+                else:
+                    result.return_value=2
+                    self._as.next_goal.set_accepted("")
+                    self._as.next_goal.set_aborted(result, 'not paused, no need for resuming') 
+                self._as.new_goal=False
+                self._as.new_goal_preempt_request = False
+            elif self._as.next_goal.get_goal().priority > self._as.current_goal.get_goal().priority:
+                current_task_info.set_customised_preempt_required(True)
         else:
             # pre-empty request is come from the same goal 
-            self.customised_preempt_request = True
             self._sm_srs.request_preempt()             
-                
-    def preempt_check(self):
-        if self.customised_preempt_request:
-            self.customised_preempt_request = False;
-            return True;
-        return False;
+              
+    #def preempt_check(self):
+    #    if self.get_customised_preempt_required()==True:
+    #        self.set_customised_preempt_required(False)
+    #        return True
+    #    return False
    
         
     def execute_cb(self, gh):
@@ -314,7 +390,7 @@ class SRS_DM_ACTION(object):
         if not self.robot_initialised:
             self.robot_initialisation_process()
             
-        current_task_info._as = copy.copy(self._as)
+        current_task_info._srs_as = copy.copy(self)
         
 
 
@@ -328,7 +404,7 @@ class SRS_DM_ACTION(object):
         try:
             requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
-            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None)
+            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
 	    print res.sessionId
 	    current_task_info.session_id = res.sessionId
             if res.result == 1:
@@ -363,16 +439,18 @@ class SRS_DM_ACTION(object):
         
         #set outcomes based on the execution result       
                 
-        if self.preempt_check()==True:
-            self._result.return_value=2
-            self._as.set_preempted(self._result)
-            return
+        #if self.preempt_check()==True:
+        #    self._result.return_value=2
+        #    self._as.set_preempted(self._result)
+        #    return
         
         if outcome == "task_succeeded": 
             self._result.return_value=3
             self._as.set_succeeded(self._result)
             return
-                
+        if outcome == "task_preempted":
+            self._result.return_value=2
+            self._as.set_preempted(result, "stopped before complete or preempted by another task")
         #for all other cases outcome == "task_aborted": 
         self._result.return_value=4
         self._as.set_aborted(self._result)
@@ -396,3 +474,6 @@ if __name__ == '__main__':
     rospy.init_node('srs_decision_making_actions')
     SRS_DM_ACTION(rospy.get_name())
     rospy.spin()
+    #global listener    
+    #listener = tf.TransformListener()
+

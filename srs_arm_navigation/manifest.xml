@@ -1,0 +1,18 @@
+<package>
+  <description brief="cob3_arm_navigation">
+    This package is derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB.
+  </description>
+  <author>Zdenek Materna</author>
+  <license>BUT OPEN SOURCE LICENSE</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/cob3_arm_navigation</url>
+
+  <depend package="planning_environment"/>
+  <depend package="arm_kinematics_constraint_aware"/>
+  <depend package="ompl_ros_interface"/>
+  <depend package="trajectory_filter_server"/>
+  <depend package="constraint_aware_spline_smoother"/>
+  <depend package="move_arm"/>
+
+</package>
+

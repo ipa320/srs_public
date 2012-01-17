@@ -1,0 +1,24 @@
+<package>
+  <description brief="srs_env_model_percp">
+
+     ROS environment perception package provided by dcgm-robotics@FIT group.
+
+  </description>
+  <author>Rostislav Hulik, Tomas Hodan, Michal Spanel</author>
+  <license>BUT OPEN SOURCE LICENCE</license>
+  <review status="unreviewed" notes=""/>
+  <url></url>
+
+  <depend package="opencv2"/>
+  <depend package="eigen"/>
+  <depend package="roscpp"/>
+  <depend package="image_transport"/>
+  <depend package="camera_calibration_parsers"/>
+  <depend package="cv_bridge"/>
+  <depend package="std_msgs"/>
+  <depend package="pcl"/>
+  <depend package="visualization_msgs"/>
+  <depend package="pcl_ros"/>
+  <depend package="srs_env_model"/>
+</package>
+

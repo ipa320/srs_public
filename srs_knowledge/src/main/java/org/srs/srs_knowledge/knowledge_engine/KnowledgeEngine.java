@@ -35,8 +35,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 //import org.apache.commons.logging.Log;
 
-class KnowledgeEngine
+public class KnowledgeEngine
 {
+    public static Ros ros;
+    public static OntologyDB ontoDB;
+
+    public static NodeHandle n;
+
     /*
     public KnowledgeEngine(String nodeName, String ontologyFile)
     {
@@ -110,6 +115,7 @@ class KnowledgeEngine
 	}
 
 	ros.spin();
+
 	return true;
     }
 
@@ -156,9 +162,12 @@ class KnowledgeEngine
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	}
 
-	ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
+	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
+	OntoQueryUtil.ObjectNameSpace = mapNamespace;
+	OntoQueryUtil.GlobalNameSpace = globalNamespace;
 	
 	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
+
     }
 
     public void testOnto(String className)
@@ -243,11 +252,12 @@ class KnowledgeEngine
 	    //throw new NullPointerException("Current Task is NULL. Send task request first");
 	}
 
-	//ActionTuple at = null;
-
+	/*
 	if(request.stateLastAction.length == 3) {
 	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
-		ca = currentTask.getNextCUAction(true); // no error. generate new action
+		//ArrayList<String> feedback = new ArrayList<String>();
+		ArrayList<String> feedback = request.genericFeedBack;
+		ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
 	    }
 	    else if(request.stateLastAction[0] == 2 || request.stateLastAction[1] == 2 || request.stateLastAction[2] == 2) {
 		ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
@@ -261,16 +271,36 @@ class KnowledgeEngine
 		return res;
 	    }
 	    else{
-		ca = currentTask.getNextCUAction(false);
+		ca = currentTask.getNextCUAction(false, null);
 	    }
+	}
+	*/
+
+	if(request.resultLastAction == 0) {
+	    ArrayList<String> feedback = request.genericFeedBack;
+	    ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
+	}
+	else if (request.resultLastAction == 2) {
+	    ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
+	    ros.logInfo("INFO: Task termintated");
+	    
+	    currentTask = null;
+	    // TODO:
+	    //currentSessionId = 1;
+	    
+	    res.nextAction = new CUAction();
+	    return res;
+	}
+	else{
+	    ca = currentTask.getNextCUAction(false, null);
 	}
 	
 	if(ca == null) {
 	    currentTask = null;
-	    //currentSessionId = 1;
 	    System.out.println("No further action can be planned. Terminate the task. ");
 
 	    res.nextAction = new CUAction(); // empty task
+	    //res.nextAction.status = 0;
 	    return res;	    
 	}
 	//if(at.getActionName().equals("finish_success")) {
@@ -278,23 +308,16 @@ class KnowledgeEngine
 	    currentTask = null;
 	    //currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
-	    //res.nextAction = new CUAction(); // empty task
-	    //res.nextAction.status = 1;
 	    res.nextAction = ca;
 	    return res;	    
 	}
-	//else if( at.getActionName().equals("finish_fail")) {
 	else if( ca.status == -1) {
 	    currentTask = null;
-	    // currentSessionId = 1;
+
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
-	    //res.nextAction = new CUAction(); // empty task
-	    //res.nextAction.status = -1;
 	    res.nextAction = ca;	    
 	    return res;	    
 	}
-
-	//ca = at.getCUAction();
 
 	res.nextAction = ca;
 
@@ -302,7 +325,7 @@ class KnowledgeEngine
 	return res;
 
     }
-
+    /*
     private PlanNextAction.Response handlePlanNextAction( PlanNextAction.Request request) throws NullPointerException
     {
 	PlanNextAction.Response res = new PlanNextAction.Response();
@@ -373,7 +396,7 @@ class KnowledgeEngine
 	//ros.logInfo("INFO: Generate sequence of length: ");
 	return res;
     }
-    
+    */
     private void initPlanNextAction() throws RosException
     {
 	ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response> scb = new ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response>() {
@@ -395,8 +418,7 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new MoveToTask(request.content, null, ontoDB);
-	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
+	    currentTask = new MoveTask(request.content, null);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
 	else if(request.task.equals("get") || request.task.equals("search")){
@@ -404,39 +426,58 @@ class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
 
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, n);
+	    currentTask = (Task)got;
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
-	    this.loadPredefinedTasksForTest(got);
+	    
+	    //currentTask = new TestTask();
+	    //this.loadPredefinedTasksForTest();
+	    
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
-	    currentTask = (Task)got;
 	}
 	else if(request.task.equals("charging")) {
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new ChargingTask(null, null, ontoDB);
-	    //currentTask = new MoveToTask(null, null, ontoDB);
+	    currentTask = new ChargingTask();
 	    System.out.println("Created CurrentTask " + "charge ");
+	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
+	}
+	else if(request.task.equals("stop")) {
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+	    currentTask = new StopTask();
+	    System.out.println("Created CurrentTask " + " STOP ");
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
 	else {
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
 	    // task not created for some reason
-	    currentTask = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
+	    //currentTask = new GetObjectTask(request.task, request.content, null, ontoDB, ontoQueryUtil, n);
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
+	    currentTask = null;
 	    res.result = 1;
 	    res.description = "No action";
 	}
 
-	if(currentTask.getActionSequence().size() == 0) {
+	//if(currentTask.getActionSequence().size() == 0) {
+	if(currentTask == null) {
 	    // task not created for some reason
 	    res.result = 1;
 	    res.description = "No action";
+	    System.out.println("No action. Task is null");
+	}
+	else if(currentTask.isEmpty()) {
+	    // task not created for some reason
+	    res.result = 1;
+	    res.description = "No action";
+	    System.out.println("No action. Task is empty");
 	}
 	else {
 	    res.result = 0;
@@ -711,7 +752,7 @@ class KnowledgeEngine
 	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = n.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
     }
 
-    private boolean loadPredefinedTasksForTest(GetObjectTask got)
+    private boolean loadPredefinedTasksForTest()
     {
 	try{
 	    System.out.println("Create Task Object");
@@ -719,9 +760,10 @@ class KnowledgeEngine
 	    //currentTask = new GetObjectTask("get", null, null);
 	    String taskFile = config.getProperty("taskfile", "task1.seq");
 	    System.out.println(taskFile);
+	    System.out.println(this.confPath);	    
 	    
 	    //if(currentTask.loadPredefinedSequence(this.confPath + taskFile)) {
-	    if(got.loadPredefinedSequence(this.confPath + taskFile)) {
+	    if(currentTask.loadPredefinedSequence(this.confPath + taskFile)) {
 		System.out.println("OK... ");
 	    }
 	    else  {
@@ -734,7 +776,7 @@ class KnowledgeEngine
 	    return false;
 	}
 
-	ArrayList<ActionTuple> acts = currentTask.getActionSequence();
+	//ArrayList<ActionTuple> acts = currentTask.getActionSequence();
 
 	return true;
     }
@@ -794,6 +836,7 @@ class KnowledgeEngine
 	//knowEng.loadPredefinedTasksForTest();
 	if (knowEng.init(configFile)) {
 	    System.out.println("OK");
+	
 	}
 	else {
 	    System.out.println("Something wrong with initialisation");
@@ -802,9 +845,6 @@ class KnowledgeEngine
 
     private Task currentTask;
     private int currentSessionId = 1;
-    private OntologyDB ontoDB;
-    private Ros ros;
-    private NodeHandle n;
     private String nodeName;
 
     private Properties config;

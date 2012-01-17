@@ -26,6 +26,11 @@ public abstract class HighLevelActionUnit {
 	return actionUnits.size();
     }
 
+    public int getCurrentCUActionIndex() {
+	
+	return currentActionInd;
+    }
+
     public int getNextCUActionIndex(boolean statusLastStep) {
 	
 	if(currentActionInd == -1) {
@@ -46,8 +51,14 @@ public abstract class HighLevelActionUnit {
 	}
     }
 
-    public CUAction getNextCUAction(int ind) {
+    public CUAction getCUActionAt(int ind) {
+	
 	currentActionInd = ind;
+	if (ind < 0) {
+	    System.out.println("Invalid index " + ind);
+	    return null;
+	}
+	
 	CUAction ca = new CUAction(); 
 
 	if(ind == COMPLETED_FAIL) {

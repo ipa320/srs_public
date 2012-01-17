@@ -103,7 +103,7 @@ public class OntologyDB
 	String r = "";
 	try{
 	    r = new String(ostream.toByteArray(), "UTF-8");
-	    System.out.println(r);
+	    //System.out.println(r);
 	}
 	catch(Exception e){
 	    System.out.println(e.getMessage());
@@ -122,7 +122,7 @@ public class OntologyDB
 	  "?room rdf:type house:Table . " +  
 	  "}";
 	*/
-	System.out.println(queryString);
+	//System.out.println(queryString);
 	Query query = QueryFactory.create(queryString);
 	
 	QueryExecution qe = QueryExecutionFactory.create(query, model);
@@ -142,7 +142,7 @@ public class OntologyDB
 	*/
 	ArrayList<QuerySolution> resList = new ArrayList<QuerySolution>();
 	if(results.hasNext()) {
-	    //System.out.println(" <><><><><><><><><><><><><> ");
+	    
 	    QuerySolution qs = results.next();
 	    resList.add(qs);
 	    //double x = qs.getLiteral("x").getFloat();

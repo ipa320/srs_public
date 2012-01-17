@@ -521,40 +521,41 @@ public class KnowledgeEngine
 
 	className = className + "FoodVessel";
 
+	System.out.println(className + " ---");
 	Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
 	if(instances == null) {
 	    return re;
 	}
-
-	try{
-	    if(instances.hasNext()) {
-		while (instances.hasNext()) { 
-		    Individual temp = (Individual)instances.next();
-		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
-		    if(temp.getNameSpace().equals(mapNamespace)) {
-			re.objects.add(temp.getLocalName());
-			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
+	com.hp.hpl.jena.rdf.model.Statement stm;
+	if(instances.hasNext()) {
+	    while (instances.hasNext()) { 
+		Individual temp = (Individual)instances.next();
+		System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		if(temp.getNameSpace().equals(mapNamespace)) {
+		    re.objects.add(temp.getLocalName());
+		    re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
+		    try{
 			
-			com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "spatiallyRelated", temp);			
-			//System.out.println(" -->  " + stm);
-			//System.out.println(" ===>  " + stm.getLiteral());
+			stm = ontoDB.getPropertyOf(globalNamespace, "spatiallyRelated", temp);			
 			re.spatialRelation.add(stm.getPredicate().getLocalName());
 			re.spatialRelatedObject.add(stm.getObject().asResource().getLocalName());
-			
+		    }
+		    catch(Exception e) {
+			System.out.println("CAUGHT exception: " + e.toString());
+			re.spatialRelation.add("NA");
+			re.spatialRelatedObject.add("NA");
+		    }
+		    try{
 			stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);			
 			re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
-
-			if(req.ifGeometryInfo == true) { 
-			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
-
-			    /*
-			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
-			    spatialInfo.point.x = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
-			    spatialInfo.point.y = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
-			    spatialInfo.point.z = getFloatOfStatement(stm);
-			    */
+		    }
+		    catch(Exception e) {
+			System.out.println("CAUGHT exception: " + e.toString());
+			re.houseHoldId.add("NA");
+		    }
+		    if(req.ifGeometryInfo == true) { 
+			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
+			try{
 			    
 			    stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
 			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
@@ -587,27 +588,38 @@ public class KnowledgeEngine
 			    spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
 			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
+			}
+			
+			catch(Exception e) {
+			    System.out.println("CAUGHT exception: " + e.getMessage()+ ".. added invalid values");
+			    
+			    spatialInfo.pose.position.x = -1000;
+			    spatialInfo.pose.position.y = -1000;
+			    spatialInfo.pose.position.z = -1000;
+			    
+			    spatialInfo.w = -1000;
+			    spatialInfo.h = -1000;
+			    spatialInfo.l = -1000;
 
-			    re.objectsInfo.add(spatialInfo);
+			    spatialInfo.pose.orientation.w = -1000;
+			    spatialInfo.pose.orientation.x = -1000;
+			    spatialInfo.pose.orientation.y = -1000;
+			    spatialInfo.pose.orientation.z = -1000;
 			}
 
+			re.objectsInfo.add(spatialInfo);
 		    }
+		    
 		}
 	    }
-	    else {
-		System.out.println("<EMPTY>");
-	    }
-
-	    System.out.println();
 	}
-	catch(Exception e) {
-	    System.out.println(e.getMessage());
+	else {
+	    System.out.println("<EMPTY>");
 	}
+	
+	
 
-
-
-
-
+	
 	/*
 
 	String targetContent = "kitchen";

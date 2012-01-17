@@ -20,6 +20,7 @@
     <owl:Ontology rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl">
         <owl:imports rdf:resource="file://@OWL_PATH_PREFIX@/conf/ontologies/srs.owl"/>
     </owl:Ontology>
+
     
 
 
@@ -281,7 +282,7 @@
     <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#MilkBox0 -->
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#MilkBox0">
-        <rdf:type rdf:resource="&srs;MilkBox"/>
+        <rdf:type rdf:resource="&srs;Milkbox"/>
         <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
@@ -323,7 +324,7 @@
     <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Pringle0 -->
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Pringle0">
-        <rdf:type rdf:resource="&srs;Pringle"/>
+        <rdf:type rdf:resource="&srs;Pringles"/>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
@@ -428,7 +429,7 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Table0">
         <rdf:type rdf:resource="&srs;Table-PieceOfFurniture"/>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">-1</srs:houseHoldObjectID>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">7</srs:houseHoldObjectID>
         <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>

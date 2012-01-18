@@ -386,6 +386,23 @@ class semantic_dm(smach.State):
                     return nextStep
 		    ####  END OF HARD CODED FOR TESTING ##
 
+                elif resp1.nextAction.generic.actionInfo[0] == 'check':
+                    nextStep = 'env_object_update'
+
+                    userdata.target_object_hh_id = 1
+                    
+                    userdata.target_object_name = respq.nextAction.generic.actionInfo[1]
+                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
+
+                    
+                    userdata.target_object_pose.point.x = float(resp1.nextAction.generic.actionInfo[5])
+                    userdata.target_object_pose.point.y = float(resp1.nextAction.generic.actionInfo[6])
+                    userdata.target_object_pose.point.z = float(resp1.nextAction.generic.actionInfo[7])
+                    userdata.target_object_pose.orientation.x = float(resp1.nextAction.generic.actionInfo[8])
+                    userdata.target_object_pose.orientation.y =float(resp1.nextAction.generic.actionInfo[9])
+                    userdata.target_object_pose.orientation.z = float(resp1.nextAction.generic.actionInfo[10]) 
+                    userdata.target_object_pose.orientation.w =float(resp1.nextAction.generic.actionInfo[11])
+                    return nextStep
                 elif resp1.nextAction.generic.actionInfo[0] == 'grasp':
                     nextStep = 'simple_grasp'
                     

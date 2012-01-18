@@ -299,7 +299,7 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	else:
 		index_2 = 0
 		while index_2 < len(parent_obj_checked_grasp_base_pose_list):
-			if (-2.7 <= parent_obj_checked_grasp_base_pose_list[index_2].x <= 3.2) and (-1.7 <= parent_obj_checked_grasp_base_pose_list[index_2].y <= 1.6):
+			if ((-2.7 <= parent_obj_checked_grasp_base_pose_list[index_2].x <= 1.6) and (-1.7 <= parent_obj_checked_grasp_base_pose_list[index_2].y <= 1.2)) or ((1.6 <= parent_obj_checked_grasp_base_pose_list[index_2].x <= 3.2) and (-1.7 <= parent_obj_checked_grasp_base_pose_list[index_2].y <= 0.7)):
 				wall_checked_grasp_base_pose_list.append(parent_obj_checked_grasp_base_pose_list[index_2])
 			index_2 += 1
 		

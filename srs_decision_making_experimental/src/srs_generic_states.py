@@ -381,14 +381,16 @@ class semantic_dm(smach.State):
                     #TODO should confirm later if name or id used !!!!!!!!
 		    ####  HARD CODED FOR TESTING ##
 
-                    userdata.target_object_name = 'milk_box'
+                    #userdata.target_object_name = 'milk_box'
+                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
                     return nextStep
 		    ####  END OF HARD CODED FOR TESTING ##
 
                 elif resp1.nextAction.generic.actionInfo[0] == 'grasp':
                     nextStep = 'simple_grasp'
                     
-                    userdata.target_object_name = 'milk_box'
+                    #userdata.target_object_name = 'milk_box'
+                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
                     return nextStep
                 else:
                     print 'No valid action'

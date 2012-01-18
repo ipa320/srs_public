@@ -42,6 +42,7 @@ class SCRIPT():#################################################################
 
 
 		object_id = (sys.argv[len(sys.argv)-1], 1)[len(sys.argv)==1]	#Operador ternario
+		object_id = int(object_id)
 
 		rospy.loginfo("Waiting /get_model_mesh service...")
 		rospy.wait_for_service('/get_model_mesh')

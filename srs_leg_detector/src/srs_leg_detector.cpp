@@ -52,7 +52,10 @@ static const double max_track_jump_m         = 1; //1.0;
 static const double max_meas_jump_m          = 1; //0.75; // 1.0
 static const double leg_pair_separation_m    = 0.5;
 //static const string fixed_frame              = "odom_combined";
-static const string fixed_frame              = "/base_link";
+static const string fixed_frame              = "/map";
+
+static const double det_dist__for_pause      = 0.5; // the distance to the person when the robot decides to pause
+static const double det_dist__for_resume      = 2.5; // the distance to the person when the robot decides to resume
 //
 //static const unsigned int num_particles=100; // particle
 
@@ -389,12 +392,12 @@ void measure_distance (double dist) {
                        distance_msg.distance = dist*100;
                        human_distance_pub_.publish(distance_msg);
                       
-                       if ( !pauseSent && dist < 1.5 )
+                       if ( !pauseSent && dist < det_dist__for_pause )
                           {
                             printf ("Local user too close ! Sending Pause ActionLibGoal to the server. Waiting for Action server responce \n"); 
                             sendActionLibGoalPause();
                            } 
-                        else if ( dist > 2.5 && pauseSent ) {
+                        else if ( dist > det_dist__for_resume && pauseSent ) {
                             printf ("Local user is far away now ! Sending Resume ActionLibGoal to the server. Waiting for Action server responce \n"); 
                             sendActionLibGoalResume();
 

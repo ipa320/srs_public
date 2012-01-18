@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
-
+roslib.load_manifest('srs_knowledge')
 from srs_symbolic_grounding.srv import *
 from srs_symbolic_grounding.msg import *
 from geometry_msgs.msg import *
+from srs_knowledge.srv import GetWorkspaceOnMap
+from srs_knowledge.msg import SRSSpatialInfo
 import rospy
 
 
@@ -15,8 +17,8 @@ def symbol_grounding_explore_base_pose_client(parent_obj_geometry, furniture_geo
 	symbol_grounding_explore_base_pose = rospy.ServiceProxy('symbol_grounding_explore_base_pose', SymbolGroundingExploreBasePose)
 	
 	try:
-		resp = list()
-		resp.append(symbol_grounding_explore_base_pose(parent_obj_geometry, furniture_geometry_list))
+
+		resp = symbol_grounding_explore_base_pose(parent_obj_geometry, furniture_geometry_list)
 		return resp
 	
 	except rospy.ServiceException, e:

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
-
+roslib.load_manifest('srs_knowledge')
 from srs_symbolic_grounding.srv import SymbolGroundingGraspBasePoseExperimental
 from srs_symbolic_grounding.msg import *
 from std_msgs.msg import *
 from geometry_msgs.msg import *
+from srs_knowledge.msg import SRSSpatialInfo
 import rospy
 import math
 

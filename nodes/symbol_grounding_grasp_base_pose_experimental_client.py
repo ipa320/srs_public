@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
-
+roslib.load_manifest('srs_knowledge')
 from srs_symbolic_grounding.srv import *
 from srs_symbolic_grounding.msg import *
 from geometry_msgs.msg import *
+from srs_knowledge.srv import GetWorkspaceOnMap
+from srs_knowledge.msg import SRSSpatialInfo
 import rospy
 import tf
 

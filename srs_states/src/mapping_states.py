@@ -56,7 +56,7 @@
 #################################################################
 
 import roslib
-roslib.load_manifest('cob_3d_mapping_pipeline')
+roslib.load_manifest('srs_states')
 import rospy
 import smach
 import smach_ros

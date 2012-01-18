@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-PKG = 'cob_3d_mapping_pipeline'
+PKG = 'srs_states'
 import roslib; roslib.load_manifest(PKG)
 import rospy
 import smach

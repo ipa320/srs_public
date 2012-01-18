@@ -352,7 +352,7 @@ public:
        //      Client client ("srs_decision_making_actions",true);
 
 
-                if (!client.waitForServer()) // ros::Duration(5)
+                if (!client.waitForServer(ros::Duration(10))) // ros::Duration(5)
                                    
  
                    {
@@ -1156,7 +1156,11 @@ xpected primary-expression before ‘)’ t
 				filter_visualize[i].x = est.pos_[0];
 				filter_visualize[i].y = est.pos_[1];
 				//	filter_visualize[i].z = est.pos_[2];
-				filter_visualize[i].z=0.15607;
+				if (pauseSent)
+                                  filter_visualize[i].z=1.0;
+                                else
+                                  filter_visualize[i].z=0.0;
+
 				weights[i] = *(float*)&(rgb[min(998, max(1, (int)trunc( reliability*999.0 )))]);
 
 				srs_msgs::PositionMeasurement pos;
@@ -1184,8 +1188,9 @@ xpected primary-expression before ‘)’ t
 			}
 
 			// visualize all trackers
-			channel.name = "laser";
-			channel.values = weights;
+			
+                        channel.name = "laser";
+                        channel.values = weights;
 			sensor_msgs::PointCloud  people_cloud;
                         sensor_msgs::PointCloud  detections_cloud;
 

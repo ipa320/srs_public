@@ -76,26 +76,26 @@ class VerifyObject(smach.State):
     smach.State.__init__(
       self,
       outcomes=['succeeded', 'failed'],
-      input_keys=['object_id'],
-      output_keys=['object_pose'])
+      input_keys=['object_id','target_object_pose'],
+      output_keys=['verfified_target_object_pose'])
     self.eo = EvalObjects()
     #self.client = actionlib.SimpleActionClient('trigger_mapping', TriggerMappingAction)
 
   def execute(self, userdata):
-    object_to_search =self.eo.semantics_db_get_object_info(userdata.object_id)
-    print "Searching for object at " + str(object_to_search.objectPose.position.x) + ", " + str(object_to_search.objectPose.position.y)
+    #object_to_search =self.eo.semantics_db_get_object_info(userdata.object_id)
+    #print "Searching for object at " + str(object_to_search.objectPose.position.x) + ", " + str(object_to_search.objectPose.position.y)
     object_list_map = self.eo.map_list_objects(object_to_search.classID)
-    if object_to_search.classID == 1: #table
-      closest_table = self.eo.verify_table(object_to_search.objectPose, object_list_map)
-      if closest_table:
-        userdata.object_pose = closest_table.params[4:7]
-        print "table " + str(object_to_search.objectPose.position.x) + "," + str(object_to_search.objectPose.position.y) + " found at " + str(closest_table.params[4]) + "," + str(closest_table.params[5])
+    #if object_to_search.classID == 1: #table
+    closest_table = self.eo.verify_table(userdata.target_object_pose, object_list_map)
+    if closest_table:
+      userdata.verfified_target_object_pose = closest_table.params[4:7]
+        print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " found at " + str(closest_table.params[4]) + "," + str(closest_table.params[5])
         return 'succeeded'
       else:
-        print "table " + str(object_to_search.objectPose.position.x) + "," + str(object_to_search.objectPose.position.y) + " not found"
+        print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " not found"
         return 'failed'
-    else:
-      print 'Object class not supported'
-      return 'failed'
+    #else:
+    #  print 'Object class not supported'
+    #  return 'failed'
 
 

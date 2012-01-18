@@ -18,7 +18,8 @@ class TestStates:
     # create a SMACH state machine
     SM = smach.StateMachine(outcomes=['overall_succeeded','overall_failed'])
     SM.userdata.object_id = 0
-    SM.userdata.object_pose = []
+    SM.userdata.target_object_pose = geometry_msgs.Pose([0.67,1.26,0.74],[0,0,0,0])
+    SM.userdata.verfied_target_object_pose = []
 
     # open the container
     with SM:

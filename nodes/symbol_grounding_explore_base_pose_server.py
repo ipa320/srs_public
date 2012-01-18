@@ -94,8 +94,8 @@ def handle_symbol_grounding_explore_base_pose(req):
 		if rb_distance < 0.7:
 			rb_distance = 0.7
 			print "target object is quite small."
-		elif rb_distance > 1.7:
-			rb_distance = 1.7
+		elif rb_distance > 1.5:
+			rb_distance = 1.5
 			print "target oject may not be covered."
 		else:
 			print "ready!"

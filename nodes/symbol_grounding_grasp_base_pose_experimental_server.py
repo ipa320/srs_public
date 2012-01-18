@@ -337,7 +337,7 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 		obstacle_check = 0 #ready to move
 		grasp_base_pose.x = obstacle_checked_grasp_base_pose_list[0].x
 		grasp_base_pose.y = obstacle_checked_grasp_base_pose_list[0].y
-		grasp_base_pose.theta = obstacle_checked_grasp_base_pose_list[0].theta
+		grasp_base_pose.theta = obstacle_checked_grasp_base_pose_list[0].theta + math.atan(0.15 / 0.8)
 	return obstacle_check, reach, grasp_base_pose
 
 	

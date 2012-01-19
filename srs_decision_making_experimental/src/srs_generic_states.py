@@ -125,16 +125,20 @@ class intervention_base_pose(smach.State):
                 if  (s.giveup == 1):
                     return 'no_more_retry'
                 else:
+                    """
                     tmppos = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
                     tmppos = tmppos.replace('[','')
                     tmppos = tmppos.replace(']','')
                     tmppos = tmppos.replace(',',' ')
                     tmppos = tmppos.replace('#','')
                     listtmp = tmppos.split()
+                    list_out = list()
                     list_out.insert(0, float(listtmp[0]))
                     list_out.insert(1, float(listtmp[1]))
                     list_out.insert(2, float(listtmp[2]))            
-                    userdata.intermediate_pose = list_out                  
+                    userdata.intermediate_pose = list_out  
+                    """
+                    userdata.intermediate_pose = eval(s.solution.__str__())
                     rospy.loginfo("New intermediate target is :%s", list_out)    
                     return 'retry'
             return 'failed'

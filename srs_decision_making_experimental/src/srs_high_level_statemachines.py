@@ -287,21 +287,23 @@ class sm_enviroment_object_verification_simple(SRS_StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self,
                                     outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
-                                    input_keys=['target_object_name', 'target_object_hh_id', 'scan_pose', 'target_object_pose'],
+                                    input_keys=['target_object_name', 'target_object_hh_id', 'target_base_pose', 'target_object_pose'],
                                     output_keys=['verified_target_object_pose']
                                     )
         self.customised_initial("sm_enviroment_object_verification")
         
         with self:
             smach.StateMachine.add('APPROACH_POSE', approach_pose_without_retry(),
-                    transitions={'succeeded':'VERIFY_OBJECT', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'base_pose':'scan_pose'})     
+                    transitions={'succeeded':'UPDATE_ENVIROMENT', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'base_pose':'target_base_pose'})     
+            smach.StateMachine.add('UPDATE_ENVIROMENT', update_env_model(),
+                    transitions={'succeeded':'VERIFY_OBJECT', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'})  
             smach.StateMachine.add('VERIFY_OBJECT', object_verification_simple(),
                     transitions={'object_verified':'succeeded', 'no_object_verified':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'target_object_name':'target_object_name',
                                'target_object_hh_id':'target_object_hh_id',
-                               'target_object_pose':'target_object_pose',
-                               'verified_target_object_pose':'verified_target_object_pose'})           
+                               'target_object_pose':'target_object_pose'
+                               })           
             
 """
 OLD STATE MACHINES

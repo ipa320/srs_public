@@ -399,7 +399,7 @@ class srs_object_verification_simple(smach.StateMachine):
     
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
-                                    input_keys=['target_object_name', 'target_object_hh_id', 'scan_pose', 'target_object_pose'],
+                                    input_keys=['target_object_name', 'target_object_hh_id', 'target_base_pose', 'target_object_pose'],
                                     output_keys=['verified_target_object_pose'])
         self.userdata.action_name = 'enviroment_update'
         #add_common_states(self)
@@ -411,7 +411,7 @@ class srs_object_verification_simple(smach.StateMachine):
 
             smach.StateMachine.add('ACTION', co_sm_enviroment_object_verification_simple,
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
-                    remapping={'target_object_name':'target_object_name', 'target_object_hh_id':'target_object_hh_id', 'target_object_pose':'target_object_pose', 'scan_pose':'scan_pose', 'verified_target_object_pose':'verified_target_object_pose'})
+                    remapping={'target_object_name':'target_object_name', 'target_object_hh_id':'target_object_hh_id', 'target_object_pose':'target_object_pose', 'target_base_pose':'target_base_pose'})
         
             smach.StateMachine.add('POST_CONFIG', co_sm_post_conf,
                     transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},

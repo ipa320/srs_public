@@ -273,7 +273,6 @@ with co_sm_enviroment_object_update:
             smach.Concurrence.add('MAIN_OPERATION', sm_enviroment_object_verification_simple(),
                             remapping={'target_object_name':'target_object_name',
                                        'target_object_hh_id':'target_object_hh_id',
-                                       'scan_pose':'scan_pose',
-                                       'target_object_pose':'target_object_pose',
-                                       'verified_target_object_pose':'verified_target_object_pose'})
+                                       'target_base_pose':'target_base_pose',
+                                       'target_object_pose':'target_object_pose'})
 

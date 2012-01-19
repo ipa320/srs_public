@@ -237,12 +237,13 @@ class semantic_dm(smach.State):
     def __init__(self):
         smach.State.__init__(self, 
                              outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','put_on_tray','env_object_update'],
-                             input_keys=['target_object_name','target_base_pose','target_object_pose','grasp_categorisation','target_object_pose_list'],
+                             input_keys=['target_object_name','target_base_pose','target_object_pose','grasp_categorisation','target_object_pose_list','target_object_hh_id'],
                              output_keys=['target_object_name',
                                           'target_base_pose',
                                           'semi_autonomous_mode',
                                           'grasp_categorisation',                                          
                                           'target_object_pose',
+                                          'target_object_hh_id',
                                           'scan_pose_list'])
         
         
@@ -397,7 +398,8 @@ class semantic_dm(smach.State):
                     
                     userdata.target_object_pose.point.x = float(resp1.nextAction.generic.actionInfo[5])
                     userdata.target_object_pose.point.y = float(resp1.nextAction.generic.actionInfo[6])
-                    userdata.target_object_pose.point.z = float(resp1.nextAction.generic.actionInfo[7])
+                    # use height of workspace as a point on the surface
+                    userdata.target_object_pose.point.z = float(resp1.nextAction.generic.actionInfo[14])
                     userdata.target_object_pose.orientation.x = float(resp1.nextAction.generic.actionInfo[8])
                     userdata.target_object_pose.orientation.y =float(resp1.nextAction.generic.actionInfo[9])
                     userdata.target_object_pose.orientation.z = float(resp1.nextAction.generic.actionInfo[10]) 

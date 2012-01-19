@@ -126,7 +126,7 @@ class intervention_base_pose(smach.State):
                     return 'no_more_retry'
                 else:
                     tmppos = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
-                    tmppos = current_goal.replace('[','')
+                    tmppos = tmppos.replace('[','')
                     tmppos = tmppos.replace(']','')
                     tmppos = tmppos.replace(',',' ')
                     tmppos = tmppos.replace('#','')

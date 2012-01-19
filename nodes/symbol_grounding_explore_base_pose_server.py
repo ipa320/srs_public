@@ -139,24 +139,26 @@ def handle_symbol_grounding_explore_base_pose(req):
 	while index_1 < len(wall_checked_explore_base_pose_list):
 		index_2 = 0
 		while index_2 < len(furniture_geometry_list):
-			delta_x = math.sqrt((wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_explore_base_pose_list[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-			delta_y = math.sqrt((wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_explore_base_pose_list[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-			if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
-				index_2 += 1
-			else:
-				index_1 += 1
+			delta_x = math.sqrt((wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(math.atan((wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x))-furniture_geometry_list[index_2].pose.theta)
+			delta_y = math.sqrt((wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(math.atan((wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x))-furniture_geometry_list[index_2].pose.theta)
+			if delta_x >= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) and delta_x <= (furniture_geometry_list[index_2].w / 2.0 + 0.5) and delta_y >= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) and delta_y <= (furniture_geometry_list[index_2].l / 2.0 + 0.5):
 				break
-		obstacle_checked_explore_base_pose_list.append(wall_checked_explore_base_pose_list[index_1])
+			else:
+				index_2 += 1
+		if index_2 == len(furniture_geometry_list):
+			rospy.loginfo(index_2)
+			obstacle_checked_explore_base_pose_list.append(wall_checked_explore_base_pose_list[index_1])
 		index_1 += 1
 	
 
 	if not obstacle_checked_explore_base_pose_list:
 		print "no valid pose."
 
+	else:
 
+		explore_base_pose = obstacle_checked_explore_base_pose_list[0]
 
-	explore_base_pose = obstacle_checked_explore_base_pose_list[0]
-
+	return explore_base_pose
 
 
 

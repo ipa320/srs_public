@@ -199,6 +199,21 @@ public class OntoQueryUtil
 	return pos;
     }
 
+    public static ArrayList<Individual> getWorkspaceByName(String objectClassName, String objectNameSpace, String globalNameSpace) { 
+	// TODO: 
+	String className = globalNameSpace + objectClassName; 
+	System.out.println(className + "  ---");
+	// first, retrieve instance(s) of objectClassName
+	Iterator<Individual> workspaceIndList = KnowledgeEngine.ontoDB.getInstancesOfClass(className);
+	ArrayList<Individual> wList = new ArrayList<Individual>();
+	for( ; workspaceIndList.hasNext(); ) {
+	    wList.add(workspaceIndList.next());
+	}
+	
+	return wList;
+    }
+
+
     /*
     public OntoQueryUtil(String objectNameSpace, String globalNameSpace) {
 	this.objectNameSpace = objectNameSpace;

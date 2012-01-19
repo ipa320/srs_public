@@ -45,13 +45,13 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    graspAct.actionInfo.add("grasp");
 
 	    if (objectClassName != null || !objectClassName.equals("")) {
-		graspAct.actionInfo.add(objectClassName);
 		graspAct.actionInfo.add(Integer.toString(houseHoldId));
+		graspAct.actionInfo.add(objectClassName);
 		ifObjectInfoSet = true;
 	    }
 	    else {
-		graspAct.actionInfo.add("");
 		graspAct.actionInfo.add(Integer.toString(houseHoldId));
+		graspAct.actionInfo.add("");
 		ifObjectInfoSet = false;
 	    }
 

@@ -449,6 +449,15 @@ public class KnowledgeEngine
 	    System.out.println("Created CurrentTask " + "charge ");
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
+	else if(request.task.equals("check") || request.task.equals("verify")){
+	    
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+
+	    currentTask = new CheckWorkspaceTask(request.content);
+	    System.out.println("Created CurrentTask " + "check workspace " + request.content);	    
+	}
 	else if(request.task.equals("stop")) {
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");

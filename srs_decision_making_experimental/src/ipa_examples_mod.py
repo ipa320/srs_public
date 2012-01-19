@@ -834,15 +834,14 @@ class verify_object(smach.State):
 #scan environment from IPA, the interface still need to be clarified    
 class update_env_model(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
-                                output_keys=['reference_to_map'])
+        smach.State.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'preempted'])
         
     def execute(self,userdata):
         # user specify key region on interface device for detection
         """
         Get current point map
         """
-        map_reference = ""   
+        #map_reference = ""   
         return 'succeeded'      
 
 
@@ -853,7 +852,7 @@ class object_verification_simple(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['object_verified','no_object_verified','failed','preempted'],
                                 input_keys=['target_object_name','target_object_hh_id','target_object_pose'],
-                                output_keys=['verified_target_object_pose'])
+                                output_keys=['target_object_pose'])
         #object verified: the expected object has been found, the revised pose is in the output_put key verified_target_object_pose
         #no_object_verified: no object found, given up
         
@@ -867,7 +866,7 @@ class object_verification_simple(smach.State):
         #verified object is in the exact expected position
         #return object_verfied
         
-        userdata.verified_target_object_pose = userdata.target_object_pose
+        userdata.target_object_pose = userdata.target_object_pose
         return 'object_verified'  
 
     

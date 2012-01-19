@@ -17,8 +17,8 @@ def symbol_grounding_explore_base_pose_client(parent_obj_geometry, furniture_geo
 	symbol_grounding_explore_base_pose = rospy.ServiceProxy('symbol_grounding_explore_base_pose', SymbolGroundingExploreBasePose)
 	
 	try:
-		resp = list()
-		resp.append(symbol_grounding_explore_base_pose(parent_obj_geometry, furniture_geometry_list))
+
+		resp = symbol_grounding_explore_base_pose(parent_obj_geometry, furniture_geometry_list)
 		return resp
 	
 	except rospy.ServiceException, e:

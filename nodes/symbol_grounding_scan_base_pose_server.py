@@ -1,52 +1,19 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 roslib.load_manifest('srs_knowledge')
+from srs_symbolic_grounding.srv import SymbolGroundingScanBasePose
 from srs_symbolic_grounding.msg import *
 from geometry_msgs.msg import *
-from srs_symbolic_grounding.srv import *
 from srs_knowledge.msg import SRSSpatialInfo
-from srs_knowledge.srv import *
 import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
 
-def getWorkspaceOnMap():
-	print 'test get all workspace (furnitures basically here) from map'
-	try:
-		requestNewTask = rospy.ServiceProxy('get_workspace_on_map', GetWorkspaceOnMap)
-		res = requestNewTask('ipa-kitchen-map', True)
-		return res
-	except rospy.ServiceException, e:
-		print "Service call failed: %s"%e
+
 
 def handle_symbol_grounding_scan_base_pose(req):
-
-		
-	#get furniture information from knowledge base
-	workspace_info = getWorkspaceOnMap()	
-	furniture_geometry_list = list()
-	furniture_geometry_list = workspace_info.objectsInfo
 	
-	
-	#transfrom list
-	index = 0
-	furniture_geometry_list = list()
-	while index < len(furniture_geometry_list):
-		furniture_geometry = FurnitureGeometry()
-		furniture_geometry.pose.x = furniture_geometry_list[index].pose.position.x
-		furniture_geometry.pose.y = furniture_geometry_list[index].pose.position.y
-		furniture_pose_rpy = tf.transformations.euler_from_quaternion([furniture_geometry_list[index].pose.orientation.x, furniture_geometry_list[index].pose.orientation.y, furniture_geometry_list[index].pose.orientation.z, furniture_geometry_list[index].pose.orientation.w])		
-		furniture_geometry.pose.theta = furniture_pose_rpy[2]
-		furniture_geometry.l = furniture_geometry_list[index].l
-		furniture_geometry.w = furniture_geometry_list[index].w
-		furniture_geometry.h = furniture_geometry_list[index].h
-		furniture_geometry_list.append(furniture_geometry)
-		index += 1
-
-
-
-		
 	parent_obj_x = req.parent_obj_geometry.pose.position.x
 	parent_obj_y = req.parent_obj_geometry.pose.position.y
 	parent_obj_rpy = tf.transformations.euler_from_quaternion([req.parent_obj_geometry.pose.orientation.x, req.parent_obj_geometry.pose.orientation.y, req.parent_obj_geometry.pose.orientation.z, req.parent_obj_geometry.pose.orientation.w])
@@ -57,7 +24,6 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 	rospy.loginfo(req.parent_obj_geometry)
 
-	'''
 	#transfrom list
 	index = 0
 	furniture_geometry_list = list()
@@ -73,7 +39,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 		furniture_geometry_list.append(furniture_geometry)
 		index += 1
 	
-	'''
+	
 
 	#get detection width
 	rb_distance = 0.8

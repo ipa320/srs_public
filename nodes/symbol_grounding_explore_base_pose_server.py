@@ -5,20 +5,11 @@ from srs_symbolic_grounding.srv import SymbolGroundingExploreBasePose
 from srs_symbolic_grounding.msg import *
 from geometry_msgs.msg import *
 from srs_knowledge.msg import SRSSpatialInfo
-from srs_knowledge.srv import *
 import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
 
-def getWorkspaceOnMap():
-	print 'test get all workspace (furnitures basically here) from map'
-	try:
-		requestNewTask = rospy.ServiceProxy('get_workspace_on_map', GetWorkspaceOnMap)
-		res = requestNewTask('ipa-kitchen-map', True)
-		return res
-	except rospy.ServiceException, e:
-		print "Service call failed: %s"%e
 
 
 def handle_symbol_grounding_explore_base_pose(req):
@@ -33,28 +24,6 @@ def handle_symbol_grounding_explore_base_pose(req):
 
 	rospy.loginfo(req.parent_obj_geometry)
 
-
-	#get furniture information from knowledge base
-	workspace_info = getWorkspaceOnMap()	
-	furniture_geometry_list = list()
-	furniture_geometry_list = workspace_info.objectsInfo
-	
-	
-	#transfrom list
-	index = 0
-	furniture_geometry_list = list()
-	while index < len(furniture_geometry_list):
-		furniture_geometry = FurnitureGeometry()
-		furniture_geometry.pose.x = furniture_geometry_list[index].pose.position.x
-		furniture_geometry.pose.y = furniture_geometry_list[index].pose.position.y
-		furniture_pose_rpy = tf.transformations.euler_from_quaternion([furniture_geometry_list[index].pose.orientation.x, furniture_geometry_list[index].pose.orientation.y, furniture_geometry_list[index].pose.orientation.z, furniture_geometry_list[index].pose.orientation.w])		
-		furniture_geometry.pose.theta = furniture_pose_rpy[2]
-		furniture_geometry.l = furniture_geometry_list[index].l
-		furniture_geometry.w = furniture_geometry_list[index].w
-		furniture_geometry.h = furniture_geometry_list[index].h
-		furniture_geometry_list.append(furniture_geometry)
-		index += 1
-	'''
 	#transfrom list
 	index = 0
 	furniture_geometry_list = list()
@@ -69,7 +38,7 @@ def handle_symbol_grounding_explore_base_pose(req):
 		furniture_geometry.h = req.furniture_geometry_list[index].h
 		furniture_geometry_list.append(furniture_geometry)
 		index += 1
-	'''
+	
 
 	#get rb_distance 
 
@@ -83,7 +52,7 @@ def handle_symbol_grounding_explore_base_pose(req):
 	explore_base_pose_4 = Pose2D()
 	
 	
-	all_explore_base_pose_list = list()
+	explore_base_pose_list = list()
 	wall_checked_explore_base_pose_list = list()
 	obstacle_checked_explore_base_pose_list = list()
 	explore_base_pose_list = list()
@@ -151,17 +120,17 @@ def handle_symbol_grounding_explore_base_pose(req):
 	
 
 	#obstacle check 
-	all_explore_base_pose_list.append(explore_base_pose_1)
-	all_explore_base_pose_list.append(explore_base_pose_2)
-	all_explore_base_pose_list.append(explore_base_pose_3)
-	all_explore_base_pose_list.append(explore_base_pose_4)
+	explore_base_pose_list.append(explore_base_pose_1)
+	explore_base_pose_list.append(explore_base_pose_2)
+	explore_base_pose_list.append(explore_base_pose_3)
+	explore_base_pose_list.append(explore_base_pose_4)
 
 	#rospy.loginfo(explore_base_pose_list)
 
 	index = 0
-	while index < len(all_explore_base_pose_list):
-		if ((-2.7 <= all_explore_base_pose_list[index].x <= 1.6) and (-1.7 <= all_explore_base_pose_list[index].y <= 1.2)) or ((1.6 <= all_explore_base_pose_list[index].x <= 3.2) and (-1.7 <= all_explore_base_pose_list[index].y <= 0.7)):
-			wall_checked_explore_base_pose_list.append(all_explore_base_pose_list[index])
+	while index < len(explore_base_pose_list):
+		if ((-2.7 <= explore_base_pose_list[index].x <= 1.6) and (-1.7 <= explore_base_pose_list[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list[index].x <= 3.2) and (-1.7 <= explore_base_pose_list[index].y <= 0.7)):
+			wall_checked_explore_base_pose_list.append(explore_base_pose_list[index])
 		index += 1
 		
 	rospy.loginfo(wall_checked_explore_base_pose_list)
@@ -187,9 +156,9 @@ def handle_symbol_grounding_explore_base_pose(req):
 
 	else:
 
-		explore_base_pose_list = [obstacle_checked_explore_base_pose_list]
+		explore_base_pose = obstacle_checked_explore_base_pose_list[0]
 
-	return explore_base_pose_list
+	return explore_base_pose
 
 
 

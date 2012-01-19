@@ -23,7 +23,7 @@ if __name__ == '__main__':
         # Initializes a rospy node so that the SimpleActionClient can
         # publish and subscribe over ROS.
         rospy.init_node('dm_client_test')
-        result = srs_decision_making_ui_interface_client('move', 'order', '1')
+        result = srs_decision_making_ui_interface_client('check', 'Dishwasher', '1')
         rospy.loginfo('result %s',result)
         # print ("Result:" result)
     except rospy.ROSInterruptException:

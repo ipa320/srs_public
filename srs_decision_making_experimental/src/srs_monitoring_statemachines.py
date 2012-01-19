@@ -264,7 +264,7 @@ with co_sm_enviroment_object_update:
 
 co_sm_enviroment_object_verification_simple = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['target_object_name', 'target_object_hh_id', 'scan_pose', 'target_object_pose'],
+                 input_keys=['target_object_name', 'target_object_hh_id', 'target_base_pose', 'target_object_pose'],
                  output_keys=['verified_target_object_pose'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)

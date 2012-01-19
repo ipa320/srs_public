@@ -249,9 +249,9 @@ class SRS_DM_ACTION(object):
         self.temp = smach.StateMachine(outcomes=['task_succeeded','task_aborted', 'task_preempted'])
         
         #
-        self.temp.userdata.target_base_pose=""
-        self.temp.userdata.target_object_name=""
-        self.temp.userdata.target_object_pose=""
+        self.temp.userdata.target_base_pose=Pose2D()
+        self.temp.userdata.target_object_name=''
+        self.temp.userdata.target_object_pose=Pose()
         
         #session id for current task, on id per task. 
         #session id can be shared by different clients

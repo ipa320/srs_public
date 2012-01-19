@@ -392,14 +392,14 @@ class semantic_dm(smach.State):
 
                     userdata.target_object_hh_id = 1
                     
-                    userdata.target_object_name = respq.nextAction.generic.actionInfo[1]
+                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[1]
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
 
                     
-                    userdata.target_object_pose.point.x = float(resp1.nextAction.generic.actionInfo[5])
-                    userdata.target_object_pose.point.y = float(resp1.nextAction.generic.actionInfo[6])
+                    userdata.target_object_pose.position.x = float(resp1.nextAction.generic.actionInfo[5])
+                    userdata.target_object_pose.position.y = float(resp1.nextAction.generic.actionInfo[6])
                     # use height of workspace as a point on the surface
-                    userdata.target_object_pose.point.z = float(resp1.nextAction.generic.actionInfo[14])
+                    userdata.target_object_pose.position.z = float(resp1.nextAction.generic.actionInfo[14])
                     userdata.target_object_pose.orientation.x = float(resp1.nextAction.generic.actionInfo[8])
                     userdata.target_object_pose.orientation.y =float(resp1.nextAction.generic.actionInfo[9])
                     userdata.target_object_pose.orientation.z = float(resp1.nextAction.generic.actionInfo[10]) 

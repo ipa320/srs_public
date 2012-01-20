@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
-roslib.load_manifest('srs_knowledge')
+
 from srs_symbolic_grounding.srv import SymbolGroundingGraspBasePoseExperimental
 from srs_symbolic_grounding.msg import *
 from std_msgs.msg import *
 from geometry_msgs.msg import *
-from srs_knowledge.msg import SRSSpatialInfo
 import rospy
 import math
 
@@ -283,8 +282,8 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 
 	index_1 = 0
 	while index_1 < len(grasp_base_pose_list):
-		delta_x = math.sqrt((grasp_base_pose_list[index_1].x - parent_obj_x) ** 2 + (grasp_base_pose_list[index_1].y - parent_obj_y) ** 2) * math.cos(math.atan((grasp_base_pose_list[index_1].y - parent_obj_y) / (grasp_base_pose_list[index_1].x - parent_obj_x))-parent_obj_th)
-		delta_y = math.sqrt((grasp_base_pose_list[index_1].x - parent_obj_x) ** 2 + (grasp_base_pose_list[index_1].y - parent_obj_y) ** 2) * math.sin(math.atan((grasp_base_pose_list[index_1].y - parent_obj_y) / (grasp_base_pose_list[index_1].x - parent_obj_x))-parent_obj_th)
+		delta_x = math.sqrt((grasp_base_pose_list[index_1].x - parent_obj_x) ** 2 + (grasp_base_pose_list[index_1].y - parent_obj_y) ** 2) * math.cos(grasp_base_pose_list[index_1].theta - parent_obj_th)
+		delta_y = math.sqrt((grasp_base_pose_list[index_1].x - parent_obj_x) ** 2 + (grasp_base_pose_list[index_1].y - parent_obj_y) ** 2) * math.sin(grasp_base_pose_list[index_1].theta - parent_obj_th)
 		#rospy.loginfo([delta_x, delta_y])
 		if (delta_x <= -(parent_obj_w / 2.0 + 0.5) or delta_x >= (parent_obj_w / 2.0 + 0.5)) or (delta_y <= -(parent_obj_l / 2.0 + 0.5) or delta_y >= (parent_obj_l / 2.0 + 0.5)):
 			parent_obj_checked_grasp_base_pose_list.append(grasp_base_pose_list[index_1])
@@ -317,15 +316,14 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 			while index_3 < len(wall_checked_grasp_base_pose_list):
 				index_4 = 0
 				while index_4 < len(furniture_geometry_list):
-					delta_x = math.sqrt((wall_checked_grasp_base_pose_list[index_3].x - furniture_geometry_list[index_4].pose.x) ** 2 + (wall_checked_grasp_base_pose_list[index_3].y - furniture_geometry_list[index_4].pose.y) ** 2) * math.cos(math.atan((wall_checked_grasp_base_pose_list[index_3].y - furniture_geometry_list[index_4].pose.y) / (wall_checked_grasp_base_pose_list[index_3].x - furniture_geometry_list[index_4].pose.x))-furniture_geometry_list[index_4].pose.theta)
-					delta_y = math.sqrt((wall_checked_grasp_base_pose_list[index_3].x - furniture_geometry_list[index_4].pose.x) ** 2 + (wall_checked_grasp_base_pose_list[index_3].y - furniture_geometry_list[index_4].pose.y) ** 2) * math.sin(math.atan((wall_checked_grasp_base_pose_list[index_3].y - furniture_geometry_list[index_4].pose.y) / (wall_checked_grasp_base_pose_list[index_3].x - furniture_geometry_list[index_4].pose.x))-furniture_geometry_list[index_4].pose.theta)
-					if delta_x >= -(furniture_geometry_list[index_4].w / 2.0 + 0.5) and delta_x <= (furniture_geometry_list[index_4].w / 2.0 + 0.5) and delta_y >= -(furniture_geometry_list[index_4].l / 2.0 + 0.5) and delta_y <= (furniture_geometry_list[index_4].l / 2.0 + 0.5):
-						break
-					else:
+					delta_x = math.sqrt((wall_checked_grasp_base_pose_list[index_3].x - furniture_geometry_list[index_4].pose.x) ** 2 + (wall_checked_grasp_base_pose_list[index_3].y - furniture_geometry_list[index_4].pose.y) ** 2) * math.cos(wall_checked_grasp_base_pose_list[index_3].theta - furniture_geometry_list[index_4].pose.theta)
+					delta_y = math.sqrt((wall_checked_grasp_base_pose_list[index_3].x - furniture_geometry_list[index_4].pose.x) ** 2 + (wall_checked_grasp_base_pose_list[index_3].y - furniture_geometry_list[index_4].pose.y) ** 2) * math.sin(wall_checked_grasp_base_pose_list[index_3].theta - furniture_geometry_list[index_4].pose.theta)
+					if (delta_x <= -(furniture_geometry_list[index_4].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_4].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_4].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_4].l / 2.0 + 0.5)):
 						index_4 += 1
-				if index_4 == len(furniture_geometry_list):
-					rospy.loginfo(index_4)
-					obstacle_checked_grasp_base_pose_list.append(wall_checked_grasp_base_pose_list[index_3])
+					else:
+						index_3 += 1
+						break
+				obstacle_checked_grasp_base_pose_list.append(wall_checked_grasp_base_pose_list[index_3])
 				index_3 += 1
 	
 	if not obstacle_checked_grasp_base_pose_list:
@@ -338,7 +336,7 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 		obstacle_check = 0 #ready to move
 		grasp_base_pose.x = obstacle_checked_grasp_base_pose_list[0].x
 		grasp_base_pose.y = obstacle_checked_grasp_base_pose_list[0].y
-		grasp_base_pose.theta = obstacle_checked_grasp_base_pose_list[0].theta + math.atan(0.15 / 0.8)
+		grasp_base_pose.theta = obstacle_checked_grasp_base_pose_list[0].theta
 	return obstacle_check, reach, grasp_base_pose
 
 	

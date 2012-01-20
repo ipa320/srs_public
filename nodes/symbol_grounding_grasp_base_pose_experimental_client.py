@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
-roslib.load_manifest('srs_knowledge')
+
 from srs_symbolic_grounding.srv import *
 from srs_symbolic_grounding.msg import *
 from geometry_msgs.msg import *
-from srs_knowledge.srv import GetWorkspaceOnMap
-from srs_knowledge.msg import SRSSpatialInfo
 import rospy
 import tf
 
@@ -43,8 +41,8 @@ if __name__ == "__main__":
 
 	target_obj_pose = Pose()
 
-	target_obj_pose.position.x = -3
-	target_obj_pose.position.y = 0.15
+	target_obj_pose.position.x = 0.5
+	target_obj_pose.position.y = 1.0
 	target_obj_pose.position.z = 1.1
 	target_obj_pose.orientation.x = 0
 	target_obj_pose.orientation.y = 0
@@ -56,19 +54,19 @@ if __name__ == "__main__":
 	
 	parent_obj_geometry = SRSSpatialInfo()
 	
-	parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[5].pose.position.x
-	parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[5].pose.position.y
-	parent_obj_geometry.pose.position.z = workspace_info.objectsInfo[5].pose.position.z
-	parent_obj_geometry.pose.orientation.x = workspace_info.objectsInfo[5].pose.orientation.x
-	parent_obj_geometry.pose.orientation.y = workspace_info.objectsInfo[5].pose.orientation.y
-	parent_obj_geometry.pose.orientation.z = workspace_info.objectsInfo[5].pose.orientation.z
-	parent_obj_geometry.pose.orientation.w = workspace_info.objectsInfo[5].pose.orientation.w
-	parent_obj_geometry.l = workspace_info.objectsInfo[5].l
-	parent_obj_geometry.w = workspace_info.objectsInfo[5].w
-	parent_obj_geometry.h = workspace_info.objectsInfo[5].h
+	#parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[6].pose.position.x
+	#parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[6].pose.position.y
+	parent_obj_geometry.pose.position.z = workspace_info.objectsInfo[6].pose.position.z
+	parent_obj_geometry.pose.orientation.x = workspace_info.objectsInfo[6].pose.orientation.x
+	parent_obj_geometry.pose.orientation.y = workspace_info.objectsInfo[6].pose.orientation.y
+	parent_obj_geometry.pose.orientation.z = workspace_info.objectsInfo[6].pose.orientation.z
+	parent_obj_geometry.pose.orientation.w = workspace_info.objectsInfo[6].pose.orientation.w
+	parent_obj_geometry.l = workspace_info.objectsInfo[6].l
+	parent_obj_geometry.w = workspace_info.objectsInfo[6].w
+	parent_obj_geometry.h = workspace_info.objectsInfo[6].h
 
-	#parent_obj_geometry.pose.position.x = 0.67
-	#parent_obj_geometry.pose.position.y = 1.26
+	parent_obj_geometry.pose.position.x = 0.67
+	parent_obj_geometry.pose.position.y = 1.26
 
 
 	furniture_geometry_list = list()

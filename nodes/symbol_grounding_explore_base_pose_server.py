@@ -10,7 +10,7 @@ import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
-
+'''
 def getWorkspaceOnMap():
 	print 'test get all workspace (furnitures basically here) from map'
 	try:
@@ -19,7 +19,7 @@ def getWorkspaceOnMap():
 		return res
 	except rospy.ServiceException, e:
 		print "Service call failed: %s"%e
-
+'''
 
 def handle_symbol_grounding_explore_base_pose(req):
 	
@@ -33,7 +33,7 @@ def handle_symbol_grounding_explore_base_pose(req):
 
 	rospy.loginfo(req.parent_obj_geometry)
 
-
+	'''
 	#get furniture information from knowledge base
 	workspace_info = getWorkspaceOnMap()	
 	furniture_geometry_list = list()
@@ -69,7 +69,7 @@ def handle_symbol_grounding_explore_base_pose(req):
 		furniture_geometry.h = req.furniture_geometry_list[index].h
 		furniture_geometry_list.append(furniture_geometry)
 		index += 1
-	'''
+	
 
 	#get rb_distance 
 

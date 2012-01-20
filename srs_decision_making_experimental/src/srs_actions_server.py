@@ -249,9 +249,9 @@ class SRS_DM_ACTION(object):
         self.temp = smach.StateMachine(outcomes=['task_succeeded','task_aborted', 'task_preempted'])
         
         #
-        self.temp.userdata.target_base_pose=""
-        self.temp.userdata.target_object_name=""
-        self.temp.userdata.target_object_pose=""
+        self.temp.userdata.target_base_pose=Pose2D()
+        self.temp.userdata.target_object_name=''
+        self.temp.userdata.target_object_pose=Pose()
         
         #session id for current task, on id per task. 
         #session id can be shared by different clients
@@ -280,6 +280,7 @@ class SRS_DM_ACTION(object):
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
                                                'target_object_pose':'target_object_pose',
+                                               'target_object_hh_id':'target_object_hh_id',
                                                'semi_autonomous_mode':'semi_autonomous_mode',
                                                'grasp_categorisation':'grasp_categorisation',
                                                'target_object_name_list':'target_object_name_list',
@@ -308,11 +309,12 @@ class SRS_DM_ACTION(object):
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
                                    remapping={'grasp_categorisation':'grasp_categorisation' })
 
-            smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', srs_enviroment_object_update(),
+            smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', srs_object_verification_simple(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
-                                   remapping={'target_object_name_list':'target_object_name_list',
-                                              'scan_pose_list':'scan_pose_list',
-                                              'target_object_pose_list':'target_object_pose_list'})        
+                                   remapping={'target_object_name':'target_object_name',
+                                              'target_base_pose':'target_base_pose',
+                                              'target_object_pose':'target_object_pose',
+                                              'target_object_hh_id':'target_object_hh_id'})        
 
                         
 

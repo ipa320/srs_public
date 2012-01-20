@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
-roslib.load_manifest('srs_knowledge')
+
 from srs_symbolic_grounding.srv import SymbolGroundingExploreBasePose
 from srs_symbolic_grounding.msg import *
 from geometry_msgs.msg import *
-from srs_knowledge.msg import SRSSpatialInfo
 import rospy
 import math
 import tf
@@ -39,11 +38,20 @@ def handle_symbol_grounding_explore_base_pose(req):
 		furniture_geometry_list.append(furniture_geometry)
 		index += 1
 	
+	
 
-	#get rb_distance 
-
+	#get detection width
+	rb_distance = 1.0
 	robot_h = 1.4
-	detection_angle = (45.0 / 180.0) * math.pi
+	detection_angle = (50.0 / 180.0) * math.pi
+	camera_distance = math.sqrt((robot_h - parent_obj_h) ** 2 + (rb_distance - 0.2) ** 2)
+	detection_w = 2 * (camera_distance * math.tan(0.5 * detection_angle))	
+
+
+
+
+
+
 	
 
 	explore_base_pose_1 = Pose2D()
@@ -51,115 +59,317 @@ def handle_symbol_grounding_explore_base_pose(req):
 	explore_base_pose_3 = Pose2D()
 	explore_base_pose_4 = Pose2D()
 	
-	
-	explore_base_pose_list = list()
-	wall_checked_explore_base_pose_list = list()
-	obstacle_checked_explore_base_pose_list = list()
-	explore_base_pose_list = list()
+
+	explore_base_pose_list_1 = list()
+	explore_base_pose_list_2 = list()
+	explore_base_pose_list_3 = list()
+	explore_base_pose_list_4 = list()
+
+	wall_checked_explore_base_pose_list_1 = list()
+	wall_checked_explore_base_pose_list_2 = list()
+	wall_checked_explore_base_pose_list_3 = list()
+	wall_checked_explore_base_pose_list_4 = list()
+
+	obstacle_checked_explore_base_pose_list_1 = list()
+	obstacle_checked_explore_base_pose_list_2 = list()
+	obstacle_checked_explore_base_pose_list_3 = list()
+	obstacle_checked_explore_base_pose_list_4 = list()
 	
 
 	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 
+		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 
-		rb_distance = math.sqrt((0.5 * parent_obj_l * (1.0 / math.tan(0.5 * detection_angle))) ** 2 - (robot_h - parent_obj_h)** 2)
-		if rb_distance < 0.7:
-			rb_distance = 0.7
-			print "target object is quite small."
-			pass		
-		elif rb_distance > 1.7:
-			rb_distance = 1.7
-			print "target oject may not be covered."
-
-		explore_base_pose_1.x = parent_obj_x - (rb_distance + 0.5 * parent_obj_w) * math.cos(parent_obj_th)
-		explore_base_pose_1.y = parent_obj_y - (rb_distance + 0.5 * parent_obj_w) * math.sin(parent_obj_th)
-		explore_base_pose_1.theta = parent_obj_th + math.pi
-
-		explore_base_pose_2.x = parent_obj_x + (rb_distance + 0.5 * parent_obj_w) * math.cos(parent_obj_th)
-		explore_base_pose_2.y = parent_obj_y + (rb_distance + 0.5 * parent_obj_w) * math.sin(parent_obj_th)
-		explore_base_pose_2.theta = parent_obj_th
-
-		explore_base_pose_3.x = parent_obj_x + (rb_distance + 0.5 * parent_obj_l) * math.sin(parent_obj_th)
-		explore_base_pose_3.y = parent_obj_y - (rb_distance + 0.5 * parent_obj_l) * math.cos(parent_obj_th)
-		explore_base_pose_3.theta = parent_obj_th - 0.5 * math.pi
-	
-		explore_base_pose_4.x = parent_obj_x - (rb_distance + 0.5 * parent_obj_l) * math.sin(parent_obj_th)
-		explore_base_pose_4.y = parent_obj_y + (rb_distance + 0.5 * parent_obj_l) * math.cos(parent_obj_th)
-		explore_base_pose_4.theta = parent_obj_th - 0.5 * math.pi
+			explore_base_pose_1 = Pose2D()
+			explore_base_pose_1.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			explore_base_pose_1.y = parent_obj_y - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 *  detection_w - num * detection_w) * math.cos(parent_obj_th)
+			explore_base_pose_1.theta = parent_obj_th + math.pi
+			explore_base_pose_list_1.append(explore_base_pose_1)
 
 
-	else:
+		#obstacle check 1
 
 
-		rb_distance = math.sqrt((0.5 * parent_obj_w * (1.0 / math.tan(0.5 * detection_angle))) ** 2 - (robot_h - parent_obj_h)** 2)
-		if rb_distance < 0.7:
-			rb_distance = 0.7
-			print "target object is quite small."
-		elif rb_distance > 1.5:
-			rb_distance = 1.5
-			print "target oject may not be covered."
-		else:
-			print "ready!"
-			
-
-		explore_base_pose_1.x = parent_obj_x - (rb_distance + 0.5 * parent_obj_l) * math.cos(parent_obj_th)
-		explore_base_pose_1.y = parent_obj_y - (rb_distance + 0.5 * parent_obj_l) * math.sin(parent_obj_th)
-		explore_base_pose_1.theta = parent_obj_th + math.pi
-
-		explore_base_pose_2.x = parent_obj_x + (rb_distance + 0.5 * parent_obj_l) * math.cos(parent_obj_th)
-		explore_base_pose_2.y = parent_obj_y + (rb_distance + 0.5 * parent_obj_l) * math.sin(parent_obj_th)
-		explore_base_pose_2.theta = parent_obj_th
-
-		explore_base_pose_3.x = parent_obj_x + (rb_distance + 0.5 * parent_obj_w) * math.sin(parent_obj_th)
-		explore_base_pose_3.y = parent_obj_y - (rb_distance + 0.5 * parent_obj_w) * math.cos(parent_obj_th)
-		explore_base_pose_3.theta = parent_obj_th - 0.5 * math.pi
-	
-		explore_base_pose_4.x = parent_obj_x - (rb_distance + 0.5 * parent_obj_w) * math.sin(parent_obj_th)
-		explore_base_pose_4.y = parent_obj_y + (rb_distance + 0.5 * parent_obj_w) * math.cos(parent_obj_th)
-		explore_base_pose_4.theta = parent_obj_th - 0.5 * math.pi
-
-	
-
-	#obstacle check 
-	explore_base_pose_list.append(explore_base_pose_1)
-	explore_base_pose_list.append(explore_base_pose_2)
-	explore_base_pose_list.append(explore_base_pose_3)
-	explore_base_pose_list.append(explore_base_pose_4)
-
-	#rospy.loginfo(explore_base_pose_list)
-
-	index = 0
-	while index < len(explore_base_pose_list):
-		if ((-2.7 <= explore_base_pose_list[index].x <= 1.6) and (-1.7 <= explore_base_pose_list[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list[index].x <= 3.2) and (-1.7 <= explore_base_pose_list[index].y <= 0.7)):
-			wall_checked_explore_base_pose_list.append(explore_base_pose_list[index])
-		index += 1
+		index = 0
+		while index < len(explore_base_pose_list_1):
+			if ((-2.7 <= explore_base_pose_list_1[index].x <= 1.6) and (-1.7 <= explore_base_pose_list_1[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list_1[index].x <= 3.2) and (-1.7 <= explore_base_pose_list_1[index].y <= 0.7)):
+				wall_checked_explore_base_pose_list_1.append(explore_base_pose_list_1[index])
+			index += 1
 		
-	rospy.loginfo(wall_checked_explore_base_pose_list)
-
-	index_1 = 0
-	while index_1 < len(wall_checked_explore_base_pose_list):
-		index_2 = 0
-		while index_2 < len(furniture_geometry_list):
-			delta_x = math.sqrt((wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(math.atan((wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x))-furniture_geometry_list[index_2].pose.theta)
-			delta_y = math.sqrt((wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(math.atan((wall_checked_explore_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (wall_checked_explore_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x))-furniture_geometry_list[index_2].pose.theta)
-			if delta_x >= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) and delta_x <= (furniture_geometry_list[index_2].w / 2.0 + 0.5) and delta_y >= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) and delta_y <= (furniture_geometry_list[index_2].l / 2.0 + 0.5):
-				break
-			else:
-				index_2 += 1
-		if index_2 == len(furniture_geometry_list):
-			rospy.loginfo(index_2)
-			obstacle_checked_explore_base_pose_list.append(wall_checked_explore_base_pose_list[index_1])
-		index_1 += 1
 	
+		else:
+			index_1 = 0
+			while index_1 < len(wall_checked_explore_base_pose_list_1):
+				index_2 = 0
+				while index_2 < len(furniture_geometry_list):
+					delta_x = math.sqrt((wall_checked_explore_base_pose_list_1[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_1[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_explore_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					delta_y = math.sqrt((wall_checked_explore_base_pose_list_1[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_1[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_explore_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+						index_2 += 1
+					else:
+						index_1 += 1
+						break
+				obstacle_checked_explore_base_pose_list_1.append(wall_checked_explore_base_pose_list_1[index_1])
+				index_1 += 1
+	
+				
+		for num in range(int((parent_obj_l / detection_w) + 0.99)):
+			explore_base_pose_2 = Pose2D()
+			explore_base_pose_2.x = parent_obj_x + (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			explore_base_pose_2.y = parent_obj_y + (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			explore_base_pose_2.theta = parent_obj_th
+			explore_base_pose_list_2.append(explore_base_pose_2)
 
-	if not obstacle_checked_explore_base_pose_list:
-		print "no valid pose."
+
+		#obstacle check 2
+
+
+		index = 0
+		while index < len(explore_base_pose_list_2):
+			if ((-2.7 <= explore_base_pose_list_2[index].x <= 1.6) and (-1.7 <= explore_base_pose_list_2[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list_2[index].x <= 3.2) and (-1.7 <= explore_base_pose_list_2[index].y <= 0.7)):
+				wall_checked_explore_base_pose_list_2.append(explore_base_pose_list_2[index])
+			index += 1
+		
+	
+		else:
+			index_1 = 0
+			while index_1 < len(wall_checked_explore_base_pose_list_2):
+				index_2 = 0
+				while index_2 < len(furniture_geometry_list):
+					delta_x = math.sqrt((wall_checked_explore_base_pose_list_2[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_2[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_explore_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					delta_y = math.sqrt((wall_checked_explore_base_pose_list_2[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_2[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_explore_base_pose_list_2[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+						index_2 += 1
+					else:
+						index_1 += 1
+						break
+				obstacle_checked_explore_base_pose_list_2.append(wall_checked_explore_base_pose_list_2[index_1])
+				index_1 += 1
+
+		for num in range(int((parent_obj_w / detection_w) + 0.99)):
+
+			explore_base_pose_3 = Pose2D()
+			explore_base_pose_3.x = parent_obj_x + (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			explore_base_pose_3.y = parent_obj_y - (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_w - 0.5 *  detection_w - num * detection_w) * math.sin(parent_obj_th)
+			explore_base_pose_3.theta = parent_obj_th - 0.5 * math.pi
+			explore_base_pose_list_3.append(explore_base_pose_3)
+
+		#obstacle check 3
+
+
+
+		index = 0
+		while index < len(explore_base_pose_list_3):
+			if ((-2.7 <= explore_base_pose_list_3[index].x <= 1.6) and (-1.7 <= explore_base_pose_list_3[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list_3[index].x <= 3.2) and (-1.7 <= explore_base_pose_list_3[index].y <= 0.7)):
+				wall_checked_explore_base_pose_list_3.append(explore_base_pose_list_3[index])
+			index += 1
+		
+	
+		else:
+			index_1 = 0
+			while index_1 < len(wall_checked_explore_base_pose_list_3):
+				index_2 = 0
+				while index_2 < len(furniture_geometry_list):
+					delta_x = math.sqrt((wall_checked_explore_base_pose_list_3[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_3[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_explore_base_pose_list_3[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					delta_y = math.sqrt((wall_checked_explore_base_pose_list_3[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_3[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_explore_base_pose_list_3[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+						index_2 += 1
+					else:
+						index_1 += 1
+						break
+				obstacle_checked_explore_base_pose_list_3.append(wall_checked_explore_base_pose_list_3[index_1])
+				index_1 += 1
+				
+		for num in range(int((parent_obj_w / detection_w) + 0.99)):
+			explore_base_pose_4 = Pose2D()
+			explore_base_pose_4.x = parent_obj_x - (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			explore_base_pose_4.y = parent_obj_y + (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			explore_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
+			explore_base_pose_list_4.append(explore_base_pose_4)
+
+		#obstacle check 4
+
+
+
+		index = 0
+		while index < len(explore_base_pose_list_4):
+			if ((-2.7 <= explore_base_pose_list_4[index].x <= 1.6) and (-1.7 <= explore_base_pose_list_4[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list_4[index].x <= 3.2) and (-1.7 <= explore_base_pose_list_4[index].y <= 0.7)):
+				wall_checked_explore_base_pose_list_4.append(explore_base_pose_list_4[index])
+			index += 1
+		
+	
+		else:
+			index_1 = 0
+			while index_1 < len(wall_checked_explore_base_pose_list_4):
+				index_2 = 0
+				while index_2 < len(furniture_geometry_list):
+					delta_x = math.sqrt((wall_checked_explore_base_pose_list_4[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_4[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_explore_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					delta_y = math.sqrt((wall_checked_explore_base_pose_list_4[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_4[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_explore_base_pose_list_4[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+						index_2 += 1
+					else:
+						index_1 += 1
+						break
+				obstacle_checked_explore_base_pose_list_4.append(wall_checked_explore_base_pose_list_4[index_1])
+				index_1 += 1
 
 	else:
 
-		explore_base_pose = obstacle_checked_explore_base_pose_list[0]
+		for num in range(int((parent_obj_w / detection_w) + 0.99)):
 
-	return explore_base_pose
+			explore_base_pose_1 = Pose2D()
+			explore_base_pose_1.x = parent_obj_x - (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			explore_base_pose_1.y = parent_obj_y - (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_w - 0.5 *  detection_w - num * detection_w) * math.cos(parent_obj_th)
+			explore_base_pose_1.theta = parent_obj_th + math.pi
+			explore_base_pose_list_1.append(explore_base_pose_1)
 
+
+		#obstacle check 1
+
+
+		index = 0
+		while index < len(explore_base_pose_list_1):
+			if ((-2.7 <= explore_base_pose_list_1[index].x <= 1.6) and (-1.7 <= explore_base_pose_list_1[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list_1[index].x <= 3.2) and (-1.7 <= explore_base_pose_list_1[index].y <= 0.7)):
+				wall_checked_explore_base_pose_list_1.append(explore_base_pose_list_1[index])
+			index += 1
+		
+	
+		else:
+			index_1 = 0
+			while index_1 < len(wall_checked_explore_base_pose_list_1):
+				index_2 = 0
+				while index_2 < len(furniture_geometry_list):
+					delta_x = math.sqrt((wall_checked_explore_base_pose_list_1[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_1[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_explore_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					delta_y = math.sqrt((wall_checked_explore_base_pose_list_1[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_1[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_explore_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+						index_2 += 1
+					else:
+						index_1 += 1
+						break
+				obstacle_checked_explore_base_pose_list_1.append(wall_checked_explore_base_pose_list_1[index_1])
+				index_1 += 1
+	
+				
+		for num in range(int((parent_obj_w / detection_w) + 0.99)):
+			explore_base_pose_2 = Pose2D()
+			explore_base_pose_2.x = parent_obj_x + (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			explore_base_pose_2.y = parent_obj_y + (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			explore_base_pose_2.theta = parent_obj_th
+			explore_base_pose_list_2.append(explore_base_pose_2)
+
+
+		#obstacle check 2
+
+
+		index = 0
+		while index < len(explore_base_pose_list_2):
+			if ((-2.7 <= explore_base_pose_list_2[index].x <= 1.6) and (-1.7 <= explore_base_pose_list_2[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list_2[index].x <= 3.2) and (-1.7 <= explore_base_pose_list_2[index].y <= 0.7)):
+				wall_checked_explore_base_pose_list_2.append(explore_base_pose_list_2[index])
+			index += 1
+		
+	
+		else:
+			index_1 = 0
+			while index_1 < len(wall_checked_explore_base_pose_list_2):
+				index_2 = 0
+				while index_2 < len(furniture_geometry_list):
+					delta_x = math.sqrt((wall_checked_explore_base_pose_list_2[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_2[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_explore_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					delta_y = math.sqrt((wall_checked_explore_base_pose_list_2[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_2[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_explore_base_pose_list_2[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+						index_2 += 1
+					else:
+						index_1 += 1
+						break
+				obstacle_checked_explore_base_pose_list_2.append(wall_checked_explore_base_pose_list_2[index_1])
+				index_1 += 1
+
+		for num in range(int((parent_obj_l / detection_w) + 0.99)):
+
+			explore_base_pose_3 = Pose2D()
+			explore_base_pose_3.x = parent_obj_x + (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			explore_base_pose_3.y = parent_obj_y - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 *  detection_w - num * detection_w) * math.sin(parent_obj_th)
+			explore_base_pose_3.theta = parent_obj_th - 0.5 * math.pi
+			explore_base_pose_list_3.append(explore_base_pose_3)
+
+		#obstacle check 3
+
+
+
+		index = 0
+		while index < len(explore_base_pose_list_3):
+			if ((-2.7 <= explore_base_pose_list_3[index].x <= 1.6) and (-1.7 <= explore_base_pose_list_3[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list_3[index].x <= 3.2) and (-1.7 <= explore_base_pose_list_3[index].y <= 0.7)):
+				wall_checked_explore_base_pose_list_3.append(explore_base_pose_list_3[index])
+			index += 1
+		
+	
+		else:
+			index_1 = 0
+			while index_1 < len(wall_checked_explore_base_pose_list_3):
+				index_2 = 0
+				while index_2 < len(furniture_geometry_list):
+					delta_x = math.sqrt((wall_checked_explore_base_pose_list_3[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_3[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_explore_base_pose_list_3[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					delta_y = math.sqrt((wall_checked_explore_base_pose_list_3[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_3[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_explore_base_pose_list_3[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+						index_2 += 1
+					else:
+						index_1 += 1
+						break
+				obstacle_checked_explore_base_pose_list_3.append(wall_checked_explore_base_pose_list_3[index_1])
+				index_1 += 1
+				
+		for num in range(int((parent_obj_l / detection_w) + 0.99)):
+			explore_base_pose_4 = Pose2D()
+			explore_base_pose_4.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			explore_base_pose_4.y = parent_obj_y + (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			explore_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
+			explore_base_pose_list_4.append(explore_base_pose_4)
+
+		#obstacle check 4
+
+
+
+		index = 0
+		while index < len(explore_base_pose_list_4):
+			if ((-2.7 <= explore_base_pose_list_4[index].x <= 1.6) and (-1.7 <= explore_base_pose_list_4[index].y <= 1.2)) or ((1.6 <= explore_base_pose_list_4[index].x <= 3.2) and (-1.7 <= explore_base_pose_list_4[index].y <= 0.7)):
+				wall_checked_explore_base_pose_list_4.append(explore_base_pose_list_4[index])
+			index += 1
+		
+	
+		else:
+			index_1 = 0
+			while index_1 < len(wall_checked_explore_base_pose_list_4):
+				index_2 = 0
+				while index_2 < len(furniture_geometry_list):
+					delta_x = math.sqrt((wall_checked_explore_base_pose_list_4[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_4[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_explore_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					delta_y = math.sqrt((wall_checked_explore_base_pose_list_4[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_explore_base_pose_list_4[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_explore_base_pose_list_4[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+						index_2 += 1
+					else:
+						index_1 += 1
+						break
+				obstacle_checked_explore_base_pose_list_4.append(wall_checked_explore_base_pose_list_4[index_1])
+				index_1 += 1
+
+	rospy.loginfo([obstacle_checked_explore_base_pose_list_1, obstacle_checked_explore_base_pose_list_2, obstacle_checked_explore_base_pose_list_3, obstacle_checked_explore_base_pose_list_4])
+	max_len = max(len(obstacle_checked_explore_base_pose_list_1), len(obstacle_checked_explore_base_pose_list_2), len(obstacle_checked_explore_base_pose_list_3), len(obstacle_checked_explore_base_pose_list_4))
+
+
+	if len(obstacle_checked_explore_base_pose_list_1) == max_len:
+		explore_base_pose_list = [obstacle_checked_explore_base_pose_list_1]
+	elif len(obstacle_checked_explore_base_pose_list_2) == max_len:
+		explore_base_pose_list = [obstacle_checked_explore_base_pose_list_2]
+	elif len(obstacle_checked_explore_base_pose_list_3) == max_len:
+		explore_base_pose_list = [obstacle_checked_explore_base_pose_list_3]
+	else:
+		explore_base_pose_list = [obstacle_checked_explore_base_pose_list_4]
+	
+
+	if not explore_base_pose_list:
+		print "no valid explore pose."
+
+	else:
+
+		return explore_base_pose_list
 
 
 

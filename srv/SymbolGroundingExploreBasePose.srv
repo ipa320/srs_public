@@ -1,7 +1,7 @@
 SRSFurnitureGeometry parent_obj_geometry
 SRSFurnitureGeometry[] furniture_geometry_list
 ---
-geometry_msgs/Pose2D explore_base_pose
+geometry_msgs/Pose2D[] explore_base_pose_list
 
 
 

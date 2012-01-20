@@ -75,7 +75,7 @@ class VerifyObject(smach.State):
 
     smach.State.__init__(
       self,
-      outcomes=['succeeded', 'failed'],
+      outcomes=['succeeded', 'failed', 'not_completed', 'preempted'],
       input_keys=['object_id','target_object_pose'],
       output_keys=['verfified_target_object_pose'])
     self.eo = EvalObjects()
@@ -88,12 +88,12 @@ class VerifyObject(smach.State):
     #if object_to_search.classID == 1: #table
     closest_table = self.eo.verify_table(userdata.target_object_pose, object_list_map)
     if closest_table:
-      userdata.verfified_target_object_pose = closest_table.params[4:7]
+        userdata.verfified_target_object_pose = closest_table.params[4:7]
         print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " found at " + str(closest_table.params[4]) + "," + str(closest_table.params[5])
         return 'succeeded'
-      else:
+    else:
         print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " not found"
-        return 'failed'
+        return 'not_completed'
     #else:
     #  print 'Object class not supported'
     #  return 'failed'

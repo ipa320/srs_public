@@ -78,7 +78,7 @@ class UpdateEnvMap(smach.State):
 
 		smach.State.__init__(
 			self,
-			outcomes=['succeeded', 'failed'],
+			outcomes=['succeeded', 'failed', 'preempted'],
 			input_keys=['angle_range']) #good angle value: 0.4
 		self.client = actionlib.SimpleActionClient('trigger_mapping', TriggerMappingAction)
 

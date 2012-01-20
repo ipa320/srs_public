@@ -252,6 +252,7 @@ class SRS_DM_ACTION(object):
         self.temp.userdata.target_base_pose=Pose2D()
         self.temp.userdata.target_object_name=''
         self.temp.userdata.target_object_pose=Pose()
+        self.temp.userdata.verified_target_object_pose=Pose()
         
         #session id for current task, on id per task. 
         #session id can be shared by different clients
@@ -280,6 +281,7 @@ class SRS_DM_ACTION(object):
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
                                                'target_object_pose':'target_object_pose',
+                                               'verified_target_object_pose':'verified_target_object_pose',
                                                'target_object_hh_id':'target_object_hh_id',
                                                'semi_autonomous_mode':'semi_autonomous_mode',
                                                'grasp_categorisation':'grasp_categorisation',
@@ -288,33 +290,32 @@ class SRS_DM_ACTION(object):
                                               'target_object_pose_list':'target_object_pose_list'})   
             
             smach.StateMachine.add('SM_NAVIGATION', srs_navigation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'})            
 
             smach.StateMachine.add('SM_DETECTION', srs_detection(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                                'target_object_pose':'target_object_pose' })
        
             smach.StateMachine.add('SM_GRASP', srs_grasp(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_old_pose':'target_object_pose',
                                               'grasp_categorisation':'grasp_categorisation' })
             
             smach.StateMachine.add('SM_PUT_ON_TRAY', srs_put_on_tray(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'grasp_categorisation':'grasp_categorisation' })
 
             smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', srs_object_verification_simple(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'SEMANTIC_DM','preempted':'SEMANTIC_DM'},
-                                   remapping={'target_object_name':'target_object_name',
-                                              'target_base_pose':'target_base_pose',
-                                              'target_object_pose':'target_object_pose',
-                                              'target_object_hh_id':'target_object_hh_id'})        
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   remapping={'target_object_pose':'target_object_pose',
+                                              'target_object_hh_id':'target_object_hh_id',
+                                              'verified_target_object_pose':'verified_target_object_pose'})        
 
                         
 
@@ -386,8 +387,13 @@ class SRS_DM_ACTION(object):
         global current_task_info
         current_task_info.task_name = current_goal.action
         if current_task_info.task_name=="":
-	           current_task_info.task_name="get"
+            current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
+        
+        
+        if current_task_info.task_name=='stop':
+            current_task_info.set_stop_acknowledged(False)            #
+            current_task_info.set_stop_required(False)
         
         if not self.robot_initialised:
             self.robot_initialisation_process()
@@ -407,8 +413,8 @@ class SRS_DM_ACTION(object):
             requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
             res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
-	    print res.sessionId
-	    current_task_info.session_id = res.sessionId
+            print res.sessionId
+            current_task_info.session_id = res.sessionId
             if res.result == 1:
                 self._as.set_aborted(self._result)
                 return
@@ -446,13 +452,19 @@ class SRS_DM_ACTION(object):
         #    self._as.set_preempted(self._result)
         #    return
         
+        
+        current_task_info.set_customised_preempt_acknowledged(False)
+        current_task_info.set_customised_preempt_required(False)
+        current_task_info.set_stop_acknowledged(False)
+        current_task_info.set_stop_required(False)        
+        
         if outcome == "task_succeeded": 
             self._result.return_value=3
             self._as.set_succeeded(self._result)
             return
         if outcome == "task_preempted":
             self._result.return_value=2
-            self._as.set_preempted(result, "stopped before complete or preempted by another task")
+            self._as.set_preempted(self._result, "stopped before complete or preempted by another task")
         #for all other cases outcome == "task_aborted": 
         self._result.return_value=4
         self._as.set_aborted(self._result)

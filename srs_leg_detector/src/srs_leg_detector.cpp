@@ -1104,6 +1104,7 @@ xpected primary-expression before ‘)’ t
 
                   
 
+
 		list<SavedFeature*>::iterator closest = propagated.end();
 		float closest_dist = max_track_jump_m;
 

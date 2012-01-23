@@ -35,6 +35,9 @@
 #include "actionlib/client/simple_action_client.h"
 #include "srs_decision_making/ExecutionAction.h"
 
+#include "nav_msgs/OccupancyGrid.h"
+#include "nav_msgs/GetMap.h"
+
 typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client;
 
 using namespace std;
@@ -249,9 +252,20 @@ class LegDetector
  int counter;
  srs_msgs::HS_distance  distance_msg;
  
- Client client;
+ Client client; // actionLib client for connection with DM action server
+
+
+ ros::ServiceClient client_map;  // clent for the getMap service
+ nav_msgs::GetMap srv_map;
         
-   
+ int ind_x, ind_y;
+
+ short int map_data []; 
+
+ double tmp;
+
+ int indtmp;
+  
 
 public:
 	NodeHandle nh_;
@@ -285,8 +299,7 @@ public:
 	tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
 
 
-
-    
+        
 	           
 
 
@@ -330,9 +343,42 @@ public:
                 pauseSent = false;
                 counter = 1;
                 
-	
+	        client_map = nh_.serviceClient<nav_msgs::GetMap>("/static_map"); // geting the clent for the map ready
                        
-        }
+                if (client_map.call(srv_map)) {  // call to srv_map OK
+                  printf ("The cells in the ocupancy grid with size %i are:\n", srv_map.response.map.data.size());
+                  printf (" width %i are:\n", srv_map.response.map.info.width);
+                  printf (" height %i are:\n", srv_map.response.map.info.height);
+                  printf (" resolution %f is:\n", srv_map.response.map.info.resolution);
+                  geometry_msgs::Pose pose = srv_map.response.map.info.origin;
+                  printf (" x position is %f \n", pose.position.x);
+                  printf (" y position is %f \n", pose.position.y);
+                  printf (" z position is %f \n", pose.position.z);
+                  printf (" x orientation is %f \n", pose.orientation.x);
+                  printf (" y orientation is %f \n", pose.orientation.y);
+                  printf (" z orientation is %f \n", pose.orientation.z);
+                  printf (" w orientation is %f \n", pose.orientation.w);
+
+                 
+
+                  
+
+                  
+                   
+
+             //     for (int i=1; i<srv_map.response.map.data.size(); i++) {
+             //       if   (srv_map.response.map.data [i]>0)
+             //       printf("ocupancy grid %i is %i \n",i, srv_map.response.map.data [i]);    
+             //     }
+                                    
+
+  
+                } 
+                else
+	        {
+		   ROS_ERROR("Failed to call service GetMap");
+	        }
+       }
 
 
 	~LegDetector()
@@ -408,7 +454,7 @@ void measure_distance (double dist) {
 // actionlib Resume Call
  bool sendActionLibGoalResume()
         {
-         if (pauseSent = false) // Resume Action has been  sent already
+         if (!pauseSent ) // Resume Action has been  sent already
                 return true;
 
 
@@ -941,6 +987,10 @@ xpected primary-expression before ‘)’ t
 			positions.push_back(pos);
              
                         measure_distance ((*i)->center().distance(Point(0,0,0)));
+                  
+
+                  
+
                 }
 
 		// Build up the set of pair of closest positions
@@ -1028,9 +1078,31 @@ xpected primary-expression before ‘)’ t
                 
                // int y111 = (*loc);
                 
+
+                ind_x = (loc[0] / srv_map.response.map.info.resolution + srv_map.response.map.info.width / 2);  // x index in the ocupancy map
+                ind_y = (320 - (loc[1] / srv_map.response.map.info.resolution + srv_map.response.map.info.height / 2)); //y index in the ocupancy map
+                
+            /*    if (map_data [ind_y*320+ind_x] > 80)  {
+                  printf ("the point is on the ocupied cell of the map \n");
+                 }
+
+               if (map_data [ind_y*320+ind_x] = -1)  {
+                  printf ("the point is outside the map \n");
+                 } */
+                 
+                  printf ( "map x: %f, map y: %f, pixel_x: %i, pixel_y:%i ",loc[0], loc[1], ind_x , ind_y ); 
+                tmp =  srv_map.response.map.data [ind_y*160+ind_x];
+                indtmp = ind_y*160+ind_x;
+                printf ("index: %i \n",indtmp ); 
+                
+                
+                printf ("value: %f \n",tmp);     
+ 
                 detections_visualize[i].x =  loc[0];
                 detections_visualize[i].y = loc[1];
                 detections_visualize[i].z =0.15;
+
+                  
 
 		list<SavedFeature*>::iterator closest = propagated.end();
 		float closest_dist = max_track_jump_m;

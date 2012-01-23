@@ -1,0 +1,16 @@
+<package>
+  <description brief="srs_decision_making_interface">
+
+     srs_decision_making_interface
+
+  </description>
+  <author>renxi</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_decision_making_interface</url>
+  <depend package="std_msgs"/>
+  <depend package="actionlib"/>
+  <depend package="rospy"/>
+</package>
+
+

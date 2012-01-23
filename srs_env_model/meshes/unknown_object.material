@@ -1,0 +1,17 @@
+material Material.UnknownObject
+{
+        technique
+        {
+                pass
+                {
+			depth_write on
+                        texture_unit
+                        {
+				
+                                texture images/red_cross.png
+ tex_coord_set 0
+				
+                        }
+                }
+        }
+}

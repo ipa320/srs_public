@@ -5,7 +5,7 @@ import copy
 import rospy
 import smach
 import smach_ros
-
+import threading
 from std_msgs.msg import String, Bool, Int32
 from cob_srvs.srv import Trigger
 from math import *
@@ -32,6 +32,167 @@ from cob_tray_sensors import *
 from cob_mmcontroller.msg import *
 from kinematics_msgs.srv import *
 
+
+
+
+"""
+current_task_info is a global shared memory for exchanging task information among statuses 
+
+smach is slow on passing large amount of userdata. Hence they are stored under goal_structure as global variable
+
+srs_dm_action perform one task at a time and maintain a unique session id.  
+"""
+
+listener = tf.TransformListener()
+
+class goal_structure():   
+    
+    def __init__(self):
+        
+        #goal of the high level task
+        self.task_name =""
+        
+        #task parameter
+        self.task_parameter=""
+        
+        #Information about last step, use Last_step_info_msg 
+        self.last_step_info = list()
+        
+        #customised pre-empty signal received or not
+        self.preemptied = False
+        
+        #reference to the action server
+        self._srs_as=""
+        
+        ## backward compatible need to be revised after the integration meeting         
+        #feedback publisher, intervention required
+        self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)
+        #feedback publisher, operational state
+        self.pub_fb2 = rospy.Publisher('fb_executing_state', String)
+        ## backward compatible need to be revised after the integration meeting  
+        
+        self.object_in_hand = False
+        
+        # this can be replaced by the tray service with real robot
+        self.object_on_tray = False
+        
+        self.arm_folded_ready_for_transfer = False    #arm in hold or folded position
+        
+        self.lock = threading.Lock()
+        
+        self.customised_preempt_required = False
+        
+        self.customised_preempt_acknowledged = False
+        
+        self.pause_required = False
+        
+        self.stop_required = False 
+        
+        self.stop_acknowledged = False
+
+    def get_pause_required(self):
+        self.lock.acquire()
+        value = self.pause_required
+        self.lock.release()
+        return value 
+    
+    def get_customised_preempt_required(self):
+        self.lock.acquire()
+        value = self.customised_preempt_required
+        self.lock.release()
+        return value 
+    
+    def get_customised_preempt_acknowledged(self):
+        self.lock.acquire()
+        value = self.customised_preempt_acknowledged
+        self.lock.release()
+        return value 
+        
+    def get_stop_required(self):
+        self.lock.acquire()
+        value = self.stop_required
+        self.lock.release()
+        return value 
+
+    def get_stop_acknowledged(self):
+        self.lock.acquire()
+        value = self.acknowledged
+        self.lock.release()
+        return value 
+    
+    def set_pause_required(self,value):
+        self.lock.acquire()
+        self.pause_required = value
+        self.lock.release()
+
+    def set_customised_preempt_required(self,value):
+        self.lock.acquire()
+        self.customised_preempt_required = value
+        self.lock.release()
+
+    
+    def set_customised_preempt_acknowledged(self, value):
+        self.lock.acquire()
+        self.customised_preempt_acknowledged = value
+        self.lock.release()
+
+        
+    def set_stop_required(self, value):
+        self.lock.acquire()
+        self.stop_required = value
+        self.lock.release()
+        return value 
+
+    def set_stop_acknowledged(self, value):
+        self.lock.acquire()
+        self.acknowledged = value
+        self.lock.release()
+        return value 
+    
+    #checking if the current atomic operation can be stopped or not
+    #true can be stopped in the middle
+    def stopable(self):
+        #List of conditions which robot should not be stopped in the middle
+        self.lock.acquire()
+        #condition 1:
+        #If a object has been grasped, operation should not be stopped until the object is released or arm is folded ready for transfer
+        if self.object_in_hand and not self.arm_folded_ready_for_transfer:
+            outcome = False
+        else:
+            outcome = True
+        self.lock.release()
+        
+        return outcome
+
+    
+    def reset(self):
+        
+        self.__init__()
+        gc.collect()
+        
+    def get_robot_pos(self):
+        try:
+            (trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
+        except rospy.ROSException, e:
+            print "Transformation not possible: %s"%e
+            return None
+            
+        rb_pose = Pose2D()
+        rb_pose.x = trans[0]
+        rb_pose.y = trans[1]
+        rb_pose_rpy = tf.transformations.euler_from_quaternion(rot)
+        rb_pose.theta = rb_pose_rpy[2]
+        
+        return rb_pose
+
+        
+
+current_task_info = goal_structure() 
+
+
+
+            
+
 """
 Below dummy generic states are copied and modified based on IPA examples for testing purpose
 They should be replaced by real states from other SRS components in the future  
@@ -50,24 +211,6 @@ detect_object()
 Only dummy outputs are given for testing purpose
 """
 
-## Approach pose state
-#-0.21
-# This state will try forever to move the robot to the given pose.
-class approach_pose(smach.State):
-
-    def __init__(self, pose = "", mode = "omni", move_second = "False"):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'failed'],
-            input_keys=['base_pose'])
-
-        self.pose = pose
-        self.mode = mode
-        self.move_second = move_second
-
-    def execute(self, userdata):
-        rospy.loginfo('base_pose: %s', userdata.base_pose)
-        return 'succeeded'
 
 ## Approach pose state (without retry)
 #
@@ -77,7 +220,7 @@ class approach_pose_without_retry(smach.State):
     def __init__(self, pose = ""):
         smach.State.__init__(
             self,
-            outcomes=['succeeded', 'failed'],
+            outcomes=['succeeded', 'not_completed','failed', 'preempted'],
             input_keys=['base_pose'])
 
         self.pose = pose
@@ -86,15 +229,10 @@ class approach_pose_without_retry(smach.State):
         #self.mode = "omni"
 
     def execute(self, userdata):
-        """
-        rospy.loginfo("target base pose: %s", userdata.base_pose)
-        self.counter=self.counter+1
-        rospy.sleep(1)
-        if self.counter>1:
-            return 'succeeded'
-        else:
-            return 'failed'
-        """
+        
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
         
         # determine target position
         if self.pose != "":
@@ -113,6 +251,8 @@ class approach_pose_without_retry(smach.State):
         # try reaching pose
         handle_base = sss.move("base", pose, False, self.mode)
         move_second = False
+        
+
 
         timeout = 0
         while not self.preempt_requested():
@@ -126,7 +266,7 @@ class approach_pose_without_retry(smach.State):
                     return 'succeeded'        
                 elif (handle_base.get_state() == 2 or handle_base.get_state() == 4):  #error or paused
                     rospy.logerr("base not arrived on target yet")
-                    return 'failed'
+                    return 'not_completed'
             except rospy.ROSException, e:
                 error_message = "%s"%e
                 rospy.logerr("unable to check hdl_base state, error: %s", error_message)
@@ -150,7 +290,7 @@ class approach_pose_without_retry(smach.State):
                 rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
                 return 'failed'
         
-            # evaluate sevice response
+            # evaluate service response
             if not resp.success.data: # robot stands still
                 if timeout > 10:
                     sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
@@ -165,512 +305,21 @@ class approach_pose_without_retry(smach.State):
                     except rospy.ROSException, e:
                         error_message = "%s"%e
                         rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)		
-	            return 'failed'
+	            return 'not_completed'
                 else:
                     timeout = timeout + 1
                     rospy.sleep(1)
             else:
                 timeout = 0
+        if self.preempt_requested():
+            self.service_preempt()
+            #handle_base.set_failed(4)
+            handle_base.client.cancel_goal()
+            return 'preempted'
         return 'failed'
 
 
 
-## Select grasp state
-#
-# This state select a grasping strategy. A high object will be grasped from the side, a low one from top.
-class select_grasp(smach.State):
-
-    def __init__(self):
-        smach.State.__init__(
-            self,
-            outcomes=['top', 'side', 'failed'],
-            input_keys=['object'])
-        
-        self.height_switch = 0.5 # Switch to select top or side grasp using the height of the object over the ground in [m].
-        
-        self.listener = tf.TransformListener()
-
-    def execute(self, userdata):
-        try:
-            # transform object_pose into base_link
-            object_pose_in = userdata.object.pose
-            print object_pose_in
-            object_pose_in.header.stamp = self.listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
-            object_pose_bl = self.listener.transformPose("/base_link", object_pose_in)
-        except rospy.ROSException, e:
-            print "Transformation not possible: %s"%e
-            return 'failed'
-        
-        if object_pose_bl.pose.position.z >= self.height_switch: #TODO how to select grasps for objects within a cabinet or shelf?
-            return 'side'
-        else: 
-            return 'top'
-
-
-## Grasp side state
-#
-# This state will grasp an object with a side grasp
-class grasp_side(smach.State):
-
-    def __init__(self, max_retries = 1):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'retry', 'no_more_retries', 'failed'],
-            input_keys=['object'])
-        
-        self.max_retries = max_retries
-        self.retries = 0
-        self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
-        self.listener = tf.TransformListener()
-        self.stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
-
-    def callIKSolver(self, current_pose, goal_pose):
-        req = GetPositionIKRequest()
-        req.ik_request.ik_link_name = "sdh_grasp_link"
-        req.ik_request.ik_seed_state.joint_state.position = current_pose
-        req.ik_request.pose_stamped = goal_pose
-        resp = self.iks(req)
-        result = []
-        for o in resp.solution.joint_state.position:
-            result.append(o)
-        return (result, resp.error_code)
-
-    def execute(self, userdata):
-        # check if maximum retries reached
-        if self.retries > self.max_retries:
-            self.retries = 0
-            return 'no_more_retries'
-    
-        # make arm soft TODO: handle stiffness for schunk arm
-        try:
-            self.stiffness([300,300,300,100,100,100,100])
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-            self.retries = 0
-            return 'failed'
-    
-        # transform object_pose into base_link
-        object_pose_in = userdata.object.pose
-        object_pose_in.header.stamp = self.listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
-        object_pose_bl = self.listener.transformPose("/base_link", object_pose_in)
-    
-        [new_x, new_y, new_z, new_w] = tf.transformations.quaternion_from_euler(-1.552, -0.042, 2.481) # rpy 
-        object_pose_bl.pose.orientation.x = new_x
-        object_pose_bl.pose.orientation.y = new_y
-        object_pose_bl.pose.orientation.z = new_z
-        object_pose_bl.pose.orientation.w = new_w
-
-        # FIXME: this is calibration between camera and hand and should be removed from scripting level
-        object_pose_bl.pose.position.x = object_pose_bl.pose.position.x #- 0.06 #- 0.08
-        object_pose_bl.pose.position.y = object_pose_bl.pose.position.y #- 0.05
-        object_pose_bl.pose.position.z = object_pose_bl.pose.position.z  #- 0.1
-        
-        # calculate pre and post grasp positions
-        pre_grasp_bl = PoseStamped()
-        post_grasp_bl = PoseStamped()
-        pre_grasp_bl = copy.deepcopy(object_pose_bl)
-        post_grasp_bl = copy.deepcopy(object_pose_bl)
-
-        #pre_grasp_bl.pose.position.x = pre_grasp_bl.pose.position.x + 0.10 # x offset for pre grasp position
-        #pre_grasp_bl.pose.position.y = pre_grasp_bl.pose.position.y + 0.10 # y offset for pre grasp position
-        #post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
-        #post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.15 # z offset for post grasp position
-
-        pre_grasp_bl.pose.position.x = pre_grasp_bl.pose.position.x + 0.10 # x offset for pre grasp position
-        pre_grasp_bl.pose.position.y = pre_grasp_bl.pose.position.y + 0.10 # y offset for pre grasp position
-        pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.15 # y offset for pre grasp position
-        post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
-        post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.17 # z offset for post grasp position
-        
-        # calculate ik solutions for pre grasp configuration
-        arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp")
-        (pre_grasp_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_grasp_bl)        
-        if(error_code.val != error_code.SUCCESS):
-            rospy.logerr("Ik pre_grasp Failed")
-            self.retries += 1
-            return 'retry'
-        
-        # calculate ik solutions for grasp configuration
-        (grasp_conf, error_code) = self.callIKSolver(pre_grasp_conf, object_pose_bl)
-        if(error_code.val != error_code.SUCCESS):
-            rospy.logerr("Ik grasp Failed")
-            self.retries += 1
-            return 'retry'
-        
-        # calculate ik solutions for pre grasp configuration
-        (post_grasp_conf, error_code) = self.callIKSolver(grasp_conf, post_grasp_bl)
-        if(error_code.val != error_code.SUCCESS):
-            rospy.logerr("Ik post_grasp Failed")
-            self.retries += 1
-            return 'retry'    
-
-        # execute grasp
-        sss.say(["I am grasping the " + userdata.object.label + " now."],False)
-        sss.move("torso","home")
-        handle_arm = sss.move("arm", [pre_grasp_conf , grasp_conf],False)
-        sss.move("sdh", "cylopen")
-        handle_arm.wait()
-        sss.move("sdh", "cylclosed")
-    
-        # move object to hold position
-        sss.move("head","front",False)
-        sss.move("arm", [post_grasp_conf, "hold"])
-        
-        self.retries = 0
-        return 'succeeded'
-
-
-## Grasp top state
-#
-# This state will grasp an object with a top grasp
-class grasp_top(smach.State):
-
-    def __init__(self, max_retries = 1):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'retry', 'no_more_retries', 'failed'],
-            input_keys=['object'])
-        
-        self.max_retries = max_retries
-        self.retries = 0
-        self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
-        self.listener = tf.TransformListener()
-        self.stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
-
-    def callIKSolver(self, current_pose, goal_pose):
-        req = GetPositionIKRequest()
-        req.ik_request.ik_link_name = "sdh_grasp_link"
-        req.ik_request.ik_seed_state.joint_state.position = current_pose
-        req.ik_request.pose_stamped = goal_pose
-        resp = self.iks(req)
-        result = []
-        for o in resp.solution.joint_state.position:
-            result.append(o)
-        return (result, resp.error_code)
-
-    def execute(self, userdata):
-        # check if maximum retries reached
-        if self.retries > self.max_retries:
-            self.retries = 0
-            return 'no_more_retries'
-    
-        # make arm soft TODO: handle stiffness for schunk arm
-        try:
-            self.stiffness([100,100,100,100,100,100,100])
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-            self.retries = 0
-            return 'failed'
-    
-        # transform object_pose into base_link
-        object_pose_in = userdata.object.pose
-        object_pose_in.header.stamp = self.listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
-        object_pose_bl = self.listener.transformPose("/base_link", object_pose_in)
-    
-        # use a predefined (fixed) orientation for object_pose_bl
-        [new_x, new_y, new_z, new_w] = tf.transformations.quaternion_from_euler(3.121, 0.077, -2.662) # rpy 
-        object_pose_bl.pose.orientation.x = new_x
-        object_pose_bl.pose.orientation.y = new_y
-        object_pose_bl.pose.orientation.z = new_z
-        object_pose_bl.pose.orientation.w = new_w
-
-        # FIXME: this is calibration between camera and hand and should be removed from scripting level
-        object_pose_bl.pose.position.x = object_pose_bl.pose.position.x #-0.04 #- 0.08
-        object_pose_bl.pose.position.y = object_pose_bl.pose.position.y# + 0.02
-        object_pose_bl.pose.position.z = object_pose_bl.pose.position.z #+ 0.07
-
-        # calculate pre and post grasp positions
-        pre_grasp_bl = PoseStamped()
-        post_grasp_bl = PoseStamped()
-        pre_grasp_bl = copy.deepcopy(object_pose_bl)
-        post_grasp_bl = copy.deepcopy(object_pose_bl)
-    
-        pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.18 # z offset for pre grasp position
-        post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
-        post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.15 # z offset for post grasp position
-        
-        # calculate ik solutions for pre grasp configuration
-        arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp_top")
-        (pre_grasp_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_grasp_bl)        
-        if(error_code.val != error_code.SUCCESS):
-            rospy.logerr("Ik pre_grasp Failed")
-            self.retries += 1
-            return 'retry'
-        
-        # calculate ik solutions for grasp configuration
-        (grasp_conf, error_code) = self.callIKSolver(pre_grasp_conf, object_pose_bl)
-        if(error_code.val != error_code.SUCCESS):
-            rospy.logerr("Ik grasp Failed")
-            self.retries += 1
-            return 'retry'
-        
-        # calculate ik solutions for pre grasp configuration
-        (post_grasp_conf, error_code) = self.callIKSolver(grasp_conf, post_grasp_bl)
-        if(error_code.val != error_code.SUCCESS):
-            rospy.logerr("Ik post_grasp Failed")
-            self.retries += 1
-            return 'retry'    
-
-        # execute grasp
-        sss.say(["I am grasping the " + userdata.object.label + " now."],False)
-        sss.move("torso","home")
-        handle_arm = sss.move("arm", [pre_grasp_conf , grasp_conf],False)
-        sss.move("sdh", "spheropen")
-        handle_arm.wait()
-        sss.move("sdh", "spherclosed")
-    
-        # move object to frontside and put object on tray
-        sss.move("head","front",False)
-        sss.move("arm", [post_grasp_conf, "hold"])
-        
-        self.retries = 0
-        return 'succeeded'
-
-
-## Open door state
-#
-# This state will open a door
-class open_door(smach.State):
-
-    def __init__(self, max_retries = 1):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'retry', 'no_more_retries', 'failed'],
-            input_keys=['object'])
-
-        self.max_retries = max_retries
-        self.retries = 0
-        self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
-        self.listener = tf.TransformListener()
-        self.mmstart = rospy.ServiceProxy('/mm/start', Trigger)
-        self.mmstop = rospy.ServiceProxy('/mm/stop', Trigger)
-        self.cartClient = actionlib.SimpleActionClient('/moveCirc', OpenFridgeAction)
-        self.stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
-
-    def callIKSolver(self, current_pose, goal_pose):
-        req = GetPositionIKRequest()
-        req.ik_request.ik_link_name = "sdh_grasp_link"
-        req.ik_request.ik_seed_state.joint_state.position = current_pose
-        req.ik_request.pose_stamped = goal_pose
-        #print req.ik_request
-        resp = self.iks(req)
-        result = []
-        for o in resp.solution.joint_state.position:
-            result.append(o)
-        return (result, resp.error_code)
-
-    def execute(self, userdata):
-        #TODO teach hinge and handle position relative to the door_pose (this means: detected ipa_logo)
-        
-        # check if maximum retries reached
-        if self.retries > self.max_retries:
-            self.retries = 0
-            return 'no_more_retries'
-
-        # make arm soft TODO: handle stiffness for schunk arm
-        try:
-            self.stiffness([100,100,100,100,100,100,100])
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-            self.retries = 0
-            return 'failed'
-
-        try:
-            # transform object_pose into base_link
-            object_pose_in = userdata.object.pose
-            object_pose_in.header.stamp = self.listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
-            object_pose_bl = self.listener.transformPose("/base_link", object_pose_in)
-        except rospy.ROSException, e:
-            print "Transformation not possible: %s"%e
-            return 'failed'
-        
-        arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp")
-
-        # door handle pose
-        door_handle_pose_bl = PoseStamped()
-        door_handle_pose_bl.header.stamp = rospy.Time.now()
-        door_handle_pose_bl.header.frame_id = "/base_link"
-        door_handle_pose_bl.pose.position.x = object_pose_bl.pose.position.x+0.06 #+0.05
-        door_handle_pose_bl.pose.position.y = object_pose_bl.pose.position.y+0.15
-        door_handle_pose_bl.pose.position.z = object_pose_bl.pose.position.z-0.04 #-0.08
-        door_handle_pose_bl.pose.orientation.x = -0.495
-        door_handle_pose_bl.pose.orientation.y = -0.532
-        door_handle_pose_bl.pose.orientation.z = 0.452
-        door_handle_pose_bl.pose.orientation.w = 0.517
-
-        # door hinge pose
-        #door_hinge_pose_bl = PoseStamped()
-        #door_hinge_pose_bl.header.stamp = rospy.Time.now()
-        #door_hinge_pose_bl.header.frame_id = "/base_link"
-        #door_hinge_pose_bl.pose.position.x = -0.7
-        #door_hinge_pose_bl.pose.position.y = -0.4
-        #door_hinge_pose_bl.pose.position.z = 0.9
-
-        #quat = quaternion_from_euler(-3.14, 0, 0)
-        #door_hinge_pose_bl.pose.orientation.x = quat[0]
-        #door_hinge_pose_bl.pose.orientation.y = quat[1]
-        #door_hinge_pose_bl.pose.orientation.z = quat[2]
-        #door_hinge_pose_bl.pose.orientation.w = quat[3]
-	
-        # pre door handle position
-        pre_door_handle_pose_bl = copy.deepcopy(door_handle_pose_bl)
-        pre_door_handle_pose_bl.pose.position.x = pre_door_handle_pose_bl.pose.position.x + 0.05 # x offset for pre door position
-
-        # calculate ik solutions for pre door configuration
-        (pre_door_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_door_handle_pose_bl)        
-        if(error_code.val != error_code.SUCCESS):
-            rospy.logerr("Ik pre_door_conf Failed")
-            self.retries += 1
-            return 'retry'
-
-        # calculate ik solutions for door configuration
-        (door_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], door_handle_pose_bl)
-        if(error_code.val != error_code.SUCCESS):
-            rospy.logerr("Ik door_conf Failed")
-            self.retries += 1
-            return 'retry'
-        
-        # move arm to handle
-        sss.move("tray","up",False)
-        handle_sdh = sss.move("sdh","cylopen",False)
-        sss.move("torso","front")
-        sss.move("arm", [pre_door_conf,door_conf])
-        handle_sdh.wait()
-        sss.move("sdh","cylclosed")
-
-        # activate mm controller
-        try:
-            print "Starting MM controller"
-            self.mmstart()
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-            self.retries = 0
-            return 'failed'
-
-        # wait for action server to become ready
-        if not self.cartClient.wait_for_server(rospy.Duration(5)):
-            # error: server did not respond
-            rospy.logerr("moveCirc action server not ready within timeout, aborting...")
-            self.retries = 0
-            return 'failed'
-
-        #syncmm movement to open fridge
-        goal = OpenFridgeGoal()
-        #goal.hinge = door_hinge_pose_bl
-        self.cartClient.send_goal(goal)
-        self.cartClient.wait_for_result(rospy.Duration.from_sec(20.0))
-
-        # deactivate mm controller
-        try:
-            print "Stop MM controller"
-            self.mmstop()
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-            self.retries = 0
-            return 'failed'
-
-        self.retries = 0
-        
-        sss.move("sdh","cyltotalopen")
-        sss.move("arm","door_release")
-        handle_arm = sss.move("arm","hold",False)
-        sss.sleep(2)
-        sss.move("sdh","cylclosed")
-        handle_arm.wait()
-        return 'succeeded'
-
-
-## Put object on tray side state
-#
-# This state puts a side grasped object on the tray
-class put_object_on_tray_side(smach.State):
-
-    def __init__(self):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'failed'])
-
-    def execute(self, userdata):
-        #TODO select position on tray depending on how many objects are on the tray already
-        
-        # move object to frontside
-        handle_arm = sss.move("arm","grasp-to-tray",False)
-        sss.sleep(2)
-        sss.move("tray","up")
-        handle_arm.wait()
-        
-        # release object
-        sss.move("sdh","cylopen")
-        
-        # move arm to backside again
-        handle_arm = sss.move("arm","tray-to-folded",False)
-        sss.sleep(3)
-        sss.move("sdh","home")
-        handle_arm.wait()
-        return 'succeeded'
-
-
-## Put object on tray top state
-#
-# This state puts a top grasped object on the tray
-class put_object_on_tray_top(smach.State):
-
-    def __init__(self):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'failed'])
-
-    def execute(self, userdata):
-        #TODO select position on tray depending on how many objects are on the tray already
-        
-        # move object to frontside
-        handle_arm = sss.move("arm","grasp-to-tray_top",False)
-        sss.sleep(2)
-        sss.move("tray","up")
-        handle_arm.wait()
-        
-        # release object
-        sss.move("sdh","spheropen")
-        
-        # move arm to backside again
-        handle_arm = sss.move("arm","tray_top-to-folded",False)
-        sss.sleep(3)
-        sss.move("sdh","home",False)
-        handle_arm.wait()
-        return 'succeeded'
-
-
-    
-"""
-## Detect state
-#
-# This state will try to detect an object.
-class detect_object(smach.State):
-    def __init__(self,object_name = "",max_retries = 1):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded','retry','no_more_retries','failed'],
-            input_keys=['object_name'],
-            output_keys=['object'])
-
-        self.object_name = object_name
-        
-
-    def execute(self, userdata):
-        # determine object name
-        if self.object_name != "":
-            object_name = self.object_name
-        elif type(userdata.object_name) is str:
-            object_name = userdata.object_name
-        else: # this should never happen
-            rospy.logerr("Invalid userdata 'object_name'")
-            self.retries = 0
-            return 'failed'
-
-        return 'succeeded'
-"""
-
-
 
 ## Detect state
 #
@@ -679,9 +328,9 @@ class detect_object(smach.State):
     def __init__(self,object_name = "",max_retries = 1):
         smach.State.__init__(
             self,
-            outcomes=['succeeded','retry','no_more_retries','failed'],
-            input_keys=['object_name'],
-            output_keys=['object'])
+            outcomes=['succeeded','retry','no_more_retries','failed','preempted'],
+            input_keys=['object_name','key_region'],
+            output_keys=['object','object_pose'])
 
         self.object_list = DetectionArray()
         self.max_retries = max_retries
@@ -693,10 +342,33 @@ class detect_object(smach.State):
         self.torso_poses.append("back_right_extreme")
         self.torso_poses.append("back_extreme")
         self.torso_poses.append("back_left_extreme")
+        #self.listener = tf.TransformListener()
+        self.object_found = False
+        self.the_object = ''
+        self.the_object_pose = ''
         
 
     def execute(self, userdata):
+        
+        if self.object_found:
+            userdata.object_pose = self.the_object_pose
+            userdata.object = self.the_object
+            return 'succeeded'
+        
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+        
+        # checking extra information
+        if userdata.key_region == '':
+            pass #normal detection
+        else:
+            pass #detection in bounding box specified by key_region
+        
+        #add initial value to output keys
         userdata.object = ""
+        userdata.object_pose=""
+        
         # determine object name
         if self.object_name != "":
             object_name = self.object_name
@@ -721,9 +393,19 @@ class detect_object(smach.State):
             handle_arm = sss.move("arm","folded-to-look_at_table",False)
             handle_torso = sss.move("torso","shake",False)
             handle_head = sss.move("head","back",False)
-            handle_arm.wait()
-            handle_head.wait()
-            handle_torso.wait()
+            
+            if self.preempt_requested():
+                self.service_preempt()
+                #handle_base.set_failed(4)
+                handle_arm.client.cancel_goal()
+                handle_torso.client.cancel_goal()
+                handle_head.client.cancel_goal()
+                return 'preempted'
+            else:
+                handle_arm.wait()
+                handle_head.wait()
+                handle_torso.wait()
+                
         handle_torso = sss.move("torso",self.torso_poses[self.retries % len(self.torso_poses)]) # have an other viewing point for each retry
         
         # move sdh as feedback
@@ -731,6 +413,7 @@ class detect_object(smach.State):
         
         # wait for image to become stable
         sss.sleep(2)
+        
     
         # check if object detection service is available
         try:
@@ -780,8 +463,442 @@ class detect_object(smach.State):
 
         # we succeeded to detect an object
         userdata.object = obj
+        self.the_object = obj
+        object_pose_map = PoseStamped()
         self.retries = 0
+        
+        global listener
+        
+        try:
+            #transform object_pose into base_link
+            object_pose_in = obj.pose
+            object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
+            object_pose_map = listener.transformPose("/map", object_pose_in)
+        except rospy.ROSException, e:
+            print "Transformation not possible: %s"%e
+            return 'failed'
+        
+        print object_pose_map
+        
+        userdata.object_pose=object_pose_map
+        self.the_object_pose=object_pose_map
+        
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+        
+        self.object_found = True
         return 'succeeded'
+
+
+
+
+## Select grasp state
+#
+# This state select a grasping strategy. A high object will be grasped from the side, a low one from top.
+class select_grasp(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed', 'preempted'],
+            input_keys=['object'],
+            output_keys=['grasp_categorisation'])
+        
+        """
+        Very simple grasp selection
+        This need to be transfered into symbolic grounding service
+        """
+        self.height_switch = 0.7 # Switch to select top or side grasp using the height of the object over the ground in [m].
+        
+        #self.listener = tf.TransformListener()
+        
+        #default grasp categorisation
+        self.grasp_categorisation = 'side'
+
+    def execute(self, userdata):
+        
+        global listener
+        try:
+            # transform object_pose into base_link
+            object_pose_in = userdata.object.pose
+            print object_pose_in
+            object_pose_in.header.stamp = listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
+            object_pose_bl = listener.transformPose("/base_link", object_pose_in)
+        except rospy.ROSException, e:
+            print "Transformation not possible: %s"%e
+            return 'failed'
+        
+        if object_pose_bl.pose.position.z >= self.height_switch: #TODO how to select grasps for objects within a cabinet or shelf?
+            userdata.grasp_categorisation='side'
+        else: 
+            userdata.grasp_categorisation= 'top'
+        
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+        
+        return 'succeeded'
+
+
+## Grasp general state
+#
+# This state will grasp an object with a side grasp
+class grasp_general(smach.State):
+
+    def __init__(self, max_retries = 1):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'retry', 'no_more_retries', 'failed', 'preempted'],
+            input_keys=['object','grasp_categorisation'])
+        
+        self.max_retries = max_retries
+        self.retries = 0
+        self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
+        #self.listener = tf.TransformListener()
+        self.stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+
+
+    def callIKSolver(self, current_pose, goal_pose):
+        req = GetPositionIKRequest()
+        req.ik_request.ik_link_name = "sdh_grasp_link"
+        req.ik_request.ik_seed_state.joint_state.position = current_pose
+        req.ik_request.pose_stamped = goal_pose
+        resp = self.iks(req)
+        result = []
+        for o in resp.solution.joint_state.position:
+            result.append(o)
+        return (result, resp.error_code)
+
+    def execute(self, userdata):
+        global current_task_info
+        
+        if not current_task_info.object_in_hand: #no object in hand
+
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
+            
+            global listener
+            # check if maximum retries reached
+            if self.retries > self.max_retries:
+                self.retries = 0
+                return 'no_more_retries'
+            
+            # transform object_pose into base_link
+            object_pose_in = userdata.object.pose
+            object_pose_in.header.stamp = listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
+            object_pose_bl = listener.transformPose("/base_link", object_pose_in)
+            
+            
+            if userdata.grasp_categorisation == 'side':
+                # make arm soft TODO: handle stiffness for schunk arm
+                try:
+                    self.stiffness([300,300,300,100,100,100,100])
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s"%e
+                    self.retries = 0
+                    return 'failed'
+            
+                [new_x, new_y, new_z, new_w] = tf.transformations.quaternion_from_euler(-1.552, -0.042, 2.481) # rpy 
+                object_pose_bl.pose.orientation.x = new_x
+                object_pose_bl.pose.orientation.y = new_y
+                object_pose_bl.pose.orientation.z = new_z
+                object_pose_bl.pose.orientation.w = new_w
+        
+                # FIXME: this is calibration between camera and hand and should be removed from scripting level
+                object_pose_bl.pose.position.x = object_pose_bl.pose.position.x #- 0.06 #- 0.08
+                object_pose_bl.pose.position.y = object_pose_bl.pose.position.y #- 0.05
+                object_pose_bl.pose.position.z = object_pose_bl.pose.position.z  #- 0.1
+                
+                # calculate pre and post grasp positions
+                pre_grasp_bl = PoseStamped()
+                post_grasp_bl = PoseStamped()
+                pre_grasp_bl = copy.deepcopy(object_pose_bl)
+                post_grasp_bl = copy.deepcopy(object_pose_bl)
+        
+                #pre_grasp_bl.pose.position.x = pre_grasp_bl.pose.position.x + 0.10 # x offset for pre grasp position
+                #pre_grasp_bl.pose.position.y = pre_grasp_bl.pose.position.y + 0.10 # y offset for pre grasp position
+                #post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
+                #post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.15 # z offset for post grasp position
+        
+                pre_grasp_bl.pose.position.x = pre_grasp_bl.pose.position.x + 0.10 # x offset for pre grasp position
+                pre_grasp_bl.pose.position.y = pre_grasp_bl.pose.position.y + 0.10 # y offset for pre grasp position
+                pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.15 # y offset for pre grasp position
+                post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
+                post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.17 # z offset for post grasp position
+                
+            elif userdata.grasp_categorisation == 'top':
+                try:
+                    self.stiffness([100,100,100,100,100,100,100])
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s"%e
+                    self.retries = 0
+                    return 'failed'
+            
+                # use a predefined (fixed) orientation for object_pose_bl
+                [new_x, new_y, new_z, new_w] = tf.transformations.quaternion_from_euler(3.121, 0.077, -2.662) # rpy 
+                object_pose_bl.pose.orientation.x = new_x
+                object_pose_bl.pose.orientation.y = new_y
+                object_pose_bl.pose.orientation.z = new_z
+                object_pose_bl.pose.orientation.w = new_w
+        
+                # FIXME: this is calibration between camera and hand and should be removed from scripting level
+                object_pose_bl.pose.position.x = object_pose_bl.pose.position.x #-0.04 #- 0.08
+                object_pose_bl.pose.position.y = object_pose_bl.pose.position.y# + 0.02
+                object_pose_bl.pose.position.z = object_pose_bl.pose.position.z #+ 0.07
+        
+                # calculate pre and post grasp positions
+                pre_grasp_bl = PoseStamped()
+                post_grasp_bl = PoseStamped()
+                pre_grasp_bl = copy.deepcopy(object_pose_bl)
+                post_grasp_bl = copy.deepcopy(object_pose_bl)
+            
+                pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.18 # z offset for pre grasp position
+                post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
+                post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.15 # z offset for post grasp position
+            else:
+                return 'failed'
+                #unknown categorisation
+               
+                
+    
+            # calculate ik solutions for pre grasp configuration
+            arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp_top")
+            (pre_grasp_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_grasp_bl)        
+            if(error_code.val != error_code.SUCCESS):
+                rospy.logerr("Ik pre_grasp Failed")
+                self.retries += 1
+                return 'retry'
+            
+            # calculate ik solutions for grasp configuration
+            (grasp_conf, error_code) = self.callIKSolver(pre_grasp_conf, object_pose_bl)
+            if(error_code.val != error_code.SUCCESS):
+                rospy.logerr("Ik grasp Failed")
+                self.retries += 1
+                return 'retry'
+            
+            # calculate ik solutions for pre grasp configuration
+            (post_grasp_conf, error_code) = self.callIKSolver(grasp_conf, post_grasp_bl)
+            if(error_code.val != error_code.SUCCESS):
+                rospy.logerr("Ik post_grasp Failed")
+                self.retries += 1
+                return 'retry'    
+        
+            # execute grasp
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
+            
+            sss.say(["I am grasping the " + userdata.object.label + " now."],False)
+            sss.move("torso","home")
+            handle_arm = sss.move("arm", [pre_grasp_conf , grasp_conf],False)
+            sss.move("sdh", "cylopen")
+            
+            if self.preempt_requested():
+                self.service_preempt()
+                handle_arm.client.cancel_goal()
+                return 'preempted'
+            else:
+                handle_arm.wait()
+                
+                
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
+            else:
+                if userdata.grasp_categorisation == 'side':
+                    sss.move("sdh", "cylclosed")
+                elif userdata.grasp_categorisation == 'side':
+                    sss.move("sdh", "spherclosed")
+                else:
+                    return 'failed'
+                    #unknown categorisation
+                    
+                #object is already in hand    
+                current_task_info.object_in_hand = True
+            
+        sss.move("arm", [post_grasp_conf, "hold"])
+        self.retries = 0     
+        return 'succeeded'
+
+class select_post_table_pose(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed','preempted'], input_keys=['post_table_pos'], output_keys=['post_table_pos'])
+        #self.counter = 0
+    
+    def execute(self, userdata):
+        if userdata.post_table_pos !='':
+            #already adjusted, not need for change again
+            return 'succeeded'
+        else:
+            #self.counter=self.counter+1
+            if userdata.post_table_pos !='':
+                return 'succeeded'
+            else:
+                global current_task_info
+                pos=current_task_info.get_robot_pos()
+            
+                if pos ==None:
+                    userdata.post_table_pos=''
+                    return 'failed'
+                else:
+                    pos.x = pos.x + 0.15 * cos(pos.theta)
+                    pos.y = pos.y + 0.15 * sin(pos.theta)
+                    userdata.post_table_pos = list()
+                    userdata.post_table_pos.append(pos.x)
+                    userdata.post_table_pos.append(pos.y)
+                    userdata.post_table_pos.append(pos.theta)
+                    return 'succeeded'
+        
+
+class select_pose(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['got_to_next_pose', 'no_more_pose', 'failed','preempted'], 
+                             input_keys=['target_base_pose_list'], output_keys=['current_target_base_pose'])
+    def execute(self, userdata):
+        userdata.current_target_base_pose='home'
+        return 'got_to_next_pose'
+
+
+## Put object on tray side state
+#
+# This state puts a side grasped object on the tray
+class put_object_on_tray(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed' ,'preempted'],
+            input_keys=['grasp_categorisation'])
+        
+        
+    def execute(self, userdata):
+        #TODO select position on tray depending on how many objects are on the tray already
+        global current_task_info
+        
+        if current_task_info.object_in_hand and not current_task_info.object_on_tray:
+        
+            # move object to frontside
+            handle_arm = sss.move("arm","grasp-to-tray",False)
+            sss.sleep(2)
+            sss.move("tray","up")
+            handle_arm.wait()
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
+            
+            # release object
+            if userdata.grasp_categorisation == 'side':
+                sss.move("sdh","cylopen")
+            elif userdata.grasp_categorisation == 'top':
+                sss.move("sdh","spheropen")
+                
+            #object is transfered from hand to tray 
+            current_task_info.object_in_hand = False
+            current_task_info.object_on_tray = True
+            
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+
+        # move arm to backside again
+        handle_arm = sss.move("arm","tray-to-folded",False)
+        sss.sleep(3)
+        sss.move("sdh","home")
+        handle_arm.wait()
+        
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+        else:
+            return 'succeeded'
+
+
+#verify_object FROM PRO+IPA, the interface still need to be clarified 
+class verify_object(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['object_verified','no_object_verified','failed','preempted'],
+                                input_keys=['reference_to_map','object_name_list'],
+                                output_keys=['updated_object_list'])
+        
+    def execute(self,userdata):
+        # user specify key region on interface device for detection
+        """
+        Extract objects from current point map
+        """
+        updated_object = ""   #updated pose information about the object
+        return 'failed'  
+
+#scan environment from IPA, the interface still need to be clarified    
+class update_env_model(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'preempted'])
+        
+    def execute(self,userdata):
+        # user specify key region on interface device for detection
+        """
+        Get current point map
+        """
+        #map_reference = ""   
+        return 'succeeded'      
+
+
+#verify_object FROM PRO+IPA, the interface still need to be clarified 
+#for integration meeting
+class object_verification_simple(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['object_verified','no_object_verified','failed','preempted'],
+                                input_keys=['target_object_name','target_object_hh_id','target_object_pose'],
+                                output_keys=['target_object_pose'])
+        #object verified: the expected object has been found, the revised pose is in the output_put key verified_target_object_pose
+        #no_object_verified: no object found, given up
+        
+                
+    def execute(self,userdata):
+        # user specify key region on interface device for detection
+        
+        
+        
+        #dummy code for testing
+        #verified object is in the exact expected position
+        #return object_verfied
+        
+        userdata.target_object_pose = userdata.target_object_pose
+        return 'object_verified'  
+
+    
+"""
+## Detect state
+#
+# This state will try to detect an object.
+class detect_object(smach.State):
+    def __init__(self,object_name = "",max_retries = 1):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded','retry','no_more_retries','failed'],
+            input_keys=['object_name'],
+            output_keys=['object'])
+
+        self.object_name = object_name
+        
+
+    def execute(self, userdata):
+        # determine object name
+        if self.object_name != "":
+            object_name = self.object_name
+        elif type(userdata.object_name) is str:
+            object_name = userdata.object_name
+        else: # this should never happen
+            rospy.logerr("Invalid userdata 'object_name'")
+            self.retries = 0
+            return 'failed'
+
+        return 'succeeded'
+
+
 
 
 
@@ -854,5 +971,5 @@ class deliver_object(smach.State):
         sss.move("torso","nod",False)
         
         return 'succeeded'
-
+"""
 

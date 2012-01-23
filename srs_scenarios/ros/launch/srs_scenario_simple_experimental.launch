@@ -14,7 +14,7 @@
 	<include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
 	
 	<!-- start manipulation -->
-    <include file="$(find cob_manipulator)/ros/launch/kdl_solver.launch"/>
+        <include file="$(find cob_manipulator)/ros/launch/kdl_solver.launch"/>
 
 	<!-- upload parameters -->
 	<include file="$(find cob_default_robot_config)/upload_param.launch"/>	
@@ -27,7 +27,14 @@
 	<include file="$(find srs_decision_making_experimental)/ros/launch/dm_server.launch"/>
 
 
+	<!-- ui tpoics-->
+	<include file="$(find srs_decision_making_experimental)/ros/launch/ui_topics.launch"/>
+
+
 	<!-- knowledge server -->
 	<include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+
+	<!-- symbol grounding -->
+	<include file="$(find srs_symbolic_grounding)/ros/launch/start_symbol_grounding.launch"/>	
 
 </launch>

@@ -1,0 +1,19 @@
+<package>
+  <description brief="srs_states">
+
+     srs_states
+
+  </description>
+  <author>Georg Arbeiter</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_states</url>
+
+  <depend package="cob_script_server"/>
+  <depend package="cob_3d_mapping_msgs"/>
+  <depend package="smach"/>
+  <depend package="smach_ros"/>
+
+</package>
+
+

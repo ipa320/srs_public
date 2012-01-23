@@ -1,0 +1,15 @@
+material Material.Chair
+{
+        technique
+        {
+                pass
+                {
+                        depth_write off
+
+                        texture_unit
+                        {
+                                texture images/chair.png
+                        }
+                }
+        }
+}

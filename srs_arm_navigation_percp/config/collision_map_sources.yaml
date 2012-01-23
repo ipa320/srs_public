@@ -1,0 +1,7 @@
+cloud_sources:
+  - name: /cam3d/depth/points_filtered
+    frame_subsample: 1
+    point_subsample: 1
+    sensor_frame: /head_cam3d_frame
+
+camera_info_topic: /cam3d/camera_info

@@ -32,6 +32,8 @@
   <depend package="cob_manipulator"/>
   <depend package="srs_decision_making"/>
   <depend package="cob_tray_sensors"/>
+  <depend package="srs_states"/>
+  <depend package="srs_object_verification"/>
 </package>
 
 

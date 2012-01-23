@@ -125,8 +125,21 @@ class intervention_base_pose(smach.State):
                 if  (s.giveup == 1):
                     return 'no_more_retry'
                 else:
-                    userdata.intermediate_pose = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
-                    rospy.loginfo("New intermediate target is :%s", s.solution.__str__())    
+                    """
+                    tmppos = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
+                    tmppos = tmppos.replace('[','')
+                    tmppos = tmppos.replace(']','')
+                    tmppos = tmppos.replace(',',' ')
+                    tmppos = tmppos.replace('#','')
+                    listtmp = tmppos.split()
+                    list_out = list()
+                    list_out.insert(0, float(listtmp[0]))
+                    list_out.insert(1, float(listtmp[1]))
+                    list_out.insert(2, float(listtmp[2]))            
+                    userdata.intermediate_pose = list_out  
+                    """
+                    userdata.intermediate_pose = eval(s.solution.__str__())
+                    rospy.loginfo("New intermediate target is :%s", list_out)    
                     return 'retry'
             return 'failed'
         else:
@@ -237,12 +250,13 @@ class semantic_dm(smach.State):
     def __init__(self):
         smach.State.__init__(self, 
                              outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','put_on_tray','env_object_update'],
-                             input_keys=['target_object_name','target_base_pose','target_object_pose','grasp_categorisation','target_object_pose_list'],
+                             input_keys=['target_object_name','target_base_pose','target_object_pose','grasp_categorisation','target_object_pose_list','target_object_hh_id','verified_target_object_pose'],
                              output_keys=['target_object_name',
                                           'target_base_pose',
                                           'semi_autonomous_mode',
                                           'grasp_categorisation',                                          
                                           'target_object_pose',
+                                          'target_object_hh_id',
                                           'scan_pose_list'])
         
         
@@ -386,6 +400,24 @@ class semantic_dm(smach.State):
                     return nextStep
 		    ####  END OF HARD CODED FOR TESTING ##
 
+                elif resp1.nextAction.generic.actionInfo[0] == 'check':
+                    nextStep = 'env_object_update'
+
+                    userdata.target_object_hh_id = 1
+                    
+                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[1]
+                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
+
+                    
+                    userdata.target_object_pose.position.x = float(resp1.nextAction.generic.actionInfo[5])
+                    userdata.target_object_pose.position.y = float(resp1.nextAction.generic.actionInfo[6])
+                    # use height of workspace as a point on the surface
+                    userdata.target_object_pose.position.z = float(resp1.nextAction.generic.actionInfo[14])
+                    userdata.target_object_pose.orientation.x = float(resp1.nextAction.generic.actionInfo[8])
+                    userdata.target_object_pose.orientation.y =float(resp1.nextAction.generic.actionInfo[9])
+                    userdata.target_object_pose.orientation.z = float(resp1.nextAction.generic.actionInfo[10]) 
+                    userdata.target_object_pose.orientation.w =float(resp1.nextAction.generic.actionInfo[11])
+                    return nextStep
                 elif resp1.nextAction.generic.actionInfo[0] == 'grasp':
                     nextStep = 'simple_grasp'
                     

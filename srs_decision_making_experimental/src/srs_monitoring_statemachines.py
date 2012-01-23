@@ -28,19 +28,13 @@ class state_checking_during_operation (smach.State):
     def execute (self, userdata):
         global current_task_info
         self.state_checking_outcome = 'preempted'  #reset the outcome to default
-        print "##########################"
-        print current_task_info.get_stop_required()
-        print self.state_checking_outcome
-        print "##########################"
-
-        
-
+        _feedback=xmsg.ExecutionFeedback()
         
         while (not self.preempt_requested()):
 
             #rospy.sleep(1)
             time.sleep(1)
-            _feedback=xmsg.ExecutionFeedback()
+
             
             #if stop command has been received
             if current_task_info.get_stop_required()==True:
@@ -55,43 +49,44 @@ class state_checking_during_operation (smach.State):
                     current_task_info.set_stop_acknowledged(True)
                     try:
                         sss.say(["I am stopping."],False)
-
-
-		        _feedback.current_state =  "the task has been stopped"
-		        _feedback.solution_required = False
-		        _feedback.exceptional_case_id = 0
-		        current_task_info._srs_as._as.publish_feedback(_feedback)
+                        _feedback.current_state =  "the task has been stopped"
+                        _feedback.solution_required = False
+                        _feedback.exceptional_case_id = 0
+                        current_task_info._srs_as._as.publish_feedback(_feedback)
                     except:
                         print sys.exc_info()
-                    return self.state_checking_outcome
+                    return 'stopped'
                 
             elif current_task_info.get_pause_required()==True:
                 #update the final outcome to stopped
                 self.state_checking_outcome  = 'paused'
                 try:
-
-		    _feedback.current_state =  "the task has been paused"
-		    _feedback.solution_required = False
-		    _feedback.exceptional_case_id = 0
+                    _feedback.current_state =  "the task has been paused"
+                    _feedback.solution_required = False
+                    _feedback.exceptional_case_id = 0
+                    current_task_info._srs_as._as.publish_feedback(_feedback)
                     sss.say(["I am pausing."],False)
                 except:
                     print sys.exc_info()
-                return self.state_checking_outcome
+                return 'paused'
             
             #if another command with higher priority received
             elif current_task_info.get_customised_preempt_required()==True:
 
                 #update the final outcome to customised_preempted
                 self.state_checking_outcome  = 'customised_preempted'
-
-		_feedback.current_state =  "the task has been replaced by another task request with higher priority"
-		_feedback.solution_required = False
-		_feedback.exceptional_case_id = 0
-                 
                 #if the current action can be stopped in the middle, terminate the checking and trigger preempty to the operation state
                 #otherwise wait for the main operation which is not stoppable to be completed
                 if current_task_info.stopable():
-                    #acknowledge the request
+                    try:
+                        _feedback.current_state =  "the task has been replaced by another task request with higher priority"
+                        _feedback.solution_required = False
+                        _feedback.exceptional_case_id = 0
+                        current_task_info._srs_as._as.publish_feedback(_feedback)
+                        sss.say(["A new task with higher priority received, i am stopping the current task."],False) 
+                        #acknowledge the request
+                    except:
+                        print sys.exc_info()
                     current_task_info.set_customised_preempt_acknowledged(True)
                     return self.state_checking_outcome
                 
@@ -103,18 +98,25 @@ class state_checking_during_operation (smach.State):
             
         if self.state_checking_outcome == 'stopped':
             try:
-                sss.say(["I am stopping."],False)
-		_feedback.current_state =  "the task has been stopped"
-		_feedback.solution_required = False
-		_feedback.exceptional_case_id = 0
-
+                sss.say(["I am stopping."],False)        		
+                _feedback.current_state =  "the task has been stopped"
+                _feedback.solution_required = False
+                _feedback.exceptional_case_id = 0
+                current_task_info._srs_as._as.publish_feedback(_feedback)
                 current_task_info.set_stop_acknowledged(True)
             except:
                 print sys.exc_info()
         if self.state_checking_outcome == 'customised_preempted':
-
-
-            current_task_info.set_customised_preempt_acknowledged(True)
+            try:
+                _feedback.current_state =  "the task has been replaced by another task request with higher priority"
+                _feedback.solution_required = False
+                _feedback.exceptional_case_id = 0
+                current_task_info._srs_as._as.publish_feedback(_feedback)
+                sss.say(["A new task with higher priority received, i am stopping the current task."],False) 
+                #acknowledge the request
+            except:
+                print sys.exc_info()
+                current_task_info.set_customised_preempt_acknowledged(True)
         return self.state_checking_outcome
 
 # gets called when ANY child state terminates
@@ -264,16 +266,14 @@ with co_sm_enviroment_object_update:
 
 co_sm_enviroment_object_verification_simple = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['target_object_name', 'target_object_hh_id', 'scan_pose', 'target_object_pose'],
+                 input_keys=[ 'target_object_hh_id', 'target_object_pose'],
                  output_keys=['verified_target_object_pose'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
-with co_sm_enviroment_object_update:
+with co_sm_enviroment_object_verification_simple:
             smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
             smach.Concurrence.add('MAIN_OPERATION', sm_enviroment_object_verification_simple(),
-                            remapping={'target_object_name':'target_object_name',
-                                       'target_object_hh_id':'target_object_hh_id',
-                                       'scan_pose':'scan_pose',
+                            remapping={'target_object_hh_id':'target_object_hh_id',
                                        'target_object_pose':'target_object_pose',
                                        'verified_target_object_pose':'verified_target_object_pose'})
 

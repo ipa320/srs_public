@@ -8,7 +8,11 @@
 # \date Date of creation: Oct 2011
 #################################################################
 # ROS imports
+import roslib; roslib.load_manifest('srs_decision_making_interface')
+
 from srs_generic_states import *
+from mapping_states import *
+from generic_states import *
 
 """
 This file contains high level state machines for decision making.
@@ -34,11 +38,12 @@ The default mode is semi_autonomous_mode=False assuming no UI connected to the r
     sm_pick_object_asisted()
     #pick object with user intervention for error handling
     
-    sm_get_object_on_tray(
+    sm_get_object_on_tray()
     #transfer object to tray after pick
     
     sm_enviroment_object_update
     #update the environment object information
+    
     
     
 """
@@ -287,21 +292,22 @@ class sm_enviroment_object_verification_simple(SRS_StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self,
                                     outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
-                                    input_keys=['target_object_name', 'target_object_hh_id', 'scan_pose', 'target_object_pose'],
+                                    input_keys=['target_object_hh_id', 'target_object_pose'],
                                     output_keys=['verified_target_object_pose']
                                     )
         self.customised_initial("sm_enviroment_object_verification")
+        self.userdata.angle_range=0.4
         
-        with self:
-            smach.StateMachine.add('APPROACH_POSE', approach_pose_without_retry(),
-                    transitions={'succeeded':'VERIFY_OBJECT', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'base_pose':'scan_pose'})     
-            smach.StateMachine.add('VERIFY_OBJECT', object_verification_simple(),
-                    transitions={'object_verified':'succeeded', 'no_object_verified':'not_completed', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'target_object_name':'target_object_name',
-                               'target_object_hh_id':'target_object_hh_id',
+        with self:    
+            smach.StateMachine.add('UPDATE_ENVIROMENT', UpdateEnvMap(),
+                    transitions={'succeeded':'VERIFY_OBJECT', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'angle_range':'angle_range'})  
+            smach.StateMachine.add('VERIFY_OBJECT', VerifyObject(),
+                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'object_id':'target_object_hh_id',
                                'target_object_pose':'target_object_pose',
-                               'verified_target_object_pose':'verified_target_object_pose'})           
+                               'verified_target_object_pose':'verified_target_object_pose'
+                               })           
             
 """
 OLD STATE MACHINES

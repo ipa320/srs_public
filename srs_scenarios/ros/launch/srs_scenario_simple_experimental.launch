@@ -24,11 +24,11 @@
 	<include file="$(find srs_scenarios)/ros/launch/table_ikea.launch"/>
 
 	<!-- decision making action server-->
-	<include file="$(find srs_decision_making_experimental)/ros/launch/dm_server.launch"/>
+	<include file="$(find srs_decision_making)/ros/launch/dm_server.launch"/>
 
 
 	<!-- ui tpoics-->
-	<include file="$(find srs_decision_making_experimental)/ros/launch/ui_topics.launch"/>
+	<include file="$(find srs_decision_making)/ros/launch/ui_topics.launch"/>
 
 
 	<!-- knowledge server -->

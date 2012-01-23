@@ -275,7 +275,8 @@ class approach_pose_without_retry(smach.State):
             # check if service is available
             service_full_name = '/base_controller/is_moving'
             try:
-                rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+                #rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+                rospy.wait_for_service(service_full_name,3)
             except rospy.ROSException, e:
                 error_message = "%s"%e
                 rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)

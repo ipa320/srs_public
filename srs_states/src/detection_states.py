@@ -1,5 +1,5 @@
 import roslib
-roslib.load_manifest('cob_generic_states')
+roslib.load_manifest('srs_states')
 import rospy
 import smach
 import smach_ros

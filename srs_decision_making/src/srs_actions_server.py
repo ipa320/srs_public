@@ -457,6 +457,7 @@ class SRS_DM_ACTION(object):
         current_task_info.set_customised_preempt_required(False)
         current_task_info.set_stop_acknowledged(False)
         current_task_info.set_stop_required(False)        
+        current_task_info.set_object_identification_state(False) 
         
         if outcome == "task_succeeded": 
             self._result.return_value=3

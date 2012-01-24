@@ -4,5 +4,8 @@
 	<!-- start srs actions server -->
 	<node pkg="srs_decision_making" type="srs_actions_server.py" name="srs_decision_making_actions" output="screen">
         </node>
+        
+    <node pkg="srs_decision_making" type="ui_pri_topics.py" name="ui_pri_topics" output="screen">
+        </node>
 
 </launch>

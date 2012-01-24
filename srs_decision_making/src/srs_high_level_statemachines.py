@@ -10,8 +10,18 @@
 # ROS imports
 import roslib; roslib.load_manifest('srs_decision_making')
 
+#import states within srs_decision_making
 from srs_generic_states import *
+
+
+#import states from srs_states package
 from mapping_states import *
+from navigation_states import *
+from detection_states  import *
+from grasp_states import *
+
+
+# This is come from srs_object_verification, the name should be updated to avoid confusion
 from generic_states import *
 
 """

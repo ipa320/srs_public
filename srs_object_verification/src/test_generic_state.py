@@ -6,6 +6,8 @@ import rospy
 import smach
 import smach_ros
 import sys
+from geometry_msgs.msg import Pose
+
 #import unittest
 
 from generic_states import *
@@ -18,7 +20,15 @@ class TestStates:
     # create a SMACH state machine
     SM = smach.StateMachine(outcomes=['overall_succeeded','overall_failed'])
     SM.userdata.object_id = 0
-    SM.userdata.object_pose = []
+    SM.userdata.target_object_pose = Pose()
+    SM.userdata.target_object_pose.position.x = 0.67
+    SM.userdata.target_object_pose.position.y = 1.26
+    SM.userdata.target_object_pose.position.z = 0.74
+    SM.userdata.target_object_pose.orientation.w = 0
+    SM.userdata.target_object_pose.orientation.x = 0
+    SM.userdata.target_object_pose.orientation.y = 0
+    SM.userdata.target_object_pose.orientation.z = 0
+    SM.userdata.verfied_target_object_pose = Pose()
 
     # open the container
     with SM:

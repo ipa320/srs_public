@@ -25,7 +25,6 @@
   <depend package="actionlib"/>
   <depend package="srs_decision_making"/>
 
-
 </package>
 
 

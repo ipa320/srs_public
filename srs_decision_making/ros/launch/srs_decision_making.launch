@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+	
+	<!-- start manipulation -->
+	<include file="$(find cob_manipulator)/ros/launch/kdl_solver.launch"/>  
+	
+	<!-- decision making action server-->
+	<include file="$(find srs_decision_making)/ros/launch/dm_server.launch"/>
+
+	<!-- knowledge server -->
+	<include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+
+	<!-- symbol grounding -->
+	<include file="$(find srs_symbolic_grounding)/ros/launch/start_symbol_grounding.launch"/>	
+
+</launch>

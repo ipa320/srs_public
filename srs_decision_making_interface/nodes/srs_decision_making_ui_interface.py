@@ -15,11 +15,8 @@ def srs_decision_making_ui_interface_handle(req):
     _goal.action=req.action
     _goal.parameter=req.parameter
     _goal.priority=int(req.priority)
-    client.send_goal(_goal)
-    
-    #print client
-    
-    return "1234"
+    client.send_goal(_goal)    
+    return client.gh.comm_state_machine.action_goal.goal_id.id
 
 def srs_decision_making_ui_interface():
 

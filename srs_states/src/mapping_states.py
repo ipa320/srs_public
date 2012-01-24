@@ -66,6 +66,8 @@ import operator
 from cob_3d_mapping_msgs.msg import *
 from cob_srvs.srv import Trigger
 
+from shared_state_information import *
+
 from simple_script_server import *
 sss = simple_script_server()
 
@@ -78,7 +80,7 @@ class UpdateEnvMap(smach.State):
 
 		smach.State.__init__(
 			self,
-			outcomes=['succeeded', 'failed'],
+			outcomes=['succeeded', 'failed', 'preempted'],
 			input_keys=['angle_range']) #good angle value: 0.4
 		self.client = actionlib.SimpleActionClient('trigger_mapping', TriggerMappingAction)
 

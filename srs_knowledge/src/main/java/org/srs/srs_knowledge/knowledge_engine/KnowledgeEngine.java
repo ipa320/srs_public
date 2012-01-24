@@ -449,6 +449,15 @@ public class KnowledgeEngine
 	    System.out.println("Created CurrentTask " + "charge ");
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
+	else if(request.task.equals("check") || request.task.equals("verify")){
+	    
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+
+	    currentTask = new CheckWorkspaceTask(request.content);
+	    System.out.println("Created CurrentTask " + "check workspace " + request.content);	    
+	}
 	else if(request.task.equals("stop")) {
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
@@ -689,14 +698,14 @@ public class KnowledgeEngine
 
 	String className = globalNamespace;
 	if(req.map != null) {
-	    System.out.println("<<<<  " + req.map + "  >>>>  ");
+	    //System.out.println("<<<<  " + req.map + "  >>>>  ");
 	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
 		className = ontoDB.getNamespaceByPrefix(req.map);
 	    }
 	}
 
 	className = className + "FurniturePiece";
-	System.out.println(className);
+	//System.out.println(className);
 	try{
 	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
 	    if(instances == null) {
@@ -706,7 +715,7 @@ public class KnowledgeEngine
 	    if(instances.hasNext()) {
 		while (instances.hasNext()) { 
 		    Individual temp = (Individual)instances.next();
-		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		    //System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		    if(temp.getNameSpace().equals(mapNamespace)) {
 			re.objects.add(temp.getLocalName());
 			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
@@ -767,7 +776,7 @@ public class KnowledgeEngine
 	    else
 		System.out.println("<EMPTY>");
 	        
-        System.out.println();
+	    //System.out.println();
 
 	}
 	catch(Exception e) {

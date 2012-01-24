@@ -1,3 +1,0 @@
-string step_name
-string outcome
-bool semi_autonomous_mode

@@ -3,9 +3,9 @@
 import roslib; roslib.load_manifest('srs_object_verification');
 import rospy
 
-from srs_semantics_db.srv import *
-from srs_semantics_db.msg import *
-from gdatabase.srv import *
+#from srs_semantics_db.srv import *
+#from srs_semantics_db.msg import *
+#from gdatabase.srv import *
 from cob_3d_mapping_msgs.srv import *
 from std_msgs.msg import *
 from math import sqrt

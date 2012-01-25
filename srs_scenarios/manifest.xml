@@ -12,7 +12,7 @@
   <depend package="srs_knowledge"/>
   <depend package="rosjava_jni"/>
   <depend package="srs_decision_making"/>
-  <depend package="srs_decision_making_experimental"/>
+  <!--depend package="srs_decision_making_experimental"/-->
   <depend package="sound_play"/>
   <depend package="cob_object_detection_msgs"/>
   <depend package="cob_object_detection_fake"/>

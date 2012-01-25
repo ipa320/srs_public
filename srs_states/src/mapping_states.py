@@ -66,6 +66,8 @@ import operator
 from cob_3d_mapping_msgs.msg import *
 from cob_srvs.srv import Trigger
 
+from shared_state_information import *
+
 from simple_script_server import *
 sss = simple_script_server()
 

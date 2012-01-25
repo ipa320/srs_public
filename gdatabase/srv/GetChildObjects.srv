@@ -1,7 +1,0 @@
-#get_child_objects
-#objectID for the workspace
-uint32 objectID
----
-#list of child objects IDs
-bool hasChildren
-uint32[] children_objectIDs

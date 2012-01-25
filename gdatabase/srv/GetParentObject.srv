@@ -1,7 +1,0 @@
-#get_parent_object
-#object ID for the workspace
-uint32 objectID
----
-#parent objectID
-bool hasParent
-uint32[] parent_object_id

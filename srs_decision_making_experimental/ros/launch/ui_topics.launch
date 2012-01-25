@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-
-	<!-- start srs actions server -->
-	<node pkg="srs_decision_making_experimental" type="ui_pri_topics.py" name="ui_pri_topics" output="screen">
-        </node>
-
-</launch>

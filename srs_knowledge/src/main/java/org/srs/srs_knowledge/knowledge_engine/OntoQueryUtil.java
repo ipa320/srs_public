@@ -213,6 +213,11 @@ public class OntoQueryUtil
 	return wList;
     }
 
+    public static boolean updatePoseOfObject() {
+    	System.out.println("Update the pose of an object or furniture in the semantic map");
+    	
+    	return true;
+    }
 
     /*
     public OntoQueryUtil(String objectNameSpace, String globalNameSpace) {

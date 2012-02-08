@@ -162,6 +162,8 @@ public class KnowledgeEngine
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
+	    System.out.println("Map Name Space: " + mapNamespace);
+	    System.out.println("Map Name Space Prefix : " + mapNamespacePrefix);
 	}
 
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);

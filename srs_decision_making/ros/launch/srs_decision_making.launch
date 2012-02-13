@@ -1,8 +1,16 @@
 <?xml version="1.0"?>
 <launch>
+	
+	<!-- start manipulation -->
+	<include file="$(find cob_manipulator)/ros/launch/kdl_solver.launch"/>  
+	
+	<!-- decision making action server-->
+	<include file="$(find srs_decision_making)/ros/launch/dm_server.launch"/>
 
-	<!-- start srs actions server -->
-	<node pkg="srs_decision_making" type="srs_actions_server.py" name="srs_decision_making_actions" output="screen">
-        </node>
+	<!-- knowledge server -->
+	<include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+
+	<!-- symbol grounding -->
+	<include file="$(find srs_symbolic_grounding)/ros/launch/start_symbol_grounding.launch"/>	
 
 </launch>

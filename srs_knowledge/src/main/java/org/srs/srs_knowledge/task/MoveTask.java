@@ -63,14 +63,14 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 		} else {
 			System.out.println("======MOVE COMMAND FORMAT=======");
 			// Ontology queries
+			String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
 			String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
 					+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-					+ "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n";
+					+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
 			String queryString = "SELECT ?x ?y ?theta WHERE { "
-					+ "ipa-kitchen-map:" + targetContent
-					+ " srs:xCoordinate ?x . " + "ipa-kitchen-map:"
-					+ targetContent + " srs:yCoordinate ?y . "
-					+ "ipa-kitchen-map:" + targetContent
+					+ "<" + mapNameSpace + targetContent + ">"
+					+ " srs:xCoordinate ?x . " + "<" + mapNameSpace + targetContent + ">" + " srs:yCoordinate ?y . "
+					+ "<" + mapNameSpace + targetContent + ">"
 					+ " srs:orientationTheta ?theta .}";
 			System.out.println(prefix + queryString + "\n");
 

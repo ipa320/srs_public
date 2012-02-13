@@ -7,31 +7,20 @@
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
     <!ENTITY srs "http://www.srs-project.eu/ontologies/srs.owl#" >
-    <!ENTITY empty-map "http://www.srs-project.eu/ontologies/empty-map.owl#" >
 ]>
 
 
 <rdf:RDF xmlns="http://www.srs-project.eu/ontologies/empty-map.owl#"
      xml:base="http://www.srs-project.eu/ontologies/empty-map.owl"
-     xmlns:empty-map="http://www.srs-project.eu/ontologies/empty-map.owl#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:srs="http://www.srs-project.eu/ontologies/srs.owl#">
+     xmlns:srs="http://www.srs-project.eu/ontologies/srs.owl#"
+     xmlns:empty-map="http://www.srs-project.eu/ontologies/empty-map.owl#">
     <owl:Ontology rdf:about="http://www.srs-project.eu/ontologies/empty-map.owl">
-        <owl:imports rdf:resource="file://@OWL_PATH_PREFIX@/conf/ontologies/srs.owl"/>
+      <owl:imports rdf:resource="file://@OWL_PATH_PREFIX@/conf/ontologies/srs.owl"/>
     </owl:Ontology>
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Datatypes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
     
 
 
@@ -65,7 +54,7 @@
 
     <!-- http://www.srs-project.eu/ontologies/empty-map.owl#inSRSCoordinateFormat -->
 
-    <owl:DatatypeProperty rdf:about="&empty-map;inSRSCoordinateFormat"/>
+    <owl:DatatypeProperty rdf:about="http://www.srs-project.eu/ontologies/empty-map.owl#inSRSCoordinateFormat"/>
     
 
 
@@ -174,97 +163,6 @@
     <!-- http://www.srs-project.eu/ontologies/srs.owl#Table-PieceOfFurniture -->
 
     <owl:Class rdf:about="&srs;Table-PieceOfFurniture"/>
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Individuals
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/empty-map.owl#ChargingStation0 -->
-
-    <owl:NamedIndividual rdf:about="&empty-map;ChargingStation0">
-        <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:yCoordinate rdf:datatype="&xsd;float">-1.6</srs:yCoordinate>
-        <srs:xCoordinate rdf:datatype="&xsd;float">1</srs:xCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">1.57</srs:orientationTheta>
-        <empty-map:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[1 -1.6 1.57]</empty-map:inSRSCoordinateFormat>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/empty-map.owl#Ipa-kitchen -->
-
-    <owl:NamedIndividual rdf:about="&empty-map;Ipa-kitchen">
-        <rdf:type rdf:resource="&srs;Kitchen"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/empty-map.owl#home -->
-
-    <owl:NamedIndividual rdf:about="&empty-map;home">
-        <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:yCoordinate rdf:datatype="&xsd;float">0</srs:yCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
-        <srs:xCoordinate rdf:datatype="&xsd;float">0</srs:xCoordinate>
-        <empty-map:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[0 0 0]</empty-map:inSRSCoordinateFormat>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/empty-map.owl#kitchen -->
-
-    <owl:NamedIndividual rdf:about="&empty-map;kitchen">
-        <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:xCoordinate rdf:datatype="&xsd;float">-2.04</srs:xCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
-        <srs:yCoordinate rdf:datatype="&xsd;float">0.3</srs:yCoordinate>
-        <empty-map:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-2.04 0.3 0]</empty-map:inSRSCoordinateFormat>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/empty-map.owl#kitchen_backwards -->
-
-    <owl:NamedIndividual rdf:about="&empty-map;kitchen_backwards">
-        <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:yCoordinate rdf:datatype="&xsd;float">-0.3</srs:yCoordinate>
-        <srs:xCoordinate rdf:datatype="&xsd;float">-2.04</srs:xCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">3.14</srs:orientationTheta>
-        <empty-map:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-2.04 -0.3 3.14]</empty-map:inSRSCoordinateFormat>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/empty-map.owl#new_kitchen -->
-
-    <owl:NamedIndividual rdf:about="&empty-map;new_kitchen">
-        <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:xCoordinate rdf:datatype="&xsd;float">-2.14</srs:xCoordinate>
-        <srs:yCoordinate rdf:datatype="&xsd;float">0</srs:yCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
-        <empty-map:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-2.14 0.0 0]</empty-map:inSRSCoordinateFormat>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/empty-map.owl#order -->
-
-    <owl:NamedIndividual rdf:about="&empty-map;order">
-        <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:yCoordinate rdf:datatype="&xsd;float">-0.7</srs:yCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">0.75</srs:orientationTheta>
-        <srs:xCoordinate rdf:datatype="&xsd;float">1.47</srs:xCoordinate>
-        <empty-map:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[1.47 -0.7 0.75]</empty-map:inSRSCoordinateFormat>
-    </owl:NamedIndividual>
 </rdf:RDF>
 
 

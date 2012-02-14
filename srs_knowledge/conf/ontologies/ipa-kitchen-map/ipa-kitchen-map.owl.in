@@ -7,6 +7,7 @@
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
     <!ENTITY srs "http://www.srs-project.eu/ontologies/srs.owl#" >
+    <!ENTITY ipa-kitchen-map "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#" >
 ]>
 
 
@@ -16,7 +17,8 @@
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:srs="http://www.srs-project.eu/ontologies/srs.owl#">
+     xmlns:srs="http://www.srs-project.eu/ontologies/srs.owl#"
+     xmlns:ipa-kitchen-map="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#">
     <owl:Ontology rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl">
         <owl:imports rdf:resource="file://@OWL_PATH_PREFIX@/conf/ontologies/srs.owl"/>
     </owl:Ontology>

@@ -160,8 +160,11 @@ public class KnowledgeEngine
 	getWorkSpaceOnMapService = config.getProperty("getWorkSpaceOnMapService", "get_workspace_on_map");
 	getObjectsOnTrayService = config.getProperty("getObjectsOnTrayService", "get_objects_on_tray");
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
+	System.out.println(" ---- > > " + mapNamespacePrefix);
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
+	    System.out.println("Map Name Space: " + mapNamespace);
+	    System.out.println("Map Name Space Prefix : " + mapNamespacePrefix);
 	}
 
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
@@ -327,78 +330,7 @@ public class KnowledgeEngine
 	return res;
 
     }
-    /*
-    private PlanNextAction.Response handlePlanNextAction( PlanNextAction.Request request) throws NullPointerException
-    {
-	PlanNextAction.Response res = new PlanNextAction.Response();
-	CUAction ca = new CUAction(); 
-	
-	if(currentTask == null) {
-	    System.out.println("Current Task is NULL. Send task request first");
-	    res.nextAction = new CUAction(); // empty task
-	    return res;
-	    //throw new NullPointerException("Current Task is NULL. Send task request first");
-	}
 
-	ActionTuple at = null;
-
-	if(request.stateLastAction.length == 3) {
-	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
-		at = currentTask.getNextAction(true); // no error. generate new action
-	    }
-	    else if(request.stateLastAction[0] == 2 || request.stateLastAction[1] == 2 || request.stateLastAction[2] == 2) {
-		ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
-		ros.logInfo("INFO: Task termintated");
-		
-		currentTask = null;
-		// TODO:
-		//currentSessionId = 1;
-
-		res.nextAction = new CUAction();
-		return res;
-	    }
-	    else{
-		at = currentTask.getNextAction(false);
-	    }
-	}
-	
-	if(at == null) {
-	    currentTask = null;
-	    //currentSessionId = 1;
-	    System.out.println("No further action can be planned. Terminate the task. ");
-
-	    res.nextAction = new CUAction(); // empty task
-	    return res;	    
-	}
-	//if(at.getActionName().equals("finish_success")) {
-	if(at.getCUAction().status == 1) {
-	    currentTask = null;
-	    //currentSessionId = 1;
-	    System.out.println("Reached the end of the task. No further action to be executed. ");
-	    //res.nextAction = new CUAction(); // empty task
-	    //res.nextAction.status = 1;
-	    res.nextAction = at.getCUAction();
-	    return res;	    
-	}
-	//else if( at.getActionName().equals("finish_fail")) {
-	else if( at.getCUAction().status == -1) {
-	    currentTask = null;
-	    // currentSessionId = 1;
-	    System.out.println("Reached the end of the task. No further action to be executed. ");
-	    //res.nextAction = new CUAction(); // empty task
-	    //res.nextAction.status = -1;
-	    res.nextAction = at.getCUAction();	    
-	    return res;	    
-	}
-
-	ca = at.getCUAction();
-
-	res.nextAction = ca;
-
-	//ros.logInfo("INFO: Generate sequence of length: ");
-	return res;
-    }
-    */
     private void initPlanNextAction() throws RosException
     {
 	ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response> scb = new ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response>() {
@@ -580,15 +512,6 @@ public class KnowledgeEngine
 			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
 			    spatialInfo.l = getFloatOfStatement(stm);
 			    
-			    /*
-			    stm = ontoDB.getPropertyOf(globalNamespace, "r3d", temp);
-			    spatialInfo.angles.r = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "p3d", temp);
-			    spatialInfo.angles.p = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "y3d", temp);
-			    spatialInfo.angles.y = getFloatOfStatement(stm);
-			    */
-
 			    stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
 			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "qx", temp);

@@ -12,7 +12,6 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.sparql.engine.ResultSetStream;
-//import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import org.mindswap.pellet.jena.PelletReasonerFactory;
 import com.hp.hpl.jena.ontology.OntClass;
@@ -23,6 +22,8 @@ import com.hp.hpl.jena.ontology.Individual;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import org.srs.srs_knowledge.knowledge_engine.*;
 
 public class OntologyDB
 {
@@ -83,14 +84,6 @@ public class OntologyDB
 
     public String executeQuery(String queryString)
     {
-	/*
-	String queryString = "PREFIX house: <http://www.semanticweb.org/ontologies/house.owl#> " + 
-	    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " + 
-	    "SELECT ?room " + 
-	    "WHERE { " +
-	    "?room rdf:type house:Table . " +  
-	    "}";
-	*/
 	//System.out.println(queryString);
 	Query query = QueryFactory.create(queryString);
 
@@ -114,14 +107,6 @@ public class OntologyDB
     
     public ArrayList<QuerySolution> executeQueryRaw(String queryString)
     {
-	/*
-	  String queryString = "PREFIX house: <http://www.semanticweb.org/ontologies/house.owl#> " + 
-	  "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " + 
-	  "SELECT ?room " + 
-	  "WHERE { " +
-	  "?room rdf:type house:Table . " +  
-	  "}";
-	*/
 	//System.out.println(queryString);
 	Query query = QueryFactory.create(queryString);
 	
@@ -148,8 +133,6 @@ public class OntologyDB
 	    //double x = qs.getLiteral("x").getFloat();
 	    //Literal y = qs.getLiteral("y");
 	    //Literal theta = qs.getLiteral("theta");
-	    //System.out.println(" <><><><><><><><><><><><><> " + qs.toString() + "    " + x);
-	    //System.out.println("x is " + x + ". y is  " + y + ". theta is " + theta);
 	}
 
 	qe.close();
@@ -202,8 +185,6 @@ public class OntologyDB
 
     public Iterator getInstancesOfClass(String className) 
     {
-	//ArrayList<String> res = new ArrayList<String>();
-
 	// get the instances of a class
 	OntClass onto = model.getOntClass( className );
 	
@@ -238,7 +219,13 @@ public class OntologyDB
     public OntModel getModel() {
 	return model;
     }
-    
+   
+    public void insertInstance(String classURI, String instanceURI) throws DuplicatedEntryException,UnknownClassException
+    {
+	
+	return; 	
+    }
+
     //private String modelFileName;    
     //private Model model;
     private OntModel model;

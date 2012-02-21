@@ -52,16 +52,11 @@ public class OntoQueryUtil
 {
     public static ArrayList<Individual> getWorkspaceOfObject(String objectClassName, String objectNameSpace, String globalNameSpace, OntologyDB onto) { 
 	// TODO: 
-	System.out.println("DEBUG ONTOQUERYUTIL 1");
 	ArrayList<String> workspaceList = getWorkspaceNamesOfObject(objectClassName, objectNameSpace, globalNameSpace);
-	System.out.println("DEBUG ONTOQUERYUTIL 2");
 	ArrayList<Individual> workspaceIndList = new ArrayList<Individual>();
-	System.out.println("DEBUG ONTOQUERYUTIL 3");
 	for(String s : workspaceList) {
-	    System.out.println("DEBUG ONTOQUERYUTIL 4");
 	    workspaceIndList.add(onto.getModel().getIndividual(objectNameSpace + s));
 	}
-	System.out.println("DEBUG ONTOQUERYUTIL 5");
 	return workspaceIndList;
     }
 

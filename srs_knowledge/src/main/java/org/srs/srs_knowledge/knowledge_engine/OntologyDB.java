@@ -19,6 +19,7 @@ import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.ontology.Individual;
 
+import com.hp.hpl.jena.ontology.OntResource;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -220,10 +221,21 @@ public class OntologyDB
 	return model;
     }
    
-    public void insertInstance(String classURI, String instanceURI) throws DuplicatedEntryException,UnknownClassException
+    public void insertInstance(String classURI, String className, String instanceURI, String instanceName) throws DuplicatedEntryException, UnknownClassException
     {
+	Resource rs = model.getResource(classURI + className);
+	if(rs == null) {
+	    throw new UnknownClassException(className);
+	}
+	OntClass onto = model.getOntClass(classURI + className);
+		
+	Individual ind = model.getIndividual(instanceURI + instanceName);
+	if(ind == null) {
+	    throw new  DuplicatedEntryException(instanceName);
+	}
+	ind = model.createIndividual(instanceURI + instanceName, rs);	
+	ind.setOntClass(rs);
 	
-	return; 	
     }
 
     //private String modelFileName;    

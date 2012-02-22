@@ -18,7 +18,7 @@ import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.ontology.Individual;
-
+import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.ontology.OntResource;
 import java.io.*;
 import java.util.ArrayList;
@@ -227,10 +227,11 @@ public class OntologyDB
 	if(rs == null) {
 	    throw new UnknownClassException(className);
 	}
-	OntClass onto = model.getOntClass(classURI + className);
+	
+	//OntClass onto = model.getOntClass(classURI + className);
 		
 	Individual ind = model.getIndividual(instanceURI + instanceName);
-	if(ind == null) {
+	if(ind != null) {
 	    throw new  DuplicatedEntryException(instanceName);
 	}
 	ind = model.createIndividual(instanceURI + instanceName, rs);	
@@ -238,6 +239,31 @@ public class OntologyDB
 	
     }
 
+    public void deleteInstance(String instanceURI, String instanceName) throws NonExistenceEntryException, UnknownException
+    {
+	model.enterCriticalSection(Lock.READ);
+	Individual ind = model.getIndividual(instanceURI + instanceName);
+	if(ind == null) {
+	    throw new  NonExistenceEntryException(instanceName);
+	}
+	
+	//ind = model.createIndividual(instanceURI + instanceName, rs);	
+	// delete it. ... 	
+	try {
+	    for(StmtIterator si = ind.listProperties(); si.hasNext(); ) {
+		Statement stmt = (Statement)si.next();
+		model.remove(stmt);
+	    }
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString() + "  ---  " + e.getMessage());
+	    throw new UnknownException(e.getMessage());
+	}
+	finally {
+	    model.leaveCriticalSection();
+	}
+    }
+    
     //private String modelFileName;    
     //private Model model;
     private OntModel model;

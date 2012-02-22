@@ -153,7 +153,7 @@ public class KnowledgeEngine
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
-	
+
 	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
 
     }
@@ -162,17 +162,17 @@ public class KnowledgeEngine
     {
 	try{
 	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
-	    	      
+
 	    if(instances.hasNext()) {
-		while (instances.hasNext()) { 
+		while (instances.hasNext()) {
 		    Individual temp = (Individual)instances.next();
 		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
-		}       
+		}
 	    }
 	    else
 		System.out.println("<EMPTY>");
-	        
-        System.out.println();
+
+	    System.out.println();
 
 	}
 	catch(Exception e) {

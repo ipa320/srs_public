@@ -208,25 +208,26 @@ public class OntoQueryUtil
 	return wList;
     }
 
-    public static boolean updatePoseOfObject(Pose pos, String objectNSURI, String objectName) throws NonExistenceEntryException {
+    public boolean updatePoseOfObject(Pose pos, String objectNSURI, String objectName) throws NonExistenceEntryException {
     	System.out.println("Update the pose of an object or furniture in the semantic map");
-	model.enterCriticalSection(Lock.READ);
-
-	Individual ind = model.getIndividual(objectNSURI + objectName);
-	if(ind == null) {
-	    model.leaveCriticalSection();
-	    throw new NonExistenceEntryException(instanceName);
+	//model.enterCriticalSection(Lock.READ);
+	try {
+	    Individual ind = ontoDB.getIndividual(objectNSURI + objectName);
+	    
+	    // set property
+	    Property pro = ontoDB.getProperty(objectNSURI + "xCoord");
+	    // ind.setPropertyValue(pro, ); 
+	    
+	    //model.leaveCriticalSection();
 	}
-	
-	// set property
-	Property pro = model.getProperty(objectNSURI, "xCoord");
-	// ind.setPropertyValue(pro, ); 
-	
-	model.leaveCriticalSection();
-    	return true;
+	catch(NonExistenceEntryException e) {
+	    throw e;
+	}
+    
+	return true;
     }
     
-    public static bool updateDimensionOfObject(double l, double w, double h, String objectNSURI, String objectName) throws NonExistenceEntryException {
+    public bool updateDimensionOfObject(double l, double w, double h, String objectNSURI, String objectName) throws NonExistenceEntryException {
     	System.out.println("Update the dimension of an object or furniture in the semantic map");
 	model.enterCriticalSection(Lock.READ);
 
@@ -241,7 +242,7 @@ public class OntoQueryUtil
 	model.leaveCriticalSection();
 	return true;
     }
-
+    
     /*
     public OntoQueryUtil(String objectNameSpace, String globalNameSpace) {
 	this.objectNameSpace = objectNameSpace;

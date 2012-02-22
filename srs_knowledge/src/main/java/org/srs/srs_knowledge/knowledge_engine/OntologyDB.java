@@ -229,7 +229,7 @@ public class OntologyDB
 	}
 	
 	//OntClass onto = model.getOntClass(classURI + className);
-		
+
 	Individual ind = model.getIndividual(instanceURI + instanceName);
 	if(ind != null) {
 	    throw new  DuplicatedEntryException(instanceName);
@@ -266,7 +266,30 @@ public class OntologyDB
 	    model.leaveCriticalSection();
 	}
     }
-    
+
+    public Individual getIndividual(String uri) throws NonExistenceEntryException
+    {
+	model.enterCriticalSection(Lock.READ);
+	Individual ind = model.getIndividual(uri);
+	if(ind == null) {
+	    model.leaveCriticalSection();
+	    throw new NonExistenceEntryException(uri);
+	}
+	model.leaveCriticalSection();
+    }
+
+    public Property getProperty(String uri) throws NonExistenceEntryException 
+    {
+	model.enterCriticalSection(Lock.READ);
+	Property pro = model.getProperty(uri);
+	if (pro == null) {
+	    model.leaveCriticalSection();
+	    throw new NonExistenceEntryException(uri);
+	}
+	model.leaveCriticalSection();
+	return pro;
+    }
+
     //private String modelFileName;    
     //private Model model;
     private OntModel model;

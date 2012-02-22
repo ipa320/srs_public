@@ -226,7 +226,7 @@ public class OntoQueryUtil
     	return true;
     }
     
-    public static bool updateDimensionOfObject(double l, double w, double h) throws NonExistenceEntryException {
+    public static bool updateDimensionOfObject(double l, double w, double h, String objectNSURI, String objectName) throws NonExistenceEntryException {
     	System.out.println("Update the dimension of an object or furniture in the semantic map");
 	model.enterCriticalSection(Lock.READ);
 

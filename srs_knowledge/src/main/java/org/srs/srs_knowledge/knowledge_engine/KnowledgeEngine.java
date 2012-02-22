@@ -27,6 +27,8 @@ import ros.pkg.srs_knowledge.srv.GetWorkspaceOnMap;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnTray;
 import ros.pkg.srs_knowledge.srv.InsertInstance;
 import ros.pkg.srs_knowledge.srv.DeleteInstance;
+import ros.pkg.srs_knowledge.srv.UpdatePosInfo;
+
 import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
 
@@ -85,6 +87,7 @@ public class KnowledgeEngine
 	    initGetObjectsOnTray();
 	    initInsertInstance();
 	    initDeleteInstance();
+	    //initUpdatePosInfo();
 	}
 	catch(RosException e){
 	    System.out.println(e.getMessage());
@@ -136,6 +139,8 @@ public class KnowledgeEngine
 	getObjectsOnTrayService = config.getProperty("getObjectsOnTrayService", "get_objects_on_tray");
 	insertInstanceService = config.getProperty("insertInstanceService", "insert_instance");
 	deleteInstanceService = config.getProperty("deleteInstanceService", "delete_instance");
+	updatePosInfoService = config.getProperty("updatePosInfoService", "update_pos_info");
+
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
 	
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
@@ -774,6 +779,23 @@ public class KnowledgeEngine
 	return res;
     }
 
+    private void initUpdatePosInfo() throws RosException 
+    {
+	ServiceServer.Callback<UpdatePosInfo.Request, UpdatePosInfo.Response> scb = new ServiceServer.Callback<UpdatePosInfo.Request, UpdatePosInfo.Response>() {
+	    public UpdatePosInfo.Response call(UpdatePosInfo.Request request) {
+		return handleUpdatePosInfo(request);
+	    }
+	};
+
+	System.out.println(insertInstanceService);
+	ServiceServer<UpdatePosInfo.Request, UpdatePosInfo.Response, UpdatePosInfo> srv = nodeHandle.advertiseService(updatePosInfoService, new UpdatePosInfo(), scb);
+    }
+
+    private UpdatePosInfo.Response handleUpdatePosInfo(UpdatePosInfo.Request request) 
+    {
+	UpdatePosInfo.Response res = new UpdatePosInfo.Response();
+	return res;
+    }
 
     private void initGetWorkspaceOnMap() throws RosException
     {
@@ -949,6 +971,8 @@ public class KnowledgeEngine
     private String getWorkSpaceOnMapService = "get_workspace_on_map";
     private String insertInstanceService = "insert_instance";
     private String deleteInstanceService = "delete_instance";
+    private String updatePosInfoService = "update_pos_info";
+    
     private String mapNamespacePrefix = "ipa-kitchen-map";
     private String mapNamespace = "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#";
 

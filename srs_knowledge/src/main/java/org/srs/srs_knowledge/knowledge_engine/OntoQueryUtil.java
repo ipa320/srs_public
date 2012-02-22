@@ -208,10 +208,38 @@ public class OntoQueryUtil
 	return wList;
     }
 
-    public static boolean updatePoseOfObject() {
+    public static boolean updatePoseOfObject(Pose pos, String objectNSURI, String objectName) throws NonExistenceEntryException {
     	System.out.println("Update the pose of an object or furniture in the semantic map");
-    	
+	model.enterCriticalSection(Lock.READ);
+
+	Individual ind = model.getIndividual(objectNSURI + objectName);
+	if(ind == null) {
+	    model.leaveCriticalSection();
+	    throw new NonExistenceEntryException(instanceName);
+	}
+	
+	// set property
+	Property pro = model.getProperty(objectNSURI, "xCoord");
+	// ind.setPropertyValue(pro, ); 
+	
+	model.leaveCriticalSection();
     	return true;
+    }
+    
+    public static bool updateDimensionOfObject(double l, double w, double h) throws NonExistenceEntryException {
+    	System.out.println("Update the dimension of an object or furniture in the semantic map");
+	model.enterCriticalSection(Lock.READ);
+
+
+	Individual ind = model.getIndividual(objectNSURI + objectName);
+	if(ind == null) {
+	    model.leaveCriticalSection();
+	    throw new NonExistenceEntryException(instanceName);
+	}
+	
+
+	model.leaveCriticalSection();
+	return true;
     }
 
     /*

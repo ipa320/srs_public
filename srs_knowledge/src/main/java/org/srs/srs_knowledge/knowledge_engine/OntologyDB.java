@@ -234,9 +234,10 @@ public class OntologyDB
 	if(ind != null) {
 	    throw new  DuplicatedEntryException(instanceName);
 	}
+	model.enterCriticalSection(Lock.READ);
 	ind = model.createIndividual(instanceURI + instanceName, rs);	
 	ind.setOntClass(rs);
-	
+	model.leaveCriticalSection();
     }
 
     public void deleteInstance(String instanceURI, String instanceName) throws NonExistenceEntryException, UnknownException
@@ -244,6 +245,7 @@ public class OntologyDB
 	model.enterCriticalSection(Lock.READ);
 	Individual ind = model.getIndividual(instanceURI + instanceName);
 	if(ind == null) {
+	    model.leaveCriticalSection();
 	    throw new  NonExistenceEntryException(instanceName);
 	}
 	
@@ -257,6 +259,7 @@ public class OntologyDB
 	}
 	catch(Exception e) {
 	    System.out.println(e.toString() + "  ---  " + e.getMessage());
+	    model.leaveCriticalSection();
 	    throw new UnknownException(e.getMessage());
 	}
 	finally {

@@ -1,7 +1,6 @@
 int32 object_id
 string hand_type
-trajectory_msgs/JointTrajectory sconfiguration
-geometry_msgs/PoseStamped palm_pose
+float64[] sdh_joint_values
 geometry_msgs/PoseStamped pre_grasp
+geometry_msgs/PoseStamped grasp
 string category
-float32 score

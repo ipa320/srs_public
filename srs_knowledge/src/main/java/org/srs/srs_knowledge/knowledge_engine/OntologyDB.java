@@ -276,6 +276,7 @@ public class OntologyDB
 	    throw new NonExistenceEntryException(uri);
 	}
 	model.leaveCriticalSection();
+	return ind;
     }
 
     public Property getProperty(String uri) throws NonExistenceEntryException 

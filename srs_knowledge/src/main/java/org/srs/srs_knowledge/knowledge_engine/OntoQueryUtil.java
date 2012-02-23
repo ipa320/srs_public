@@ -212,12 +212,14 @@ public class OntoQueryUtil
     	System.out.println("Update the pose of an object or furniture in the semantic map");
 	//model.enterCriticalSection(Lock.READ);
 	try {
-	    Individual ind = ontoDB.getIndividual(objectNSURI + objectName);
+	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);
 	    
 	    // set property
-	    Property pro = ontoDB.getProperty(objectNSURI + "xCoord");
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(objectNSURI + "xCoord");
 	    // ind.setPropertyValue(pro, ); 
-	    
+	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	    RDFNode r = stm.getObject();
+	    ind.setPropertyValue(pro, r);
 	    //model.leaveCriticalSection();
 	}
 	catch(NonExistenceEntryException e) {
@@ -227,10 +229,11 @@ public class OntoQueryUtil
 	return true;
     }
     
-    public bool updateDimensionOfObject(double l, double w, double h, String objectNSURI, String objectName) throws NonExistenceEntryException {
+    public boolean updateDimensionOfObject(double l, double w, double h, String objectNSURI, String objectName) throws NonExistenceEntryException {
     	System.out.println("Update the dimension of an object or furniture in the semantic map");
+	
+	/*
 	model.enterCriticalSection(Lock.READ);
-
 
 	Individual ind = model.getIndividual(objectNSURI + objectName);
 	if(ind == null) {
@@ -238,8 +241,8 @@ public class OntoQueryUtil
 	    throw new NonExistenceEntryException(instanceName);
 	}
 	
-
 	model.leaveCriticalSection();
+	*/
 	return true;
     }
     

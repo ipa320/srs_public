@@ -238,12 +238,12 @@ public class OntoQueryUtil
 	try {
 	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
 	    // set property
-	    Property pro = KnowledgeEngine.ontoDB.getProperty(proNSURI + "xCoord");
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "xCoord");
 	    // ind.setPropertyValue(pro, ); 
 	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
 	    // KnowledgeEngine.ontoDB.removeStatement(stm);
-	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
-
+	    //Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
+	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(10));
 	    // RDFNode r = stm.getObject();
 	    ind.setPropertyValue(pro, x);
 	    //Statement stm1 = KnowledgeEngine.ontoDB.model.createStatement(ind, pro, x);

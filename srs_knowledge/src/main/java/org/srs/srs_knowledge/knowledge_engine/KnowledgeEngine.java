@@ -12,6 +12,7 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
+import com.hp.hpl.jena.shared.JenaException;
 import ros.*;
 import ros.communication.*;
 import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
@@ -87,7 +88,7 @@ public class KnowledgeEngine
 	    initGetObjectsOnTray();
 	    initInsertInstance();
 	    initDeleteInstance();
-	    //initUpdatePosInfo();
+	    initUpdatePosInfo();
 	}
 	catch(RosException e){
 	    System.out.println(e.getMessage());
@@ -434,18 +435,19 @@ public class KnowledgeEngine
     private GetObjectsOnMap.Response handleGetObjectsOnMap(GetObjectsOnMap.Request req)
     {
 	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
-	
+
 	String className = globalNamespace;
+	String mapNS = mapNamespace;
+		
 	if(req.map != null) {
 	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
-		className = ontoDB.getNamespaceByPrefix(req.map);
+		mapNS = ontoDB.getNamespaceByPrefix(req.map);
 	    }
 	}
 	
-
 	className = className + "FoodVessel";
 
-	System.out.println(className + " ---");
+	System.out.println(className + " --- ");
 	Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
 	if(instances == null) {
 	    return re;
@@ -600,10 +602,11 @@ public class KnowledgeEngine
 	GetWorkspaceOnMap.Response re = new GetWorkspaceOnMap.Response();
 
 	String className = globalNamespace;
+	String mapNS = mapNamespace;
+		
 	if(req.map != null) {
-	    //System.out.println("<<<<  " + req.map + "  >>>>  ");
 	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
-		className = ontoDB.getNamespaceByPrefix(req.map);
+		mapNS = ontoDB.getNamespaceByPrefix(req.map);
 	    }
 	}
 
@@ -777,6 +780,13 @@ public class KnowledgeEngine
 	    System.out.println(e.toString() + "  ---  " + e.getMessage());
 	    res.status = -1;
 	}
+	catch(JenaException e) {
+	    System.out.println(e.toString() + "  ---  " + e.getMessage());
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString() + "  ---  " + e.getMessage());
+	    res.status = -1;
+	}
 	return res;
     }
 
@@ -795,14 +805,18 @@ public class KnowledgeEngine
     private UpdatePosInfo.Response handleUpdatePosInfo(UpdatePosInfo.Request request) 
     {
 	UpdatePosInfo.Response res = new UpdatePosInfo.Response();
+	String objectName = request.objectName;
 
 	try {
 	    //    public boolean testUpdateObjectProperty(String objectNSURI, String objectName)
 	    OntoQueryUtil.testUpdateObjectProperty(this.globalNamespace, this.mapNamespace, objectName);
+	    res.success = true;
 	}
 	catch(Exception e) {
+	    res.success = false;
 	    System.out.println(e.getMessage());
 	}
+	
 
 	return res;
     }

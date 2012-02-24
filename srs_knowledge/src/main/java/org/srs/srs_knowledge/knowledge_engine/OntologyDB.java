@@ -242,35 +242,57 @@ public class OntologyDB
 
     public void deleteInstance(String instanceURI, String instanceName) throws NonExistenceEntryException, UnknownException
     {
+	
 	model.enterCriticalSection(Lock.READ);
 	Individual ind = model.getIndividual(instanceURI + instanceName);
 	if(ind == null) {
 	    model.leaveCriticalSection();
 	    throw new  NonExistenceEntryException(instanceName);
 	}
+	model.leaveCriticalSection();
 	
 	//ind = model.createIndividual(instanceURI + instanceName, rs);	
 	// delete it. ... 	
-	try {
-	    for(StmtIterator si = ind.listProperties(); si.hasNext(); ) {
+	
+	//System.out.println("Start Debugging --- ");
+	model.enterCriticalSection(Lock.READ);
+	StmtIterator si = ind.listProperties();
+	model.leaveCriticalSection();
+
+	//	for(; si.hasNext(); ) {	    
+	while(si.hasNext()) {
+	    try {		
+		model.enterCriticalSection(Lock.READ);
 		Statement stmt = (Statement)si.next();
+		model.leaveCriticalSection();
+
+		System.out.println("Debugging ------- " + stmt.toString());
+		//removeStatement(stmt);
 		model.remove(stmt);
+		//System.out.println("Debugging ------------ ");
+		//model.leaveCriticalSection();
+	    
+	    	}
+	    catch(Exception e) {
+		model.leaveCriticalSection();
+		System.out.println(e.toString() + "  ---  " + e.getMessage());
+		throw new UnknownException(e.getMessage());
 	    }
-	}
-	catch(Exception e) {
-	    System.out.println(e.toString() + "  ---  " + e.getMessage());
-	    model.leaveCriticalSection();
-	    throw new UnknownException(e.getMessage());
-	}
-	finally {
+	    finally {
+		//model.leaveCriticalSection();
+		}
+	    model.enterCriticalSection(Lock.READ);
+	    si = ind.listProperties();
 	    model.leaveCriticalSection();
 	}
     }
-
+    
     public boolean removeStatement(Statement stm) 
     {
 	// TODO: error checking in future
+	model.enterCriticalSection(Lock.WRITE);
 	model.remove(stm);
+	model.leaveCriticalSection();
 	return true;
     }
 
@@ -301,4 +323,5 @@ public class OntologyDB
     //private String modelFileName;    
     //private Model model;
     public OntModel model;
+    //    private LockMutex mutex;
 }

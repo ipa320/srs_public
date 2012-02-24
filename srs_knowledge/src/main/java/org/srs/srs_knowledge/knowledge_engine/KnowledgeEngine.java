@@ -732,6 +732,9 @@ public class KnowledgeEngine
 	try {
 	    ontoDB.insertInstance(this.globalNamespace, objectClass, this.mapNamespace, objectName);
 	    res.status = 0;
+
+	    //    public boolean testUpdateObjectProperty(String objectNSURI, String objectName)
+	    ontoQueryUtil.testUpdateObjectProperty(mapNamespace, objectName);
 	}
 	catch(DuplicatedEntryException de) {
 	    res.status = 1;
@@ -742,6 +745,8 @@ public class KnowledgeEngine
 	catch(Exception e) {
 	    res.status = -1;
 	}
+
+
 	return res;
     }
 

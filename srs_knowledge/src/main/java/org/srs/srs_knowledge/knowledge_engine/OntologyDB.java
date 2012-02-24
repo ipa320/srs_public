@@ -267,6 +267,13 @@ public class OntologyDB
 	}
     }
 
+    public boolean removeStatement(Statement stm) 
+    {
+	// TODO: error checking in future
+	model.remove(stm);
+	return true;
+    }
+
     public Individual getIndividual(String uri) throws NonExistenceEntryException
     {
 	model.enterCriticalSection(Lock.READ);
@@ -293,5 +300,5 @@ public class OntologyDB
 
     //private String modelFileName;    
     //private Model model;
-    private OntModel model;
+    public OntModel model;
 }

@@ -208,6 +208,31 @@ public class OntoQueryUtil
 	return wList;
     }
 
+
+    public boolean testUpdateObjectProperty(String objectNSURI, String objectName) throws NonExistenceEntryException
+    {
+	try {
+	    
+	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
+	    // set property
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(objectNSURI + "xCoord");
+	    // ind.setPropertyValue(pro, ); 
+	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	    // KnowledgeEngine.ontoDB.removeStatement(stm);
+	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0);
+
+	    // RDFNode r = stm.getObject();
+	    ind.setPropertyValue(pro, x);
+	    Statement stm1 = KnowledgeEngine.ontoDB.model.createStatement(ind, pro, x);
+	    KnowledgeEngine.ontoDB.model.add(stm1);
+	    //model.leaveCriticalSection();
+	}
+	catch(NonExistenceEntryException e) {
+	    throw e;
+	}
+	return true;
+    }
+
     public boolean updatePoseOfObject(Pose pos, String objectNSURI, String objectName) throws NonExistenceEntryException {
     	System.out.println("Update the pose of an object or furniture in the semantic map");
 	//model.enterCriticalSection(Lock.READ);
@@ -218,8 +243,11 @@ public class OntoQueryUtil
 	    Property pro = KnowledgeEngine.ontoDB.getProperty(objectNSURI + "xCoord");
 	    // ind.setPropertyValue(pro, ); 
 	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
-	    RDFNode r = stm.getObject();
-	    ind.setPropertyValue(pro, r);
+	    // KnowledgeEngine.ontoDB.removeStatement(stm);
+	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0);
+
+	    // RDFNode r = stm.getObject();
+	     ind.setPropertyValue(pro, x);
 	    //model.leaveCriticalSection();
 	}
 	catch(NonExistenceEntryException e) {

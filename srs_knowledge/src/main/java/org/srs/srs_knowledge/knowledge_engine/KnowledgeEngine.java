@@ -806,18 +806,20 @@ public class KnowledgeEngine
     {
 	UpdatePosInfo.Response res = new UpdatePosInfo.Response();
 	String objectName = request.objectName;
-
+	SRSSpatialInfo spa = request.spatialInfo;
 	try {
 	    //    public boolean testUpdateObjectProperty(String objectNSURI, String objectName)
-	    OntoQueryUtil.testUpdateObjectProperty(this.globalNamespace, this.mapNamespace, objectName);
+	    // OntoQueryUtil.Testupdateobjectproperty(this.globalNamespace, this.mapNamespace, objectName);
+	    //public boolean updatePoseOfObject(Pose pos, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
+	    OntoQueryUtil.updatePoseOfObject(spa.pose, this.globalNamespace, this.mapNamespace, objectName);
+	    
 	    res.success = true;
 	}
 	catch(Exception e) {
 	    res.success = false;
-	    System.out.println(e.getMessage());
+	    System.out.println(e.toString() + " === " + e.getMessage());
 	}
 	
-
 	return res;
     }
 

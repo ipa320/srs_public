@@ -218,10 +218,13 @@ public class OntoQueryUtil
 	    // ind.setPropertyValue(pro, ); 
 	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
 	    // KnowledgeEngine.ontoDB.removeStatement(stm);
-	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
 
-	    // RDFNode r = stm.getObject();
+	    
+	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
 	    ind.setPropertyValue(pro, x);
+	    
+	    //stm.changeLiteralObject(10.0f);
+	    
 	    //Statement stm1 = KnowledgeEngine.ontoDB.model.createStatement(ind, pro, x);
 	    //KnowledgeEngine.ontoDB.model.add(stm1);
 	    //model.leaveCriticalSection();
@@ -232,23 +235,23 @@ public class OntoQueryUtil
 	return true;
     }
 
-    public boolean updatePoseOfObject(Pose pos, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
+    public static boolean updatePoseOfObject(Pose pos, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
     	System.out.println("Update the pose of an object or furniture in the semantic map");
-	//model.enterCriticalSection(Lock.READ);
 	try {
 	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
 	    // set property
 	    Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "xCoord");
-	    // ind.setPropertyValue(pro, ); 
 	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
-	    // KnowledgeEngine.ontoDB.removeStatement(stm);
 	    //Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
-	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(10));
-	    // RDFNode r = stm.getObject();
-	    ind.setPropertyValue(pro, x);
-	    //Statement stm1 = KnowledgeEngine.ontoDB.model.createStatement(ind, pro, x);
-	    //KnowledgeEngine.ontoDB.model.add(stm1);
-	    //model.leaveCriticalSection();
+	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.x));
+       	    ind.setPropertyValue(pro, x);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "yCoord");
+	    stm = ind.getProperty(pro);
+	    Literal y = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.y));
+       	    ind.setPropertyValue(pro, y);
+
+
 	}
 	catch(NonExistenceEntryException e) {
 	    throw e;

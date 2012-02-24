@@ -200,8 +200,11 @@ public class OntologyDB
 
     public String getNamespaceByPrefix(String namespacePrefix)
     {
+	model.enterCriticalSection(Lock.READ);
 	//http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#
-	return model.getNsPrefixURI(namespacePrefix);
+	String pre = model.getNsPrefixURI(namespacePrefix);
+	model.leaveCriticalSection();
+	return pre;
     }
 
     /**
@@ -212,8 +215,10 @@ public class OntologyDB
      */
     public com.hp.hpl.jena.rdf.model.Statement getPropertyOf(String proNameSpace, String proLocalName, Individual ind ) 
     {
+	model.enterCriticalSection(Lock.READ);
 	com.hp.hpl.jena.rdf.model.Property property = model.getProperty(proNameSpace, proLocalName);
 	com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(property);
+	model.leaveCriticalSection();
 	return stm;
     }
 
@@ -223,8 +228,10 @@ public class OntologyDB
    
     public void insertInstance(String classURI, String className, String instanceURI, String instanceName) throws DuplicatedEntryException, UnknownClassException
     {
+	model.enterCriticalSection(Lock.WRITE);
 	Resource rs = model.getResource(classURI + className);
 	if(rs == null) {
+	    model.leaveCriticalSection();
 	    throw new UnknownClassException(className);
 	}
 	
@@ -232,59 +239,25 @@ public class OntologyDB
 
 	Individual ind = model.getIndividual(instanceURI + instanceName);
 	if(ind != null) {
+	    model.leaveCriticalSection();
 	    throw new  DuplicatedEntryException(instanceName);
 	}
-	model.enterCriticalSection(Lock.READ);
 	ind = model.createIndividual(instanceURI + instanceName, rs);	
 	ind.setOntClass(rs);
 	model.leaveCriticalSection();
     }
 
     public void deleteInstance(String instanceURI, String instanceName) throws NonExistenceEntryException, UnknownException
-    {
-	
-	model.enterCriticalSection(Lock.READ);
+    {	
+	model.enterCriticalSection(Lock.WRITE);
 	Individual ind = model.getIndividual(instanceURI + instanceName);
 	if(ind == null) {
 	    model.leaveCriticalSection();
 	    throw new  NonExistenceEntryException(instanceName);
 	}
-	model.leaveCriticalSection();
+	ind.remove();
 	
-	//ind = model.createIndividual(instanceURI + instanceName, rs);	
-	// delete it. ... 	
-	
-	//System.out.println("Start Debugging --- ");
-	model.enterCriticalSection(Lock.READ);
-	StmtIterator si = ind.listProperties();
 	model.leaveCriticalSection();
-
-	//	for(; si.hasNext(); ) {	    
-	while(si.hasNext()) {
-	    try {		
-		model.enterCriticalSection(Lock.READ);
-		Statement stmt = (Statement)si.next();
-		model.leaveCriticalSection();
-
-		System.out.println("Debugging ------- " + stmt.toString());
-		//removeStatement(stmt);
-		model.remove(stmt);
-		//System.out.println("Debugging ------------ ");
-		//model.leaveCriticalSection();
-	    
-	    	}
-	    catch(Exception e) {
-		model.leaveCriticalSection();
-		System.out.println(e.toString() + "  ---  " + e.getMessage());
-		throw new UnknownException(e.getMessage());
-	    }
-	    finally {
-		//model.leaveCriticalSection();
-		}
-	    model.enterCriticalSection(Lock.READ);
-	    si = ind.listProperties();
-	    model.leaveCriticalSection();
-	}
     }
     
     public boolean removeStatement(Statement stm) 

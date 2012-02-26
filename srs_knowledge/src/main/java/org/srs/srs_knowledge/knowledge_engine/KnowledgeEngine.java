@@ -732,8 +732,19 @@ public class KnowledgeEngine
 	InsertInstance.Response res = new InsertInstance.Response();
 	String objectName = request.objectName;
 	String objectClass = request.objectClass;
+	String hhId = request.houseHoldId;
+	int id = -1000;
+	try{
+	    id = Integer.valueOf(hhId);
+	}
+	catch(NumberFormatException e) {
+	    System.out.println(e.getMessage());
+	    id = -1000;
+	}
+
 	try {
 	    ontoDB.insertInstance(this.globalNamespace, objectClass, this.mapNamespace, objectName);
+	    OntoQueryUtil.updateHHIdOfObject(id, this.globalNamespace, this.mapNamespace, objectName);
 	    res.status = 0;
 	}
 	catch(DuplicatedEntryException de) {
@@ -808,11 +819,11 @@ public class KnowledgeEngine
 	String objectName = request.objectName;
 	SRSSpatialInfo spa = request.spatialInfo;
 	try {
-	    //    public boolean testUpdateObjectProperty(String objectNSURI, String objectName)
+	    // public boolean testUpdateObjectProperty(String objectNSURI, String objectName)
 	    // OntoQueryUtil.Testupdateobjectproperty(this.globalNamespace, this.mapNamespace, objectName);
 	    //public boolean updatePoseOfObject(Pose pos, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
 	    OntoQueryUtil.updatePoseOfObject(spa.pose, this.globalNamespace, this.mapNamespace, objectName);
-	    
+	    OntoQueryUtil.updateDimensionOfObject(spa.l, spa.w, spa.h, this.globalNamespace, this.mapNamespace, objectName);
 	    res.success = true;
 	}
 	catch(Exception e) {

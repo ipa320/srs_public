@@ -47,9 +47,20 @@ def updatePosInfo():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
+
+def insertObject():
+    print 'update spatial info'
+    try:
+        insertObj = rospy.ServiceProxy('insert_instance', InsertInstance)
+        res = insertObj('Dishwasher0', 'Dishwasher', '10', 'ss', 'sss')
+        return res
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
 if __name__ == "__main__":
     # request a new task
     # print requestNewTask()
     # print getObjectsOnMap()
     # print getWorkspaceOnMap()
+    print insertObject()
     print updatePosInfo()

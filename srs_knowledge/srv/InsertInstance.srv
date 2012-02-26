@@ -2,6 +2,8 @@
 string objectName
 string objectClass
 
+string houseHoldId
+
 ## optional. only use when you know exactly what you are doing
 string classURI
 string objectURI

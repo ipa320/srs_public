@@ -251,6 +251,30 @@ public class OntoQueryUtil
 	    Literal y = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.y));
        	    ind.setPropertyValue(pro, y);
 
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "zCoord");
+	    stm = ind.getProperty(pro);
+	    Literal z = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.z));
+       	    ind.setPropertyValue(pro, z);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qx");
+	    stm = ind.getProperty(pro);
+	    Literal qx = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.x));
+       	    ind.setPropertyValue(pro, qx);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qy");
+	    stm = ind.getProperty(pro);
+	    Literal qy = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.y));
+       	    ind.setPropertyValue(pro, qy);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qz");
+	    stm = ind.getProperty(pro);
+	    Literal qz = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.z));
+       	    ind.setPropertyValue(pro, qz);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qu");
+	    stm = ind.getProperty(pro);
+	    Literal qw = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.w));
+       	    ind.setPropertyValue(pro, qw);
 
 	}
 	catch(NonExistenceEntryException e) {
@@ -260,23 +284,51 @@ public class OntoQueryUtil
 	return true;
     }
     
-    public boolean updateDimensionOfObject(double l, double w, double h, String objectNSURI, String objectName) throws NonExistenceEntryException {
+    public static boolean updateDimensionOfObject(float l, float w, float h, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
     	System.out.println("Update the dimension of an object or furniture in the semantic map");
-	
-	/*
-	model.enterCriticalSection(Lock.READ);
+	try{	
+	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
+	    // set property
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "lengthOfObject");
+	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	    
+	    Literal ll = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(l));
+       	    ind.setPropertyValue(pro, ll);
 
-	Individual ind = model.getIndividual(objectNSURI + objectName);
-	if(ind == null) {
-	    model.leaveCriticalSection();
-	    throw new NonExistenceEntryException(instanceName);
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "widthOfObject");
+	    stm = ind.getProperty(pro);
+	    Literal lw = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(w));
+       	    ind.setPropertyValue(pro, lw);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "heightOfObject");
+	    stm = ind.getProperty(pro);
+	    Literal lh = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(h));
+       	    ind.setPropertyValue(pro, lh);
 	}
-	
-	model.leaveCriticalSection();
-	*/
+	catch(NonExistenceEntryException e) {
+	    throw e;
+	}
+
 	return true;
     }
     
+    public static boolean updateHHIdOfObject(int id, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
+    	System.out.println("Update the household object ID of an object or furniture in the semantic map");
+	try{	
+	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
+	    // set property
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "houseHoldObjectID");
+	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	    Literal litId = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Integer(id));
+       	    ind.setPropertyValue(pro, litId);
+	}
+	catch(NonExistenceEntryException e) {
+	    throw e;
+	}
+	return true;
+    }
+
+
     /*
     public OntoQueryUtil(String objectNameSpace, String globalNameSpace) {
 	this.objectNameSpace = objectNameSpace;

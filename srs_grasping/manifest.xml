@@ -21,5 +21,6 @@
   <depend package="kinematics_msgs"/>
   <depend package="srs_object_database"/>
   <depend package="cob_object_detection_msgs"/>
+  <depend package="schunk_sdh"/>
 
 </package>

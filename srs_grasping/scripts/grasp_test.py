@@ -23,7 +23,7 @@ from cob_object_detection_msgs.srv import *
 from srs_object_database.msg import *
 from srs_object_database.srv import *
 
-
+import grasping_functions
 from srs_grasping.srv import *
 
 class GraspScript(script):
@@ -45,7 +45,7 @@ class GraspScript(script):
 		self.sss = simple_script_server()
 		self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
 
-		
+		"""
 		# initialize components (not needed for simulation)
 		self.sss.init("tray")
 		self.sss.init("torso")
@@ -65,24 +65,23 @@ class GraspScript(script):
 		if not self.sss.parse:
 			print "Please localize the robot with rviz"
 		self.sss.wait_for_input()
-		
+		"""
 
 	def execute(self):
 		listener = tf.TransformListener(True, rospy.Duration(10.0))
 		rospy.sleep(2)
 
 		# prepare for grasping
-		self.sss.move("base","kitchen")
-		self.sss.move("arm","look_at_table")
-		handle_sdh = self.sss.move("sdh","cylopen",False)
-		handle_sdh.wait()
-		
+		#self.sss.move("base","kitchen")
+		#self.sss.move("arm","look_at_table")
+		self.sss.move("sdh","cylopen")
+
 		#current_joint_configuration
 		sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
 		while sub.get_num_connections() == 0:
 			time.sleep(0.3)
 			continue
-
+		print "--"
 		#Detect
 		self.srv_name_object_detection = '/object_detection/detect_object'
 		detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
@@ -108,8 +107,8 @@ class GraspScript(script):
 		grasp_configuration = (get_grasps_from_position(req)).grasp_configuration
 
 		for i in range(0,len(grasp_configuration)):
-			pre_grasp_pose = grasp_configuration[i].pre_grasp.pose
-			grasp_pose = grasp_configuration[i].grasp.pose
+			pre_grasp_pose = grasp_configuration[i].pre_grasp
+			grasp_pose = grasp_configuration[i].grasp
 
 			pre_trans = grasping_functions.matrix_from_pose(pre_grasp_pose)  
 			grasp_trans = grasping_functions.matrix_from_pose(grasp_pose)
@@ -188,9 +187,9 @@ class GraspScript(script):
 					handle_arm2.wait()
 
 					raw_input("Catch the object")
-					handle_sdh = self.sss.move("sdh", [list(grasp_configuration[i].sconfiguration.points[0].positions)], False)
+					handle_sdh = self.sss.move("sdh", [list(grasp_configuration[i].sdh_joint_values)], False)
 					handle_sdh.wait()
-					
+					"""
 					# place obj on tray
 					handle01 = self.sss.move("arm","grasp-to-tray",False)
 					self.sss.move("tray","up")
@@ -208,7 +207,8 @@ class GraspScript(script):
 					#self.sss.move("base","order")
 					self.sss.say("Here's your drink.")
 					self.sss.move("torso","nod")
-					"
+					"""
+					print grasping_functions.sdh_tactil_sensor_result()
 					return 0
 
 			#else:
@@ -225,7 +225,7 @@ class GraspScript(script):
 
 	#Fake function
 	def getObjectID(self, obj_name):
-		if (obj_ame=="milk"): 
+		if (obj_name=="milk"): 
 			return 1;
 		else:
 			return -1;

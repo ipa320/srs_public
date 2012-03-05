@@ -6,9 +6,11 @@ import rospy
 import openravepy
 import os
 import time
+import tf
 
 from srs_grasping.srv import *
 from srs_object_database.srv import *
+
 from tf.transformations import *
 from numpy import *
 from xml.dom import minidom
@@ -17,6 +19,8 @@ from srs_msgs.msg import *
 from trajectory_msgs.msg import *
 from geometry_msgs.msg import *
 from kinematics_msgs.srv import *
+from schunk_sdh.msg import *
+
 #---------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------
@@ -27,6 +31,7 @@ def init_env(object_id):
 
 	try:
     		robot = env.ReadRobotXMLFile(robotName)
+		robot.SetActiveManipulator("arm")		#care-o-bot3.zae
 		env.AddRobot(robot)
 	except:
 		rospy.logerr("The robot file %s does not exists.", robotName)
@@ -55,7 +60,7 @@ def init_env(object_id):
 		os.remove(mesh_file)
 		return (-1,-1);
 
-	robot.SetActiveManipulator("arm")		#care-o-bot3.zae
+
 	gmodel = openravepy.databases.grasping.GraspingModel(robot=robot,target=target)
 
 	return (gmodel, env);
@@ -153,6 +158,7 @@ def generate_grasp_file(object_id, gmodel, env):
 
 
 def generate_grasps(gmodel):
+
 
 	if not gmodel.load():
 		rospy.loginfo("GENERATING GRASPS...")
@@ -355,6 +361,7 @@ def callIKSolver(current_pose, goal_pose):
 def matrix_from_pose(gp): 
 	return numpy.matrix(array_from_pose(gp))
 
+
 def array_from_pose(gp): 
 
 	q = []
@@ -368,8 +375,8 @@ def array_from_pose(gp):
 	matrix[0][3] = gp.position.x
 	matrix[1][3] = gp.position.y
 	matrix[2][3] = gp.position.z
-
 	return matrix
+
 
 def rotation_matrix(obj):
 
@@ -381,33 +388,17 @@ def rotation_matrix(obj):
 	return rotacion;
 
 
-def grasp_view(object_id, grasp):
+def COB_to_OR(values):
 
-	(gmodel, env) = init_env(object_id);
+	res = [0 for i in range(28)]	
+	values = [values[5], values[6], values[0], values[3], values[4], values[1], values[2]]
 
-	env.SetViewer('qtcoin')
-	time.sleep(1.0)
-
-	manip = ((env.GetRobots()[0]).GetManipulator("arm"))
-	robot = env.GetRobots()[0]
-
-	with openravepy.databases.grasping.GraspingModel.GripperVisibility(manip):
-		dof_values = COB_to_OR(grasp.sdh_joint_values)
-		robot.SetDOFValues(dof_values)
-		Tgrasp = array_from_pose(grasp.grasp.pose)
-
-		index = (robot.GetLink("sdh_palm_link")).GetIndex()
-		matrix = (robot.GetLinkTransformations())[index]
-		Tdelta = dot(Tgrasp,linalg.inv(matrix))
-		for link in manip.GetChildLinks():
-			link.SetTransform(dot(Tdelta,link.GetTransform()))
-
-		env.UpdatePublishedBodies()
-		raw_input('Press <ENTER> to continue...')
-		return;
+	for i in range (0,len(values)):
+		res[i+7] = float(values[i])
+	return eval(str(res))
 
 
-def show_all_grasps(object_id, grasps):
+def show_all_grasps(object_id, grasps):		#Group of grasps (grasp of GraspConfiguration)
 
 	(gmodel, env) = init_env(object_id);
 
@@ -435,13 +426,107 @@ def show_all_grasps(object_id, grasps):
 			raw_input('Next config.')
 
 
-def COB_to_OR(values):
-
-	res = [0 for i in range(28)]	
-	values = [values[5], values[6], values[0], values[3], values[4], values[1], values[2]]
-
-	for i in range (0,len(values)):
-		res[i+7] = float(values[i])
-	return eval(str(res))
-
+def grasp_view(env, object_id, grasp, object_pose):	#Individual grasp (grasp of GraspSubConfiguration)
+	env = SetRobot(env);
+	env = SetTarget(env, object_id);
 	
+	m = matrix_from_pose(grasp.grasp);
+	rot = numpy.matrix(rotation_matrix(object_pose));
+	sol = rot.I * m;
+	t = translation_from_matrix(sol)
+	q = quaternion_from_matrix(sol)
+	grasp.grasp.position.x = t[0]
+	grasp.grasp.position.y = t[1]
+	grasp.grasp.position.z = t[2] 
+	grasp.grasp.orientation.x = q[0]
+	grasp.grasp.orientation.y = q[1]
+	grasp.grasp.orientation.z = q[2]
+	grasp.grasp.orientation.w = q[3]
+
+	manip = ((env.GetRobots()[0]).GetManipulator("arm"))
+	robot = env.GetRobots()[0]
+	with openravepy.databases.grasping.GraspingModel.GripperVisibility(manip):
+		dof_values = COB_to_OR(grasp.sdh_joint_values)
+		robot.SetDOFValues(dof_values)
+		Tgrasp = array_from_pose(grasp.grasp)
+		index = (robot.GetLink("sdh_palm_link")).GetIndex()
+		matrix = (robot.GetLinkTransformations())[index]
+		Tdelta = dot(Tgrasp,linalg.inv(matrix))
+		for link in manip.GetChildLinks():
+			link.SetTransform(dot(Tdelta,link.GetTransform()))
+		env.UpdatePublishedBodies()
+		raw_input('Press <ENTER> to continue...')
+		env.Reset();
+
+
+def init_simulator():
+	robotName = roslib.packages.get_pkg_dir("srs_grasping")+"/robots/care-o-bot3.zae"
+	env = openravepy.Environment()
+	env.SetViewer('qtcoin');
+	time.sleep(1.0)
+	return env
+
+
+def SetTarget(env, object_id):
+	get_mesh = rospy.ServiceProxy('/get_model_mesh', GetMesh)
+	try:
+		resp = get_mesh(model_ids=[object_id])
+	except rospy.ServiceException, e:
+		rospy.logerr("Service did not process request: %s", str(e))
+		return (-1,-1);
+	try:
+		mesh_file = "/tmp/mesh.iv"
+		f = open(mesh_file, 'w')
+		res = f.write(resp.msg[0].data)
+		f.close()
+		target = env.ReadKinBodyXMLFile(mesh_file)
+		env.AddKinBody(target)
+		os.remove(mesh_file)
+	except:
+		rospy.logerr("The mesh data does not exist or does not work correctly.")
+		os.remove(mesh_file)
+		return (-1,-1);
+	return env
+
+
+def SetRobot(env):
+	robotName = roslib.packages.get_pkg_dir("srs_grasping")+"/robots/care-o-bot3.zae"
+	try:
+    		robot = env.ReadRobotXMLFile(robotName)
+		robot.SetActiveManipulator("arm")		#care-o-bot3.zae
+		env.AddRobot(robot)
+	except:
+		rospy.logerr("The robot file %s does not exists.", robotName)
+		return -1
+	return env
+
+
+def sdh_tactil_sensor_result():
+	rospy.loginfo("Reading SDH tactil sensors...");
+	sub = rospy.Subscriber("/sdh_controller/tactile_data", TactileSensor, sdh_tactil_sensor_result_callback);
+	while sub.get_num_connections() == 0:
+		time.sleep(0.3);
+		continue;
+	rospy.loginfo("SDH tactil sensors has been readed.");
+	return object_grasped;
+
+
+def sdh_tactil_sensor_result_callback(msg):
+	global object_grasped;
+	tactile_matrix = msg.tactile_matrix
+	
+	count = 0;
+	count_fingers = 0;
+	for i in range(0, len(tactile_matrix)):
+		tactile_array = tactile_matrix[i].tactile_array;
+		for j in range(0, len(tactile_array)):
+			if tactile_array[j] > 0:
+				count+=1;
+			if count > 10:
+				count_fingers+=1;	#El dedo toca el objeto
+				break;		
+
+	if count_fingers <4:
+		object_grasped = False;
+	else:
+		object_grasped = True;

@@ -30,20 +30,20 @@ class select_grasp(smach.State):
             outcomes=['succeeded', 'failed', 'preempted'],
             input_keys=['object'],
             output_keys=['grasp_categorisation'])
-
+        
         """
         Very simple grasp selection
         This need to be transfered into symbolic grounding service
         """
         self.height_switch = 0.5 # Switch to select top or side grasp using the height of the object over the ground in [m].
-
+        
         #self.listener = tf.TransformListener()
-
+        
         #default grasp categorisation
         self.grasp_categorisation = 'side'
 
     def execute(self, userdata):
-
+        
         global listener
         try:
             # transform object_pose into base_link
@@ -54,16 +54,16 @@ class select_grasp(smach.State):
         except rospy.ROSException, e:
             print "Transformation not possible: %s"%e
             return 'failed'
-
+        
         if object_pose_bl.pose.position.z >= self.height_switch: #TODO how to select grasps for objects within a cabinet or shelf?
             userdata.grasp_categorisation='side'
-        else:
+        else: 
             userdata.grasp_categorisation= 'top'
-
+        
         if self.preempt_requested():
             self.service_preempt()
             return 'preempted'
-
+        
         return 'succeeded'
 
 
@@ -77,7 +77,7 @@ class grasp_simple(smach.State):
             self,
             outcomes=['succeeded', 'retry', 'no_more_retries', 'failed', 'preempted'],
             input_keys=['object','grasp_categorisation'])
-
+        
         self.max_retries = max_retries
         self.retries = 0
         self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
@@ -98,25 +98,25 @@ class grasp_simple(smach.State):
 
     def execute(self, userdata):
         global current_task_info
-
+        
         if not current_task_info.object_in_hand: #no object in hand
 
             if self.preempt_requested():
                 self.service_preempt()
                 return 'preempted'
-
+            
             global listener
             # check if maximum retries reached
             if self.retries > self.max_retries:
                 self.retries = 0
                 return 'no_more_retries'
-
+            
             # transform object_pose into base_link
             object_pose_in = userdata.object.pose
             object_pose_in.header.stamp = listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
             object_pose_bl = listener.transformPose("/base_link", object_pose_in)
-
-
+            
+            
             if userdata.grasp_categorisation == 'side':
                 # make arm soft TODO: handle stiffness for schunk arm
                 try:
@@ -125,35 +125,35 @@ class grasp_simple(smach.State):
                     print "Service call failed: %s"%e
                     self.retries = 0
                     return 'failed'
-
-                [new_x, new_y, new_z, new_w] = tf.transformations.quaternion_from_euler(-1.552, -0.042, 2.481) # rpy
+            
+                [new_x, new_y, new_z, new_w] = tf.transformations.quaternion_from_euler(-1.552, -0.042, 2.481) # rpy 
                 object_pose_bl.pose.orientation.x = new_x
                 object_pose_bl.pose.orientation.y = new_y
                 object_pose_bl.pose.orientation.z = new_z
                 object_pose_bl.pose.orientation.w = new_w
-
+        
                 # FIXME: this is calibration between camera and hand and should be removed from scripting level
                 object_pose_bl.pose.position.x = object_pose_bl.pose.position.x #- 0.06 #- 0.08
                 object_pose_bl.pose.position.y = object_pose_bl.pose.position.y #- 0.05
                 object_pose_bl.pose.position.z = object_pose_bl.pose.position.z  #- 0.1
-
+                
                 # calculate pre and post grasp positions
                 pre_grasp_bl = PoseStamped()
                 post_grasp_bl = PoseStamped()
                 pre_grasp_bl = copy.deepcopy(object_pose_bl)
                 post_grasp_bl = copy.deepcopy(object_pose_bl)
-
+        
                 #pre_grasp_bl.pose.position.x = pre_grasp_bl.pose.position.x + 0.10 # x offset for pre grasp position
                 #pre_grasp_bl.pose.position.y = pre_grasp_bl.pose.position.y + 0.10 # y offset for pre grasp position
                 #post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
                 #post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.15 # z offset for post grasp position
-
+        
                 pre_grasp_bl.pose.position.x = pre_grasp_bl.pose.position.x + 0.10 # x offset for pre grasp position
                 pre_grasp_bl.pose.position.y = pre_grasp_bl.pose.position.y + 0.10 # y offset for pre grasp position
                 pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.15 # y offset for pre grasp position
                 post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
                 post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.17 # z offset for post grasp position
-
+                
             elif userdata.grasp_categorisation == 'top':
                 try:
                     self.stiffness([100,100,100,100,100,100,100])
@@ -161,80 +161,80 @@ class grasp_simple(smach.State):
                     print "Service call failed: %s"%e
                     self.retries = 0
                     return 'failed'
-
+            
                 # use a predefined (fixed) orientation for object_pose_bl
-                [new_x, new_y, new_z, new_w] = tf.transformations.quaternion_from_euler(3.121, 0.077, -2.662) # rpy
+                [new_x, new_y, new_z, new_w] = tf.transformations.quaternion_from_euler(3.121, 0.077, -2.662) # rpy 
                 object_pose_bl.pose.orientation.x = new_x
                 object_pose_bl.pose.orientation.y = new_y
                 object_pose_bl.pose.orientation.z = new_z
                 object_pose_bl.pose.orientation.w = new_w
-
+        
                 # FIXME: this is calibration between camera and hand and should be removed from scripting level
                 object_pose_bl.pose.position.x = object_pose_bl.pose.position.x #-0.04 #- 0.08
                 object_pose_bl.pose.position.y = object_pose_bl.pose.position.y# + 0.02
                 object_pose_bl.pose.position.z = object_pose_bl.pose.position.z #+ 0.07
-
+        
                 # calculate pre and post grasp positions
                 pre_grasp_bl = PoseStamped()
                 post_grasp_bl = PoseStamped()
                 pre_grasp_bl = copy.deepcopy(object_pose_bl)
                 post_grasp_bl = copy.deepcopy(object_pose_bl)
-
+            
                 pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.18 # z offset for pre grasp position
                 post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
                 post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.15 # z offset for post grasp position
             else:
                 return 'failed'
                 #unknown categorisation
-
-
-
+               
+                
+    
             # calculate ik solutions for pre grasp configuration
             arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp_top")
-            (pre_grasp_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_grasp_bl)
+            (pre_grasp_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_grasp_bl)        
             if(error_code.val != error_code.SUCCESS):
                 rospy.logerr("Ik pre_grasp Failed")
                 self.retries += 1
                 return 'retry'
-
+            
             # calculate ik solutions for grasp configuration
             (grasp_conf, error_code) = self.callIKSolver(pre_grasp_conf, object_pose_bl)
             if(error_code.val != error_code.SUCCESS):
                 rospy.logerr("Ik grasp Failed")
                 self.retries += 1
                 return 'retry'
-
+            
             # calculate ik solutions for pre grasp configuration
             (post_grasp_conf, error_code) = self.callIKSolver(grasp_conf, post_grasp_bl)
             if(error_code.val != error_code.SUCCESS):
                 rospy.logerr("Ik post_grasp Failed")
                 self.retries += 1
-                return 'retry'
-
+                return 'retry'    
+        
             # execute grasp
             if self.preempt_requested():
                 self.service_preempt()
                 return 'preempted'
-
+            
             sss.say(["I am grasping the " + userdata.object.label + " now."],False)
             sss.move("torso","home")
             handle_arm = sss.move("arm", [pre_grasp_conf , grasp_conf],False)
-
+            
             if userdata.grasp_categorisation == 'side':
                 sss.move("sdh", "cylopen")
             elif userdata.grasp_categorisation == 'top':
                 sss.move("sdh", "spheropen")
             else:
                 return 'failed'
-
+            
             if self.preempt_requested():
                 self.service_preempt()
                 handle_arm.client.cancel_goal()
                 return 'preempted'
             else:
                 handle_arm.wait()
-
-
+                
+                
             if self.preempt_requested():
                 self.service_preempt()
                 return 'preempted'
@@ -246,16 +246,16 @@ class grasp_simple(smach.State):
                 else:
                     return 'failed'
                     #unknown categorisation
-
-                #object is already in hand
+                    
+                #object is already in hand    
                 current_task_info.object_in_hand = True
                 #object graspped, any previous detection is not valid anymore
-                current_task_info.set_object_identification_state(False)
+                current_task_info.set_object_identification_state(False) 
                 #New object grasp, post grasp adjustment might be required
-                current_task_info.set_post_grasp_adjustment_state(False)
-
+                current_task_info.set_post_grasp_adjustment_state(False)  
+            
         sss.move("arm", [post_grasp_conf, "hold"])
-        self.retries = 0
+        self.retries = 0     
         return 'succeeded'
 
 

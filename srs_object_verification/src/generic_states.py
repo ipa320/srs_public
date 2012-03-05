@@ -63,6 +63,8 @@ import smach_ros
 import actionlib
 import operator
 
+from struct import *
+
 from eval_objects import *
 from cob_3d_mapping_msgs.msg import *
 
@@ -114,8 +116,8 @@ class CheckPositionOnTable(smach.State):
     #print "Searching for object at " + str(object_to_search.objectPose.position.x) + ", " + str(object_to_search.objectPose.position.y)
     object_list_map = self.eo.map_list_objects(1)#object_to_search.classID)
     #if object_to_search.classID == 1: #table
-    #verfied_table = self.eo.verify_table(userdata.target_object_pose, object_list_map)
-    verified_table = object_list_map.objects.shapes[0]
+    verfied_table = self.eo.verify_table(userdata.target_object_pose, object_list_map)
+    #verified_table = object_list_map.objects.shapes[2]
     if verified_table:
         hull = verified_table.points[0]
         #print verified_table.params
@@ -132,5 +134,16 @@ class CheckPositionOnTable(smach.State):
       return 'failed'
     bbs = self.client.get_result().bounding_boxes
     for bb in bbs:
-      print len(bb.data)
+      pt1 = []
+      for i in range(0,3):
+        pt1.append(unpack("f",bb.data[4*i:4*i+4])[0])
+      pt2 = []
+      for i in range(4,7):
+        pt2.append(unpack("f",bb.data[4*i:4*i+4])[0])
+      x = userdata.target_object_pose.position.x
+      y = userdata.target_object_pose.position.y
+      if x>pt1[0] and x<pt2[0] and y>pt1[1] and y<pt2[1]:
+        print "target position occupied"
+      else:
+        print "target position free"
     return 'succeeded'

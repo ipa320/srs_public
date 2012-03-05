@@ -64,11 +64,9 @@ import actionlib
 import operator
 
 from eval_objects import *
+from cob_3d_mapping_msgs.msg import *
 
 
-## Initialize state
-#
-# This state will initialize all hardware drivers.
 class VerifyObject(smach.State):
 
   def __init__(self):
@@ -86,10 +84,10 @@ class VerifyObject(smach.State):
     #print "Searching for object at " + str(object_to_search.objectPose.position.x) + ", " + str(object_to_search.objectPose.position.y)
     object_list_map = self.eo.map_list_objects(1)#object_to_search.classID)
     #if object_to_search.classID == 1: #table
-    closest_table = self.eo.verify_table(userdata.target_object_pose, object_list_map)
-    if closest_table:
-        userdata.verfified_target_object_pose = closest_table.params[4:7]
-        print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " found at " + str(closest_table.params[4]) + "," + str(closest_table.params[5])
+    verfied_table = self.eo.verify_table(userdata.target_object_pose, object_list_map)
+    if verified_table:
+        userdata.verfified_target_object_pose = verified_table.params[4:7]
+        print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " found at " + str(verified_table.params[4]) + "," + str(verified_table.params[5])
         return 'succeeded'
     else:
         print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " not found"
@@ -99,3 +97,40 @@ class VerifyObject(smach.State):
     #  return 'failed'
 
 
+class CheckPositionOnTable(smach.State):
+
+  def __init__(self):
+
+    smach.State.__init__(
+      self,
+      outcomes=['succeeded', 'failed', 'not_completed', 'preempted'],
+      input_keys=['target_object_pose'],
+      output_keys=[])
+    self.eo = EvalObjects()
+    self.client = actionlib.SimpleActionClient('table_object_cluster', TableObjectClusterAction)
+
+  def execute(self, userdata):
+    #object_to_search =self.eo.semantics_db_get_object_info(userdata.object_id)
+    #print "Searching for object at " + str(object_to_search.objectPose.position.x) + ", " + str(object_to_search.objectPose.position.y)
+    object_list_map = self.eo.map_list_objects(1)#object_to_search.classID)
+    #if object_to_search.classID == 1: #table
+    #verfied_table = self.eo.verify_table(userdata.target_object_pose, object_list_map)
+    verified_table = object_list_map.objects.shapes[0]
+    if verified_table:
+        hull = verified_table.points[0]
+        #print verified_table.params
+        #print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " found at " + str(verified_table.params[4]) + "," + str(verified_table.params[5])
+    else:
+        print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " not found"
+        return 'not_completed'
+    goal = TableObjectClusterGoal(hull)
+    if not self.client.wait_for_server():#rospy.Duration.from_sec(5.0)):
+      rospy.logerr('server not available')
+      return 'failed'
+    self.client.send_goal(goal)
+    if not self.client.wait_for_result():#rospy.Duration.from_sec(5.0)):
+      return 'failed'
+    bbs = self.client.get_result().bounding_boxes
+    for bb in bbs:
+      print len(bb.data)
+    return 'succeeded'

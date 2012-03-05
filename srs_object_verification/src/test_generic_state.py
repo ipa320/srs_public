@@ -33,7 +33,7 @@ class TestStates:
     # open the container
     with SM:
       smach.StateMachine.add('VERIFY', VerifyObject(),
-        transitions={'succeeded':'overall_succeeded', 'failed':'overall_failed'})
+        transitions={'succeeded':'overall_succeeded', 'failed':'overall_failed', 'not_completed':'overall_failed', 'preempted':'overall_failed'})
       #smach.StateMachine.add('UPDATE', Map360(),
       #  transitions={'succeeded':'overall_succeeded', 'failed':'overall_failed'})
     try:

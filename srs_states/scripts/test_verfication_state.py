@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-PKG = 'srs_object_verification'
+PKG = 'srs_states'
 import roslib; roslib.load_manifest(PKG)
 import rospy
 import smach
@@ -10,7 +10,7 @@ from geometry_msgs.msg import Pose
 
 #import unittest
 
-from generic_states import *
+from detection_states import *
 
 class TestStates:
   def __init__(self, *args):

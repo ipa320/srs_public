@@ -74,13 +74,14 @@ def DM_client():
     client.send_goal(_goal)  
     client.wait_for_result()
     print("milk delivered")
+    sss.say(["Here is your milk, Please help yourself."],False)
     sss.wait_for_input()
     
     
     start_pose = Pose()
     
-    start_pose.position.x = -3.15;
-    start_pose.position.y = -0.1;
+    start_pose.position.x = -3.0;
+    start_pose.position.y = -0.2;
     start_pose.position.z = 1.02;
     start_pose.orientation.x = 0.0;
     start_pose.orientation.y = 0.0;
@@ -120,7 +121,7 @@ def DM_client():
     _goal.parameter="[1 -1.6 1.57]"
     _goal.priority=0
     client.send_goal(_goal)  
-    client.wait_for_result()
+    #client.wait_for_result()
     print("back to charge")
     
     return client.get_result()

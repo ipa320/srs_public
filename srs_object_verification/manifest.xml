@@ -9,8 +9,8 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_object_verification</url>
 
-  <depend package="srs_semantics_db"/>
-  <depend package="gdatabase"/>
+  <!--depend package="srs_semantics_db"/-->
+  <!--depend package="gdatabase"/-->
   <depend package="cob_3d_mapping_msgs"/>
   <depend package="pcl"/>
   <depend package="smach"/>

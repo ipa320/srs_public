@@ -1,0 +1,235 @@
+#!/usr/bin/python
+
+import roslib
+roslib.load_manifest('srs_grasping')
+
+import rospy
+import smach
+import smach_ros
+
+import random
+import tf
+import time
+import math
+import scipy
+
+from numpy import matrix
+from kinematics_msgs.srv import *
+from srs_grasping.msg import *
+from srs_grasping.srv import *
+import grasping_functions
+from cob_object_detection_msgs.msg import *
+from cob_object_detection_msgs.srv import *
+from srs_object_database.msg import *
+from srs_object_database.srv import *
+
+from simple_script_server import *
+sss = simple_script_server()
+
+# ------------------------------------------------------------------------------------------
+# STATES
+# ------------------------------------------------------------------------------------------
+# define state READ_DB
+class Read_DB(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded','failed'], input_keys=['object_id','object_pose'], output_keys=['grasp_configuration'])
+
+	rospy.loginfo("Waiting /get_grasps_from_position service...");
+	rospy.wait_for_service('/get_grasps_from_position')
+	self.client = rospy.ServiceProxy('/get_grasps_from_position', GetGraspConfigurations)
+	rospy.loginfo("/get_grasps_from_position service is ready.");
+
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state READ_DB')
+
+	req = GetGraspsFromPositionRequest();
+	req.object_id = object_id;
+	req.object_pose = object_pose;
+	grasp_configuration = (self.client(req)).grasp_configuration;
+
+	if len(grasp_configuration)==0:
+		rospy.logerr("No grasping configurations for this object.")
+		return 'failed'
+	else:
+		rospy.loginfo("%d grasping configuration for this object." %len(grasp_configuration))	
+		userdata.grasp_configuration = grasp_configuration
+	        return 'succeeded'
+
+
+# define state MOVE_ARM
+class Move_arm(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded','retry','failed'], input_keys=['grasp_configuration', 'object_pose'], output_keys=['grasp_config'])
+
+	rospy.loginfo("Waiting /arm_kinematics/get_ik service...");
+	self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
+	rospy.loginfo("/arm_kinematics/get_ik service is ready.");
+	self.listener = tf.TransformListener(True, rospy.Duration(10.0))
+	self.counter = 0
+
+
+    def get_joint_state(self, msg):
+	global current_joint_configuration
+	current_joint_configuration = list(msg.desired.positions)
+	rospy.spin()
+
+
+    def callIKSolver(self, current_pose, goal_pose):
+	req = GetPositionIKRequest()
+	req.ik_request.ik_link_name = "sdh_palm_link"
+	req.ik_request.ik_seed_state.joint_state.position = current_pose
+	req.ik_request.pose_stamped = goal_pose
+	resp = self.iks(req)
+	result = []
+	for o in resp.solution.joint_state.position:
+		result.append(o)
+	return (result, resp.error_code)
+
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state MOVE_ARM')
+	
+	if self.counter >= len(userdata.grasp_configuration):
+		rospy.logerr('No good configurations for this object.')
+		return 'failed'
+
+        rospy.loginfo('Executing the grasp_configuration[%d]' %self.counter)
+
+	#current_joint_configuration
+	sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
+	while sub.get_num_connections() == 0:
+		time.sleep(0.3)
+		continue
+
+
+
+	pre = PoseStamped()
+	pre.header.stamp = rospy.Time.now()
+	pre.header.frame_id = "/base_link"
+	pre.pose.position.x = userdata.grasp_configuration[self.counter].pre_grasp.position.x #t[0]
+	pre.pose.position.y = userdata.grasp_configuration[self.counter].pre_grasp.position.y #t[1] 
+	pre.pose.position.z = userdata.grasp_configuration[self.counter].pre_grasp.position.z #[2] 
+	pre.pose.orientation.x = userdata.grasp_configuration[self.counter].pre_grasp.orientation.x #q[0]
+	pre.pose.orientation.y = userdata.grasp_configuration[self.counter].pre_grasp.orientation.y #q[1]
+	pre.pose.orientation.z = userdata.grasp_configuration[self.counter].pre_grasp.orientation.z #q[2]
+	pre.pose.orientation.w = userdata.grasp_configuration[self.counter].pre_grasp.orientation.w #q[3]
+
+	g = PoseStamped()
+	g.header.stamp = rospy.Time.now()
+	g.header.frame_id = "/base_link"
+	g.pose.position.x = userdata.grasp_configuration[self.counter].grasp.position.x #tg[0] 
+	g.pose.position.y = userdata.grasp_configuration[self.counter].grasp.position.y #tg[1] 
+	g.pose.position.z = userdata.grasp_configuration[self.counter].grasp.position.z #tg[2] 
+	g.pose.orientation.x = userdata.grasp_configuration[self.counter].grasp.orientation.x #qg[0]
+	g.pose.orientation.y = userdata.grasp_configuration[self.counter].grasp.orientation.y #qg[1]
+	g.pose.orientation.z = userdata.grasp_configuration[self.counter].grasp.orientation.z #qg[2]
+	g.pose.orientation.w = userdata.grasp_configuration[self.counter].grasp.orientation.w #qg[3]
+
+	
+	offset_x = (g.pose.position.x - pre.pose.position.x)/3
+	offset_y = (g.pose.position.y - pre.pose.position.y)/3
+	offset_z = (g.pose.position.z - pre.pose.position.z)/3
+	
+	pre.pose.position.x += offset_x
+	pre.pose.position.y += offset_y
+	pre.pose.position.z += offset_z
+	g.pose.position.x += offset_x
+	g.pose.position.y += offset_y
+	g.pose.position.z += offset_z
+	
+
+	sol = False
+	for i in range(0,10):
+		(pre_grasp_conf, error_code) = self.callIKSolver(current_joint_configuration, pre)		
+		if(error_code.val == error_code.SUCCESS):
+			sol = True
+			break
+	if not sol:
+		rospy.logerr("Ik pre_grasp FAILED")
+		self.counter += 1
+		return 'retry'
+
+
+	sol = False
+	for i in range(0,10):
+		(grasp_conf, error_code) = self.callIKSolver(pre_grasp_conf, g)		
+		if(error_code.val == error_code.SUCCESS):
+			sol = True
+			break
+
+	if not sol:
+		rospy.logerr("Ik grasp FAILED")
+		self.counter += 1
+		return 'retry'
+
+
+	res = raw_input("Execute this " + userdata.grasp_configuration[self.counter].category + " grasp? (y/n): ")
+	if res != "y":
+		self.counter += 1
+		return 'retry'
+
+	# execute grasp
+	sss.say(["I am grasping the object now."], False)
+	sss.move("sdh", "cylopen")
+	sss.move("arm", [pre_grasp_conf, grasp_conf])
+	userdata.grasp_config = userdata.grasp_configuration[self.counter]
+	return 'succeeded'
+
+
+# define state MOVE_HAND
+class Move_hand(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded','failed'], input_keys=['grasp_config'])
+	
+    def execute(self, userdata):
+        rospy.loginfo('Executing state MOVE_HAND')
+
+	sss.move("sdh", [list(userdata.grasp_config.sconfiguration.points[0].positions)])
+	return 'succeeded'
+
+
+def start(object_id, object_pose):
+
+    #sss.move("arm", "home")
+    # Create a SMACH state machine
+    sm_top = smach.StateMachine(outcomes=['succeeded','failed'])
+
+
+    # Open the container
+    with sm_top:
+        # Add states to the container
+        smach.StateMachine.add('READ_DB', Read_DB(), transitions={'succeeded':'GRASP_OBJECT', 'failed': 'failed'})
+
+    	sm_sub = smach.StateMachine(outcomes=['succeeded','failed','retry'])
+	with sm_sub:
+		smach.StateMachine.add('MOVE_ARM', Move_arm(), transitions={'succeeded':'MOVE_HAND', 'retry': 'retry', 'failed': 'failed'})
+        	smach.StateMachine.add('MOVE_HAND', Move_hand())
+
+
+        smach.StateMachine.add('GRASP_OBJECT', sm_sub, transitions={'succeeded': 'succeeded', 'retry': 'GRASP_OBJECT', 'failed': 'failed'})
+
+
+    sm_top.userdata.object_id = object_id		
+    sm_top.userdata.object_pose = object_pose   
+    sm_sub.userdata = sm_top.userdata
+  
+
+    #smach_viewer = smach_ros.IntrospectionServer('GRASP_SMACH', sm_top, 'GRASP_SMACH')
+    #smach_viewer.start()
+
+
+    # Execute SMACH plan
+    outcome = sm_top.execute()
+	
+    #rospy.spin()
+    #smach_viewer.stop()
+
+    return outcome
+
+
+# ------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------
+if __name__ == '__main__':
+    rospy.init_node('grasp_state_machine')
+    start(1, "")	#object_id = Milk

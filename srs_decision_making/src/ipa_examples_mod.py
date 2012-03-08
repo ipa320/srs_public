@@ -1,32 +1,41 @@
 # ROS imports
-import roslib; roslib.load_manifest('srs_decision_making')
-import copy
+import roslib
+roslib.load_manifest('srs_decision_making')
+#import copy
 import rospy
 import smach
-import smach_ros
+#import smach_ros
 
 from std_msgs.msg import String, Bool, Int32
 from cob_srvs.srv import Trigger
 from math import *
 import time
-import tf
 from kinematics_msgs.srv import *
 
-import actionlib
-
+#import actionlib
+# ROS imports
+import roslib
+roslib.load_manifest('srs_states')
+import rospy
+import smach
 # include script server, to move the robot
-from simple_script_server import simple_script_server
+from simple_script_server import *
 sss = simple_script_server()
 
 # msg imports
 from geometry_msgs.msg import *
+from shared_state_information import *
 
-from cob_object_detection_msgs.srv import *
-from cob_object_detection_msgs.msg import *
-from gazebo.srv import *
-import gazebo.msg as gazebo
-#import geometry_msgs.msg as geomery
-#from gazebo.srv import SetModelState
+#from gazebo.srv import *
+#import gazebo.msg as gazebo
+
+
+
+
+
+
+
+            
 
 """
 Below dummy generic states are copied and modified based on IPA examples for testing purpose
@@ -46,427 +55,185 @@ detect_object()
 Only dummy outputs are given for testing purpose
 """
 
-## Approach pose state
-#-0.21
-# This state will try forever to move the robot to the given pose.
-class approach_pose(smach.State):
 
-    def __init__(self, pose = "", mode = "omni", move_second = "False"):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'failed'],
-            input_keys=['base_pose'])
 
-        self.pose = pose
-        self.mode = mode
-        self.move_second = move_second
 
+
+class select_post_table_pose(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed','preempted'], input_keys=['post_table_pos'], output_keys=['post_table_pos'])
+        #self.counter = 0
+    
     def execute(self, userdata):
-        rospy.loginfo('base_pose: %s', userdata.base_pose)
-        return 'succeeded'
-
-## Approach pose state (without retry)
-#
-# This state tries once to move the robot to the given pose.
-class approach_pose_without_retry(smach.State):
-
-    def __init__(self, pose = ""):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'failed'],
-            input_keys=['base_pose'])
-
-        self.pose = pose
-        self.counter =0
-        self.mode = "linear"
-
-    def execute(self, userdata):
-        """
-        rospy.loginfo("target base pose: %s", userdata.base_pose)
-        self.counter=self.counter+1
-        rospy.sleep(1)
-        if self.counter>1:
-            return 'succeeded'
+        global current_task_info
+        
+        if current_task_info.get_post_grasp_adjustment_state()==True:  # already adjusted
+            return 'succeeded'            
         else:
-            return 'failed'
-        """
-        
-        # determine target position
-        if self.pose != "":
-            pose = self.pose
-        elif type(userdata.base_pose) is str:
-            pose = userdata.base_pose
-        elif type(userdata.base_pose) is list:
-            pose = []
-            pose.append(userdata.base_pose[0])
-            pose.append(userdata.base_pose[1])
-            pose.append(userdata.base_pose[2])
-        else: # this should never happen
-            rospy.logerr("Invalid userdata 'pose'")
-            return 'failed'
-
-        # try reaching pose
-        handle_base = sss.move("base", pose, False, self.mode)
-        move_second = False
-
-        timeout = 0
-        while not self.preempt_requested():
-            try:
-                #print "base_state = ", handle_base.get_state()
-                if (handle_base.get_state() == 3) and (not move_second):
-                    # do a second movement to place the robot more exactly
-                    handle_base = sss.move("base", pose, False, self.mode)
-                    move_second = True
-                elif (handle_base.get_state() == 3) and (move_second):
-                    return 'succeeded'        
-                elif (handle_base.get_state() == 2 or handle_base.get_state() == 4):  #error or paused
-                    rospy.logerr("base not arrived on target yet")
-                    return 'failed'
-            except rospy.ROSException, e:
-                error_message = "%s"%e
-                rospy.logerr("unable to check hdl_base state, error: %s", error_message)
-                rospy.sleep(0.5)
-
-            # check if service is available
-            service_full_name = '/base_controller/is_moving'
-            try:
-                rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
-            except rospy.ROSException, e:
-                error_message = "%s"%e
-                rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+            pos=current_task_info.get_robot_pos()
+            
+            if pos ==None:
+                userdata.post_table_pos=''
                 return 'failed'
-        
-            # check if service is callable
-            try:
-                is_moving = rospy.ServiceProxy(service_full_name,Trigger)
-                resp = is_moving()
-            except rospy.ServiceException, e:
-                error_message = "%s"%e
-                rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                return 'failed'
-        
-            # evaluate sevice response
-            if not resp.success.data: # robot stands still
-                if timeout > 10:
-                    sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
-		
-                    try:
-                        rospy.wait_for_service('base_controller/stop',10)
-                        stop = rospy.ServiceProxy('base_controller/stop',Trigger)
-                        resp = stop()
-                    except rospy.ServiceException, e:
-                        error_message = "%s"%e
-                        rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                    except rospy.ROSException, e:
-                        error_message = "%s"%e
-                        rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)		
-	            return 'failed'
-                else:
-                    timeout = timeout + 1
-                    rospy.sleep(1)
             else:
-                timeout = 0
-        return 'failed'
+                current_task_info.set_post_grasp_adjustment_state(True)  
+                pos.x = pos.x + 0.15 * cos(pos.theta)
+                pos.y = pos.y + 0.15 * sin(pos.theta)
+                userdata.post_table_pos = list()
+                userdata.post_table_pos.append(pos.x)
+                userdata.post_table_pos.append(pos.y)
+                userdata.post_table_pos.append(pos.theta)
+                return 'succeeded'
+        
 
-
-
-## Select grasp state
-#
-# This state select a grasping strategy. A high object will be grasped from the side, a low one from top.
-class select_grasp(smach.State):
-
+class select_pose(smach.State):
     def __init__(self):
-        smach.State.__init__(
-            self,
-            outcomes=['top', 'side', 'failed'],
-            input_keys=['object_pose'])
-        
-        self.height_switch = 0.8 # Switch to select top or side grasp using the height of the object over the ground in [m].
-
+        smach.State.__init__(self, outcomes=['got_to_next_pose', 'no_more_pose', 'failed','preempted'], 
+                             input_keys=['target_base_pose_list'], output_keys=['current_target_base_pose'])
     def execute(self, userdata):
-        return 'top'
+        userdata.current_target_base_pose='home'
+        return 'got_to_next_pose'
 
 
-## Grasp side state
+## Put object on tray side state
 #
-# This state will grasp an object with a side grasp
-class grasp_side(smach.State):
-
-    def __init__(self, max_retries = 1):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'retry', 'no_more_retry', 'failed'],
-            input_keys=['object'])
-        
-    def execute(self, userdata):
-        return 'failed'
-
-
-## Grasp top state
-#
-# This state will grasp an object with a top grasp
-class grasp_top(smach.State):
-
-    def __init__(self, max_retries = 1):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'retry', 'no_more_retry', 'failed'],
-            input_keys=['object'])
-
-
-    def execute(self, userdata):
-        return 'failed'        
-
-## General grasp
-#  
-# This state will grasp an object based on the configuration passed
-class grasp_general(smach.State):
-
-    def __init__(self, max_retries = 1):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'retry', 'failed'],
-            input_keys=['object', 'grasp_conf'])
-
-
-    def execute(self, userdata):
-        
-        global sss
-        handle_tray = sss.move("tray", "up")
-        handle_tray.wait()
-        handle_arm = sss.move("arm", "grasp")
-        handle_arm = sss.move("arm", "grasp-to-tray_top")
-        handle_arm.wait()   
-
-        start_pose = Pose()
-    
-        start_pose.position.x = -2.47;
-        start_pose.position.y = -0.23;
-        start_pose.position.z = 1.01;
-        start_pose.orientation.x = 0.0;
-        start_pose.orientation.y = 0.0;
-        start_pose.orientation.z = 0.0;
-        start_pose.orientation.w = 0.0;
-        
-        start_twist = Twist()
-        start_twist.linear.x = 0.0;
-        start_twist.linear.y = 0.0;
-        start_twist.linear.z = 0.0;
-        start_twist.angular.x = 0.0;
-        start_twist.angular.y = 0.0;
-        start_twist.angular.z = 0.0;
-        
-        modelstate = gazebo.ModelState
-        modelstate.model_name = "milk_box";
-        modelstate.reference_frame = "world";
-        modelstate.pose = start_pose;
-        modelstate.twist = start_twist;
-        
-        
-        move_milk = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
-        
-        #setmodelstate = gazebo
-        
-        #setmodelstate.request.model_state = modelstate
-        
-        move_milk(modelstate)
-        
-        handle_arm = sss.move("arm", "tray_top-to-folded")
-        handle_arm.wait()
-        #handle_arm = sss.move("arm", "tray",False)
-        #handle_arm.wait()
-
-        
-        
-        
-        
-        
-        
-        
-        return 'succeeded'    
-        #return 'failed'     
-
-## Open door state
-#
-# This state will open a door
-class open_door(smach.State):
-
-    def __init__(self):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'failed'],
-            input_keys=['door_pose'])
-
-    def execute(self, userdata):
-        #TODO teach hinge and handle position relative to the door_pose (this means: detected ipa_logo)
-        return 'succeeded'
-    
-## Put object on tray state
-#
-# This state puts a grasped object on the tray
+# This state puts a side grasped object on the tray
 class put_object_on_tray(smach.State):
 
     def __init__(self):
         smach.State.__init__(
             self,
-            outcomes=['succeeded', 'failed'])
-
+            outcomes=['succeeded', 'failed' ,'preempted'],
+            input_keys=['grasp_categorisation'])
+        
+        
     def execute(self, userdata):
-        #TODO select position on tray depending on how many objects are on the tray already. This has to be counted by this state itself
-        return 'succeeded'
-    
-"""
-## Detect state
-#
-# This state will try to detect an object.
-class detect_object(smach.State):
-    def __init__(self,object_name = "",max_retries = 1):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded','retry','no_more_retries','failed'],
-            input_keys=['object_name'],
-            output_keys=['object'])
-
-        self.object_name = object_name
+        #TODO select position on tray depending on how many objects are on the tray already
+        global current_task_info
         
-
-    def execute(self, userdata):
-        # determine object name
-        if self.object_name != "":
-            object_name = self.object_name
-        elif type(userdata.object_name) is str:
-            object_name = userdata.object_name
-        else: # this should never happen
-            rospy.logerr("Invalid userdata 'object_name'")
-            self.retries = 0
-            return 'failed'
-
-        return 'succeeded'
-"""
-
-## Detect state
-#
-# This state will try to detect an object.
-class detect_object(smach.State):
-    def __init__(self,object_name = "",max_retries = 1):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded','retry','no_more_retries','failed'],
-            input_keys=['object_name'],
-            output_keys=['object'])
-
-        self.object_list = DetectionArray()
-        self.max_retries = max_retries
-        self.retries = 0
-        self.object_name = object_name
+        if current_task_info.object_in_hand and not current_task_info.object_on_tray:
         
-        self.torso_poses = []
-        self.torso_poses.append("back_right_extreme")
-        self.torso_poses.append("back_extreme")
-        self.torso_poses.append("back_left_extreme")
-
-    def execute(self, userdata):
-
-        userdata.object = ""
-
-        # determine object name
-        if self.object_name != "":
-            object_name = self.object_name
-        elif type(userdata.object_name) is str:
-            object_name = userdata.object_name
-        else: # this should never happen
-            rospy.logerr("Invalid userdata 'object_name'")
-            self.retries = 0
-            return 'failed'
-    
-        # check if maximum retries reached
-        if self.retries > self.max_retries:
-            self.retries = 0
-            return 'no_more_retries'
-        
-        # move sdh as feedback
-        sss.move("sdh","cylclosed",False)
-        
-        # make the robot ready to inspect the scene
-        if self.retries == 0: # only move arm, sdh and head for the first try
-            sss.say(["I will now search for the " + object_name + "."],False)
-            handle_arm = sss.move("arm","folded-to-look_at_table",False)
-            handle_torso = sss.move("torso","shake",False)
-            #handle_head = sss.move("head","back",False)
+            # move object to frontside
+            handle_arm = sss.move("arm","grasp-to-tray",False)
+            sss.sleep(2)
+            sss.move("tray","up")
             handle_arm.wait()
-            #handle_head.wait()
-            handle_torso.wait()
-        #handle_torso = sss.move("torso",self.torso_poses[self.retries % len(self.torso_poses)]) # have an other viewing point for each retry
-        
-        # move sdh as feedback
-        sss.move("sdh","home",False)
-    
-        # check if object detection service is available
-        try:
-            rospy.wait_for_service('/object_detection/detect_object',10)
-        except rospy.ROSException, e:
-            print "Service not available: %s"%e
-            self.retries = 0 # no object found within min_dist start value
-            return 'failed'
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
+            
+            # release object
+            if userdata.grasp_categorisation == 'side':
+                sss.move("sdh","cylopen")
+            elif userdata.grasp_categorisation == 'top':
+                sss.move("sdh","spheropen")
+                
+            #object is transfered from hand to tray 
+            current_task_info.object_in_hand = False
+            current_task_info.object_on_tray = True
+            
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
 
-        # call object detection service
-        try:
-            detector_service = rospy.ServiceProxy('/object_detection/detect_object', DetectObjects)
-            req = DetectObjectsRequest()
-            req.object_name.data = object_name
-            print object_name
-            res = detector_service(req)
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
+        # move arm to backside again
+        handle_arm = sss.move("arm","tray-to-folded",False)
+        sss.sleep(3)
+        sss.move("sdh","home")
+        handle_arm.wait()
+        
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+        else:
+            return 'succeeded'
+
+
+#verify_object FROM PRO+IPA, the interface still need to be clarified 
+class verify_object(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['object_verified','no_object_verified','failed','preempted'],
+                                input_keys=['reference_to_map','object_name_list'],
+                                output_keys=['updated_object_list'])
+        
+    def execute(self,userdata):
+        # user specify key region on interface device for detection
+        """
+        Extract objects from current point map
+        """
+        updated_object = ""   #updated pose information about the object
+        return 'failed'  
+
+#scan environment from IPA, the interface still need to be clarified    
+class update_env_model(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'preempted'])
+        
+    def execute(self,userdata):
+        # user specify key region on interface device for detection
+        """
+        Get current point map
+        """
+        #map_reference = ""   
+        return 'succeeded'      
+
+
+#verify_object FROM PRO+IPA, the interface still need to be clarified 
+#for integration meeting
+class object_verification_simple(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['object_verified','no_object_verified','failed','preempted'],
+                                input_keys=['target_object_name','target_object_hh_id','target_object_pose'],
+                                output_keys=['target_object_pose'])
+        #object verified: the expected object has been found, the revised pose is in the output_put key verified_target_object_pose
+        #no_object_verified: no object found, given up
+        
+                
+    def execute(self,userdata):
+        # user specify key region on interface device for detection
+        
+        
+        
+        #dummy code for testing
+        #verified object is in the exact expected position
+        #return object_verfied
+        
+        userdata.target_object_pose = userdata.target_object_pose
+        return 'object_verified'  
+
+    
+"""
+## Detect state
+#
+# This state will try to detect an object.
+class detect_object(smach.State):
+    def __init__(self,object_name = "",max_retries = 1):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded','retry','no_more_retries','failed'],
+            input_keys=['object_name'],
+            output_keys=['object'])
+
+        self.object_name = object_name
+        
+
+    def execute(self, userdata):
+        # determine object name
+        if self.object_name != "":
+            object_name = self.object_name
+        elif type(userdata.object_name) is str:
+            object_name = userdata.object_name
+        else: # this should never happen
+            rospy.logerr("Invalid userdata 'object_name'")
             self.retries = 0
             return 'failed'
-            
-        # check for no objects
-        if len(res.object_list.detections) <= 0:
-            rospy.logerr("No objects found")
-            self.retries += 1
-            return 'retry'
-        
-        # select nearest object in x-y-plane in head_camera_left_link
-	# TODO transform object_pose using tf into /base_link and search for nearest object in base_link
-        min_dist = 2 # start value in m
-        obj = Detection()
 
-	"""	
-	self.listener = tf.TransformListener()
-	object_pose.header.stamp = self.listener.getLatestCommonTime("/base_link", object_pose_in.header.frame_id)
-
-	object_pose_bl = self.listener.transformPose("/base_link", object_pose_in)
-	"""
-
-        for item in res.object_list.detections:
-            dist = sqrt(item.pose.pose.position.x*item.pose.pose.position.x+item.pose.pose.position.y*item.pose.pose.position.y)
-	    print '$$$$$$$$$$$$$$$$$$$$$', dist
-	
-            if dist < min_dist:
-                min_dist = dist
-                obj = copy.deepcopy(item)
-                print '================  ', obj
-            #else:
-            #    print 'Failed'
-            #    return 'failed'
-        # check if an object could be found within the min_dist start value
-        
-        #if obj.header.frame_id == "":
-        #    self.retries += 1
-        #    return 'retry'
-        
-        #check if label of object fits to requested object_name
-        #if obj.label != object_name:
-        #    sss.say(["The object name doesn't fit."],False)
-        #    self.retries += 1
-        #    return 'retry'
-        
-        # we succeeded to detect an object
-        userdata.object = obj
-        self.retries = 0
-        print 'RETURNED SUCCEEDED'
         return 'succeeded'
+
+
+
 
 
 class move_head(smach.State):
@@ -486,4 +253,57 @@ class move_head(smach.State):
     def execute(self, userdata):
         sss.move("torso",userdata.torso_pose)
         return 'succeeded'
+
+
+
+
+## Deliver object state
+#
+# This state will deliver an object which should be on the tray.
+class deliver_object(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, 
+            outcomes=['succeeded', 'retry', 'failed'])
+
+    def execute(self, userdata):
+        
+        #sss.say(["Here is your " + userdata.object_name + ". Please help yourself."],False)
+        sss.move("torso","nod",False)
+        
+        try:
+            rospy.wait_for_service('/tray/check_occupied',10)
+        except rospy.ROSException, e:
+            rospy.loginfo("\n\nService not available: %s", e)
+	    rospy.loginfo('\n\nIf the tray has been emptied? Please enter Yes/No - Y/N')
+	    inp = raw_input()
+	    if inp == 'y' or inp == 'Y':
+	        
+		sss.move("tray","down",False)
+                sss.move("torso","nod",False)
+		return  'succeeded'
+	    else:
+		return 'failed'
+
+        time = rospy.Time.now().secs
+        loop_rate = rospy.Rate(5) #hz
+        while True:
+            if rospy.Time.now().secs-time > 20:
+                return 'retry'
+            try:
+                tray_service = rospy.ServiceProxy('/tray/check_occupied', CheckOccupied)            
+                req = CheckOccupiedRequest()
+                res = tray_service(req)
+                print "waiting for tray to be not occupied any more"
+                if(res.occupied.data == False):
+                    break
+            except rospy.ServiceException, e:
+                print "Service call failed: %s", e
+                return 'failed'
+            sss.sleep(2)
+        
+        sss.move("tray","down",False)
+        sss.move("torso","nod",False)
+        
+        return 'succeeded'
+"""
 

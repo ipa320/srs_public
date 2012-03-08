@@ -99,15 +99,15 @@ class VerifyObject(smach.State):
     #  return 'failed'
 
 
-class CheckPositionOnTable(smach.State):
+class GetTableObjectCluster(smach.State):
 
   def __init__(self):
 
     smach.State.__init__(
       self,
       outcomes=['succeeded', 'failed', 'not_completed', 'preempted'],
-      input_keys=['target_object_pose'],
-      output_keys=[])
+      input_keys=['target_table_pose'],
+      output_keys=['object_cluster'])
     self.eo = EvalObjects()
     self.client = actionlib.SimpleActionClient('table_object_cluster', TableObjectClusterAction)
 
@@ -128,22 +128,37 @@ class CheckPositionOnTable(smach.State):
     goal = TableObjectClusterGoal(hull)
     if not self.client.wait_for_server():#rospy.Duration.from_sec(5.0)):
       rospy.logerr('server not available')
-      return 'failed'
+      return 'not_completed'
     self.client.send_goal(goal)
     if not self.client.wait_for_result():#rospy.Duration.from_sec(5.0)):
-      return 'failed'
-    bbs = self.client.get_result().bounding_boxes
-    for bb in bbs:
+      return 'not_completed'
+    userdata.object_cluster = self.client.get_result().bounding_boxes
+    return 'succeeded'
+
+
+class CheckPoseOnTableFree(smach.State):
+
+  def __init__(self):
+
+    smach.State.__init__(
+      self,
+      outcomes=['succeeded', 'failed', 'not_completed', 'preempted'],
+      input_keys=['target_object_pose_on_table','object_cluster'],
+      output_keys=[])
+
+  def execute(self, userdata):
+    for bb in userdata.object_cluster:
       pt1 = []
       for i in range(0,3):
         pt1.append(unpack("f",bb.data[4*i:4*i+4])[0])
       pt2 = []
       for i in range(4,7):
         pt2.append(unpack("f",bb.data[4*i:4*i+4])[0])
-      x = userdata.target_object_pose.position.x
-      y = userdata.target_object_pose.position.y
+      x = userdata.target_object_pose_on_table.position.x
+      y = userdata.target_object_pose_on_table.position.y
       if x>pt1[0] and x<pt2[0] and y>pt1[1] and y<pt2[1]:
         print "target position occupied"
+        return 'failed'
       else:
         print "target position free"
     return 'succeeded'

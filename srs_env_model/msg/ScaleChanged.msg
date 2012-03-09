@@ -1,0 +1,3 @@
+string marker_name
+geometry_msgs/Vector3 new_scale
+geometry_msgs/Vector3 scale_change

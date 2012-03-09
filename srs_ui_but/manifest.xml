@@ -16,6 +16,13 @@
   <depend package="rviz"/>
   <depend package="ogre"/>
   <depend package="srs_env_model"/>
+  <depend package="srs_msgs"/>
+  <depend package="ogre_tools"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="message_filters"/>
+
 
 <!--export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros"/>
@@ -23,6 +30,7 @@
   </export-->
 
   <export>
+    <!--<cpp cflags="-I${prefix}/srv_gen/cpp/include" />-->
     <rviz plugin="${prefix}/lib/but_gui.yaml"/>
   </export>
 

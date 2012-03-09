@@ -13,6 +13,24 @@
   <depend package="trajectory_filter_server"/>
   <depend package="constraint_aware_spline_smoother"/>
   <depend package="move_arm"/>
+  <depend package="move_arm_warehouse"/>
+  <depend package="srs_ui_but"/>
+  <depend package="cob_bringup_sim"/>
+  <depend package="rviz"/>
+  <depend package="mongodb"/>
+  <depend package="interpolated_ik_motion_planner"/>
+  <depend package="cob_default_env_config"/>
+  <depend package="robot_self_filter"/>
+  <depend package="cob_default_robot_config"/>
+  <depend package="cob_2dnav"/>
+  <depend package="srs_arm_navigation_percp"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="smach"/>
+  <depend package="smach_ros"/>
+  <depend package="cob_object_detection_msgs"/>
+  <depend package="srs_grasping"/>
+  <depend package="srs_object_database"/>
+  <depend package="srs_knowledge"/>
 
 </package>
 

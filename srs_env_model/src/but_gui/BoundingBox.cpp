@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: BoundingBox.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: BoundingBox.cpp 305 2012-03-08 14:20:02Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -13,66 +13,54 @@
 namespace but_gui
 {
 
-BoundingBox::BoundingBox(InteractiveMarkerServerPtr server_, string frame_id_, string name_)
+BoundingBox::BoundingBox(InteractiveMarkerServerPtr server, string frame_id, string name) :
+  Primitive(server, frame_id, name, srs_env_model::PrimitiveType::BOUNDING_BOX)
 {
-  server = server_;
-  frame_id = frame_id_;
-  name = name_;
-  immediateInteraction = false;
-  description = "";
-}
-
-BoundingBox::BoundingBox(InteractiveMarkerServerPtr server_, string frame_id_, string name_, string objectName_,
-                         Pose pose_, Scale scale_, ColorRGBA color_, string description_)
-{
-  server = server_;
-  frame_id = frame_id_;
-  attachedObjectName = objectName_;
-  name = name_;
-  pose = pose_;
-  scale = scale_;
-  color = color_;
-  immediateInteraction = false;
-  description = description_;
-  create();
-}
-
-BoundingBox::~BoundingBox()
-{
+  description_ = "";
 }
 
 string BoundingBox::getAttachedObjectName()
 {
-  return attachedObjectName;
+  return attached_object_name_;
 }
 
-void BoundingBox::setAttachedObjectName(string name_)
+void BoundingBox::setAttachedObjectName(string name)
 {
-  attachedObjectName = name_;
+  attached_object_name_ = name;
 }
 
 void BoundingBox::bboxCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  if (feedback->control_name != "box_control")
+  if (feedback->control_name != BOUNDING_BOX_CONTROL_NAME)
   {
-    if (immediateInteraction || (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP))
-    {
-      ROS_INFO("New position:");
-      cout << feedback->pose.position << endl;
-      ROS_INFO("New orientation:");
-      cout << feedback->pose.orientation << endl;
+    /*if ((feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP))
+     {
+     InteractiveMarker o;
+     if (server->get(name, o))
+     {
+     pose = o.pose;
+     object.pose = pose;
+     }
 
-      // Interaction with object from Interactive Marker Server
-      // TODO what to do with other objects?
-      InteractiveMarker object;
-      if (server->get(attachedObjectName, object))
-      {
-        server->erase(attachedObjectName);
-        object.pose = feedback->pose;
-        server->insert(object);
-        server->applyChanges();
-      }
-    }
+     ROS_INFO("New position:");
+     cout << feedback->pose.position << endl;
+     ROS_INFO("New orientation:");
+     cout << feedback->pose.orientation << endl;
+
+     // Interaction with object from Interactive Marker Server
+     InteractiveMarker obj;
+     if (server->get(attachedObjectName, obj))
+     {
+     server->erase(attachedObjectName);
+     obj.pose = feedback->pose;
+     server->insert(obj);
+     }
+
+     server->insert(object);
+     menu_handler.reApply(*server);
+     server->applyChanges();
+     }*/
+    defaultCallback(feedback);
   }
 }
 
@@ -80,211 +68,294 @@ void BoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback
 {
   MenuHandler::EntryHandle handle = feedback->menu_entry_id;
   MenuHandler::CheckState state;
-  menu_handler.getCheckState(handle, state);
+  string title;
+  menu_handler_.getCheckState(handle, state);
+  menu_handler_.getTitle(handle, title);
 
-  InteractiveMarker bounding_box;
-  if (server->get(name, bounding_box))
+  updatePublisher_->publishMenuClicked(title, state);
+
+  InteractiveMarker o;
+  if (server_->get(name_, o))
   {
-    server->erase(name);
-    switch (feedback->menu_entry_id)
-    {
-      case 1:
-        /**
-         * Bounding box visibility
-         */
-        if (state == MenuHandler::CHECKED)
-        {
-          bounding_box.controls[0].markers[0].color.a = BBOX_MIN_ALPHA;
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
-        }
-        else
-        {
-          bounding_box.controls[0].markers[0].color.a = BBOX_MAX_ALPHA;
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
-        }
-        break;
-      case 2:
-        /**
-         * Bounding box description
-         */
-        if (state == MenuHandler::CHECKED)
-        {
-          bounding_box.controls[1].markers[0].color.a = 0.0;
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
-        }
-        else
-        {
-          bounding_box.controls[1].markers[0].color.a = 1.0;
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
-        }
-        break;
-      case 3:
-        /**
-         * Bounding box measure
-         */
-        if (state == MenuHandler::CHECKED)
-        {
-          for (unsigned int i = 0; i < bounding_box.controls[2].markers.size(); i++)
-          {
-            bounding_box.controls[2].markers[i].color.a = 0.0;
-          }
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
-        }
-        else
-        {
-          for (unsigned int i = 0; i < bounding_box.controls[2].markers.size(); i++)
-          {
-            bounding_box.controls[2].markers[i].color.a = 1.0;
-          }
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
-        }
-        break;
-      case 5:
-        /*
-         * Movement controls
-         */
-        if (state == MenuHandler::CHECKED)
-        {
-          MenuHandler::EntryHandle h = 6;
-          MenuHandler::CheckState s;
-          menu_handler.getCheckState(h, s);
-          removeMovementControls(bounding_box, s == MenuHandler::CHECKED);
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
-        }
-        else
-        {
-          addMovementControls(bounding_box);
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
-        }
-        break;
-      case 6:
-        /*
-         * Rotation controls
-         */
-        if (state == MenuHandler::CHECKED)
-        {
-          MenuHandler::EntryHandle h = 5;
-          MenuHandler::CheckState s;
-          menu_handler.getCheckState(h, s);
-          removeRotationControls(bounding_box, s == MenuHandler::CHECKED);
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
-        }
-        else
-        {
-          addRotationControls(bounding_box);
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
-        }
-        break;
-      case 7:
-        /*
-         * Immediate interaction
-         */
-        if (state == MenuHandler::CHECKED)
-        {
-          immediateInteraction = false;
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
-        }
-        else
-        {
-          immediateInteraction = true;
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
-        }
-        break;
-      case 9:
-        /*
-         * Take object action
-         */
-        ROS_INFO("Take object");
-        break;
-      case 10:
-        /*
-         * Throw object action
-         */
-        ROS_INFO("Throw object");
-        break;
-    }
-    server->insert(bounding_box);
+    pose_ = o.pose;
+    object_.pose = pose_;
   }
 
-  menu_handler.reApply(*server);
-  server->applyChanges();
+  switch (feedback->menu_entry_id)
+  {
+    case 1:
+      /**
+       * Bounding box visibility
+       */
+      if (state == MenuHandler::CHECKED)
+      {
+        showBoundingBoxControl(false);
+        menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
+      }
+      else
+      {
+        showBoundingBoxControl(true);
+        menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
+      }
+      break;
+    case 2:
+      /**
+       * Bounding box description
+       */
+      if (state == MenuHandler::CHECKED)
+      {
+        removeDescriptionControl();
+        menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
+      }
+      else
+      {
+        addDescriptionControl();
+        menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
+      }
+      break;
+    case 3:
+      /**
+       * Bounding box measure
+       */
+      if (state == MenuHandler::CHECKED)
+      {
+        removeMeasureControl();
+        menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
+      }
+      else
+      {
+        addMeasureControl();
+        menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
+      }
+      break;
+    case 5:
+      /*
+       * Movement controls
+       */
+      if (state == MenuHandler::CHECKED)
+      {
+        removeMovementControls();
+        menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
+      }
+      else
+      {
+        addMovementControls();
+        menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
+      }
+      break;
+    case 6:
+      /*
+       * Rotation controls
+       */
+      if (state == MenuHandler::CHECKED)
+      {
+        removeRotationControls();
+        menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
+      }
+      else
+      {
+        addRotationControls();
+        menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
+      }
+      break;
+    case 8:
+      /*
+       * Take object action
+       */
+      ROS_INFO("Take object");
+      break;
+    case 9:
+      /*
+       * Throw object action
+       */
+      ROS_INFO("Throw object");
+      break;
+  }
+
+  server_->insert(object_);
+  menu_handler_.reApply(*server_);
+  server_->applyChanges();
 }
 
 void BoundingBox::createMenu()
 {
-  menu_handler.setCheckState(
-                             menu_handler.insert("Show Bounding Box", boost::bind(&BoundingBox::menuCallback, this, _1)),
-                             MenuHandler::CHECKED);
-  menu_handler.setCheckState(
-                             menu_handler.insert("Show description", boost::bind(&BoundingBox::menuCallback, this, _1)),
-                             MenuHandler::UNCHECKED);
-  menu_handler.setCheckState(menu_handler.insert("Show measure", boost::bind(&BoundingBox::menuCallback, this, _1)),
-                             MenuHandler::UNCHECKED);
+  if (!menu_created_)
+  {
+    menu_created_ = true;
+    menu_handler_.setCheckState(menu_handler_.insert("Show Bounding Box", boost::bind(&BoundingBox::menuCallback, this,
+                                                                                      _1)), MenuHandler::CHECKED);
+    menu_handler_.setCheckState(menu_handler_.insert("Show description", boost::bind(&BoundingBox::menuCallback, this,
+                                                                                     _1)), MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(
+                                menu_handler_.insert("Show measure", boost::bind(&BoundingBox::menuCallback, this, _1)),
+                                MenuHandler::UNCHECKED);
 
-  MenuHandler::EntryHandle sub_menu_handle = menu_handler.insert("Interaction");
-  menu_handler.setCheckState(menu_handler.insert(sub_menu_handle, "Movement", boost::bind(&BoundingBox::menuCallback,
-                                                                                          this, _1)),
-                             MenuHandler::UNCHECKED);
-  menu_handler.setCheckState(menu_handler.insert(sub_menu_handle, "Rotation", boost::bind(&BoundingBox::menuCallback,
-                                                                                          this, _1)),
-                             MenuHandler::UNCHECKED);
-  menu_handler.setCheckState(menu_handler.insert(sub_menu_handle, "Immediate", boost::bind(&BoundingBox::menuCallback,
-                                                                                           this, _1)),
-                             MenuHandler::UNCHECKED);
+    MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert("Interaction");
+    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Movement",
+                                                     boost::bind(&BoundingBox::menuCallback, this, _1)),
+                                MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Rotation",
+                                                     boost::bind(&BoundingBox::menuCallback, this, _1)),
+                                MenuHandler::UNCHECKED);
 
-  sub_menu_handle = menu_handler.insert("Actions");
-  menu_handler.insert(sub_menu_handle, "Take object", boost::bind(&BoundingBox::menuCallback, this, _1));
-  menu_handler.insert(sub_menu_handle, "Throw object", boost::bind(&BoundingBox::menuCallback, this, _1));
+    sub_menu_handle = menu_handler_.insert("Actions");
+    menu_handler_.insert(sub_menu_handle, "Take object", boost::bind(&BoundingBox::menuCallback, this, _1));
+    menu_handler_.insert(sub_menu_handle, "Throw object", boost::bind(&BoundingBox::menuCallback, this, _1));
+  }
 }
 
-void BoundingBox::createBoundingBox()
+void BoundingBox::createBoundingBoxControl()
 {
-  object.header.frame_id = frame_id;
-  object.header.stamp = ros::Time::now();
-  object.name = name;
-  object.description = description;
-  object.pose = pose;
-  object.scale = but_gui::maxScale(scale);
+  Point p1, p2;
+  double sx = scale_.x / 2;
+  double sy = scale_.y / 2;
+  double sz = scale_.z / 2;
+
+  bounding_box_.type = Marker::CUBE;
+  bounding_box_.scale = scale_;
+  bounding_box_.color = color_;
+  bounding_box_.color.a = BBOX_MAX_ALPHA;
+
+  wire_.points.clear();
+
+  wire_.type = Marker::LINE_LIST;
+  wire_.scale = scale_;
+  wire_.color.r = color_.b;
+  wire_.color.g = color_.r;
+  wire_.color.b = color_.g;
+  wire_.color.a = BBOX_MAX_ALPHA;
+  wire_.scale.x = 0.002;
+
+  p1.x = -sx;
+  p1.y = -sy;
+  p1.z = -sz;
+  p2.x = -sx;
+  p2.y = sy;
+  p2.z = -sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+  p2.x = -sx;
+  p2.y = -sy;
+  p2.z = sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+  p1.x = -sx;
+  p1.y = sy;
+  p1.z = sz;
+  p2.x = -sx;
+  p2.y = sy;
+  p2.z = -sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+  p2.x = -sx;
+  p2.y = -sy;
+  p2.z = sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+
+  p1.x = sx;
+  p1.y = -sy;
+  p1.z = -sz;
+  p2.x = sx;
+  p2.y = sy;
+  p2.z = -sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+  p2.x = sx;
+  p2.y = -sy;
+  p2.z = sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+  p1.x = sx;
+  p1.y = sy;
+  p1.z = sz;
+  p2.x = sx;
+  p2.y = sy;
+  p2.z = -sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+  p2.x = sx;
+  p2.y = -sy;
+  p2.z = sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+
+  p1.x = sx;
+  p1.y = sy;
+  p1.z = sz;
+  p2.x = -sx;
+  p2.y = sy;
+  p2.z = sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+
+  p1.x = sx;
+  p1.y = -sy;
+  p1.z = sz;
+  p2.x = -sx;
+  p2.y = -sy;
+  p2.z = sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+
+  p1.x = sx;
+  p1.y = sy;
+  p1.z = -sz;
+  p2.x = -sx;
+  p2.y = sy;
+  p2.z = -sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+
+  p1.x = sx;
+  p1.y = -sy;
+  p1.z = -sz;
+  p2.x = -sx;
+  p2.y = -sy;
+  p2.z = -sz;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+
+  control_.name = BOUNDING_BOX_CONTROL_NAME;
+  control_.markers.push_back(bounding_box_);
+  control_.markers.push_back(wire_);
+  control_.interaction_mode = InteractiveMarkerControl::BUTTON;
+  control_.always_visible = true;
+
+  object_.controls.push_back(control_);
 }
 
-void BoundingBox::createBox()
+void BoundingBox::showBoundingBoxControl(bool show)
 {
-  box.type = Marker::CUBE;
-  box.scale = scale;
-  box.color = color;
-  box.color.a = BBOX_MAX_ALPHA;
+  for (unsigned int i = 0; i < control_.markers.size(); i++)
+    control_.markers[i].color.a = show ? BBOX_MAX_ALPHA : BBOX_MIN_ALPHA;
+
+  removeControl(BOUNDING_BOX_CONTROL_NAME);
+  object_.controls.push_back(control_);
 }
 
 void BoundingBox::create()
 {
-  baseControlCount = 0;
+  clearObject();
 
-  createControls();
-  createBoundingBox();
+  object_.header.frame_id = frame_id_;
+  object_.header.stamp = ros::Time::now();
+  object_.name = name_;
+  object_.description = description_;
+  object_.pose = pose_;
+  object_.scale = but_gui::maxScale(scale_);
 
-  control.name = "box_control";
-  createBox();
-  control.markers.push_back(box);
-  control.interaction_mode = InteractiveMarkerControl::BUTTON;
-  control.always_visible = true;
-  object.controls.push_back(control);
-  baseControlCount++;
-
-  createDescriptionControl();
-  object.controls.push_back(descriptionControl);
-  baseControlCount++;
-
-  createMeasureControl();
-  object.controls.push_back(measureControl);
-  baseControlCount++;
+  createBoundingBoxControl();
 
   createMenu();
 }
 
 void BoundingBox::insert()
 {
-  server->insert(object, boost::bind(&BoundingBox::bboxCallback, this, _1));
-  menu_handler.apply(*server, name);
+  create();
+
+  server_->insert(object_, boost::bind(&BoundingBox::bboxCallback, this, _1));
+  menu_handler_.apply(*server_, name_);
 }
 
 }

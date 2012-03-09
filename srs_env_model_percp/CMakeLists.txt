@@ -27,10 +27,16 @@ rosbuild_add_executable(segmenter src/plane_det/filtering.cpp)
 rosbuild_add_executable(segmenter src/plane_det/normals.cpp)
 rosbuild_add_executable(segmenter src/plane_det/polygonization.cpp)
 
+rosbuild_add_executable(pclDetector src/plane_det/pclDetector.cpp)
+rosbuild_add_executable(pclDetector src/plane_det/dynModelExporter.cpp)
+rosbuild_add_executable(pclDetector src/plane_det/normals.cpp)
+
 rosbuild_add_executable(detector src/plane_det/detector.cpp)
 rosbuild_add_executable(detector src/plane_det/normals.cpp)
 rosbuild_add_executable(detector src/plane_det/filtering.cpp)
 rosbuild_add_executable(detector src/plane_det/parameterSpace.cpp)
+rosbuild_add_executable(detector src/plane_det/parameterSpaceOctomap.cpp)
+rosbuild_add_executable(detector src/plane_det/parameterSpaceHierarchy.cpp)
 rosbuild_add_executable(detector src/plane_det/sceneModel.cpp)
 rosbuild_add_executable(detector src/plane_det/dynModelExporter.cpp)
 

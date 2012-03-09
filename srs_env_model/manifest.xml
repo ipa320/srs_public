@@ -1,38 +1,46 @@
 <package>
-  <description brief="but_dynmodel">
+	<description brief="srs_env_model">
 
-    ROS dynamic environment model provided by dcgm-robotics@FIT group.
+		ROS dynamic environment model provided by dcgm-robotics@FIT group.
 
-  </description>
-  <author>Vit Stancl, Tomas Hodan, Michal Spanel</author>
-  <license>BUT OPEN SOURCE LICENCE</license>
-  <review status="unreviewed" notes=""/>
-  <url></url>
+	</description>
+	<author>Vit Stancl, Tomas Hodan, Michal Spanel</author>
+	<license>BUT OPEN SOURCE LICENCE</license>
+	<review status="unreviewed" notes="" />
+	<url></url>
 
-  <depend package="opencv2"/>
-  <depend package="roscpp"/>
-  <depend package="image_transport"/>
-  <depend package="camera_calibration_parsers"/>
-  <depend package="visualization_msgs"/>
-  <depend package="cv_bridge"/>
-  <depend package="std_msgs"/>
-  <depend package="std_srvs"/>
-  <depend package="nav_msgs"/>
-  <depend package="arm_navigation_msgs"/>
-  <depend package="pcl"/>
-  <depend package="pcl_ros"/>
-  <depend package="ogre"/>
-  <depend package="interactive_markers"/> <!-- interactive markers server -->
-  <depend package="octomap_ros" /> <!-- octomap -->
+	<depend package="opencv2" />
+	<depend package="roscpp" />
+	<depend package="image_transport" />
+	<depend package="camera_calibration_parsers" />
+	<depend package="visualization_msgs" />
+	<depend package="cv_bridge" />
+	<depend package="std_msgs" />
+	<depend package="std_srvs" />
+	<depend package="nav_msgs" />
+	<depend package="arm_navigation_msgs" />
+	<depend package="pcl" />
+	<depend package="pcl_ros" />
+	<depend package="ogre" />
+	<depend package="interactive_markers" /> <!-- interactive markers server -->
+	<depend package="octomap_ros" /> <!-- octomap -->
+	<depend package="actionlib_msgs" />
+	<depend package="actionlib" />
+	<depend package="cob_object_detection_msgs" />
 
-  <!--export>
-    <cpp cflags="-I${prefix}/include -I${prefix}/msg/cpp" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lfeatures_2d" />
-  </export> -->
+	<depend package="srs_env_model_msgs" />
 
-<export>
-    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros"/>
-    <cpp os="osx" cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,-L${prefix}lib -lrosthread -framework CoreServices"/>
-  </export>
+	<!--
+		export> <cpp cflags="-I${prefix}/include -I${prefix}/msg/cpp"
+		lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lfeatures_2d" />
+		</export>
+	-->
+
+	<export>
+		<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros" />
+		<cpp os="osx" cflags="-I${prefix}/include"
+			lflags="-L${prefix}/lib -Wl,-rpath,-L${prefix}lib -lrosthread -framework CoreServices" />
+	</export>
 
 </package>
 

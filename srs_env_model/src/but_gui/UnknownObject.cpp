@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: UnknownObject.cpp 146 2012-01-13 10:23:10Z spanel $
+ * $Id: UnknownObject.cpp 252 2012-02-24 10:54:11Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -14,129 +14,73 @@
 namespace but_gui
 {
 
-UnknownObject::UnknownObject(InteractiveMarkerServerPtr server_, string frame_id_, string name_)
+UnknownObject::UnknownObject(InteractiveMarkerServerPtr server, string frame_id, string name) :
+  Primitive(server, frame_id, name, srs_env_model::PrimitiveType::UNKNOWN_OBJECT)
 {
-  server = server_;
-  frame_id = frame_id_;
-  name = name_;
-  immediateInteraction = false;
-  description = "";
-  color.r = 0.3;
-  color.g = 0.5;
-  color.b = 0.6;
-  color.a = 1.0;
-}
-
-UnknownObject::UnknownObject(InteractiveMarkerServerPtr server_, string frame_id_, string name_, Pose pose_,
-                             Scale scale_, string description_)
-{
-  server = server_;
-  frame_id = frame_id_;
-  name = name_;
-  pose = pose_;
-  scale = scale_;
-  immediateInteraction = false;
-  description = description_;
-  color.r = 0.3;
-  color.g = 0.5;
-  color.b = 0.6;
-  color.a = 1.0;
-  create();
-}
-
-UnknownObject::~UnknownObject()
-{
+  description_ = "";
+  color_.r = 0.3;
+  color_.g = 0.5;
+  color_.b = 0.6;
+  color_.a = 1.0;
+  show_movement_control_ = show_scale_control_ = show_rotation_control_ = show_measure_control_
+      = show_description_control_ = false;
 }
 
 void UnknownObject::uboxCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  if (feedback->control_name == "measure_control")
+  if (show_scale_control_)
   {
-    if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP)
-    {
-      InteractiveMarker unknown_object;
-      if (server->get(name, unknown_object))
-      {
-        ROS_INFO("SCALING");
-
-        cout << feedback->pose.position << endl;
-        unknown_object.controls[0].markers[0].scale.x += feedback->pose.orientation.x;
-
-        server->erase(name);
-        scale.x += feedback->pose.orientation.x;
-        create();
-        server->insert(object);
-        server->applyChanges();
-      }
-    }
-    /*
-     if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP)
-     {
-     ROS_INFO("New position:");
-     cout << feedback->pose.position << endl;
-     ROS_INFO("New orientation:");
-     cout << feedback->pose.orientation << endl;
-
-     // Interaction with object from Interactive Marker Server
-     // TODO what to do with other objects?
-     InteractiveMarker object;
-     if (server->get(attachedObjectName, object))
-     {
-     server->erase(attachedObjectName);
-     object.pose = feedback->pose;
-     server->insert(object);
-     server->applyChanges();
-     }
-     }*/
+    updateScaleControls();
+    server_->applyChanges();
   }
+
+  defaultCallback(feedback);
 }
 
 void UnknownObject::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
   MenuHandler::EntryHandle handle = feedback->menu_entry_id;
   MenuHandler::CheckState state;
-  menu_handler.getCheckState(handle, state);
+  string title;
+  menu_handler_.getCheckState(handle, state);
+  menu_handler_.getTitle(handle, title);
 
-  InteractiveMarker unknown_object;
-  if (server->get(name, unknown_object))
+  updatePublisher_->publishMenuClicked(title, state);
+
+  InteractiveMarker o;
+  if (server_->get(name_, o))
   {
-    server->erase(name);
+    object_.pose = o.pose;
     switch (feedback->menu_entry_id)
     {
       case 1:
         /**
-         * Bounding box description
+         * Uknown object description
          */
         if (state == MenuHandler::CHECKED)
         {
-          unknown_object.controls[1].markers[0].color.a = 0.0;
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
+          removeDescriptionControl();
+          menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
         }
         else
         {
-          unknown_object.controls[1].markers[0].color.a = 1.0;
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
+          addDescriptionControl();
+          menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
         }
         break;
       case 2:
         /**
-         * Bounding box measure
+         * Unknown object measure
          */
         if (state == MenuHandler::CHECKED)
         {
-          for (unsigned int i = 0; i < unknown_object.controls[2].markers.size(); i++)
-          {
-            unknown_object.controls[2].markers[i].color.a = 0.0;
-          }
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
+          removeMeasureControl();
+          menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
         }
         else
         {
-          for (unsigned int i = 0; i < unknown_object.controls[2].markers.size(); i++)
-          {
-            unknown_object.controls[2].markers[i].color.a = 1.0;
-          }
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
+          addMeasureControl();
+          menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
         }
         break;
       case 4:
@@ -145,16 +89,13 @@ void UnknownObject::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedba
          */
         if (state == MenuHandler::CHECKED)
         {
-          MenuHandler::EntryHandle h = 5;
-          MenuHandler::CheckState s;
-          menu_handler.getCheckState(h, s);
-          removeMovementControls(unknown_object, s == MenuHandler::CHECKED);
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
+          removeMovementControls();
+          menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
         }
         else
         {
-          addMovementControls(unknown_object);
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
+          addMovementControls();
+          menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
         }
         break;
       case 5:
@@ -163,134 +104,102 @@ void UnknownObject::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedba
          */
         if (state == MenuHandler::CHECKED)
         {
-          MenuHandler::EntryHandle h = 4;
-          MenuHandler::CheckState s;
-          menu_handler.getCheckState(h, s);
-          removeRotationControls(unknown_object, s == MenuHandler::CHECKED);
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
+          removeRotationControls();
+          menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
         }
         else
         {
-          addRotationControls(unknown_object);
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
+          addRotationControls();
+          menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
         }
         break;
-      case 7:
+      case 6:
         /*
          * Scale controls
-         * TODO add this controls
          */
         if (state == MenuHandler::CHECKED)
         {
-          immediateInteraction = false;
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
+          removeScaleControls();
+          menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
         }
         else
         {
-          immediateInteraction = true;
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
+          addScaleControls();
+          menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
         }
         break;
-      case 9:
-        /*
-         * Take object action
-         */
-        ROS_INFO("Take object");
-        break;
-      case 10:
-        /*
-         * Throw object action
-         */
-        ROS_INFO("Throw object");
-        break;
     }
-    server->insert(unknown_object);
+    server_->insert(object_);
   }
 
-  menu_handler.reApply(*server);
-  server->applyChanges();
+  menu_handler_.reApply(*server_);
+  server_->applyChanges();
 }
 
 void UnknownObject::createMenu()
 {
-  menu_handler.setCheckState(menu_handler.insert("Show description",
-                                                 boost::bind(&UnknownObject::menuCallback, this, _1)),
-                             MenuHandler::UNCHECKED);
-  menu_handler.setCheckState(menu_handler.insert("Show measure", boost::bind(&UnknownObject::menuCallback, this, _1)),
-                             MenuHandler::UNCHECKED);
+  if (!menu_created_)
+  {
+    menu_created_ = true;
+    menu_handler_.setCheckState(menu_handler_.insert("Show description", boost::bind(&UnknownObject::menuCallback,
+                                                                                     this, _1)), MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_.insert("Show measure",
+                                                     boost::bind(&UnknownObject::menuCallback, this, _1)),
+                                MenuHandler::UNCHECKED);
 
-  MenuHandler::EntryHandle sub_menu_handle = menu_handler.insert("Interaction");
-  menu_handler.setCheckState(menu_handler.insert(sub_menu_handle, "Movement", boost::bind(&UnknownObject::menuCallback,
-                                                                                          this, _1)),
-                             MenuHandler::UNCHECKED);
-  menu_handler.setCheckState(menu_handler.insert(sub_menu_handle, "Rotation", boost::bind(&UnknownObject::menuCallback,
-                                                                                          this, _1)),
-                             MenuHandler::UNCHECKED);
-  menu_handler.setCheckState(menu_handler.insert(sub_menu_handle, "Scale", boost::bind(&UnknownObject::menuCallback,
-                                                                                       this, _1)),
-                             MenuHandler::UNCHECKED);
+    MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert("Interaction");
+    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Movement",
+                                                     boost::bind(&UnknownObject::menuCallback, this, _1)),
+                                MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Rotation",
+                                                     boost::bind(&UnknownObject::menuCallback, this, _1)),
+                                MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Scale",
+                                                     boost::bind(&UnknownObject::menuCallback, this, _1)),
+                                MenuHandler::UNCHECKED);
+  }
 }
 
 void UnknownObject::createBox()
 {
-  box.type = Marker::MESH_RESOURCE;
-  box.mesh_use_embedded_materials = true;
-  box.scale = scale;
-  box.mesh_resource = "package://srs_env_model/meshes/unknown_object.mesh.xml";
+  box_.type = Marker::MESH_RESOURCE;
+  box_.mesh_use_embedded_materials = true;
+  box_.scale = scale_;
+  box_.mesh_resource = "package://srs_env_model/meshes/unknown_object.dae";
 }
 
 void UnknownObject::createUnknownBox()
 {
-  object.header.frame_id = frame_id;
-  object.header.stamp = ros::Time::now();
-  object.name = name;
-  object.description = description;
-  object.pose = pose;
-  object.scale = but_gui::maxScale(scale);
+  object_.header.frame_id = frame_id_;
+  object_.header.stamp = ros::Time::now();
+  object_.name = name_;
+  object_.description = description_;
+  object_.pose = pose_;
+  object_.scale = but_gui::maxScale(scale_);
 }
 
 void UnknownObject::create()
 {
-  baseControlCount = 0;
+  clearObject();
 
-  createControls();
   createUnknownBox();
 
-  control.name = "box_control";
+  control_.name = "box_control";
   createBox();
-  control.markers.push_back(box);
-  control.interaction_mode = InteractiveMarkerControl::MENU;
-  control.always_visible = true;
-  object.controls.push_back(control);
-  baseControlCount++;
-
-  createDescriptionControl();
-  object.controls.push_back(descriptionControl);
-  baseControlCount++;
-
-  createMeasureControl();
-  measureControl.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
-  object.controls.push_back(measureControl);
-  baseControlCount++;
-
-  /*InteractiveMarkerControl cScaleX;
-   cScaleX.name = "scale_x";
-   cScaleX.set_markers_size(0.5);
-   cScaleX.orientation.w = 1;
-   cScaleX.orientation.x = 1;
-   cScaleX.orientation.y = 0;
-   cScaleX.orientation.z = 0;
-   cScaleX.interaction_mode = InteractiveMarkerControl::MOVE_PLANE;
-   object.controls.push_back(cScaleX);*/
+  control_.markers.push_back(box_);
+  control_.interaction_mode = InteractiveMarkerControl::MENU;
+  control_.always_visible = true;
+  object_.controls.push_back(control_);
 
   createMenu();
 }
 
 void UnknownObject::insert()
 {
-  //  server->insert(object);
-  server->insert(object, boost::bind(&UnknownObject::uboxCallback, this, _1));//
-  menu_handler.apply(*server, name);
+  create();
+
+  server_->insert(object_, boost::bind(&UnknownObject::uboxCallback, this, _1));
+  menu_handler_.apply(*server_, name_);
 }
 
 }

@@ -1,0 +1,5 @@
+bool pregrasp
+bool away
+string object_name
+---
+bool completed

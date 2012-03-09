@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+    
+
+<!-- BUT assisted arm navigation -->
+<include file="$(find srs_arm_navigation)/launch/but_arm_nav_simple_dynmodel.launch"/>
+
+<!-- fake decision making for TESTing purposes ONLY (it calls two generic states) -->
+<!--<node name="fake_dm" pkg="srs_arm_navigation" type="fake_dm.py"/>-->
+
+<!-- object db - for grasping -->
+<include file="$(find srs_object_database)/launch/srs_db.launch"/>
+
+<!-- srs_grasping -->
+<!--<include file="$(find srs_grasping)/launch/grasping_services.launch"/>-->
+<node pkg="srs_grasping" type="get_grasps_from_position.py" name="get_grasps_from_position" ns="get_grasps_from_position" cwd="node" respawn="false" output="screen">
+    <remap from="/arm_kinematics/get_ik" to="/cob3_arm_kinematics/get_ik"/>
+</node>
+<node pkg="srs_grasping" type="get_grasp_configurations.py" name="get_grasp_configurations" ns="get_grasp_configurations" cwd="node" respawn="false" output="screen" />
+
+<!-- knowledge server -->
+<include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+
+<!-- start object detection -->
+<include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
+
+<!-- send milkbox to param server -->
+<!--<param name="MilkBox0" textfile="$(find cob_gazebo_objects)/objects/milk.model" />-->
+
+<!-- spawn model in gazebo -->
+<!--<node name="spawn_Milkbox" pkg="gazebo" type="spawn_model" args="-gazebo -param MilkBox0 -x -2.95 -y 0.05 -z 1.02 -R 0 -P 0 -Y 0 -model milk" respawn="false" output="screen" launch-prefix="" />-->
+
+</launch>

@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: BoundingBox.h 134 2012-01-12 13:52:36Z spanel $
+ * $Id: BoundingBox.h 252 2012-02-24 10:54:11Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -8,7 +8,7 @@
  *******************************************************************************
  */
 
-#include "GuiObject.h"
+#include "Primitive.h"
 
 #ifndef BOUNDINGBOX_H_
 #define BOUNDINGBOX_H_
@@ -16,40 +16,34 @@
 #define BBOX_MIN_ALPHA 0.0
 #define BBOX_MAX_ALPHA 0.1
 
+#define BOUNDING_BOX_CONTROL_NAME "bbox_control"
+
 namespace but_gui
 {
-
-class BoundingBox : public GuiObject
+/*
+ * This class represents Bounding Box primitive
+ *
+ * Bounding Box allows interaction with the selected object as a movement or rotation.
+ * All actions are available and configurable from the menu (right mouse click on the bounding box).
+ * With bounding box you can show the object dimensions.
+ *
+ */
+class BoundingBox : public Primitive
 {
 public:
   /**
-   * Constructor without automatic object creation.
-   * @param server_ is Interactive marker server
-   * @param frame_id_ is fixed frame
-   * @param name_ is name of this bounding box
+   * Constructor.
+   * @param server is Interactive marker server
+   * @param frame_id is fixed frame
+   * @param name is name of this bounding box
    */
-  BoundingBox(InteractiveMarkerServerPtr, string, string);
+  BoundingBox(InteractiveMarkerServerPtr server, string frame_id, string name);
   /**
-   * Constructor with automatic object creation.
-   * @param server_ is Interactive marker server
-   * @param frame_id_ is fixed frame
-   * @param name_ is name of this bounding box
-   * @param objectName_ is name of object controlled by this bounding box
-   * @param pose_ is position and orientation of this bounding box
-   * @param scale_ is scale is size of this bounding box
-   * @param color_ is RGBA color of this bounding box
-   * @param description_ is description of this bounding box
+   * Constructor.
    */
-  BoundingBox(InteractiveMarkerServerPtr, string, string, string, Pose, Scale, ColorRGBA, string);
-  /*
-   * Destructor.
-   */
-  virtual ~BoundingBox();
-
-  /*
-   * Creates this bounding box
-   */
-  void create();
+  BoundingBox()
+  {
+  }
   /*
    * Inserts bounding box into Interactive marker server
    */
@@ -60,11 +54,11 @@ public:
   /**
    * Callback for menu
    */
-  void menuCallback(const InteractiveMarkerFeedbackConstPtr &);
+  void menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
   /**
    * Callback for interactive markers
    */
-  void bboxCallback(const InteractiveMarkerFeedbackConstPtr &);
+  void bboxCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
 
   //Getters and setters
 
@@ -74,17 +68,18 @@ public:
   string getAttachedObjectName();
   /*
    * Sets name of object attached to this bounding box
-   * @param name_ is name of attached object
+   * @param name is name of attached object
    */
-  void setAttachedObjectName(string);
+  void setAttachedObjectName(string name);
 
-private:
-  Marker box;
-  bool immediateInteraction;
-  string attachedObjectName;
+protected:
+  Marker bounding_box_, wire_;
+  string attached_object_name_;
 
-  void createBoundingBox();
-  void createBox();
+  void showBoundingBoxControl(bool show);
+
+  void createBoundingBoxControl();
+  void create();
   void createMenu();
 };
 

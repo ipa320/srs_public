@@ -1,8 +1,0 @@
-<launch>
-
-  <include file="$(find cob_default_robot_config)/upload_param.launch" />
-  <include file="$(find cob_default_env_config)/upload_param.launch" />
-  <include file="$(find cob_2dnav)/ros/launch/2dnav.launch" />
-  <include file="$(find cob_bringup_sim)/launch/robot.launch" />
-
-</launch>

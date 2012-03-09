@@ -49,3 +49,4 @@ arm_cartesian:
   root_name: base_link
   projection_evaluator: joint_state
   longest_valid_segment_fraction: 0.001
+  default_planner_config: SBLKConfig1

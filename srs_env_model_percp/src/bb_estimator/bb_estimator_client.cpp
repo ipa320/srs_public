@@ -1,19 +1,20 @@
 /**
- * $Id: bb_estimator_client.cpp 138 2012-01-12 23:56:08Z xhodan04 $
+ * $Id: bb_estimator_client.cpp 290 2012-03-05 23:19:07Z xhodan04 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Hodan (xhodan04@stud.fit.vutbr.cz)
- * Date: 11.01.2012 (version 4.0)
+ * Date: 02.03.2012 (version 5.0)
  *
  * License: BUT OPEN SOURCE LICENSE
  *
  * Description:
- * This client demonstrates the function of service "bb_estimate" performing
- * bounding box estimation.
+ * This client demonstrates the function of service "/bb_estimator/estimate_bb"
+ * performing bounding box estimation.
  *
- * There are two variants of subscription - to be able to work with the newest
- * and also older versions of Care-o-Bot (subscription variant #2 is for COB 3-3
- * which doesn't provide a depth map so it must be created from a point cloud).
+ * There are two variants of subscription - to be the service able to work also
+ * with a simulation of Care-o-Bot (subscription variant #2 is meant to be used
+ * with simulation, which does not produce a depth map so it must be created from
+ * a point cloud).
  *
  * Node parameters:
  *  Parameters for subscription variant #1:
@@ -25,6 +26,9 @@
  *  bb_sv2_rgb_topic - topic with Image messages containing RGB information
  *  bb_sv2_pointCloud_topic - topic with PointCloud2 messages containing Point Cloud
  *  bb_sv2_camInfo_topic - topic with CameraInfo messages
+ *
+ *  Other parameters:
+ *  bb_scene_frame_id - Frame Id in which the BB coordinates are returned
  *
  * Manual:
  * - Use your mouse to specify a region of interest (ROI) in the window with
@@ -47,10 +51,14 @@
  */
 
 #include "ros/ros.h"
+#include "bb_estimator/services_list.h"
 #include "srs_env_model_percp/EstimateBB.h" // Definition of the service for BB estimation
+#include "srs_env_model/AddBoundingBox.h"
+#include "srs_env_model/ChangePose.h"
+#include "srs_env_model/ChangeScale.h"
+
 #include <algorithm>
 #include <cstdlib>
-#include <sstream>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
@@ -62,12 +70,17 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/image_encodings.h>
 
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Vector3.h>
+
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+
+#include <tf/transform_listener.h>
 
 using namespace cv;
 using namespace sensor_msgs;
@@ -92,16 +105,25 @@ const std::string sv2_rgbTopicDefault("/cam3d/rgb/image_raw");
 const std::string sv2_pointCloudTopicDefault("/cam3d/depth/points");
 const std::string sv2_camInfoTopicDefault("/cam3d/camera_info");
 
+// Frame IDs
+std::string camFrameId; // Camera frame id (will be obtained automatically)
+std::string sceneFrameId; // Scene (world) frame id
+const std::string sceneFrameIdDefault("/map"); // Default scene (world) frame id
+
 // Subscription variants
 enum subVariantsEnum {SV_NONE=0, SV_1, SV_2};
 int subVariant = SV_NONE;
 
 bool isWaitingForResponse = false; // Client is waiting for response from server
 bool isBBCalculated = false; // Indicates, if there is any BB already calculated
+bool isBBPrimitiveCreated = false; // Indicates, if there is any BB primitive already created
+                                   // (for visualization using interactive markers)
 int estimationMode = 1; // Estimation mode (modes are defined in BBEstimatorServer.cpp)
 Point2i mouseDown; // Position of mouse click
 Point2i roiP1, roiP2; // Two diagonally opposite corners of ROI
-vector<Point3f> bbVertices(8); // Corners of estimated bounding box
+vector<Point3f> bbVertices(8); // Corners of the estimated BB
+geometry_msgs::Pose bbPose; // Pose of the estimated BB
+geometry_msgs::Vector3 bbScale; // Scale of the estimated BB
 
 // Names of windows
 string inputVideoWinName("Input Video (use your mouse to specify a ROI)");
@@ -111,12 +133,18 @@ string bbWinName("Bounding Box");
 Scalar bbColorFront(0, 0, 255); // Color of the front side edges of the box
 Scalar bbColor(255, 0, 0); // Color of the rest of the edges
 
+// Transformation from world to camera coordinates
+tf::StampedTransform worldToSensorTf;
+
 // Display mode enumeration
 enum displayModesEnum {RGB, DEPTH};
 int displayMode = RGB;
 
 // Client for comunication with bb_estimator_server
-ros::ServiceClient client;
+ros::ServiceClient bbEstimateClient;
+
+// Client for the add_bounding_box, change_pose and change_scale service
+ros::ServiceClient bbAddClient, bbChangePoseClient, bbChangeScaleClient;
 
 // Current and request images
 // currentX = the last received image of type X
@@ -127,11 +155,14 @@ Mat currentImage, requestImage;
 Mat currentRgb, requestRgb, currentDepth, requestDepth;
 Mat currentCamK, requestCamK;
 
+// TF listener
+tf::TransformListener *tfListener;
+
 
 /*==============================================================================
- * Visualization of bounding box.
+ * Visualization of bounding box in a special window.
  */
-void showBB()
+void visualizeInImage()
 {    
     // If the image does not have 3 channels => convert it (we want to visualize
     // the bounding box in color, thus we need 3 channels)
@@ -141,6 +172,28 @@ void showBB()
     }
     else {
         requestImage.copyTo(img3ch);
+    }
+    
+    // Transform the resulting BB vertices (in world coordinates)
+    // to camera coordinates
+    //--------------------------------------------------------------------------
+    vector<Point3f> bbVerticesCam(8); // Corners of estimated BB in camera coords
+    
+    tf::Transformer t;
+    t.setTransform(worldToSensorTf);
+    
+    for(int i = 0; i < (int)bbVertices.size(); i++) {
+    
+        tf::Stamped<tf::Point> vertex;
+        vertex.frame_id_ = sceneFrameId;
+    
+        vertex.setX(bbVertices[i].x);
+        vertex.setY(bbVertices[i].y);
+        vertex.setZ(bbVertices[i].z);
+        t.transformPoint(camFrameId, vertex, vertex);
+        bbVerticesCam[i].x = vertex.getX();
+        bbVerticesCam[i].y = vertex.getY();
+        bbVerticesCam[i].z = vertex.getZ();
     }
     
     // Perspective projection of the bounding box on the image plane:
@@ -157,9 +210,9 @@ void showBB()
     // where [X,Y,Z] is a 3D point and [x,y] its perspective projection.
     //--------------------------------------------------------------------------
     double bb3DVerticesArray[8][3];
-    for(int i = 0; i < 8; i++) {
-        bb3DVerticesArray[i][0] = bbVertices[i].x / (double)bbVertices[i].z;
-        bb3DVerticesArray[i][1] = bbVertices[i].y / (double)bbVertices[i].z;
+    for(int i = 0; i < (int)bbVertices.size(); i++) {
+        bb3DVerticesArray[i][0] = bbVerticesCam[i].x / (double)bbVerticesCam[i].z;
+        bb3DVerticesArray[i][1] = bbVerticesCam[i].y / (double)bbVerticesCam[i].z;
         bb3DVerticesArray[i][2] = 1;
     }
     Mat bb3DVertices = Mat(8, 3, CV_64F, bb3DVerticesArray);
@@ -189,6 +242,72 @@ void showBB()
     
     // Show the image with visualized bounding box
     imshow(bbWinName, img3ch);
+}
+
+
+/*==============================================================================
+ * Visualization of bounding box using interactive markers.
+ */
+void visualizeWithMarkers()
+{   
+    std::string bbPrimitiveName("estimated_bb");
+
+    // No BB primitive has been created yet => create it
+    //--------------------------------------------------------------------------
+    if(!isBBPrimitiveCreated) {
+
+        // Set parameters to the new bounding box
+        srs_env_model::AddBoundingBox bbAddSrv;
+        
+        bbAddSrv.request.name = bbPrimitiveName;
+        bbAddSrv.request.frame_id = sceneFrameId;
+        bbAddSrv.request.description = "Bounding Box";
+        
+        bbAddSrv.request.pose = bbPose;
+        bbAddSrv.request.scale = bbScale;
+        
+        bbAddSrv.request.color.r = 1.0;
+        bbAddSrv.request.color.g = 0.0;
+        bbAddSrv.request.color.b = 1.0;
+        bbAddSrv.request.color.a = 1.0;
+
+        // Call service with specified parameters
+        bbAddClient.call(bbAddSrv);
+        
+        isBBPrimitiveCreated = true;
+    }
+    
+    // The BB primitive has already been created => modify it
+    //--------------------------------------------------------------------------
+    else {
+        // Change pose of the BB
+        //--------------------
+        srs_env_model::ChangePose bbChangePoseSrv;
+        bbChangePoseSrv.request.name = bbPrimitiveName;
+        bbChangePoseSrv.request.pose = bbPose;
+
+        // Call service with specified parameters
+        bbChangePoseClient.call(bbChangePoseSrv);
+        
+        // Change scale of the BB
+        //--------------------
+        srs_env_model::ChangeScale bbChangeScaleSrv;
+        bbChangeScaleSrv.request.name = bbPrimitiveName;
+        bbChangeScaleSrv.request.scale = bbScale;
+
+        // Call service with specified parameters
+        bbChangeScaleClient.call(bbChangeScaleSrv);
+    }
+}
+
+
+/*==============================================================================
+ * Visualization of bounding box.
+ */
+void visualize()
+{
+    visualizeInImage();
+    visualizeWithMarkers();
 }
 
 
@@ -224,7 +343,7 @@ void redrawWindows()
     
     // Show the bounding box (if there is any calculated already)
     if(isBBCalculated) {
-        showBB();
+        visualize();
     }
 }
 
@@ -263,25 +382,44 @@ void sendRequest(Point2i p1, Point2i p2)
     } while(reqTime.sec == 0);
     srv.request.header.stamp = reqTime;
     
+    // Obtain the corresponding transformation from world to camera coordinate system
+    // (for later visualization in an image)
+    //--------------------------------------------------------------------------
+    try {
+        tfListener->waitForTransform(sceneFrameId, camFrameId, reqTime, ros::Duration(0.2));
+        tfListener->lookupTransform(sceneFrameId, camFrameId, reqTime, worldToSensorTf);
+    }
+    catch(tf::TransformException& ex) {
+        string errorMsg = String("Transform error: ") + ex.what();
+        ROS_ERROR("%s", errorMsg.c_str());
+        return;
+    }
+    
     // Send request and obtain response (the bounding box coordinates)
     //--------------------------------------------------------------------------    
     // Call the service (calls are blocking, it will return once the call is done)
-    if(client.call(srv)) {
+    if(bbEstimateClient.call(srv)) {
         isWaitingForResponse = false;
         isBBCalculated = true;
         
         srs_env_model_percp::EstimateBB::Response res = srv.response;
         
-        // Save the vertices defining the bounding box
+        // Save the response (in world coordinates)
         //----------------------------------------------------------------------
-        bbVertices[0] = Point3i(res.p1[0], res.p1[1], res.p1[2]);
-        bbVertices[1] = Point3i(res.p2[0], res.p2[1], res.p2[2]);
-        bbVertices[2] = Point3i(res.p3[0], res.p3[1], res.p3[2]);
-        bbVertices[3] = Point3i(res.p4[0], res.p4[1], res.p4[2]);
-        bbVertices[4] = Point3i(res.p5[0], res.p5[1], res.p5[2]);
-        bbVertices[5] = Point3i(res.p6[0], res.p6[1], res.p6[2]);
-        bbVertices[6] = Point3i(res.p7[0], res.p7[1], res.p7[2]);
-        bbVertices[7] = Point3i(res.p8[0], res.p8[1], res.p8[2]);
+        bbVertices[0] = Point3f(res.p1[0], res.p1[1], res.p1[2]);
+        bbVertices[1] = Point3f(res.p2[0], res.p2[1], res.p2[2]);
+        bbVertices[2] = Point3f(res.p3[0], res.p3[1], res.p3[2]);
+        bbVertices[3] = Point3f(res.p4[0], res.p4[1], res.p4[2]);
+        bbVertices[4] = Point3f(res.p5[0], res.p5[1], res.p5[2]);
+        bbVertices[5] = Point3f(res.p6[0], res.p6[1], res.p6[2]);
+        bbVertices[6] = Point3f(res.p7[0], res.p7[1], res.p7[2]);
+        bbVertices[7] = Point3f(res.p8[0], res.p8[1], res.p8[2]);
+        
+        bbPose = res.pose;
+        bbScale = res.scale;
+        
+        // Show the resulting bounding box    
+        visualize();
         
         // Log request
         //----------------------------------------------------------------------
@@ -302,13 +440,11 @@ void sendRequest(Point2i p1, Point2i p2)
         }
         ss << "Mode: " << estimationMode;
         ROS_INFO("%s", ss.str().c_str());
-        
-        // Show the resulting bounding box    
-        showBB();
     }
     else {
         isWaitingForResponse = false;
-        ROS_ERROR("Failed to call service bb_estimate.");
+        std::string errMsg = "Failed to call service " + BB_ESTIMATOR_Estimate_SRV + ".";
+        ROS_ERROR("%s", errMsg.c_str());
     }
 }
 
@@ -319,7 +455,7 @@ void sendRequest(Point2i p1, Point2i p2)
  * Because we do not expect to have any negative depth value, we
  * can convert the datatype to unsigned integers, which is sufficient
  * for visualization purposes + more OpenCV functions can work with this
- * datatype (e.g. cvtColor used in showBB function).
+ * datatype (e.g. cvtColor used in visualize function).
  * The depth values are scaled to fit the range <0, 255>.
  */
 void scaleDepth()
@@ -365,6 +501,9 @@ void sv1_processSubMsgs(const sensor_msgs::ImageConstPtr &rgb,
     // Get the intrinsic camera matrix of our camera
     Mat K = Mat(3, 3, CV_64F, (double *)camInfo->K.data());
     K.copyTo(currentCamK);
+    
+    // Save frame id
+    camFrameId = camInfo->header.frame_id;
 
     // Get rgb and depth image from the messages
     //--------------------------------------------------------------------------
@@ -416,6 +555,9 @@ void sv2_processSubMsgs(const sensor_msgs::ImageConstPtr &rgb,
     // Get the intrinsic camera matrix of our camera
     Mat K = Mat(3, 3, CV_64F, (double *)camInfo->K.data());
     K.copyTo(currentCamK);
+    
+    // Save frame id
+    camFrameId = camInfo->header.frame_id;
 
     // Convert the sensor_msgs/PointCloud2 data to depth map
     //--------------------------------------------------------------------------
@@ -442,8 +584,8 @@ void sv2_processSubMsgs(const sensor_msgs::ImageConstPtr &rgb,
     }
     
     // The image / point cloud coming from COB is flipped around X and Y axis
-    flip(currentRgb, currentRgb, -1);
-    flip(currentDepth, currentDepth, -1);
+    //flip(currentRgb, currentRgb, -1);
+    //flip(currentDepth, currentDepth, -1);
     
     // Scales depth values (for visualization purposes).
     scaleDepth();
@@ -512,8 +654,17 @@ int main(int argc, char **argv)
     // NodeHandle is the main access point to communications with the ROS system
     ros::NodeHandle n;
     
-    // Create a client for the bb_estimate service
-    client = n.serviceClient<srs_env_model_percp::EstimateBB>("bb_estimate");
+    // Create a client for the /bb_estimator/estimate_bb service
+    bbEstimateClient = n.serviceClient<srs_env_model_percp::EstimateBB>(BB_ESTIMATOR_Estimate_SRV);
+    
+    // Create clients for the add_bounding_box, change_pose and change_scale services
+    // (for manipulation with a visualization of BB)
+    bbAddClient = n.serviceClient<srs_env_model::AddBoundingBox>("/but_gui/add_bounding_box");
+    bbChangePoseClient = n.serviceClient<srs_env_model::ChangePose>("/but_gui/change_pose");
+    bbChangeScaleClient = n.serviceClient<srs_env_model::ChangeScale>("/but_gui/change_scale");
+    
+    // Create a TF listener
+    tfListener = new tf::TransformListener();
     
     // Get parameters from the parameter server
     // (the third parameter of function param is the default value)
@@ -527,6 +678,8 @@ int main(int argc, char **argv)
     n.param("bb_sv2_rgb_topic", sv2_rgbTopic, sv2_rgbTopicDefault);
     n.param("bb_sv2_pointCloud_topic", sv2_pointCloudTopic, sv2_pointCloudTopicDefault);
     n.param("bb_sv2_camInfo_topic", sv2_camInfoTopic, sv2_camInfoTopicDefault);
+    
+    n.param("bb_scene_frame_id", sceneFrameId, sceneFrameIdDefault);
 
     // Subscription and synchronization of messages
     // TODO: Create the subscribers dynamically and unsubscribe the unused

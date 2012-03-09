@@ -1,5 +1,5 @@
 /**
- * $Id: detector.cpp 151 2012-01-13 12:25:29Z ihulik $
+ * $Id: detector.cpp 264 2012-02-29 15:16:28Z ihulik $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Rostislav Hulik (ihulik@fit.vutbr.cz)
@@ -30,6 +30,7 @@
 #include <pcl/io/vtk_io.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl_ros/point_cloud.h>
+#include <pcl_ros/transforms.h>
 
 // OpenCV 2
 #include <opencv2/highgui/highgui.hpp>
@@ -50,6 +51,10 @@
 #include "plane_det/sceneModel.h"
 #include "plane_det/dynModelExporter.h"
 
+#include <tf/transform_listener.h>
+#include <tf/message_filter.h>
+#include <tf/tfMessage.h>
+
 using namespace std;
 using namespace cv;
 using namespace pcl;
@@ -57,14 +62,19 @@ using namespace sensor_msgs;
 using namespace message_filters;
 
 sensor_msgs::PointCloud2 cloud_msg;
+tf::MessageFilter<sensor_msgs::PointCloud2> *transform_filter;
+tf::TransformListener *tfListener;
 ros::Publisher pub1;
 ros::Publisher pub2;
 but_scenemodel::DynModelExporter *exporter = NULL;
 
+CameraInfo cam_info_legacy;
+CameraInfoConstPtr cam_info_aux (&cam_info_legacy);
+
 /**
  * Callback function manages sync of messages
  */
-void callback(const PointCloud2ConstPtr& cloud, const CameraInfoConstPtr& cam_info)
+void callbackpcl(const PointCloud2ConstPtr& cloud)
 {
 	ros::Time begin = ros::Time::now();
 
@@ -72,21 +82,44 @@ void callback(const PointCloud2ConstPtr& cloud, const CameraInfoConstPtr& cam_in
 	pcl::PointCloud<pcl::PointXYZ> pointcloud;
 	pcl::fromROSMsg (*cloud, pointcloud);
 
+
 	// Control out
 	std::cerr << "Recieved frame..." << std::endl;
 	std::cerr << "Topic: " << pointcloud.header.frame_id << std::endl;
 	std::cerr << "Width: " << pointcloud.width << " height: " << pointcloud.height << std::endl;
 	std::cerr << "=========================================================" << endl;
 
+	// transform to world
+	tf::StampedTransform sensorToWorldTf;
+    try {
+    	tfListener->waitForTransform("/map", cloud->header.frame_id, cloud->header.stamp, ros::Duration(0.2));
+    	tfListener->lookupTransform("/map", cloud->header.frame_id, cloud->header.stamp, sensorToWorldTf);
+    }
+    catch(tf::TransformException& ex){
+        std::cerr << "Transform error: " << ex.what() << ", quitting callback" << std::endl;
+        return;
+    }
+
+    Eigen::Matrix4f sensorToWorld;
+    pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
+    // transform pointcloud from sensor frame to fixed robot frame
+
+
+
 	Mat depth(cvSize(pointcloud.width, pointcloud.height), CV_16UC1);
 	for(int y = 0; y < (int)pointcloud.height; y++)
 	for(int x = 0; x < (int)pointcloud.width; x++) {
 		depth.at<unsigned short>(y, x) = pointcloud.at(x, y).z * 1000.0;
 	}
+	//pcl::transformPointCloud(pointcloud, pointcloud, sensorToWorld);
 
 	// Compute normals and HT
-	but_scenemodel::Normals normal(depth, cam_info, but_scenemodel::NormalType::LSQAROUND);
-	but_scenemodel::SceneModel model(depth, cam_info, normal);
+	// fill aux Kinect cam_info (legacy - need to solve multiple callbacks sync with tf)
+
+
+	but_scenemodel::Normals normal(depth, cam_info_aux, but_scenemodel::NormalType::LSQAROUND);
+	//but_scenemodel::Normals normal(depth, pointcloud, cam_info_aux, but_scenemodel::NormalType::LSQAROUND);
+	but_scenemodel::SceneModel model(depth, cam_info_aux, normal);
 
 	// send scene cloud and HT cloud if necessary
 	//	pcl::VoxelGrid<pcl::PointXYZ> voxelgrid;
@@ -94,8 +127,38 @@ void callback(const PointCloud2ConstPtr& cloud, const CameraInfoConstPtr& cam_in
 	//	voxelgrid.setLeafSize(0.05, 0.05, 0.05);
 	//	voxelgrid.filter(*cloud);
 
-	model.scene_cloud->header.frame_id = "/openni_depth_frame";
-	model.current_hough_cloud->header.frame_id = "/openni_depth_frame";
+	model.scene_cloud->header.frame_id = "/map";
+	model.current_hough_cloud->header.frame_id = "/map";
+	pub1.publish(model.scene_cloud);
+	//	pub2.publish(model.current_hough_cloud);
+	exporter->update(model.planes, model.scene_cloud, sensorToWorldTf);
+
+	// Control out
+	ros::Time end = ros::Time::now();
+	std::cerr << "DONE.... Computation time: " << (end-begin).nsec/1000000.0 << " ms." << std::endl;
+	std::cerr << "=========================================================" << endl<< endl;
+}
+
+void callbackkinect( const sensor_msgs::ImageConstPtr& dep, const CameraInfoConstPtr& cam_info)
+{
+	ros::Time begin = ros::Time::now();
+	//  Debug info
+	std::cerr << "Recieved frame..." << std::endl;
+	std::cerr << "Cam info: fx:" << cam_info->K[0] << " fy:" << cam_info->K[4] << " cx:" << cam_info->K[2] <<" cy:" << cam_info->K[5] << std::endl;
+	std::cerr << "Depth image h:" << dep->height << " w:" << dep->width << " e:" << dep->encoding << " " << dep->step << endl;
+	std::cerr << "=========================================================" << endl;
+
+	//get image from message
+	sensor_msgs::CvBridge bridge;
+	cv::Mat depth = bridge.imgMsgToCv( dep );
+
+
+	but_scenemodel::Normals normal(depth, cam_info, but_scenemodel::NormalType::LSQAROUND);
+	but_scenemodel::SceneModel model(depth, cam_info, normal);
+
+	model.scene_cloud->header.frame_id = "/head_cam3d_link";
+	model.current_hough_cloud->header.frame_id = dep->header.frame_id;
+
 	pub1.publish(model.scene_cloud);
 	//	pub2.publish(model.current_hough_cloud);
 	exporter->update(model.planes, model.scene_cloud);
@@ -106,7 +169,6 @@ void callback(const PointCloud2ConstPtr& cloud, const CameraInfoConstPtr& cam_in
 	std::cerr << "=========================================================" << endl<< endl;
 }
 
-
 /**
  * Main detector module body
  */
@@ -115,24 +177,64 @@ int main( int argc, char** argv )
 	ros::init(argc, argv, "plane_detector");
 	ros::NodeHandle n;
 
-	exporter = new but_scenemodel::DynModelExporter(&n);
+	string input = "";
+	if (argc == 3)
+	{
+		if (strcmp(argv[1], "-input")==0)
+		{
+			if (strcmp(argv[2], "pcl")==0)
+				input = "pcl";
+			else if (strcmp(argv[2], "kinect")==0)
+				input = "kinect";
+		}
+	}
+	if (input == "pcl")
+	{
+		exporter = new but_scenemodel::DynModelExporter(&n);
 
-	// MESSAGES
-	// message_filters::Subscriber<Image> depth_sub(n, "/cam3d/depth/image_raw", 1);
-	message_filters::Subscriber<CameraInfo> info_sub_depth(n, "/cam3d/camera_info", 1);
-	message_filters::Subscriber<PointCloud2 > point_cloud(n, "/cam3d/depth/points", 1);
-	pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/point_cloud", 1);
-	pub2 = n.advertise<visualization_msgs::Marker> ("/polygons", 1);
-	//pub2 = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/hough_cloud", 1);
+		// MESSAGES
+		// message_filters::Subscriber<Image> depth_sub(n, "/cam3d/depth/image_raw", 1);
+		message_filters::Subscriber<PointCloud2 > point_cloud(n, "/cam3d/depth/points", 1);
+
+		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/point_cloud", 1);
+
+		cam_info_legacy.K[0] = 589.367;
+		cam_info_legacy.K[2] = 320.5;
+		cam_info_legacy.K[4] = 589.367;
+		cam_info_legacy.K[5] = 240.5;
+
+		// sync images
+		tfListener = new tf::TransformListener();
+		transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2> (point_cloud, *tfListener, "/map", 1);
+		transform_filter->registerCallback(boost::bind(&callbackpcl, _1));
+		std::cerr << "Plane detector initialized and listening point clouds..." << std::endl;
+		ros::spin();
+
+		return 1;
+	}
+	else if (input == "kinect")
+	{
+		exporter = new but_scenemodel::DynModelExporter(&n);
+		// MESSAGES
+		// message_filters::Subscriber<Image> depth_sub(n, "/cam3d/depth/image_raw", 1);
+		message_filters::Subscriber<Image> depth_sub(n, "/cam3d/depth/image_raw", 1);
+		message_filters::Subscriber<CameraInfo> info_sub_depth(n, "/cam3d/depth/camera_info", 1);
 
 
-	// sync images
-	typedef sync_policies::ApproximateTime<PointCloud2, CameraInfo> MySyncPolicy;
-	Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), point_cloud, info_sub_depth);
-	sync.registerCallback(boost::bind(&callback, _1, _2));
+		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/point_cloud", 1);
+		//pub2 = n.advertise<visualization_msgs::Marker> ("/polygons", 1);
 
-	std::cerr << "Plane detector initialized and listening..." << std::endl;
-	ros::spin();
+		typedef sync_policies::ApproximateTime<Image, CameraInfo> MySyncPolicy;
+		Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), depth_sub, info_sub_depth);
+		sync.registerCallback(boost::bind(&callbackkinect, _1, _2));
+		std::cerr << "Plane detector initialized and listening depth images..." << std::endl;
+		ros::spin();
 
-	return 1;
+		return 1;
+	}
+	else
+	{
+		std::cerr << "Please specify input type (-input pcl or -input kinect)" << std::endl;
+		return 0;
+	}
 }

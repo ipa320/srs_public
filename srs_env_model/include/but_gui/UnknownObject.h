@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: UnknownObject.h 134 2012-01-12 13:52:36Z spanel $
+ * $Id: UnknownObject.h 246 2012-02-23 10:31:43Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -11,40 +11,27 @@
 #ifndef UNKNOWNOBJECT_H_
 #define UNKNOWNOBJECT_H_
 
-#include "but_gui/GuiObject.h"
+#include "but_gui/Primitive.h"
 
 namespace but_gui
 {
+/*
+ * This class represents an Unknown Object primitive.
+ *
+ * Unknown Object shows some obstacles in the scene.
+ * Unknown Object can be rotated, translated and scaled.
+ */
 
-class UnknownObject : public GuiObject
+class UnknownObject : public Primitive
 {
 public:
   /**
-   * Constructor without automatic object creation.
-   * @param server_ is Interactive marker server
-   * @param frame_id_ is fixed frame
-   * @param name_ is name of this object
+   * Constructor.
+   * @param server is Interactive marker server
+   * @param frame_id is fixed frame
+   * @param name is name of this object
    */
-  UnknownObject(InteractiveMarkerServerPtr, string, string);
-  /**
-   * Constructor with automatic object creation.
-   * @param server_ is Interactive marker server
-   * @param frame_id_ is fixed frame
-   * @param name_ is name of this bounding box
-   * @param pose_ is position and orientation of this bounding box
-   * @param scale_ is scale is size of this bounding box
-   * @param description_ is description of this bounding box
-   */
-  UnknownObject(InteractiveMarkerServerPtr, string, string, Pose, Scale, string);
-  /*
-   * Destructor.
-   */
-  virtual ~UnknownObject();
-
-  /*
-   * Creates this Unknown object
-   */
-  void create();
+  UnknownObject(InteractiveMarkerServerPtr server, string frame_id, string name);
   /*
    * Inserts Unknown object into Interactive marker server
    */
@@ -54,18 +41,18 @@ public:
   /**
    * Callback for menu
    */
-  void menuCallback(const InteractiveMarkerFeedbackConstPtr &);
+  void menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
   /**
    * Callback for interactive markers
    */
-  void uboxCallback(const InteractiveMarkerFeedbackConstPtr &);
+  void uboxCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
 
 private:
-  Marker box;
-  bool immediateInteraction;
+  Marker box_;
 
   void createUnknownBox();
   void createBox();
+  void create();
   void createMenu();
 };
 

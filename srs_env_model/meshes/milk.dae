@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA version="1.4.0" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+	<asset>
+		<contributor>
+			<author>Illusoft Collada 1.4.0 plugin for Blender - http://colladablender.illusoft.com</author>
+			<authoring_tool>Blender v:249 - Illusoft Collada Exporter v:0.3.162</authoring_tool>
+			<comments></comments>
+			<copyright></copyright>
+			<source_data>file://</source_data>
+		</contributor>
+		<created>2012-02-09T11:54:34.311757</created>
+		<modified>2012-02-09T11:54:34.311787</modified>
+		<unit meter="0.01" name="centimeter"/>
+		<up_axis>Z_UP</up_axis>
+	</asset>
+	<library_effects>
+		<effect id="Material_Milk-fx" name="Material_Milk-fx">
+			<profile_COMMON>
+				<newparam sid="milk_png-surface">
+					<surface type="2D">
+						<init_from>milk_png-img</init_from>
+						<format>A8R8G8B8</format>
+					</surface>
+				</newparam>
+				<newparam sid="milk_png-sampler">
+					<sampler2D>
+						<source>milk_png-surface</source>
+						<minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+						<magfilter>LINEAR</magfilter>
+					</sampler2D>
+				</newparam>
+				<technique sid="blender">
+					<phong>
+						<emission>
+							<color>0.00000 0.00000 0.00000 1</color>
+						</emission>
+						<ambient>
+							<color>0.50000 0.50000 0.50000 1</color>
+						</ambient>
+						<diffuse>
+							<texture texcoord="CHANNEL1" texture="milk_png-sampler"/>
+						</diffuse>
+						<specular>
+							<color>0.00000 0.00000 0.00000 1</color>
+						</specular>
+						<shininess>
+							<float>12.5</float>
+						</shininess>
+						<reflective>
+							<color>1.00000 1.00000 1.00000 1</color>
+						</reflective>
+						<reflectivity>
+							<float>0.0</float>
+						</reflectivity>
+						<transparent>
+							<color>1 1 1 1</color>
+						</transparent>
+						<transparency>
+							<float>0.0</float>
+						</transparency>
+					</phong>
+				</technique>
+			</profile_COMMON>
+		</effect>
+	</library_effects>
+	<library_images>
+		<image id="milk_png-img" name="milk_png-img">
+			<init_from>images/milk.png</init_from>
+		</image>
+	</library_images>
+	<library_materials>
+		<material id="Material_Milk" name="Material_Milk">
+			<instance_effect url="#Material_Milk-fx"/>
+		</material>
+	</library_materials>
+	<library_geometries>
+		<geometry id="milk-Geometry" name="milk-Geometry">
+			<mesh>
+				<source id="milk-Geometry-Position">
+					<float_array count="72" id="milk-Geometry-Position-array">0.00000 -0.50000 0.50000 0.00000 0.50000 0.50000 0.00000 0.50000 -0.50000 0.00000 -0.50000 -0.50000 0.00000 0.50000 -0.50000 0.00000 0.50000 0.50000 -0.00000 0.50000 0.50000 -0.00000 0.50000 -0.50000 0.00000 0.50000 0.50000 0.00000 -0.50000 0.50000 -0.00000 -0.50000 0.50000 -0.00000 0.50000 0.50000 0.00000 -0.50000 0.50000 0.00000 -0.50000 -0.50000 -0.00000 -0.50000 -0.50000 -0.00000 -0.50000 0.50000 0.00000 -0.50000 -0.50000 0.00000 0.50000 -0.50000 -0.00000 0.50000 -0.50000 -0.00000 -0.50000 -0.50000 -0.00000 0.50000 -0.50000 -0.00000 0.50000 0.50000 -0.00000 -0.50000 0.50000 -0.00000 -0.50000 -0.50000</float_array>
+					<technique_common>
+						<accessor count="24" source="#milk-Geometry-Position-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="milk-Geometry-Normals">
+					<float_array count="36" id="milk-Geometry-Normals-array">-1.00000 0.00000 0.00000 -1.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 1.00000 -0.00000 0.00000 1.00000 -0.00000 0.00000</float_array>
+					<technique_common>
+						<accessor count="12" source="#milk-Geometry-Normals-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="milk-Geometry-UV">
+					<float_array count="72" id="milk-Geometry-UV-array">0.00000 0.00000 1.00000 0.00000 1.00000 1.00000 0.00000 0.00000 1.00000 1.00000 0.00000 1.00000 0.00000 0.00000 1.00000 0.00000 0.00000 1.00000 1.00000 0.00000 1.00000 1.00000 0.00000 1.00000 0.00000 0.00000 1.00000 0.00000 0.00000 1.00000 1.00000 0.00000 1.00000 1.00000 0.00000 1.00000 0.00000 0.00000 1.00000 0.00000 0.00000 1.00000 1.00000 0.00000 1.00000 1.00000 0.00000 1.00000 0.00000 0.00000 1.00000 0.00000 0.00000 1.00000 1.00000 0.00000 1.00000 1.00000 0.00000 1.00000 0.00000 0.00000 1.00000 0.00000 1.00000 1.00000 0.00000 0.00000 1.00000 1.00000 0.00000 1.00000</float_array>
+					<technique_common>
+						<accessor count="36" source="#milk-Geometry-UV-array" stride="2">
+							<param type="float" name="S"></param>
+							<param type="float" name="T"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="milk-Geometry-Vertex">
+					<input semantic="POSITION" source="#milk-Geometry-Position"/>
+				</vertices>
+				<polygons count="12" material="Material_Milk">
+					<input offset="0" semantic="VERTEX" source="#milk-Geometry-Vertex"/>
+					<input offset="1" semantic="NORMAL" source="#milk-Geometry-Normals"/>
+					<input offset="2" semantic="TEXCOORD" source="#milk-Geometry-UV"/>
+					<p>0 0 0 1 0 1 2 0 2</p>
+					<p>0 1 3 2 1 4 3 1 5</p>
+					<p>4 2 6 5 2 7 7 2 8</p>
+					<p>5 3 9 6 3 10 7 3 11</p>
+					<p>8 4 12 9 4 13 11 4 14</p>
+					<p>9 5 15 10 5 16 11 5 17</p>
+					<p>12 6 18 13 6 19 15 6 20</p>
+					<p>13 7 21 14 7 22 15 7 23</p>
+					<p>16 8 24 17 8 25 19 8 26</p>
+					<p>17 9 27 18 9 28 19 9 29</p>
+					<p>20 10 30 21 10 31 22 10 32</p>
+					<p>20 11 33 22 11 34 23 11 35</p>
+				</polygons>
+			</mesh>
+		</geometry>
+	</library_geometries>
+	<library_visual_scenes>
+		<visual_scene id="Scene" name="Scene">
+			<node layer="L1" id="milk" name="milk">
+				<matrix>
+					1.0 0.0 0.0 0.0 
+					0.0 1.0 0.0 0.0 
+					0.0 0.0 1.0 0.0 
+					0.0 0.0 0.0 1.0 
+				</matrix>
+				<instance_geometry url="#milk-Geometry">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material_Milk" target="#Material_Milk">
+								<bind_vertex_input input_semantic="TEXCOORD" input_set="1" semantic="CHANNEL1"/>
+							</instance_material>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+		</visual_scene>
+	</library_visual_scenes>
+	<scene>
+		<instance_visual_scene url="#Scene"/>
+	</scene>
+</COLLADA>

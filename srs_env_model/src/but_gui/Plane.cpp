@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: Plane.cpp 146 2012-01-13 10:23:10Z spanel $
+ * $Id: Plane.cpp 252 2012-02-24 10:54:11Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -13,26 +13,8 @@
 namespace but_gui
 {
 
-Plane::Plane(InteractiveMarkerServerPtr server_, string frame_id_, string name_)
-{
-  server = server_;
-  frame_id = frame_id_;
-  name = name_;
-}
-
-Plane::Plane(InteractiveMarkerServerPtr server_, string frame_id_, string name_, Pose pose_, Scale scale_,
-             ColorRGBA color_)
-{
-  server = server_;
-  frame_id = frame_id_;
-  name = name_;
-  pose = pose_;
-  scale = scale_;
-  color = color_;
-  create();
-}
-
-Plane::~Plane()
+Plane::Plane(InteractiveMarkerServerPtr server, string frame_id, string name) :
+  Primitive(server, frame_id, name, srs_env_model::PrimitiveType::PLANE)
 {
 }
 
@@ -40,132 +22,168 @@ void Plane::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
   MenuHandler::EntryHandle handle = feedback->menu_entry_id;
   MenuHandler::CheckState state;
-  menu_handler.getCheckState(handle, state);
+  string title;
+  menu_handler_.getCheckState(handle, state);
+  menu_handler_.getTitle(handle, title);
 
-  InteractiveMarker plane;
-  if (server->get(name, plane))
+  updatePublisher_->publishMenuClicked(title, state);
+
+  switch (feedback->menu_entry_id)
   {
-    server->erase(name);
-    switch (feedback->menu_entry_id)
-    {
-      case 1:
-        /**
-         * Plane tag description
-         */
-        if (state == MenuHandler::CHECKED)
+    case 1:
+      /**
+       * Plane tag description
+       */
+      if (state == MenuHandler::CHECKED)
+      {
+        removeDescriptionControl();
+        menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
+      }
+      else
+      {
+        description_ = tag_;
+        addDescriptionControl();
+        menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
+      }
+      break;
+    case 3:
+      /**
+       * Plane tag
+       */
+      tag_ = "Unknown";
+      updatePublisher_->publishTagChanged(tag_);
+      if (state == MenuHandler::UNCHECKED)
+      {
+        menu_handler_.setCheckState(3, MenuHandler::CHECKED);
+        menu_handler_.setCheckState(4, MenuHandler::UNCHECKED);
+        menu_handler_.setCheckState(5, MenuHandler::UNCHECKED);
+        menu_handler_.setCheckState(6, MenuHandler::UNCHECKED);
+        if (show_description_control_)
         {
-          plane.controls[1].markers[0].color.a = 0.0;
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
+          removeDescriptionControl();
+          description_ = tag_;
+          addDescriptionControl();
         }
-        else
+      }
+      break;
+    case 4:
+      /**
+       * Plane tag
+       */
+      tag_ = "Wall";
+      updatePublisher_->publishTagChanged(tag_);
+      if (state == MenuHandler::UNCHECKED)
+      {
+        menu_handler_.setCheckState(3, MenuHandler::UNCHECKED);
+        menu_handler_.setCheckState(4, MenuHandler::CHECKED);
+        menu_handler_.setCheckState(5, MenuHandler::UNCHECKED);
+        menu_handler_.setCheckState(6, MenuHandler::UNCHECKED);
+        if (show_description_control_)
         {
-          plane.controls[1].markers[0].color.a = 1.0;
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
+          removeDescriptionControl();
+          description_ = tag_;
+          addDescriptionControl();
         }
-        break;
-      case 3:
-        /**
-         * Plane tag
-         */
-        tag = "Table desk";
-        if (state == MenuHandler::CHECKED)
+      }
+      break;
+    case 5:
+      /**
+       * Plane tag
+       */
+      tag_ = "Door";
+      updatePublisher_->publishTagChanged(tag_);
+      if (state == MenuHandler::UNCHECKED)
+      {
+        menu_handler_.setCheckState(3, MenuHandler::UNCHECKED);
+        menu_handler_.setCheckState(4, MenuHandler::UNCHECKED);
+        menu_handler_.setCheckState(5, MenuHandler::CHECKED);
+        menu_handler_.setCheckState(6, MenuHandler::UNCHECKED);
+        if (show_description_control_)
         {
-          plane.controls[1].markers[0].text = tag;
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
+          removeDescriptionControl();
+          description_ = tag_;
+          addDescriptionControl();
         }
-        else
+      }
+      break;
+    case 6:
+      /**
+       * Plane tag
+       */
+      tag_ = "Table desk";
+      updatePublisher_->publishTagChanged(tag_);
+      if (state == MenuHandler::UNCHECKED)
+      {
+        menu_handler_.setCheckState(3, MenuHandler::UNCHECKED);
+        menu_handler_.setCheckState(4, MenuHandler::UNCHECKED);
+        menu_handler_.setCheckState(5, MenuHandler::UNCHECKED);
+        menu_handler_.setCheckState(6, MenuHandler::CHECKED);
+        if (show_description_control_)
         {
-          plane.controls[1].markers[0].text = tag;
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
+          removeDescriptionControl();
+          description_ = tag_;
+          addDescriptionControl();
         }
-        break;
-      case 4:
-        /**
-         * Plane tag
-         */
-        tag = "Wall";
-        if (state == MenuHandler::CHECKED)
-        {
-          plane.controls[1].markers[0].text = tag;
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
-        }
-        else
-        {
-          plane.controls[1].markers[0].text = tag;
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
-        }
-        break;
-      case 5:
-        /**
-         * Plane tag
-         */
-        tag = "Door";
-        if (state == MenuHandler::CHECKED)
-        {
-          plane.controls[1].markers[0].text = tag;
-          menu_handler.setCheckState(handle, MenuHandler::UNCHECKED);
-        }
-        else
-        {
-          plane.controls[1].markers[0].text = tag;
-          menu_handler.setCheckState(handle, MenuHandler::CHECKED);
-        }
-        break;
-    }
-
-    server->insert(plane);
+      }
+      break;
   }
 
-  menu_handler.reApply(*server);
-  server->applyChanges();
+  server_->insert(object_);
+  menu_handler_.reApply(*server_);
+  server_->applyChanges();
 }
 
 void Plane::createMenu()
 {
-  menu_handler.setCheckState(menu_handler.insert("Show description", boost::bind(&Plane::menuCallback, this, _1)),
-                             MenuHandler::UNCHECKED);
-  MenuHandler::EntryHandle sub_menu_handle = menu_handler.insert("Tag");
-  menu_handler.setCheckState(menu_handler.insert(sub_menu_handle, "Table desk", boost::bind(&Plane::menuCallback, this,
-                                                                                            _1)),
-                             MenuHandler::UNCHECKED);
-  menu_handler.setCheckState(menu_handler.insert(sub_menu_handle, "Wall", boost::bind(&Plane::menuCallback, this, _1)),
-                             MenuHandler::UNCHECKED);
-  menu_handler.setCheckState(menu_handler.insert(sub_menu_handle, "Door", boost::bind(&Plane::menuCallback, this, _1)),
-                             MenuHandler::UNCHECKED);
+  if (!menu_created_)
+  {
+    menu_created_ = true;
+    menu_handler_.setCheckState(menu_handler_.insert("Show description", boost::bind(&Plane::menuCallback, this, _1)),
+                               MenuHandler::UNCHECKED);
+    MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert("Tag");
+    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Unknown", boost::bind(&Plane::menuCallback, this,
+                                                                                           _1)), MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(
+                               menu_handler_.insert(sub_menu_handle, "Wall", boost::bind(&Plane::menuCallback, this, _1)),
+                               MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(
+                               menu_handler_.insert(sub_menu_handle, "Door", boost::bind(&Plane::menuCallback, this, _1)),
+                               MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Table desk", boost::bind(&Plane::menuCallback,
+                                                                                              this, _1)),
+                               MenuHandler::UNCHECKED);
+  }
 }
 
 void Plane::create()
 {
-  object.header.frame_id = frame_id;
-  object.header.stamp = ros::Time::now();
-  object.name = name;
-  object.description = name + " plane";
-  object.pose = pose;
+  clearObject();
 
-  mesh.type = Marker::MESH_RESOURCE;
-  mesh.color = color;
-  // Todo switch x and y ?
-  mesh.scale = scale;
-  mesh.mesh_resource = "package://srs_env_model/meshes/plane.mesh.xml";
+  object_.header.frame_id = frame_id_;
+  object_.header.stamp = ros::Time::now();
+  object_.name = name_;
+  object_.description = name_ + " plane";
+  object_.pose = pose_;
 
-  control.always_visible = true;
-  control.interaction_mode = InteractiveMarkerControl::BUTTON;
-  control.markers.push_back(mesh);
-  object.controls.push_back(control);
-  baseControlCount++;
+  mesh_.type = Marker::CUBE;
+  mesh_.color = color_;
+  mesh_.scale = scale_;
+  mesh_.scale.z = 0.001;
 
-  createDescriptionControl();
-  descriptionControl.markers[0].text = tag;
-  object.controls.push_back(descriptionControl);
-  baseControlCount++;
+  control_.always_visible = true;
+  control_.interaction_mode = InteractiveMarkerControl::BUTTON;
+  control_.markers.push_back(mesh_);
+  object_.controls.push_back(control_);
 
   createMenu();
 }
 
 void Plane::insert()
 {
-  server->insert(object);
-  menu_handler.apply(*server, name);
+  create();
+
+  server_->insert(object_);
+  menu_handler_.apply(*server_, name_);
 }
 
 }

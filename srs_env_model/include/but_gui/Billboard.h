@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: Billboard.h 134 2012-01-12 13:52:36Z spanel $
+ * $Id: Billboard.h 246 2012-02-23 10:31:43Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -8,7 +8,7 @@
  *******************************************************************************
  */
 
-#include "GuiObject.h"
+#include "Primitive.h"
 #include <srs_env_model/BillboardType.h>
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
@@ -20,89 +20,49 @@ using namespace srs_env_model;
 
 namespace but_gui
 {
-
-class Billboard : public GuiObject
+/*
+ * This class represents Billboard primitive.
+ *
+ * Billboard is a simple object created as a plane mesh with texture
+ * representing a real world object.
+ * Billboard is view facing and can illustrate the movement of the represented object.
+ */
+class Billboard : public Primitive
 {
 public:
   /*
-   * Constructor without automatic object creation.
-   * @param server_ is Interactive marker server
-   * @param frame_id_ is fixed frame
-   * @param name_ is name of this billboard
+   * Constructor.
+   * @param server is Interactive marker server
+   * @param frame_id is fixed frame
+   * @param name is name of this billboard
    */
-  Billboard(InteractiveMarkerServerPtr, string, string);
-  /*
-   * Constructor with automatic object creation.
-   * @param server_ is Interactive marker server
-   * @param frame_id_ is fixed frame
-   * @param name_ is name of this billboard
-   * @param type_ is type of this billboard
-   * @param pose_ is position and orientation of this billboard
-   * @param scale_ is scale is size of this billboard
-   */
-  Billboard(InteractiveMarkerServerPtr, string, string, int, Pose, Scale);
-  /*
-   * Destructor.
-   */
-  virtual ~Billboard();
-
-  //Getters and setter
-
+  Billboard(InteractiveMarkerServerPtr server, string frame_id, string name);
   /*
    * Sets type to the billboard
-   * @param type_ is billboard's type
+   * @param type is billboard's type
    */
-  void setType(int);
+  void setType(int type);
   /*
    * Gets billboard's type
    */
   int getType();
-  /*
-   * Sets direction to the billboard
-   * @param direction_ is billboard's direction
-   */
-  void setDirection(Quaternion);
-  /*
-   * Gets billboard's direction
-   */
-  Quaternion getDirection();
-  /*
-   * Sets velocity to the billboard
-   * @param velocity_ is billboard's velocity
-   */
-  void setVelocity(double);
-  /*
-   * Gets billboard's velocity
-   */
-  double getVelocity();
 
-  /*
-   * Creates this billboard
-   */
-  void create();
   /*
    * Inserts this billboard into Interactive marker server
    */
   void insert();
-
-  // Callbacks
-
   /**
    * Callback for menu
    */
   void menuCallback(const InteractiveMarkerFeedbackConstPtr &);
 
 private:
-  int type;
-  double velocity;
-  Quaternion direction;
-  InteractiveMarker object;
-  InteractiveMarkerControl trajectoryControl;
-  Marker mesh;
+  int billboard_type_;
+  Marker mesh_;
 
-  void createMesh();
+  void create();
   void createMenu();
-  void createTrajectoryControl();
+  void createMesh();
 };
 }
 #endif /* BILLBOARD_H_ */

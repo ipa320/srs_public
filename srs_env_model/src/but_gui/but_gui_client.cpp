@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: but_gui_client.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: but_gui_client.cpp 157 2012-01-19 17:23:56Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -16,7 +16,7 @@
 #include <srs_env_model/AddBoundingBox.h>
 #include <srs_env_model/AddBillboard.h>
 #include <srs_env_model/AddPlane.h>
-#include <but_gui/GuiObject.h>
+#include <but_gui/Primitive.h>
 #include <but_gui/Billboard.h>
 #include <srs_env_model/BillboardType.h>
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 
   srs_env_model::AddMarker markerSrv;
   markerSrv.request.name = "Sphere marker";
-  markerSrv.request.frame_id = "/base_link";
+  markerSrv.request.frame_id = "/world";
   markerSrv.request.description = "This is Sphere marker";
   markerSrv.request.type = Marker::SPHERE;
   markerSrv.request.pose.position.x = 1.0;

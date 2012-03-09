@@ -1,5 +1,5 @@
 /**
- * $Id: dynModelExporter.h 134 2012-01-12 13:52:36Z spanel $
+ * $Id: dynModelExporter.h 263 2012-02-27 13:49:53Z ihulik $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Rostislav Hulik (ihulik@fit.vutbr.cz)
@@ -19,6 +19,10 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
+#include <tf/transform_listener.h>
+#include <tf/message_filter.h>
+#include <tf/tfMessage.h>
+
 using namespace pcl;
 
 namespace but_scenemodel
@@ -34,13 +38,14 @@ class DynModelExporter
 		/**
 		 * Updates sent planes using rosservice
 		 */
-		void update(std::vector<Plane<float> > & planes, PointCloud<PointXYZRGB>::Ptr scene_cloud);
+		void update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+		void update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud);
 
 	private:
 		/**
 		 * Returns center and scale of plane marker
 		 */
-		bool getCenterAndScale(Plane<float> &plane, PointCloud<PointXYZRGB>::Ptr scene_cloud, PointXYZ &center, PointXYZ &scale);
+		bool getCenterAndScale(Plane<float> &plane, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, PointXYZ &center, PointXYZ &scale);
 
 		ros::NodeHandle *n;
 		std::vector<bool> managedInd;

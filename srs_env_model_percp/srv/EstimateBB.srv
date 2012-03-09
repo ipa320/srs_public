@@ -25,3 +25,10 @@ float32[3] p6
 float32[3] p7
 float32[3] p8
 
+# pose includes a position and an orientation of the resulting bounding box
+geometry_msgs/Pose pose
+
+# scale includes a size of the bounding box in direction of X, Y and Z coordinates
+# (before rotation given by orientation, which is included in pose)
+geometry_msgs/Vector3 scale
+

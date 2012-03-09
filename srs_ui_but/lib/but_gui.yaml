@@ -1,0 +1,23 @@
+name: but_gui
+library: but_gui
+displays:
+  -
+    class_name: CButDisplay
+    display_name: CButDisplay
+    description: |
+      This demonstrational display shows only basic geometry.
+  -
+    class_name: CButPointCloud
+    display_name: CButPointCloud
+    description: |
+      Show pointclouds display
+  -
+    class_name: CButDistanceVisualizer
+    display_name: Distance Visualizer
+    description: |
+      Visualization of distance between the link and closest surface.
+  -
+    class_name: ButCamDisplay
+    display_name: ButCamDisplay
+    description: |
+      This display allows to create rectangular polygon reading its position from desired topic, with dynamic texture

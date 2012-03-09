@@ -1,0 +1,3 @@
+string link                                # Link from which you want to get closest point
+---
+srs_ui_but/ClosestPoint closest_point_data # Distance and position of the closest point

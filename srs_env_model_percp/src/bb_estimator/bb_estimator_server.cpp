@@ -1,19 +1,20 @@
 /**
- * $Id: bb_estimator_server.cpp 138 2012-01-12 23:56:08Z xhodan04 $
+ * $Id: bb_estimator_server.cpp 290 2012-03-05 23:19:07Z xhodan04 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Hodan (xhodan04@stud.fit.vutbr.cz)
- * Date: 11.01.2012 (version 4.0)
+ * Date: 02.03.2012 (version 5.0)
  *
  * License: BUT OPEN SOURCE LICENSE
  *
  * Description:
- * This server advertises service "bb_estimate" performing bounding box estimation.
- * The input/output is defined in estimateBB.srv file.
+ * This server advertises service ("/bb_estimator/estimate_bb") performing bounding
+ * box estimation. The input/output is defined in Estimate.srv file.
  *
- * There are two variants of subscription - to be able to work with the newest
- * and also older versions of Care-o-Bot (subscription variant #2 is for COB 3-3
- * which doesn't provide a depth map so it must be created from a point cloud).
+ * There are two variants of subscription - to be the service able to work also
+ * with a simulation of Care-o-Bot (subscription variant #2 is meant to be used
+ * with simulation, which does not produce a depth map so it must be created from
+ * a point cloud).
  *
  * Node parameters:
  *  Parameters for subscription variant #1:
@@ -27,10 +28,12 @@
  *  Other parameters:
  *  bb_outliers_percent - Percentage of furthest points from mean considered
  *                        as outliers when calculating statistics of ROI
+ *  bb_scene_frame_id - Frame Id in which the BB coordinates are returned
  *------------------------------------------------------------------------------
  */
 
 #include "ros/ros.h"
+#include "bb_estimator/services_list.h"
 #include "srs_env_model_percp/EstimateBB.h" // Definition of the service for BB estimation
 #include <algorithm>
 
@@ -50,6 +53,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
+#include <tf/transform_listener.h>
+
 using namespace cv;
 using namespace sensor_msgs;
 using namespace message_filters;
@@ -57,6 +62,7 @@ using namespace message_filters;
 
 // Global variables
 //------------------------------------------------------------------------------
+static const float PI = 3.1415926535;
 const bool DEBUG = false; // If true, verbose outputs are written to console.
 
 // Cache
@@ -76,6 +82,11 @@ const std::string sv1_camInfoTopicDefault("/cam3d/depth/camera_info");
 // Topics for subscription variant #2
 const std::string sv2_pointCloudTopicDefault("/cam3d/depth/points");
 const std::string sv2_camInfoTopicDefault("/cam3d/camera_info");
+
+// Frame IDs
+std::string camFrameId; // Camera frame id (will be obtained automatically)
+std::string sceneFrameId; // Scene (world) frame id
+const std::string sceneFrameIdDefault("/map"); // Default scene (world) frame id
 
 // Subscription variants
 enum subVariantsEnum {SV_NONE=0, SV_1, SV_2};
@@ -109,12 +120,8 @@ const double sidesRatioDefault = 5;
 enum estimationModeEnum{MODE1 = 1, MODE2, MODE3};
 int estimationMode;
 
-// The number of pixels per meter for Kinect IR camera
-// focal length = 0.00473 [m], 589.367 [pixels] => 589.3667 / 0.00473 = 124601.839
-// Ref:
-// http://www.isprs.org/proceedings/XXXVIII/5-W12/Papers/ls2011_submission_40.pdf
-// http://www.ros.org/wiki/kinect_calibration/technical#Lens_distortion_and_focal_length
-//const float kinectIRPixelsPerMeter = 124601.839;
+// TF listener
+tf::TransformListener *tfListener;
 
 
 /*==============================================================================
@@ -164,7 +171,7 @@ bool calcStats(Mat &m, float *mean, float *stdDev)
     // Get the mask of known values (the unknown are represented by 0, the
     // known by 255)
     Mat negMask = m <= 0; // Negative values
-    Mat infMask = m > 20000; // "Infinite" values (more than 20 meters)
+    Mat infMask = m > 20; // "Infinite" values (more than 20 meters)
     Mat knownMask = ((negMask + infMask) == 0);
 
     // Mean and standard deviation
@@ -241,7 +248,6 @@ bool calcStats(Mat &m, float *mean, float *stdDev)
 bool calcNearAndFarFaceDistance(Mat &m, float fx, float fy, Point2i roiLB,
                                 Point2i roiRT, float *d1, float *d2)
 {
-
 	// Get mean and standard deviation
 	float mean, stdDev;
 	if(!calcStats(m, &mean, &stdDev)) {
@@ -252,6 +258,9 @@ bool calcNearAndFarFaceDistance(Mat &m, float fx, float fy, Point2i roiLB,
 	*d1 = mean - stdDev;
 	*d2 = mean + stdDev;
 
+    // TODO: The following check can be done only after conversion the focal
+    // length to the same units as the distances have (= meters)
+    // ----------
 	// Check if all BB vertices are in the front of the image plane (only the
 	// vertices of the front face can be behind (= closer to origin),
 	// so it is enough to check them). A vector from origin to the depth = f
@@ -261,6 +270,7 @@ bool calcNearAndFarFaceDistance(Mat &m, float fx, float fy, Point2i roiLB,
 	// the corresponding vertex is behind the image plane, thus set d1 to l
 	// (the vertex is moved to depth = f). This is done for all front face
 	// vertices...
+	/*
     float f = (fx + fy) / 2.0;
 	
 	Point3f vecLBFf = backProject(roiLB, f, fx, fy);
@@ -278,6 +288,7 @@ bool calcNearAndFarFaceDistance(Mat &m, float fx, float fy, Point2i roiLB,
 	Point3f vecLTFf = backProject(Point2i(roiLB.x, roiRT.y), f, fx, fy);
 	float vecLTFlen = norm(vecLTFf);
 	if(vecLTFlen > *d1) *d1 = vecLTFlen;
+	*/
 	
 	return true;
 }
@@ -306,10 +317,15 @@ bool calcNearAndFarFaceDepth(Mat &m, float f, float *z1, float *z2)
     // (given by the depth standard deviation) from the depth mean.
     *z1 = mean - stdDev; // Depth of the near BB face
     *z2 = mean + stdDev; // Depth of the far BB face
-        
+    
+    // TODO: The following check can be done only after conversion the focal
+    // length to the same units as the depth values have (= meters)
+    // ----------
     // There cannot be any object whose depth is smaller than the focal length
     // => if we have obtained such value, set the value to be equal to f.
+    /*
     *z1 = (*z1 > f) ? *z1 : f;
+    */
     
     return true;
 }
@@ -357,6 +373,9 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
           ROS_ERROR("cv_bridge exception: %s", e.what());
           return false;
         }
+        
+        // Convert the depth coming in milimeters to meters
+        depthMap *= 1.0/1000.0;
     }
     
     // Subscription variant #2 - the depth map must be created from a point clound
@@ -380,13 +399,26 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
         }
         
         // The point cloud coming from COB is flipped around X and Y axis
-        flip(depthMap, depthMap, -1);
-        
-        // Convert the depth coming in meters to pixels
-        depthMap *= 1000.0;
+        //flip(depthMap, depthMap, -1);
     }
     else {
         ROS_ERROR("Unknown subscription variant!");
+        return false;
+    }
+    
+    // Obtain the corresponding transformation from camera to world coordinate system
+    //--------------------------------------------------------------------------
+    tf::StampedTransform sensorToWorldTf;
+    camFrameId = camInfo->header.frame_id;
+    try {
+        tfListener->waitForTransform(camFrameId, sceneFrameId,
+                                     camInfo->header.stamp, ros::Duration(0.2));
+        tfListener->lookupTransform(camFrameId, sceneFrameId,
+                                    camInfo->header.stamp, sensorToWorldTf);
+    }
+    catch(tf::TransformException& ex) {
+        string errorMsg = String("Transform error: ") + ex.what();
+        ROS_ERROR("%s", errorMsg.c_str());
         return false;
     }
     
@@ -415,7 +447,7 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     
     // Get depth information in the ROI
     Mat roi = Mat(depthMap, Rect(roiLBi.x, roiRTi.y,
-                                       roiRTi.x - roiLBi.x, roiLBi.y - roiRTi.y));
+                                 roiRTi.x - roiLBi.x, roiLBi.y - roiRTi.y));
 
     // Get the intrinsic camera parameters (needed for back-projection)
     //--------------------------------------------------------------------------
@@ -444,16 +476,27 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     // e.g. an array with 8 items.)
     Point3f bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB;
     
+    // Vector with pointers to the BB vertices (to be able to iterate over them)
+    vector<Point3f *> bbVertices(8);
+    bbVertices[0] = &bbLBF;
+    bbVertices[1] = &bbRBF;
+    bbVertices[2] = &bbRTF;
+    bbVertices[3] = &bbLTF;
+    bbVertices[4] = &bbLBB;
+    bbVertices[5] = &bbRBB;
+    bbVertices[6] = &bbRTB;
+    bbVertices[7] = &bbLTB;
+    
     // MODE #1
-    //--------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////
     if(estimationMode == MODE1) {
         
         // Convert depth to distance from origin (0,0,0) (= optical center).
         Mat roiD(roi.size(), CV_32F);
         for(int i = 0; i < roi.rows; i++) {
             for(int j = 0; j < roi.cols; j++) {
-                int z = roi.at<float>(i, j);
-                Point3f P = backProject(Point2i(roiLB.x + i, roiRT.y + j), z, fx, fy);
+                float z = roi.at<float>(i, j);
+                Point3f P = backProject(Point2i(roiLB.x + j, roiRT.y + i), z, fx, fy);
                 
                 // Get the distance from the origin
                 roiD.at<float>(i, j) = norm(P);
@@ -519,7 +562,7 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     }
     
     // MODE #2
-    //--------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////
     // Only bbLBF and bbRTF are calculated in this mode. The rest of the BB
     // vertices is expressed using these points (it is possible because the
     // resulting BB is parallel with all axis in this mode).
@@ -653,7 +696,7 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     }
     
     // MODE #3
-    //--------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////
     // Only bbLBF and bbRTF are calculated in this mode. The rest of the BB
     // vertices is expressed using these points (it is possible because the
     // resulting BB is parallel with all axis in this mode).
@@ -684,33 +727,184 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
         bbRBB = Point3f(bbRTB.x, bbLBF.y, bbRTB.z);
         bbLTB = Point3f(bbLBF.x, bbRTB.y, bbRTB.z);
     }
+
+
+    // Transform the resulting BB vertices to the world coordinates
+    //--------------------------------------------------------------------------
+    tf::Transformer t;
+    t.setTransform(sensorToWorldTf);
     
-    // If the the depth map was already in pixels, round the resulting coordinates
-    // to return the whole numbers
-    if(subVariant == SV_1) {
-        bbLBF.x = cvRound(bbLBF.x); bbLBF.y = cvRound(bbLBF.y); bbLBF.y = cvRound(bbLBF.y);
-        bbRBF.x = cvRound(bbRBF.x); bbRBF.y = cvRound(bbRBF.y); bbRBF.y = cvRound(bbRBF.y);
-        bbRTF.x = cvRound(bbRTF.x); bbRTF.y = cvRound(bbRTF.y); bbRTF.y = cvRound(bbRTF.y);
-        bbLTF.x = cvRound(bbLTF.x); bbLTF.y = cvRound(bbLTF.y); bbLTF.y = cvRound(bbLTF.y);
-        bbLBB.x = cvRound(bbLBB.x); bbLBB.y = cvRound(bbLBB.y); bbLBB.y = cvRound(bbLBB.y);
-        bbRBB.x = cvRound(bbRBB.x); bbRBB.y = cvRound(bbRBB.y); bbRBB.y = cvRound(bbRBB.y);
-        bbRTB.x = cvRound(bbRTB.x); bbRTB.y = cvRound(bbRTB.y); bbRTB.y = cvRound(bbRTB.y);
-        bbLTB.x = cvRound(bbLTB.x); bbLTB.y = cvRound(bbLTB.y); bbLTB.y = cvRound(bbLTB.y);
+    for(int i = 0; i < (int)bbVertices.size(); i++) {
+        tf::Stamped<tf::Point> vertex;
+        vertex.frame_id_ = camFrameId;
+    
+        vertex.setX(bbVertices[i]->x);
+        vertex.setY(bbVertices[i]->y);
+        vertex.setZ(bbVertices[i]->z);
+        t.transformPoint(sceneFrameId, vertex, vertex);
+        bbVertices[i]->x = vertex.getX();
+        bbVertices[i]->y = vertex.getY();
+        bbVertices[i]->z = vertex.getZ();
     }
-    // If we obtained the depth map from point clound from Kinect (whose coordinates
-    // are in meter), convert it back to meters.
-    else if(subVariant == SV_2) {
-        /*
-        bbLBF *= 1.0 / kinectIRPixelsPerMeter;
-        bbRBF *= 1.0 / kinectIRPixelsPerMeter;
-        bbRTF *= 1.0 / kinectIRPixelsPerMeter;
-        bbLTF *= 1.0 / kinectIRPixelsPerMeter;
-        bbLBB *= 1.0 / kinectIRPixelsPerMeter;
-        bbRBB *= 1.0 / kinectIRPixelsPerMeter;
-        bbRTB *= 1.0 / kinectIRPixelsPerMeter;
-        bbLTB *= 1.0 / kinectIRPixelsPerMeter;
-        */
+    
+    // Calculate also a representation of the BB given by position, orientation
+    // and scale
+    //--------------------------------------------------------------------------
+    // Save vectors representing the 3 edges emanating from bbLBF. We will align
+    // them to X, Y and Z axis by a rotation (roll, pitch, yaw), from which is
+    // then created a quaternion representing the BB orientation. All permutations
+    // from set of these three edges to set of X, Y and Z axis are considered. The
+    // one with the smallest sum of roll + pitch + yaw (= rotation which yields
+    // the BB to be axis-aligned) is selected - we want to describe the BB
+    // orientation by minimal rotation.
+    vector<Point3f> edges(3), edgesNorm(3);
+    edges[0] = bbRBF - bbLBF;
+    edges[1] = bbLTF - bbLBF;
+    edges[2] = bbLBB - bbLBF;
+    
+    // Normalization of edge vectors
+    for(int i = 0; i < 3; i++) edgesNorm[i] = edges[i] * (1.0 / norm(edges[i]));
+    
+    Point3f rotBest; // The best rotation yielding to axis-aligned BB (roll, pitch and yaw)
+    float anglesMinSum = -1; // Minimal sum of roll, pitch and yaw
+    Point3f bbSize; // Size (scale) of the BB, w.r.t. X, Y and Z axis
+
+    // For each permutation (edges -> axis) the smallest rotation which yields
+    // to the axis-aligned BB is obtained.
+    // At first, an angle between an edge (the one which is currently selected
+    // as the one to be aligned with X axis) and X-axis is found. The edges are
+    // then rotated by this angle. Similar steps are then applied for Y and Z axis.
+    // These angles then define the BB orientation.
+    //
+    // Here are detailed steps to calculation an angle of rotation around X axis
+    // (the steps for Y and Z axis are analogous):
+    // 1) Project edges (the ones to be aligned with Y and Z axis; the one to be
+    //    aligned with X axis is not considered here, because its rotation around
+    //    X axis won't get us any closer to the axis-aligned BB) onto YZ plane
+    //    and normalize them.
+    // 2) Angle = arcus cosinus of the dot product of a normalized
+    //    projected edge and a unit vector describing the corresponding axis.
+    // 3) The direction correspondence of the vectors is not important,
+    //    so convert the angle to the range from 0 to PI/2
+    //    (=> the normalized projected vector can have, after rotation
+    //    by this angle, the opposite direction than the axis vector).
+    // 4) Set the direction of rotation (note: rotation is going
+    //    counter-clockwise around given axis, when the coordinate system is
+    //    viewed as this axis is going the the eye).
+    // 5) Take the smaller angle (from the angle aligning one edge to Y axis and
+    //    the angle aligning the second edge to Z axis).
+    for(int xi = 0; xi < 3; xi++) {
+        for(int yi = 0; yi < 3; yi++) {
+            if(xi == yi) continue;
+            for(int zi = 0; zi < 3; zi++) {
+                if(xi == zi || yi == zi) continue;
+                
+                Point3f rot; // Current rotation
+                vector<Point3f> edgesTmp = edgesNorm; // Local copy of edges
+
+                // Roll - rotation around X axis
+                //----------
+                // Step 1:
+                Point3f edgeYyz(0, edgesTmp[yi].y, edgesTmp[yi].z);
+                Point3f edgeZyz(0, edgesTmp[zi].y, edgesTmp[zi].z);
+                edgeYyz *= (1.0 / norm(edgeYyz));
+                edgeZyz *= (1.0 / norm(edgeZyz));
+                // Step 2:
+                float rollY = acos(edgeYyz.y);
+                float rollZ = acos(edgeZyz.z);
+                // Step 3:
+                if(rollY > PI/2.0) rollY = -PI + rollY;
+                if(rollZ > PI/2.0) rollZ = -PI + rollZ;
+                // Step 4:
+                if(edgeYyz.z < 0) rollY = -rollY;
+                if(edgeZyz.y > 0) rollZ = -rollZ;
+                // Step 5:
+                rot.x = (fabs(rollY) < fabs(rollZ)) ? -rollY : -rollZ;
+
+                // Rotate edges around X axis
+                for(int m = 0; m < 3; m++) {
+	                edgesTmp[m] = Point3f(
+					    edgesTmp[m].x,
+					    cos(rot.x)*edgesTmp[m].y - sin(rot.x)*edgesTmp[m].z,
+			            sin(rot.x)*edgesTmp[m].y + cos(rot.x)*edgesTmp[m].z);
+                }
+
+                // Pitch - rotation around Y axis
+                //----------
+                // Step 1:
+                // Project edges (the ones to be aligned with X and Z axis) onto XZ plane
+                Point3f edgeXxz(edgesTmp[xi].x, 0, edgesTmp[xi].z);
+                Point3f edgeZxz(edgesTmp[zi].x, 0, edgesTmp[zi].z);
+                edgeXxz *= (1.0 / norm(edgeXxz));
+                edgeZxz *= (1.0 / norm(edgeZxz));
+                // Step 2:
+                float pitchX = acos(edgeXxz.x);
+                float pitchZ = acos(edgeZxz.z);
+                // Step 3:
+                if(pitchX > PI/2.0) pitchX = -PI + pitchX;
+                if(pitchZ > PI/2.0) pitchZ = -PI + pitchZ;
+                // Step 4:
+                if(edgeXxz.z > 0) pitchX = -pitchX;
+                if(edgeZxz.x < 0) pitchZ = -pitchZ;
+                // Step 5:
+                rot.y = (fabs(pitchX) < fabs(pitchZ)) ? -pitchX : -pitchZ;
+
+                // Rotate edges around Y axis
+                for(int m = 0; m < 3; m++) {
+	                edgesTmp[m] = Point3f(
+					    cos(rot.y)*edgesTmp[m].x + sin(rot.y)*edgesTmp[m].z,
+					    edgesTmp[m].y,
+					    -sin(rot.y)*edgesTmp[m].x + cos(rot.y)*edgesTmp[m].z);
+                }
+
+                // Yaw - rotation around Z axis
+                //----------
+                // Step 1:
+                // Project edges (the ones to be aligned with X and Y axis) onto XY plane
+                Point3f edgeXxy(edgesTmp[xi].x, edgesTmp[xi].y, 0);
+                Point3f edgeYxy(edgesTmp[yi].x, edgesTmp[yi].y, 0);
+                edgeXxy *= (1.0 / norm(edgeXxy));
+                edgeYxy *= (1.0 / norm(edgeYxy));
+                // Step 2:
+                float yawX = acos(edgeXxy.x);
+                float yawY = acos(edgeYxy.y);
+                // Step 3:
+                if(yawX > PI/2.0) yawX = -PI + yawX;
+                if(yawY > PI/2.0) yawY = -PI + yawY;
+                // Step 4:
+                if(edgeXxy.y < 0) yawX = -yawX;
+                if(edgeYxy.x > 0) yawY = -yawY;
+                // Step 5:
+                rot.z = (fabs(yawX) < fabs(yawY)) ? -yawX : -yawY;
+
+                // Evaluate the actual rotation - the smaller sum of angles, the better
+                //--------------------------------------------------------------
+                float actualSum = fabs(rot.x) + fabs(rot.y) + fabs(rot.z);
+                if(anglesMinSum == -1 || anglesMinSum > actualSum) {
+	                anglesMinSum = actualSum;
+	                rotBest = rot;
+
+                    // Calculate size (scale) of the BB, w.r.t. X, Y and Z axis
+                    // (using the current permutation)
+	                bbSize.x = norm(edges[xi]);
+	                bbSize.y = norm(edges[yi]);
+	                bbSize.z = norm(edges[zi]);
+                }
+            }
+        }
     }
+    
+    // Create a quaternion representing the calculated rotation
+    //--------------------------------------------------------------------------
+    btQuaternion q = tf::createQuaternionFromRPY(-rotBest.x, -rotBest.y, -rotBest.z);
+    
+    // Get the center of mass of the BB (in world coordinates)
+    //--------------------------------------------------------------------------
+    Point3f COM(0, 0, 0);
+    for(int i = 0; i < (int)bbVertices.size(); i++) {
+        COM += *(bbVertices[i]);
+    }
+    COM *= 1.0/8.0;
 
     // Set response
     //--------------------------------------------------------------------------
@@ -723,6 +917,19 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     res.p7[0] = bbRTB.x; res.p7[1] = bbRTB.y; res.p7[2] = bbRTB.z;
     res.p8[0] = bbLTB.x; res.p8[1] = bbLTB.y; res.p8[2] = bbLTB.z;
     
+    res.pose.position.x = COM.x;
+    res.pose.position.y = COM.y;
+    res.pose.position.z = COM.z;
+
+    res.pose.orientation.x = q.x();
+    res.pose.orientation.y = q.y();
+    res.pose.orientation.z = q.z();
+    res.pose.orientation.w = q.w();
+
+    res.scale.x = bbSize.x;
+    res.scale.y = bbSize.y;
+    res.scale.z = bbSize.z;
+    
     // Log request timestamp
     //--------------------------------------------------------------------------
     ROS_INFO("Request timestamp: %d.%d", req.header.stamp.sec, req.header.stamp.nsec);
@@ -732,12 +939,13 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
 
 
 /*==============================================================================
- * Adds messages to cache (for synchronized subscription variant #1).
+ * Adds messages to cache (for synchronized subscription variant #1) and obtains
+ * the corresponding transformation.
  *
  * @param depth  Message with depth image.
  * @param camInfo  Message with camera information.
  */
-void sv1_addToCache(const sensor_msgs::ImageConstPtr &depth,
+void sv1_callback(const sensor_msgs::ImageConstPtr &depth,
                 const sensor_msgs::CameraInfoConstPtr &camInfo)
 {
     if(subVariant == SV_NONE) {
@@ -763,12 +971,13 @@ void sv1_addToCache(const sensor_msgs::ImageConstPtr &depth,
 
 
 /*==============================================================================
- * Adds messages to cache (for synchronized subscription variant #2).
+ * Adds messages to cache (for synchronized subscription variant #2) and obtains
+ * the corresponding transformation.
  *
  * @param pointCloud  Message with point cloud.
  * @param camInfo  Message with camera information.
  */
-void sv2_addToCache(const sensor_msgs::PointCloud2ConstPtr &pointCloud,
+void sv2_callback(const sensor_msgs::PointCloud2ConstPtr &pointCloud,
                 const sensor_msgs::CameraInfoConstPtr &camInfo)
 {
     if(subVariant == SV_NONE) {
@@ -804,6 +1013,9 @@ int main(int argc, char **argv)
     // NodeHandle is the main access point to communications with the ROS system
     ros::NodeHandle n;
     
+    // Create a TF listener
+    tfListener = new tf::TransformListener();
+    
     // Get parameters from the parameter server
     // (the third parameter of function param is the default value)
     //--------------------------------------------------------------------------
@@ -816,6 +1028,7 @@ int main(int argc, char **argv)
     n.param("bb_sv2_camInfo_topic", sv2_camInfoTopic, sv2_camInfoTopicDefault);
     
     n.param("bb_outliers_percent", outliersPercent, outliersPercentDefault);
+    n.param("bb_scene_frame_id", sceneFrameId, sceneFrameIdDefault);
     
     // Subscription and synchronization of messages
     // TODO: Create the subscribers dynamically and unsubscribe the unused
@@ -828,7 +1041,7 @@ int main(int argc, char **argv)
     typedef sync_policies::ApproximateTime<Image, CameraInfo> sv1_MySyncPolicy;
 	Synchronizer<sv1_MySyncPolicy> sv1_sync(sv1_MySyncPolicy(QUEUE_SIZE),
 	    sv1_depth_sub, sv1_camInfo_sub);
-	sv1_sync.registerCallback(boost::bind(&sv1_addToCache, _1, _2));
+	sv1_sync.registerCallback(boost::bind(&sv1_callback, _1, _2));
 	
 	// Subscription variant #2
     message_filters::Subscriber<PointCloud2> sv2_pointCloud_sub(n, sv2_pointCloudTopic, 1);
@@ -837,11 +1050,11 @@ int main(int argc, char **argv)
     typedef sync_policies::ApproximateTime<PointCloud2, CameraInfo> sv2_MySyncPolicy;
 	Synchronizer<sv2_MySyncPolicy> sv2_sync(sv2_MySyncPolicy(QUEUE_SIZE),
 	    sv2_pointCloud_sub, sv2_camInfo_sub);
-	sv2_sync.registerCallback(boost::bind(&sv2_addToCache, _1, _2));
+	sv2_sync.registerCallback(boost::bind(&sv2_callback, _1, _2));
     
     // Create and advertise this service over ROS
     //--------------------------------------------------------------------------
-    ros::ServiceServer service = n.advertiseService("bb_estimate", estimateBB);   
+    ros::ServiceServer service = n.advertiseService(BB_ESTIMATOR_Estimate_SRV, estimateBB);   
     ROS_INFO("Ready.");
     
     // Enters a loop, calling message callbacks

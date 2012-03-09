@@ -20,5 +20,6 @@
   <depend package="visualization_msgs"/>
   <depend package="pcl_ros"/>
   <depend package="srs_env_model"/>
+  <depend package="octomap_ros"/>
 </package>
 

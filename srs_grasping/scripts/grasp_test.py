@@ -83,6 +83,7 @@ class GraspScript(script):
 			continue
 		print "--"
 		#Detect
+		"""
 		self.srv_name_object_detection = '/object_detection/detect_object'
 		detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
 		req = DetectObjectsRequest()
@@ -99,6 +100,17 @@ class GraspScript(script):
 		obj = res.object_list.detections[i].pose
 		obj = listener.transformPose("/base_link", obj)
 		obj.pose.position.z -= 0.1	#Milk z-offset
+		"""
+		obj = PoseStamped();
+		obj.header.frame_id = "/base_link"
+		obj.pose.position.x = -0.8
+		obj.pose.position.y = 0
+		obj.pose.position.z = 0.55
+		obj.pose.orientation.x = 0
+		obj.pose.orientation.y = 0
+		obj.pose.orientation.z = 0
+		obj.pose.orientation.w = 1
+
 
 		object_id = self.getObjectID("milk");
 

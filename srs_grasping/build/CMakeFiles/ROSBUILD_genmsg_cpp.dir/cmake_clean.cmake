@@ -1,0 +1,42 @@
+FILE(REMOVE_RECURSE
+  "../msg_gen"
+  "../srv_gen"
+  "../src/srs_grasping/msg"
+  "../src/srs_grasping/srv"
+  "../msg_gen"
+  "../srv_gen"
+  "CMakeFiles/ROSBUILD_genmsg_cpp"
+  "../msg_gen/cpp/include/srs_grasping/GraspCAction.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspCGoal.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspCActionGoal.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspCResult.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspCActionResult.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspCFeedback.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspCActionFeedback.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspFAction.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspFGoal.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspFActionGoal.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspFResult.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspFActionResult.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspFFeedback.h"
+  "../msg_gen/cpp/include/srs_grasping/GraspFActionFeedback.h"
+  "../msg/GraspCAction.msg"
+  "../msg/GraspCGoal.msg"
+  "../msg/GraspCActionGoal.msg"
+  "../msg/GraspCResult.msg"
+  "../msg/GraspCActionResult.msg"
+  "../msg/GraspCFeedback.msg"
+  "../msg/GraspCActionFeedback.msg"
+  "../msg/GraspFAction.msg"
+  "../msg/GraspFGoal.msg"
+  "../msg/GraspFActionGoal.msg"
+  "../msg/GraspFResult.msg"
+  "../msg/GraspFActionResult.msg"
+  "../msg/GraspFFeedback.msg"
+  "../msg/GraspFActionFeedback.msg"
+)
+
+# Per-language clean rules from dependency scanning.
+FOREACH(lang)
+  INCLUDE(CMakeFiles/ROSBUILD_genmsg_cpp.dir/cmake_clean_${lang}.cmake OPTIONAL)
+ENDFOREACH(lang)

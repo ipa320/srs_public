@@ -86,7 +86,7 @@ def generate_grasp_file(object_id, gmodel, env):
 		try:
  			contacts,finalconfig,mindist,volume = gmodel.testGrasp(grasp=gmodel.grasps[i],translate=True,forceclosure=True)
 			OR = (finalconfig[0])[7:14]	#care-o-bot3.zae
-			values = [OR[2], OR[3], OR[4], OR[0], OR[1], OR[5], OR[6]]
+			values = [OR[2], OR[3], OR[4], OR[0], OR[1], OR[5], OR[6]]	 #values to script_server
 			j = values
 
 			if not (j[1]>=-1.15 and j[3]>=-1.15 and j[5]>=-1.25 and j[1]<=1 and j[3]<=1 and j[5]<=1 and j[2]>-0.5 and j[4]>-0.5 and j[6]>-0.5):
@@ -275,7 +275,7 @@ def get_grasps_from_file(file_name):
 			Translation = eval((aux.getElementsByTagName('Translation')[0]).firstChild.nodeValue)
 			Rotation = eval((aux.getElementsByTagName('Rotation')[0]).firstChild.nodeValue)
 			grasp = PoseStamped()
-			grasp.header.frame_id = "/sdh_palm_link"
+			grasp.header.frame_id = "/base_link"; #"/sdh_palm_link" ???
 			grasp.pose.position.x = float(Translation[0])
 			grasp.pose.position.y = float(Translation[1])
 			grasp.pose.position.z = float(Translation[2])
@@ -289,7 +289,7 @@ def get_grasps_from_file(file_name):
 			Translation = eval((aux.getElementsByTagName('Translation')[0]).firstChild.nodeValue)
 			Rotation = eval((aux.getElementsByTagName('Rotation')[0]).firstChild.nodeValue)
 			pre_grasp = PoseStamped()
-			pre_grasp.header.frame_id = "/sdh_palm_link"
+			pre_grasp.header.frame_id = "/base_link"; #"/sdh_palm_link" ???
 			pre_grasp.pose.position.x = float(Translation[0])
 			pre_grasp.pose.position.y = float(Translation[1])
 			pre_grasp.pose.position.z = float(Translation[2])
@@ -305,10 +305,11 @@ def get_grasps_from_file(file_name):
 			GC = GraspConfiguration()
 
 			GC.object_id = object_id
-			GC.sdh_joint_values = eval(sdh_joint_values)
 			GC.hand_type = "SDH"
-			GC.grasp = grasp
+			GC.sdh_joint_values = eval(sdh_joint_values)
+			GC.target_link = "/sdh_palm_link"
 			GC.pre_grasp = pre_grasp
+			GC.grasp = grasp
 			GC.category= str(category)
 
 			grasps.append(GC)
@@ -398,6 +399,24 @@ def COB_to_OR(values):
 	return eval(str(res))
 
 
+def SCRIPTSERVER_to_GAZEBO(values):	 #non-defined
+	res = [0 for i in range(28)]	
+	values = [values[5], values[6], values[0], values[3], values[4], values[1], values[2]]
+
+	for i in range (0,len(values)):
+		res[i+7] = float(values[i])
+	return eval(str(res))
+
+
+def GAZEBO_to_SCRIPTSERVER(values):	#non-defined
+	res = [0 for i in range(28)]	
+	values = [values[5], values[6], values[0], values[3], values[4], values[1], values[2]]
+
+	for i in range (0,len(values)):
+		res[i+7] = float(values[i])
+	return eval(str(res))
+
+
 def show_all_grasps(object_id, grasps):		#Group of grasps (grasp of GraspConfiguration)
 
 	(gmodel, env) = init_env(object_id);
@@ -429,7 +448,7 @@ def show_all_grasps(object_id, grasps):		#Group of grasps (grasp of GraspConfigu
 def grasp_view(env, object_id, grasp, object_pose):	#Individual grasp (grasp of GraspSubConfiguration)
 	env = SetRobot(env);
 	env = SetTarget(env, object_id);
-	
+
 	m = matrix_from_pose(grasp.grasp);
 	rot = numpy.matrix(rotation_matrix(object_pose));
 	sol = rot.I * m;
@@ -443,6 +462,7 @@ def grasp_view(env, object_id, grasp, object_pose):	#Individual grasp (grasp of 
 	grasp.grasp.orientation.z = q[2]
 	grasp.grasp.orientation.w = q[3]
 
+
 	manip = ((env.GetRobots()[0]).GetManipulator("arm"))
 	robot = env.GetRobots()[0]
 	with openravepy.databases.grasping.GraspingModel.GripperVisibility(manip):
@@ -455,7 +475,7 @@ def grasp_view(env, object_id, grasp, object_pose):	#Individual grasp (grasp of 
 		for link in manip.GetChildLinks():
 			link.SetTransform(dot(Tdelta,link.GetTransform()))
 		env.UpdatePublishedBodies()
-		raw_input('Press <ENTER> to continue...')
+		rospy.sleep(5);
 		env.Reset();
 
 

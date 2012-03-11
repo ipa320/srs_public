@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: Primitive.cpp 304 2012-03-08 10:34:42Z xlokaj03 $
+ * $Id: Primitive.cpp 326 2012-03-10 10:41:22Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -56,6 +56,14 @@ void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedbac
   }
   else
     ROS_WARN("Cannot find object in IM Server!");
+
+  // Transfer object into IMS frame
+  if (feedback->header.frame_id != frame_id_)
+  {
+    frame_id_ = feedback->header.frame_id;
+    pose_ = object.pose;
+    insert();
+  }
 }
 
 void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
@@ -719,6 +727,7 @@ void Primitive::addPregraspPositions()
   {
     pregrasp1Control_.name = pregrasp1_.name;
     pregrasp1Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp1Control_.always_visible = true;
     p1.x = pregrasp1_.position.x;
     p1.y = pregrasp1_.position.y;
     p1.z = pregrasp1_.position.z;
@@ -736,7 +745,6 @@ void Primitive::addPregraspPositions()
     arrow.points.clear();
     arrow.points.push_back(p2);
     arrow.points.push_back(p1);
-    pregrasp1Control_.always_visible = false;
     pregrasp1Control_.markers.push_back(arrow);
     object_.controls.push_back(pregrasp1Control_);
   }
@@ -745,6 +753,7 @@ void Primitive::addPregraspPositions()
   {
     pregrasp2Control_.name = pregrasp2_.name;
     pregrasp2Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp2Control_.always_visible = true;
     p1.x = pregrasp2_.position.x;
     p1.y = pregrasp2_.position.y;
     p1.z = pregrasp2_.position.z;
@@ -762,7 +771,6 @@ void Primitive::addPregraspPositions()
     arrow.points.clear();
     arrow.points.push_back(p2);
     arrow.points.push_back(p1);
-    pregrasp2Control_.always_visible = false;
     pregrasp2Control_.markers.push_back(arrow);
 
     object_.controls.push_back(pregrasp2Control_);
@@ -772,6 +780,7 @@ void Primitive::addPregraspPositions()
   {
     pregrasp3Control_.name = pregrasp3_.name;
     pregrasp3Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp3Control_.always_visible = true;
     p1.x = pregrasp3_.position.x;
     p1.y = pregrasp3_.position.y;
     p1.z = pregrasp3_.position.z;
@@ -791,7 +800,6 @@ void Primitive::addPregraspPositions()
     arrow.points.clear();
     arrow.points.push_back(p2);
     arrow.points.push_back(p1);
-    pregrasp3Control_.always_visible = false;
     pregrasp3Control_.markers.push_back(arrow);
 
     object_.controls.push_back(pregrasp3Control_);
@@ -801,6 +809,7 @@ void Primitive::addPregraspPositions()
   {
     pregrasp4Control_.name = pregrasp4_.name;
     pregrasp4Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp4Control_.always_visible = true;
     p1.x = pregrasp4_.position.x;
     p1.y = pregrasp4_.position.y;
     p1.z = pregrasp4_.position.z;
@@ -818,7 +827,6 @@ void Primitive::addPregraspPositions()
     arrow.points.clear();
     arrow.points.push_back(p2);
     arrow.points.push_back(p1);
-    pregrasp4Control_.always_visible = false;
     pregrasp4Control_.markers.push_back(arrow);
 
     object_.controls.push_back(pregrasp4Control_);
@@ -828,6 +836,7 @@ void Primitive::addPregraspPositions()
   {
     pregrasp5Control_.name = pregrasp5_.name;
     pregrasp5Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp5Control_.always_visible = true;
     p1.x = pregrasp5_.position.x;
     p1.y = pregrasp5_.position.y;
     p1.z = pregrasp5_.position.z;
@@ -845,7 +854,6 @@ void Primitive::addPregraspPositions()
     arrow.points.clear();
     arrow.points.push_back(p2);
     arrow.points.push_back(p1);
-    pregrasp5Control_.always_visible = false;
     pregrasp5Control_.markers.push_back(arrow);
 
     object_.controls.push_back(pregrasp5Control_);
@@ -855,6 +863,7 @@ void Primitive::addPregraspPositions()
   {
     pregrasp6Control_.name = pregrasp6_.name;
     pregrasp6Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp6Control_.always_visible = true;
     p1.x = pregrasp6_.position.x;
     p1.y = pregrasp6_.position.y;
     p1.z = pregrasp6_.position.z;
@@ -872,7 +881,6 @@ void Primitive::addPregraspPositions()
     arrow.points.clear();
     arrow.points.push_back(p2);
     arrow.points.push_back(p1);
-    pregrasp6Control_.always_visible = false;
     pregrasp6Control_.markers.push_back(arrow);
 
     object_.controls.push_back(pregrasp6Control_);

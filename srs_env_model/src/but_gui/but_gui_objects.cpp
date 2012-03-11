@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: but_gui_objects.cpp 305 2012-03-08 14:20:02Z xlokaj03 $
+ * $Id: but_gui_objects.cpp 324 2012-03-09 16:17:44Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -197,13 +197,12 @@ int main(int argc, char** argv)
   sbb.x = 0.2;
   sbb.y = 0.2;
   sbb.z = 0.2;
-  Point bbm, bbx;
+  Point bbm;
   bbm = Point();
-  bbx.x = 1;
-  bbx.y = 1;
-  bbx.z = 1;
-  objbb->setBoundingBoxMin(bbm);
-  objbb->setBoundingBoxMax(bbx);
+  bbm.x = 1;
+  bbm.y = 1;
+  bbm.z = 1;
+  objbb->setBoundingBoxLWH(bbm);
   objbb->setDescription("Table with Bounding Box");
   objbb->setColor(c);
   objbb->setResource("package://gazebo_worlds/Media/models/table.dae");

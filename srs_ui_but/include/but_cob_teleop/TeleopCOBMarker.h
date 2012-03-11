@@ -71,6 +71,7 @@ private:
   InteractiveMarkerServerPtr server_; // Interactive Marker Server
   ros::Publisher pub_; // Movement publisher
   ros::NodeHandle n_; // Node handler
+  geometry_msgs::Pose initial_pose_;
 
 };
 

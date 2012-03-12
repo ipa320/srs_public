@@ -16,7 +16,7 @@
   <depend package="rviz"/>
   <depend package="ogre"/>
   <depend package="srs_env_model"/>
-  <depend package="srs_msgs"/>
+  <!--<depend package="srs_msgs"/>-->
   <depend package="ogre_tools"/>
   <depend package="tf"/>
   <depend package="geometry_msgs"/>

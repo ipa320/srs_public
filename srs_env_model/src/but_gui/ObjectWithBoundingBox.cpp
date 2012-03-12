@@ -16,7 +16,7 @@ ObjectWithBoundingBox::ObjectWithBoundingBox(InteractiveMarkerServerPtr server, 
   BoundingBox(server, frame_id, name)
 {
   setPrimitiveType(srs_env_model::PrimitiveType::OBJECT_WITH_BOUNDING_BOX);
-  use_material_ = false;
+  use_material_ = translated_ = false;
   pregrasp1_.name = "control_grasp_xp";
   pregrasp2_.name = "control_grasp_xm";
   pregrasp3_.name = "control_grasp_yp";
@@ -178,6 +178,10 @@ void ObjectWithBoundingBox::createMenu()
 
 void ObjectWithBoundingBox::createMesh()
 {
+  mesh_.pose = pose_;
+  mesh_.header.frame_id = frame_id_;
+  mesh_.pose.position.z -= 0.5 * bounding_box_lwh_.z;
+
   mesh_.color = color_;
   mesh_.scale = Vector3();
   switch (object_resource_)
@@ -195,12 +199,28 @@ void ObjectWithBoundingBox::createMesh()
   }
 }
 
+void ObjectWithBoundingBox::setPoseLWH(Pose pose, Point bounding_box_lwh)
+{
+  pose.position.z += 0.5 * bounding_box_lwh.z;
+
+  BoundingBox::setPose(pose);
+}
+
 void ObjectWithBoundingBox::create()
 {
-  scale_.x = fabs(bounding_box_min_.x - bounding_box_max_.x) / 2;
-  scale_.y = fabs(bounding_box_min_.y - bounding_box_max_.y) / 2;
-//  scale_.z = fabs(bounding_box_min_.z - bounding_box_max_.z) * 1.5;
-  scale_.z = fabs(bounding_box_min_.z - bounding_box_max_.z) / 2;
+  scale_.x = bounding_box_lwh_.x;
+  scale_.y = bounding_box_lwh_.y;
+//  scale_.z = 0.5 * bounding_box_lwh_.z;
+  scale_.z = bounding_box_lwh_.z;
+  
+//  if (!translated_)
+//  {
+//    if (frame_id_ == "/map")
+//      pose_.position.z += scale_.z / 2;
+//    else
+//      pose_.position.y += scale_.z / 2;
+//    translated_ = true;
+//  }
 
   BoundingBox::create();
   createMesh();

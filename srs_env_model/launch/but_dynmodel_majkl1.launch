@@ -1,25 +1,22 @@
 <launch>
-	<!-- Possibly not needed -->
-	<param name="robot_description" command="$(find xacro)/xacro.py '$(find cob_description)/robots/$(env ROBOT).urdf.xacro'"/>
-	
-	<!-- Run gazebo simulation in the default configuration -->
-	<include file="$(find cob_bringup_sim)/launch/robot.launch" />
+	<!-- Set to use simulation time -->
+	<param name="/use_sim_time" value="true"/>
 
 	<!-- Load robot parameters -->
 	<include file="$(find cob_default_robot_config)/upload_param.launch" />
 	
 	<!-- Load world parameters -->
 	<include file="$(find cob_default_env_config)/upload_param.launch" />
-
+    
+	<!-- Run gazebo simulation in the default configuration -->
+	<include file="$(find cob_bringup_sim)/launch/robot.launch" />
+    
 	<!-- Launch 2d navigation -->
 	<include file="$(find cob_2dnav)/ros/launch/2dnav.launch" />
-
-	<!-- Set to use simulation time -->
-	<param name="/use_sim_time" value="true"/>
-
+       
 	<!-- Run our dynamic scene model server node -->
     <include file="$(find srs_env_model)/launch/only_butserver.launch"/>
-
+    
 	<!-- Run rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model)/launch/majkl1.vcg"/>
 </launch>

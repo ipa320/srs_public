@@ -194,18 +194,19 @@ def main():
   sm.userdata.list_of_target_positions = fake_grasp_positions
   sm.userdata.list_of_id_for_target_positions = [5,8,13,72]
   sm.userdata.pose_of_the_target_object = obj_pose_transf
-  bbmin = Pose()
-  bbmax = Pose()
-  bbmin.position.x = object.pose.pose.position.x - object.bounding_box_lwh.x
-  bbmin.position.y = object.pose.pose.position.y - object.bounding_box_lwh.y
-#  bbmin.position.z = object.pose.pose.position.z - object.bounding_box_lwh.z
-  bbmin.position.z = object.pose.pose.position.z
-  bbmin.position.x = object.pose.pose.position.x + object.bounding_box_lwh.x
-  bbmin.position.y = object.pose.pose.position.y + object.bounding_box_lwh.y
-  bbmin.position.z = object.pose.pose.position.z + object.bounding_box_lwh.z
-  sm.userdata.bb_of_the_target_object = {'bb_min': bbmin.position, 'bb_max': bbmax.position}
-#  sm.userdata.bb_of_the_target_object = {'bb_min': object.pose.pose.position - object.bounding_box_lwh, 'bb_max': object.pose.pose.position + object.bounding_box_lwh}
-#  sm.userdata.bb_of_the_target_object = {'bb_min': object.bounding_box_min, 'bb_max': object.bounding_box_max}
+#  bbmin = Pose()
+#  bbmax = Pose()
+#  bbmin.position.x = object.pose.pose.position.x - object.bounding_box_lwh.x
+#  bbmin.position.y = object.pose.pose.position.y - object.bounding_box_lwh.y
+##  bbmin.position.z = object.pose.pose.position.z - object.bounding_box_lwh.z
+#  bbmin.position.z = object.pose.pose.position.z
+#  bbmin.position.x = object.pose.pose.position.x + object.bounding_box_lwh.x
+#  bbmin.position.y = object.pose.pose.position.y + object.bounding_box_lwh.y
+#  bbmin.position.z = object.pose.pose.position.z + object.bounding_box_lwh.z
+#  sm.userdata.bb_of_the_target_object = {'bb_min': bbmin.position, 'bb_max': bbmax.position}
+##  sm.userdata.bb_of_the_target_object = {'bb_min': object.pose.pose.position - object.bounding_box_lwh, 'bb_max': object.pose.pose.position + object.bounding_box_lwh}
+##  sm.userdata.bb_of_the_target_object = {'bb_min': object.bounding_box_min, 'bb_max': object.bounding_box_max}
+  sm.userdata.bb_of_the_target_object = {'bb_lwh': object.bounding_box_lwh}
   
   with sm:
     

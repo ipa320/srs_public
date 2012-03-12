@@ -54,7 +54,7 @@ def add_object_to_scene(object):
         color.a = 1
         pose = object.pose.pose
         
-        add_object(object.pose.header.frame_id, object.label, "Detected milk", pose, object.bounding_box_min, object.bounding_box_max, color, None, 'package://cob_gazebo_worlds/Media/models/milk_box.dae', True)
+        add_object(object.pose.header.frame_id, object.label, "Detected milk", pose, object.bounding_box_lwh, color, None, 'package://cob_gazebo_worlds/Media/models/milk_box.dae', True)
     except:
         print "ERROR!\nexiting..."
         exit()

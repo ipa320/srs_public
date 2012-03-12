@@ -10,7 +10,7 @@ sss = simple_script_server()
 
 class grasp(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','failed'], input_keys=['grasp_configuration'])
+        smach.State.__init__(self, outcomes=['succeeded', 'not_completed','failed', 'preempted'], input_keys=['grasp_configuration'])	#grasp_configuration = GraspSubConfiguration.msg
 	
     def get_joint_state(self, msg):
 	global current_joint_configuration
@@ -38,7 +38,7 @@ class grasp(smach.State):
 			sol = True
 			break
 	if not sol:
-		return 'failed';
+		return 'not_completed';
 	else:
 		sss.move("arm", [grasp_conf])
 

@@ -103,6 +103,7 @@ def generate_grasp_file(object_id, gmodel, env):
 			robot.SetDOFValues(finalconfig[0])
 			robot.SetTransform(finalconfig[1])
 			env.UpdatePublishedBodies()
+
 			index = (robot.GetLink("sdh_palm_link")).GetIndex()
 			matrix = (robot.GetLinkTransformations())[index]
 			t = translation_from_matrix(matrix)
@@ -133,13 +134,10 @@ def generate_grasp_file(object_id, gmodel, env):
 			f.write("<Translation>["+str(t[0])+", "+str(t[1])+", "+str(t[2])+"]</Translation>\n")
 			f.write("<Rotation>["+str(e[0])+", "+str(e[1])+", "+str(e[2])+"]</Rotation>\n")
 	   		f.write("</PreGraspPose>\n")
-
 			f.write("<category>"+category+"</category>\n")
-
 		   	f.write("</Grasp>\n")
 
 			cont += 1
-		
 		except:
 			continue
 
@@ -158,7 +156,6 @@ def generate_grasp_file(object_id, gmodel, env):
 
 
 def generate_grasps(gmodel):
-
 
 	if not gmodel.load():
 		rospy.loginfo("GENERATING GRASPS...")
@@ -186,7 +183,7 @@ def generator(object_id):
 	return 0;
 
 
-def get_category(self, matrix, values):
+def get_category(matrix, values):
 
 	x = (matrix)[0][2]
 	y = (matrix)[1][2]
@@ -543,7 +540,7 @@ def sdh_tactil_sensor_result_callback(msg):
 			if tactile_array[j] > 0:
 				count+=1;
 			if count > 10:
-				count_fingers+=1;	#El dedo toca el objeto
+				count_fingers+=1;	#The finger touch the object
 				break;		
 
 	if count_fingers <4:

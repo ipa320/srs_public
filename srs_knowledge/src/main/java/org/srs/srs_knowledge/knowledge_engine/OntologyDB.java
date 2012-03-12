@@ -80,7 +80,6 @@ public class OntologyDB
 
     public void reasoning()
     {
-	return;
     }
 
     public String executeQuery(String queryString)

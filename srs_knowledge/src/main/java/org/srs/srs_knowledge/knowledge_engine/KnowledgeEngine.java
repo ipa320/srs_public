@@ -29,6 +29,8 @@ import ros.pkg.srs_knowledge.srv.GetObjectsOnTray;
 import ros.pkg.srs_knowledge.srv.InsertInstance;
 import ros.pkg.srs_knowledge.srv.DeleteInstance;
 import ros.pkg.srs_knowledge.srv.UpdatePosInfo;
+import ros.pkg.srs_knowledge.srv.GetRoomsOnMap;
+import ros.pkg.srs_knowledge.srv.GetPredefinedPoses;
 
 import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
@@ -89,6 +91,7 @@ public class KnowledgeEngine
 	    initInsertInstance();
 	    initDeleteInstance();
 	    initUpdatePosInfo();
+	    initGetRoomsOnMap();
 	}
 	catch(RosException e){
 	    System.out.println(e.getMessage());
@@ -141,6 +144,8 @@ public class KnowledgeEngine
 	insertInstanceService = config.getProperty("insertInstanceService", "insert_instance");
 	deleteInstanceService = config.getProperty("deleteInstanceService", "delete_instance");
 	updatePosInfoService = config.getProperty("updatePosInfoService", "update_pos_info");
+	getRoomsOnMapService = config.getProperty("getRoomsOnMapService", "get_rooms_on_map");
+	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
 
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
 	
@@ -931,6 +936,83 @@ public class KnowledgeEngine
 	return true;
     }
 
+    private void initGetRoomsOnMap() throws RosException 
+    {
+	ServiceServer.Callback<GetRoomsOnMap.Request, GetRoomsOnMap.Response> scb = new ServiceServer.Callback<GetRoomsOnMap.Request, GetRoomsOnMap.Response>() {
+	    public GetRoomsOnMap.Response call(GetRoomsOnMap.Request request) {
+		return handleGetRoomsOnMap(request);
+	    }
+	};
+
+	System.out.println(getRoomsOnMapService);
+	ServiceServer<GetRoomsOnMap.Request, GetRoomsOnMap.Response, GetRoomsOnMap> srv = nodeHandle.advertiseService(getRoomsOnMapService, new GetRoomsOnMap(), scb);
+    }
+
+    private GetRoomsOnMap.Response handleGetRoomsOnMap(GetRoomsOnMap.Request req)
+    {
+	GetRoomsOnMap.Response re = new GetRoomsOnMap.Response();
+
+	String className = globalNamespace;
+	String mapNS = mapNamespace;
+		
+	if(req.map != null) {
+	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
+		mapNS = ontoDB.getNamespaceByPrefix(req.map);
+	    }
+	}
+
+	className = className + "RoomInAConstruction";
+	//System.out.println(className);
+
+	try{
+	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
+	    if(instances == null) {
+		return re;
+	    }
+
+	    while (instances.hasNext()) { 
+		Individual temp = (Individual)instances.next();
+		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		if(temp.getNameSpace().equals(mapNamespace)) {
+		    re.rooms.add(temp.getLocalName());
+		    		    
+		    if(req.ifGeometryInfo == true) { 
+			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
+			com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
+			spatialInfo.pose.position.x = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
+			spatialInfo.pose.position.y = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
+			spatialInfo.pose.position.z = getFloatOfStatement(stm);
+			
+			stm = ontoDB.getPropertyOf(globalNamespace, "widthOfObject", temp);
+			spatialInfo.w = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "heightOfObject", temp);
+			spatialInfo.h = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
+			spatialInfo.l = getFloatOfStatement(stm);
+			
+			stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
+			spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "qx", temp);
+			spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "qy", temp);
+			spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
+			spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
+			
+			re.roomsInfo.add(spatialInfo);
+		    }
+		}
+	    }       
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+	return re;
+    }
+
     /*
     public static void testTask(Properties conf)
     {
@@ -1009,7 +1091,9 @@ public class KnowledgeEngine
     private String insertInstanceService = "insert_instance";
     private String deleteInstanceService = "delete_instance";
     private String updatePosInfoService = "update_pos_info";
-    
+    private String getRoomsOnMapService = "get_rooms_on_map";
+    private String getPredefinedPosesService = "get_predefined_poses";
+
     private String mapNamespacePrefix = "ipa-kitchen-map";
     private String mapNamespace = "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#";
 

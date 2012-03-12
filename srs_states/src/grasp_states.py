@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import roslib
 roslib.load_manifest('srs_states')
 import rospy
@@ -10,12 +12,14 @@ from simple_script_server import *
 sss = simple_script_server()
 
 import tf
+from tf.transformations import *
 from kinematics_msgs.srv import *
 
 #this should be in manipulation_msgs
 from cob_mmcontroller.msg import *
 
 from shared_state_information import *
+import grasping_functions
 
 
 
@@ -270,14 +274,45 @@ class grasp(smach.State):
             outcomes=['succeeded', 'failed', 'preempted'],
             input_keys=['hand_grasp_configuration', 'arm_pre_grasp_position', 'arm_grasp_position'])
 
-
+    def poseStampedtoSSS(self,pose_stamped):
+        pose = pose_stamped.pose
+        euler = euler_from_quaternion(pose.orientation.x,pose.orientation.y,pose.orientation.z,pose.orientation.w)
+        return [[pose_stamped.frame_id, [pose.position.x,pose.position.y,pose.position.z],list(euler)]]
+        
     def execute(self, userdata):
+      config_sdh = [userdata.hand_grasp_configuration]
+      config_pregrasp = self.poseStampedToSSS(userdata.arm_pre_grasp_position)
+      config_grasp = self.poseStampedToSSS(userdata.arm_grasp_position)
+      
       #1. call IK Solver for pre-grasp
+      ik_pregrasp, error_pregrasp = sss.calculate_ik(config_pregrasp)
+      if error_pregrasp is not error_pregrasp.SUCCESS:
+          return 'failed'    
+          
+      #5. call IK Solver for grasp
+      ik_grasp, error_grasp = sss.calculate_ik(config_grasp)
+      if error_grasp is not error_grasp.SUCCESS:
+          return 'failed'    
+      
       #2. call arm planner for pre-grasp
       #3. move arm to pre-grasp
+      sss.move_planned('arm',ik_pregrasp)
+      
       #4. open gripper
-      #5. call IK Solver for grasp
+      sss.move('sdh','cylopen')
+      
       #6. move arm to grasp (re-planning probably not necessary)
+      
+      #TODO: use interpolated ik planner
+      sss.move('arm',ik_pregrasp)
+      
       #7. close gripper
+      sss.move('sdh',config_sdh)
       #8. check if grasp successful
-      return 'succeeded'
+      successful_grasp = grasping_functions.sdh_tactil_sensor_result();
+      
+      if successful_grasp:
+         return 'succeeded'
+      else:
+         #TODO: open hand, go back to pregrasp to be safe ? 
+         return 'failed'

@@ -22,6 +22,7 @@
   <depend package="gazebo"/>
   <depend package="kinematics_msgs"/>
   <depend package="srs_object_verification"/>
+  <depend package="srs_grasping"/>
 </package>
 
 

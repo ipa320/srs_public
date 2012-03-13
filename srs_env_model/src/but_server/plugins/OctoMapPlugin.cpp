@@ -160,7 +160,7 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_mapParameters.frameId, cloud.header.frame_id,
-				cloud.header.stamp, ros::Duration(0.2));
+				cloud.header.stamp, ros::Duration(2.0)); // orig. 0.2
 
 		m_tfListener.lookupTransform(m_mapParameters.frameId, cloud.header.frame_id,
 				cloud.header.stamp, cloudToMapTf);

@@ -142,7 +142,7 @@ void srs::CPointCloudPlugin::handlePostNodeTraversal(const ros::Time& rostime)
 		try {
 			// Transformation - to, from, time, waiting time
 			m_tfListener.waitForTransform(m_pcFrameId, m_ocFrameId,
-					rostime, ros::Duration(0.2));
+					rostime, ros::Duration(2.0)); // 0.2
 
 			m_tfListener.lookupTransform(m_pcFrameId, m_ocFrameId,
 					rostime, ocToPcTf);
@@ -191,7 +191,7 @@ void srs::CPointCloudPlugin::insertCloudCallback( const sensor_msgs::PointCloud2
 		try {
 			// Transformation - from, to, time, waiting time
 			m_tfListener.waitForTransform(m_pcFrameId, cloud->header.frame_id,
-					cloud->header.stamp, ros::Duration(0.2));
+					cloud->header.stamp, ros::Duration(2.0));
 
 			m_tfListener.lookupTransform(m_pcFrameId, cloud->header.frame_id,
 					cloud->header.stamp, sensorToPcTf);
@@ -219,7 +219,7 @@ void srs::CPointCloudPlugin::insertCloudCallback( const sensor_msgs::PointCloud2
 		try {
 			// Transformation - from, to, time, waiting time
 			m_tfListener.waitForTransform(BASE_FRAME_ID, m_pcFrameId,
-					cloud->header.stamp, ros::Duration(0.2));
+					cloud->header.stamp, ros::Duration(2.0));
 
 			m_tfListener.lookupTransform(BASE_FRAME_ID, m_pcFrameId,
 					cloud->header.stamp, pcToBaseTf);

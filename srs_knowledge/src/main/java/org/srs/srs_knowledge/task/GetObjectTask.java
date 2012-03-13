@@ -64,7 +64,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	       
 	    }
 	    catch(RosException e) {
-		System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \n" + e.getMessage() + "\n" + e.toString());
+		System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \t" + e.getMessage() + "\t" + e.toString());
 		
 	    }
 	    catch(Exception e) {
@@ -172,9 +172,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("Sequence size is " + allSubSeqs.size());
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
-	    System.out.println("DEBUG >>> 0 ");
 	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
-	    System.out.println("DEBUG >>> 1 ");
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
 	    // if stuck (fail), move to the next subActionSequence
@@ -187,11 +185,11 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		System.out.println("=========>>>>  " + ni);
 		switch(ni) {
 		case HighLevelActionUnit.COMPLETED_SUCCESS:
-		    System.out.println(".COMPLETED_SUCCESS");
+		    System.out.println("COMPLETED_SUCCESS");
 		    lastStepActUnit = highAct;
 		    	    
 		    //HighLevelActionUnit curActUnit = subActSeq.getCurrentHighLevelActionUnit();
-		    //  Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
+		    // Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
 		    // private HighLevelActionUnit setParametersGraspPos(Pose2D pos, HighLevelActionUnit mgActUnit)
 		    //curActUnit.setParameters(basePos);
 		    CUAction retact = handleSuccessMessage(new ActionFeedback(feedback)); 
@@ -199,7 +197,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		case HighLevelActionUnit.COMPLETED_FAIL:
 		    // The whole task finished (failure). 
 		    lastStepActUnit = null;
-		    System.out.println(".COMPLETED_FAIL");
+		    System.out.println("COMPLETED_FAIL");
 		    return handleFailedMessage();
 		case HighLevelActionUnit.INVALID_INDEX:
 		    // The whole task finished failure. Should move to a HighLevelActionUnit in subActSeq of finsihing
@@ -319,27 +317,20 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     
     private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
 	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
-	System.out.println("DEBUG --- 0");
 	// call symbol grounding to get parameters for the MoveAndGrasp action
 	try {
-	    System.out.println("DEBUG --- 1");
 	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
 	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
-	    System.out.println("DEBUG --- 2");
 	    recentDetectedObject = ActionFeedback.toPose(fb);
-	    System.out.println("DEBUG --- 3");
 	    if(recentDetectedObject == null) {
-	    System.out.println("DEBUG --- 4");
 		return null;
 	    }
-	    System.out.println("DEBUG --- 5");
 
 	    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
-	    System.out.println("DEBUG --- 6");
 	    return pos;
 	}
 	catch (Exception e) {
-	    System.out.println("DEBUG --- 7   " + e.toString());
+	    System.out.println(e.getMessage() + " ++ " + e.toString());
 	    return null;
 	}
 	
@@ -396,11 +387,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return posList;
     }
 
-private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
+    private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
 	Pose2D pos = new Pose2D();
 	
-	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc =
-	   KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
+	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc = KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
 	
 	SymbolGroundingGraspBasePoseExperimental.Request rq = new SymbolGroundingGraspBasePoseExperimental.Request();
 	rq.parent_obj_geometry = furnitureInfo;

@@ -42,7 +42,7 @@ namespace srs
 	typedef pcl::PointCloud<pcl::PointXYZ> tPointCloud;
 
 	//! Define point type
-	typedef typename tPointCloud::PointType tPoint;
+	typedef tPointCloud::PointType tPoint;
 
 	/// All needed octo map parameters and something more...
 	struct SMapParameters

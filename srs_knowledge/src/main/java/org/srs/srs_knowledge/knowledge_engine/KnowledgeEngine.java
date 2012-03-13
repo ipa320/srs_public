@@ -34,6 +34,7 @@ import ros.pkg.srs_knowledge.srv.GetPredefinedPoses;
 
 import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
+import ros.pkg.geometry_msgs.msg.Pose2D;
 
 import java.util.Properties;
 
@@ -92,6 +93,7 @@ public class KnowledgeEngine
 	    initDeleteInstance();
 	    initUpdatePosInfo();
 	    initGetRoomsOnMap();
+	    initGetPredefinedPoses();
 	}
 	catch(RosException e){
 	    System.out.println(e.getMessage());
@@ -633,15 +635,6 @@ public class KnowledgeEngine
 
 			if(req.ifGeometryInfo == true) { 
 			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
-
-			    /*
-			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
-			    spatialInfo.point.x = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
-			    spatialInfo.point.y = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
-			    spatialInfo.point.z = getFloatOfStatement(stm);
-			    */
 			    
 			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
 			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
@@ -655,16 +648,7 @@ public class KnowledgeEngine
 			    stm = ontoDB.getPropertyOf(globalNamespace, "heightOfObject", temp);
 			    spatialInfo.h = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
-			    spatialInfo.l = getFloatOfStatement(stm);
-			    
-			    /*
-			    stm = ontoDB.getPropertyOf(globalNamespace, "r3d", temp);
-			    spatialInfo.angles.r = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "p3d", temp);
-			    spatialInfo.angles.p = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "y3d", temp);
-			    spatialInfo.angles.y = getFloatOfStatement(stm);
-			    */
+			    spatialInfo.l = getFloatOfStatement(stm);			    
 
 			    stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
 			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
@@ -685,9 +669,6 @@ public class KnowledgeEngine
 	    }
 	    else
 		System.out.println("<EMPTY>");
-	        
-	    //System.out.println();
-
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage());
@@ -1011,6 +992,65 @@ public class KnowledgeEngine
 	}
 
 	return re;
+    }
+
+    private void initGetPredefinedPoses() throws RosException 
+    {
+	ServiceServer.Callback<GetPredefinedPoses.Request, GetPredefinedPoses.Response> scb = new ServiceServer.Callback<GetPredefinedPoses.Request, GetPredefinedPoses.Response>() {
+	    public GetPredefinedPoses.Response call(GetPredefinedPoses.Request request) {
+		return handleGetPredefinedPoses(request);
+	    }
+	};
+
+	System.out.println(getPredefinedPosesService);
+	ServiceServer<GetPredefinedPoses.Request, GetPredefinedPoses.Response, GetPredefinedPoses> srv = nodeHandle.advertiseService(getPredefinedPosesService, new GetPredefinedPoses(), scb);
+    }
+
+    private GetPredefinedPoses.Response handleGetPredefinedPoses(GetPredefinedPoses.Request req)
+    {
+	GetPredefinedPoses.Response re = new GetPredefinedPoses.Response();
+
+	String className = globalNamespace;
+	String mapNS = mapNamespace;
+		
+	if(req.map != null) {
+	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
+		mapNS = ontoDB.getNamespaceByPrefix(req.map);
+	    }
+	}
+
+	className = className + "Point2D";
+
+	try{
+	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
+	    if(instances == null) {
+		return re;
+	    }
+
+	    while (instances.hasNext()) { 
+		Individual temp = (Individual)instances.next();
+		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		if(temp.getNameSpace().equals(mapNamespace)) {
+		    		    
+		    Pose2D pos2d = new Pose2D();
+		    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoordinate", temp);
+		    pos2d.x = getFloatOfStatement(stm);
+		    stm = ontoDB.getPropertyOf(globalNamespace, "yCoordinate", temp);
+		    pos2d.y = getFloatOfStatement(stm);
+		    stm = ontoDB.getPropertyOf(globalNamespace, "orientationTheta", temp);
+		    pos2d.theta = getFloatOfStatement(stm);
+
+		    re.locations.add(temp.getLocalName());		    
+		    re.poses.add(pos2d);
+		}
+	    }
+	}	
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+	return re;
+
     }
 
     /*

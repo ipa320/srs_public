@@ -80,7 +80,7 @@ void srs::CMap2DPlugin::onFrameStart(const SMapParameters & par)
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_map2DFrameId, m_ocFrameId,
-				timestamp, ros::Duration(0.2));
+				timestamp, ros::Duration(2.0)); // orig. 0.2
 
 		m_tfListener.lookupTransform(m_map2DFrameId, m_ocFrameId,
 				timestamp, ocToMap2DTf);

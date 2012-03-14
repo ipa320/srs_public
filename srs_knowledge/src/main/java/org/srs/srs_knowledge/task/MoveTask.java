@@ -72,7 +72,7 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 					+ " srs:xCoordinate ?x . " + "<" + mapNameSpace + targetContent + ">" + " srs:yCoordinate ?y . "
 					+ "<" + mapNameSpace + targetContent + ">"
 					+ " srs:orientationTheta ?theta .}";
-			System.out.println(prefix + queryString + "\n");
+			//System.out.println(prefix + queryString + "\n");
 
 			if (KnowledgeEngine.ontoDB == null) {
 				System.out.println("Ontology Database is NULL");

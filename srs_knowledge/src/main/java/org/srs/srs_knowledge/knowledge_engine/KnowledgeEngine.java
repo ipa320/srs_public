@@ -773,7 +773,7 @@ public class KnowledgeEngine
 	    }
 	};
 
-	System.out.println(insertInstanceService);
+	System.out.println(deleteInstanceService);
 	ServiceServer<DeleteInstance.Request, DeleteInstance.Response, DeleteInstance> srv = nodeHandle.advertiseService(deleteInstanceService, new DeleteInstance(), scb);
     }
 
@@ -814,7 +814,7 @@ public class KnowledgeEngine
 	    }
 	};
 
-	System.out.println(insertInstanceService);
+	System.out.println(updatePosInfoService);
 	ServiceServer<UpdatePosInfo.Request, UpdatePosInfo.Response, UpdatePosInfo> srv = nodeHandle.advertiseService(updatePosInfoService, new UpdatePosInfo(), scb);
     }
 

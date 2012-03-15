@@ -15,8 +15,8 @@ import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.shared.JenaException;
 import ros.*;
 import ros.communication.*;
-import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
-import ros.pkg.srs_knowledge.srv.GenerateSequence;
+//import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
+//import ros.pkg.srs_knowledge.srv.GenerateSequence;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
@@ -82,7 +82,7 @@ public class KnowledgeEngine
 	nodeHandle = ros.createNodeHandle();
 
 	try{
-	    initGenerateSequence();
+	    //    initGenerateSequence();
 	    initQuerySparQL();
 	    initPlanNextAction();
 	    initTaskRequest();
@@ -157,13 +157,11 @@ public class KnowledgeEngine
 	    System.out.println("Map Name Space Prefix : " + mapNamespacePrefix);
 	}
 
-
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
 
 	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
-
     }
 
     public void testOnto(String className)
@@ -189,6 +187,7 @@ public class KnowledgeEngine
 
     }
 
+    /*
     private GenerateSequence.Response handleGenerateSequence(GenerateSequence.Request request)
     {
 	GenerateSequence.Response res = new GenerateSequence.Response();
@@ -204,7 +203,9 @@ public class KnowledgeEngine
 	ros.logInfo("INFO: Generate sequence of length: " + actSeq.size());
 	return res;
     }
+    */
     
+    /*
     private void initGenerateSequence() throws RosException
     {
 	ServiceServer.Callback<GenerateSequence.Request, GenerateSequence.Response> scb = new ServiceServer.Callback<GenerateSequence.Request,GenerateSequence.Response>() {
@@ -215,7 +216,8 @@ public class KnowledgeEngine
 
 	ServiceServer<GenerateSequence.Request,GenerateSequence.Response,GenerateSequence> srv = nodeHandle.advertiseService(generateSequenceService, new GenerateSequence(), scb);
     }
-
+    */
+    
     private QuerySparQL.Response handleQuerySparQL(QuerySparQL.Request req)
     {
 	QuerySparQL.Response re = new QuerySparQL.Response();
@@ -379,7 +381,7 @@ public class KnowledgeEngine
 	    }
 
 	    currentTask = new CheckWorkspaceTask(request.content);
-	    System.out.println("Created CurrentTask " + "check workspace " + request.content);	    
+	    System.out.println("Created CurrentTask " + "check workspace " + request.content);
 	}
 	else if(request.task.equals("stop")) {
 	    if(ontoDB == null) {
@@ -489,7 +491,6 @@ public class KnowledgeEngine
 		    if(req.ifGeometryInfo == true) { 
 			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
 			try{
-			    
 			    stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
 			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
@@ -513,7 +514,6 @@ public class KnowledgeEngine
 			    stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
 			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
 			}
-			
 			catch(Exception e) {
 			    System.out.println("CAUGHT exception: " + e.getMessage()+ ".. added invalid values");
 			    

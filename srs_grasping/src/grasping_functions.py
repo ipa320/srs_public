@@ -345,6 +345,7 @@ def callIKSolver(current_pose, goal_pose):
 
 	iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
 
+
 	req = GetPositionIKRequest();
 	req.ik_request.ik_link_name = "sdh_palm_link";
 	req.ik_request.ik_seed_state.joint_state.position = current_pose;
@@ -378,8 +379,8 @@ def array_from_pose(gp):
 
 def rotation_matrix(obj):
 
-	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxzy');
-	rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz');
+	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
+	rotacion =  euler_matrix(e[0],e[1],e[2], axes='sxyz');
 	rotacion[0,3] = obj.position.x;
 	rotacion[1,3] = obj.position.y;
 	rotacion[2,3] = obj.position.z;
@@ -443,6 +444,7 @@ def show_all_grasps(object_id, grasps):		#Group of grasps (grasp of GraspConfigu
 
 
 def grasp_view(env, object_id, grasp, object_pose):	#Individual grasp (grasp of GraspSubConfiguration)
+
 	env = SetRobot(env);
 	env = SetTarget(env, object_id);
 

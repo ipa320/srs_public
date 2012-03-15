@@ -23,6 +23,8 @@ class get_grasps_from_position():
 		rospy.loginfo("/arm_kinematics/get_ik is ready.");
 
 
+
+
 		rospy.loginfo("Waiting /get_grasp_configurations service...");
 		rospy.wait_for_service('/get_grasp_configurations')
 		self.client = rospy.ServiceProxy('/get_grasp_configurations', GetGraspConfigurations)
@@ -34,7 +36,7 @@ class get_grasps_from_position():
 		rospy.loginfo("/get_grasps_from_position service has been called...");
 
 		obj_id = req.object_id;
-		obj = req.object_pose;
+		obj_pose = req.object_pose;
 
 		req = GetGraspConfigurationsRequest();
 		req.object_id = obj_id;
@@ -48,7 +50,7 @@ class get_grasps_from_position():
 			continue;
 		rospy.loginfo("/arm_controller/state has finished.");
 
-		rotacion = grasping_functions.rotation_matrix(obj);
+		rotacion = grasping_functions.rotation_matrix(obj_pose);
 
 		resp = GetGraspsFromPositionResponse();
 		resp.feasible_grasp_available = False;

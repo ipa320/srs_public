@@ -23,12 +23,9 @@ class select_grasp(smach.State):
         
         #default grasp categorisation
         #self.grasp_configuration = ""
-        #self.object_id=1
+        self.object_id=1
 
     def execute(self, userdata):
-        
-        #userdata.object_id = 1
-        
         
         global listener
         try:
@@ -42,7 +39,7 @@ class select_grasp(smach.State):
             return 'failed'
         
         get_grasps_from_position = rospy.ServiceProxy('get_grasps_from_position', GetGraspsFromPosition)
-        req = GetGraspsFromPositionRequest(1, object_pose_bl.pose)
+        req = GetGraspsFromPositionRequest(self.object_id, object_pose_bl.pose)
         grasp_configuration = (get_grasps_from_position(req)).grasp_configuration
        
         userdata.grasp_configuration = grasp_configuration[1]

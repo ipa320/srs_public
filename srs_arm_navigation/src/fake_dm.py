@@ -15,7 +15,8 @@ from srs_grasping.srv import GetGraspsFromPosition
 from tf import TransformListener
 from numpy import *
 import sys
-from srs_object_database.srv import GetObjectId
+from srs_object_database_msgs.srv import GetObjectId
+#from srs_object_database.srv import GetObjectId
 
 def main():
   

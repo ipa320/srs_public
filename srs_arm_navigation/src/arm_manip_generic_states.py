@@ -13,8 +13,10 @@ from srs_env_model.srv import RemoveGraspingPosition
 from math import fabs
 from geometry_msgs.msg import Vector3
 from std_msgs.msg import ColorRGBA
-from srs_object_database.srv import GetMesh
-from srs_object_database.srv import GetObjectId
+from srs_object_database_msgs.srv import GetMesh
+from srs_object_database_msgs.srv import GetObjectId
+#from srs_object_database.srv import GetMesh
+#from srs_object_database.srv import GetObjectId
 from arm_navigation_msgs.msg import CollisionObject
 from arm_navigation_msgs.msg import CollisionObjectOperation
 from arm_navigation_msgs.msg import Shape

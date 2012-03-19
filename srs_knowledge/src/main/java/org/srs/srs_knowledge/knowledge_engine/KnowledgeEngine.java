@@ -1,3 +1,13 @@
+/*
+ * Copyright 2011,2012.
+ *
+ * Licensed under the LGPL License.
+ * 
+ * Author: Ze Ji, Cardiff University. JiZ1@cf.ac.uk
+ * The EU FP7 SRS project. 
+ * http://www.srs-project.eu
+ */
+
 package org.srs.srs_knowledge.knowledge_engine;
 
 import com.hp.hpl.jena.rdf.model.*;

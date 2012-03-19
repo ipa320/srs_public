@@ -1,3 +1,11 @@
+/*
+ * Licensed under the LGPL License.
+ * 
+ * Author: Ze Ji, Cardiff University. JiZ1@cf.ac.uk
+ * The EU FP7 SRS project. 
+ * http://www.srs-project.eu
+ */
+
 package org.srs.srs_knowledge.task;
 
 import java.io.*;
@@ -21,8 +29,6 @@ public class HighLevelActionSequence {
     public HighLevelActionSequence() {
 	indOfCurrent = 0;
     }
-
-    //public void 
 
     public void appendHighLevelAction(HighLevelActionUnit actUnit) {
 	highLevelActionList.add(actUnit);

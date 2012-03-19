@@ -1,3 +1,11 @@
+/*
+ * Licensed under the LGPL License.
+ * 
+ * Author: Ze Ji, Cardiff University. JiZ1@cf.ac.uk
+ * The EU FP7 SRS project. 
+ * http://www.srs-project.eu
+ */
+
 package org.srs.srs_knowledge.task;
 
 import java.io.*;

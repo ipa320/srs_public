@@ -1,9 +1,9 @@
 /*
- * Copyright 2011,2012.
+ * Copyright
  *
  * Licensed under the LGPL License.
  * 
- * Author: Ze Ji, Cardiff University. JiZ1@cf.ac.uk
+ * @author Ze Ji, Cardiff University. JiZ1@cf.ac.uk
  * The EU FP7 SRS project. 
  * http://www.srs-project.eu
  */

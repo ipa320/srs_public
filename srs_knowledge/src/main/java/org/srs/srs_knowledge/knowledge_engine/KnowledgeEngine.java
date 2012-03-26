@@ -397,7 +397,7 @@ public class KnowledgeEngine
 	    currentTask = new MoveTask(request.content, null);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
-	else if(request.task.equals("get") || request.task.equals("search")){
+	else if(request.task.equals("get")){
 	    
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
@@ -414,6 +414,14 @@ public class KnowledgeEngine
 	    //this.loadPredefinedTasksForTest();
 	    
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
+	}
+	else if(request.task.equals("search")){
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+	    SearchObjectTask got = new SearchObjectTask(request.task, request.content, request.userPose, nodeHandle);
+	    currentTask = (Task)got;
+	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 	}
 	else if(request.task.equals("charging")) {
 	    if(ontoDB == null) {

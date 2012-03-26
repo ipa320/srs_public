@@ -19,6 +19,19 @@ def testNextActionService(result):
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
+def planNextActionService(sessionId, result, feedback):
+    print 'Plan next Action service'
+    rospy.wait_for_service('plan_next_action')
+    try:
+        next_action = rospy.ServiceProxy('plan_next_action', PlanNextAction)
+        
+        resp1 = next_action(sessionId, result, feedback)
+    
+        return resp1.nextAction
+    
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
 def terminateCurrentTask():
     print 'Terminate current task (due to vital problems, e.g. with hardware)'
     rospy.wait_for_service('plan_next_action')
@@ -52,23 +65,22 @@ def requestNewTaskMove():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
-def requestNewTaskMove():
-    print 'Request new task'
+def requestNewTaskSearch():
+    print 'Request new task - search'
     rospy.wait_for_service('task_request')
     try:
         requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
-        res = requestNewTask('move', '[4 5 6]', None)
+        res = requestNewTask('search', 'Milkbox', 'order')
         print 'send task request'
         return res
     except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
-
+        print 'Service call failed: %s'%e
 
 def getObjectsOnMap():
     print 'test get all objects from map'
     try:
         requestNewTask = rospy.ServiceProxy('get_objects_on_map', GetObjectsOnMap)
-        res = requestNewTask('ipa-kitchen-map')
+        res = requestNewTask('ipa-kitchen-map', False)
         return res
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
@@ -90,18 +102,20 @@ if __name__ == "__main__":
 
     # request a new task
     #print requestNewTask()
-    print requestNewTaskMove()
+    print requestNewTaskSearch()
     # get next action [0 0 0 ] is not used here as the first step. see explanation in the next call
-    print '1-- ', testNextActionService([0,0,0])
+    print '1-- ', planNextActionService(16, 0, ['s'])
 
     #[0, 0, 0] means: success for move, perception, and grasp actions in the last step
 
-    print '2-- ', testNextActionService([0,0,0])
-    #print '3-- ', testNextActionService([0,1,0])
+    print '2-- ', planNextActionService(16, 1, ['s'])
+    print '3-- ', planNextActionService(16, 1, ['s'])
+    print '4-- ', planNextActionService(16, 1, ['s'])
+
     #print '4-- ', testNextActionService([0,0,0])
     #print '5-- ', testNextActionService([0,0,0])
     #print '6-- ', testNextActionService([0,0,0])
     # to terminate current task, 
     #print terminateCurrentTask()
-    print getObjectsOnMap()
-    print getWorkspaceOnMap()
+    #print getObjectsOnMap()
+    #print getWorkspaceOnMap()

@@ -418,7 +418,7 @@ public class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    SearchObjectTask got = new SearchObjectTask(request.task, request.content, request.userPose, nodeHandle);
+	    SearchObjectTask got = new SearchObjectTask(request.task, request.content, nodeHandle);
 	    currentTask = (Task)got;
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 	}

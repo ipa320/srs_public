@@ -73,12 +73,12 @@ import ros.communication.*;
 
 public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    public SearchObjectTask(String taskType, String targetContent, String userPose, NodeHandle n) 
+    public SearchObjectTask(String taskType, String targetContent, NodeHandle n) 
     {	
 	this.nodeHandle = n;
-	this.userPose = userPose;
+	// this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
-	this.initTask(targetContent, this.userPose);
+	this.initTask(targetContent);
     }
 
     protected boolean constructTask() {
@@ -185,8 +185,8 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 
 	// create BackToUserActionUnit
 	
-	Pose2D posUser = OntoQueryUtil.parsePose2D(userPose);
-	MoveActionUnit mau = new MoveActionUnit(posUser);
+	//Pose2D posUser = OntoQueryUtil.parsePose2D(userPose);
+	//MoveActionUnit mau = new MoveActionUnit(posUser);
 	
 	// create FinishActionUnit
 	FinishActionUnit fau = new FinishActionUnit(true);
@@ -481,7 +481,7 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	return spatialInfo;
     }
 
-    private void initTask(String targetContent, String userPose) {
+    private void initTask(String targetContent) {
 	acts = new ArrayList<ActionTuple>();
 	
 	setTaskTarget(targetContent);
@@ -511,6 +511,6 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
     private int currentSubAction;
     private Pose recentDetectedObject;    // required by MoveAndGraspActionUnit
     private String lastActionType;        // used to handle feedback from last action executed
-    private String userPose;
+    //private String userPose;
     private HighLevelActionUnit lastStepActUnit;
 }

@@ -1,17 +1,21 @@
 <package>
 
   <description brief="srs_grasping">
-     Grasping package
+
+      This package provides tools to generate and simulate different grasping solutions in the Care-o-Bot.
+
   </description>
+
   <author>Robotnik Automation SLL</author>
-  <license>BSD</license>
+  <license>LGPL</license>
+
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_grasping</url>
 
   <depend package="actionlib"/>
   <depend package="rospy"/>
   <depend package="tf"/>
-  <!--depend package="openrave"/-->
+  <depend package="openrave"/>
   <depend package="smach"/>
   <depend package="smach_ros"/>
   <depend package="cob_script_server"/>

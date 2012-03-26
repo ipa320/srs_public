@@ -1,3 +1,54 @@
+/****************************************************************
+ *
+ * Copyright (c) 2011, 2012
+ *
+ * School of Engineering, Cardiff University, UK
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Project name: srs EU FP7 (www.srs-project.eu)
+ * ROS stack name: srs
+ * ROS package name: srs_knowledge
+ * Description: 
+ *								
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * @author Ze Ji, email: jiz1@cf.ac.uk
+ *
+ * Date of creation: Oct 2011:
+ * ToDo: 
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *	 * Redistributions of source code must retain the above copyright
+ *	   notice, this list of conditions and the following disclaimer.
+ *	 * Redistributions in binary form must reproduce the above copyright
+ *	   notice, this list of conditions and the following disclaimer in the
+ *	   documentation and/or other materials provided with the distribution.
+ *	 * Neither the name of the Fraunhofer Institute for Manufacturing 
+ *	   Engineering and Automation (IPA) nor the names of its
+ *	   contributors may be used to endorse or promote products derived from
+ *	   this software without specific prior written permission.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License LGPL as 
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License LGPL for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public 
+ * License LGPL along with this program. 
+ * If not, see <http://www.gnu.org/licenses/>.
+ *
+ ****************************************************************/
+
 package org.srs.srs_knowledge.task;
 
 import java.io.*;
@@ -62,7 +113,6 @@ public abstract class Task {
     public void setTaskType(TaskType type) {
 	this.taskType = type;
     }
-    
  
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
 	//CUAction ca = new CUAction();
@@ -71,11 +121,8 @@ public abstract class Task {
 		if (acts.get(i).getActionId() == 1) {
 		    currentAction = acts.get(i);
 		    currentActionLoc = i;
-		    //System.out.println(i);
-		    //System.out.println(currentAction.getCUAction().ma.targetPose2D.x);
 		    System.out.println(currentAction.getActionName());
 		    
-		    //return currentAction.getCUAction();
 		    if (currentAction != null) 
 			return currentAction.getCUAction();
 		    else 
@@ -114,7 +161,6 @@ public abstract class Task {
      public boolean loadPredefinedSequence(String filename) throws IOException,
 								  Exception {
 	System.out.println("LOAD " + filename);
-	// ArrayList<ActionTuple> acts = new ArrayList<ActionTuple>();
 	File file = null;
 	FileReader freader = null;
 	LineNumberReader in = null;
@@ -144,7 +190,6 @@ public abstract class Task {
 	System.out.println("Number of actions is: " + acts.size());
 	return true;
     }
-    
     
     private static ActionTuple newParseAction(String actionDesc) throws Exception {
 	ActionTuple act;
@@ -209,12 +254,10 @@ public abstract class Task {
 	return act;
     }
     
-    
     private static GenericAction newParseMoveAction(String moveAction)
 	throws Exception {
 	GenericAction geAct = new GenericAction(); 
 
-	//MoveAction ma = new MoveAction();
 	String[] parameters = moveAction.split(" ");
 	
 	geAct.actionInfo.add("move");
@@ -230,8 +273,6 @@ public abstract class Task {
 	int[] _actionFlags = new int[3];
 	
 	String[] parameters = actionFlags.split(" ");
-	// System.out.println(parameters[0] + " -- " + parameters[1] + " -- " +
-	// parameters[2]);
 	_actionFlags[0] = Integer.parseInt(parameters[0].trim());
 	_actionFlags[1] = Integer.parseInt(parameters[1].trim());
 	_actionFlags[2] = Integer.parseInt(parameters[2].trim());
@@ -248,7 +289,6 @@ public abstract class Task {
 	geAct.actionInfo.add(parameters[0]);     // name (not available in this case... )
 	return geAct;
     }
-
 
     private static GenericAction newParseGraspAction(String perceptionAction, String graspAction) throws Exception {
 	
@@ -267,8 +307,6 @@ public abstract class Task {
 	return geAct;
     }
 
-
-
     public boolean isEmpty() {
 	try {
 	    if(allSubSeqs.size() == 0 && acts.size() == 0) {
@@ -282,17 +320,13 @@ public abstract class Task {
 	return false;
     }
 
-
     protected TaskType taskType;
     protected String targetContent;
     protected int taskId;
-    // private ArrayList<CUAction> actionSequence;
     protected ArrayList<ActionTuple> acts;
     protected int currentActionId = 1;
     protected ActionTuple currentAction;
     protected int currentActionLoc = 0;
-    //protected OntologyDB ontoDB;
-    //protected OntoQueryUtil ontoQueryUtil;
     protected NodeHandle nodeHandle;
     protected ArrayList<HighLevelActionSequence> allSubSeqs = new ArrayList<HighLevelActionSequence>();
 }

@@ -211,8 +211,6 @@ public class KnowledgeEngine
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
-
-	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
     }
 
     public void testOnto(String className)

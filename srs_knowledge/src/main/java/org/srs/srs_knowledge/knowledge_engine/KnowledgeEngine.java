@@ -1,3 +1,54 @@
+/****************************************************************
+ *
+ * Copyright (c) 2011, 2012
+ *
+ * School of Engineering, Cardiff University, UK
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Project name: srs EU FP7 (www.srs-project.eu)
+ * ROS stack name: srs
+ * ROS package name: srs_knowledge
+ * Description: 
+ *								
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * @author Ze Ji, email: jiz1@cf.ac.uk
+ *
+ * Date of creation: Oct 2011:
+ * ToDo: 
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *	 * Redistributions of source code must retain the above copyright
+ *	   notice, this list of conditions and the following disclaimer.
+ *	 * Redistributions in binary form must reproduce the above copyright
+ *	   notice, this list of conditions and the following disclaimer in the
+ *	   documentation and/or other materials provided with the distribution.
+ *	 * Neither the name of the Fraunhofer Institute for Manufacturing 
+ *	   Engineering and Automation (IPA) nor the names of its
+ *	   contributors may be used to endorse or promote products derived from
+ *	   this software without specific prior written permission.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License LGPL as 
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License LGPL for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public 
+ * License LGPL along with this program. 
+ * If not, see <http://www.gnu.org/licenses/>.
+ *
+ ****************************************************************/
+
 package org.srs.srs_knowledge.knowledge_engine;
 
 import com.hp.hpl.jena.rdf.model.*;
@@ -12,10 +63,11 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
+import com.hp.hpl.jena.shared.JenaException;
 import ros.*;
 import ros.communication.*;
-import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
-import ros.pkg.srs_knowledge.srv.GenerateSequence;
+//import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
+//import ros.pkg.srs_knowledge.srv.GenerateSequence;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
@@ -25,8 +77,15 @@ import ros.pkg.srs_knowledge.srv.TaskRequest;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;
 import ros.pkg.srs_knowledge.srv.GetWorkspaceOnMap;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnTray;
+import ros.pkg.srs_knowledge.srv.InsertInstance;
+import ros.pkg.srs_knowledge.srv.DeleteInstance;
+import ros.pkg.srs_knowledge.srv.UpdatePosInfo;
+import ros.pkg.srs_knowledge.srv.GetRoomsOnMap;
+import ros.pkg.srs_knowledge.srv.GetPredefinedPoses;
+
 import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
+import ros.pkg.geometry_msgs.msg.Pose2D;
 
 import java.util.Properties;
 
@@ -34,7 +93,6 @@ import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList; 
 import java.util.Iterator;
-//import org.apache.commons.logging.Log;
 
 public class KnowledgeEngine
 {
@@ -42,34 +100,6 @@ public class KnowledgeEngine
     public static OntologyDB ontoDB;
 
     public static NodeHandle nodeHandle;
-
-    /*
-    public KnowledgeEngine(String nodeName, String ontologyFile)
-    {
-	this.defaultContextPath();
-	ontoDB = new OntologyDB(ontologyFile);
-	this.nodeName = nodeName;
-    }
-    */
-    /*
-    public KnowledgeEngine(Properties conf)
-    {
-	this.defaultContextPath();
-	String ontoDBFile = conf.getProperty("ontologyFile", "house.owl");
-
-	ArrayList<String> nameList = parseOntologyFileNames(ontoDBFile);
-
-	ontoDB = new OntologyDB(nameList);
-
-	this.nodeName = conf.getProperty("nodename", "knowledge_srs_node");
-	this.config = conf;
-
-	taskRequestService = conf.getProperty("taskRequestService", "task_request");
-	planNextActionService = conf.getProperty("planNextActionService", "plan_next_action");
-	generateSequenceService = conf.getProperty("generateSequenceService", "generate_sequence");
-	querySparQLService = conf.getProperty("querySparQLService", "query_sparql");
-    }
-    */
 
     public KnowledgeEngine()
     {
@@ -103,13 +133,18 @@ public class KnowledgeEngine
 	nodeHandle = ros.createNodeHandle();
 
 	try{
-	    initGenerateSequence();
+	    //    initGenerateSequence();
 	    initQuerySparQL();
 	    initPlanNextAction();
 	    initTaskRequest();
 	    initGetObjectsOnMap();
 	    initGetWorkspaceOnMap();
 	    initGetObjectsOnTray();
+	    initInsertInstance();
+	    initDeleteInstance();
+	    initUpdatePosInfo();
+	    initGetRoomsOnMap();
+	    initGetPredefinedPoses();
 	}
 	catch(RosException e){
 	    System.out.println(e.getMessage());
@@ -159,8 +194,14 @@ public class KnowledgeEngine
 	getObjectsOnMapService = config.getProperty("getObjectsOnMapService", "get_objects_on_map");
 	getWorkSpaceOnMapService = config.getProperty("getWorkSpaceOnMapService", "get_workspace_on_map");
 	getObjectsOnTrayService = config.getProperty("getObjectsOnTrayService", "get_objects_on_tray");
+	insertInstanceService = config.getProperty("insertInstanceService", "insert_instance");
+	deleteInstanceService = config.getProperty("deleteInstanceService", "delete_instance");
+	updatePosInfoService = config.getProperty("updatePosInfoService", "update_pos_info");
+	getRoomsOnMapService = config.getProperty("getRoomsOnMapService", "get_rooms_on_map");
+	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
+
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
-	System.out.println(" ---- > > " + mapNamespacePrefix);
+	
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	    System.out.println("Map Name Space: " + mapNamespace);
@@ -170,26 +211,23 @@ public class KnowledgeEngine
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
-	
-	//testOnto("http://www.srs-project.eu/ontologies/srs.owl#MilkBox");
-
     }
 
     public void testOnto(String className)
     {
 	try{
 	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
-	    	      
+
 	    if(instances.hasNext()) {
-		while (instances.hasNext()) { 
+		while (instances.hasNext()) {
 		    Individual temp = (Individual)instances.next();
 		    System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
-		}       
+		}
 	    }
 	    else
 		System.out.println("<EMPTY>");
-	        
-        System.out.println();
+
+	    System.out.println();
 
 	}
 	catch(Exception e) {
@@ -198,6 +236,7 @@ public class KnowledgeEngine
 
     }
 
+    /*
     private GenerateSequence.Response handleGenerateSequence(GenerateSequence.Request request)
     {
 	GenerateSequence.Response res = new GenerateSequence.Response();
@@ -213,7 +252,9 @@ public class KnowledgeEngine
 	ros.logInfo("INFO: Generate sequence of length: " + actSeq.size());
 	return res;
     }
+    */
     
+    /*
     private void initGenerateSequence() throws RosException
     {
 	ServiceServer.Callback<GenerateSequence.Request, GenerateSequence.Response> scb = new ServiceServer.Callback<GenerateSequence.Request,GenerateSequence.Response>() {
@@ -224,7 +265,8 @@ public class KnowledgeEngine
 
 	ServiceServer<GenerateSequence.Request,GenerateSequence.Response,GenerateSequence> srv = nodeHandle.advertiseService(generateSequenceService, new GenerateSequence(), scb);
     }
-
+    */
+    
     private QuerySparQL.Response handleQuerySparQL(QuerySparQL.Request req)
     {
 	QuerySparQL.Response re = new QuerySparQL.Response();
@@ -388,7 +430,7 @@ public class KnowledgeEngine
 	    }
 
 	    currentTask = new CheckWorkspaceTask(request.content);
-	    System.out.println("Created CurrentTask " + "check workspace " + request.content);	    
+	    System.out.println("Created CurrentTask " + "check workspace " + request.content);
 	}
 	else if(request.task.equals("stop")) {
 	    if(ontoDB == null) {
@@ -451,18 +493,19 @@ public class KnowledgeEngine
     private GetObjectsOnMap.Response handleGetObjectsOnMap(GetObjectsOnMap.Request req)
     {
 	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
-	
+
 	String className = globalNamespace;
+	String mapNS = mapNamespace;
+		
 	if(req.map != null) {
 	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
-		className = ontoDB.getNamespaceByPrefix(req.map);
+		mapNS = ontoDB.getNamespaceByPrefix(req.map);
 	    }
 	}
 	
-
 	className = className + "FoodVessel";
 
-	System.out.println(className + " ---");
+	System.out.println(className + " --- ");
 	Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
 	if(instances == null) {
 	    return re;
@@ -497,7 +540,6 @@ public class KnowledgeEngine
 		    if(req.ifGeometryInfo == true) { 
 			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
 			try{
-			    
 			    stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
 			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
@@ -521,7 +563,6 @@ public class KnowledgeEngine
 			    stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
 			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
 			}
-			
 			catch(Exception e) {
 			    System.out.println("CAUGHT exception: " + e.getMessage()+ ".. added invalid values");
 			    
@@ -548,9 +589,6 @@ public class KnowledgeEngine
 	else {
 	    System.out.println("<EMPTY>");
 	}
-	
-	
-
 	
 	/*
 
@@ -620,10 +658,11 @@ public class KnowledgeEngine
 	GetWorkspaceOnMap.Response re = new GetWorkspaceOnMap.Response();
 
 	String className = globalNamespace;
+	String mapNS = mapNamespace;
+		
 	if(req.map != null) {
-	    //System.out.println("<<<<  " + req.map + "  >>>>  ");
 	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
-		className = ontoDB.getNamespaceByPrefix(req.map);
+		mapNS = ontoDB.getNamespaceByPrefix(req.map);
 	    }
 	}
 
@@ -645,15 +684,6 @@ public class KnowledgeEngine
 
 			if(req.ifGeometryInfo == true) { 
 			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
-
-			    /*
-			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
-			    spatialInfo.point.x = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
-			    spatialInfo.point.y = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
-			    spatialInfo.point.z = getFloatOfStatement(stm);
-			    */
 			    
 			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
 			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
@@ -667,16 +697,7 @@ public class KnowledgeEngine
 			    stm = ontoDB.getPropertyOf(globalNamespace, "heightOfObject", temp);
 			    spatialInfo.h = getFloatOfStatement(stm);
 			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
-			    spatialInfo.l = getFloatOfStatement(stm);
-			    
-			    /*
-			    stm = ontoDB.getPropertyOf(globalNamespace, "r3d", temp);
-			    spatialInfo.angles.r = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "p3d", temp);
-			    spatialInfo.angles.p = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "y3d", temp);
-			    spatialInfo.angles.y = getFloatOfStatement(stm);
-			    */
+			    spatialInfo.l = getFloatOfStatement(stm);			    
 
 			    stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
 			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
@@ -691,16 +712,12 @@ public class KnowledgeEngine
 
 			    stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);
 			    re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
-
 			}
 		    }
 		}       
 	    }
 	    else
 		System.out.println("<EMPTY>");
-	        
-	    //System.out.println();
-
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage());
@@ -733,6 +750,124 @@ public class KnowledgeEngine
 	return t;
     }
 
+    private void initInsertInstance() throws RosException 
+    {
+	ServiceServer.Callback<InsertInstance.Request, InsertInstance.Response> scb = new ServiceServer.Callback<InsertInstance.Request, InsertInstance.Response>() {
+	    public InsertInstance.Response call(InsertInstance.Request request) {
+		return handleInsertInstance(request);
+	    }
+	};
+
+	System.out.println(insertInstanceService);
+	ServiceServer<InsertInstance.Request, InsertInstance.Response, InsertInstance> srv = nodeHandle.advertiseService(insertInstanceService, new InsertInstance(), scb);
+    }
+
+    private InsertInstance.Response handleInsertInstance(InsertInstance.Request request)
+    {
+	InsertInstance.Response res = new InsertInstance.Response();
+	String objectName = request.objectName;
+	String objectClass = request.objectClass;
+	String hhId = request.houseHoldId;
+	int id = -1000;
+	try{
+	    id = Integer.valueOf(hhId);
+	}
+	catch(NumberFormatException e) {
+	    System.out.println(e.getMessage());
+	    id = -1000;
+	}
+
+	try {
+	    ontoDB.insertInstance(this.globalNamespace, objectClass, this.mapNamespace, objectName);
+	    OntoQueryUtil.updateHHIdOfObject(id, this.globalNamespace, this.mapNamespace, objectName);
+	    res.status = 0;
+	}
+	catch(DuplicatedEntryException de) {
+	    res.status = 1;
+	}
+	catch(UnknownClassException ue) {
+	    res.status = 2;
+	}
+	catch(Exception e) {
+	    res.status = -1;
+	}
+
+	return res;
+    }
+
+    private void initDeleteInstance() throws RosException 
+    {
+	ServiceServer.Callback<DeleteInstance.Request, DeleteInstance.Response> scb = new ServiceServer.Callback<DeleteInstance.Request, DeleteInstance.Response>() {
+	    public DeleteInstance.Response call(DeleteInstance.Request request) {
+		return handleDeleteInstance(request);
+	    }
+	};
+
+	System.out.println(deleteInstanceService);
+	ServiceServer<DeleteInstance.Request, DeleteInstance.Response, DeleteInstance> srv = nodeHandle.advertiseService(deleteInstanceService, new DeleteInstance(), scb);
+    }
+
+    private DeleteInstance.Response handleDeleteInstance(DeleteInstance.Request request)
+    {
+	DeleteInstance.Response res = new DeleteInstance.Response();
+	String objectName = request.objectName;
+	String objectURI = this.mapNamespace;
+	if(request.objectURI == null) {
+	    objectURI = request.objectURI;
+	}
+	try {
+	    ontoDB.deleteInstance( objectURI, request.objectName);
+	    res.status = 0;
+	}
+	catch(NonExistenceEntryException ne) {
+	    res.status = 1;
+	}
+	catch(UnknownException e) {
+	    System.out.println(e.toString() + "  ---  " + e.getMessage());
+	    res.status = -1;
+	}
+	catch(JenaException e) {
+	    System.out.println(e.toString() + "  ---  " + e.getMessage());
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString() + "  ---  " + e.getMessage());
+	    res.status = -1;
+	}
+	return res;
+    }
+
+    private void initUpdatePosInfo() throws RosException 
+    {
+	ServiceServer.Callback<UpdatePosInfo.Request, UpdatePosInfo.Response> scb = new ServiceServer.Callback<UpdatePosInfo.Request, UpdatePosInfo.Response>() {
+	    public UpdatePosInfo.Response call(UpdatePosInfo.Request request) {
+		return handleUpdatePosInfo(request);
+	    }
+	};
+
+	System.out.println(updatePosInfoService);
+	ServiceServer<UpdatePosInfo.Request, UpdatePosInfo.Response, UpdatePosInfo> srv = nodeHandle.advertiseService(updatePosInfoService, new UpdatePosInfo(), scb);
+    }
+
+    private UpdatePosInfo.Response handleUpdatePosInfo(UpdatePosInfo.Request request) 
+    {
+	UpdatePosInfo.Response res = new UpdatePosInfo.Response();
+	String objectName = request.objectName;
+	SRSSpatialInfo spa = request.spatialInfo;
+	try {
+	    // public boolean testUpdateObjectProperty(String objectNSURI, String objectName)
+	    // OntoQueryUtil.Testupdateobjectproperty(this.globalNamespace, this.mapNamespace, objectName);
+	    //public boolean updatePoseOfObject(Pose pos, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
+	    OntoQueryUtil.updatePoseOfObject(spa.pose, this.globalNamespace, this.mapNamespace, objectName);
+	    OntoQueryUtil.updateDimensionOfObject(spa.l, spa.w, spa.h, this.globalNamespace, this.mapNamespace, objectName);
+	    res.success = true;
+	}
+	catch(Exception e) {
+	    res.success = false;
+	    System.out.println(e.toString() + " === " + e.getMessage());
+	}
+	
+	return res;
+    }
 
     private void initGetWorkspaceOnMap() throws RosException
     {
@@ -746,22 +881,9 @@ public class KnowledgeEngine
 	ServiceServer<GetWorkspaceOnMap.Request, GetWorkspaceOnMap.Response, GetWorkspaceOnMap> srv = nodeHandle.advertiseService(getWorkSpaceOnMapService, new GetWorkspaceOnMap(), scb);
     }
 
-
     private GetObjectsOnTray.Response handleGetObjectsOnTray(GetObjectsOnTray.Request request)
     {
 	GetObjectsOnTray.Response res = new GetObjectsOnTray.Response();
-
-
-
-
-
-
-
-
-
-
-
-
 
 	String targetContent = "kitchen";
 	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
@@ -773,8 +895,6 @@ public class KnowledgeEngine
 	    + "?objs srs:SpatiallyRelated ?tray . "
 	    + "}";
 
-	//System.out.println(prefix + queryString + "\n");
-	
 	if (this.ontoDB == null) {
 	    ros.logInfo("INFO: Ontology Database is NULL. Nothing executed. ");
 	    return res;
@@ -803,15 +923,6 @@ public class KnowledgeEngine
 	    
 	}
 
-
-
-
-
-
-
-
-
-
 	return res;
     }
     
@@ -825,8 +936,6 @@ public class KnowledgeEngine
 
 	ServiceServer<GetObjectsOnTray.Request,GetObjectsOnTray.Response,GetObjectsOnTray> srv = nodeHandle.advertiseService(getObjectsOnTrayService, new GetObjectsOnTray(), scb);
     }
-
-
 
     private boolean loadPredefinedTasksForTest()
     {
@@ -855,6 +964,142 @@ public class KnowledgeEngine
 	//ArrayList<ActionTuple> acts = currentTask.getActionSequence();
 
 	return true;
+    }
+
+    private void initGetRoomsOnMap() throws RosException 
+    {
+	ServiceServer.Callback<GetRoomsOnMap.Request, GetRoomsOnMap.Response> scb = new ServiceServer.Callback<GetRoomsOnMap.Request, GetRoomsOnMap.Response>() {
+	    public GetRoomsOnMap.Response call(GetRoomsOnMap.Request request) {
+		return handleGetRoomsOnMap(request);
+	    }
+	};
+
+	System.out.println(getRoomsOnMapService);
+	ServiceServer<GetRoomsOnMap.Request, GetRoomsOnMap.Response, GetRoomsOnMap> srv = nodeHandle.advertiseService(getRoomsOnMapService, new GetRoomsOnMap(), scb);
+    }
+
+    private GetRoomsOnMap.Response handleGetRoomsOnMap(GetRoomsOnMap.Request req)
+    {
+	GetRoomsOnMap.Response re = new GetRoomsOnMap.Response();
+
+	String className = globalNamespace;
+	String mapNS = mapNamespace;
+		
+	if(req.map != null) {
+	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
+		mapNS = ontoDB.getNamespaceByPrefix(req.map);
+	    }
+	}
+
+	className = className + "RoomInAConstruction";
+	//System.out.println(className);
+
+	try{
+	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
+	    if(instances == null) {
+		return re;
+	    }
+
+	    while (instances.hasNext()) { 
+		Individual temp = (Individual)instances.next();
+		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		if(temp.getNameSpace().equals(mapNamespace)) {
+		    re.rooms.add(temp.getLocalName());
+		    		    
+		    if(req.ifGeometryInfo == true) { 
+			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
+			com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
+			spatialInfo.pose.position.x = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
+			spatialInfo.pose.position.y = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
+			spatialInfo.pose.position.z = getFloatOfStatement(stm);
+			
+			stm = ontoDB.getPropertyOf(globalNamespace, "widthOfObject", temp);
+			spatialInfo.w = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "heightOfObject", temp);
+			spatialInfo.h = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
+			spatialInfo.l = getFloatOfStatement(stm);
+			
+			stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
+			spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "qx", temp);
+			spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "qy", temp);
+			spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
+			spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
+			
+			re.roomsInfo.add(spatialInfo);
+		    }
+		}
+	    }       
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+	return re;
+    }
+
+    private void initGetPredefinedPoses() throws RosException 
+    {
+	ServiceServer.Callback<GetPredefinedPoses.Request, GetPredefinedPoses.Response> scb = new ServiceServer.Callback<GetPredefinedPoses.Request, GetPredefinedPoses.Response>() {
+	    public GetPredefinedPoses.Response call(GetPredefinedPoses.Request request) {
+		return handleGetPredefinedPoses(request);
+	    }
+	};
+
+	System.out.println(getPredefinedPosesService);
+	ServiceServer<GetPredefinedPoses.Request, GetPredefinedPoses.Response, GetPredefinedPoses> srv = nodeHandle.advertiseService(getPredefinedPosesService, new GetPredefinedPoses(), scb);
+    }
+
+    private GetPredefinedPoses.Response handleGetPredefinedPoses(GetPredefinedPoses.Request req)
+    {
+	GetPredefinedPoses.Response re = new GetPredefinedPoses.Response();
+
+	String className = globalNamespace;
+	String mapNS = mapNamespace;
+		
+	if(req.map != null) {
+	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
+		mapNS = ontoDB.getNamespaceByPrefix(req.map);
+	    }
+	}
+
+	className = className + "Point2D";
+
+	try{
+	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
+	    if(instances == null) {
+		return re;
+	    }
+
+	    while (instances.hasNext()) { 
+		Individual temp = (Individual)instances.next();
+		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		if(temp.getNameSpace().equals(mapNamespace)) {
+		    		    
+		    Pose2D pos2d = new Pose2D();
+		    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoordinate", temp);
+		    pos2d.x = getFloatOfStatement(stm);
+		    stm = ontoDB.getPropertyOf(globalNamespace, "yCoordinate", temp);
+		    pos2d.y = getFloatOfStatement(stm);
+		    stm = ontoDB.getPropertyOf(globalNamespace, "orientationTheta", temp);
+		    pos2d.theta = getFloatOfStatement(stm);
+
+		    re.locations.add(temp.getLocalName());		    
+		    re.poses.add(pos2d);
+		}
+	    }
+	}	
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+	return re;
+
     }
 
     /*
@@ -932,6 +1177,11 @@ public class KnowledgeEngine
     private String querySparQLService = "query_sparql";
     private String getObjectsOnMapService = "get_objects_on_map";
     private String getWorkSpaceOnMapService = "get_workspace_on_map";
+    private String insertInstanceService = "insert_instance";
+    private String deleteInstanceService = "delete_instance";
+    private String updatePosInfoService = "update_pos_info";
+    private String getRoomsOnMapService = "get_rooms_on_map";
+    private String getPredefinedPosesService = "get_predefined_poses";
 
     private String mapNamespacePrefix = "ipa-kitchen-map";
     private String mapNamespace = "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#";

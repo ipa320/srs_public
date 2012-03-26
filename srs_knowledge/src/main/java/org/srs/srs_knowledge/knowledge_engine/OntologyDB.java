@@ -1,3 +1,54 @@
+/****************************************************************
+ *
+ * Copyright (c) 2011, 2012
+ *
+ * School of Engineering, Cardiff University, UK
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Project name: srs EU FP7 (www.srs-project.eu)
+ * ROS stack name: srs
+ * ROS package name: srs_knowledge
+ * Description: 
+ *								
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * @author Ze Ji, email: jiz1@cf.ac.uk
+ *
+ * Date of creation: Oct 2011:
+ * ToDo: 
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *	 * Redistributions of source code must retain the above copyright
+ *	   notice, this list of conditions and the following disclaimer.
+ *	 * Redistributions in binary form must reproduce the above copyright
+ *	   notice, this list of conditions and the following disclaimer in the
+ *	   documentation and/or other materials provided with the distribution.
+ *	 * Neither the name of the Fraunhofer Institute for Manufacturing 
+ *	   Engineering and Automation (IPA) nor the names of its
+ *	   contributors may be used to endorse or promote products derived from
+ *	   this software without specific prior written permission.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License LGPL as 
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License LGPL for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public 
+ * License LGPL along with this program. 
+ * If not, see <http://www.gnu.org/licenses/>.
+ *
+ ****************************************************************/
+
 package org.srs.srs_knowledge.knowledge_engine;
 
 import com.hp.hpl.jena.rdf.model.*;
@@ -12,17 +63,19 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.sparql.engine.ResultSetStream;
-//import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import org.mindswap.pellet.jena.PelletReasonerFactory;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.ontology.Individual;
-
+import com.hp.hpl.jena.shared.Lock;
+import com.hp.hpl.jena.ontology.OntResource;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import org.srs.srs_knowledge.knowledge_engine.*;
 
 public class OntologyDB
 {
@@ -78,19 +131,10 @@ public class OntologyDB
 
     public void reasoning()
     {
-	return;
     }
 
     public String executeQuery(String queryString)
     {
-	/*
-	String queryString = "PREFIX house: <http://www.semanticweb.org/ontologies/house.owl#> " + 
-	    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " + 
-	    "SELECT ?room " + 
-	    "WHERE { " +
-	    "?room rdf:type house:Table . " +  
-	    "}";
-	*/
 	//System.out.println(queryString);
 	Query query = QueryFactory.create(queryString);
 
@@ -114,14 +158,6 @@ public class OntologyDB
     
     public ArrayList<QuerySolution> executeQueryRaw(String queryString)
     {
-	/*
-	  String queryString = "PREFIX house: <http://www.semanticweb.org/ontologies/house.owl#> " + 
-	  "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " + 
-	  "SELECT ?room " + 
-	  "WHERE { " +
-	  "?room rdf:type house:Table . " +  
-	  "}";
-	*/
 	//System.out.println(queryString);
 	Query query = QueryFactory.create(queryString);
 	
@@ -148,8 +184,6 @@ public class OntologyDB
 	    //double x = qs.getLiteral("x").getFloat();
 	    //Literal y = qs.getLiteral("y");
 	    //Literal theta = qs.getLiteral("theta");
-	    //System.out.println(" <><><><><><><><><><><><><> " + qs.toString() + "    " + x);
-	    //System.out.println("x is " + x + ". y is  " + y + ". theta is " + theta);
 	}
 
 	qe.close();
@@ -202,8 +236,6 @@ public class OntologyDB
 
     public Iterator getInstancesOfClass(String className) 
     {
-	//ArrayList<String> res = new ArrayList<String>();
-
 	// get the instances of a class
 	OntClass onto = model.getOntClass( className );
 	
@@ -218,8 +250,11 @@ public class OntologyDB
 
     public String getNamespaceByPrefix(String namespacePrefix)
     {
+	model.enterCriticalSection(Lock.READ);
 	//http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#
-	return model.getNsPrefixURI(namespacePrefix);
+	String pre = model.getNsPrefixURI(namespacePrefix);
+	model.leaveCriticalSection();
+	return pre;
     }
 
     /**
@@ -230,16 +265,86 @@ public class OntologyDB
      */
     public com.hp.hpl.jena.rdf.model.Statement getPropertyOf(String proNameSpace, String proLocalName, Individual ind ) 
     {
+	model.enterCriticalSection(Lock.READ);
 	com.hp.hpl.jena.rdf.model.Property property = model.getProperty(proNameSpace, proLocalName);
 	com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(property);
+	model.leaveCriticalSection();
 	return stm;
     }
 
     public OntModel getModel() {
 	return model;
     }
+   
+    public void insertInstance(String classURI, String className, String instanceURI, String instanceName) throws DuplicatedEntryException, UnknownClassException
+    {
+	model.enterCriticalSection(Lock.WRITE);
+	Resource rs = model.getResource(classURI + className);
+	if(rs == null) {
+	    model.leaveCriticalSection();
+	    throw new UnknownClassException(className);
+	}
+	
+	//OntClass onto = model.getOntClass(classURI + className);
+
+	Individual ind = model.getIndividual(instanceURI + instanceName);
+	if(ind != null) {
+	    model.leaveCriticalSection();
+	    throw new  DuplicatedEntryException(instanceName);
+	}
+	ind = model.createIndividual(instanceURI + instanceName, rs);	
+	ind.setOntClass(rs);
+	model.leaveCriticalSection();
+    }
+
+    public void deleteInstance(String instanceURI, String instanceName) throws NonExistenceEntryException, UnknownException
+    {	
+	model.enterCriticalSection(Lock.WRITE);
+	Individual ind = model.getIndividual(instanceURI + instanceName);
+	if(ind == null) {
+	    model.leaveCriticalSection();
+	    throw new  NonExistenceEntryException(instanceName);
+	}
+	ind.remove();
+	
+	model.leaveCriticalSection();
+    }
     
+    public boolean removeStatement(Statement stm) 
+    {
+	// TODO: error checking in future
+	model.enterCriticalSection(Lock.WRITE);
+	model.remove(stm);
+	model.leaveCriticalSection();
+	return true;
+    }
+
+    public Individual getIndividual(String uri) throws NonExistenceEntryException
+    {
+	model.enterCriticalSection(Lock.READ);
+	Individual ind = model.getIndividual(uri);
+	if(ind == null) {
+	    model.leaveCriticalSection();
+	    throw new NonExistenceEntryException(uri);
+	}
+	model.leaveCriticalSection();
+	return ind;
+    }
+
+    public Property getProperty(String uri) throws NonExistenceEntryException 
+    {
+	model.enterCriticalSection(Lock.READ);
+	Property pro = model.getProperty(uri);
+	if (pro == null) {
+	    model.leaveCriticalSection();
+	    throw new NonExistenceEntryException(uri);
+	}
+	model.leaveCriticalSection();
+	return pro;
+    }
+
     //private String modelFileName;    
     //private Model model;
-    private OntModel model;
+    public OntModel model;
+    //    private LockMutex mutex;
 }

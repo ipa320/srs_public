@@ -1,3 +1,54 @@
+/****************************************************************
+ *
+ * Copyright (c) 2011, 2012
+ *
+ * School of Engineering, Cardiff University, UK
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Project name: srs EU FP7 (www.srs-project.eu)
+ * ROS stack name: srs
+ * ROS package name: srs_knowledge
+ * Description: 
+ *								
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * @author Ze Ji, email: jiz1@cf.ac.uk
+ *
+ * Date of creation: Oct 2011:
+ * ToDo: 
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *	 * Redistributions of source code must retain the above copyright
+ *	   notice, this list of conditions and the following disclaimer.
+ *	 * Redistributions in binary form must reproduce the above copyright
+ *	   notice, this list of conditions and the following disclaimer in the
+ *	   documentation and/or other materials provided with the distribution.
+ *	 * Neither the name of the Fraunhofer Institute for Manufacturing 
+ *	   Engineering and Automation (IPA) nor the names of its
+ *	   contributors may be used to endorse or promote products derived from
+ *	   this software without specific prior written permission.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License LGPL as 
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License LGPL for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public 
+ * License LGPL along with this program. 
+ * If not, see <http://www.gnu.org/licenses/>.
+ *
+ ****************************************************************/
+
 package org.srs.srs_knowledge.task;
 
 import java.io.*;
@@ -64,7 +115,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	       
 	    }
 	    catch(RosException e) {
-		System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \n" + e.getMessage() + "\n" + e.toString());
+		System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \t" + e.getMessage() + "\t" + e.toString());
 		
 	    }
 	    catch(Exception e) {
@@ -172,9 +223,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("Sequence size is " + allSubSeqs.size());
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
-	    System.out.println("DEBUG >>> 0 ");
 	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
-	    System.out.println("DEBUG >>> 1 ");
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
 	    // if stuck (fail), move to the next subActionSequence
@@ -187,11 +236,11 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		System.out.println("=========>>>>  " + ni);
 		switch(ni) {
 		case HighLevelActionUnit.COMPLETED_SUCCESS:
-		    System.out.println(".COMPLETED_SUCCESS");
+		    System.out.println("COMPLETED_SUCCESS");
 		    lastStepActUnit = highAct;
 		    	    
 		    //HighLevelActionUnit curActUnit = subActSeq.getCurrentHighLevelActionUnit();
-		    //  Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
+		    // Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
 		    // private HighLevelActionUnit setParametersGraspPos(Pose2D pos, HighLevelActionUnit mgActUnit)
 		    //curActUnit.setParameters(basePos);
 		    CUAction retact = handleSuccessMessage(new ActionFeedback(feedback)); 
@@ -199,7 +248,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		case HighLevelActionUnit.COMPLETED_FAIL:
 		    // The whole task finished (failure). 
 		    lastStepActUnit = null;
-		    System.out.println(".COMPLETED_FAIL");
+		    System.out.println("COMPLETED_FAIL");
 		    return handleFailedMessage();
 		case HighLevelActionUnit.INVALID_INDEX:
 		    // The whole task finished failure. Should move to a HighLevelActionUnit in subActSeq of finsihing
@@ -319,27 +368,20 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     
     private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
 	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
-	System.out.println("DEBUG --- 0");
 	// call symbol grounding to get parameters for the MoveAndGrasp action
 	try {
-	    System.out.println("DEBUG --- 1");
 	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
 	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
-	    System.out.println("DEBUG --- 2");
 	    recentDetectedObject = ActionFeedback.toPose(fb);
-	    System.out.println("DEBUG --- 3");
 	    if(recentDetectedObject == null) {
-	    System.out.println("DEBUG --- 4");
 		return null;
 	    }
-	    System.out.println("DEBUG --- 5");
 
 	    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
-	    System.out.println("DEBUG --- 6");
 	    return pos;
 	}
 	catch (Exception e) {
-	    System.out.println("DEBUG --- 7   " + e.toString());
+	    System.out.println(e.getMessage() + " ++ " + e.toString());
 	    return null;
 	}
 	
@@ -396,11 +438,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return posList;
     }
 
-private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
+    private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
 	Pose2D pos = new Pose2D();
 	
-	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc =
-	   KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
+	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc = KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
 	
 	SymbolGroundingGraspBasePoseExperimental.Request rq = new SymbolGroundingGraspBasePoseExperimental.Request();
 	rq.parent_obj_geometry = furnitureInfo;

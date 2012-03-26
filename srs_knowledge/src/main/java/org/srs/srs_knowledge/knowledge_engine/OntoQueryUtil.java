@@ -1,3 +1,54 @@
+/****************************************************************
+ *
+ * Copyright (c) 2011, 2012
+ *
+ * School of Engineering, Cardiff University, UK
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Project name: srs EU FP7 (www.srs-project.eu)
+ * ROS stack name: srs
+ * ROS package name: srs_knowledge
+ * Description: 
+ *								
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * @author Ze Ji, email: jiz1@cf.ac.uk
+ *
+ * Date of creation: Oct 2011:
+ * ToDo: 
+ *
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *	 * Redistributions of source code must retain the above copyright
+ *	   notice, this list of conditions and the following disclaimer.
+ *	 * Redistributions in binary form must reproduce the above copyright
+ *	   notice, this list of conditions and the following disclaimer in the
+ *	   documentation and/or other materials provided with the distribution.
+ *	 * Neither the name of the Fraunhofer Institute for Manufacturing 
+ *	   Engineering and Automation (IPA) nor the names of its
+ *	   contributors may be used to endorse or promote products derived from
+ *	   this software without specific prior written permission.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License LGPL as 
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License LGPL for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public 
+ * License LGPL along with this program. 
+ * If not, see <http://www.gnu.org/licenses/>.
+ *
+ ****************************************************************/
+
 package org.srs.srs_knowledge.knowledge_engine;
 
 import com.hp.hpl.jena.rdf.model.*;
@@ -22,7 +73,7 @@ import ros.pkg.srs_knowledge.srv.GenerateSequence;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
-
+import com.hp.hpl.jena.shared.Lock;
 import ros.pkg.srs_knowledge.srv.PlanNextAction;
 import ros.pkg.srs_knowledge.srv.TaskRequest;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;
@@ -52,16 +103,11 @@ public class OntoQueryUtil
 {
     public static ArrayList<Individual> getWorkspaceOfObject(String objectClassName, String objectNameSpace, String globalNameSpace, OntologyDB onto) { 
 	// TODO: 
-	System.out.println("DEBUG ONTOQUERYUTIL 1");
 	ArrayList<String> workspaceList = getWorkspaceNamesOfObject(objectClassName, objectNameSpace, globalNameSpace);
-	System.out.println("DEBUG ONTOQUERYUTIL 2");
 	ArrayList<Individual> workspaceIndList = new ArrayList<Individual>();
-	System.out.println("DEBUG ONTOQUERYUTIL 3");
 	for(String s : workspaceList) {
-	    System.out.println("DEBUG ONTOQUERYUTIL 4");
 	    workspaceIndList.add(onto.getModel().getIndividual(objectNameSpace + s));
 	}
-	System.out.println("DEBUG ONTOQUERYUTIL 5");
 	return workspaceIndList;
     }
 
@@ -213,11 +259,126 @@ public class OntoQueryUtil
 	return wList;
     }
 
-    public static boolean updatePoseOfObject() {
-    	System.out.println("Update the pose of an object or furniture in the semantic map");
-    	
-    	return true;
+
+    public static boolean testUpdateObjectProperty(String proNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException
+    {
+	try {
+	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
+	    // set property
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(proNSURI + "xCoord");
+	    // ind.setPropertyValue(pro, ); 
+	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	    // KnowledgeEngine.ontoDB.removeStatement(stm);
+
+	    
+	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
+	    ind.setPropertyValue(pro, x);
+	    
+	    //stm.changeLiteralObject(10.0f);
+	    
+	    //Statement stm1 = KnowledgeEngine.ontoDB.model.createStatement(ind, pro, x);
+	    //KnowledgeEngine.ontoDB.model.add(stm1);
+	    //model.leaveCriticalSection();
+	}
+	catch(NonExistenceEntryException e) {
+	    throw e;
+	}
+	return true;
     }
+
+    public static boolean updatePoseOfObject(Pose pos, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
+    	System.out.println("Update the pose of an object or furniture in the semantic map");
+	try {
+	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
+	    // set property
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "xCoord");
+	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	    //Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
+	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.x));
+       	    ind.setPropertyValue(pro, x);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "yCoord");
+	    stm = ind.getProperty(pro);
+	    Literal y = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.y));
+       	    ind.setPropertyValue(pro, y);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "zCoord");
+	    stm = ind.getProperty(pro);
+	    Literal z = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.z));
+       	    ind.setPropertyValue(pro, z);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qx");
+	    stm = ind.getProperty(pro);
+	    Literal qx = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.x));
+       	    ind.setPropertyValue(pro, qx);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qy");
+	    stm = ind.getProperty(pro);
+	    Literal qy = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.y));
+       	    ind.setPropertyValue(pro, qy);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qz");
+	    stm = ind.getProperty(pro);
+	    Literal qz = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.z));
+       	    ind.setPropertyValue(pro, qz);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qu");
+	    stm = ind.getProperty(pro);
+	    Literal qw = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.w));
+       	    ind.setPropertyValue(pro, qw);
+
+	}
+	catch(NonExistenceEntryException e) {
+	    throw e;
+	}
+    
+	return true;
+    }
+    
+    public static boolean updateDimensionOfObject(float l, float w, float h, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
+    	System.out.println("Update the dimension of an object or furniture in the semantic map");
+	try{	
+	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
+	    // set property
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "lengthOfObject");
+	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	    
+	    Literal ll = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(l));
+       	    ind.setPropertyValue(pro, ll);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "widthOfObject");
+	    stm = ind.getProperty(pro);
+	    Literal lw = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(w));
+       	    ind.setPropertyValue(pro, lw);
+
+	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "heightOfObject");
+	    stm = ind.getProperty(pro);
+	    Literal lh = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(h));
+       	    ind.setPropertyValue(pro, lh);
+	}
+	catch(NonExistenceEntryException e) {
+	    throw e;
+	}
+
+	return true;
+    }
+    
+    public static boolean updateHHIdOfObject(int id, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
+    	System.out.println("Update the household object ID of an object or furniture in the semantic map");
+	try{	
+	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
+	    // set property
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "houseHoldObjectID");
+	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	    Literal litId = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Integer(id));
+       	    ind.setPropertyValue(pro, litId);
+	}
+	catch(NonExistenceEntryException e) {
+	    throw e;
+	}
+	return true;
+    }
+
 
     /*
     public OntoQueryUtil(String objectNameSpace, String globalNameSpace) {

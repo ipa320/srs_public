@@ -402,7 +402,8 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+	    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, nodeHandle);
 	    currentTask = (Task)got;
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
@@ -420,7 +421,25 @@ public class KnowledgeEngine
 	    }
 	    SearchObjectTask got = new SearchObjectTask(request.task, request.content, nodeHandle);
 	    currentTask = (Task)got;
-	    System.out.println("Created CurrentTask " + "get " + request.content);	    
+	    System.out.println("Created CurrentTask " + "search " + request.content);	    
+	}
+	else if(request.task.equals("fetch")){
+	    
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+
+	    FetchObjectTask got = new FetchObjectTask(request.task, request.content, request.userPose, nodeHandle);
+	    currentTask = (Task)got;
+	    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
+	}
+	else if(request.task.equals("deliver")){
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, nodeHandle);
+	    currentTask = (Task)got;
+	    System.out.println("Created CurrentTask " + "search " + request.content);	    
 	}
 	else if(request.task.equals("charging")) {
 	    if(ontoDB == null) {

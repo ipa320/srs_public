@@ -71,14 +71,14 @@ import ros.pkg.srs_symbolic_grounding.msg.*;
 import ros.*;
 import ros.communication.*;
 
-public class GetObjectTask extends org.srs.srs_knowledge.task.Task
+public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    public GetObjectTask(String taskType, String targetContent, NodeHandle n) 
+    public FetchObjectTask(String taskType, String targetContent, String userPose, NodeHandle n) 
     {	
 	this.nodeHandle = n;
-	//this.userPose = userPose;
+	this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
-	this.initTask(targetContent);
+	this.initTask(targetContent, this.userPose);
     }
 
     protected boolean constructTask() {
@@ -187,10 +187,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	// FoldArmActionUnit
 	//FoldArmActionUnit foldArmAction = new FoldArmActionUnit();
 
-	//create BackToUserActionUnit
-	
-	//Pose2D posUser = OntoQueryUtil.parsePose2D(userPose);
-	//MoveActionUnit mau = new MoveActionUnit(posUser);
+	// create BackToUserActionUnit
+	Pose2D posUser = OntoQueryUtil.parsePose2D(userPose);
+	MoveActionUnit mau = new MoveActionUnit(posUser);
 	
 	// create FinishActionUnit
 	FinishActionUnit fau = new FinishActionUnit(true);
@@ -201,7 +200,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	actionList.appendHighLevelAction(mgAction);
 	actionList.appendHighLevelAction(trayAction);
 	//actionList.appendHighLevelAction(foldArmAction);
-	//actionList.appendHighLevelAction(mau);
+	actionList.appendHighLevelAction(mau);
 	actionList.appendHighLevelAction(fau);
 		
 	System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
@@ -485,7 +484,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return spatialInfo;
     }
 
-    private void initTask(String targetContent) {
+    private void initTask(String targetContent, String userPose) {
 	acts = new ArrayList<ActionTuple>();
 	
 	setTaskTarget(targetContent);
@@ -515,6 +514,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     private int currentSubAction;
     private Pose recentDetectedObject;    // required by MoveAndGraspActionUnit
     private String lastActionType;        // used to handle feedback from last action executed
-    //private String userPose;
+    private String userPose;
     private HighLevelActionUnit lastStepActUnit;
 }

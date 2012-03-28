@@ -390,6 +390,7 @@ class SRS_DM_ACTION(object):
         if current_task_info.task_name=="":
             current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
+        ## added by Ze
         current_task_info.task_parameters = current_goal.parameters
         
         if current_task_info.task_name=='stop':

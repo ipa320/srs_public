@@ -415,7 +415,7 @@ class SRS_DM_ACTION(object):
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
             req = TaskRequestRequest()
             req.task = current_task_info.task_name
-            req.parameter = current_task_info.task_parameter
+            req.content = current_task_info.task_parameter
             req.userPose = "order"
             res = requestNewTask(req)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")

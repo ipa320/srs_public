@@ -1,2 +1,9 @@
-Header header
+string frame_id                     # Fixed Frame
+string name                         # Object name
+string description                  # Object name description
+string resource                     # Resource file with model
+bool use_material                   # Usage of material (or color)
+std_msgs/ColorRGBA color            # color of the Object
+geometry_msgs/Pose pose             # position and orientation of the Object name 
+geometry_msgs/Vector3 scale         # scale of the Object name
 --- 

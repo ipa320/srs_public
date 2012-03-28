@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: Plane.h 134 2012-01-12 13:52:36Z spanel $
+ * $Id: Plane.h 246 2012-02-23 10:31:43Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -11,40 +11,25 @@
 #ifndef PLANE_H_
 #define PLANE_H_
 
-#include "GuiObject.h"
+#include "Primitive.h"
 
 namespace but_gui
 {
-
-class Plane : public GuiObject
+/*
+ * This class represents a Plane primitive.
+ *
+ * Plane shows only a simple plane which can be tagged as table desk, wall, etc.
+ */
+class Plane : public Primitive
 {
 public:
   /**
-   * Constructor without automatic object creation.
-   * @param server_ is Interactive marker server
-   * @param frame_id_ is fixed frame
+   * Constructor.
+   * @param server is Interactive marker server
+   * @param frame_id is fixed frame
    * @param name_ is name of this plane
    */
-  Plane(InteractiveMarkerServerPtr, string, string);
-  /**
-   * Constructor with automatic object creation.
-   * @param server_ is Interactive marker server
-   * @param frame_id_ is fixed frame
-   * @param name_ is name of this plane
-   * @param pose_ is position and orientation of plane
-   * @param scale_ is scale is size of this plane
-   * @param color_ is RGBA color of this plane
-   */
-  Plane(InteractiveMarkerServerPtr, string, string, Pose, Scale, ColorRGBA);
-  /*
-   * Destructor.
-   */
-  virtual ~Plane();
-
-  /*
-   * Create this Plane
-   */
-  void create();
+  Plane(InteractiveMarkerServerPtr server, string frame_id, string name);
   /*
    * Insert this Plane into Interactive Marker Server
    */
@@ -55,12 +40,13 @@ public:
   /**
    * Callback for menu
    */
-  void menuCallback(const InteractiveMarkerFeedbackConstPtr &);
+  void menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
 
 private:
-  Marker mesh;
-  string tag;
+  Marker mesh_;
+  string tag_;
 
+  void create();
   void createMenu();
 };
 

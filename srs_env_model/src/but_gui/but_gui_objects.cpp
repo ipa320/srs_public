@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * $Id: but_gui_objects.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: but_gui_objects.cpp 305 2012-03-08 14:20:02Z xlokaj03 $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -14,6 +14,8 @@
 #include "but_gui/Billboard.h"
 #include "but_gui/Plane.h"
 #include "but_gui/UnknownObject.h"
+#include "but_gui/Object.h"
+#include "but_gui/ObjectWithBoundingBox.h"
 #include "math.h"
 
 using namespace but_gui;
@@ -37,7 +39,7 @@ int main(int argc, char** argv)
   p.orientation.x = M_PI_4;
   p.orientation.y = 0;
   p.orientation.z = M_PI_4;
-  Scale s;
+  Vector3 s;
   s.x = 1.0;
   s.y = 1.0;
   s.z = 1.0;
@@ -48,11 +50,14 @@ int main(int argc, char** argv)
   chairBillboard->setPose(p);
   chairBillboard->setScale(s);
   chairBillboard->setFrameID("/world");
-  chairBillboard->create();
   chairBillboard->insert();
   // Bounding box
-  BoundingBox * chairBoundingBox = new BoundingBox(server, "/world", chairBillboard->getName() + "_bbox",
-                                                   chairBillboard->getName(), p, s, c, "Person bounding box");
+  BoundingBox * chairBoundingBox = new BoundingBox(server, "/world", chairBillboard->getName() + "_bbox");
+  chairBoundingBox->setAttachedObjectName(chairBillboard->getName());
+  chairBoundingBox->setPose(p);
+  chairBoundingBox->setScale(s);
+  chairBoundingBox->setColor(c);
+  chairBoundingBox->setDescription("Person bounding box");
   chairBoundingBox->insert();
 
   p.position.x = 1;
@@ -62,15 +67,18 @@ int main(int argc, char** argv)
   s.y = 0.5;
   s.z = 0.5;
   // Object
-  Billboard *milkBillboard = new Billboard(server, "/world", "milk", srs_env_model::BillboardType::MILK, p, s);
+  Billboard *milkBillboard = new Billboard(server, "/world", "milk_billboard");
   Quaternion direction;
   direction.x = 2.0;
   direction.y = 1.0;
   direction.z = 3.0;
   direction.w = 1.0;
+  milkBillboard->setType(srs_env_model::BillboardType::MILK);
+  milkBillboard->setPose(p);
+  milkBillboard->setScale(s);
   milkBillboard->setDirection(direction);
   milkBillboard->setVelocity(3.4);
-  milkBillboard->create();
+  milkBillboard->setDescription("MLEEEEKO");
   milkBillboard->insert();
   // Bounding box
 
@@ -81,23 +89,21 @@ int main(int argc, char** argv)
    milkBoundingBox->setScale(s);
    milkBoundingBox->setColor(c);
    milkBoundingBox->setDescription("Table bounding box");
-   milkBoundingBox->create();
    milkBoundingBox->insert();*/
 
   UnknownObject * unknowObject = new UnknownObject(server, "/world", "unknown_object");
   unknowObject->setFrameID("/world");
   Pose pp;
-  pp.position.x = -3;
-  pp.position.y = 5;
-  pp.position.z = 7;
+  pp.position.x = 0;
+  pp.position.y = 0;
+  pp.position.z = 0;
   unknowObject->setPose(pp);
-  Scale ss;
-  ss.x = 4;
-  ss.y = 0.7;
-  ss.z = 6;
+  Vector3 ss;
+  ss.x = 1;
+  ss.y = 1;
+  ss.z = 1;
   unknowObject->setScale(ss);
   unknowObject->setDescription("Uknown object");
-  unknowObject->create();
   unknowObject->insert();
 
   Plane *plane = new Plane(server, "/world", "plane1");
@@ -111,7 +117,6 @@ int main(int argc, char** argv)
   plane->setFrameID("/world");
   plane->setPose(p);
   plane->setScale(s);
-  plane->create();
   plane->insert();
   c.g = 1.0;
   plane->changeColor(c);
@@ -141,10 +146,85 @@ int main(int argc, char** argv)
   object.controls.push_back(control);
   server->insert(object);
   // Bounding box
-  c.r=1;
-  BoundingBox * sphereBoundingBox = new BoundingBox(server, "/world", "sphere_bbox", "sphere", p, s, c,
-                                                    "Sphere bounding box");
+  c.r = 1;
+  BoundingBox * sphereBoundingBox = new BoundingBox(server, "/world", "sphere_bbox");
+  sphereBoundingBox->setAttachedObjectName("sphere");
+  sphereBoundingBox->setPose(p);
+  sphereBoundingBox->setScale(s);
+  sphereBoundingBox->setColor(c);
+  sphereBoundingBox->setDescription("Sphere bounding box");
   sphereBoundingBox->insert();
+
+  Object * obj = new Object(server, "/world", "table_object");
+  obj->setFrameID("/world");
+  Pose ppp;
+  ppp.position.x = 6;
+  ppp.position.y = 0;
+  ppp.position.z = 0;
+  obj->setPose(ppp);
+  Vector3 sss;
+  sss.x = 1;
+  sss.y = 1;
+  sss.z = 1;
+  c.a = 1.0;
+  obj->setScale(sss);
+  obj->setDescription("Table");
+  obj->setColor(c);
+  obj->setResource("package://gazebo_worlds/Media/models/table.dae");
+  obj->setUseMaterial(true);
+  obj->insert();
+
+  ObjectWithBoundingBox * objbb = new ObjectWithBoundingBox(server, "/world", "table_with_bb");
+  ppp.position.x = 2;
+  ppp.position.y = 2;
+  ppp.position.z = 2;
+  objbb->setPose(ppp);
+  c.a = 1.0;
+  Vector3 gp;
+  gp.x = 0.7;
+  gp.y = 1.2;
+  gp.z = 0;
+  objbb->setGraspingPosition(GRASP_1, gp);
+  gp.x = 0;
+  gp.y = 1.2;
+  gp.z = 0.9;
+  objbb->setGraspingPosition(GRASP_2, gp);
+  gp.x = 0.1;
+  gp.y = 0.1;
+  gp.z = 0.1;
+  objbb->setGraspingPosition(GRASP_3, gp);
+  Scale sbb;
+  sbb.x = 0.2;
+  sbb.y = 0.2;
+  sbb.z = 0.2;
+  Point bbm, bbx;
+  bbm = Point();
+  bbx.x = 1;
+  bbx.y = 1;
+  bbx.z = 1;
+  objbb->setBoundingBoxMin(bbm);
+  objbb->setBoundingBoxMax(bbx);
+  objbb->setDescription("Table with Bounding Box");
+  objbb->setColor(c);
+  objbb->setResource("package://gazebo_worlds/Media/models/table.dae");
+  objbb->setUseMaterial(true);
+
+  arm_navigation_msgs::Shape shape;
+  Point sp;
+  sp.x = 0;
+  sp.y = 0;
+  sp.z = 0;
+  shape.vertices.push_back(sp);
+  sp.x = 1;
+  shape.vertices.push_back(sp);
+  sp.y = 2;
+  shape.vertices.push_back(sp);
+  shape.triangles.push_back(0);
+  shape.triangles.push_back(1);
+  shape.triangles.push_back(2);
+  objbb->setShape(shape);
+
+  objbb->insert();
 
   server->applyChanges();
   ros::spin();

@@ -1,5 +1,5 @@
 /**
- * $Id: sceneModel.h 134 2012-01-12 13:52:36Z spanel $
+ * $Id: sceneModel.h 154 2012-01-14 17:22:53Z ihulik $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Rostislav Hulik (ihulik@fit.vutbr.cz)
@@ -42,8 +42,8 @@ namespace but_scenemodel
 		 */
 		SceneModel(cv::Mat &depth, const CameraInfoConstPtr& cam_info, Normals &normals);
 
-		PointCloud<PointXYZRGB>::Ptr scene_cloud;
-		PointCloud<PointXYZI>::Ptr current_hough_cloud;
+		pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud;
+		pcl::PointCloud<PointXYZI>::Ptr current_hough_cloud;
 		std::vector<Plane<float> > planes;
 		int max_plane;
 	};

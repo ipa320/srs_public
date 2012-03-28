@@ -70,7 +70,7 @@ class select_grasp(smach.State):
 ## Grasp general state
 #
 # This state will grasp an object with a side grasp
-class grasp_general(smach.State):
+class grasp_simple(smach.State):
 
     def __init__(self, max_retries = 1):
         smach.State.__init__(
@@ -257,3 +257,27 @@ class grasp_general(smach.State):
         sss.move("arm", [post_grasp_conf, "hold"])
         self.retries = 0     
         return 'succeeded'
+
+
+## Grasp general state
+#
+# This state will grasp an object with a side grasp configuration coming from the grasp planner
+class grasp(smach.State):
+
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed', 'preempted'],
+            input_keys=['hand_grasp_configuration', 'arm_pre_grasp_position', 'arm_grasp_position'])
+
+
+    def execute(self, userdata):
+      #1. call IK Solver for pre-grasp
+      #2. call arm planner for pre-grasp
+      #3. move arm to pre-grasp
+      #4. open gripper
+      #5. call IK Solver for grasp
+      #6. move arm to grasp (re-planning probably not necessary)
+      #7. close gripper
+      #8. check if grasp successful
+      return 'succeeded'

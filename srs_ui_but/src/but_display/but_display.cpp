@@ -1,5 +1,5 @@
 /**
- * $Id: but_display.cpp 134 2012-01-12 13:52:36Z spanel $
+ * $Id: but_display.cpp 321 2012-03-09 13:39:19Z spanel $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
@@ -27,15 +27,20 @@ CButDisplay::CButDisplay(const std::string & name,rviz::VisualizationManager * m
     , m_child_window( 0 )
     , m_dialog_window( 0 )
     , m_controls_window( 0 )
+	, m_cameraPositionPublisherName( "rviz_camera_position" )
+    , m_latchedTopics( false )
 {
+	// Get node handle
+	ros::NodeHandle private_nh("/");
+
+	// Set parameters
+	private_nh.param("camera_position_publisher_name", m_cameraPositionPublisherName, m_cameraPositionPublisherName);
+
     // Connect to the controller changed signal
     vis_manager_->getViewControllerTypeChangedSignal().connect( boost::bind(&CButDisplay::onViewControllerChange, this, _1 ) );
 
     // Get scene node
     m_sceneNode = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
-    // Create geometry
-   // createGeometry();
 
     // Try to connect camera listener
     connectListener();
@@ -46,41 +51,27 @@ CButDisplay::CButDisplay(const std::string & name,rviz::VisualizationManager * m
 
     if( wi != 0 )
     {
-        /*
-        // Simple window example
-        m_child_window = new CExamplePanel( wi->getParentWindow(), wxT("Simple example window"), wi);
+        
+        
 
-        if( m_child_window != 0 )
+        // Arm manipulation controls
+        m_armmanipulation_window = new CArmManipulationControls( wi->getParentWindow(), wxT("Manual arm navigation"), wi);
+
+        if( m_armmanipulation_window != 0 )
         {
             std::cerr << "Adding to the window manager..." << std::endl;
-            wi->addPane( "Simple example window pane", m_child_window );
-            wi->showPane( m_child_window );
-        }
-        */
-
-        // Controls window example
-        m_controls_window = new CExamplePanelControls( wi->getParentWindow(), wxT("Simple example window"), wi);
-
-        if( m_controls_window != 0 )
-        {
-            std::cerr << "Adding to the window manager..." << std::endl;
-            wi->addPane( "Controls example window pane", m_controls_window );
-            wi->showPane( m_controls_window );
+            wi->addPane( "Manual arm manipulation", m_armmanipulation_window );
+            wi->showPane( m_armmanipulation_window );
             std::cerr << "Added..." << std::endl;
         }
+        
     }else{
         std::cerr << "No window manager, no panes :( " << std::endl;
     }
 
-    /*
-    // Dialog example
-    m_dialog_window = new CExampleDialog( 0, wxT("Example dialog window"));
-
-    if( m_dialog_window->Show() == wxID_OK )
-    {
-        std::cerr << "Dialog OK" << std::endl;
-    }
-    //*/
+    // Create publisher
+    this->m_cameraPositionPub = private_nh.advertise< srs_env_model_msgs::RVIZCameraPosition >(
+    		m_cameraPositionPublisherName, 100, m_latchedTopics);
 
 }
 
@@ -262,7 +253,39 @@ void CButDisplay::connectListener()
 void CButDisplay::propertyPositionChanged()
 {
     if( ! m_property_position.expired() )
+    {
         propertyChanged( m_property_position );
+
+        // Publish changes
+        if( m_latchedTopics || m_cameraPositionPub.getNumSubscribers() > 0 )
+        {
+        	// Store start time
+        	ros::Time rostime = ros::Time::now();
+
+        	// Prepare header
+        	m_cameraPositionMsg.header.frame_id = "/map";
+        	m_cameraPositionMsg.header.stamp = rostime;
+
+        	// Get camera
+        	Ogre::Camera & camera( m_listener.getCamera() );
+
+        	// Fill message data
+        	Ogre::Vector3 position( camera.getPosition() );
+        	m_cameraPositionMsg.position.x = position.x;
+        	m_cameraPositionMsg.position.y = position.y;
+        	m_cameraPositionMsg.position.z = position.z;
+
+        	Ogre::Quaternion orientation( camera.getOrientation() );
+        	m_cameraPositionMsg.orientation.w = orientation.w;
+        	m_cameraPositionMsg.orientation.x = orientation.x;
+        	m_cameraPositionMsg.orientation.y = orientation.y;
+        	m_cameraPositionMsg.orientation.z = orientation.z;
+
+        	// Publish message
+        	m_cameraPositionPub.publish( m_cameraPositionMsg );
+
+        }
+    }
 }
 
 /**
@@ -292,6 +315,7 @@ void CButDisplay::CNotifyCameraListener::cameraPreRenderScene(Ogre::Camera *cam)
 {
     Ogre::Vector3 position( cam->getPosition() );
     Ogre::Quaternion orientation ( cam->getOrientation() );
+    cam->getCullingFrustum();
 
     if( hasMoved( position, orientation ) )
     {

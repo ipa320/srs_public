@@ -1,5 +1,5 @@
 /**
- * $Id: but_server.h 134 2012-01-12 13:52:36Z spanel $
+ * $Id: but_server.h 281 2012-03-05 14:50:43Z stancl $
  *
  * Modified by dcgm-robotics@FIT group
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
@@ -52,49 +52,33 @@
 
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <nav_msgs/OccupancyGrid.h>
 #include <std_msgs/ColorRGBA.h>
-#include <arm_navigation_msgs/CollisionObject.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <sensor_msgs/CameraInfo.h>
-#include <std_srvs/Empty.h>
 
-#include <pcl/point_types.h>
-#include <pcl/ros/conversions.h>
-#include <pcl_ros/transforms.h>
-#include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
-#include <pcl/segmentation/sac_segmentation.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/filters/extract_indices.h>
-#include <pcl/filters/passthrough.h>
-#include <arm_navigation_msgs/CollisionMap.h>
+//#include <sensor_msgs/CameraInfo.h>
+//#include <std_srvs/Empty.h>
+
+//#include <pcl/point_types.h>
 
 
-#include <tf/transform_listener.h>
-#include <tf/message_filter.h>
-#include <message_filters/subscriber.h>
-#include <octomap_ros/OctomapBinary.h>
-#include <octomap_ros/GetOctomap.h>
-#include <octomap_ros/ClearBBXRegion.h>
-#include <octomap_ros/OctomapROS.h>
-#include <octomap/OcTreeKey.h>
+//#include <pcl/io/pcd_io.h>
 
-#include "octonode.h"
 
-#include <but_gui/Plane.h>
-#include <srs_env_model/RemoveObject.h>
-#include <srs_env_model/AddPlanes.h>
-#include <srs_env_model/AddPlane.h>
-#include <srs_env_model/PlaneDesc.h>
+#include <but_server/plugins/CMapPlugin.h>
+#include <but_server/plugins/PointCloudPlugin.h>
+#include <but_server/plugins/OctoMapPlugin.h>
+#include <but_server/plugins/CollisionObjectPlugin.h>
+#include <but_server/plugins/Map2DPlugin.h>
+#include <but_server/plugins/IMarkersPlugin.h>
 
-typedef boost::shared_ptr<interactive_markers::InteractiveMarkerServer> InteractiveMarkerServerPtr;
+
 
 
 /**
   BUT dynamic scene server class.
   */
 class CButServer{
+public:
+
 
 public:
     //! Type of the used pointcloud
@@ -106,82 +90,9 @@ public:
     //! Destructor
     virtual ~CButServer();
 
-
-    /// Reset octomap service
-    bool resetOctomapCB(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
-
 protected:
-
-    //! Publish stored map
-    void publishMap(const ros::Time& rostime = ros::Time::now()) const;
-
     //! Publish all
     void publishAll(const ros::Time& rostime = ros::Time::now());
-
-
-    //! Clear octomap data
-    void resetOctomap();
-
-
-    /// label the input cloud "pc" into ground and nonground. Should be in the robot's fixed frame (not world!)
-    void filterGroundPlane(const tPCLPointCloud& pc, tPCLPointCloud& ground, tPCLPointCloud& nonground) const;
-
-    /**
-     * @brief update occupancy map with a scan labeled as ground and nonground.
-     * The scans should be in the global map frame.
-     *
-     * @param sensorOrigin origin of the measurements for raycasting
-     * @param ground scan endpoints on the ground plane (only clear space)
-     * @param nonground all other endpoints (clear up to occupied endpoint)
-     */
-    void insertScan(const tf::Point& sensorOrigin, const tPCLPointCloud& ground, const tPCLPointCloud& nonground);
-
-    /**
-     * @brief Insert point cloud callback
-     *
-     * @param cloud Input point cloud
-     */
-    void insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud);
-
-    /**
-     * @brief New camera info published callback
-     *
-     * @param ci Camera info
-     */
-    void cameraInfoCallback( const sensor_msgs::CameraInfo::ConstPtr& ci){};
-
-    /**
-     * @brief Insert or modify plane array
-     *
-     * @param pa Array of planes
-     */
-    bool insertPlaneCallback( srs_env_model::AddPlanes::Request & req, srs_env_model::AddPlanes::Response & res );
-
-    /**
-     * @brief Insert/modify/remove plane
-     *
-     * @param plane Plane
-     */
-    void operatePlane( const srs_env_model::PlaneDesc & plane );
-
-    /**
-     * @brief Service helper - add plane
-     *
-     * @param plane Added plane
-     */
-    void addPlaneSrvCall( const srs_env_model::PlaneDesc & plane, const std::string & name );
-
-    /**
-     * @brief Service helper - remove plane
-     *
-     * @param plane Added plane
-     */
-    void removePlaneSrvCall( const srs_env_model::PlaneDesc & plane, const std::string & name );
-
-    /**
-     *  @brief Get unique string (used as interactive marker name)
-     */
-    std::string getUniqueName();
 
     /**
  * @brief Find speckle nodes (single occupied voxels with no neighbors). Only works on lowest resolution!
@@ -190,20 +101,8 @@ protected:
  */
     bool isSpeckleNode(const octomap::OcTreeKey& key) const;
 
-    /// hook that is called after traversing all nodes
-    void handlePreNodeTraversal(const ros::Time& rostime);
-
-    /// hook that is called when traversing all nodes of the updated Octree (does nothing here)
-    void handleNode(const octomap::OcTreeROS::OcTreeType::iterator& it) {};
-
-    /// hook that is called when traversing occupied nodes of the updated Octree (updates 2D map projection here)
-    void handleOccupiedNode(const octomap::OcTreeROS::OcTreeType::iterator& it);
-
-    /// hook that is called when traversing free nodes of the updated Octree (updates 2D map projection here)
-    void handleFreeNode(const octomap::OcTreeROS::OcTreeType::iterator& it);
-
-    /// hook that is called after traversing all nodes
-    void handlePostNodeTraversal(const ros::Time& rostime);
+    //! On octomap data changed
+    void onOcMapDataChanged( const srs::tButServerOcMap & mapdata );
 
 protected:
     std_msgs::ColorRGBA heightMapColor(double h) const;
@@ -212,16 +111,16 @@ protected:
     ros::NodeHandle m_nh;
 
     /// Publishers
-    ros::Publisher m_markerPub, m_binaryMapPub, m_pointCloudPub, m_collisionObjectPub, m_mapPub, m_collisionMapPub;
+    ros::Publisher 	  m_markerPub
+					, m_binaryMapPub
+					, m_visiblePartPub;			//! Visible part of the scene publisher
 
-    /// Subscriber - point cloud
-    message_filters::Subscriber<sensor_msgs::PointCloud2> * m_pointCloudSub;
 
     /// Subscriber - camera information
     //message_filters::Subscriber<sensor_msgs::CameraInfo> * m_camInfoSub;
 
-    //! Message filter (we only want point cloud 2 messages)
-    tf::MessageFilter<sensor_msgs::PointCloud2>* m_tfPointCloudSub;
+    /// Subscriber - camera position
+    //message_filters::Subscriber<srs_ui_but::RVIZCameraPosition> m_cameraPositionSub;
 
     //! Message filter - camera info
     //tf::MessageFilter<sensor_msgs::CameraInfo>* m_tfCameraInfoSub;
@@ -229,93 +128,64 @@ protected:
     ros::ServiceServer m_octomapService, m_clearBBXService, m_resetService;
     tf::TransformListener m_tfListener;
 
-    /// Stored octomap
-    octomap::OcTreeROS *m_octoMap;
 
-    octomap::KeyRay m_keyRay;  // temp storage for ray casting
-
-    double m_maxRange;
     bool m_useHeightMap;
     std_msgs::ColorRGBA m_color;
     double m_colorFactor;
 
     bool m_latchedTopics;
 
-    double m_res;
-    unsigned m_treeDepth;
-    double m_probHit;
-    double m_probMiss;
-    double m_thresMin;
-    double m_thresMax;
-
-    double m_pointcloudMinZ;
-    double m_pointcloudMaxZ;
     double m_occupancyMinZ;
     double m_occupancyMaxZ;
-    double m_minSizeX;
-    double m_minSizeY;
-
-    /// Unique name counter
-    long int m_uniqueNameCounter;
 
     /// Should speckles be filtered?
     bool m_filterSpeckles;
 
-    /// Should ground plane be filtered?
-    bool m_filterGroundPlane;
-    double m_groundFilterDistance;
-    double m_groundFilterAngle;
-    double m_groundFilterPlaneDistance;
-
-    /// downprojected 2D map:
-    nav_msgs::OccupancyGrid m_gridmap;
-
-    octomap::OcTreeKey m_paddedMinKey;
-
-    /// Should 2D map be published?
-    bool m_publish2DMap;
-
-    /// Should collision map be published
-    bool m_publishCollisionMap;
-
-    /// Collision map message
-    arm_navigation_msgs::CollisionMap m_cmap;
-
-    /// Services
-    ros::ServiceServer m_serviceResetOctomap, // Reset octomap service
-                       m_serviceInsertPlanes; // Insert some planes
-
-    /// Interactive markers server pointer
-    but_gui::InteractiveMarkerServerPtr m_imServer;
-
-    /// Remove object from the interactive markers server pointer
-    ros::ServiceClient m_removeInteractiveMarkerService;
-
-    /// Add plane interactive marker service
-    ros::ServiceClient m_addInteractivePlaneService;
-
     /// Connection settings
     std::string m_ocupiedCellsPublisher,
                 m_octomapBinaryPublisher,
-                m_pointcloudCentersPublisher,
-                m_collisionObjectPublisher,
-                m_mapPublisher,
-                m_collisionMapPublisher,
-                m_pointcloudSubscriber,
-                m_cameraInfoSubscriber,
+                m_cameraPositionSubscriber,
                 m_worldFrameId,
-                m_baseFrameId;
+                m_baseFrameId,
+                m_visiblePartPublisher;
+
+    /// Sensor to base transform matrix
+    Eigen::Matrix4f m_sensorToBaseTM;
+
+    /// Base to world transform matrix
+    Eigen::Matrix4f m_baseToWorldTM;
+
+    //! Every N-th frame should be processed when including point-cloud.
+    int m_numPCFramesProcessed;
+
+    //! Current frame counter
+    int m_frameCounter;
 
 
-    // DETECTED ENTITIES
-    /// Plane
-    typedef std::pair< std::string, srs_env_model::PlaneDesc > tNamedPlane;
-    typedef std::map< int, tNamedPlane > tPlanesMap;
-    tPlanesMap m_dataPlanes;
+    //======================================================================================================
+    // Plugins
 
-    // Planes frame id
-    std::string m_planesFrameId;
+    /// Collision map
+    srs::CCMapPlugin m_plugCMapPub;
 
+    /// Incoming depth points cloud
+    srs::CPointCloudPlugin m_plugInputPointCloud,
+    /// Output depth points cloud - whole octomap
+						m_plugOcMapPointCloud,
+	/// Visible points point cloud
+						m_plugVisiblePointCloud;
+
+    /// Octo map plugin
+    srs::COctoMapPlugin m_plugOctoMap;
+
+    /// Collision object plugin
+    srs::CCollisionObjectPlugin m_plugCollisionObject;
+
+    /// 2D map plugin
+    srs::CMap2DPlugin m_plugMap2D;
+
+    /// Interactive markers server plugin
+    srs::CIMarkersPlugin m_plugIMarkers;
 
 };
 

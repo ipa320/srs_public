@@ -1,5 +1,5 @@
 /**
- * $Id: but_display.h 134 2012-01-12 13:52:36Z spanel $
+ * $Id: but_display.h 321 2012-03-09 13:39:19Z spanel $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
@@ -23,6 +23,9 @@
 #include <OgreCamera.h>
 #include <string>
 #include "but_examplepane.h"
+#include "but_arm_manipulation.h"
+#include "srs_env_model_msgs/RVIZCameraPosition.h"
+
 
 class CButDisplay:public rviz::Display
 {
@@ -47,6 +50,8 @@ public:
 
         //! Get current camera position
         const Ogre::Vector3 & getCameraPosition(){ return m_position; }
+
+        Ogre::Camera & getCamera() { return *m_camera; }
 
     protected:
         //! Test if camera position and orientation has changed
@@ -132,6 +137,22 @@ protected:
 
     //! Controls window example
     CExamplePanelControls * m_controls_window;
+    
+    //! Controls window example
+    CArmManipulationControls * m_armmanipulation_window;
+
+    //! Camera position publisher name
+    std::string m_cameraPositionPublisherName;
+
+    //! Camera position message
+    srs_env_model_msgs::RVIZCameraPosition m_cameraPositionMsg;
+
+    //! Camera position publisher
+    ros::Publisher m_cameraPositionPub;
+
+    //! Enable/disable publishing
+    bool m_latchedTopics;
+
 
     friend class CNotifyCameraListener;
 

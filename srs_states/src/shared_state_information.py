@@ -27,6 +27,8 @@ class goal_structure():
         
         #task parameter
         self.task_parameter=""
+        ## by Ze
+        self.parameters = list()
         
         #Information about last step, use Last_step_info_msg 
         self.last_step_info = list()
@@ -68,6 +70,7 @@ class goal_structure():
         self.stop_required = False 
         
         self.stop_acknowledged = False
+
         
     def get_post_grasp_adjustment_state(self):
         self.lock.acquire()

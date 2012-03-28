@@ -390,7 +390,7 @@ class SRS_DM_ACTION(object):
         if current_task_info.task_name=="":
             current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
-        
+        current_task_info.task_parameters = current_goal.parameters
         
         if current_task_info.task_name=='stop':
             current_task_info.set_stop_acknowledged(False)            #
@@ -417,9 +417,11 @@ class SRS_DM_ACTION(object):
             req.task = current_task_info.task_name
             req.content = current_task_info.task_parameter
             req.userPose = "order"
+            req.parameters = current_task_info.parameters
+            
             res = requestNewTask(req)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
-            print 'Task created with session id of: ' + res.sessionId
+            print 'Task created with session id of: ' + str(res.sessionId)
             current_task_info.session_id = res.sessionId
             if res.result == 1:
                 self._as.set_aborted(self._result)

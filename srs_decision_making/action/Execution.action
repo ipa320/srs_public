@@ -2,6 +2,7 @@
 string action
 string parameter
 uint32 priority
+string[] parameters
 ---
 #define the result
 uint32 return_value

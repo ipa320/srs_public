@@ -15,7 +15,7 @@
   <depend package="move_arm"/>
   <depend package="move_arm_warehouse"/>
   <depend package="srs_ui_but"/>
-  <depend package="cob_bringup_sim"/>
+  <!--depend package="cob_bringup_sim"/-->
   <depend package="rviz"/>
   <depend package="mongodb"/>
   <depend package="interpolated_ik_motion_planner"/>
@@ -28,8 +28,8 @@
   <depend package="smach"/>
   <depend package="smach_ros"/>
   <depend package="cob_object_detection_msgs"/>
-  <depend package="srs_grasping"/>
-  <depend package="srs_object_database"/>
+  <!--depend package="srs_grasping"/-->
+  <depend package="srs_object_database_msgs"/>
   <depend package="srs_knowledge"/>
 
 </package>

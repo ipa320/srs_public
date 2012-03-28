@@ -75,7 +75,7 @@ void srs::CCollisionObjectPlugin::onFrameStart(const SMapParameters & par)
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_coFrameId, m_ocFrameId,
-				par.currentTime, ros::Duration(0.2));
+				par.currentTime, ros::Duration(2.0)); // orig. 0.2
 
 		m_tfListener.lookupTransform(m_coFrameId, m_ocFrameId,
 				par.currentTime, ocToCoTf);

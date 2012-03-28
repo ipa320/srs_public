@@ -15,9 +15,14 @@
 	<include file="$(find cob_2dnav)/ros/launch/2dnav.launch" />
        
 	<!-- Run our dynamic scene model server node -->
-    <include file="$(find srs_env_model)/launch/only_butserver.launch"/>
+	<include file="$(find srs_env_model)/launch/only_butserver.launch"/>
     
+	<!-- Run our GUI nodes -->
+	<node pkg="srs_ui_but" type="but_cob_teleop_marker" name="but_cob_teleop_marker" />
+<!--	<node pkg="srs_ui_but" type="view" name="view" /> -->
+	<node pkg="srs_ui_but" type="but_service_server" name="but_service_server" />
+
 	<!-- Run rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model)/launch/majkl1.vcg"/>
+	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model)/launch/majkl2.vcg"/>
 </launch>
 

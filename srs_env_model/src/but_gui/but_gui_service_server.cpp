@@ -1,6 +1,6 @@
 /*
  ********************************************************************************
- * $Id: but_gui_service_server.cpp 305 2012-03-08 14:20:02Z xlokaj03 $
+ * $Id: but_gui_service_server.cpp 337 2012-03-11 17:18:48Z spanel $
  *
  * Developed by dcgm-robotics@FIT group
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
@@ -143,9 +143,9 @@ bool addObjectWithBoundingBox(AddObjectWithBoundingBox::Request &req, AddObjectW
     object->setResource(req.resource);
     object->setUseMaterial(req.use_material);
   }
-  object->setPose(req.pose);
-  object->setBoundingBoxMin(req.bounding_box_min);
-  object->setBoundingBoxMax(req.bounding_box_max);
+//  object->setPose(req.pose);
+  object->setPoseLWH(req.pose, req.bounding_box_lwh);
+  object->setBoundingBoxLWH(req.bounding_box_lwh);
   object->setColor(req.color);
   object->setDescription(req.description);
   object->insert();

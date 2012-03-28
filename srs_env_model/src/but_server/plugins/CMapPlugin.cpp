@@ -101,11 +101,11 @@ void srs::CCMapPlugin::onFrameStart( const SMapParameters & par )
 	try
 	{
 		// Transformation - to, from, time, waiting time
-		m_tfListener.waitForTransform(m_cmapFrameId, par.frameId, par.currentTime, ros::Duration(0.2));
+		m_tfListener.waitForTransform(m_cmapFrameId, par.frameId, par.currentTime, ros::Duration(2.0)); // orig. 0.2
 
 		m_tfListener.lookupTransform(m_cmapFrameId, par.frameId, par.currentTime, omapToCmapTf);
 
-		m_tfListener.waitForTransform(par.frameId, robotBaseFrameId, par.currentTime, ros::Duration(0.2));
+		m_tfListener.waitForTransform(par.frameId, robotBaseFrameId, par.currentTime, ros::Duration(2.0));
 
 		m_tfListener.lookupTransform(par.frameId, robotBaseFrameId, par.currentTime, baseToOmapTf);
 	}

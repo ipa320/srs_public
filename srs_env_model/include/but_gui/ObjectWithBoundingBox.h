@@ -26,18 +26,33 @@ public:
    */
   ObjectWithBoundingBox(InteractiveMarkerServerPtr server, string frame_id, string name);
 
+  /**
+   * Creates and inserts object into Interactive Marker Server
+   */
   void insert();
 
-  void setBoundingBoxMin(Point bounding_box_min)
+  /**
+   * Sets object's bounding box
+   * @param bounding_box_lwh is bounding box length, width and height
+   */
+  void setBoundingBoxLWH(Point bounding_box_lwh)
   {
-    bounding_box_min_ = bounding_box_min;
-  }
-  void setBoundingBoxMax(Point bounding_box_max)
-  {
-    bounding_box_max_ = bounding_box_max;
+    bounding_box_lwh_ = bounding_box_lwh;
   }
 
+  /*
+   * Sets position and orientation
+   * @param pose is object's position and orientation
+   */
+  void setPoseLWH(Pose pose, Point bounding_box_lwh);
+
+  /**
+   * Callback
+   */
   void objectWithBoundingBoxCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
+  /**
+   * Menu callback
+   */
   void menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
 
 private:
@@ -46,7 +61,8 @@ private:
   void createMesh();
   void createBoundingBoxControl();
 
-  Point bounding_box_min_, bounding_box_max_;
+  Point bounding_box_lwh_;
+  bool translated_;
 };
 
 }

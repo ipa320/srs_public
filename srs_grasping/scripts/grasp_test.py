@@ -29,9 +29,12 @@ from srs_grasping.srv import *
 class GraspScript(script):
 		
 	def __init__(self):
+		
 		rospy.loginfo("Waiting /arm_kinematics/get_ik service...")
 		rospy.wait_for_service('/arm_kinematics/get_ik')
 		rospy.loginfo("/arm_kinematics/get_ik has been found!")
+	
+
 
 		rospy.loginfo("Waiting /get_grasp_configurations service...")
 		rospy.wait_for_service('/get_grasp_configurations')
@@ -67,22 +70,27 @@ class GraspScript(script):
 		self.sss.wait_for_input()
 		"""
 
-	def execute(self):
-		listener = tf.TransformListener(True, rospy.Duration(10.0))
+		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
 		rospy.sleep(2)
+
+	def execute(self):
+
+
 
 		# prepare for grasping
 		#self.sss.move("base","kitchen")
 		#self.sss.move("arm","look_at_table")
 		self.sss.move("sdh","cylopen")
+		self.sss.move("arm","look_at_table")
+		rospy.sleep(2);
 
 		#current_joint_configuration
 		sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
 		while sub.get_num_connections() == 0:
 			time.sleep(0.3)
 			continue
-		print "--"
-		#Detect
+
+		#Detection
 		self.srv_name_object_detection = '/object_detection/detect_object'
 		detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
 		req = DetectObjectsRequest()
@@ -96,49 +104,43 @@ class GraspScript(script):
 		while (index < 0):
 			index = int(raw_input("Select object to grasp: "))
 		
-		obj = res.object_list.detections[i].pose
-		obj = listener.transformPose("/base_link", obj)
-		obj.pose.position.z -= 0.1	#Milk z-offset
+		obj = res.object_list.detections[index].pose
+		obj.header.stamp = self.listener.getLatestCommonTime("/base_link", obj.header.frame_id)
+		obj = self.listener.transformPose("/base_link", obj)
+
+
 
 		object_id = self.getObjectID("milk");
-
+		print "Calling get_grasps_from_position service..."
 		get_grasps_from_position = rospy.ServiceProxy('get_grasps_from_position', GetGraspsFromPosition)
 		req = srs_grasping.srv.GetGraspsFromPositionRequest(object_id, obj.pose)	
 		grasp_configuration = (get_grasps_from_position(req)).grasp_configuration
+		print "get_grasps_from_position service has finished."
+
 
 		for i in range(0,len(grasp_configuration)):
-			pre_grasp_pose = grasp_configuration[i].pre_grasp
-			grasp_pose = grasp_configuration[i].grasp
-
-			pre_trans = grasping_functions.matrix_from_pose(pre_grasp_pose)  
-			grasp_trans = grasping_functions.matrix_from_pose(grasp_pose)
-
-			t = translation_from_matrix(pre_trans)
-			q = quaternion_from_matrix(pre_trans)
-			tg = translation_from_matrix(grasp_trans)
-			qg = quaternion_from_matrix(grasp_trans)
 
 			pre = PoseStamped()
 			pre.header.stamp = rospy.Time.now()
 			pre.header.frame_id = "/base_link"
-			pre.pose.position.x = t[0]
-			pre.pose.position.y = t[1]
-			pre.pose.position.z = t[2] 
-			pre.pose.orientation.x = q[0]
-			pre.pose.orientation.y = q[1]
-			pre.pose.orientation.z = q[2]
-			pre.pose.orientation.w = q[3]
+			pre.pose.position.x = grasp_configuration[i].pre_grasp.position.x
+			pre.pose.position.y = grasp_configuration[i].pre_grasp.position.y
+			pre.pose.position.z = grasp_configuration[i].pre_grasp.position.z
+			pre.pose.orientation.x = grasp_configuration[i].pre_grasp.orientation.x
+			pre.pose.orientation.y = grasp_configuration[i].pre_grasp.orientation.y
+			pre.pose.orientation.z = grasp_configuration[i].pre_grasp.orientation.z
+			pre.pose.orientation.w = grasp_configuration[i].pre_grasp.orientation.w
 
 			g = PoseStamped()
 			g.header.stamp = rospy.Time.now()
 			g.header.frame_id = "/base_link"
-			g.pose.position.x = tg[0]
-			g.pose.position.y = tg[1]
-			g.pose.position.z = tg[2]
-			g.pose.orientation.x = qg[0]
-			g.pose.orientation.y = qg[1]
-			g.pose.orientation.z = qg[2]
-			g.pose.orientation.w = qg[3]
+			g.pose.position.x = grasp_configuration[i].grasp.position.x
+			g.pose.position.y = grasp_configuration[i].grasp.position.y
+			g.pose.position.z = grasp_configuration[i].grasp.position.z
+			g.pose.orientation.x = grasp_configuration[i].grasp.orientation.x
+			g.pose.orientation.y = grasp_configuration[i].grasp.orientation.y
+			g.pose.orientation.z = grasp_configuration[i].grasp.orientation.z
+			g.pose.orientation.w = grasp_configuration[i].grasp.orientation.w
 	
 
 			offset_x = 0#(g.pose.position.x - pre.pose.position.x)/3
@@ -154,6 +156,7 @@ class GraspScript(script):
 
 
 			sol = False
+			
 			for w in range(0,10):
 				(pre_grasp_conf, error_code) = grasping_functions.callIKSolver(current_joint_configuration, pre)		
 				if(error_code.val == error_code.SUCCESS):
@@ -168,7 +171,11 @@ class GraspScript(script):
 
 
 			if sol:
+				print "PREGRASP: #####################################"
+				print grasp_configuration[i].pre_grasp
 				print "Category: "+ grasp_configuration[i].category
+				print "###############################################"
+
 				res = raw_input("Execute this grasp? (y/n): ")
 
 				if res != "y":
@@ -181,7 +188,6 @@ class GraspScript(script):
 					handle_say.wait()
 					handle_arm.wait()
 
-
 					raw_input("Grasp...")
 					handle_arm2 = self.sss.move("arm", [grasp_conf], False)
 					handle_arm2.wait()
@@ -189,6 +195,7 @@ class GraspScript(script):
 					raw_input("Catch the object")
 					handle_sdh = self.sss.move("sdh", [list(grasp_configuration[i].sdh_joint_values)], False)
 					handle_sdh.wait()
+					rospy.sleep(4);
 					"""
 					# place obj on tray
 					handle01 = self.sss.move("arm","grasp-to-tray",False)
@@ -207,13 +214,19 @@ class GraspScript(script):
 					#self.sss.move("base","order")
 					self.sss.say("Here's your drink.")
 					self.sss.move("torso","nod")
+
+					res = grasping_functions.sdh_tactil_sensor_result()
+					if not res:
+						val = list(grasp_configuration[i].sdh_joint_values)
+						val[2] -= 0.1
+						val[4] -= 0.1
+						val[6] -= 0.1
+						handle_sdh = self.sss.move("sdh", [val], False)
+						handle_sdh.wait()
+						rospy.sleep(4);
+						return 0;
 					"""
-					print grasping_functions.sdh_tactil_sensor_result()
-					return 0
-
-			#else:
-				#rospy.logerr(str(i)+": Ik grasp FAILED")
-
+					return 0;
 		return -1
 
 

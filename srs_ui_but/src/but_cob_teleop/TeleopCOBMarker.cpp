@@ -17,6 +17,9 @@ TeleopCOBMarker::TeleopCOBMarker()
   server_.reset(new InteractiveMarkerServer("but_cob_teleop_marker", "", false));
   pub_ = n_.advertise<geometry_msgs::Twist> ("base_controller/command", 1);
 
+  initial_pose_ = geometry_msgs::Pose();
+  initial_pose_.position.z = 0.05;
+
   createMarkers();
 
   server_->applyChanges();
@@ -58,8 +61,8 @@ void TeleopCOBMarker::processFeedback(const visualization_msgs::InteractiveMarke
 
   pub_.publish(twist);
 
-  server_->setPose(MARKER_DRIVER_NAME, geometry_msgs::Pose());
-  server_->setPose(MARKER_NAVIGATOR_NAME, geometry_msgs::Pose());
+  server_->setPose(MARKER_DRIVER_NAME, initial_pose_);
+  server_->setPose(MARKER_NAVIGATOR_NAME, initial_pose_);
   server_->applyChanges();
 }
 
@@ -69,9 +72,7 @@ void TeleopCOBMarker::createMarkers()
   marker_driver.name = MARKER_DRIVER_NAME;
   marker_driver.header.frame_id = "/base_link";
   marker_driver.header.stamp = ros::Time::now();
-  marker_driver.pose.position.x = 0;
-  marker_driver.pose.position.y = 0;
-  marker_driver.pose.position.z = 0;
+  marker_driver.pose = initial_pose_;
   marker_driver.scale = 1.5;
 
   InteractiveMarkerControl control;
@@ -96,9 +97,7 @@ void TeleopCOBMarker::createMarkers()
   marker_navigator.name = MARKER_NAVIGATOR_NAME;
   marker_navigator.header.frame_id = "/base_link";
   marker_navigator.header.stamp = ros::Time::now();
-  marker_navigator.pose.position.x = 0;
-  marker_navigator.pose.position.y = 0;
-  marker_navigator.pose.position.z = 0;
+  marker_navigator.pose = initial_pose_;
   marker_navigator.scale = 1.5;
 
   InteractiveMarkerControl floorControl;

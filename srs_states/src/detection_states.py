@@ -48,7 +48,7 @@ class detect_object(smach.State):
     def execute(self, userdata):
 
         global current_task_info
-
+	userdata.object_name = "milk"
         # if the object has been identified, and there was no base movement of grasp, then no need to detect again
         if current_task_info.get_object_identification_state() == True:
             userdata.object_pose = self.the_object_pose

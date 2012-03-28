@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('srs_arm_navigation')
+import roslib; roslib.load_manifest('srs_states')
 import rospy
 import smach
 import smach_ros
@@ -196,8 +196,9 @@ class move_arm_to_given_positions_assisted(smach.State):
                  description = 'Object to grasp',
                  pose = bpose,
 #                 scale = bscale,
-                 bounding_box_min = userdata.bb_of_the_target_object['bb_min'],
-                 bounding_box_max = userdata.bb_of_the_target_object['bb_max'],
+                 bounding_box_lwh = userdata.bb_of_the_target_object['bb_lwh'],
+#                 bounding_box_min = userdata.bb_of_the_target_object['bb_min'],
+#                 bounding_box_max = userdata.bb_of_the_target_object['bb_max'],
                  color = color,
                  resource = mesh,
                  shape = shape,

@@ -89,8 +89,11 @@ def getWorkspaceOnMap():
     print 'test get all workspace (furnitures basically here) from map'
     try:
         getWorkspace = rospy.ServiceProxy('get_workspace_on_map', GetWorkspaceOnMap)
-        req = GetWorkspaceOnMap.request()
-        res = getWorkspace('ipa-kitchen-map', True)
+        req = GetWorkspaceOnMapRequest()
+        req.map = 'ipa-kitchen-map'
+        req.ifGeometryInfo = True
+        res = getWorkspace(req)
+        #res = getWorkspace('ipa-kitchen-map', True)
         return res
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e

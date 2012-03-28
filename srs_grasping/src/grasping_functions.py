@@ -9,7 +9,7 @@ import time
 import tf
 
 from srs_grasping.srv import *
-from srs_object_database.srv import *
+#from srs_object_database.srv import *
 
 from tf.transformations import *
 from numpy import *

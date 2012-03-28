@@ -18,8 +18,8 @@ from srs_generic_states import *
 from mapping_states import *
 from navigation_states import *
 from detection_states  import *
-#from grasp_states import *
-from generic_grasp_state import *
+from grasp_states import *
+#from generic_grasp_state import *
 
 # This is come from srs_object_verification, the name should be updated to avoid confusion
 from generic_states import *
@@ -209,13 +209,14 @@ class sm_pick_object_asisted(SRS_StateMachine):
                     transitions={'succeeded':'SELECT_GRASP', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_object_name':'target_object_name','target_object':'target_object', 'target_object_pose':'target_object_old_pose'})
     
+            
             smach.StateMachine.add('SELECT_GRASP', select_grasp(),
                     transitions={'succeeded':'GRASP_GENERAL', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'grasp_configuration':'grasp_configuration', 'object':'target_object'})
+                    remapping={'grasp_categorisation':'grasp_categorisation', 'object':'target_object'})
                 
-            smach.StateMachine.add('GRASP_GENERAL', grasp(),
-                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
-                    remapping={'object':'target_object', 'grasp_configuration':'grasp_configuration'})
+            smach.StateMachine.add('GRASP_GENERAL', grasp_simple(max_retries = 5),
+                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT', 'no_more_retries':'not_completed', 'failed':'failed','preempted':'preempted'},
+                    remapping={'object':'target_object', 'grasp_categorisation':'grasp_categorisation'})
  
  
 ################################################################################

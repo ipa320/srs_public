@@ -16,9 +16,9 @@
 #   ROS package name: srs_grasping
 #
 # \author
-#   Author: Manuel Rodríguez, email:mrodriguez@robotnik.es
+#   Author: Manuel Rodriguez, email:mrodriguez@robotnik.es
 # \author
-#   Supervised by: Manuel Rodríguez, email:mrodriguez@robotnik.es
+#   Supervised by: Manuel Rodriguez, email:mrodriguez@robotnik.es
 #
 # \date Date of creation: March 2012
 #
@@ -92,4 +92,4 @@ if __name__ == "__main__":################################################
 ##########################################################################
     	rospy.init_node('grasp_simulation')
 	s = grasp_simulation()
-    	s.run(1)	#milk
+    	s.run(9)	#milk

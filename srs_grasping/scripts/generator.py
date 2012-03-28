@@ -16,9 +16,9 @@
 #   ROS package name: srs_grasping
 #
 # \author
-#   Author: Manuel Rodríguez, email:mrodriguez@robotnik.es
+#   Author: Manuel Rodriguez, email:mrodriguez@robotnik.es
 # \author
-#   Supervised by: Manuel Rodríguez, email:mrodriguez@robotnik.es
+#   Supervised by: Manuel Rodriguez, email:mrodriguez@robotnik.es
 #
 # \date Date of creation: March 2012
 #
@@ -80,4 +80,4 @@ class GENERATOR():
 if __name__ == "__main__":
 	rospy.init_node('grasp_generator')
 	s = GENERATOR()
-    	s.run(1)
+    	s.run(9)

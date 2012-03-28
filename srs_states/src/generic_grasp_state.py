@@ -23,7 +23,7 @@ class select_grasp(smach.State):
         
         #default grasp categorisation
         #self.grasp_configuration = ""
-        self.object_id=1
+        self.object_id=9
 
     def execute(self, userdata):
         

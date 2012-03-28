@@ -16,9 +16,9 @@
 #   ROS package name: srs_grasping
 #
 # \author
-#   Author: Manuel Rodríguez, email:mrodriguez@robotnik.es
+#   Author: Manuel Rodriguez, email:mrodriguez@robotnik.es
 # \author
-#   Supervised by: Manuel Rodríguez, email:mrodriguez@robotnik.es
+#   Supervised by: Manuel Rodriguez, email:mrodriguez@robotnik.es
 #
 # \date Date of creation: March 2012
 #
@@ -76,8 +76,8 @@ from numpy import matrix
 
 from cob_object_detection_msgs.msg import *
 from cob_object_detection_msgs.srv import *
-from srs_object_database.msg import *
-from srs_object_database.srv import *
+from srs_object_database_msgs.msg import *
+from srs_object_database_msgs.srv import *
 
 import grasping_functions
 from srs_grasping.srv import *
@@ -294,7 +294,7 @@ class GraspScript(script):
 	#Fake function
 	def getObjectID(self, obj_name):
 		if (obj_name=="milk"): 
-			return 1;
+			return 9;
 		else:
 			return -1;
 

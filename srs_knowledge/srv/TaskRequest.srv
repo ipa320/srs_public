@@ -5,7 +5,8 @@
 string task
 
 #temporary use here: kitchen, milk, [x, y, theta]
-string content
+#string content
+string parameter
 # string parameters
 
 # if to get an object (milk0) or any in the general class (eg. Milk)

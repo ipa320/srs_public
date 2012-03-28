@@ -88,8 +88,9 @@ def getObjectsOnMap():
 def getWorkspaceOnMap():
     print 'test get all workspace (furnitures basically here) from map'
     try:
-        requestNewTask = rospy.ServiceProxy('get_workspace_on_map', GetWorkspaceOnMap)
-        res = requestNewTask('ipa-kitchen-map', True)
+        getWorkspace = rospy.ServiceProxy('get_workspace_on_map', GetWorkspaceOnMap)
+        req = GetWorkspaceOnMap.request()
+        res = getWorkspace('ipa-kitchen-map', True)
         return res
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
@@ -102,15 +103,15 @@ if __name__ == "__main__":
 
     # request a new task
     #print requestNewTask()
-    print requestNewTaskSearch()
+    #print requestNewTaskSearch()
     # get next action [0 0 0 ] is not used here as the first step. see explanation in the next call
-    print '1-- ', planNextActionService(16, 0, ['s'])
+    #print '1-- ', planNextActionService(16, 0, ['s'])
 
     #[0, 0, 0] means: success for move, perception, and grasp actions in the last step
 
-    print '2-- ', planNextActionService(16, 1, ['s'])
-    print '3-- ', planNextActionService(16, 1, ['s'])
-    print '4-- ', planNextActionService(16, 1, ['s'])
+    #print '2-- ', planNextActionService(16, 1, ['s'])
+    #print '3-- ', planNextActionService(16, 1, ['s'])
+    #print '4-- ', planNextActionService(16, 1, ['s'])
 
     #print '4-- ', testNextActionService([0,0,0])
     #print '5-- ', testNextActionService([0,0,0])
@@ -118,4 +119,4 @@ if __name__ == "__main__":
     # to terminate current task, 
     #print terminateCurrentTask()
     #print getObjectsOnMap()
-    #print getWorkspaceOnMap()
+    print getWorkspaceOnMap()

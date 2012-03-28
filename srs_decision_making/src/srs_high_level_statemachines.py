@@ -19,10 +19,11 @@ from mapping_states import *
 from navigation_states import *
 from detection_states  import *
 from grasp_states import *
+
 #from generic_grasp_state import *
 
 # This is come from srs_object_verification, the name should be updated to avoid confusion
-from generic_states import *
+#from generic_states import *
 
 """
 This file contains high level state machines for decision making.

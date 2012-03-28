@@ -25,6 +25,7 @@ from smach_ros import ConditionState, IntrospectionServer
 from srs_knowledge.srv import *
 from srs_knowledge.msg import *
 
+
 """
 smach introspection server not working in electric yet, modify the executive_smach/smach_msgs/msg/SmachContainerStatus.msg below can bypass error:
 

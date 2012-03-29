@@ -28,8 +28,8 @@
   <depend package="smach"/>
   <depend package="smach_ros"/>
   <depend package="cob_object_detection_msgs"/>
-  <!--depend package="srs_grasping"/-->
-  <!--depend package="srs_object_database_msgs"/-->
+  <depend package="srs_grasping"/>
+  <depend package="srs_object_database_msgs"/>
   <depend package="srs_object_database"/>
   <depend package="srs_knowledge"/>
 

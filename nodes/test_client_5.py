@@ -22,16 +22,22 @@ def DM_client():
     # Creates a goal to send to the action server.
     _goal=xmsg.ExecutionGoal()
     _goal.action="move"
-    _goal.parameter="[-2.399 0.36 0]"
+
+    _goal.parameter="[-2.399 0.5 0]"
     _goal.priority=1
     # Sends the goal to the action server.
     client.send_goal(_goal)
+
 
     # Waits for the server to finish performing the action.
     client.wait_for_result()
 
     # Prints out the result of executing the action
     return client.get_result()
+
+
+ 
+
 
 if __name__ == '__main__':
     try:

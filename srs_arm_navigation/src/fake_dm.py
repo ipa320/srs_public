@@ -1,4 +1,30 @@
 #!/usr/bin/env python
+###############################################################################
+# \file
+#
+# $Id:$
+#
+# Copyright (C) Brno University of Technology
+#
+# This file is part of software developed by dcgm-robotics@FIT group.
+# 
+# Author: Zdenek Materna (imaterna@fit.vutbr.cz)
+# Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+# Date: dd/mm/2012
+#
+# This file is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this file.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 import roslib; roslib.load_manifest('srs_arm_navigation')
 import rospy
@@ -16,7 +42,7 @@ from tf import TransformListener
 from numpy import *
 import sys
 from srs_object_database_msgs.srv import GetObjectId
-#from srs_object_database.srv import GetObjectId
+from srs_object_database_msgs.srv import GetObjectId
 
 def main():
   
@@ -95,7 +121,7 @@ def main():
   rospy.loginfo('Lets transform pose from %s to %s frame',object.pose.header.frame_id,transf_target)
   
   if not tfl.frameExists(object.pose.header.frame_id):
-    rospy.logerr('Frame %s does not exist',obj_position.header.frame_id)
+    rospy.logerr('Frame %s does not exist',object.pose.header.frame_id)
     sys.exit(0)
   
   if not tfl.frameExists(transf_target):
@@ -132,7 +158,7 @@ def main():
   
   try:
   
-    cres = convert_id(type=int(obj_id))
+    cres = convert_id(type=str(obj_id))
     objdb_id = int(cres.model_ids[0])
     rospy.loginfo('OBJDB ID=%d, model_desc=%s, model_category=%s',objdb_id,cres.model_desc[0],cres.model_category[0])
     
@@ -142,71 +168,114 @@ def main():
     objdb_id = 1
     
   
-#  rospy.loginfo('We will try to find some grasping positions, be patient')
-#  
-#  grasps_res = get_grasps(object_id=objdb_id,object_pose=obj_pose_transf.pose)
-#  
-#  if grasps_res.feasible_grasp_available == False:
-#    rospy.logerr('Feasible grasp for object ID %s is not available :-(',int(obj_id))
-#    #sys.exit(0)
-#  
-#  print "GRASPS"
-#  print grasps_res
+  rospy.loginfo('We will try to find some grasping positions, be patient')
+
+  grasps_res = None
+
+  # TODO add try except.....
+  try:
+  
+      # TODO uncomment and test.....................................................................................................
+      #grasps_res = get_grasps(object_id=objdb_id,object_pose=obj_pose_transf.pose)
+      
+      if grasps_res.feasible_grasp_available == False:
+      
+        rospy.logerr('Feasible grasp for object ID %s is not available :-( (lets use fake positions...)',int(obj_id))
+        #grasps_res = None
+        
+      else:
+        
+        rospy.loginfo('Hooray, we are able to grasp! ;)')
+      
+  except Exception, e:
+      
+      rospy.logerr('Error on getting grasps: %s',str(e))
+      grasps_res = None
+
+  
+      #sys.exit(0)
+
+  #print "GRASPS"
+  #print grasps_res
 
   # TODO prepare fake grasping positions data....
   
-  fake_grasp_positions = [Pose(),Pose(),Pose(),Pose()]
-  
-  # relative position to object
-  fake_grasp_positions[0].position.x = -0.2
-  fake_grasp_positions[0].position.y = 0
-  fake_grasp_positions[0].position.z = 0.1
-  fake_grasp_positions[0].orientation.x = 0
-  fake_grasp_positions[0].orientation.y = 0
-  fake_grasp_positions[0].orientation.z = 0
-  fake_grasp_positions[0].orientation.w = 1 
-  
-  fake_grasp_positions[1].position.x = 0.2
-  fake_grasp_positions[1].position.y = 0
-  fake_grasp_positions[1].position.z = 0.1
-  fake_grasp_positions[1].orientation.x = 0
-  fake_grasp_positions[1].orientation.y = 0
-  fake_grasp_positions[1].orientation.z = 0
-  fake_grasp_positions[1].orientation.w = 1 
-  
-  fake_grasp_positions[2].position.x = 0
-  fake_grasp_positions[2].position.y = -0.2
-  fake_grasp_positions[2].position.z = 0.1
-  fake_grasp_positions[2].orientation.x = 0
-  fake_grasp_positions[2].orientation.y = 0
-  fake_grasp_positions[2].orientation.z = 0
-  fake_grasp_positions[2].orientation.w = 1 
-  
-  fake_grasp_positions[3].position.x = 0
-  fake_grasp_positions[3].position.y = 0.2
-  fake_grasp_positions[3].position.z = 0.1
-  fake_grasp_positions[3].orientation.x = 0
-  fake_grasp_positions[3].orientation.y = 0
-  fake_grasp_positions[3].orientation.z = 0
-  fake_grasp_positions[3].orientation.w = 1 
+  # test if variable is defined
+  if grasps_res is not None:
+      
+      try:
+          
+           grasps_res.grasp_configuration
+           
+      except NameError:
+      
+         grasps_res.grasp_configuration = None
+     
+        
     
-  # TODO add another data !!!!!!!!
-  #sm.userdata.list_of_target_positions = grasps_res.grasp_configuration
-  sm.userdata.list_of_target_positions = fake_grasp_positions
-  sm.userdata.list_of_id_for_target_positions = [5,8,13,72]
+  if grasps_res is None:
+      
+      rospy.logerr('Problem with pre-grasp positions. We will use fake ones...') 
+      
+      sm.userdata.list_of_id_for_target_positions = [5,8,13,72]
+      
+      fake_grasp_positions = [Pose(),Pose(),Pose(),Pose()]
+  
+      # relative position to object
+      fake_grasp_positions[0].position.x = -0.2
+      fake_grasp_positions[0].position.y = 0
+      fake_grasp_positions[0].position.z = 0.1
+      fake_grasp_positions[0].orientation.x = 0
+      fake_grasp_positions[0].orientation.y = 0
+      fake_grasp_positions[0].orientation.z = 0
+      fake_grasp_positions[0].orientation.w = 1 
+          
+      fake_grasp_positions[1].position.x = 0.2
+      fake_grasp_positions[1].position.y = 0
+      fake_grasp_positions[1].position.z = 0.1
+      fake_grasp_positions[1].orientation.x = 0
+      fake_grasp_positions[1].orientation.y = 0
+      fake_grasp_positions[1].orientation.z = 0
+      fake_grasp_positions[1].orientation.w = 1 
+          
+      fake_grasp_positions[2].position.x = 0
+      fake_grasp_positions[2].position.y = -0.2
+      fake_grasp_positions[2].position.z = 0.1
+      fake_grasp_positions[2].orientation.x = 0
+      fake_grasp_positions[2].orientation.y = 0
+      fake_grasp_positions[2].orientation.z = 0
+      fake_grasp_positions[2].orientation.w = 1 
+          
+      fake_grasp_positions[3].position.x = 0
+      fake_grasp_positions[3].position.y = 0.2 
+      fake_grasp_positions[3].position.z = 0.1
+      fake_grasp_positions[3].orientation.x = 0
+      fake_grasp_positions[3].orientation.y = 0
+      fake_grasp_positions[3].orientation.z = 0
+      fake_grasp_positions[3].orientation.w = 1 
+      
+      sm.userdata.list_of_target_positions = fake_grasp_positions
+    
+      
+  else:
+    
+      rospy.loginfo('We will use real pre-gr positions') 
+      
+      pre_gr = list()    
+      sm.userdata.list_of_id_for_target_positions = list()
+      idx = 100
+
+      for it in grasps_res.grasp_configuration:
+  
+        pre_gr.append(it.pre_grasp)
+        sm.userdata.list_of_id_for_target_positions.append(idx)
+        idx = idx+1
+      
+      sm.userdata.list_of_target_positions = pre_gr
+      
+  
+  
   sm.userdata.pose_of_the_target_object = obj_pose_transf
-#  bbmin = Pose()
-#  bbmax = Pose()
-#  bbmin.position.x = object.pose.pose.position.x - object.bounding_box_lwh.x
-#  bbmin.position.y = object.pose.pose.position.y - object.bounding_box_lwh.y
-##  bbmin.position.z = object.pose.pose.position.z - object.bounding_box_lwh.z
-#  bbmin.position.z = object.pose.pose.position.z
-#  bbmin.position.x = object.pose.pose.position.x + object.bounding_box_lwh.x
-#  bbmin.position.y = object.pose.pose.position.y + object.bounding_box_lwh.y
-#  bbmin.position.z = object.pose.pose.position.z + object.bounding_box_lwh.z
-#  sm.userdata.bb_of_the_target_object = {'bb_min': bbmin.position, 'bb_max': bbmax.position}
-##  sm.userdata.bb_of_the_target_object = {'bb_min': object.pose.pose.position - object.bounding_box_lwh, 'bb_max': object.pose.pose.position + object.bounding_box_lwh}
-##  sm.userdata.bb_of_the_target_object = {'bb_min': object.bounding_box_min, 'bb_max': object.bounding_box_max}
   sm.userdata.bb_of_the_target_object = {'bb_lwh': object.bounding_box_lwh}
   
   with sm:

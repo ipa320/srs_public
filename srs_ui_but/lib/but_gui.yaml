@@ -17,8 +17,13 @@ displays:
     description: |
       Visualization of distance between the link and closest surface.
   -
-    class_name: ButCamDisplay
-    display_name: ButCamDisplay
+    class_name: CButDistanceIndicator
+    display_name: Distance Indicator
+    description: |
+      Visualization of distances around robot's links.
+  -
+    class_name: CButCamDisplay
+    display_name: CButCamDisplay
     description: |
       This display allows to create rectangular polygon reading its position from desired topic, with dynamic texture
   -

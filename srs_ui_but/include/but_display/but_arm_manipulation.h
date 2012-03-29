@@ -1,12 +1,28 @@
-/**
- * $Id: but_examplepane.h 134 2012-01-12 13:52:36Z spanel $
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: dd.mm.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2011
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef BUT_ARMNAVIGATION_H
@@ -30,8 +46,24 @@
 #include "ArmNavSuccess.h"
 #include "ArmNavFailed.h"
 
+#include "cob_script_server/ScriptAction.h"
+#include <actionlib/client/simple_action_client.h>
 
+#define BUT_PREFIX std::string("/but_arm_manip")
 
+#define BUT_SERVICE(topic) BUT_PREFIX + std::string(topic)
+#define BUT_TOPIC(topic) BUT_PREFIX + std::string(topic)
+
+#define SRV_START BUT_SERVICE("/arm_nav_start")
+#define SRV_NEW BUT_SERVICE("/arm_nav_new")
+#define SRV_PLAN BUT_SERVICE("/arm_nav_plan")
+#define SRV_PLAY BUT_SERVICE("/arm_nav_play")
+#define SRV_EXECUTE BUT_SERVICE("/arm_nav_execute")
+#define SRV_RESET BUT_SERVICE("/arm_nav_reset")
+#define SRV_SUCCESS BUT_SERVICE("/arm_nav_success")
+#define SRV_FAILED BUT_SERVICE("/arm_nav_failed")
+
+typedef actionlib::SimpleActionClient<cob_script_server::ScriptAction> cob_client;
 
 namespace rviz
 {
@@ -53,6 +85,9 @@ public:
     //virtual void OnFinish(wxCommandEvent& event);
     virtual void OnSuccess(wxCommandEvent& event);
     virtual void OnFailed(wxCommandEvent& event);
+
+    virtual void OnGripperO(wxCommandEvent& event);
+    virtual void OnGripperC(wxCommandEvent& event);
 
     void OnSetText(wxCommandEvent & event);
     bool nav_start(srs_ui_but::ArmNavStart::Request &req, srs_ui_but::ArmNavStart::Response &res);
@@ -96,6 +131,10 @@ protected:
     bool goal_pregrasp;
 
     std::string object_name;
+
+    cob_client * cob_script;
+
+    bool gripper_initialized;
 
 private:
     DECLARE_EVENT_TABLE()

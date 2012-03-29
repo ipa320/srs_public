@@ -1,20 +1,35 @@
-/**
- * $Id$
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: 06.02.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include <but_server/plugins/CMapPlugin.h>
 #include <pcl_ros/transforms.h>
 
 #define COLLISION_MAP_RADIUS_LIMIT double(2.0)
-#define COLLISION_MAP_PUBLISHER_NAME std::string("but_srv_collision_map")
+#define COLLISION_MAP_PUBLISHER_NAME std::string("butsrv_collision_map")
 #define COLLISIONMAP_FRAME_ID std::string("/base_footprint")
 #define GETCOLLISIONMAP_SERVICE_NAME "but_srv_getcollisionmap"
 
@@ -27,6 +42,7 @@ srs::CCMapPlugin::CCMapPlugin(const std::string & name)
 , m_cmapFrameId(COLLISIONMAP_FRAME_ID)
 , m_publishCollisionMap( true )
 , m_latchedTopics(false)
+, m_bConvertPoint( false )
 {
 	// Create collision map and the buffer
 	m_data = new arm_navigation_msgs::CollisionMap();
@@ -101,16 +117,17 @@ void srs::CCMapPlugin::onFrameStart( const SMapParameters & par )
 	try
 	{
 		// Transformation - to, from, time, waiting time
-		m_tfListener.waitForTransform(m_cmapFrameId, par.frameId, par.currentTime, ros::Duration(2.0)); // orig. 0.2
+		m_tfListener.waitForTransform(m_cmapFrameId, par.frameId, par.currentTime, ros::Duration(0.2));
 
 		m_tfListener.lookupTransform(m_cmapFrameId, par.frameId, par.currentTime, omapToCmapTf);
 
-		m_tfListener.waitForTransform(par.frameId, robotBaseFrameId, par.currentTime, ros::Duration(2.0));
+		m_tfListener.waitForTransform(par.frameId, robotBaseFrameId, par.currentTime, ros::Duration(0.2));
 
 		m_tfListener.lookupTransform(par.frameId, robotBaseFrameId, par.currentTime, baseToOmapTf);
 	}
 	catch (tf::TransformException& ex) {
 		ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+		PERROR( "Transform error.");
 		return;
 	}
 
@@ -120,6 +137,8 @@ void srs::CCMapPlugin::onFrameStart( const SMapParameters & par )
 	// Disassemble world to cmap translation and rotation
 	m_worldToCMapRot  = m_worldToCMapTM.block<3, 3> (0, 0);
 	m_worldToCMapTrans = m_worldToCMapTM.block<3, 1> (0, 3);
+
+	m_bConvertPoint = m_cmapFrameId != par.frameId;
 
 	// Compute robot position in the collision map coordinate system
 	geometry_msgs::TransformStamped msg;
@@ -141,9 +160,13 @@ void srs::CCMapPlugin::handleOccupiedNode(const srs::tButServerOcTree::iterator&
 	if( ! isNearRobot( btVector3( it.getX(), it.getY(), it.getZ() ), it.getSize() ) )
 		return;
 
-	// Transform point from the world to the CMap TF
 	Eigen::Vector3f point( it.getX(), it.getY(), it.getZ() );
-	point = m_worldToCMapRot * point + m_worldToCMapTrans;
+
+	if( m_bConvertPoint )
+	{
+	    // Transform point from the world to the CMap TF
+	    point = m_worldToCMapRot * point + m_worldToCMapTrans;
+	}
 
 	// Add point to the collision map
 	arm_navigation_msgs::OrientedBoundingBox box;

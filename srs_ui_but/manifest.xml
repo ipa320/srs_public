@@ -5,9 +5,9 @@
 
   </description>
   <author>Vit Stancl, Michal Spanel</author>
-  <license>BUT OPEN SOURCE LICENCE</license>
+  <license>LGPL</license>
   <review status="unreviewed" notes=""/>
-  <url></url>
+  <url>http://ros.org/wiki/but_ui</url>
 
   <depend package="roscpp"/>
   <depend package="visualization_msgs"/>
@@ -22,7 +22,9 @@
   <depend package="geometry_msgs"/>
   <depend package="sensor_msgs"/>
   <depend package="message_filters"/>
-
+  <depend package="cob_script_server"/>
+  <depend package="actionlib"/>
+  <depend package="actionlib_msgs"/>
 
 <!--export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros"/>

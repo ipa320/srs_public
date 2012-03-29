@@ -1,16 +1,31 @@
-/**
- * $Id: but_examplepane.cpp 134 2012-01-12 13:52:36Z spanel $
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: dd.mm.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2011
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 // TODO pridat do ArmNavNew jaky je timeout, zobrazovat ubihajici cas v RVIZu
-// TODO vraceni ramena do vychozi polohy pri kliku na reset ????
 // TODO hledani nejblizsi pregrasp pos.
 // TODO dat do odpovedi ID pozice
 // TODO messagebox pri vyprseni timeoutu
@@ -31,11 +46,6 @@ const int ID_BUTTON_AUTOADJ(108);
 const int ID_BUTTON_GRIPPER_O(109);
 const int ID_BUTTON_GRIPPER_C(110);
 
-CArmManipulationControls::~CArmManipulationControls() {
-
-
-
-}
 
 /**
  Constructor
@@ -77,8 +87,9 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     m_button_failed->Enable(false);
 
     m_button_autoadj->Enable(false);
-    m_button_gripper_o->Enable(false);
-    m_button_gripper_c->Enable(false);
+
+    m_button_gripper_o->Enable(true); // povolit tlacitka jen pokud bude k dispozici actionserver?
+    m_button_gripper_c->Enable(true);
 
     wxSizer *vsizer = new wxBoxSizer(wxVERTICAL); // top sizer
 
@@ -134,10 +145,21 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     this->SetSizerAndFit(vsizer);
 
     ros::NodeHandle nh;
-    service_start_ = nh.advertiseService("arm_nav_start",&CArmManipulationControls::nav_start,this);
+    service_start_ = nh.advertiseService(SRV_START,&CArmManipulationControls::nav_start,this);
+
+    cob_script = new cob_client("/script_server",true);
 
 }
 ///////////////////////////////////////////////////////////////////////////////
+
+
+CArmManipulationControls::~CArmManipulationControls() {
+
+  if (cob_script!=NULL) delete cob_script;
+
+  // TODO delete vsech tlacitek apod....
+
+}
 
 void CArmManipulationControls::OnNew(wxCommandEvent& event)
 {
@@ -146,7 +168,7 @@ void CArmManipulationControls::OnNew(wxCommandEvent& event)
 
    srs_ui_but::ArmNavNew srv;
 
-   if ( ros::service::exists("arm_nav_new",true) && ros::service::call("arm_nav_new",srv) ) {
+   if ( ros::service::exists(SRV_NEW,true) && ros::service::call(SRV_NEW,srv) ) {
 
      if (srv.response.completed) {
 
@@ -189,9 +211,9 @@ void CArmManipulationControls::OnPlan(wxCommandEvent& event)
 
    ROS_INFO("Starting planning and filtering of new trajectory");
 
-   srs_ui_but::ArmNavNew srv;
+   srs_ui_but::ArmNavPlan srv;
 
-   if ( ros::service::exists("arm_nav_plan",true) && ros::service::call("arm_nav_plan",srv) ) {
+   if ( ros::service::exists(SRV_PLAN,true) && ros::service::call(SRV_PLAN,srv) ) {
 
      if (srv.response.completed) {
 
@@ -213,7 +235,7 @@ void CArmManipulationControls::OnPlan(wxCommandEvent& event)
 
    } else {
 
-     ROS_ERROR("failed when calling arm_nav_plan service");
+     ROS_ERROR("failed when calling service");
      m_text_status->SetLabel(wxString::FromAscii("Communication error"));
 
    }
@@ -226,9 +248,9 @@ void CArmManipulationControls::OnPlay(wxCommandEvent& event)
 
    ROS_INFO("Starting planning and filtering of new trajectory");
 
-   srs_ui_but::ArmNavNew srv;
+   srs_ui_but::ArmNavPlay srv;
 
-   if ( ros::service::exists("arm_nav_play",true) && ros::service::call("arm_nav_play",srv) ) {
+   if ( ros::service::exists(SRV_PLAY,true) && ros::service::call(SRV_PLAY,srv) ) {
 
      if (srv.response.completed) {
 
@@ -260,9 +282,9 @@ void CArmManipulationControls::OnExecute(wxCommandEvent& event)
 {
    ROS_INFO("Execution of planned trajectory has been started");
 
-   srs_ui_but::ArmNavNew srv;
+   srs_ui_but::ArmNavExecute srv;
 
-   if ( ros::service::exists("arm_nav_execute",true) && ros::service::call("arm_nav_execute",srv) ) {
+   if ( ros::service::exists(SRV_EXECUTE,true) && ros::service::call(SRV_EXECUTE,srv) ) {
 
      if (srv.response.completed) {
 
@@ -296,9 +318,9 @@ void CArmManipulationControls::OnReset(wxCommandEvent& event)
 {
    ROS_INFO("Reset planning stuff to initial state");
 
-   srs_ui_but::ArmNavNew srv;
+   srs_ui_but::ArmNavReset srv;
 
-   if ( ros::service::exists("arm_nav_reset",true) && ros::service::call("arm_nav_reset",srv) ) {
+   if ( ros::service::exists(SRV_RESET,true) && ros::service::call(SRV_RESET,srv) ) {
 
      if (srv.response.completed) {
 
@@ -345,7 +367,7 @@ void CArmManipulationControls::OnSuccess(wxCommandEvent& event)
 
    srs_ui_but::ArmNavSuccess srv;
 
-   if ( ros::service::exists("arm_nav_success",true) && ros::service::call("arm_nav_success",srv) ) {
+   if ( ros::service::exists(SRV_SUCCESS,true) && ros::service::call(SRV_SUCCESS,srv) ) {
 
        m_button_plan->Enable(false);
        m_button_execute->Enable(false);
@@ -386,7 +408,7 @@ void CArmManipulationControls::OnFailed(wxCommandEvent& event)
 
    srs_ui_but::ArmNavFailed srv;
 
-   if ( ros::service::exists("arm_nav_failed",true) && ros::service::call("arm_nav_failed",srv) ) {
+   if ( ros::service::exists(SRV_FAILED,true) && ros::service::call(SRV_FAILED,srv) ) {
 
        m_button_plan->Enable(false);
        m_button_execute->Enable(false);
@@ -420,6 +442,78 @@ void CArmManipulationControls::OnFailed(wxCommandEvent& event)
 
 }
 
+void CArmManipulationControls::OnGripperO(wxCommandEvent& event) {
+
+  // TODO gripper_initialized -> provest init... pro simulaci neni treba, ale na robotovi bude
+  // TODO udělat metodu na otevreni/zavreni a udtud ji jen volat....
+
+  if (cob_script==NULL) {
+
+    return;
+
+  }
+
+  if (!cob_script->waitForServer(ros::Duration(3.0))) {
+
+    ROS_ERROR("No response from cob_script action server");
+    return;
+
+  }
+
+  cob_script_server::ScriptAction goal;
+
+  goal.action_goal.goal.component_name = "sdh";
+  goal.action_goal.goal.function_name = "move";
+  goal.action_goal.goal.mode = "";
+  goal.action_goal.goal.parameter_name = "cylopen";
+
+  cob_script->sendGoal(goal.action_goal.goal);
+
+  cob_script->waitForResult((ros::Duration(5.0)));
+
+  if (cob_script->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+
+    ROS_INFO("Gripper should be opened...");
+
+  } else ROS_ERROR("Error on opening gripper.");
+
+
+}
+
+void CArmManipulationControls::OnGripperC(wxCommandEvent& event) {
+
+  if (cob_script==NULL) {
+
+    return;
+
+  }
+
+  if (!cob_script->waitForServer(ros::Duration(3.0))) {
+
+    ROS_ERROR("No response from cob_script action server");
+    return;
+
+  }
+
+  cob_script_server::ScriptAction goal;
+
+  goal.action_goal.goal.component_name = "sdh";
+  goal.action_goal.goal.function_name = "move";
+  goal.action_goal.goal.mode = "";
+  goal.action_goal.goal.parameter_name = "cylclosed";
+
+  cob_script->sendGoal(goal.action_goal.goal);
+
+  cob_script->waitForResult((ros::Duration(5.0)));
+
+  if (cob_script->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+
+    ROS_INFO("Gripper should be closed...");
+
+  } else ROS_ERROR("Error on closing gripper.");
+
+
+}
 
 bool CArmManipulationControls::nav_start(srs_ui_but::ArmNavStart::Request &req, srs_ui_but::ArmNavStart::Response &res) {
 
@@ -471,4 +565,6 @@ BEGIN_EVENT_TABLE(CArmManipulationControls, wxPanel)
     EVT_BUTTON(ID_BUTTON_RESET,  CArmManipulationControls::OnReset)
     EVT_BUTTON(ID_BUTTON_SUCCESS,  CArmManipulationControls::OnSuccess)
     EVT_BUTTON(ID_BUTTON_FAILED,  CArmManipulationControls::OnFailed)
+    EVT_BUTTON(ID_BUTTON_GRIPPER_O,  CArmManipulationControls::OnGripperO)
+    EVT_BUTTON(ID_BUTTON_GRIPPER_C,  CArmManipulationControls::OnGripperC)
 END_EVENT_TABLE()

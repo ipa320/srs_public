@@ -1,11 +1,28 @@
-/*
- *******************************************************************************
- * $Id: Primitive.h 304 2012-03-08 10:34:42Z xlokaj03 $
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id: Primitive.h 397 2012-03-29 12:50:30Z spanel $
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
- * Date: 24.11.2011
- *******************************************************************************
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd.mm.2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef CPRIMITIVE_H_
@@ -336,9 +353,11 @@ protected:
                            rotateZControl_;
   InteractiveMarkerControl pregrasp1Control_, pregrasp2Control_, pregrasp3Control_, pregrasp4Control_,
                            pregrasp5Control_, pregrasp6Control_;
+  MenuHandler menu_handler_;
+
+  // Common attributes
   string name_, description_, frame_id_;
   InteractiveMarkerServerPtr server_;
-  MenuHandler menu_handler_;
   Pose pose_;
   Vector3 scale_;
   ColorRGBA color_, color_green_a02_;

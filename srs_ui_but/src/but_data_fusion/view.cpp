@@ -1,7 +1,35 @@
+/******************************************************************************
+ * \file
+ *
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
+ * Author: Vladimir Blahoz
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <ros/ros.h>
 
 #include <OgreVector3.h>
 
+#include "topics_list.h""
 #include <visualization_msgs/Marker.h>
 #include <srs_ui_but/ButCamMsg.h>
 
@@ -12,7 +40,6 @@
 
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
-//#include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
 #include <pcl_ros/point_cloud.h>
@@ -54,7 +81,7 @@ ros::Publisher frustum_marker_pub, but_display_pub;
  * cameraInfo also with available TF transformation
  */
 void callback(const CameraInfoConstPtr cam_info, const PointCloud2ConstPtr& pcl) {
-	ROS_DEBUG("Got everything together");
+	ROS_DEBUG("Got everything synced");
 
 	countCameraParams(cam_info);
 	pair<float, float> distances = countPclDepths(pcl);
@@ -329,9 +356,9 @@ int main(int argc, char** argv) {
 	// initialize ROS messages publishers
 	// frustum is published as simple marker
 	frustum_marker_pub = nh.advertise<visualization_msgs::Marker> (
-			"view_frustum", 1);
+			BUT_VIEW_FRUSTUM_TOP, 1);
 	// but rectangle as srs_ui_but::ButCamMsg
-	but_display_pub = nh.advertise<srs_ui_but::ButCamMsg> ("but_rectangle", 1);
+	but_display_pub = nh.advertise<srs_ui_but::ButCamMsg> (BUT_CAMERA_VIEW_TOP, 1);
 
 	// subscribers to required topics
 	message_filters::Subscriber<CameraInfo> cam_info_sub(nh,

@@ -1,12 +1,28 @@
-/**
- * $Id$
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: 06.02.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef OCTOMAPPLUGIN_H_INCLUDED
@@ -36,7 +52,7 @@ public:
 	typedef boost::signal< void (const tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnOccupiedNode;
 
 	/// Post node traversal
-	typedef boost::signal< void (const ros::Time &) > tSigOnPost;
+	typedef boost::signal< void (const SMapParameters &) > tSigOnPost;
 
 public:
 	/// Constructor
@@ -79,6 +95,9 @@ public:
 	/// Should something be published?
 	virtual bool shouldPublish();
 
+	/// Publishing callback
+	virtual void onPublish(const ros::Time & timestamp);
+
 protected:
 
 	/// Set octomap default parameters
@@ -105,13 +124,16 @@ protected:
 	void handleOccupiedNode(const tButServerOcTree::iterator & it, const SMapParameters & mp);
 
 	/// Called when all nodes was visited.
-	virtual void handlePostNodeTraversal(const ros::Time& rostime);
+	virtual void handlePostNodeTraversal(const SMapParameters & mp);
 
 	/// Fill map parameters
 	void fillMapParameters(const ros::Time & time);
 
 	/// Reset octomap service callback
 	bool resetOctomapCB(std_srvs::Empty::Request& request,	std_srvs::Empty::Response& response);
+
+	/// Test if this node is specle
+	bool isSpeckleNode(const tButServerOcTree::iterator & it) const;
 
 protected:
 	///
@@ -150,6 +172,20 @@ protected:
 
     /// Reset octomap service
     ros::ServiceServer m_serviceResetOctomap;
+
+    /// Should octomap be published
+    bool m_bPublishOctomap;
+
+    //! Octomap publisher name
+    std::string m_ocPublisherName;
+
+    /// Octomap publisher
+    ros::Publisher m_ocPublisher;
+
+    bool m_latchedTopics;
+
+    /// Remove specle nodes now
+    bool m_removeSpecles;
 
 }; // class COctoMapPlugin;
 

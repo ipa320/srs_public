@@ -1,70 +1,122 @@
-/**
- * $Id$
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: 06.02.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <but_server/plugins/IMarkersPlugin.h>
 #include <pcl_ros/transforms.h>
+#include <but_gui/Billboard.h>
+
+#define IM_SERVER_FRAME_ID "/base_link"
+#define IM_SERVER_TOPIC_NAME "BUT_IM_Server"
 
 
 srs::CIMarkersPlugin::CIMarkersPlugin(const std::string & name)
 : srs::CServerPluginBase(name)
+, m_IMarkersFrameId(IM_SERVER_FRAME_ID)
+, m_serverTopicName( IM_SERVER_TOPIC_NAME )
 , m_uniqueNameCounter(0)
+, m_bUseExternalServer( false )
 {
 }
 
 srs::CIMarkersPlugin::~CIMarkersPlugin()
 {
+	if( ! m_bUseExternalServer )
+	{
+		// Remove all markers
+		m_imServer->clear();
+	}
 }
 
 void srs::CIMarkersPlugin::init(ros::NodeHandle & node_handle)
 {
-	// Initialize interactive markers server
-	m_imServer.reset(new InteractiveMarkerServer("BUT_IM_Server", "", false));
+	// Get interactive markers server topic name
+	node_handle.param("im_server_topic_name", m_serverTopicName, m_serverTopicName );
 
-	// Connect to the services
-	m_removeInteractiveMarkerService = node_handle.serviceClient<srs_env_model::RemovePrimitive> (BUT_RemovePrimitive_SRV);
-	m_addInteractivePlaneService = node_handle.serviceClient<srs_env_model::AddPlane> (BUT_AddPlane_SRV);
+	// Get default frame id
+	node_handle.param("im_server_frame_id", m_IMarkersFrameId, m_IMarkersFrameId );
 
+	// Should external server be used
+	node_handle.param("im_server_use_external_server", m_bUseExternalServer, false );
+
+	// Use external server or start one?
+	if( m_bUseExternalServer )
+	{
+		// Connect to the services
+		m_removeInteractiveMarkerService = node_handle.serviceClient<srs_env_model::RemovePrimitive> (BUT_RemovePrimitive_SRV);
+		m_addInteractivePlaneService = node_handle.serviceClient<srs_env_model::AddPlane> (BUT_AddPlane_SRV);
+	}
+	else
+	{
+		// Initialize interactive markers server
+		m_imServer.reset(new InteractiveMarkerServer(m_serverTopicName, "", false));
+	}
+
+	// Advertise services
 	m_serviceInsertPlanes = node_handle.advertiseService("insert_plane", &srs::CIMarkersPlugin::insertPlaneCallback, this);
 
+
 	// Interactive marker server test
-		{
-			// Creating Plane object with name "plane1"
-			but_gui::Plane *plane = new but_gui::Plane(m_imServer, "plane1", "");
+	//*
+	{
+		srs_env_model_msgs::PlaneDesc planedesc;
 
-			// Color
-			std_msgs::ColorRGBA c;
-			c.r = 1.0;
-			c.g = c.b = 0.0;
-			c.a = 1.0;
-			plane->setColor(c);
 
-			// Positioning
-			geometry_msgs::Pose p;
-			p.position.x = p.position.y = p.position.z = 0.0;
-			plane->setPose(p);
+		// Positioning
+		geometry_msgs::Pose p;
+		p.position.x = p.position.y = p.position.z = 1.0;
+		p.orientation.x = 0.0; p.orientation.y = p.orientation.z = p.orientation.w = 0.6;
 
-			// Scaling
-			but_gui::Scale s;
-			s.x = s.y = s.z = 10.0;
-			plane->setScale(s);
+		// Scaling
+		but_gui::Scale s;
+		s.x = s.y = s.z = 10.0;
 
-			// Creating plane with specified attributes
-			/* deprecated
-			 * plane->create();
-			 */
+		// Test plane insertion
+		m_planesFrameId = m_IMarkersFrameId;
+		planedesc.pose = p;
+		planedesc.scale = s;
+		planedesc.flags = srs_env_model_msgs::PlaneDesc::INSERT;
+		planedesc.id = 0;
 
-			// Inserting object into server
-			plane->insert();
-		}
+		operatePlane( planedesc );
 
+		// Test plane modification
+		p.position.x = p.position.y = p.position.z = 1.0;
+		p.orientation.x = p.orientation.y = p.orientation.z = p.orientation.w = 0.3;
+		planedesc.pose = p;
+		planedesc.flags = srs_env_model_msgs::PlaneDesc::MODIFY;
+
+		operatePlane( planedesc );
+
+		PERROR( "Inserting plane");
+	}
+
+	m_imServer->applyChanges();
+
+  //*/
 }
 
 
@@ -76,7 +128,7 @@ void srs::CIMarkersPlugin::init(ros::NodeHandle & node_handle)
  * @param pa Array of planes
  */
 bool srs::CIMarkersPlugin::insertPlaneCallback(srs_env_model::AddPlanes::Request & req,
-		srs_env_model::AddPlanes::Response & res) {
+	srs_env_model::AddPlanes::Response & res) {
 	std::cerr << "Inset plane called" << std::endl;
 	// Get plane array
 	srs_env_model_msgs::PlaneArray & planea(req.plane_array);
@@ -108,6 +160,8 @@ void srs::CIMarkersPlugin::operatePlane(const srs_env_model_msgs::PlaneDesc & pl
 		m_dataPlanes[plane.id] = tNamedPlane(name, plane);
 
 		addPlaneSrvCall(plane, name);
+//		PERROR( "Added plane: " << "Name: " << name << std::endl << plane );
+
 		break;
 
 	case srs_env_model_msgs::PlaneDesc::MODIFY:
@@ -117,6 +171,8 @@ void srs::CIMarkersPlugin::operatePlane(const srs_env_model_msgs::PlaneDesc & pl
 		// call remove plane, add plane
 		removePlaneSrvCall(plane, name);
 		addPlaneSrvCall(plane, name);
+//		PERROR( "Modified plane: " << "Name: " << name << std::endl << plane );
+
 		break;
 
 	case srs_env_model_msgs::PlaneDesc::REMOVE:
@@ -125,13 +181,19 @@ void srs::CIMarkersPlugin::operatePlane(const srs_env_model_msgs::PlaneDesc & pl
 		m_dataPlanes.erase(plane.id);
 		// call remove plane
 		removePlaneSrvCall(plane, name);
+
+//		PERROR( "Removed plane: " << "Name: " << name << std::endl << plane );
+
 		break;
 
 	default:
 		break;
 	}
 
-	std::cerr << "Current planes count: " << m_dataPlanes.size() << std::endl;
+	// Apply changes
+	if(!m_bUseExternalServer)
+		m_imServer->applyChanges();
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,25 +204,44 @@ void srs::CIMarkersPlugin::operatePlane(const srs_env_model_msgs::PlaneDesc & pl
  * @param plane Added plane
  */
 void srs::CIMarkersPlugin::addPlaneSrvCall(const srs_env_model_msgs::PlaneDesc & plane,
-		const std::string & name) {
-	// Create service
-	srs_env_model::AddPlane addPlaneSrv;
+		const std::string & name)
+{
+	if( m_bUseExternalServer )
+	{
+		// Create service
+		srs_env_model::AddPlane addPlaneSrv;
 
-	// Modify service
-	addPlaneSrv.request.name = name;
-	addPlaneSrv.request.frame_id = m_planesFrameId;
-	addPlaneSrv.request.pose = plane.pose;
-	addPlaneSrv.request.scale = plane.scale;
-	addPlaneSrv.request.color.r = 1.0;
-	addPlaneSrv.request.color.g = 0.0;
-	addPlaneSrv.request.color.b = 0.0;
-	addPlaneSrv.request.color.a = 0.8;
+		// Modify service
+		addPlaneSrv.request.name = name;
+		addPlaneSrv.request.frame_id = m_planesFrameId;
+		addPlaneSrv.request.pose = plane.pose;
+		addPlaneSrv.request.scale = plane.scale;
+		addPlaneSrv.request.color.r = 1.0;
+		addPlaneSrv.request.color.g = 0.0;
+		addPlaneSrv.request.color.b = 0.0;
+		addPlaneSrv.request.color.a = 0.8;
 
-	m_addInteractivePlaneService.call(addPlaneSrv);
+		m_addInteractivePlaneService.call(addPlaneSrv);
+	}
+	else
+	{
+		// Creating Plane object with name "plane1"
+		but_gui::Plane *p = new but_gui::Plane(m_imServer, m_IMarkersFrameId, name );
 
-	std::cerr << "Adding plane: " << name << ", frame: " << m_planesFrameId
-			<< ", pose: " << plane.pose << "scale: " << plane.scale
-			<< std::endl;
+		p->setPose( plane.pose );
+		p->setScale( plane.scale );
+
+		// Color
+		std_msgs::ColorRGBA c;
+		c.r = 1.0;
+		c.g = c.b = 0.0;
+		c.a = 1.0;
+		p->setColor( c );
+
+		p->insert();
+
+	}
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,16 +252,22 @@ void srs::CIMarkersPlugin::addPlaneSrvCall(const srs_env_model_msgs::PlaneDesc &
  * @param plane Added plane
  */
 void srs::CIMarkersPlugin::removePlaneSrvCall(const srs_env_model_msgs::PlaneDesc & plane,
-		const std::string & name) {
-	// Create service
-	srs_env_model::RemovePrimitive removeObjectSrv;
+		const std::string & name)
+{
+	if( m_bUseExternalServer )
+	{
+		// Create service
+		srs_env_model::RemovePrimitive removeObjectSrv;
 
-	// Modify service
-	removeObjectSrv.request.name = name;
+		// Modify service
+		removeObjectSrv.request.name = name;
 
-	m_removeInteractiveMarkerService.call(removeObjectSrv);
-
-	std::cerr << "Removing plane: " << name;
+		m_removeInteractiveMarkerService.call(removeObjectSrv);
+	}
+	else
+	{
+		m_imServer->erase( name );
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

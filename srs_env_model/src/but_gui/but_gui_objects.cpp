@@ -1,13 +1,28 @@
-/*
- *******************************************************************************
- * $Id: but_gui_objects.cpp 324 2012-03-09 16:17:44Z xlokaj03 $
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id: but_gui_objects.cpp 397 2012-03-29 12:50:30Z spanel $
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
- * Date: 24.11.2011
- * Description:
- *      This is example!
- *******************************************************************************
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: 05/12/2011
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "but_gui/BoundingBox.h"
@@ -46,7 +61,7 @@ int main(int argc, char** argv)
 
   // Object
   Billboard *chairBillboard = new Billboard(server, "/world", "person");
-  chairBillboard->setType(srs_env_model::BillboardType::PERSON);
+  chairBillboard->setType(srs_env_model::BillboardType::CHAIR);
   chairBillboard->setPose(p);
   chairBillboard->setScale(s);
   chairBillboard->setFrameID("/world");
@@ -63,9 +78,9 @@ int main(int argc, char** argv)
   p.position.x = 1;
   p.position.y = 2;
   p.position.z = 2;
-  s.x = 0.5;
-  s.y = 0.5;
-  s.z = 0.5;
+  s.x = 1;
+  s.y = 1;
+  s.z = 1;
   // Object
   Billboard *milkBillboard = new Billboard(server, "/world", "milk_billboard");
   Quaternion direction;
@@ -136,7 +151,7 @@ int main(int argc, char** argv)
   object.header.frame_id = "/world";
   object.name = "sphere";
   object.description = "Sphere";
-  p.position.x = 10;
+  p.position.x = 20;
   object.pose = p;
   InteractiveMarkerControl control;
   control.name = "sphere_control";
@@ -147,6 +162,8 @@ int main(int argc, char** argv)
   server->insert(object);
   // Bounding box
   c.r = 1;
+  c.g = 0;
+  c.b = 0;
   BoundingBox * sphereBoundingBox = new BoundingBox(server, "/world", "sphere_bbox");
   sphereBoundingBox->setAttachedObjectName("sphere");
   sphereBoundingBox->setPose(p);
@@ -159,7 +176,7 @@ int main(int argc, char** argv)
   obj->setFrameID("/world");
   Pose ppp;
   ppp.position.x = 6;
-  ppp.position.y = 0;
+  ppp.position.y = 5;
   ppp.position.z = 0;
   obj->setPose(ppp);
   Vector3 sss;
@@ -171,7 +188,7 @@ int main(int argc, char** argv)
   obj->setDescription("Table");
   obj->setColor(c);
   obj->setResource("package://gazebo_worlds/Media/models/table.dae");
-  obj->setUseMaterial(true);
+  obj->setUseMaterial(false);
   obj->insert();
 
   ObjectWithBoundingBox * objbb = new ObjectWithBoundingBox(server, "/world", "table_with_bb");

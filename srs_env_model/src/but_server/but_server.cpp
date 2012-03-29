@@ -1,13 +1,15 @@
-/**
- * $Id: but_server.cpp 281 2012-03-05 14:50:43Z stancl $
+/******************************************************************************
+ * \file
+ * $Id: but_server.cpp 397 2012-03-29 12:50:30Z spanel $
  *
- * Modified by dcgm-robotics@FIT group
+ * Modified by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd.mm.2011
  *
  * This code is derived from the OctoMap server provided by A. Hornung.
  * Please, see the original comments below.
- *
  */
 
 /**
@@ -18,7 +20,7 @@
  * License: BSD
  */
 
-/*
+/**
  * Copyright (c) 2010-2011, A. Hornung, University of Freiburg
  * All rights reserved.
  *
@@ -53,9 +55,6 @@
 #include <sstream>
 
 // Define publishers names
-#define MARKERS_PUBLISHER_NAME std::string("butsrv_ocupied_cells_markers")
-#define OCTOMAP_BINARY_PUBLISHER_NAME std::string("butsrv_octomap_binary")
-#define MAP_PUBLISHER_NAME std::string("but_map")
 #define SUBSCRIBER_CAMERA_POSITION std::string("rviz_camera_position")
 #define WORLD_FRAME_ID std::string("/map")
 #define BASE_FRAME_ID std::string("/base_footprint")
@@ -69,65 +68,24 @@
  Constructor
  */
 CButServer::CButServer(const std::string& filename) :
-			m_nh(), m_useHeightMap(true), m_colorFactor(0.8),
-			m_latchedTopics(false),  m_occupancyMinZ(
-					-std::numeric_limits<double>::max()), m_occupancyMaxZ(
-					std::numeric_limits<double>::max()), m_filterSpeckles(false),
+			m_nh(),
+			m_latchedTopics(false),
 			m_numPCFramesProcessed(1.0), m_frameCounter(0),
-			m_plugCMapPub("CMAP"),
-			m_plugInputPointCloud("PCIN"),
-			m_plugOcMapPointCloud("PCOC"),
-			m_plugVisiblePointCloud("PCVIS"),
+			m_plugCMapHolder("CMAP"),
+			m_plugInputPointCloudHolder("PCIN"),
+			m_plugOcMapPointCloudHolder("PCOC"),
+			m_plugVisiblePointCloudHolder("PCVIS"),
 			m_plugOctoMap("OCM"),
-			m_plugCollisionObject("COB"),
-			m_plugMap2D("M2D"),
-			m_plugIMarkers("IM")
+			m_plugCollisionObjectHolder("COB"),
+			m_plugMap2DHolder("M2D"),
+			m_plugIMarkers("IM"),
+			m_plugMarkerArrayHolder( "MA" )
 {
-	// Get node handla
+	// Get node handle
 	ros::NodeHandle private_nh("~");
 
-	// Set parameters
-	private_nh.param("frame_id", m_worldFrameId, m_worldFrameId);
-	private_nh.param("base_frame_id", m_baseFrameId, m_baseFrameId);
-	private_nh.param("height_map", m_useHeightMap, m_useHeightMap);
-	private_nh.param("color_factor", m_colorFactor, m_colorFactor);
-
-
-	private_nh.param("occupancy_min_z", m_occupancyMinZ, m_occupancyMinZ);
-	private_nh.param("occupancy_max_z", m_occupancyMaxZ, m_occupancyMaxZ);
-
-
-	private_nh.param("filter_speckles", m_filterSpeckles, m_filterSpeckles);
-
-	// Use every n-th frame when processing incoming point cloud
-	private_nh.param("PC_frames_processed", m_numPCFramesProcessed,
-			NUM_PCFRAMES_PROCESSED);
-
-	// Topic names
-	private_nh.param("ocupied_cells_publisher", m_ocupiedCellsPublisher,
-			MARKERS_PUBLISHER_NAME );
-	private_nh.param("octomap_binary_publisher", m_octomapBinaryPublisher,
-			OCTOMAP_BINARY_PUBLISHER_NAME );
-
-	private_nh.param("camera_position_topic", m_cameraPositionSubscriber,
-			SUBSCRIBER_CAMERA_POSITION );
-
-	// In this frame ID will be incomming points transformed and stored
-	private_nh.param("world_frame_id", m_worldFrameId, WORLD_FRAME_ID );
-
-	// Get FID to which will be all points transformed
-	private_nh.param("base_frame_id", m_baseFrameId, BASE_FRAME_ID );
-
-	double r, g, b, a;
-
-	private_nh.param("color/r", r, 0.0);
-	private_nh.param("color/g", g, 0.0);
-	private_nh.param("color/b", b, 1.0);
-	private_nh.param("color/a", a, 1.0);
-	m_color.r = r;
-	m_color.g = g;
-	m_color.b = b;
-	m_color.a = a;
+	// Advertise services
+	m_serviceReset = private_nh.advertiseService("ButServerReset", &CButServer::onReset, this);
 
 	// Is map static (loaded from file)?
 	bool staticMap(filename != "");
@@ -135,32 +93,24 @@ CButServer::CButServer(const std::string& filename) :
 	m_latchedTopics = staticMap;
 	private_nh.param("latch", m_latchedTopics, m_latchedTopics);
 
-	// Create publishers
-	m_markerPub = m_nh.advertise<visualization_msgs::MarkerArray> (
-			m_ocupiedCellsPublisher, 100, m_latchedTopics);
-	m_binaryMapPub = m_nh.advertise<octomap_ros::OctomapBinary> (
-			m_octomapBinaryPublisher, 100, m_latchedTopics);
-
-
-	// Subscribe to the camera info topic
-	// m_camInfoSub = new message_filters::Subscriber<sensor_msgs::CameraInfo> ( m_nh, m_cameraInfoSubscriber, 200 );
-	// m_tfCameraInfoSub = new tf::MessageFilter<sensor_msgs::CameraInfo> (*m_camInfoSub, m_tfListener, m_worldFrameId, 100);
-	// m_tfCameraInfoSub->registerCallback(boost::bind(&CButServer::cameraInfoCallback, this, _1));
-
+	// Store all plugins pointer for easier access
+	m_plugins.push_back( m_plugCMapHolder.getPlugin() );
+	m_plugins.push_back( m_plugInputPointCloudHolder.getPlugin() );
+	m_plugins.push_back( m_plugOcMapPointCloudHolder.getPlugin() );
+	m_plugins.push_back( m_plugVisiblePointCloudHolder.getPlugin() );
+	m_plugins.push_back( &m_plugOctoMap );
+	m_plugins.push_back( m_plugCollisionObjectHolder.getPlugin() );
+	m_plugins.push_back( m_plugMap2DHolder.getPlugin() );
+	m_plugins.push_back( &m_plugIMarkers );
+	m_plugins.push_back( m_plugMarkerArrayHolder.getPlugin() );
 
 
 	//=========================================================================
 	// Initialize plugins
-	m_plugCMapPub.init( private_nh );
-	m_plugInputPointCloud.init(private_nh);
-	m_plugOcMapPointCloud.init(private_nh, false);
-	m_plugOctoMap.init( private_nh );
-	m_plugCollisionObject.init( private_nh );
-	m_plugMap2D.init(private_nh);
-	m_plugIMarkers.init(private_nh);
+	FOR_ALL_PLUGINS_PARAM(init, private_nh)
 
 	// Connect input point cloud input with octomap
-	m_plugInputPointCloud.getSigDataChanged().connect( boost::bind( &srs::COctoMapPlugin::insertCloud, &m_plugOctoMap, _1 ));
+	m_plugInputPointCloudHolder.getPlugin()->getSigDataChanged().connect( boost::bind( &srs::COctoMapPlugin::insertCloud, &m_plugOctoMap, _1 ));
 
 	// Connect octomap data changed signal with server publish
 	m_plugOctoMap.getSigDataChanged().connect( boost::bind( &CButServer::onOcMapDataChanged, this, _1 ));
@@ -196,9 +146,6 @@ void CButServer::publishAll(const ros::Time& rostime) {
 		return;
 	}
 
-	// What should be published - get if there are any subscribers...
-	bool publishMarkerArray = (m_latchedTopics
-			|| m_markerPub.getNumSubscribers() > 0);
 
 	// init markers:
 	visualization_msgs::MarkerArray occupiedNodesVis;
@@ -209,150 +156,50 @@ void CButServer::publishAll(const ros::Time& rostime) {
 	//=========================================================================
 	// Plugins frame start
 
-
-	// Create holders
-	typedef srs::CCrawlingPluginHolder< srs::CPointCloudPlugin, srs::COctoMapPlugin > tPCHolder;
-	tPCHolder cPCHolder( &m_plugOcMapPointCloud, tPCHolder::ON_START | tPCHolder::ON_OCCUPIED | tPCHolder::ON_STOP );
-
-	typedef srs::CCrawlingPluginHolder< srs::CCMapPlugin, srs::COctoMapPlugin > tCMapHolder;
-	tCMapHolder cCMapHolder( &m_plugCMapPub, tCMapHolder::ON_START | tCMapHolder::ON_OCCUPIED | tCMapHolder::ON_STOP );
-
-	typedef srs::CCrawlingPluginHolder< srs::CCollisionObjectPlugin, srs::COctoMapPlugin > tCOHolder;
-	tCOHolder cCOHolder( &m_plugCollisionObject, tCOHolder::ON_START | tCOHolder::ON_OCCUPIED | tCOHolder::ON_STOP );
-
-	typedef srs::CCrawlingPluginHolder< srs::CMap2DPlugin, srs::COctoMapPlugin > tM2DHolder;
-	tM2DHolder cM2DHolder( &m_plugMap2D, tM2DHolder::ON_START | tM2DHolder::ON_OCCUPIED | tM2DHolder::ON_FREE | tM2DHolder::ON_STOP );
-
-	// Connect what needed
-	if( m_plugOcMapPointCloud.shouldPublish() )
-	{
-		cPCHolder.connect( & m_plugOctoMap );
-	}
-
-	if( m_plugCMapPub.shouldPublish() )
-	{
-		cCMapHolder.connect(& m_plugOctoMap );
-	}
-
-	if( m_plugCollisionObject.shouldPublish() )
-	{
-		cCOHolder.connect(& m_plugOctoMap );
-	}
-
-	if( m_plugMap2D.shouldPublish() )
-	{
-		cM2DHolder.connect(& m_plugOctoMap );
-	}
+	m_plugOcMapPointCloudHolder.connect( & m_plugOctoMap );
+	m_plugCollisionObjectHolder.connect( & m_plugOctoMap );
+	m_plugCMapHolder.connect( & m_plugOctoMap );
+	m_plugMap2DHolder.connect( & m_plugOctoMap );
+    m_plugMarkerArrayHolder.connect( & m_plugOctoMap );
+    m_plugVisiblePointCloudHolder.connect( & m_plugOctoMap );
 
 	// Crawl octomap
 	m_plugOctoMap.crawl( rostime );
 
 	// Disconnect all
-	cPCHolder.disconnect();
-	cCMapHolder.disconnect();
-	cCOHolder.disconnect();
-	cM2DHolder.disconnect();
+	m_plugOcMapPointCloudHolder.disconnect();
+    m_plugCollisionObjectHolder.disconnect();
+	m_plugCMapHolder.disconnect();
+	m_plugMap2DHolder.disconnect();
+	m_plugMarkerArrayHolder.disconnect();
+	m_plugVisiblePointCloudHolder.disconnect();
+
+   // Publish point cloud
+    m_plugOcMapPointCloudHolder.publish( rostime );
 
 	// Publish collision object
-	if (m_plugCollisionObject.shouldPublish() )
-	{
-		m_plugCollisionObject.onPublish( rostime );
-	}
+	m_plugCollisionObjectHolder.publish( rostime );
 
-	// Publish point cloud
-	if( m_plugOcMapPointCloud.shouldPublish() )
-	{
-		m_plugOcMapPointCloud.onPublish( rostime );
-	}
+	// Publish collision map
+	m_plugCMapHolder.publish( rostime );
 
-	if(m_plugMap2D.shouldPublish())
-	{
-		m_plugMap2D.onPublish(rostime);
-	}
+	// Publish 2D map
+	m_plugMap2DHolder.publish( rostime );
 
 	// Finalize octomap publishing
 	if (m_plugOctoMap.shouldPublish())
 		m_plugOctoMap.onPublish( rostime );
 
-	//=========================================================================
-	// Plugins publishing
-	m_plugCMapPub.onPublish( rostime );
+	m_plugMarkerArrayHolder.publish(rostime);
+
+	// Publish pointcloud visible in rviz
+	m_plugVisiblePointCloudHolder.publish(rostime);
 
 	// Compute and show elapsed time
 	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
 	ROS_DEBUG("Map publishing in CButServer took %f sec", total_elapsed);
 
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-/**
- Generate color from the height
- */
-std_msgs::ColorRGBA CButServer::heightMapColor(double h) const {
-
-	std_msgs::ColorRGBA color;
-	color.a = 1.0;
-	// blend over HSV-values (more colors)
-
-	double s = 1.0;
-	double v = 1.0;
-
-	h -= floor(h);
-	h *= 6;
-	int i;
-	double m, n, f;
-
-	i = floor(h);
-	f = h - i;
-	if (!(i & 1))
-		f = 1 - f; // if i is even
-	m = v * (1 - s);
-	n = v * (1 - s * f);
-
-	switch (i) {
-	case 6:
-	case 0:
-		color.r = v;
-		color.g = n;
-		color.b = m;
-		break;
-	case 1:
-		color.r = n;
-		color.g = v;
-		color.b = m;
-		break;
-	case 2:
-		color.r = m;
-		color.g = v;
-		color.b = n;
-		break;
-	case 3:
-		color.r = m;
-		color.g = n;
-		color.b = v;
-		break;
-	case 4:
-		color.r = n;
-		color.g = m;
-		color.b = v;
-		break;
-	case 5:
-		color.r = v;
-		color.g = m;
-		color.b = n;
-		break;
-	default:
-		color.r = 1;
-		color.g = 0.5;
-		color.b = 0.5;
-		break;
-	}
-
-	return color;
-}
-
 
 
 /**
@@ -362,6 +209,19 @@ void CButServer::onOcMapDataChanged( const srs::tButServerOcMap & mapdata )
 {
 	// Publish all data
 	publishAll(ros::Time::now() );
+}
+
+/**
+ * @brief Reset server and all plugins.
+ */
+void CButServer::reset()
+{
+  ROS_DEBUG("Reseting environment server...");
+
+  FOR_ALL_PLUGINS(reset());
+
+  ROS_DEBUG("Environment server reset finished.");
+
 }
 
 

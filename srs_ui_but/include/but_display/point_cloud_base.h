@@ -1,13 +1,16 @@
-/**
- * $Id: point_cloud_base.h 134 2012-01-12 13:52:36Z spanel $
+/******************************************************************************
+ * \file
  *
- * Modified by dcgm-robotics@FIT group
+ * $Id: point_cloud_base.h 396 2012-03-29 12:24:03Z spanel $
+ *
+ * Modified by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: dd.mm.2011
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2011
  *
  * This code is based on the original one provided by Willow Garage, Inc.
  * Please, see the comments below.
- *
  */
 
 /*
@@ -278,3 +281,4 @@ protected:
 } // namespace rviz
 
 #endif // RVIZ_POINT_CLOUD_BASE_H
+

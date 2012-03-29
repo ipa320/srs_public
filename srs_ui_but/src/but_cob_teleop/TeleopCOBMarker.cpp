@@ -1,10 +1,28 @@
-/*
- *******************************************************************************
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
- * Date: 9.2.2012
- *******************************************************************************
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: 09/02/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <but_cob_teleop/TeleopCOBMarker.h>
@@ -31,7 +49,14 @@ void TeleopCOBMarker::processFeedback(const visualization_msgs::InteractiveMarke
 
   // Move forward or backward
   if (feedback->control_name == CONTROL_MOVE_NAME)
+  {
     twist.linear.x = LINEAR_SCALE * feedback->pose.position.x;
+  }
+  // Strafe left or right
+  else if (feedback->control_name == CONTROL_STRAFE_NAME)
+  {
+    twist.linear.y = LINEAR_SCALE * feedback->pose.position.y;
+  }
   // Rotate
   else if (feedback->control_name == CONTROL_ROTATE_NAME)
     twist.angular.z = ANGULAR_SCALE * tf::getYaw(feedback->pose.orientation);
@@ -90,6 +115,14 @@ void TeleopCOBMarker::createMarkers()
   control.orientation.x = 1;
   control.orientation.y = 0;
   control.orientation.z = 0;
+  control.orientation.w = 1;
+  marker_driver.controls.push_back(control);
+
+  control.name = CONTROL_STRAFE_NAME;
+  control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+  control.orientation.x = 0;
+  control.orientation.y = 0;
+  control.orientation.z = 1;
   control.orientation.w = 1;
   marker_driver.controls.push_back(control);
 

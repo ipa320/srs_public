@@ -2,7 +2,7 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b srs_arm_navigation_percp is ... 
+This package provided by dcgm-robotics@FIT group is derived from the pr2_arm_navigation_perception package. It modifies components developed for PR2 robot so that you can use it with COB. It allows you to build a collision space representation of the world.
 
 <!-- 
 Provide an overview of your package.

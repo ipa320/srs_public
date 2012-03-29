@@ -3,20 +3,25 @@ Background\ ColorG=0
 Background\ ColorB=0
 Fixed\ Frame=/map
 Target\ Frame=/base_link
-ButCamDisplay.Alpha=0,7
-ButCamDisplay.Draw\ Behind=0
-ButCamDisplay.Enabled=1
-ButCamDisplay.Image\ Topic=/stereo/left/image_raw
-ButCamDisplay.Marker\ Topic=/but_rectangle
-Map.Alpha=0,7
+CButCamDisplay.Alpha=0.7
+CButCamDisplay.Draw\ Behind=0
+CButCamDisplay.Enabled=1
+CButCamDisplay.Image\ Topic=/stereo/left/image_raw
+CButCamDisplay.Marker\ Topic=/but_data_fusion/cam_view
+Interactive\ Markers.Enabled=1
+Interactive\ Markers.Show\ Axes=0
+Interactive\ Markers.Show\ Descriptions=1
+Interactive\ Markers.Show\ Tool\ Tips=1
+Interactive\ Markers.Update\ Topic=/but_cob_teleop_marker/update
+Map.Alpha=0.7
 Map.Draw\ Behind=0
 Map.Enabled=1
 Map.Topic=/map
 Marker.Enabled=1
-Marker.Marker\ Topic=/view_frustum
+Marker.Marker\ Topic=/but_data_fusion/view_frustum
 Marker.view_frustum=1
 Point\ Cloud2.Alpha=1
-Point\ Cloud2.Billboard\ Size=0,01
+Point\ Cloud2.Billboard\ Size=0.01
 Point\ Cloud2.Color\ Transformer=Intensity
 Point\ Cloud2.Decay\ Time=0
 Point\ Cloud2.Enabled=1
@@ -139,8 +144,8 @@ Robot\:\ Robot\ Model\ Link\ torso_upper_neck_tilt_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.256 5.38035 6.4844 1.15671 2.18564 -0.957902
-Property\ Grid\ State=selection=Point Cloud2.Enabled;expanded=Marker.Enabled.Marker.Namespaces,ButCamDisplay.Enabled.ButCamDisplay.StatusTopStatus;scrollpos=0,0;splitterpos=150,301;ispageselected=1
+Camera\ Config=1.186 5.22035 3.1368 1.01914 2.2864 -0.688317
+Property\ Grid\ State=selection=Interactive Markers.Enabled;expanded=Marker.Enabled.Marker.Namespaces;scrollpos=0,0;splitterpos=148,296;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz
@@ -154,10 +159,14 @@ Name=Marker
 Package=rviz
 ClassName=rviz::MarkerDisplay
 [Display3]
-Name=ButCamDisplay
-Package=srs_ui_but
-ClassName=ButCamDisplay
-[Display4]
 Name=Map
 Package=rviz
 ClassName=rviz::MapDisplay
+[Display4]
+Name=CButCamDisplay
+Package=srs_ui_but
+ClassName=CButCamDisplay
+[Display5]
+Name=Interactive Markers
+Package=rviz
+ClassName=rviz::InteractiveMarkerDisplay

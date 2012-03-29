@@ -1,7 +1,9 @@
-/**
- * $Id: point_cloud_base.cpp 134 2012-01-12 13:52:36Z spanel $
+/******************************************************************************
+ * \file
+ * $Id: point_cloud_base.cpp 396 2012-03-29 12:24:03Z spanel $
  *
- * Modified by dcgm-robotics@FIT group
+ * Modified by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Date: dd.mm.2011
  *

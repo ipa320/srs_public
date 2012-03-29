@@ -1,4 +1,60 @@
 #!/usr/bin/python
+#################################################################
+##\file
+#
+# \note
+#   Copyright (c) 2012 \n
+#   Robotnik Automation SLL \n\n
+#
+#################################################################
+#
+# \note
+#   Project name: srs
+# \note
+#   ROS stack name: srs
+# \note
+#   ROS package name: srs_grasping
+#
+# \author
+#   Author: Manuel Rodriguez, email:mrodriguez@robotnik.es
+# \author
+#   Supervised by: Manuel Rodriguez, email:mrodriguez@robotnik.es
+#
+# \date Date of creation: March 2012
+#
+# \brief
+#   Implements a simple grasp test.
+#
+#################################################################
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#     - Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer. \n
+#     - Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution. \n
+#     - Neither the name of the Robotnik Automation SLL nor the names of its
+#       contributors may be used to endorse or promote products derived from
+#       this software without specific prior written permission. \n
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License LGPL as 
+# published by the Free Software Foundation, either version 3 of the 
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License LGPL for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public 
+# License LGPL along with this program. 
+# If not, see <http://www.gnu.org/licenses/>.
+#
+#################################################################
+
 import roslib
 roslib.load_manifest('srs_grasping')
 
@@ -20,8 +76,8 @@ from numpy import matrix
 
 from cob_object_detection_msgs.msg import *
 from cob_object_detection_msgs.srv import *
-from srs_object_database.msg import *
-from srs_object_database.srv import *
+from srs_object_database_msgs.msg import *
+from srs_object_database_msgs.srv import *
 
 import grasping_functions
 from srs_grasping.srv import *
@@ -48,7 +104,7 @@ class GraspScript(script):
 		self.sss = simple_script_server()
 		self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
 
-		"""
+		
 		# initialize components (not needed for simulation)
 		self.sss.init("tray")
 		self.sss.init("torso")
@@ -68,20 +124,18 @@ class GraspScript(script):
 		if not self.sss.parse:
 			print "Please localize the robot with rviz"
 		self.sss.wait_for_input()
-		"""
+		
 
 		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
 		rospy.sleep(2)
 
 	def execute(self):
 
-
-
 		# prepare for grasping
 		#self.sss.move("base","kitchen")
-		#self.sss.move("arm","look_at_table")
-		self.sss.move("sdh","cylopen")
 		self.sss.move("arm","look_at_table")
+		self.sss.move("sdh","cylopen")
+
 		rospy.sleep(2);
 
 		#current_joint_configuration
@@ -196,6 +250,7 @@ class GraspScript(script):
 					handle_sdh = self.sss.move("sdh", [list(grasp_configuration[i].sdh_joint_values)], False)
 					handle_sdh.wait()
 					rospy.sleep(4);
+
 					"""
 					# place obj on tray
 					handle01 = self.sss.move("arm","grasp-to-tray",False)
@@ -239,7 +294,7 @@ class GraspScript(script):
 	#Fake function
 	def getObjectID(self, obj_name):
 		if (obj_name=="milk"): 
-			return 1;
+			return 9;
 		else:
 			return -1;
 

@@ -1,13 +1,55 @@
 #!/usr/bin/python
 #################################################################
+##\file
+#
 # \note
-#   Project name: srs
+# Copyright (c) 2011 \n
+# Cardiff University \n\n
+#
+#################################################################
+#
+# \note
+# Project name: Multi-Role Shadow Robotic System for Independent Living
+# \note
+# ROS stack name: srs
+# \note
+# ROS package name: srs_decision_making
+#
 # \author
-#   Renxi Qiu, email:renxi.qiu@googlemail.com
+# Author: Renxi Qiu, email: renxi.qiu@gmail.com
 #
 # \date Date of creation: Oct 2011
+#
+# \brief
+# Task coordination and interfacing for SRS decision making
+#
 #################################################################
-# ROS imports
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# - Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer. \n
+#
+# - Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution. \n
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License LGPL as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License LGPL for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License LGPL along with this program.
+# If not, see <http://www.gnu.org/licenses/>.
+#
+#################################################################
 
 import roslib; roslib.load_manifest('srs_decision_making')
 
@@ -24,6 +66,7 @@ from smach_ros import ConditionState, IntrospectionServer
 
 from srs_knowledge.srv import *
 from srs_knowledge.msg import *
+
 
 """
 smach introspection server not working in electric yet, modify the executive_smach/smach_msgs/msg/SmachContainerStatus.msg below can bypass error:
@@ -389,7 +432,7 @@ class SRS_DM_ACTION(object):
         if current_task_info.task_name=="":
             current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
-        
+        current_task_info.task_parameters = current_goal.parameters
         
         if current_task_info.task_name=='stop':
             current_task_info.set_stop_acknowledged(False)            #
@@ -412,8 +455,15 @@ class SRS_DM_ACTION(object):
         try:
             requestNewTask = rospy.ServiceProxy('task_request', TaskRequest)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
-            res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
-            print res.sessionId
+            req = TaskRequestRequest()
+            req.task = current_task_info.task_name
+            req.content = current_task_info.task_parameter
+            req.userPose = "order"
+            req.parameters = current_task_info.parameters
+            
+            res = requestNewTask(req)
+            #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
+            print 'Task created with session id of: ' + str(res.sessionId)
             current_task_info.session_id = res.sessionId
             if res.result == 1:
                 self._as.set_aborted(self._result)

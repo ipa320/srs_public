@@ -1,4 +1,57 @@
+#!/usr/bin/python
+#################################################################
+##\file
+#
+# \note
+# Copyright (c) 2011 \n
+# Cardiff University \n\n
+#
+#################################################################
+#
+# \note
+# Project name: Multi-Role Shadow Robotic System for Independent Living
+# \note
+# ROS stack name: srs
+# \note
+# ROS package name: srs_states
+#
+# \author
+# Author: Renxi Qiu, email: renxi.qiu@gmail.com
+#
+# \date Date of creation: Oct 2011
+#
+# \brief
+# information shared by the SRS components
+#
+#################################################################
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# - Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer. \n
+#
+# - Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution. \n
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License LGPL as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License LGPL for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License LGPL along with this program.
+# If not, see <http://www.gnu.org/licenses/>.
+#
+#################################################################
 # ROS imports
+
 import roslib
 roslib.load_manifest('srs_states')
 import rospy
@@ -27,6 +80,8 @@ class goal_structure():
         
         #task parameter
         self.task_parameter=""
+        ## by Ze
+        self.parameters = list()
         
         #Information about last step, use Last_step_info_msg 
         self.last_step_info = list()
@@ -68,6 +123,7 @@ class goal_structure():
         self.stop_required = False 
         
         self.stop_acknowledged = False
+
         
     def get_post_grasp_adjustment_state(self):
         self.lock.acquire()

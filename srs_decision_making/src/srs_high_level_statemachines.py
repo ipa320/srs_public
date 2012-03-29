@@ -1,11 +1,54 @@
 #!/usr/bin/python
 #################################################################
+##\file
+#
 # \note
-#   Project name: srs
+# Copyright (c) 2011 \n
+# Cardiff University \n\n
+#
+#################################################################
+#
+# \note
+# Project name: Multi-Role Shadow Robotic System for Independent Living
+# \note
+# ROS stack name: srs
+# \note
+# ROS package name: srs_decision_making
+#
 # \author
-#   Renxi Qiu, email:renxi.qiu@googlemail.com
+# Author: Renxi Qiu, email: renxi.qiu@gmail.com
 #
 # \date Date of creation: Oct 2011
+#
+# \brief
+# Task coordination and interfacing for SRS decision making
+#
+#################################################################
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# - Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer. \n
+#
+# - Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution. \n
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License LGPL as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License LGPL for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License LGPL along with this program.
+# If not, see <http://www.gnu.org/licenses/>.
+#
 #################################################################
 # ROS imports
 import roslib; roslib.load_manifest('srs_decision_making')
@@ -18,11 +61,12 @@ from srs_generic_states import *
 from mapping_states import *
 from navigation_states import *
 from detection_states  import *
-#from grasp_states import *
-from generic_grasp_state import *
+from grasp_states import *
+
+#from generic_grasp_state import *
 
 # This is come from srs_object_verification, the name should be updated to avoid confusion
-from generic_states import *
+#from generic_states import *
 
 """
 This file contains high level state machines for decision making.
@@ -209,13 +253,14 @@ class sm_pick_object_asisted(SRS_StateMachine):
                     transitions={'succeeded':'SELECT_GRASP', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'semi_autonomous_mode':'semi_autonomous_mode', 'target_object_name':'target_object_name','target_object':'target_object', 'target_object_pose':'target_object_old_pose'})
     
+            
             smach.StateMachine.add('SELECT_GRASP', select_grasp(),
                     transitions={'succeeded':'GRASP_GENERAL', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'grasp_configuration':'grasp_configuration', 'object':'target_object'})
+                    remapping={'grasp_categorisation':'grasp_categorisation', 'object':'target_object'})
                 
-            smach.StateMachine.add('GRASP_GENERAL', grasp(),
-                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
-                    remapping={'object':'target_object', 'grasp_configuration':'grasp_configuration'})
+            smach.StateMachine.add('GRASP_GENERAL', grasp_simple(max_retries = 5),
+                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT', 'no_more_retries':'not_completed', 'failed':'failed','preempted':'preempted'},
+                    remapping={'object':'target_object', 'grasp_categorisation':'grasp_categorisation'})
  
  
 ################################################################################

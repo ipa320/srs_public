@@ -71,33 +71,29 @@ import ros.pkg.srs_symbolic_grounding.msg.*;
 import ros.*;
 import ros.communication.*;
 
-public class GetObjectTask extends org.srs.srs_knowledge.task.Task
+public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    public GetObjectTask(String taskType, String targetContent, NodeHandle n) 
+    public SearchObjectTask(String taskType, String targetContent, NodeHandle n) 
     {	
 	this.nodeHandle = n;
-	//this.userPose = userPose;
+	// this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);
     }
 
     protected boolean constructTask() {
-	return createGetObjectTask();
+	return createSearchObjectTask();
     }
     
-    private boolean createGetObjectTask() {
+    private boolean createSearchObjectTask() {
 	/*
 	// query for tables
 	// move to tables (near -- use grounding)
 	// detect milk
-	// grap milk
-	// back to user
 	*/
 	System.out.println("Create New GET OBJECT Task --- ");
 
 	try {
-	    //ArrayList<String> workspaces = OntoQueryUtil.getWorkspaceNamesOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
-	    //	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, OntoQueryUtilthis.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), KnowledgeEngine.ontoDB);
 	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, OntoQueryUtil.ObjectNameSpace, OntoQueryUtil.GlobalNameSpace, KnowledgeEngine.ontoDB);
 	}
 	catch(Exception e) {
@@ -187,7 +183,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	// FoldArmActionUnit
 	//FoldArmActionUnit foldArmAction = new FoldArmActionUnit();
 
-	//create BackToUserActionUnit
+	// create BackToUserActionUnit
 	
 	//Pose2D posUser = OntoQueryUtil.parsePose2D(userPose);
 	//MoveActionUnit mau = new MoveActionUnit(posUser);
@@ -198,8 +194,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	//actionList.appendHighLevelAction(mau1);
 
 	actionList.appendHighLevelAction(mdAction);
-	actionList.appendHighLevelAction(mgAction);
-	actionList.appendHighLevelAction(trayAction);
+	//actionList.appendHighLevelAction(mgAction);
+	//actionList.appendHighLevelAction(trayAction);
 	//actionList.appendHighLevelAction(foldArmAction);
 	//actionList.appendHighLevelAction(mau);
 	actionList.appendHighLevelAction(fau);

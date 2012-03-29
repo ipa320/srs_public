@@ -21,7 +21,7 @@
   <depend package="cob_3d_mapping_msgs"/>
   <depend package="kinematics_msgs"/>
   <depend package="srs_object_verification"/>
-  <depend package="srs_grasping"/>
+  <!--depend package="srs_grasping"/-->
 </package>
 
 

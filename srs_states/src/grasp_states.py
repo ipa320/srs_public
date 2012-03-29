@@ -19,7 +19,7 @@ from kinematics_msgs.srv import *
 from cob_mmcontroller.msg import *
 
 from shared_state_information import *
-import grasping_functions
+#import grasping_functions
 
 
 

@@ -28,10 +28,9 @@
  *	 * Redistributions in binary form must reproduce the above copyright
  *	   notice, this list of conditions and the following disclaimer in the
  *	   documentation and/or other materials provided with the distribution.
- *	 * Neither the name of the Fraunhofer Institute for Manufacturing 
- *	   Engineering and Automation (IPA) nor the names of its
- *	   contributors may be used to endorse or promote products derived from
- *	   this software without specific prior written permission.
+ *	 * Neither the name of the school of Engineering, Cardiff University nor 
+ *         the names of its contributors may be used to endorse or promote products 
+ *         derived from this software without specific prior written permission.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License LGPL as 
@@ -397,13 +396,14 @@ public class KnowledgeEngine
 	    currentTask = new MoveTask(request.content, null);
 	    System.out.println("Created CurrentTask " + "move " + request.content);
 	}
-	else if(request.task.equals("get") || request.task.equals("search")){
+	else if(request.task.equals("get")){
 	    
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+	    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, nodeHandle);
 	    currentTask = (Task)got;
 	    System.out.println("Created CurrentTask " + "get " + request.content);	    
 
@@ -414,6 +414,32 @@ public class KnowledgeEngine
 	    //this.loadPredefinedTasksForTest();
 	    
 	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
+	}
+	else if(request.task.equals("search")){
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+	    SearchObjectTask got = new SearchObjectTask(request.task, request.content, nodeHandle);
+	    currentTask = (Task)got;
+	    System.out.println("Created CurrentTask " + "search " + request.content);	    
+	}
+	else if(request.task.equals("fetch")){
+	    
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+
+	    FetchObjectTask got = new FetchObjectTask(request.task, request.content, request.userPose, nodeHandle);
+	    currentTask = (Task)got;
+	    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
+	}
+	else if(request.task.equals("deliver")){
+	    if(ontoDB == null) {
+		System.out.println(" ONTOLOGY FILE IS NULL ");
+	    }
+	    GetObjectTask got = new GetObjectTask(request.task, request.content, nodeHandle);
+	    currentTask = (Task)got;
+	    System.out.println("Created CurrentTask " + "search " + request.content);	    
 	}
 	else if(request.task.equals("charging")) {
 	    if(ontoDB == null) {

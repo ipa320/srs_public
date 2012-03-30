@@ -7,6 +7,6 @@
    <include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
    
    <node pkg="srs_env_model" type="but_gui_service_server" name="but_gui_service_server" />
-   <node pkg="srs_ui_but" type="but_cob_teleop_marker" name="but_cob_teleop_marker" />
-   <include file="$(find cob_gazebo_worlds)/ros/launch/populate_ipa-kitchen.launch"/>
+   <!--<node pkg="srs_ui_but" type="but_cob_teleop_marker" name="but_cob_teleop_marker" />-->
+   <!--<include file="$(find cob_gazebo_worlds)/ros/launch/populate_ipa-kitchen.launch"/>-->
 </launch>

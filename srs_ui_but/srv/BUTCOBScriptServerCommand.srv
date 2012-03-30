@@ -1,0 +1,5 @@
+string command
+string component_name
+string parametr_name
+---
+bool status

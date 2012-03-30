@@ -6,10 +6,10 @@
 			<authoring_tool>Blender v:249 - Illusoft Collada Exporter v:0.3.162</authoring_tool>
 			<comments></comments>
 			<copyright></copyright>
-			<source_data>file:///home/lom/ros_workspace/billboards/person_collada_working.blend</source_data>
+			<source_data>file:///home/lom/ros_workspace/meshes/person_collada_working.blend</source_data>
 		</contributor>
-		<created>2012-02-09T12:01:04.667841</created>
-		<modified>2012-02-09T12:01:04.667874</modified>
+		<created>2012-03-13T11:38:04.176233</created>
+		<modified>2012-03-13T11:38:04.176257</modified>
 		<unit meter="0.01" name="centimeter"/>
 		<up_axis>Z_UP</up_axis>
 	</asset>
@@ -133,8 +133,8 @@
 			<node layer="L1" id="milk" name="milk">
 				<matrix>
 					1.0 0.0 0.0 0.0 
-					0.0 1.0 0.0 0.0 
-					0.0 0.0 1.0 0.0 
+					0.0 0.5 0.0 0.0 
+					0.0 0.0 1.5 0.0 
 					0.0 0.0 0.0 1.0 
 				</matrix>
 				<instance_geometry url="#milk-Geometry">

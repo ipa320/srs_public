@@ -1,12 +1,28 @@
-/**
- * $Id$
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: 06.02.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef SERVER_TOOLS_H_INCLUDED
@@ -42,7 +58,7 @@ namespace srs
 	typedef pcl::PointCloud<pcl::PointXYZ> tPointCloud;
 
 	//! Define point type
-	typedef tPointCloud::PointType tPoint;
+	typedef typename tPointCloud::PointType tPoint;
 
 	/// All needed octo map parameters and something more...
 	struct SMapParameters
@@ -65,6 +81,9 @@ namespace srs
 
 		/// Clamping maximum
 		double thresMax;
+
+		/// Occupancy threshold
+		double thresOccupancy;
 
 		/// Maximal range of valid sensor data
 		double maxRange;
@@ -145,7 +164,7 @@ namespace srs
 		virtual void handleOccupiedNode(const srs::tButServerOcTree::iterator& it, const SMapParameters & mp){}
 
 		/// Called when all nodes was visited.
-		virtual void handlePostNodeTraversal(const ros::Time& rostime){}
+		virtual void handlePostNodeTraversal(const SMapParameters & mp){}
 
 	protected:
 		//! Octomap frame_id
@@ -172,20 +191,56 @@ namespace srs
 			ALL	= ON_START | ON_NODE | ON_FREE | ON_OCCUPIED | ON_STOP
 		};
 	public:
+
+		/// Creating constructor
+		CCrawlingPluginHolder( const std::string & name, int flags )
+		: m_plugin( new tpPlugin( name ) )
+		, m_source( 0 )
+		, m_connected( false )
+		, m_flags( flags )
+		{
+		    assert( m_plugin != 0 );
+		    m_bDeletePlugin = true;
+		}
 		/// Constructor
-		CCrawlingPluginHolder( tpPlugin * plugin, int flags ) : m_plugin( plugin ), m_source(0), m_connected( false ), m_flags(flags) { assert( plugin != 0 ); }
+		CCrawlingPluginHolder( tpPlugin * plugin, int flags, bool deletePlugin = false )
+		: m_plugin( plugin )
+		, m_source(0)
+		, m_connected( false )
+		, m_flags(flags)
+		{
+		    assert( plugin != 0 );
+		    m_bDeletePlugin = deletePlugin;
+		}
 
 		/// Connecting constructor
-		CCrawlingPluginHolder( tpPlugin * plugin, tpOctomapPlugin * source, EConnectionFlags flags ) : m_plugin( plugin ), m_source(0), m_connected( false ), m_flags(flags) { assert( plugin != 0 ); connect(source); }
+		CCrawlingPluginHolder( tpPlugin * plugin, tpOctomapPlugin * source, EConnectionFlags flags, bool deletePlugin = false )
+		: m_plugin( plugin )
+		, m_source(0)
+		, m_connected( false )
+		, m_flags(flags)
+		{
+		    assert( plugin != 0 );
+		    connect(source);
+		    m_bDeletePlugin = deletePlugin;
+		}
 
 		/// Destructor
-		virtual ~CCrawlingPluginHolder() { disconnect(); }
+		virtual ~CCrawlingPluginHolder()
+		{
+		    disconnect();
+		    if( m_bDeletePlugin && m_plugin != 0 )
+		        delete m_plugin;
+		}
 
 		/// Connect plugin to the data
 		void connect( tpOctomapPlugin * source )
 		{
 			if( m_connected )
 				disconnect();
+
+			if( !m_plugin->shouldPublish() )
+			    return;
 
 			if( source != 0 )
 			{
@@ -200,7 +255,7 @@ namespace srs
 			}
 		}
 
-		// Disconnect plugin
+		/// Disconnect plugin
 		void disconnect()
 		{
 			if( m_connected && m_source != 0 )
@@ -215,6 +270,16 @@ namespace srs
 				m_connected = false;
 			}
 		}
+
+		/// Publish data if exists
+		void publish(const ros::Time & timestamp)
+		{
+		    if( m_plugin->shouldPublish() )
+		        m_plugin->onPublish( timestamp );
+		}
+
+		/// Get plugin pointer
+		tpPlugin * getPlugin( ) { return m_plugin; }
 
 	protected:
 		/// Plugin pointer
@@ -231,6 +296,9 @@ namespace srs
 
 		/// Used flags
 		int m_flags;
+
+		/// Delete plugin data on exit?
+		bool m_bDeletePlugin;
 	};
 
 	/**

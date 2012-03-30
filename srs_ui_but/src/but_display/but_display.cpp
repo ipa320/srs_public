@@ -1,12 +1,28 @@
-/**
- * $Id: but_display.cpp 321 2012-03-09 13:39:19Z spanel $
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id: but_display.cpp 396 2012-03-29 12:24:03Z spanel $
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: dd.mm.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2011
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "but_display.h"
@@ -16,6 +32,7 @@
 #include <rviz/window_manager_interface.h>
 #include <sstream>
 
+#define CAMERA_POSITION_TOPIC_NAME std::string("/rviz_camera_position")
 
 /*
  *  Constructor
@@ -27,11 +44,11 @@ CButDisplay::CButDisplay(const std::string & name,rviz::VisualizationManager * m
     , m_child_window( 0 )
     , m_dialog_window( 0 )
     , m_controls_window( 0 )
-	, m_cameraPositionPublisherName( "rviz_camera_position" )
+	, m_cameraPositionPublisherName( CAMERA_POSITION_TOPIC_NAME )
     , m_latchedTopics( false )
 {
 	// Get node handle
-	ros::NodeHandle private_nh("/");
+	ros::NodeHandle private_nh("~");
 
 	// Set parameters
 	private_nh.param("camera_position_publisher_name", m_cameraPositionPublisherName, m_cameraPositionPublisherName);
@@ -263,7 +280,7 @@ void CButDisplay::propertyPositionChanged()
         	ros::Time rostime = ros::Time::now();
 
         	// Prepare header
-        	m_cameraPositionMsg.header.frame_id = "/map";
+        	m_cameraPositionMsg.header.frame_id = target_frame_;
         	m_cameraPositionMsg.header.stamp = rostime;
 
         	// Get camera
@@ -274,6 +291,12 @@ void CButDisplay::propertyPositionChanged()
         	m_cameraPositionMsg.position.x = position.x;
         	m_cameraPositionMsg.position.y = position.y;
         	m_cameraPositionMsg.position.z = position.z;
+
+        	Ogre::Vector3 direction( camera.getDirection() );
+        	m_cameraPositionMsg.direction.x = direction.x;
+        	m_cameraPositionMsg.direction.y = direction.y;
+        	m_cameraPositionMsg.direction.z = direction.z;
+
 
         	Ogre::Quaternion orientation( camera.getOrientation() );
         	m_cameraPositionMsg.orientation.w = orientation.w;
@@ -313,12 +336,14 @@ CButDisplay::CNotifyCameraListener::~CNotifyCameraListener()
   */
 void CButDisplay::CNotifyCameraListener::cameraPreRenderScene(Ogre::Camera *cam)
 {
+
     Ogre::Vector3 position( cam->getPosition() );
     Ogre::Quaternion orientation ( cam->getOrientation() );
-    cam->getCullingFrustum();
 
     if( hasMoved( position, orientation ) )
     {
+      //cam->getCullingFrustum();
+
         // callback
         changedCB( position, orientation );
 
@@ -343,8 +368,6 @@ void CButDisplay::CNotifyCameraListener::connect( Ogre::Camera * camera )
     // Connect listener to the camera
     camera->addListener( this );
     m_camera = camera;
-
-    std::cerr << "Camera has changed..." << std::endl;
 }
 
 
@@ -353,7 +376,7 @@ void CButDisplay::CNotifyCameraListener::connect( Ogre::Camera * camera )
   */
 bool CButDisplay::CNotifyCameraListener::hasMoved( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation )
 {
-#define far( x ) ( abs(x) > 0.0f )
+#define far( x ) ( abs(x) > 0.001f )
 
     // test position
     if( far( position.x - m_position.x ) || far( position.y - m_position.y ) || far( position.z - position.z ) )
@@ -376,7 +399,6 @@ bool CButDisplay::CNotifyCameraListener::hasMoved( const Ogre::Vector3 & positio
   */
 void CButDisplay::CNotifyCameraListener::changedCB( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation )
 {
-//    std::cerr << "New position..." << std::endl;
     m_display->propertyPositionChanged();
 }
 

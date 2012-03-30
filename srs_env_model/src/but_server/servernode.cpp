@@ -1,13 +1,15 @@
-/**
- * $Id: servernode.cpp 134 2012-01-12 13:52:36Z spanel $
+/******************************************************************************
+ * \file
+ * $Id: servernode.cpp 397 2012-03-29 12:50:30Z spanel $
  *
- * Modified by dcgm-robotics@FIT group
+ * Modified by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd.mm.2011
  *
  * This code is derived from the OctoMap server provided by A. Hornung.
  * Please, see the original comments below.
- *
  */
 
 /**
@@ -18,7 +20,7 @@
 * License: BSD
 */
 
-/*
+/**
  * Copyright (c) 2009-2011, A. Hornung, University of Freiburg
  * All rights reserved.
  *

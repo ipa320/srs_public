@@ -13,7 +13,7 @@ CButPointCloud.Enabled=1
 CButPointCloud.Position\ Transformer=XYZ
 CButPointCloud.Selectable=0
 CButPointCloud.Style=1
-CButPointCloud.Topic=/butsrv_pointcloud_centers
+CButPointCloud.Topic=/but_server_node/butsrv_pointcloud_centers
 CButPointCloud..AxisAutocompute\ Value\ Bounds=1
 CButPointCloud..AxisAxis=2
 CButPointCloud..AxisMax\ Value=10
@@ -27,11 +27,11 @@ CButPointCloud..IntensityChannel\ Name=z
 CButPointCloud..IntensityMax\ ColorR=1
 CButPointCloud..IntensityMax\ ColorG=1
 CButPointCloud..IntensityMax\ ColorB=1
-CButPointCloud..IntensityMax\ Intensity=2,625
+CButPointCloud..IntensityMax\ Intensity=2,525
 CButPointCloud..IntensityMin\ ColorR=0
 CButPointCloud..IntensityMin\ ColorG=0
 CButPointCloud..IntensityMin\ ColorB=0
-CButPointCloud..IntensityMin\ Intensity=-0,125
+CButPointCloud..IntensityMin\ Intensity=-0,025
 CButPointCloud..IntensityUse\ full\ RGB\ spectrum=1
 Map.Alpha=0,7
 Map.Draw\ Behind=0
@@ -145,7 +145,7 @@ Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
 Camera\ Config=0.786001 4.82079 12.7315 -0.628793 0.114604 0.127212
-Property\ Grid\ State=selection=;expanded=.Global StatusTopStatus,CButDisplay.Enabled,CButDisplay.Enabled.CButDisplay.StatusTopStatus,CButDisplay.Enabled.CButDisplay.Camera position,CButPointCloud.Enabled;scrollpos=0,0;splitterpos=150,288;ispageselected=1
+Property\ Grid\ State=selection=;expanded=CButDisplay.Enabled.CButDisplay.StatusTopStatus,CButDisplay.Enabled.CButDisplay.Camera position;scrollpos=0,0;splitterpos=150,301;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz

@@ -3,10 +3,13 @@
     
 
 <!-- BUT assisted arm navigation -->
-<include file="$(find srs_arm_navigation)/launch/but_arm_nav_simple_dynmodel.launch"/>
+<include file="$(find srs_arm_navigation)/launch/but_arm_nav_simple_dynmodel_sim.launch"/>
 
 <!-- fake decision making for TESTing purposes ONLY (it calls two generic states) -->
 <!--<node name="fake_dm" pkg="srs_arm_navigation" type="fake_dm.py"/>-->
+
+<!-- BUT cob teleop marker -->
+<node name="cob_teleop_im" pkg="srs_ui_but" type="but_cob_teleop_marker" />
 
 <!-- object db - for grasping -->
 <include file="$(find srs_object_database)/launch/srs_db.launch"/>

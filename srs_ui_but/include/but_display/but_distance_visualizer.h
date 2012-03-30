@@ -1,11 +1,28 @@
-/**
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
- * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
- * Date: 26.01.2012
+ * $Id:$
  *
- * License: BUT OPEN SOURCE LICENSE
+ * Copyright (C) Brno University of Technology
  *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
+ * Author: Vit Stancl (stancl@fit.vutbr.cz)
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2011
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef BUT_DISTANCE_VISUALIZER_H_
@@ -25,10 +42,13 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreMaterialManager.h>
 #include <ogre_tools/movable_text.h>
 #include <srs_ui_but/GetClosestPoint.h>
 #include <srs_ui_but/ClosestPoint.h>
 #include <time.h>
+#include <GL/gl.h>
 
 #define DEFAULT_ROBOT_LINK "/sdh_palm_link"
 #define GET_CLOSEST_POINT_SERVICE "but_services/get_closest_point"
@@ -45,11 +65,6 @@ class CButDistanceVisualizer : public rviz::Display
 
 {
 public:
-  enum
-  {
-    UPDATED, READY_FOR_UPDATE
-  };
-
   /*
    * Constructor
    */
@@ -100,16 +115,6 @@ protected:
   virtual void onDisable();
 
   /*
-   * Subscribe topic
-   */
-  void subscribe();
-
-  /*
-   * Unsubscribe topic
-   */
-  void unsubscribe();
-
-  /*
    * Get distance property
    */
   const string getDistance();
@@ -117,31 +122,41 @@ protected:
   /*
    * Get link property
    */
-  const string getLinkString();
+  const string getLinkString()
+  {
+    return robot_link_;
+  }
 
   /*
    * Get color property
    */
-  Color getColor();
+  Color getColor()
+  {
+    return color_;
+  }
 
   /*
    * Get aplha property
    */
-  float getAlpha();
+  float getAlpha()
+  {
+    return alpha_;
+  }
+
+  /*
+   * Get thickness property
+   */
+  float getThickness()
+  {
+    return thickness_;
+  }
 
   /*
    * Get draw distance text
    */
-  bool getDrawDistance()
+  bool getShowDistance()
   {
-    return drawDistanceText_;
-  }
-
-  /*
-   * Set distance property
-   */
-  void setDistance(string distance)
-  {
+    return showDistance_;
   }
 
   /*
@@ -160,11 +175,25 @@ protected:
   void setAlpha(float alpha);
 
   /*
+   * Set thickness property
+   */
+  void setThickness(float thickness)
+  {
+    if (thickness > 0.1)
+      thickness_ = 0.1;
+    else
+      thickness_ = thickness;
+
+    propertyChanged(m_property_thickness_);
+  }
+
+  /*
    * Set draw distance text
    */
-  void setDrawDistance(bool draw)
+  void setShowDistance(bool show)
   {
-    drawDistanceText_ = draw;
+    showDistance_ = show;
+    propertyChanged(m_show_distance_property_);
   }
 
   // Link
@@ -179,12 +208,15 @@ protected:
   // Geometry manual object
   Ogre::ManualObject * line_manual_object_;
 
+  // Material
+  Ogre::MaterialPtr material_;
+
   // Display properties
   StringPropertyWPtr m_property_distance_;
   TFFramePropertyWPtr m_property_link_;
-  FloatPropertyWPtr m_property_alpha_;
+  FloatPropertyWPtr m_property_alpha_, m_property_thickness_;
   ColorPropertyWPtr m_property_color_;
-  BoolPropertyWPtr m_draw_distance_property_;
+  BoolPropertyWPtr m_show_distance_property_;
   IntPropertyWPtr m_refresh_property_;
 
   // Line color
@@ -193,8 +225,11 @@ protected:
   // Line aplha
   float alpha_;
 
+  // Line thickness
+  float thickness_;
+
   // Draw distance text
-  bool drawDistanceText_;
+  bool showDistance_;
 
   // Client for get_closest_point service
   ros::ServiceClient closestPointClient_;

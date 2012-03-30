@@ -1,13 +1,16 @@
-/**
- * $Id: but_server.h 281 2012-03-05 14:50:43Z stancl $
+/******************************************************************************
+ * \file
+ *
+ * $Id: but_server.h 397 2012-03-29 12:50:30Z spanel $
  *
  * Modified by dcgm-robotics@FIT group
- * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: dd.mm.2011
  *
+ * Author: Vit Stancl (stancl@fit.vutbr.cz)
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
  * This code is derived from the OctoMap server provided by A. Hornung.
  * Please, see the original comments below.
- *
  */
 
 /**
@@ -18,7 +21,7 @@
 * License: BSD
 */
 
-/*
+/**
  * Copyright (c) 2010-2011, A. Hornung, University of Freiburg
  * All rights reserved.
  *
@@ -69,7 +72,8 @@
 #include <but_server/plugins/CollisionObjectPlugin.h>
 #include <but_server/plugins/Map2DPlugin.h>
 #include <but_server/plugins/IMarkersPlugin.h>
-
+#include <but_server/plugins/MarkerArrayPlugin.h>
+#include <but_server/plugins/LimitedPointCloudPlugin.h>
 
 
 
@@ -90,6 +94,9 @@ public:
     //! Destructor
     virtual ~CButServer();
 
+    /// Reset server and all plugins
+    void reset();
+
 protected:
     //! Publish all
     void publishAll(const ros::Time& rostime = ros::Time::now());
@@ -104,56 +111,15 @@ protected:
     //! On octomap data changed
     void onOcMapDataChanged( const srs::tButServerOcMap & mapdata );
 
+    /// On reset service call
+    bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response){ reset(); return true; }
+
 protected:
-    std_msgs::ColorRGBA heightMapColor(double h) const;
 
     /// Node handle
     ros::NodeHandle m_nh;
 
-    /// Publishers
-    ros::Publisher 	  m_markerPub
-					, m_binaryMapPub
-					, m_visiblePartPub;			//! Visible part of the scene publisher
-
-
-    /// Subscriber - camera information
-    //message_filters::Subscriber<sensor_msgs::CameraInfo> * m_camInfoSub;
-
-    /// Subscriber - camera position
-    //message_filters::Subscriber<srs_ui_but::RVIZCameraPosition> m_cameraPositionSub;
-
-    //! Message filter - camera info
-    //tf::MessageFilter<sensor_msgs::CameraInfo>* m_tfCameraInfoSub;
-
-    ros::ServiceServer m_octomapService, m_clearBBXService, m_resetService;
-    tf::TransformListener m_tfListener;
-
-
-    bool m_useHeightMap;
-    std_msgs::ColorRGBA m_color;
-    double m_colorFactor;
-
     bool m_latchedTopics;
-
-    double m_occupancyMinZ;
-    double m_occupancyMaxZ;
-
-    /// Should speckles be filtered?
-    bool m_filterSpeckles;
-
-    /// Connection settings
-    std::string m_ocupiedCellsPublisher,
-                m_octomapBinaryPublisher,
-                m_cameraPositionSubscriber,
-                m_worldFrameId,
-                m_baseFrameId,
-                m_visiblePartPublisher;
-
-    /// Sensor to base transform matrix
-    Eigen::Matrix4f m_sensorToBaseTM;
-
-    /// Base to world transform matrix
-    Eigen::Matrix4f m_baseToWorldTM;
 
     //! Every N-th frame should be processed when including point-cloud.
     int m_numPCFramesProcessed;
@@ -161,31 +127,50 @@ protected:
     //! Current frame counter
     int m_frameCounter;
 
+    //======================================================================================================
+    // Services
+
+    /// Reset service
+    ros::ServiceServer m_serviceReset;
+
 
     //======================================================================================================
     // Plugins
 
+    /// All plugins vector type
+    typedef std::vector<srs::CServerPluginBase * > tVecPlugins;
+
+    /// All plugins
+    tVecPlugins m_plugins;
+
+    /// Call all plugins function
+#define FOR_ALL_PLUGINS( X ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X; } }
+#define FOR_ALL_PLUGINS_PARAM( X, Y ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X(Y); } }
+
     /// Collision map
-    srs::CCMapPlugin m_plugCMapPub;
+    srs::SCMapPluginHolder< srs::COctoMapPlugin > m_plugCMapHolder;
 
     /// Incoming depth points cloud
-    srs::CPointCloudPlugin m_plugInputPointCloud,
-    /// Output depth points cloud - whole octomap
-						m_plugOcMapPointCloud,
-	/// Visible points point cloud
-						m_plugVisiblePointCloud;
+    srs::SPointCloudPluginHolder< srs::COctoMapPlugin > m_plugInputPointCloudHolder,
+                                    /// Output depth points cloud - whole octomap
+                                                        m_plugOcMapPointCloudHolder;
+    /// Visible points point cloud
+    srs::SLimitedPointCloudPluginHolder< srs::COctoMapPlugin > m_plugVisiblePointCloudHolder;
 
     /// Octo map plugin
     srs::COctoMapPlugin m_plugOctoMap;
 
     /// Collision object plugin
-    srs::CCollisionObjectPlugin m_plugCollisionObject;
+    srs::SCollisionObjectPluginHolder< srs::COctoMapPlugin > m_plugCollisionObjectHolder;
 
     /// 2D map plugin
-    srs::CMap2DPlugin m_plugMap2D;
+    srs::SMap2DPluginHolder< srs::COctoMapPlugin > m_plugMap2DHolder;
 
     /// Interactive markers server plugin
     srs::CIMarkersPlugin m_plugIMarkers;
+
+    /// Marker array publisher plugin
+    srs::SMarkerArrayHolder< srs::COctoMapPlugin > m_plugMarkerArrayHolder;
 
 };
 

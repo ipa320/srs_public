@@ -1,12 +1,28 @@
-/**
- * $Id$
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: 06.02.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <but_server/plugins/CollisionObjectPlugin.h>
@@ -23,6 +39,7 @@ srs::CCollisionObjectPlugin::CCollisionObjectPlugin(const std::string & name)
 , m_coPublisherName(COLLISION_OBJECT_PUBLISHER_NAME)
 , m_latchedTopics(false)
 , m_coFrameId(COLLISION_OBJECT_FRAME_ID)
+, m_bConvert( false )
 {
 	m_data = new tData;
 	assert( m_data != 0 );
@@ -71,17 +88,24 @@ void srs::CCollisionObjectPlugin::onFrameStart(const SMapParameters & par)
 
 	tf::StampedTransform ocToCoTf;
 
+	m_bConvert = m_ocFrameId != m_coFrameId;
+
+	/// We need no transformation - frames are the same...
+	if( ! m_bConvert )
+	    return;
+
 	// Get transform
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_coFrameId, m_ocFrameId,
-				par.currentTime, ros::Duration(2.0)); // orig. 0.2
+				par.currentTime, ros::Duration(0.2));
 
 		m_tfListener.lookupTransform(m_coFrameId, m_ocFrameId,
 				par.currentTime, ocToCoTf);
 
 	} catch (tf::TransformException& ex) {
 		ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+		PERROR("Transform error.");
 		return;
 	}
 
@@ -102,7 +126,10 @@ void srs::CCollisionObjectPlugin::handleOccupiedNode(const srs::tButServerOcTree
 {
 	// Transform input point
 	Eigen::Vector3f point( it.getX(), it.getY(), it.getZ() );
-	point = m_ocToCoRot * point + m_ocToCoTrans;
+
+	// Convert point if needed...
+	if( m_bConvert )
+	    point = m_ocToCoRot * point + m_ocToCoTrans;
 
 	// Add shape
 	arm_navigation_msgs::Shape shape;
@@ -122,7 +149,7 @@ void srs::CCollisionObjectPlugin::handleOccupiedNode(const srs::tButServerOcTree
 
 
 
-void srs::CCollisionObjectPlugin::handlePostNodeTraversal(const ros::Time & rostime)
+void srs::CCollisionObjectPlugin::handlePostNodeTraversal(const SMapParameters & mp)
 {
 	invalidate();
 }

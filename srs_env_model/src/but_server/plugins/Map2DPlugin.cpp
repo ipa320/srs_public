@@ -1,12 +1,28 @@
-/**
- * $Id$
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: 06.02.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <but_server/plugins/Map2DPlugin.h>
@@ -76,17 +92,20 @@ void srs::CMap2DPlugin::onFrameStart(const SMapParameters & par)
 
 	tf::StampedTransform ocToMap2DTf;
 
+	m_bConvert = m_ocFrameId != m_map2DFrameId;
+
 	// Get transform
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_map2DFrameId, m_ocFrameId,
-				timestamp, ros::Duration(2.0)); // orig. 0.2
+				timestamp, ros::Duration(0.2));
 
 		m_tfListener.lookupTransform(m_map2DFrameId, m_ocFrameId,
 				timestamp, ocToMap2DTf);
 
 	} catch (tf::TransformException& ex) {
 		ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+		PERROR( "Transform error.");
 		return;
 	}
 
@@ -108,6 +127,7 @@ void srs::CMap2DPlugin::onFrameStart(const SMapParameters & par)
 
 	octomap::point3d minPt(minX, minY, minZ);
 	octomap::point3d maxPt(maxX, maxY, maxZ);
+
 	octomap::OcTreeKey minKey, maxKey, curKey;
 
 	// Try to create key
@@ -126,10 +146,13 @@ void srs::CMap2DPlugin::onFrameStart(const SMapParameters & par)
 	// add padding if requested (= new min/maxPts in x&y):
 	double halfPaddedX = 0.5 * m_minSizeX;
 	double halfPaddedY = 0.5 * m_minSizeY;
+
 	minX = std::min(minX, -halfPaddedX);
 	maxX = std::max(maxX, halfPaddedX);
+
 	minY = std::min(minY, -halfPaddedY);
 	maxY = std::max(maxY, halfPaddedY);
+
 	minPt = octomap::point3d(minX, minY, minZ);
 	maxPt = octomap::point3d(maxX, maxY, maxZ);
 
@@ -147,17 +170,21 @@ void srs::CMap2DPlugin::onFrameStart(const SMapParameters & par)
 
 	ROS_DEBUG("Padded MinKey: %d %d %d / padded MaxKey: %d %d %d", m_paddedMinKey[0], m_paddedMinKey[1],
 			m_paddedMinKey[2], paddedMaxKey[0], paddedMaxKey[1], paddedMaxKey[2]);
+
 	assert(paddedMaxKey[0] >= maxKey[0] && paddedMaxKey[1] >= maxKey[1]);
 
 	m_data->info.width = paddedMaxKey[0] - m_paddedMinKey[0] + 1;
 	m_data->info.height = paddedMaxKey[1] - m_paddedMinKey[1] + 1;
+
 	int mapOriginX = minKey[0] - m_paddedMinKey[0];
 	int mapOriginY = minKey[1] - m_paddedMinKey[1];
+
 	assert(mapOriginX >= 0 && mapOriginY >= 0);
 
 	// might not exactly be min / max of octree:
 	octomap::point3d origin;
 	map.octree.genCoords(m_paddedMinKey, par.treeDepth, origin);
+
 	m_data->info.origin.position.x = origin.x() - par.resolution* 0.5;
 	m_data->info.origin.position.y = origin.y() - par.resolution * 0.5;
 
@@ -217,7 +244,7 @@ void srs::CMap2DPlugin::handleFreeNode(const srs::tButServerOcTree::iterator & i
 }
 
 
-void srs::CMap2DPlugin::handlePostNodeTraversal(const ros::Time & rostime)
+void srs::CMap2DPlugin::handlePostNodeTraversal(const SMapParameters & mp)
 {
 	invalidate();
 }

@@ -1,12 +1,28 @@
-/**
- * $Id$
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: 06.02.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <but_server/plugins/PointCloudPlugin.h>
@@ -14,7 +30,7 @@
 #include <pcl_ros/transforms.h>
 #include <pcl/filters/passthrough.h>
 
-#define POINTCLOUD_CENTERS_PUBLISHER_NAME std::string("/butsrv_pointcloud_centers")
+#define POINTCLOUD_CENTERS_PUBLISHER_NAME std::string("butsrv_pointcloud_centers")
 #define SUBSCRIBER_POINT_CLOUD_NAME std::string("/cam3d/depth/points")
 #define DEFAULT_FRAME_ID std::string("/base_footprint")
 #define BASE_FRAME_ID std::string("/base_footprint")
@@ -128,7 +144,7 @@ void srs::CPointCloudPlugin::handleOccupiedNode(const srs::tButServerOcTree::ite
 	m_data->push_back(pcl::PointXYZ( it.getX(), it.getY(), it.getZ() ));
 }
 
-void srs::CPointCloudPlugin::handlePostNodeTraversal(const ros::Time& rostime)
+void srs::CPointCloudPlugin::handlePostNodeTraversal(const SMapParameters & mp)
 {
 
 //	PERROR("PostNode");
@@ -142,13 +158,14 @@ void srs::CPointCloudPlugin::handlePostNodeTraversal(const ros::Time& rostime)
 		try {
 			// Transformation - to, from, time, waiting time
 			m_tfListener.waitForTransform(m_pcFrameId, m_ocFrameId,
-					rostime, ros::Duration(2.0)); // 0.2
+					mp.currentTime, ros::Duration(0.2));
 
 			m_tfListener.lookupTransform(m_pcFrameId, m_ocFrameId,
-					rostime, ocToPcTf);
+			        mp.currentTime, ocToPcTf);
 
 		} catch (tf::TransformException& ex) {
 			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+			PERROR( "Transform error.");
 			return;
 		}
 
@@ -191,13 +208,14 @@ void srs::CPointCloudPlugin::insertCloudCallback( const sensor_msgs::PointCloud2
 		try {
 			// Transformation - from, to, time, waiting time
 			m_tfListener.waitForTransform(m_pcFrameId, cloud->header.frame_id,
-					cloud->header.stamp, ros::Duration(2.0));
+					cloud->header.stamp, ros::Duration(0.2));
 
 			m_tfListener.lookupTransform(m_pcFrameId, cloud->header.frame_id,
 					cloud->header.stamp, sensorToPcTf);
 
 		} catch (tf::TransformException& ex) {
 			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+			PERROR("Transform error");
 			return;
 		}
 
@@ -219,13 +237,14 @@ void srs::CPointCloudPlugin::insertCloudCallback( const sensor_msgs::PointCloud2
 		try {
 			// Transformation - from, to, time, waiting time
 			m_tfListener.waitForTransform(BASE_FRAME_ID, m_pcFrameId,
-					cloud->header.stamp, ros::Duration(2.0));
+					cloud->header.stamp, ros::Duration(0.2));
 
 			m_tfListener.lookupTransform(BASE_FRAME_ID, m_pcFrameId,
 					cloud->header.stamp, pcToBaseTf);
 
 		} catch (tf::TransformException& ex) {
 			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+			PERROR( "Transform error.");
 			return;
 		}
 

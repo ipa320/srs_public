@@ -1,12 +1,28 @@
-/**
- * $Id$
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
- * Date: 06.02.2011
- *
- * License: BUT OPEN SOURCE LICENSE
- *
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <but_server/plugins/OctoMapPlugin.h>
@@ -18,16 +34,18 @@
 #include <pcl_ros/transforms.h>
 
 #define OCTOMAP_FRAME_ID std::string("/map")
+#define OCTOMAP_PUBLISHER_NAME std::string("butsrv_binary_octomap")
 
 void srs::COctoMapPlugin::setDefaults()
 {
 	// Set octomap parameters
 	m_mapParameters.resolution = 0.05;
 	m_mapParameters.treeDepth = 0;
-	m_mapParameters.probHit = 0.7;
-	m_mapParameters.probMiss = 0.4;
-	m_mapParameters.thresMin = 0.12;
-	m_mapParameters.thresMax = 0.97;
+	m_mapParameters.probHit = 0.7;         // Probability of node, if node is occupied
+	m_mapParameters.probMiss = 0.1;        // Probability of node, if node is free
+	m_mapParameters.thresMin = 0.05;// 0.12;
+	m_mapParameters.thresMax = 0.97; //0.97;
+	m_mapParameters.thresOccupancy = 0.5;
 	m_mapParameters.maxRange = -1.0;
 
 	// Set ground filtering parameters
@@ -35,8 +53,11 @@ void srs::COctoMapPlugin::setDefaults()
 	m_groundFilterDistance = 0.04;
 	m_groundFilterAngle = 0.15;
 	m_groundFilterPlaneDistance = 0.07;
+	m_removeSpecles = false;
 
 	m_mapParameters.frameId = "/map";
+
+	m_bPublishOctomap = true;
 
 }
 
@@ -55,6 +76,7 @@ srs::COctoMapPlugin::COctoMapPlugin(const std::string & name)
 	m_data->octree.setProbMiss(m_mapParameters.probMiss);
 	m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
 	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
+	m_data->octree.setOccupancyThres( m_mapParameters.thresOccupancy );
 	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
 	m_mapParameters.map = m_data;
 }
@@ -96,6 +118,7 @@ srs::COctoMapPlugin::COctoMapPlugin( const std::string & name, const std::string
 
 			// Something is wrong - cannot load data...
 			ROS_ERROR("Could not open requested file %s, exiting.", filename.c_str());
+			PERROR( "Transform error.");
 			exit(-1);
 		}
 	}
@@ -114,6 +137,15 @@ void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("sensor_model/max", m_mapParameters.thresMax, m_mapParameters.thresMax);
 	node_handle.param("max_range", m_mapParameters.maxRange, m_mapParameters.maxRange);
 
+	// Set octomap parameters...
+	{
+	    m_data->octree.setResolution(m_mapParameters.resolution);
+	    m_data->octree.setProbHit(m_mapParameters.probHit);
+	    m_data->octree.setProbMiss(m_mapParameters.probMiss);
+	    m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
+	    m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
+	}
+
 	// Should ground plane be filtered?
 	node_handle.param("filter_ground", m_filterGroundPlane, m_filterGroundPlane);
 
@@ -127,9 +159,15 @@ void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("ground_filter/plane_distance",
 			m_groundFilterPlaneDistance, m_groundFilterPlaneDistance);
 
+	// Octomap publishing topic
+	node_handle.param("octomap_publishing_topic", m_ocPublisherName, OCTOMAP_PUBLISHER_NAME );
+
 	// Advertise services
 	m_serviceResetOctomap = node_handle.advertiseService("reset_octomap",
 			&srs::COctoMapPlugin::resetOctomapCB, this);
+
+	// Create publisher
+	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary>(m_ocPublisherName, 100, m_latchedTopics);
 
 }
 
@@ -160,13 +198,14 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_mapParameters.frameId, cloud.header.frame_id,
-				cloud.header.stamp, ros::Duration(2.0)); // orig. 0.2
+				cloud.header.stamp, ros::Duration(0.2));
 
 		m_tfListener.lookupTransform(m_mapParameters.frameId, cloud.header.frame_id,
 				cloud.header.stamp, cloudToMapTf);
 
 	} catch (tf::TransformException& ex) {
 		ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+		PERROR( "Transform error.");
 		return;
 	}
 
@@ -423,12 +462,21 @@ void srs::COctoMapPlugin::crawl( const ros::Time & currentTime )
 	// Crawl through node
 	for (srs::tButServerOcTree::iterator it = m_data->octree.begin(), end = m_data->octree.end(); it != end; ++it)
 		{
+
+
 			// call general hook:
 			handleNode(it, m_mapParameters);
 
 			// Node is occupied?
 			if (m_data->octree.isNodeOccupied(*it))
 			{
+			    if( m_removeSpecles )
+			    {
+			        if( !isSpeckleNode(it) )
+			        {
+			            handleOccupiedNode(it, m_mapParameters);
+			        }
+			    }else
 					handleOccupiedNode(it, m_mapParameters);
 			} else { // node not occupied => mark as free in 2D map if unknown so far
 
@@ -436,7 +484,7 @@ void srs::COctoMapPlugin::crawl( const ros::Time & currentTime )
 			} // Node is occupied?
 		} // Iterate through octree
 
-	handlePostNodeTraversal(currentTime);
+	handlePostNodeTraversal(m_mapParameters);
 }
 
 /// On octomap crawling start
@@ -467,16 +515,26 @@ void srs::COctoMapPlugin::handleOccupiedNode(const tButServerOcTree::iterator & 
 	m_sigOnOccupiedNode( it, mp );
 }
 
-void srs::COctoMapPlugin::handlePostNodeTraversal(const ros::Time& rostime)
+void srs::COctoMapPlugin::handlePostNodeTraversal(const SMapParameters & mp)
 {
-	m_sigOnPost( rostime );
+	m_sigOnPost( mp );
 }
 
 //! Should plugin publish data?
 bool srs::COctoMapPlugin::shouldPublish()
 {
-	return false;
-	//return( m_publishPointCloud && m_pcPublisher.getNumSubscribers() > 0 );
+	return( m_bPublishOctomap && m_ocPublisher.getNumSubscribers() > 0 );
+}
+
+void srs::COctoMapPlugin::onPublish(const ros::Time & timestamp)
+{
+  octomap_ros::OctomapBinary map;
+  map.header.frame_id = m_mapParameters.frameId;
+  map.header.stamp = timestamp;
+
+  octomap::octomapMapToMsgData(m_data->octree, map.data);
+
+  m_ocPublisher.publish(map);
 }
 
 /// Fill map parameters
@@ -500,4 +558,32 @@ bool srs::COctoMapPlugin::resetOctomapCB(std_srvs::Empty::Request& request,	std_
 	std::cerr << "Reset octomap service called..." << std::endl;
 	reset();
 	return true;
+}
+
+/**
+ * Find if this node is specle
+ * @param it - node iterator
+ * @return true, if this node is specle
+ */
+bool srs::COctoMapPlugin::isSpeckleNode(const tButServerOcTree::iterator & it) const
+{
+    const octomap::OcTreeKey nKey( it.getKey() );
+    octomap::OcTreeKey key;
+
+    bool neighborFound = false;
+    for (key[2] = nKey[2] - 1; !neighborFound && key[2] <= nKey[2] + 1; ++key[2]){
+        for (key[1] = nKey[1] - 1; !neighborFound && key[1] <= nKey[1] + 1; ++key[1]){
+            for (key[0] = nKey[0] - 1; !neighborFound && key[0] <= nKey[0] + 1; ++key[0]){
+                if (key != nKey){
+                    tButServerOcNode* node = m_data->octree.search(key);
+                    if (node && m_data->octree.isNodeOccupied(node)){
+                        // we have a neighbor => break!
+                        neighborFound = true;
+                    }
+                }
+            }
+        }
+    }
+
+    return neighborFound;
 }

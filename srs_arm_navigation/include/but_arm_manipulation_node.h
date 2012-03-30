@@ -1,3 +1,30 @@
+/******************************************************************************
+ * \file
+ *
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
+ * Author: Zdenek Materna (imaterna@fit.vutbr.cz)
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef BUT_ARMNAVIGATION_NODE_H
 #define BUT_ARMNAVIGATION_NODE_H
 
@@ -21,6 +48,27 @@
 
 #include "srs_arm_navigation/ManualArmManipAction.h"
 #include <actionlib/server/simple_action_server.h>
+
+//#include <arm_navigation_msgs/AttachedCollisionObject.h>
+//#include <arm_navigation_msgs/Shape.h>
+
+#define BUT_PREFIX std::string("/but_arm_manip")
+
+#define BUT_SERVICE(topic) BUT_PREFIX + std::string(topic)
+#define BUT_TOPIC(topic) BUT_PREFIX + std::string(topic)
+#define BUT_ACTION(topic) BUT_PREFIX + std::string(topic)
+
+#define SRV_START BUT_SERVICE("/arm_nav_start")
+#define SRV_NEW BUT_SERVICE("/arm_nav_new")
+#define SRV_PLAN BUT_SERVICE("/arm_nav_plan")
+#define SRV_PLAY BUT_SERVICE("/arm_nav_play")
+#define SRV_EXECUTE BUT_SERVICE("/arm_nav_execute")
+#define SRV_RESET BUT_SERVICE("/arm_nav_reset")
+#define SRV_SUCCESS BUT_SERVICE("/arm_nav_success")
+#define SRV_FAILED BUT_SERVICE("/arm_nav_failed")
+
+#define ACT_ARM_MANIP BUT_ACTION("/manual_arm_manip_action")
+
 
 static const std::string VIS_TOPIC_NAME = "planning_scene_visualizer_markers";
 
@@ -124,6 +172,7 @@ public:
   virtual void attachObjectCallback(const std::string& name);
   virtual void selectedTrajectoryCurrentPointChanged( unsigned int new_current_point );
 
+  void createAttachedObj();
 
   bool ArmNavNew(srs_ui_but::ArmNavNew::Request &req, srs_ui_but::ArmNavNew::Response &res);
   bool ArmNavPlan(srs_ui_but::ArmNavPlan::Request &req, srs_ui_but::ArmNavPlan::Response &res);
@@ -138,6 +187,7 @@ public:
   void reset();
 
   ManualArmManipActionServer * action_server_ptr_;
+  tf::TransformListener *tfl_;
 
 protected:
 
@@ -145,6 +195,7 @@ protected:
   unsigned int mpr_id;
   unsigned int traj_id;
   unsigned int filt_traj_id;
+  std::string coll_obj_id;
   bool inited;
 
 private:

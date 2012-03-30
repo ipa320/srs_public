@@ -1,10 +1,28 @@
-/*
- *******************************************************************************
+/******************************************************************************
+ * \file
  *
- * Developed by dcgm-robotics@FIT group
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
- * Date: 9.2.2012
- *******************************************************************************
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: 09/02/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef TELEOPCOBMARKER_H_
@@ -33,6 +51,7 @@ namespace but_cob_teleop
 #define MARKER_DRIVER_NAME "marker_driver"
 #define MARKER_NAVIGATOR_NAME "marker_navigator"
 #define CONTROL_MOVE_NAME "control_move"
+#define CONTROL_STRAFE_NAME "control_strafe"
 #define CONTROL_ROTATE_NAME "control_rotate"
 #define CONTROL_NAVIGATION_NAME "controle_naavigation"
 

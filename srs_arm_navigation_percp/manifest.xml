@@ -1,11 +1,13 @@
 <package>
   <description brief="srs_arm_navigation_percp">
-    This package is derived from the pr2_arm_navigation_perception package. It modifies components developed for PR2 robot and so that you can use it with COB. It allows you to build a collision space representation of the world.
+
+    This package provided by dcgm-robotics@FIT group is derived from the pr2_arm_navigation_perception package. It modifies components developed for PR2 robot so that you can use it with COB. It allows you to build a collision space representation of the world.
+
   </description>
-  <author>Zdenek Materna</author>
-  <license>BUT OPEN SOURCE LICENSE</license>
+  <author>Zdenek Materna, Michal Spanel</author>
+  <license>LGPL</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/pr2_arm_navigation_perception</url>
+  <url>http://ros.org/wiki/but_arm_navigation_percp</url>
 
   <depend package="pr2_machine"/>
 

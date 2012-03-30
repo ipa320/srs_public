@@ -63,6 +63,8 @@ set( SERVER_SOURCES src/but_server/servernode.cpp
                     src/but_server/plugins/CollisionObjectPlugin.cpp
                     src/but_server/plugins/Map2DPlugin.cpp
                     src/but_server/plugins/IMarkersPlugin.cpp
+                    src/but_server/plugins/MarkerArrayPlugin.cpp
+                    src/but_server/plugins/LimitedPointCloudPlugin.cpp
                     )
 
 # Add servernode executable

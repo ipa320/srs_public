@@ -60,6 +60,7 @@ set( DISPLAY_SOURCE_FILES src/but_display/but_display.cpp
                           src/but_display/but_arm_manipulation.cpp
                           src/but_display/but_examplepane.cpp
                           src/but_display/but_distance_visualizer.cpp
+                          src/but_display/but_distance_indicator.cpp
 			  			  src/but_data_fusion/but_cam_display.cpp
 			  			  src/but_display/but_camcast.cpp
 			  			  src/but_display/CRosRttTexture.cpp

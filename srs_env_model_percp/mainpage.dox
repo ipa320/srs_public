@@ -2,9 +2,9 @@
 \mainpage
 \htmlinclude manifest.html
 
-ROS object detection nodes provided by dcgm-robotics@FIT group:
-- Plane fitting
-- BB estimator
+ROS environment perception package provided by dcgm-robotics@FIT group:
+- plane fitting
+- bounding box estimator
 
 <!-- 
 Provide an overview of your package.

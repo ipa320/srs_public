@@ -1,30 +1,28 @@
-/*
- * Copyright (c) 2008, Willow Garage, Inc.
- * All rights reserved.
+/******************************************************************************
+ * \file
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * $Id:$
  *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Willow Garage, Inc. nor the names of its
- *       contributors may be used to endorse or promote products derived from
- *       this software without specific prior written permission.
+ * Copyright (C) Brno University of Technology
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
+ * Author: Vladimir Blahoz
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "but_cam_display.h"
@@ -50,7 +48,7 @@
 
 namespace rviz {
 
-ButCamDisplay::ButCamDisplay(const std::string& name,
+CButCamDisplay::CButCamDisplay(const std::string& name,
 		VisualizationManager* manager) :
 	Display(name, manager), manual_object_(NULL), marker_loaded_(false),
 			image_loaded_(false), marker_sub_ptr_(NULL), marker_subscribed_(
@@ -59,7 +57,7 @@ ButCamDisplay::ButCamDisplay(const std::string& name,
 			image_width_(0), image_height_(0), width_(0), height_(0),
 			position_(Ogre::Vector3::ZERO), orientation_(
 					Ogre::Quaternion::IDENTITY), draw_under_(false) {
-	ROS_DEBUG("ButCamDisplay: constructor");
+	ROS_DEBUG("CButCamDisplay: constructor");
 
 	scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -77,21 +75,23 @@ ButCamDisplay::ButCamDisplay(const std::string& name,
 	setAlpha(0.7f);
 }
 
-ButCamDisplay::~ButCamDisplay() {
+CButCamDisplay::~CButCamDisplay() {
 	unsubscribe();
 	imUnsubscribe();
 
 	clear();
 }
 
-void ButCamDisplay::onEnable() {
+void CButCamDisplay::onEnable() {
+	ROS_DEBUG("CButCamDisplay: onEnable");
 	subscribe();
 	imSubscribe();
 
 	scene_node_->setVisible(true);
 }
 
-void ButCamDisplay::onDisable() {
+void CButCamDisplay::onDisable() {
+	ROS_DEBUG("CButCamDisplay: onDisable");
 	unsubscribe();
 	imUnsubscribe();
 
@@ -99,9 +99,12 @@ void ButCamDisplay::onDisable() {
 	clear();
 }
 
-void ButCamDisplay::synchronise() {
+void CButCamDisplay::synchronise() {
+	ROS_DEBUG("CButCamDisplay: synchronise1");
 	if (marker_subscribed_ && image_subscribed_) {
+		ROS_DEBUG("CButCamDisplay: synchronise2");
 		if (!time_synced_) {
+			ROS_DEBUG("CButCamDisplay: synchronise3");
 			// time-synchronizing both messages with CameraInfo tf transformation
 			time_sync_ptr_
 					= new message_filters::Synchronizer<App_sync_policy>(
@@ -109,16 +112,18 @@ void ButCamDisplay::synchronise() {
 							*image_sub_ptr_);
 			//			time_sync_ptr_ = new message_filters::TimeSynchronizer<srs_ui_but::ButCamMsg, sensor_msgs::Image>(*marker_sub_ptr_,*image_sub_ptr_, 10);
 			time_sync_ptr_->registerCallback(boost::bind(
-					&ButCamDisplay::incoming, this, _1, _2));
+					&CButCamDisplay::incoming, this, _1, _2));
 			time_synced_ = true;
 		} else {
+			ROS_DEBUG("CButCamDisplay: synchronise4");
 			time_sync_ptr_->connectInput(*marker_sub_ptr_, *image_sub_ptr_);
 		}
 	}
+
 }
 
-void ButCamDisplay::subscribe() {
-	ROS_DEBUG("ButCamDisplay: subscribe");
+void CButCamDisplay::subscribe() {
+	ROS_DEBUG("CButCamDisplay: subscribe");
 	if (!isEnabled()) {
 		return;
 	}
@@ -131,18 +136,19 @@ void ButCamDisplay::subscribe() {
 						update_nh_, marker_topic_, 1);
 		marker_subscribed_ = true;
 	}
+
 	synchronise();
 }
 
-void ButCamDisplay::unsubscribe() {
-	ROS_DEBUG("ButCamDisplay: unsubscribe");
+void CButCamDisplay::unsubscribe() {
+	ROS_DEBUG("CButCamDisplay: unsubscribe");
 	if (marker_sub_ptr_ != NULL)
 		marker_sub_ptr_->unsubscribe();
 	marker_subscribed_ = false;
 }
 
-void ButCamDisplay::imSubscribe() {
-	ROS_DEBUG("ButCamDisplay: imSubscribe");
+void CButCamDisplay::imSubscribe() {
+	ROS_DEBUG("CButCamDisplay: imSubscribe");
 	if (!isEnabled()) {
 		return;
 	}
@@ -154,18 +160,19 @@ void ButCamDisplay::imSubscribe() {
 				update_nh_, image_topic_, 1);
 		image_subscribed_ = true;
 	}
+
 	synchronise();
 }
 
-void ButCamDisplay::imUnsubscribe() {
-	ROS_DEBUG("ButCamDisplay: imUnubscribe");
+void CButCamDisplay::imUnsubscribe() {
+	ROS_DEBUG("CButCamDisplay: imUnubscribe");
 	if (image_sub_ptr_ != NULL)
 		image_sub_ptr_->unsubscribe();
-	marker_subscribed_ = false;
+	image_subscribed_ = false;
 }
 
-void ButCamDisplay::setAlpha(float alpha) {
-	ROS_DEBUG("ButCamDisplay: setAlpha");
+void CButCamDisplay::setAlpha(float alpha) {
+	ROS_DEBUG("CButCamDisplay: setAlpha");
 
 	alpha_ = alpha;
 
@@ -191,8 +198,8 @@ void ButCamDisplay::setAlpha(float alpha) {
 	propertyChanged(alpha_property_);
 }
 
-void ButCamDisplay::setDrawUnder(bool under) {
-	ROS_DEBUG("ButCamDisplay: setDrawUnder");
+void CButCamDisplay::setDrawUnder(bool under) {
+	ROS_DEBUG("CButCamDisplay: setDrawUnder");
 
 	draw_under_ = under;
 	if (alpha_ >= 0.9998) {
@@ -211,8 +218,8 @@ void ButCamDisplay::setDrawUnder(bool under) {
 	propertyChanged(draw_under_property_);
 }
 
-void ButCamDisplay::setMarkerTopic(const std::string& topic) {
-	ROS_DEBUG("ButCamDisplay: setMarkerTopic");
+void CButCamDisplay::setMarkerTopic(const std::string& topic) {
+	ROS_DEBUG("CButCamDisplay: setMarkerTopic");
 
 	unsubscribe();
 
@@ -225,7 +232,8 @@ void ButCamDisplay::setMarkerTopic(const std::string& topic) {
 	propertyChanged(marker_topic_property_);
 }
 
-void ButCamDisplay::setImageTopic(const std::string& topic) {
+void CButCamDisplay::setImageTopic(const std::string& topic) {
+	ROS_DEBUG("CButCamDisplay: setImageTopic");
 
 	imUnsubscribe();
 
@@ -237,7 +245,8 @@ void ButCamDisplay::setImageTopic(const std::string& topic) {
 
 	propertyChanged(image_topic_property_);
 }
-void ButCamDisplay::clearMarker() {
+void CButCamDisplay::clearMarker() {
+	ROS_DEBUG("CButCamDisplay: clearMarker");
 	if (marker_loaded_) {
 		scene_manager_->destroyManualObject(manual_object_);
 		manual_object_ = NULL;
@@ -247,8 +256,8 @@ void ButCamDisplay::clearMarker() {
 
 }
 
-void ButCamDisplay::clear() {
-	ROS_DEBUG("ButCamDisplay: clear()");
+void CButCamDisplay::clear() {
+	ROS_DEBUG("CButCamDisplay: clear()");
 
 	if (marker_loaded_) {
 		scene_manager_->destroyManualObject(manual_object_);
@@ -271,7 +280,8 @@ bool validateFloats(const srs_ui_but::ButCamMsg& msg) {
 	return validateFloats(msg.pose);
 }
 
-void ButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
+void CButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
+	ROS_DEBUG("CButCamDisplay: loadImage");
 	//	setStatus(status_levels::Ok, "Image", "Image received");
 
 	image_width_ = image->width;
@@ -334,19 +344,21 @@ void ButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 	Ogre::DataStreamPtr pixel_stream;
 	pixel_stream.bind(new Ogre::MemoryDataStream(pixels, pixels_size));
 	static int tex_count = 0;
+	std::stringstream ss2;
+	ss2 << "CamTexture" << (tex_count - 1);
 	std::stringstream ss;
+	ss.clear();
 	ss << "CamTexture" << tex_count++;
+
 	try {
+		Ogre::TextureManager::getSingleton().remove(ss2.str());
 		texture_ = Ogre::TextureManager::getSingleton().loadRawData(ss.str(),
 				Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 				pixel_stream, image_width_, image_height_, Ogre::PF_B8G8R8,
 				Ogre::TEX_TYPE_2D, 0);
 
 		setStatus(status_levels::Ok, "Image", "Image OK");
-		/*if( !map_status_set )
-		 {
-		 setStatus(status_levels::Ok, "Map", "Map OK");
-		 }*/
+
 	} catch (Ogre::RenderingAPIException&) {
 		Ogre::Image image;
 		pixel_stream->seek(0);
@@ -399,8 +411,8 @@ void ButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 	causeRender();
 
 }
-void ButCamDisplay::load(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
-	ROS_DEBUG("Loading marker");
+void CButCamDisplay::load(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
+	ROS_DEBUG("CButCamDisplay: load");
 
 	setStatus(status_levels::Ok, "Marker", "Marker OK");
 
@@ -507,8 +519,8 @@ void ButCamDisplay::load(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
 	causeRender();
 }
 
-void ButCamDisplay::transformCam() {
-	ROS_DEBUG_NAMED("ButCamDisplay", "transforming cam from frame '%s' to frame '%s'", frame_.c_str(), fixed_frame_.c_str());
+void CButCamDisplay::transformCam() {
+	ROS_DEBUG_NAMED("CButCamDisplay", "transforming cam from frame '%s' to frame '%s'", frame_.c_str(), fixed_frame_.c_str());
 
 	if (!marker_) {
 		return;
@@ -534,19 +546,19 @@ void ButCamDisplay::transformCam() {
 			marker_->scale.z));
 }
 
-void ButCamDisplay::update(float wall_dt, float ros_dt) {
-	//ROS_DEBUG("ButCamDisplay: update");
-	//ROS_DEBUG_NAMED("ButCamDisplay", "update");
+void CButCamDisplay::update(float wall_dt, float ros_dt) {
+	//ROS_DEBUG("CButCamDisplay: update");
+	//ROS_DEBUG_NAMED("CButCamDisplay", "update");
 }
 
-void ButCamDisplay::createProperties() {
-	ROS_DEBUG("ButCamDisplay: createProperties");
+void CButCamDisplay::createProperties() {
+	ROS_DEBUG("CButCamDisplay: createProperties");
 
 	// the name "marker_topic" is residue, when polygon was defined by marker message
 	marker_topic_property_ = property_manager_->createProperty<
 			ROSTopicStringProperty> ("Marker Topic", property_prefix_,
-			boost::bind(&ButCamDisplay::getMarkerTopic, this), boost::bind(
-					&ButCamDisplay::setMarkerTopic, this, _1),
+			boost::bind(&CButCamDisplay::getMarkerTopic, this), boost::bind(
+					&CButCamDisplay::setMarkerTopic, this, _1),
 			parent_category_, this);
 	setPropertyHelpText(marker_topic_property_,
 			"srs_ui_but::ButCamMsg topic to subscribe to.");
@@ -557,9 +569,9 @@ void ButCamDisplay::createProperties() {
 
 	image_topic_property_ = property_manager_->createProperty<
 			ROSTopicStringProperty> ("Image Topic", property_prefix_,
-			boost::bind(&ButCamDisplay::getImageTopic, this), boost::bind(
-					&ButCamDisplay::setImageTopic, this, _1), parent_category_,
-			this);
+			boost::bind(&CButCamDisplay::getImageTopic, this), boost::bind(
+					&CButCamDisplay::setImageTopic, this, _1),
+			parent_category_, this);
 	setPropertyHelpText(image_topic_property_,
 			"sensor_msgs::Image topic to subscribe to.");
 	ROSTopicStringPropertyPtr image_topic_prop = image_topic_property_.lock();
@@ -568,15 +580,15 @@ void ButCamDisplay::createProperties() {
 	image_topic_prop->addLegacyName("Service"); // something of a hack, but should provide reasonable backwards compatibility
 
 	alpha_property_ = property_manager_->createProperty<FloatProperty> (
-			"Alpha", property_prefix_, boost::bind(&ButCamDisplay::getAlpha,
-					this), boost::bind(&ButCamDisplay::setAlpha, this, _1),
+			"Alpha", property_prefix_, boost::bind(&CButCamDisplay::getAlpha,
+					this), boost::bind(&CButCamDisplay::setAlpha, this, _1),
 			parent_category_, this);
 	setPropertyHelpText(alpha_property_,
 			"Amount of transparency to apply to the marker.");
 	draw_under_property_ = property_manager_->createProperty<BoolProperty> (
 			"Draw Behind", property_prefix_, boost::bind(
-					&ButCamDisplay::getDrawUnder, this), boost::bind(
-					&ButCamDisplay::setDrawUnder, this, _1), parent_category_,
+					&CButCamDisplay::getDrawUnder, this), boost::bind(
+					&CButCamDisplay::setDrawUnder, this, _1), parent_category_,
 			this);
 	setPropertyHelpText(
 			draw_under_property_,
@@ -584,80 +596,80 @@ void ButCamDisplay::createProperties() {
 
 	resolution_property_ = property_manager_->createProperty<FloatProperty> (
 			"Resolution", property_prefix_, boost::bind(
-					&ButCamDisplay::getResolution, this),
+					&CButCamDisplay::getResolution, this),
 			FloatProperty::Setter(), parent_category_, this);
 	setPropertyHelpText(resolution_property_,
 			"Resolution of the image. (not editable)");
 	width_property_ = property_manager_->createProperty<FloatProperty> (
 			"Marker Width", property_prefix_, boost::bind(
-					&ButCamDisplay::getWidth, this), FloatProperty::Setter(),
+					&CButCamDisplay::getWidth, this), FloatProperty::Setter(),
 			parent_category_, this);
 	setPropertyHelpText(width_property_,
 			"Width of the marker, in meters. (not editable)");
 	height_property_ = property_manager_->createProperty<FloatProperty> (
 			"Marker Height", property_prefix_, boost::bind(
-					&ButCamDisplay::getHeight, this), FloatProperty::Setter(),
+					&CButCamDisplay::getHeight, this), FloatProperty::Setter(),
 			parent_category_, this);
 	setPropertyHelpText(height_property_,
 			"Height of the marker, in meters. (not editable)");
 
 	image_width_property_ = property_manager_->createProperty<IntProperty> (
 			"Image Width", property_prefix_, boost::bind(
-					&ButCamDisplay::getImageWidth, this),
+					&CButCamDisplay::getImageWidth, this),
 			IntProperty::Setter(), parent_category_, this);
 	setPropertyHelpText(image_width_property_,
 			"Width of the camera image, in pixels. (not editable)");
 	image_height_property_ = property_manager_->createProperty<IntProperty> (
 			"Image Height", property_prefix_, boost::bind(
-					&ButCamDisplay::getImageHeight, this),
+					&CButCamDisplay::getImageHeight, this),
 			IntProperty::Setter(), parent_category_, this);
 	setPropertyHelpText(image_height_property_,
 			"Height of the camera image, in pixels. (not editable)");
 
 	position_property_ = property_manager_->createProperty<Vector3Property> (
 			"Position", property_prefix_, boost::bind(
-					&ButCamDisplay::getPosition, this),
+					&CButCamDisplay::getPosition, this),
 			Vector3Property::Setter(), parent_category_, this);
 	setPropertyHelpText(position_property_,
 			"Position of the middle of the marker, in meters. (not editable)");
 	orientation_property_ = property_manager_->createProperty<
 			QuaternionProperty> ("Orientation", property_prefix_, boost::bind(
-			&ButCamDisplay::getOrientation, this),
+			&CButCamDisplay::getOrientation, this),
 			QuaternionProperty::Setter(), parent_category_, this);
 	setPropertyHelpText(orientation_property_,
 			"Orientation of the marker. (not editable)");
 }
 
-void ButCamDisplay::fixedFrameChanged() {
-	ROS_DEBUG("ButCamDisplay: fixedFrameChanged");
+void CButCamDisplay::fixedFrameChanged() {
+	ROS_DEBUG("CButCamDisplay: fixedFrameChanged");
 	transformCam();
 }
 
-void ButCamDisplay::reset() {
-	ROS_DEBUG("ButCamDisplay: reset");
+void CButCamDisplay::reset() {
+	ROS_DEBUG("CButCamDisplay: reset");
 	Display::reset();
 
 	clear();
-	// Force resubscription so that the map will be re-sent
+	// Force resubscription so that the marker will be re-sent
 	setMarkerTopic(marker_topic_);
 	setImageTopic(image_topic_);
 }
 
-void ButCamDisplay::incoming(const srs_ui_but::ButCamMsg::ConstPtr& msg,
+void CButCamDisplay::incoming(const srs_ui_but::ButCamMsg::ConstPtr& msg,
 		const sensor_msgs::Image::ConstPtr& image) {
-	ROS_DEBUG("incoming synchronized");
+	ROS_DEBUG("CButCamDisplay: incoming");
 	load(msg);
 	loadImage(image);
 }
 
-void ButCamDisplay::incomingMarker(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
-	ROS_DEBUG_NAMED("ButCamDisplay", "incoming marker");
+void CButCamDisplay::incomingMarker(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
+	ROS_DEBUG_NAMED("CButCamDisplay", "incoming marker");
 
 	load(msg);
 }
 
-void ButCamDisplay::incomingImage(const sensor_msgs::Image::ConstPtr& image) {
-	ROS_DEBUG_NAMED("ButCamDisplay", "incoming image");
+void CButCamDisplay::incomingImage(const sensor_msgs::Image::ConstPtr& image) {
+	ROS_DEBUG_NAMED("CButCamDisplay", "incoming image");
 
 	loadImage(image);
 }

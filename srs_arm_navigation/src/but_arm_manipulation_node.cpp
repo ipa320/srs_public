@@ -1,7 +1,32 @@
+/******************************************************************************
+ * \file
+ *
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
+ * Author: Zdenek Materna (imaterna@fit.vutbr.cz)
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "but_arm_manipulation_node.h"
 
-// TODO srv arm_nav_success, arm_nav_failed
 
 using namespace collision_space;
 using namespace kinematics_msgs;
@@ -15,6 +40,15 @@ using namespace trajectory_msgs;
 using namespace planning_scene_utils;
 using namespace ros::param;
 
+// TODO: pridani znameho (detekovaneho) objektu -> asi budu muset z GenericState volat service, který to tady provede, mesh ulozit do docasneho souboru...
+//  createMeshObject / createCollisionObject
+
+
+
+// TODO: controllerDoneCallback / armHasStoppedMoving -> zkusit použít tohle - sledování stavu provádění trajektorie
+
+
+
 planning_scene_utils::PlanningSceneParameters params;
 
 CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSceneParameters& params) : PlanningSceneEditor(params)
@@ -27,6 +61,9 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
 
 CArmManipulationEditor::~CArmManipulationEditor() {
 
+  if (action_server_ptr_!=NULL) delete action_server_ptr_;
+
+  if (tfl_!=NULL) delete tfl_;
 
 }
 
@@ -57,9 +94,8 @@ void CArmManipulationEditor::filterCallback(arm_navigation_msgs::ArmNavigationEr
 void CArmManipulationEditor::attachObjectCallback(const std::string& name) {};
 void CArmManipulationEditor::selectedTrajectoryCurrentPointChanged( unsigned int new_current_point ) {};
 
-
-
 bool CArmManipulationEditor::ArmNavNew(srs_ui_but::ArmNavNew::Request &req, srs_ui_but::ArmNavNew::Response &res) {
+
 
     planning_scene_id = createNewPlanningScene();
 
@@ -89,6 +125,127 @@ bool CArmManipulationEditor::ArmNavNew(srs_ui_but::ArmNavNew::Request &req, srs_
 
    if (action_server_ptr_!=NULL)
      action_server_ptr_->srv_new();
+
+   ros::Time now;
+   now = ros::Time::now();
+
+   std::string target = "/base_link";
+
+   // TODO: createCollisionObject + attachCollisionObject -> vytvorit utvar pripojeny k ruce (gripper)
+   geometry_msgs::PoseStamped pose;
+   pose.header.frame_id = "/arm_7_link";
+   //pose.header.stamp = ros::Time(ros::WallTime::now().toSec());
+   pose.header.stamp = now;
+   //pose.header.stamp = ros::Time(0);
+   pose.pose.position.x = 0;
+   pose.pose.position.y = 0;
+   pose.pose.position.z = 0.2;
+   pose.pose.orientation.x = 0;
+   pose.pose.orientation.y = 0;
+   pose.pose.orientation.z = 0;
+   pose.pose.orientation.w = 1;
+
+   /*if (ros::Time::isSimTime()) {
+
+     ROS_INFO("Sim time detected. We will sleep for some time (to solve tf issue).");
+
+     ros::Duration sl;
+     sl.sec = 2;
+     sl.sleep();
+
+   }*/
+
+   bool transf = false;
+
+   //ros::spinOnce(); // just experiment...
+
+   ROS_INFO("Waiting for transformation between %s and %s",pose.header.frame_id.c_str(),target.c_str());
+   try {
+
+         if (tfl_->waitForTransform(target, pose.header.frame_id, now, ros::Duration(2.0))) {
+
+           tfl_->transformPose(target,pose,pose);
+
+         } else {
+
+           pose.header.stamp = ros::Time(0);
+           tfl_->transformPose(target,pose,pose);
+           ROS_WARN("Using latest transform available, may be wrong.");
+
+         }
+
+         transf = true;
+
+    }
+
+       // In case of absence of transformation path
+       catch(tf::TransformException& ex){
+           std::cerr << "Transform error: " << ex.what() << std::endl;
+           transf = false;
+       }
+
+
+   if (transf) {
+
+     ROS_INFO("Transformation succeeded");
+
+     std::string name = "gripper";
+
+     PlanningSceneEditor::GeneratedShape shape;
+
+     shape = PlanningSceneEditor::Cylinder;
+
+     std_msgs::ColorRGBA color;
+
+     color.r = 1.0;
+     color.g = 0;
+     color.b = 0;
+     color.a = 0.25;
+
+     coll_obj_id = "";
+     coll_obj_id = createCollisionObject(name,
+                           pose.pose,
+                           shape,
+                           0.2,
+                           0.2,
+                           0.3,
+                           color);
+
+     if (coll_obj_id!="") {
+
+       std::vector<std::string> links;
+
+       // TODO move to configuration file
+       links.push_back("sdh_palm_link");
+       links.push_back("sdh_grasp_link");
+       links.push_back("sdh_tip_link");
+
+       links.push_back("sdh_finger_21_link");
+       links.push_back("sdh_finger_22_link");
+       links.push_back("sdh_finger_23_link");
+
+       links.push_back("sdh_finger_11_link");
+       links.push_back("sdh_finger_12_link");
+       links.push_back("sdh_finger_13_link");
+
+       links.push_back("sdh_thumb_1_link");
+       links.push_back("sdh_thumb_2_link");
+       links.push_back("sdh_thumb_3_link");
+
+       attachCollisionObject(coll_obj_id,
+                             "arm_7_link",
+                             links);
+
+       //changeToAttached(name);
+
+
+     } else {
+
+       ROS_ERROR("Gripper collision object was not created successfully");
+
+     }
+
+   } // if transf
 
   return true;
 }
@@ -166,6 +323,8 @@ bool CArmManipulationEditor::ArmNavExecute(srs_ui_but::ArmNavExecute::Request &r
 
   reset();
 
+  deleteCollisionObject(coll_obj_id);
+
   res.completed = true;
 
   if (action_server_ptr_!=NULL)
@@ -178,6 +337,10 @@ bool CArmManipulationEditor::ArmNavReset(srs_ui_but::ArmNavReset::Request &req, 
 
 
   reset();
+
+
+  //std::string name = "gripper";
+  deleteCollisionObject(coll_obj_id);
 
   res.completed = true;
 
@@ -249,7 +412,7 @@ void ManualArmManipActionServer::executeCB(const srs_arm_navigation::ManualArmMa
   timeout_ = ros::Time::now();
   state_ = S_NONE;
 
-  while(!ros::service::exists("arm_nav_start",true)) {
+  while(!ros::service::exists(SRV_START,true)) {
 
     ROS_INFO("Waiting for arm_nav_start service");
     r5.sleep();
@@ -270,7 +433,7 @@ void ManualArmManipActionServer::executeCB(const srs_arm_navigation::ManualArmMa
 
     }
 
-    ros::service::call("arm_nav_start",srv_start);
+    ros::service::call(SRV_START,srv_start);
 
     inited_ = true;
 
@@ -485,20 +648,22 @@ int main(int argc, char** argv)
 
       ROS_INFO("Advertising services");
       ros::NodeHandle n;
-      ros::ServiceServer service_new = n.advertiseService("arm_nav_new", &CArmManipulationEditor::ArmNavNew,ps_editor);
-      ros::ServiceServer service_plan = n.advertiseService("arm_nav_plan", &CArmManipulationEditor::ArmNavPlan,ps_editor);
-      ros::ServiceServer service_play = n.advertiseService("arm_nav_play", &CArmManipulationEditor::ArmNavPlay,ps_editor);
-      ros::ServiceServer service_execute = n.advertiseService("arm_nav_execute", &CArmManipulationEditor::ArmNavExecute,ps_editor);
-      ros::ServiceServer service_reset = n.advertiseService("arm_nav_reset", &CArmManipulationEditor::ArmNavReset,ps_editor);
+      ros::ServiceServer service_new = n.advertiseService(SRV_NEW, &CArmManipulationEditor::ArmNavNew,ps_editor);
+      ros::ServiceServer service_plan = n.advertiseService(SRV_PLAN, &CArmManipulationEditor::ArmNavPlan,ps_editor);
+      ros::ServiceServer service_play = n.advertiseService(SRV_PLAY, &CArmManipulationEditor::ArmNavPlay,ps_editor);
+      ros::ServiceServer service_execute = n.advertiseService(SRV_EXECUTE, &CArmManipulationEditor::ArmNavExecute,ps_editor);
+      ros::ServiceServer service_reset = n.advertiseService(SRV_RESET, &CArmManipulationEditor::ArmNavReset,ps_editor);
 
-      ros::ServiceServer service_success = n.advertiseService("arm_nav_success", &CArmManipulationEditor::ArmNavSuccess,ps_editor);
-      ros::ServiceServer service_failed = n.advertiseService("arm_nav_failed", &CArmManipulationEditor::ArmNavFailed,ps_editor);
+      ros::ServiceServer service_success = n.advertiseService(SRV_SUCCESS, &CArmManipulationEditor::ArmNavSuccess,ps_editor);
+      ros::ServiceServer service_failed = n.advertiseService(SRV_FAILED, &CArmManipulationEditor::ArmNavFailed,ps_editor);
 
       ros::Timer timer1 = n.createTimer(ros::Duration(0.01), &CArmManipulationEditor::spin_callback,ps_editor);
 
-      ManualArmManipActionServer act_server("manual_arm_manip_action");
+      ManualArmManipActionServer act_server(ACT_ARM_MANIP);
 
       ps_editor->action_server_ptr_ = &act_server;
+
+      ps_editor->tfl_ = new tf::TransformListener();
 
       ROS_INFO("Spinning");
 

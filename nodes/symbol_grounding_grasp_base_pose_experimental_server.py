@@ -1,15 +1,4 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('srs_symbolic_grounding')
-
-from srs_symbolic_grounding.srv import SymbolGroundingGraspBasePoseExperimental
-from srs_symbolic_grounding.msg import *
-from std_msgs.msg import *
-from geometry_msgs.msg import *
-import rospy
-import math
-
-import tf
-from tf.transformations import euler_from_quaternion
 
 #################################################################
 ##\file
@@ -23,7 +12,7 @@ from tf.transformations import euler_from_quaternion
 # \note
 # Project name: care-o-bot
 # \note
-# ROS stack name: srs
+# ROS stack name: srs_public
 # \note
 # ROS package name: srs_symbolic_grounding
 #
@@ -66,6 +55,20 @@ from tf.transformations import euler_from_quaternion
 # If not, see <http://www.gnu.org/licenses/>.
 #
 #################################################################
+
+
+import roslib; roslib.load_manifest('srs_symbolic_grounding')
+
+from srs_symbolic_grounding.srv import SymbolGroundingGraspBasePoseExperimental
+from srs_symbolic_grounding.msg import *
+from std_msgs.msg import *
+from geometry_msgs.msg import *
+import rospy
+import math
+
+import tf
+from tf.transformations import euler_from_quaternion
+
 '''
 def getWorkspaceOnMap():
 	print 'test get all workspace (furnitures basically here) from map'

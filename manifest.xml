@@ -1,11 +1,11 @@
 <package>
   <description brief="srs_symbolic_grounding">
 
-     srs_symbolic_grounding
+     This package provide symbol grounding services for the DM.
 
   </description>
-  <author>beisheng</author>
-  <license>BSD</license>
+  <author>Beisheng Liu</author>
+  <license></license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_symbolic_grounding</url>
   <depend package="std_msgs"/>

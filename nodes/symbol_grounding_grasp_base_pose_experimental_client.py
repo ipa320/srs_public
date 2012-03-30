@@ -12,7 +12,7 @@
 # \note
 # Project name: care-o-bot
 # \note
-# ROS stack name: srs
+# ROS stack name: srs_public
 # \note
 # ROS package name: srs_symbolic_grounding
 #

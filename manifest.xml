@@ -5,7 +5,7 @@
 
   </description>
   <author>Beisheng Liu</author>
-  <license></license>
+  <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_symbolic_grounding</url>
   <depend package="std_msgs"/>

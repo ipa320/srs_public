@@ -1,11 +1,11 @@
 <package>
   <description brief="srs_knowledge">
 
-     srs_knowledge
+     srs_knowledge is a ros package handling the task planning at the symbolic level in the srs project. 
 
   </description>
   <author>Ze Ji</author>
-  <license>BSD</license>
+  <license>LGPL</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_knowledge</url>
   <depend package="roslib"/>

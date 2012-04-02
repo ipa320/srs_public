@@ -1,5 +1,3 @@
-# this file is originally leveraged from the KnowRob project. 
-# The license will remain the same as the original file.
 
 macro(fix_ros_destination_path var)
   # This macro iterates over all its parameters which should be

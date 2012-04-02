@@ -393,19 +393,50 @@ public class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new MoveTask(request.content, null);
-	    System.out.println("Created CurrentTask " + "move " + request.content);
+
+	    try{
+		if(request.parameters.size() == 0) {
+		    currentTask = new MoveTask(request.content, null);
+		    System.out.println("Created CurrentTask " + "move " + request.content);
+		}
+		else {	
+		    currentTask = new MoveTask((String)request.parameters.get(0), null);
+		    System.out.println("Created CurrentTask " + "move " + (String)request.parameters.get(0));	    
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
+	    
 	}
 	else if(request.task.equals("get")){
-	    
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 
-	    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, nodeHandle);
-	    currentTask = (Task)got;
-	    System.out.println("Created CurrentTask " + "get " + request.content);	    
+	    try{
+		if(request.parameters.size() == 0) {
+
+		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		    GetObjectTask got = new GetObjectTask(request.task, request.content);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "get " + request.content);	    
+		}
+		else {	
+		    GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "get " + request.parameters.get(0));	    
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
@@ -419,27 +450,81 @@ public class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    SearchObjectTask got = new SearchObjectTask(request.task, request.content, nodeHandle);
-	    currentTask = (Task)got;
-	    System.out.println("Created CurrentTask " + "search " + request.content);	    
+	    try{
+		if(request.parameters.size() == 0) {
+		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "search " + request.content);	    
+		}
+		else {	
+		    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "search " + request.content);	    
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
+
 	}
 	else if(request.task.equals("fetch")){
 	    
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-
-	    FetchObjectTask got = new FetchObjectTask(request.task, request.content, request.userPose, nodeHandle);
-	    currentTask = (Task)got;
-	    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
+	    try{
+		if(request.parameters.size() == 0) {
+		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		    FetchObjectTask got = new FetchObjectTask(request.task, request.content, request.userPose);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
+		}
+		else if (request.parameters.size() == 2) {	
+		    FetchObjectTask got = new FetchObjectTask(request.task, request.parameters.get(0), request.parameters.get(1));
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "fetch " + request.parameters.get(0) + " to " + request.parameters.get(1));	    
+		}
+		else {
+		    currentTask = null;
+		    res.result = 1;
+		    res.description = "No action";
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
 	}
 	else if(request.task.equals("deliver")){
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, nodeHandle);
-	    currentTask = (Task)got;
-	    System.out.println("Created CurrentTask " + "search " + request.content);	    
+	    try{
+		if(request.parameters.size() == 0) {
+		    
+		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		    GetObjectTask got = new GetObjectTask(request.task, request.content);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "get " + request.content);	    
+		}
+		else {	
+		    GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "get " + request.content);	    
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
 	}
 	else if(request.task.equals("charging")) {
 	    if(ontoDB == null) {

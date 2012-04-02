@@ -73,14 +73,15 @@ import ros.communication.*;
 
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    public GetObjectTask(String taskType, String targetContent, NodeHandle n) 
+    public GetObjectTask(String taskType, String targetContent) 
     {	
-	this.nodeHandle = n;
+	//this.nodeHandle = n;
 	//this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);
     }
 
+    @Override
     protected boolean constructTask() {
 	return createGetObjectTask();
     }
@@ -208,7 +209,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return actionList;
     }
     
-    
+    @Override
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
      
 	System.out.println("===> Get Next CUACTION -- from GetObjectTask.java");

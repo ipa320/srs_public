@@ -1,0 +1,4 @@
+int32 object_id
+---
+srs_msgs/GraspConfiguration[] grasp_configuration
+---

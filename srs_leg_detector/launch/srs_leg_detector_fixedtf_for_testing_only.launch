@@ -1,0 +1,16 @@
+<launch>
+
+    <!-- set tf set tf -->
+       <node pkg="tf" type="static_transform_publisher"     name="base_footprint_broadcaster" args="1 0 0 0 0 0 /map /base_footprint 400"/>
+
+
+       <node pkg="tf" type="static_transform_publisher"     name="base_link_broadcaster" args="0 0 0 0 0 0 /base_footprint /base_link 400"/>
+
+       <node pkg="tf" type="static_transform_publisher"     name="base_laser_front_link_broadcaster" args="0 0 0 0 0 0 /base_link /base_laser_front_link 400"/>
+
+        <node pkg="tf" type="static_transform_publisher"     name="base_laser_rear_link_broadcaster" args="0 0 0 0 0 0 /base_link /base_laser_rear_link 400"/>
+
+
+  <node pkg="srs_leg_detector" type="srs_leg_detector" name="srs_leg_detector" args="scan:=base_scan $(find srs_leg_detector)/config/trained_leg_detector.yaml" output="screen"/>
+</launch>
+

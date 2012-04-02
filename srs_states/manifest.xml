@@ -1,0 +1,27 @@
+<package>
+  <description brief="srs_states">
+
+     srs_states
+
+  </description>
+  <author>Georg Arbeiter</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_states</url>
+  <depend package="smach"/>
+  <depend package="cob_script_server"/>
+  <depend package="cob_2dnav"/>
+  <depend package="cob_linear_nav"/>
+  <depend package="cob_mmcontroller"/>
+  <depend package="cob_manipulator"/>
+  <depend package="cob_tray_sensors"/>
+  <depend package="cob_object_detection_msgs"/>
+  <depend package="cob_object_detection_fake"/>
+  <depend package="gazebo"/>
+  <depend package="cob_3d_mapping_msgs"/>
+  <depend package="kinematics_msgs"/>
+  <depend package="srs_object_verification"/>
+  <!--depend package="srs_grasping"/-->
+</package>
+
+

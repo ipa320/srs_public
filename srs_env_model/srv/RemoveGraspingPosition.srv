@@ -1,0 +1,3 @@
+string name                         # object's name
+uint8 pos_id                        # position id
+--- 

@@ -1,0 +1,26 @@
+<package>
+  <description brief="srs_scenarios">
+
+     srs_scenarios
+
+  </description>
+  <author>Renxi Qiu</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_scenarios</url>
+  <depend package="cob_script_server"/>
+  <depend package="srs_knowledge"/>
+  <!--depend package="rosjava_jni"/-->
+  <depend package="srs_decision_making"/>
+  <!--depend package="srs_decision_making_experimental"/-->
+  <depend package="sound_play"/>
+  <depend package="cob_object_detection_msgs"/>
+  <depend package="cob_object_detection_fake"/>
+  <depend package="cob_3d_mapping_msgs"/>
+  <depend package="cob_3d_mapping_pipeline_fake"/>
+  <depend package="cob_bringup_sim"/>
+  <depend package="cob_2dnav"/>
+  <depend package="cob_linear_nav"/>
+</package>
+
+

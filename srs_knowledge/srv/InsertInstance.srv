@@ -1,0 +1,17 @@
+# string map
+string objectName
+string objectClass
+
+string houseHoldId
+
+## optional. only use when you know exactly what you are doing
+string classURI
+string objectURI
+
+---
+
+# if -1, failed to insert for unexpected reasons.
+# 0: successful
+# 1: duplicated entry exists
+# 2: class does not exist
+int32 status

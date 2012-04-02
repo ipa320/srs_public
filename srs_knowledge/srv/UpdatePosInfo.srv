@@ -1,0 +1,16 @@
+#updating positional information of an object
+
+string objectName
+
+# object ID
+uint32 hhObjectID
+# object pose
+SRSSpatialInfo spatialInfo
+# geometry_msgs/Pose newPose
+# Time stamp for the object
+# time lastseenTime
+
+string objectURI  # optional, use it only if you know what you are doing
+
+---
+bool success

@@ -1,0 +1,17 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+ROS dynamic environment model provided by dcgm-robotics@FIT group:
+- global 3D map based on OctoMap library
+- GUI primitives for HRI based on Interactive Markers
+
+<!--
+\section xyz ...
+
+\subsection xyz ...
+-->
+
+
+*/
+

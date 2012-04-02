@@ -1,0 +1,13 @@
+#Time stamp for the period
+#duration period # if empty then all the period
+
+string map
+
+---
+#list of object ID for possible object in current map
+
+string[] objects
+string[] classesOfObjects
+string[] spatialRelation       # e.g. aboveOf, under, behind etc
+string[] spatialRelatedObject  # e.g. Tray, etc 
+string[] houseHoldId

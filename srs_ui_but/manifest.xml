@@ -1,0 +1,41 @@
+<package>
+  <description brief="srs_ui_but">
+
+    ROS visualization tools provided by dcgm-robotics@FIT group.
+
+  </description>
+  <author>Vit Stancl, Michal Spanel</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/but_ui</url>
+
+  <depend package="roscpp"/>
+  <depend package="visualization_msgs"/>
+  <depend package="interactive_markers"/>
+  <depend package="std_msgs"/>
+  <depend package="rviz"/>
+  <depend package="ogre"/>
+  <depend package="srs_env_model"/>
+  <!--<depend package="srs_msgs"/>-->
+  <depend package="ogre_tools"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="message_filters"/>
+  <depend package="cob_script_server"/>
+  <depend package="actionlib"/>
+  <depend package="actionlib_msgs"/>
+
+<!--export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros"/>
+    <cpp os="osx" cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,-L${prefix}lib -lrosthread -framework CoreServices"/>
+  </export-->
+
+  <export>
+    <!--<cpp cflags="-I${prefix}/srv_gen/cpp/include" />-->
+    <rviz plugin="${prefix}/lib/but_gui.yaml"/>
+  </export>
+
+</package>
+
+

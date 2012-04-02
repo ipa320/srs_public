@@ -1,0 +1,25 @@
+<package>
+  <description brief="srs_env_model_msgs">
+
+    Shared ROS messages definition provided by dcgm-robotics@FIT group.
+
+  </description>
+  <author>Vit Stancl</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/but_env_model_msgs</url>
+
+  <depend package="nav_msgs"/>
+  <depend package="arm_navigation_msgs"/>
+
+  <!--export>
+    <cpp cflags="-I${prefix}/include -I${prefix}/msg/cpp" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lfeatures_2d" />
+  </export> -->
+
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros"/>
+    <cpp os="osx" cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,-L${prefix}lib -lrosthread -framework CoreServices"/>
+  </export>
+
+</package>
+

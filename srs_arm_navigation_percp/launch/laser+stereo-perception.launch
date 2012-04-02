@@ -1,0 +1,79 @@
+<launch>
+  <arg name="use_right_arm" default="true" />
+  <arg name="use_left_arm" default="true" />
+
+  <arg if="$(arg use_right_arm)"      name="right_arm_text" value="right" />
+  <arg unless="$(arg use_right_arm)"  name="right_arm_text" value="" />
+  <arg if="$(arg use_left_arm)"       name="left_arm_text" value="left" />
+  <arg unless="$(arg use_left_arm)"   name="left_arm_text" value="" />
+  <arg name="arm_config" value="$(arg right_arm_text)_$(arg left_arm_text)" />
+
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
+  
+  <!-- send additional description parameters -->
+  <include file="$(find pr2_arm_navigation_config)/launch/pr2_planning_environment.launch" />
+
+  <node pkg="pr2_mechanism_controllers" type="send_periodic_cmd_srv.py" name="laser_tilt_controller_3dnav_params" args="laser_tilt_controller linear 2 .75 .25" />
+
+  <node name="pr2_arm_navigation_perception_change_narrow_stereo_params_speckle" pkg="dynamic_reconfigure" type="dynparam" 
+    args="set /narrow_stereo_textured/narrow_stereo_proc speckle_size 1000" />
+
+  <!-- convert tilt laser scan to pointcloud -->
+  <node machine="c2" pkg="laser_filters" type="scan_to_cloud_filter_chain" output="screen" name="scan_to_cloud_filter_chain_tilt_laser">
+    <remap from="scan" to="/tilt_scan"/>
+    <remap from="cloud_filtered" to="/tilt_scan_cloud"/>
+    <param name="target_frame" type="string" value="base_footprint"/>
+    <rosparam command="load" file="$(find pr2_arm_navigation_perception)/config/shadow_filter.yaml" />
+  </node>
+
+  <node pkg="point_cloud_converter" name="point_cloud_converter_preself" type="point_cloud_converter">
+        <remap from="/points_in" to="/tilt_scan_cloud" />
+        <remap from="/points2_out" to="/tilt_scan_cloud2" />
+  </node>
+
+  <!-- self filter laser scans -->
+  <node pkg="robot_self_filter" type="self_filter" respawn="true" name="laser_self_filter" output="screen">
+     <remap from="cloud_in" to="/tilt_scan_cloud2" />
+     <remap from="cloud_out" to="/tilt_scan_cloud_filtered2" />
+     <param name="sensor_frame" type="string" value="laser_tilt_link" />        
+     <param name="subsample_value" type="double" value=".01"/>
+     <rosparam command="load" file="$(find pr2_arm_navigation_perception)/config/self_filter_$(arg arm_config).yaml" />
+  </node>
+
+  <!-- self filter stereo points -->
+  <node pkg="robot_self_filter" type="self_filter" respawn="true" name="stereo_self_filter" output="screen">
+     <remap from="cloud_in" to="/narrow_stereo_textured/points2" />
+     <remap from="cloud_out" to="/narrow_stereo_textured/points2_filtered" />
+     
+     <param name="subsample_value" type="double" value=".02"/>
+     <rosparam command="load" file="$(find pr2_arm_navigation_perception)/config/self_filter_$(arg arm_config).yaml" />
+  </node>
+
+  <!-- attached_object filter stereo points -->
+  <node pkg="planning_environment" type="filter_attached_objects" name="filter_attached_objects_stereo" output="screen">
+    <remap from="cloud_in" to="/narrow_stereo_textured/points2_filtered" />
+    <remap from="cloud_out" to="/narrow_stereo_textured/points2_filtered_attached" />
+    <param name="sensor_frame" type="string" value="narrow_stereo_optical_frame" />			
+  </node>
+
+  <node pkg="collider" type="collider_node" name="collider_node" respawn="true" output="screen">
+     <param name="fixed_frame" type="string" value="base_link" />
+     <param name="resolution" type="double" value="0.025" />
+     <param name="max_range" type="double" value="2.5" />
+     <param name="publish_static_over_dynamic_map" value="true" />
+     <param name="sensor_model_hit" value= "0.8" />
+     <param name="sensor_model_miss" value= "0.31" />
+     <param name="sensor_model_min" value= "0.12" />
+     <param name="sensor_model_max" value= "0.95" />   
+
+     <remap from="collision_map_out" to="collision_map_occ" />
+     <remap from="point_cloud_out" to="octomap_point_cloud" />
+
+     <rosparam command="load" file="$(find pr2_arm_navigation_perception)/config/collision_map_sources_laser+stereo.yaml"/>
+   
+     <!-- self filtering links -->
+     <rosparam command="load" file="$(find pr2_arm_navigation_perception)/config/self_filter_$(arg arm_config).yaml" />
+ 
+  </node>
+
+</launch>

@@ -1,0 +1,12 @@
+# string map
+string objectName
+
+## optional. only use when you know exactly what you are doing
+string objectURI
+
+---
+
+# if -1, failed to delete for unexpected reasons.
+# 0: successful
+# 1: object does not exist
+int32 status

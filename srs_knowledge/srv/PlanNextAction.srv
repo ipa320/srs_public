@@ -1,0 +1,21 @@
+#input: command + target
+
+int32 sessionId
+
+# 3 tuple state representing three action elements in each CUAction. 
+# 0: success 1: fail, 2: n/a, or others. 
+# e.g. if MoveAction sucess, PerceptionAction fail, GraspAction N/A
+# then stateLastAction = [0, 1, 2]
+#int32[] stateLastAction      # to be deprecated
+
+# 0: success 1: fail, 2: n/a, or others. 
+int32 resultLastAction
+
+### for action "detection", 
+### feedback: array in the order of: action-type-"detect", x, y, z, qx, qy, qz, w, "object class name"-e.g. "MilkBox" (length 9)  
+string[] genericFeedBack
+
+---
+
+# int16 sessionId
+CUAction nextAction

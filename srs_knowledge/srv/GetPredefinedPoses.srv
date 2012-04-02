@@ -1,0 +1,8 @@
+string map
+# string location    # if null, then return all locations. Otherwise, specify the name of the location
+
+---
+#list 
+
+string[] locations
+geometry_msgs/Pose2D[] poses

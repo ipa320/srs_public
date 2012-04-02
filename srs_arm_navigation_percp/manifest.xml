@@ -1,0 +1,35 @@
+<package>
+  <description brief="srs_arm_navigation_percp">
+
+    This package provided by dcgm-robotics@FIT group is derived from the pr2_arm_navigation_perception package. It modifies components developed for PR2 robot so that you can use it with COB. It allows you to build a collision space representation of the world.
+
+  </description>
+  <author>Zdenek Materna, Michal Spanel</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/but_arm_navigation_percp</url>
+
+  <depend package="pr2_machine"/>
+
+  <!-- messages -->
+  <depend package="sensor_msgs"/>
+  <depend package="pr2_msgs"/>
+
+  <!-- perception -->
+  <depend package="laser_filters"/>
+  <depend package="laser_assembler"/>
+  <depend package="robot_self_filter"/>
+  <depend package="collider"/>
+  <depend package="stereo_image_proc"/>
+  <depend package="point_cloud_converter"/>
+
+  <!-- rosWTF mandated -->
+  <depend package="planning_environment"/>
+  <depend package="pr2_arm_navigation_config"/>
+  <depend package="pr2_mechanism_controllers"/>
+
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
+</package>
+

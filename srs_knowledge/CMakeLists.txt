@@ -18,8 +18,6 @@ add_java_source_dir(${PROJECT_SOURCE_DIR}/src)
 
 rosbuild_find_ros_package(srs_knowledge)
 
-# rosbuild_find_ros_package(ias_knowledge_base)
-#rosbuild_include(rosprolog utils)
 include(cmake/utils.cmake)
 set(OWL_PATH_PREFIX ${srs_knowledge_PACKAGE_PATH})
 fix_ros_destination_path(OWL_PATH_PREFIX)
@@ -32,5 +30,4 @@ foreach( _in ${inputs} )
 endforeach( _in )
 
 rospack_add_java_executable(bin/knowledgeEngine  org.srs.srs_knowledge.knowledge_engine.KnowledgeEngine)
-# rosbuild_add_rostest(test/rosjava_test.launch)
 

@@ -94,6 +94,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+
+
 /**
  * This class is used for more application specific ontology queries. 
  * OntologyDB is more generic, and only provides basic functions and reusable functions. 

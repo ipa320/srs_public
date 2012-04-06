@@ -41,11 +41,11 @@ void srs::COctoMapPlugin::setDefaults()
 	// Set octomap parameters
 	m_mapParameters.resolution = 0.05;
 	m_mapParameters.treeDepth = 0;
-	m_mapParameters.probHit = 0.7;         // Probability of node, if node is occupied
-	m_mapParameters.probMiss = 0.1;        // Probability of node, if node is free
-	m_mapParameters.thresMin = 0.05;// 0.12;
-	m_mapParameters.thresMax = 0.97; //0.97;
-	m_mapParameters.thresOccupancy = 0.5;
+	m_mapParameters.probHit = 0.7;         	// Probability of node, if node is occupied: 0.7
+	m_mapParameters.probMiss = 0.4;        	// Probability of node, if node is free: 0.4
+	m_mapParameters.thresMin = 0.45;		// Clamping minimum threshold: 0.1192;
+	m_mapParameters.thresMax = 0.55; 		// Clamping maximum threshold: 0.971;
+	m_mapParameters.thresOccupancy = 0.5; 	// Occupied node threshold: 0.5
 	m_mapParameters.maxRange = -1.0;
 
 	// Set ground filtering parameters
@@ -63,6 +63,7 @@ void srs::COctoMapPlugin::setDefaults()
 
 srs::COctoMapPlugin::COctoMapPlugin(const std::string & name)
 : srs::CServerPluginBase(name)
+, filecounter( 0 )
 {
 	//
 	setDefaults();
@@ -127,6 +128,8 @@ srs::COctoMapPlugin::COctoMapPlugin( const std::string & name, const std::string
 //! Initialize plugin - called in server constructor
 void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 {
+	PERROR( "Initializing OctoMapPlugin" );
+
 	reset();
 
 	// Load parameters from the parameter server
@@ -136,6 +139,9 @@ void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("sensor_model/min", m_mapParameters.thresMin, m_mapParameters.thresMin);
 	node_handle.param("sensor_model/max", m_mapParameters.thresMax, m_mapParameters.thresMax);
 	node_handle.param("max_range", m_mapParameters.maxRange, m_mapParameters.maxRange);
+
+	// TODO: Remove this line!!!
+	// m_mapParameters.maxRange = 2.0;
 
 	// Set octomap parameters...
 	{
@@ -169,6 +175,7 @@ void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	// Create publisher
 	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary>(m_ocPublisherName, 100, m_latchedTopics);
 
+	PERROR( "OctoMapPlugin initialized..." );
 }
 
 
@@ -244,7 +251,14 @@ void srs::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf, const tPo
 	octomap::KeySet free_cells, occupied_cells;
 
 	double maxRange(m_mapParameters.maxRange);
+/*
+	octomap::Pointcloud pcNonground;
+	octomap::pointcloudPCLToOctomap( nonground, pcNonground );
+	m_data->octree.insertScan( pcNonground, sensorOrigin, maxRange, true );
 
+//	PERROR( "Scan inserted. Size: " << nonground.size() << ", " << pcNonground.size() << ", " << m_data->octree.getNumLeafNodes() );
+
+/*/
 //	std::cerr << "OCM:  Insert ground. MR: " << maxRange << ", SO: " << sensorOrigin << std::endl;
 
 	// insert ground points only as free:
@@ -266,9 +280,10 @@ void srs::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf, const tPo
 		}
 	}
 
-//	std::cerr << "OCM:  Inser nonground. Size: " << nonground.size() << std::endl;
 
 	// all other points: free on ray, occupied on endpoint:
+	int miss(0), hit(0);
+
 	for (tPointCloud::const_iterator it( nonground.begin() ), end( nonground.end() ); it != end; ++it)
 	{
 
@@ -283,17 +298,18 @@ void srs::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf, const tPo
 			{
 				free_cells.insert(m_keyRay.begin(), m_keyRay.end());
 			}
-			//*/
+			///
 			// occupied endpoint
 			octomap::OcTreeKey key;
 			if (m_data->octree.genKey(point, key))
 			{
 				occupied_cells.insert(key);
 			}
+
 		}
 		else
 		{// ray longer than maxrange:;
-			//*
+
 			octomap::point3d new_end = sensorOrigin	+ (point - sensorOrigin).normalized() * maxRange;
 
 			if (m_data->octree.computeRayKeys(sensorOrigin, new_end,	m_keyRay))
@@ -301,31 +317,54 @@ void srs::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf, const tPo
 				free_cells.insert(m_keyRay.begin(), m_keyRay.end());
 			}
 
-			//*/
 		}
 	}
 
-//	std::cerr << "OCM:  Mark free..." << std::endl;
+//	PERROR( "Rays hit: " << hit << ", miss: " << miss );
+
+	long fcounter(0), fchanged(0), ocounter(0), nfound(0);
+
 	// mark free cells only if not seen occupied in this cloud
 	for (octomap::KeySet::iterator it = free_cells.begin(), end = free_cells.end(); it != end; ++it)
 	{
 		if (occupied_cells.find(*it) == occupied_cells.end())
 		{
-			m_data->octree.updateNode(*it, false, true);
+			double o1, o2;
+			tButServerOcNode * node( m_data->octree.search( *it ) );
+			if( node != 0 )
+				o1 = node->getOccupancy();
+			else
+				++nfound;
+			m_data->octree.updateNode(*it, false, false);
+
+			if( node != 0 )
+				o2 = node->getOccupancy();
+
+			if( node != 0 && o1 != o2 )
+			{
+//				PERROR( "Node changed: " << o1 << " -> " << o2 );
+				++fchanged;
+			}
+			++fcounter;
 		}
 	}
 
-//	std::cerr << "OCM:  Mark occupied... " << std::endl;
 	// now mark all occupied cells:
-	for (octomap::KeySet::iterator it = occupied_cells.begin(), end = free_cells.end(); it != end; it++)
+	for (octomap::KeySet::iterator it = occupied_cells.begin(), end = occupied_cells.end(); it != end; it++)
 	{
-		m_data->octree.updateNode(*it, true, true);
+		m_data->octree.updateNode(*it, true, false);
+		++ocounter;
 	}
 
-//	std::cerr << "OCM: IS finish... " << std::endl;
+//	PERROR( "Free cells: " << fcounter << ", occupied:" << ocounter << ", MaxRange: " << maxRange << ", free changed: " << fchanged << ", not found: " << nfound );
+//	PERROR( "OC stats. LN: " << m_data->octree.getNumLeafNodes() );
+
 	// TODO: eval lazy+updateInner vs. proper insertion
 	m_data->octree.updateInnerOccupancy();
-	m_data->octree.prune();
+//	m_data->octree.prune();
+	//*/
+
+
 }
 
 
@@ -347,7 +386,7 @@ void srs::COctoMapPlugin::filterGroundPlane(const tPointCloud & pc, tPointCloud 
 		pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
 
 		// Create the segmentation object and set up:
-		pcl::SACSegmentation<pcl::PointXYZ> seg;
+		pcl::SACSegmentation<tPclPoint> seg;
 		seg.setOptimizeCoefficients(true);
 		// TODO: maybe a filtering based on the surface normals might be more robust / accurate?
 		seg.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
@@ -359,7 +398,7 @@ void srs::COctoMapPlugin::filterGroundPlane(const tPointCloud & pc, tPointCloud 
 
 		tPointCloud cloud_filtered(pc);
 		// Create the filtering object
-		pcl::ExtractIndices<pcl::PointXYZ> extract;
+		pcl::ExtractIndices<tPclPoint> extract;
 		bool groundPlaneFound = false;
 
 		while (cloud_filtered.size() > 10 && !groundPlaneFound) {
@@ -397,13 +436,13 @@ void srs::COctoMapPlugin::filterGroundPlane(const tPointCloud & pc, tPointCloud 
 				ROS_DEBUG("Horizontal plane (not ground) found: %zu/%zu inliers. Coeff: %f %f %f %f", inliers->indices.size(),
 						cloud_filtered.size(), coefficients->values.at(0), coefficients->values.at(1),
 						coefficients->values.at(2), coefficients->values.at(3));
-				pcl::PointCloud<pcl::PointXYZ> cloud_out;
+				tPointCloud cloud_out;
 				extract.setNegative(false);
 				extract.filter(cloud_out);
 				nonground += cloud_out;
 				// debug
 				//            pcl::PCDWriter writer;
-				//            writer.write<pcl::PointXYZ>("nonground_plane.pcd",cloud_out, false);
+				//            writer.write<tPclPoint>("nonground_plane.pcd",cloud_out, false);
 
 				// remove current plane from scan for next iteration:
 				// workaround for PCL bug:
@@ -423,7 +462,7 @@ void srs::COctoMapPlugin::filterGroundPlane(const tPointCloud & pc, tPointCloud 
 			ROS_WARN("No ground plane found in scan");
 
 			// do a rough filtering on height to prevent spurious obstacles
-			pcl::PassThrough<pcl::PointXYZ> second_pass;
+			pcl::PassThrough<tPclPoint> second_pass;
 			second_pass.setFilterFieldName("z");
 			second_pass.setFilterLimits(-m_groundFilterPlaneDistance,
 					m_groundFilterPlaneDistance);
@@ -437,9 +476,9 @@ void srs::COctoMapPlugin::filterGroundPlane(const tPointCloud & pc, tPointCloud 
 		// debug:
 		//        pcl::PCDWriter writer;
 		//        if (pc_ground.size() > 0)
-		//          writer.write<pcl::PointXYZ>("ground.pcd",pc_ground, false);
+		//          writer.write<tPclPoint>("ground.pcd",pc_ground, false);
 		//        if (pc_nonground.size() > 0)
-		//          writer.write<pcl::PointXYZ>("nonground.pcd",pc_nonground, false);
+		//          writer.write<tPclPoint>("nonground.pcd",pc_nonground, false);
 
 	}
 }
@@ -460,9 +499,8 @@ void srs::COctoMapPlugin::crawl( const ros::Time & currentTime )
 	onCrawlStart(currentTime);
 
 	// Crawl through node
-	for (srs::tButServerOcTree::iterator it = m_data->octree.begin(), end = m_data->octree.end(); it != end; ++it)
+	for (srs::tButServerOcTree::leaf_iterator it = m_data->octree.begin_leafs(), end = m_data->octree.end_leafs(); it != end; ++it)
 		{
-
 
 			// call general hook:
 			handleNode(it, m_mapParameters);
@@ -485,6 +523,14 @@ void srs::COctoMapPlugin::crawl( const ros::Time & currentTime )
 		} // Iterate through octree
 
 	handlePostNodeTraversal(m_mapParameters);
+/*
+	std::stringstream ss;
+	ss << "/home/wik/output/octomap" << filecounter << ".bt";
+
+	PERROR( "Writing: " << ss.str() );
+	m_data->octree.writeBinary( ss.str() );
+	++filecounter;
+*/
 }
 
 /// On octomap crawling start

@@ -69,6 +69,8 @@ namespace srs
         /// Called when all nodes was visited.
         virtual void handlePostNodeTraversal(const SMapParameters & mp);
 
+    public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     protected:
         //! Is publishing enabled?

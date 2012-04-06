@@ -1,0 +1,9 @@
+name: but_cob_gui
+library: but_cob_gui
+displays:
+  -
+    class_name: CButCobDisplay
+    display_name: CButCobDisplay
+    description: |
+      This display shows controls for COB arm navigation.
+

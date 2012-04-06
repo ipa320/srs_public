@@ -2,7 +2,7 @@
 \mainpage
 \htmlinclude manifest.html
 
-This package provided by dcgm-robotics@FIT group is derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB.
+This package containes SRS project specific launch files for COB arm navigation and Smach generic states. The package is provided by dcgm-robotics@FIT group 
 
 <!-- 
 Provide an overview of your package.

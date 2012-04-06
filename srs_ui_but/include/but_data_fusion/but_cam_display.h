@@ -28,6 +28,7 @@
 #ifndef RVIZ_BUT_CAM_DISPLAY_H
 #define RVIZ_BUT_CAM_DISPLAY_H
 
+#include "topics_list.h"
 #include "rviz/display.h"
 #include "rviz/properties/forwards.h"
 
@@ -102,6 +103,11 @@ public:
 	}
 	void setAlpha(float alpha);
 
+	float getDistance() {
+		return distance_;
+	}
+	void setDistance(float distance);
+
 	bool getDrawUnder() {
 		return draw_under_;
 	}
@@ -157,8 +163,6 @@ protected:
 	void loadImage(const sensor_msgs::Image::ConstPtr& image);
 	void transformCam();
 
-	//void requestThreadFunc();
-
 	Ogre::SceneNode* scene_node_;
 	Ogre::ManualObject* manual_object_;
 	Ogre::TexturePtr texture_;
@@ -203,6 +207,9 @@ protected:
 
 	float height_;
 	FloatPropertyWPtr height_property_;
+
+	float distance_;
+	FloatPropertyWPtr distance_property_;
 
 	Ogre::Vector3 position_;
 	Vector3PropertyWPtr position_property_;

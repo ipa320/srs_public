@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_display.cpp 396 2012-03-29 12:24:03Z spanel $
+ * $Id: but_display.cpp 521 2012-04-05 13:55:58Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -44,7 +44,7 @@ CButDisplay::CButDisplay(const std::string & name,rviz::VisualizationManager * m
     , m_child_window( 0 )
     , m_dialog_window( 0 )
     , m_controls_window( 0 )
-	, m_cameraPositionPublisherName( CAMERA_POSITION_TOPIC_NAME )
+    , m_cameraPositionPublisherName( CAMERA_POSITION_TOPIC_NAME )
     , m_latchedTopics( false )
 {
 	// Get node handle
@@ -66,30 +66,17 @@ CButDisplay::CButDisplay(const std::string & name,rviz::VisualizationManager * m
 
     rviz::WindowManagerInterface * wi( manager->getWindowManager() );
 
-    if( wi != 0 )
-    {
-        
-        
-
-        // Arm manipulation controls
-        m_armmanipulation_window = new CArmManipulationControls( wi->getParentWindow(), wxT("Manual arm navigation"), wi);
-
-        if( m_armmanipulation_window != 0 )
-        {
-            std::cerr << "Adding to the window manager..." << std::endl;
-            wi->addPane( "Manual arm manipulation", m_armmanipulation_window );
-            wi->showPane( m_armmanipulation_window );
-            std::cerr << "Added..." << std::endl;
-        }
-        
-    }else{
-        std::cerr << "No window manager, no panes :( " << std::endl;
+/*    if( wi != 0 )
+    {     
     }
+    else
+    {
+        std::cerr << "No window manager, no panes :( " << std::endl;
+    }*/
 
     // Create publisher
     this->m_cameraPositionPub = private_nh.advertise< srs_env_model_msgs::RVIZCameraPosition >(
     		m_cameraPositionPublisherName, 100, m_latchedTopics);
-
 }
 
 /*

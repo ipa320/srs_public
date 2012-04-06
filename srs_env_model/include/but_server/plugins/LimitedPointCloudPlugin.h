@@ -59,6 +59,9 @@ public:
 	//! Called when new scan was inserted and now all can be published
 	virtual void onPublish(const ros::Time & timestamp);
 
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 protected:
 	/// On camera position changed callback
 	void onCameraPositionChangedCB(const srs_env_model_msgs::RVIZCameraPosition::ConstPtr& position);

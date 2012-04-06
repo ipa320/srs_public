@@ -54,7 +54,6 @@ target_link_libraries(but_gui_observers ${BUT_GUI_PROJECT_NAME})
 
 set( SERVER_SOURCES src/but_server/servernode.cpp
                     src/but_server/but_server.cpp
-                    src/but_server/pointTester.cpp
                     src/but_server/ServerTools.cpp
                     src/but_server/octonode.cpp
                     src/but_server/plugins/CMapPlugin.cpp

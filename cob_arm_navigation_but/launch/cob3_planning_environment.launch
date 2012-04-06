@@ -1,0 +1,5 @@
+<launch>
+   <!-- <param name="robot_description" textfile="$(find cob_hardware_config)/cob3-3/urdf/cob.urdf" /> -->
+    <param name="global_frame" value="/map" />
+    <rosparam command="load" ns="robot_description_planning" file="$(find cob_arm_navigation_but)/config/cob3_planning_description.yaml" />
+</launch>

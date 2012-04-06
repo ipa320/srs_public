@@ -1,6 +1,0 @@
-<launch>
-
-  <!-- fake decision making for TESTing purposes ONLY (it calls two generic states) -->
-  <node name="fake_dm" pkg="srs_arm_navigation" type="fake_dm.py"/>
-
-</launch>

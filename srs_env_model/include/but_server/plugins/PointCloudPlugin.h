@@ -33,11 +33,23 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <tf/message_filter.h>
 
+#include <message_filters/sync_policies/exact_time.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/pass_through.h>
+
+// PCL includes
+#include <pcl/segmentation/extract_polygonal_prism_data.h>
+
+
 namespace srs
 {
 
     class CPointCloudPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< tPointCloud >
     {
+    public:
+    	//! Incomming pointcloud type
+    	typedef sensor_msgs::PointCloud2 tIncommingPointCloud;
+
     public:
         /// Constructor
         CPointCloudPlugin(const std::string & name, bool subscribe = true );
@@ -77,7 +89,7 @@ namespace srs
         *
         * @param cloud Input point cloud
         */
-        void insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud);
+        void insertCloudCallback(const tIncommingPointCloud::ConstPtr& cloud);
 
 
     protected:
@@ -91,10 +103,10 @@ namespace srs
         std::string m_pcSubscriberName;
 
         /// Subscriber - point cloud
-        message_filters::Subscriber<sensor_msgs::PointCloud2> *m_pcSubscriber;
+        message_filters::Subscriber<tIncommingPointCloud> *m_pcSubscriber;
 
         //! Message filter (we only want point cloud 2 messages)
-        tf::MessageFilter<sensor_msgs::PointCloud2> *m_tfPointCloudSub;
+        tf::MessageFilter<tIncommingPointCloud> *m_tfPointCloudSub;
 
         /// Point cloud publisher
         ros::Publisher m_pcPublisher;
@@ -123,6 +135,9 @@ namespace srs
 
         //! Maximal Z value
         double m_pointcloudMaxZ;
+
+        //! Counter
+        long counter;
 
     }; // class CPointCloudPlugin
 

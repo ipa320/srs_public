@@ -28,6 +28,10 @@
 #define BUT_DATA_FUSION_PREFIX std::string("/but_data_fusion")
 #define BUT_DATA_FUSION_TOPIC(topic) BUT_DATA_FUSION_PREFIX + std::string(topic)
 
+// published topics
 #define BUT_VIEW_FRUSTUM_TOP BUT_DATA_FUSION_TOPIC("/view_frustum")
 #define BUT_CAMERA_VIEW_TOP BUT_DATA_FUSION_TOPIC("/cam_view")
 
+// global parameters
+#define BUT_CAMERA_PAR BUT_DATA_FUSION_TOPIC("/camera")
+#define BUT_DEPTH_PAR BUT_DATA_FUSION_TOPIC("/depth")

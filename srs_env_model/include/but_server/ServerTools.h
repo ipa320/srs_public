@@ -54,11 +54,11 @@ namespace srs
 	//! Define node type
 	typedef tButServerOcTree::NodeType tButServerOcNode;
 
-	//! Define point cloud type
-	typedef pcl::PointCloud<pcl::PointXYZ> tPointCloud;
+	//! Define pcl point type
+	typedef pcl::PointXYZRGB tPclPoint;
 
-	//! Define point type
-	typedef typename tPointCloud::PointType tPoint;
+	//! Define point cloud type
+	typedef pcl::PointCloud<tPclPoint> tPointCloud;
 
 	/// All needed octo map parameters and something more...
 	struct SMapParameters

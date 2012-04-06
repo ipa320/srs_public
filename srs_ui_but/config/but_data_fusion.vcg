@@ -8,6 +8,7 @@ CButCamDisplay.Draw\ Behind=0
 CButCamDisplay.Enabled=1
 CButCamDisplay.Image\ Topic=/stereo/left/image_raw
 CButCamDisplay.Marker\ Topic=/but_data_fusion/cam_view
+CButCamDisplay.Video\ distance=1
 Interactive\ Markers.Enabled=1
 Interactive\ Markers.Show\ Axes=0
 Interactive\ Markers.Show\ Descriptions=1
@@ -145,7 +146,7 @@ Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
 Camera\ Config=1.186 5.22035 3.1368 1.01914 2.2864 -0.688317
-Property\ Grid\ State=selection=Interactive Markers.Enabled;expanded=Marker.Enabled.Marker.Namespaces;scrollpos=0,0;splitterpos=148,296;ispageselected=1
+Property\ Grid\ State=selection=CButCamDisplay.Enabled.CButCamDisplay.Video distance;expanded=Marker.Enabled.Marker.Namespaces,CButCamDisplay.Enabled;scrollpos=0,6;splitterpos=148,283;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz

@@ -56,7 +56,7 @@ CButCamDisplay::CButCamDisplay(const std::string& name,
 			time_sync_ptr_(NULL), time_synced_(false), resolution_(0.0f),
 			image_width_(0), image_height_(0), width_(0), height_(0),
 			position_(Ogre::Vector3::ZERO), orientation_(
-					Ogre::Quaternion::IDENTITY), draw_under_(false) {
+					Ogre::Quaternion::IDENTITY), distance_(1.0), draw_under_(false) {
 	ROS_DEBUG("CButCamDisplay: constructor");
 
 	scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -171,10 +171,26 @@ void CButCamDisplay::imUnsubscribe() {
 	image_subscribed_ = false;
 }
 
+void CButCamDisplay::setDistance(float distance) {
+	if (distance > 1)
+		distance_ = 1;
+	else if (distance < 0)
+		distance_ = 0;
+	else
+		distance_ = distance;
+
+	ros::param::set(BUT_DEPTH_PAR, distance_);
+}
+
 void CButCamDisplay::setAlpha(float alpha) {
 	ROS_DEBUG("CButCamDisplay: setAlpha");
 
-	alpha_ = alpha;
+	if (alpha > 1)
+		alpha_ = 1;
+	else if (alpha < 0)
+		alpha_ = 0;
+	else
+		alpha_ = alpha;
 
 	Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
 	Ogre::TextureUnitState* tex_unit = NULL;
@@ -238,6 +254,7 @@ void CButCamDisplay::setImageTopic(const std::string& topic) {
 	imUnsubscribe();
 
 	image_topic_ = topic;
+	ros::param::set(BUT_CAMERA_PAR, image_topic_);
 
 	imSubscribe();
 
@@ -585,6 +602,16 @@ void CButCamDisplay::createProperties() {
 			parent_category_, this);
 	setPropertyHelpText(alpha_property_,
 			"Amount of transparency to apply to the marker.");
+
+	distance_property_ = property_manager_->createProperty<FloatProperty> (
+			"Video distance", property_prefix_, boost::bind(
+					&CButCamDisplay::getDistance, this), boost::bind(
+					&CButCamDisplay::setDistance, this, _1), parent_category_,
+			this);
+	setPropertyHelpText(
+			distance_property_,
+			"Distance of the video polygon from the robot. Value 1 means the biggest distance possible, 0.5 is the half way to the robot and so forth...");
+
 	draw_under_property_ = property_manager_->createProperty<BoolProperty> (
 			"Draw Behind", property_prefix_, boost::bind(
 					&CButCamDisplay::getDrawUnder, this), boost::bind(
@@ -638,6 +665,7 @@ void CButCamDisplay::createProperties() {
 			QuaternionProperty::Setter(), parent_category_, this);
 	setPropertyHelpText(orientation_property_,
 			"Orientation of the marker. (not editable)");
+
 }
 
 void CButCamDisplay::fixedFrameChanged() {

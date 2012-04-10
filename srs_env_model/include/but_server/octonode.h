@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: octonode.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: octonode.h 512 2012-04-04 21:07:51Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -59,6 +59,26 @@ public:
 	inline const EModelTreeNode* getChild(unsigned int i) const {
 		return static_cast<const EModelTreeNode*> (OcTreeDataNode<float>::getChild(i));
 	}
+
+	//! Get color components
+	unsigned char r() const { return m_r; }
+	unsigned char g() const { return m_g; }
+	unsigned char b() const { return m_b; }
+	unsigned char a() const { return m_a; }
+
+	//! Get color components - reference version
+	unsigned char & r() { return m_r; }
+	unsigned char & g() { return m_g; }
+	unsigned char & b() { return m_b; }
+	unsigned char & a() { return m_a; }
+
+	//! Set color components
+	void setColor( unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255 )
+	{ m_r = r; m_g = g; m_b = b; m_a = a; }
+
+protected:
+	//! Color data
+	unsigned char m_r, m_g, m_b, m_a;
 
 }; // class EModelTreeNode
 

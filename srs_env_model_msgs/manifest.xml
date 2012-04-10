@@ -1,13 +1,13 @@
 <package>
   <description brief="srs_env_model_msgs">
 
-    Shared ROS messages definition provided by dcgm-robotics@FIT group.
+Shared ROS messages definition provided by dcgm-robotics@FIT group.
 
   </description>
-  <author>Vit Stancl</author>
+  <author>Vit Stancl/stancl@fit.vutbr.cz, Michal Spanel/spanel@fit.vutbr.cz</author>
   <license>LGPL</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/but_env_model_msgs</url>
+  <url>http://ros.org/wiki/srs_env_model_msgs</url>
 
   <depend package="nav_msgs"/>
   <depend package="arm_navigation_msgs"/>

@@ -1,6 +1,6 @@
 /******************************************************************************
  * \file
- * $Id: but_server.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: but_server.cpp 512 2012-04-04 21:07:51Z stancl $
  *
  * Modified by dcgm-robotics@FIT group.
  *
@@ -93,6 +93,8 @@ CButServer::CButServer(const std::string& filename) :
 	m_latchedTopics = staticMap;
 	private_nh.param("latch", m_latchedTopics, m_latchedTopics);
 
+	std::cerr << "BUTSERVER: Initializing plugins " << std::endl;
+
 	// Store all plugins pointer for easier access
 	m_plugins.push_back( m_plugCMapHolder.getPlugin() );
 	m_plugins.push_back( m_plugInputPointCloudHolder.getPlugin() );
@@ -105,9 +107,12 @@ CButServer::CButServer(const std::string& filename) :
 	m_plugins.push_back( m_plugMarkerArrayHolder.getPlugin() );
 
 
+
 	//=========================================================================
 	// Initialize plugins
 	FOR_ALL_PLUGINS_PARAM(init, private_nh)
+
+	std::cerr << "BUTSERVER: All plugins initialized. Starting server. " << std::endl;
 
 	// Connect input point cloud input with octomap
 	m_plugInputPointCloudHolder.getPlugin()->getSigDataChanged().connect( boost::bind( &srs::COctoMapPlugin::insertCloud, &m_plugOctoMap, _1 ));

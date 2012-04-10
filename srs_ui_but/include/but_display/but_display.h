@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_display.h 396 2012-03-29 12:24:03Z spanel $
+ * $Id: but_display.h 521 2012-04-05 13:55:58Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -39,7 +39,6 @@
 #include <OgreCamera.h>
 #include <string>
 #include "but_examplepane.h"
-#include "but_arm_manipulation.h"
 #include "srs_env_model_msgs/RVIZCameraPosition.h"
 
 
@@ -157,9 +156,6 @@ protected:
     //! Controls window example
     CExamplePanelControls * m_controls_window;
     
-    //! Controls window example
-    CArmManipulationControls * m_armmanipulation_window;
-
     //! Camera position publisher name
     std::string m_cameraPositionPublisherName;
 
@@ -179,3 +175,4 @@ protected:
 
 
 #endif // BUT_DISPLAY_H
+

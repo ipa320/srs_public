@@ -1,13 +1,13 @@
 <package>
 	<description brief="srs_env_model">
 
-		ROS dynamic environment model provided by dcgm-robotics@FIT group.
+ROS dynamic environment model provided by dcgm-robotics@FIT group.
 
 	</description>
-	<author>Vit Stancl, Tomas Hodan, Michal Spanel</author>
+	<author>Vit Stancl/stancl@fit.vutbr.cz, Tomas Lokaj, Michal Spanel/spanel@fit.vutbr.cz</author>
 	<license>LGPL</license>
 	<review status="unreviewed" notes="" />
-    <url>http://ros.org/wiki/but_env_model</url>
+	<url>http://ros.org/wiki/srs_env_model</url>
 
 	<depend package="opencv2" />
 	<depend package="roscpp" />

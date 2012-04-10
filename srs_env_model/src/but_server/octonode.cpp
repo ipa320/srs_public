@@ -32,6 +32,10 @@
  */
 octomap::EModelTreeNode::EModelTreeNode()
 : OcTreeNode()
+, m_r( 255 )
+, m_g( 5 )
+, m_b( 255 )
+, m_a( 255 )
 {
 
 }

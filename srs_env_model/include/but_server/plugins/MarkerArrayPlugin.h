@@ -70,6 +70,8 @@ namespace srs
         /// Compute color from the height
         std_msgs::ColorRGBA heightMapColor(double h) const;
 
+    public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     protected:
         //! Is publishing enabled?

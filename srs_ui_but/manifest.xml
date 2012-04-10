@@ -1,13 +1,13 @@
 <package>
   <description brief="srs_ui_but">
 
-    ROS visualization tools provided by dcgm-robotics@FIT group.
+ROS visualization tools provided by dcgm-robotics@FIT group.
 
   </description>
-  <author>Vit Stancl, Michal Spanel</author>
+  <author>Vit Stancl/stancl@fit.vutbr.cz, Michal Spanel/spanel@fit.vutbr.cz, Tomas Lokaj</author>
   <license>LGPL</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/but_ui</url>
+  <url>http://ros.org/wiki/srs_ui_but</url>
 
   <depend package="roscpp"/>
   <depend package="visualization_msgs"/>
@@ -25,6 +25,7 @@
   <depend package="cob_script_server"/>
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>
+  <depend package="cob_arm_navigation_but"/>
 
 <!--export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros"/>
@@ -34,8 +35,7 @@
   <export>
     <!--<cpp cflags="-I${prefix}/srv_gen/cpp/include" />-->
     <rviz plugin="${prefix}/lib/but_gui.yaml"/>
+    <rosdoc config="rosdoc.yaml" />
   </export>
 
 </package>
-
-

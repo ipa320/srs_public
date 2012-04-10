@@ -31,7 +31,7 @@ import rospy
 import smach
 import smach_ros
 import actionlib
-from srs_arm_navigation.msg import *
+from cob_arm_navigation_but.msg import *
 from srs_env_model.srv import AddObjectWithBoundingBox
 from srs_env_model.srv import RemovePrimitive
 from srs_env_model.srv import SetGraspingPosition
@@ -49,6 +49,7 @@ from arm_navigation_msgs.msg import Shape
 from geometry_msgs.msg import Pose
 from tf import TransformListener
 import threading
+from cob_arm_navigation_but.srv import ArmNavCollObj
 
 class coll_obj_publisher (threading.Thread):
   
@@ -112,6 +113,7 @@ class move_arm_to_given_positions_assisted(smach.State):
     arm_manip_ns = '/but_arm_manip'
     #action_name = rospy.get_param('/manual_arm_manip_action','~arm_action_name')
     self.action_name = arm_manip_ns + '/manual_arm_manip_action'
+    self.s_coll_obj = arm_manip_ns + '/arm_nav_coll_obj';
       
   def add_grpos(self,userdata):
     
@@ -291,6 +293,20 @@ class move_arm_to_given_positions_assisted(smach.State):
     
     # add IM for grasping positions
     self.add_grpos(userdata)
+    
+    rospy.loginfo("Waiting for %s service",self.s_coll_obj)
+    rospy.wait_for_service(self.s_coll_obj)
+    coll_obj = rospy.ServiceProxy(self.s_coll_obj, ArmNavCollObj);
+    
+    try:
+      
+      coll_obj(object_name = userdata.name_of_the_target_object,
+               pose = userdata.pose_of_the_target_object,
+               bb_lwh = userdata.bb_of_the_target_object['bb_lwh']);
+      
+    except Exception, e:
+      
+      rospy.logerr('Cannot add detected object to the planning scene, error: %s',str(e))
     
     # ADD known object to collision map...
     #===========================================================================

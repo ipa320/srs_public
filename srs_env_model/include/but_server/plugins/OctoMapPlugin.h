@@ -187,6 +187,8 @@ protected:
     /// Remove specle nodes now
     bool m_removeSpecles;
 
+    int filecounter;
+
 }; // class COctoMapPlugin;
 
 

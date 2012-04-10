@@ -128,6 +128,9 @@ namespace srs
         /// Does need input point to be converted?
         bool m_bConvertPoint;
 
+    public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     }; // class CCollisionMapPublisher
 
     /// Declare holder object - partial specialization of the default holder with predefined connection settings

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+    
+  <!-- BUT assisted arm navigation -->
+  <include file="$(find srs_arm_navigation)/launch/but_arm_nav_sim.launch"/>
+
+  <!-- Run but_gui server -->
+  <node name="but_gui_service_server" pkg="srs_env_model" type="but_gui_service_server" />
+
+  <!-- BUT cob teleop marker -->
+  <node name="cob_teleop_im" pkg="srs_ui_but" type="but_cob_teleop_marker" />
+
+  <!-- object db - for grasping -->
+  <include file="$(find srs_object_database)/launch/srs_db.launch"/>
+
+<!-- srs_grasping -->
+<!--<include file="$(find srs_grasping)/launch/grasping_services.launch"/>-->
+  <node pkg="srs_grasping" type="get_grasps_from_position.py" name="get_grasps_from_position" ns="get_grasps_from_position" cwd="node" respawn="false" output="screen">
+      <remap from="/arm_kinematics/get_ik" to="/cob3_arm_kinematics/get_ik"/>
+  </node>
+  <node pkg="srs_grasping" type="get_grasp_configurations.py" name="get_grasp_configurations" ns="get_grasp_configurations" cwd="node" respawn="false" output="screen" />
+
+  <!-- knowledge server -->
+  <include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+
+  <!-- start object detection -->
+  <include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
+
+</launch>

@@ -31,7 +31,7 @@ import rospy
 import smach
 import smach_ros
 import actionlib
-from srs_arm_navigation.msg import *
+from cob_arm_navigation_but.msg import *
 from srs_env_model.srv import AddObjectWithBoundingBox
 from srs_env_model.srv import RemovePrimitive
 from srs_env_model.srv import SetGraspingPosition
@@ -39,13 +39,17 @@ from srs_env_model.srv import RemoveGraspingPosition
 from math import fabs
 from geometry_msgs.msg import Vector3
 from std_msgs.msg import ColorRGBA
-from srs_object_database.srv import GetMesh
-from srs_object_database.srv import GetObjectId
+from srs_object_database_msgs.srv import GetMesh
+from srs_object_database_msgs.srv import GetObjectId
+from srs_object_database_msgs.srv import GetMesh
+from srs_object_database_msgs.srv import GetObjectId
 from arm_navigation_msgs.msg import CollisionObject
 from arm_navigation_msgs.msg import CollisionObjectOperation
 from arm_navigation_msgs.msg import Shape
 from geometry_msgs.msg import Pose
+from tf import TransformListener
 import threading
+from cob_arm_navigation_but.srv import ArmNavCollObj
 
 class coll_obj_publisher (threading.Thread):
   
@@ -94,7 +98,22 @@ class move_arm_to_given_positions_assisted(smach.State):
     smach.State.__init__(self,outcomes=['completed','not_completed','failed','pre-empted'],
                          input_keys=['list_of_target_positions','list_of_id_for_target_positions','name_of_the_target_object','pose_of_the_target_object','bb_of_the_target_object'],
                          output_keys=['id_of_the_reached_position'])
-   
+    
+ 
+    but_gui_ns = '/but_gui'
+    self.s_set_gr_pos = but_gui_ns + '/set_grasping_position'
+    self.s_add_object = but_gui_ns + '/add_object_with_bounding_box'
+    self.s_remove_object = but_gui_ns + '/remove_primitive'
+    
+    # object database
+    self.s_get_object_id = '/get_models'
+    self.s_get_model_mesh = '/get_model_mesh'
+    
+    #ns = rospy.get_param('/but_arm_manip','/arm_manip_namespace')
+    arm_manip_ns = '/but_arm_manip'
+    #action_name = rospy.get_param('/manual_arm_manip_action','~arm_action_name')
+    self.action_name = arm_manip_ns + '/manual_arm_manip_action'
+    self.s_coll_obj = arm_manip_ns + '/arm_nav_coll_obj';
       
   def add_grpos(self,userdata):
     
@@ -108,11 +127,12 @@ class move_arm_to_given_positions_assisted(smach.State):
       rospy.logerr('List with gr. positions has different length than list with IDs')
       return None
     
-    s_set_gr_pos = '/but_gui/set_grasping_position'
-    rospy.loginfo("Waiting for %s service",s_set_gr_pos)
-    rospy.wait_for_service(s_set_gr_pos)
-    set_gr_pos = rospy.ServiceProxy(s_set_gr_pos, SetGraspingPosition)
-    rospy.loginfo('Calling service %s',s_set_gr_pos)
+    #global s_set_gr_pos
+    #s_set_gr_pos = '/but_gui/set_grasping_position'
+    rospy.loginfo("Waiting for %s service",self.s_set_gr_pos)
+    rospy.wait_for_service(self.s_set_gr_pos)
+    set_gr_pos = rospy.ServiceProxy(self.s_set_gr_pos, SetGraspingPosition)
+    rospy.loginfo('Calling service %s',self.s_set_gr_pos)
     
     
     for idx in range(0,len(userdata.list_of_id_for_target_positions)):
@@ -139,12 +159,12 @@ class move_arm_to_given_positions_assisted(smach.State):
     
   def add_im(self,userdata):
     
+    tfl = TransformListener()
     
-    s_get_object_id = '/get_models'
-    rospy.loginfo("Waiting for %s service",s_get_object_id)
-    rospy.wait_for_service(s_get_object_id)
-    get_object_id = rospy.ServiceProxy(s_get_object_id, GetObjectId)
-    rospy.loginfo('Calling service %s',s_get_object_id)
+    rospy.loginfo("Waiting for %s service",self.s_get_object_id)
+    rospy.wait_for_service(self.s_get_object_id)
+    get_object_id = rospy.ServiceProxy(self.s_get_object_id, GetObjectId)
+    rospy.loginfo('Calling service %s',self.s_get_object_id)
   
     obj_db_id = None
   
@@ -162,14 +182,13 @@ class move_arm_to_given_positions_assisted(smach.State):
       obj_db_id = 1
     
     shape = None
-    mesh = None
-    db_shape = None
+    mesh = 'package://cob_gazebo_objects/Media/models/milk.dae'
+    #db_shape = None
     
-    s_get_model_mesh = '/get_model_mesh'
-    rospy.loginfo("Waiting for %s service",s_get_model_mesh)
-    rospy.wait_for_service(s_get_model_mesh)
-    get_model_mesh = rospy.ServiceProxy(s_get_model_mesh, GetMesh)
-    rospy.loginfo('Calling service %s (with ID=%d)',s_get_model_mesh,obj_db_id)
+    rospy.loginfo("Waiting for %s service",self.s_get_model_mesh)
+    rospy.wait_for_service(self.s_get_model_mesh)
+    get_model_mesh = rospy.ServiceProxy(self.s_get_model_mesh, GetMesh)
+    rospy.loginfo('Calling service %s (with ID=%d)',self.s_get_model_mesh,obj_db_id)
     
     try:
       
@@ -180,33 +199,13 @@ class move_arm_to_given_positions_assisted(smach.State):
     except Exception, e:
       
       rospy.logerr('Cannot get mesh from db. We will use default one for milkbox. Error: %s',str(e))
-      mesh = 'package://cob_gazebo_objects/Media/models/milk.dae'
+      #mesh = 'package://cob_gazebo_objects/Media/models/milk.dae'
       
-    
-    s_add_object = 'but_gui/add_object_with_bounding_box'
-    
-    rospy.loginfo("Waiting for %s service",s_add_object)
-    rospy.wait_for_service(s_add_object)
+       
+    rospy.loginfo("Waiting for %s service",self.s_add_object)
+    rospy.wait_for_service(self.s_add_object)
     add_object = rospy.ServiceProxy('but_gui/add_object_with_bounding_box', AddObjectWithBoundingBox)
-    rospy.loginfo('Calling %s service',s_add_object)
-    
-    #print 'POSE'
-    #print userdata.pose_of_the_target_object.pose
-    
-    #print 'BB_MIN'
-    #print userdata.bb_of_the_target_object['bb_min']
-    
-    #print 'BB_MAX'
-    #print userdata.bb_of_the_target_object['bb_max']
-    
-    # position and orientation
-    bpose = userdata.pose_of_the_target_object.pose
-
-    # calculation of bounding box scale
-#    bscale = Vector3()
-#    bscale.x = fabs(userdata.bb_of_the_target_object['bb_min'].x - userdata.bb_of_the_target_object['bb_max'].x)
-#    bscale.y = fabs(userdata.bb_of_the_target_object['bb_min'].y - userdata.bb_of_the_target_object['bb_max'].y)
-#    bscale.z = fabs(userdata.bb_of_the_target_object['bb_min'].z - userdata.bb_of_the_target_object['bb_max'].z)
+    rospy.loginfo('Calling %s service',self.s_add_object)
 
     # color of the bounding box
     color = ColorRGBA()
@@ -215,18 +214,50 @@ class move_arm_to_given_positions_assisted(smach.State):
     color.b = 0
     color.a = 1
     
+    # try to transform pose of detected object from /base_link to /map
+    transf_target = '/map'
+  
+    rospy.loginfo('Lets transform pose from %s to %s frame',userdata.pose_of_the_target_object.header.frame_id,transf_target)
+  
+    #if not tfl.frameExists(userdata.pose_of_the_target_object.header.frame_id):
+    #  rospy.logerr('Frame %s does not exist',userdata.pose_of_the_target_object.header.frame_id)
+    #  sys.exit(0)
+  
+    #if not tfl.frameExists(transf_target):
+    #  rospy.logerr('Frame %s does not exist',transf_target)
+    #  sys.exit(0) 
+    
+
+    t = rospy.Time(0)
+  
+    rospy.loginfo('Waiting for transform for some time...')
+    tfl.waitForTransform(transf_target,userdata.pose_of_the_target_object.header.frame_id,t,rospy.Duration(5))
+  
+    if tfl.canTransform(transf_target,userdata.pose_of_the_target_object.header.frame_id,t):
+    
+      obj_pose_transf = tfl.transformPose(transf_target,userdata.pose_of_the_target_object)
+    
+    else:
+    
+      rospy.logerr('Transformation is not possible!')
+      sys.exit(0) 
+      
+    #print "Transformed pose of object"
+    #print obj_pose_transf
+      
+      
+    bpose = obj_pose_transf.pose
+    #bpose = userdata.pose_of_the_target_object.pose
+    
     try:
       
-      add_object(frame_id = '/base_link',
+      add_object(frame_id = transf_target,
                  name = userdata.name_of_the_target_object,
                  description = 'Object to grasp',
                  pose = bpose,
-#                 scale = bscale,
                  bounding_box_lwh = userdata.bb_of_the_target_object['bb_lwh'],
-#                 bounding_box_min = userdata.bb_of_the_target_object['bb_min'],
-#                 bounding_box_max = userdata.bb_of_the_target_object['bb_max'],
                  color = color,
-                 resource = mesh,
+                 #resource = mesh, # TODO udelat na zaklade toho co se mi povede ziskat volani bud z mesh nebo shape...
                  shape = shape,
                  use_material = True)
     except Exception, e:
@@ -239,10 +270,9 @@ class move_arm_to_given_positions_assisted(smach.State):
   def remove_im(self,userdata):
     
     # clean-up : removing interactive marker...
-    s_remove_object = 'but_gui/remove_primitive'
-    rospy.loginfo("Waiting for %s service",s_remove_object)
-    rospy.wait_for_service(s_remove_object)
-    remove_object = rospy.ServiceProxy(s_remove_object, RemovePrimitive)
+    rospy.loginfo("Waiting for %s service",self.s_remove_object)
+    rospy.wait_for_service(self.s_remove_object)
+    remove_object = rospy.ServiceProxy(self.s_remove_object, RemovePrimitive)
     
     try:
     
@@ -264,6 +294,20 @@ class move_arm_to_given_positions_assisted(smach.State):
     # add IM for grasping positions
     self.add_grpos(userdata)
     
+    rospy.loginfo("Waiting for %s service",self.s_coll_obj)
+    rospy.wait_for_service(self.s_coll_obj)
+    coll_obj = rospy.ServiceProxy(self.s_coll_obj, ArmNavCollObj);
+    
+    try:
+      
+      coll_obj(object_name = userdata.name_of_the_target_object,
+               pose = userdata.pose_of_the_target_object,
+               bb_lwh = userdata.bb_of_the_target_object['bb_lwh']);
+      
+    except Exception, e:
+      
+      rospy.logerr('Cannot add detected object to the planning scene, error: %s',str(e))
+    
     # ADD known object to collision map...
     #===========================================================================
     # if db_shape != None:
@@ -280,7 +324,7 @@ class move_arm_to_given_positions_assisted(smach.State):
     #===========================================================================
 
     # lets start action...    
-    client = actionlib.SimpleActionClient('manual_arm_manip_action',ManualArmManipAction)
+    client = actionlib.SimpleActionClient(self.action_name,ManualArmManipAction)
     
     rospy.loginfo("Waiting for actionlib server...")
     client.wait_for_server()
@@ -333,11 +377,15 @@ class move_arm_from_a_given_position_assisted(smach.State):
   def __init__(self):
     smach.State.__init__(self,outcomes=['completed','not_completed','failed','pre-empted'])
     
+   
+    but_gui_ns = '/but_arm_manip'
+    self.action_name = but_gui_ns + '/manual_arm_manip_action'
+    
   def execute(self,userdata):
     
     rospy.loginfo('Executing state move_arm_from_a_given_position_assisted')
     
-    client = actionlib.SimpleActionClient('manual_arm_manip_action',ManualArmManipAction)
+    client = actionlib.SimpleActionClient(self.action_name,ManualArmManipAction)
     
     rospy.loginfo("Waiting for server...")
     client.wait_for_server()

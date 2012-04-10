@@ -1,0 +1,292 @@
+/******************************************************************************
+ * \file but_arm_manipulation_node.h
+ * \brief Definition of ManualArmManipActionServer and CArmManipulationEditor classes.
+ * \author Zdenek Materna (imaterna@fit.vutbr.cz)
+ *
+ * $Id:$
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
+ * Author: Zdenek Materna (imaterna@fit.vutbr.cz)
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: dd/mm/2012
+ * 
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef BUT_ARMNAVIGATION_NODE_H
+#define BUT_ARMNAVIGATION_NODE_H
+
+
+#include <ros/ros.h>
+#include "move_arm_warehouse/move_arm_utils.h"
+#include <assert.h>
+#include <unistd.h>
+#include <time.h>
+
+#include "cob_arm_navigation_but/ArmNavNew.h"
+#include "cob_arm_navigation_but/ArmNavPlan.h"
+#include "cob_arm_navigation_but/ArmNavPlay.h"
+#include "cob_arm_navigation_but/ArmNavReset.h"
+#include "cob_arm_navigation_but/ArmNavRefresh.h"
+#include "cob_arm_navigation_but/ArmNavExecute.h"
+#include "cob_arm_navigation_but/ArmNavStart.h"
+#include "cob_arm_navigation_but/ArmNavCollObj.h"
+
+#include "cob_arm_navigation_but/ArmNavSuccess.h"
+#include "cob_arm_navigation_but/ArmNavFailed.h"
+
+#include "cob_arm_navigation_but/ManualArmManipAction.h"
+#include <actionlib/server/simple_action_server.h>
+
+/**
+ * Definition of services
+ *
+ * arm_nav_start: when called a messagebox will pop-up in RVIZ plugin
+ * arm_nav_new: let's create planning scene and so on
+ * arm_nav_plan: plan and filter trajectory
+ * arm_nav_play: play previously planned trajectory
+ * arm_nav_execute: execute planned trajectory
+ * arm_nav_reset: delete planning scene, start from beginning
+ * arm_nav_success: user marked action as successful
+ * arm_nav_failed: user marked action as failed
+ * arm_nav_refresh: send planning scene
+ *
+ */
+
+#define BUT_PREFIX std::string("/but_arm_manip")
+
+#define BUT_SERVICE(topic) BUT_PREFIX + std::string(topic)
+#define BUT_TOPIC(topic) BUT_PREFIX + std::string(topic)
+#define BUT_ACTION(topic) BUT_PREFIX + std::string(topic)
+
+#define SRV_START BUT_SERVICE("/arm_nav_start")
+#define SRV_NEW BUT_SERVICE("/arm_nav_new")
+#define SRV_PLAN BUT_SERVICE("/arm_nav_plan")
+#define SRV_PLAY BUT_SERVICE("/arm_nav_play")
+#define SRV_EXECUTE BUT_SERVICE("/arm_nav_execute")
+#define SRV_RESET BUT_SERVICE("/arm_nav_reset")
+#define SRV_SUCCESS BUT_SERVICE("/arm_nav_success")
+#define SRV_FAILED BUT_SERVICE("/arm_nav_failed")
+#define SRV_REFRESH BUT_SERVICE("/arm_nav_refresh")
+#define SRV_COLLOBJ BUT_SERVICE("/arm_nav_coll_obj")
+
+#define ACT_ARM_MANIP BUT_ACTION("/manual_arm_manip_action")
+
+
+/**
+ * Definition of default values for parameters needed by PlanningSceneEditor. Values are customized for use with COB.
+ *
+ */
+static const std::string VIS_TOPIC_NAME = "planning_scene_visualizer_markers";
+static const std::string EXECUTE_RIGHT_TRAJECTORY = "none";
+static const std::string EXECUTE_LEFT_TRAJECTORY = "/arm_controller/follow_joint_trajectory";
+static const std::string LEFT_IK_NAME = "/cob3_arm_kinematics/get_constraint_aware_ik";
+static const std::string RIGHT_IK_NAME = "none";
+static const std::string NON_COLL_LEFT_IK_NAME = "/cob3_arm_kinematics/get_ik";
+static const std::string NON_COLL_RIGHT_IK_NAME = "none";
+static const std::string RIGHT_ARM_GROUP = "none";
+static const std::string LEFT_ARM_GROUP = "arm";
+static const std::string RIGHT_ARM_REDUNDANCY = "none";
+static const std::string LEFT_ARM_REDUNDANCY = "none";
+static const std::string LEFT_IK_LINK = "arm_7_link";
+static const std::string RIGHT_IK_LINK = "none";
+static const std::string PLANNER_1_SERVICE_NAME = "/ompl_planning/plan_kinematic_path";
+static const std::string PLANNER_2_SERVICE_NAME = "none";
+static const std::string LEFT_INTERPOLATE_SERVICE_NAME = "none";
+static const std::string RIGHT_INTERPOLATE_SERVICE_NAME = "none";
+static const std::string TRAJECTORY_FILTER_1_SERVICE_NAME = "/trajectory_filter_server/filter_trajectory_with_constraints";
+static const std::string TRAJECTORY_FILTER_2_SERVICE_NAME = "none";
+static const std::string PROXIMITY_SPACE_SERVICE_NAME = "none";
+static const std::string PROXIMITY_SPACE_VALIDITY_NAME = "none";
+static const std::string PROXIMITY_SPACE_PLANNER_NAME = "none";
+static const std::string LIST_CONTROLLERS_SERVICE = "/pr2_controller_manager/list_controllers";
+static const std::string LOAD_CONTROLLERS_SERVICE = "/pr2_controller_manager/load_controller";
+static const std::string UNLOAD_CONTROLLERS_SERVICE = "/pr2_controller_manager/unload_controller";
+static const std::string SWITCH_CONTROLLERS_SERVICE = "/pr2_controller_manager/switch_controller";
+static const std::string GAZEBO_ROBOT_MODEL = "robot";
+static const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
+static const ros::Duration PLANNING_DURATION = ros::Duration(5.0);
+static const std::string SET_PLANNING_SCENE_DIFF_NAME = "environment_server/set_planning_scene_diff";
+
+static const double START_TIMEOUT = 60.0;
+static const double SOLVE_TIMEOUT = (5*60.0);
+
+
+/*!
+ * ManualArmManipActionServer
+ *
+ * \brief Class is used to wrap actionlib server and related variables.
+ *
+ * Class implements actionlib server (there is also example for such client: arm_manip_state_machine.py),
+ * which can be called from some client. It's also maintaining state of manually assisted arm manipulation.
+ *
+ * \author Zdenek Materna
+ *
+ */
+class ManualArmManipActionServer{
+
+public:
+
+  /*!
+   * Constructor of class.
+   *
+   * \param name Name of the action.
+   *
+   */
+  ManualArmManipActionServer(std::string name):
+    server_(nh_, name, boost::bind(&ManualArmManipActionServer::executeCB, this, _1), false), action_name_(name) {
+
+    inited_ = false;
+    state_ = S_NONE;
+
+    start_timeout_ = ros::Duration(START_TIMEOUT);
+    solve_timeout_ = ros::Duration(SOLVE_TIMEOUT);
+
+    server_.start(); /**< start of actionlib server */
+
+  }
+
+  ~ManualArmManipActionServer(void) {};
+
+
+  /// List of possible states of arm manipulation
+  enum {S_NONE,S_NEW,S_PLAN,S_EXECUTE,S_RESET,S_SUCCESS,S_FAILED};
+
+  /*!
+   * Method for changing state of execution (state, new_state variables).
+   *
+   */
+  void srv_set_state(unsigned int n);
+
+  ros::Duration start_timeout_; /**< Action should start before start_time_ + start_timeout_ */
+  ros::Duration solve_timeout_; /**< This is timeout between user actions */
+
+  protected:
+
+    unsigned int state_;             /**< Variable for holding current state of execution */
+    unsigned int new_state_;         /**< Variable for holding new state of execution */
+
+    ros::NodeHandle nh_;
+    actionlib::SimpleActionServer<cob_arm_navigation_but::ManualArmManipAction> server_;
+    std::string action_name_;
+    cob_arm_navigation_but::ManualArmManipActionFeedback feedback_;
+    cob_arm_navigation_but::ManualArmManipActionResult result_;
+
+    ros::Time start_time_; /**< time at which the task was started */
+    ros::Time timeout_; /**< updated on each user action */
+
+
+    bool inited_; /**< Flag indicating that arm_nav_start was called */
+
+    planning_scene_utils::PlanningSceneParameters params_;
+
+    void setFeedbackFalse();
+
+    /*!
+     * This method maintains state of execution, sends feedback and result of the action. It's used as callback of actionlib server.
+     *
+     * \param goal Goal of action (pregrasp position / away)
+     *
+     */
+    void executeCB(const cob_arm_navigation_but::ManualArmManipGoalConstPtr &goal);
+
+
+  private:
+
+
+};
+
+/*!
+ * CArmManipulationEditor
+ *
+ * \brief Class inherited from planning_scene_utils::PlanningSceneEditor
+ *
+ * These class provides access to functionality of PlanningSceneEditor.
+ *
+ */
+class CArmManipulationEditor : public planning_scene_utils::PlanningSceneEditor
+{
+
+public:
+
+   CArmManipulationEditor(planning_scene_utils::PlanningSceneParameters& params,  std::vector<string> clist);
+  ~CArmManipulationEditor();
+
+  virtual void onPlanningSceneLoaded();
+  virtual void updateState();
+  virtual void planCallback(arm_navigation_msgs::ArmNavigationErrorCodes& errorCode);
+  virtual void filterCallback(arm_navigation_msgs::ArmNavigationErrorCodes& errorCode);
+  virtual void attachObjectCallback(const std::string& name);
+  virtual void selectedTrajectoryCurrentPointChanged( unsigned int new_current_point );
+
+  void createAttachedObj();
+
+  /*!
+   * Service callbacks
+   *
+   */
+  bool ArmNavNew(cob_arm_navigation_but::ArmNavNew::Request &req, cob_arm_navigation_but::ArmNavNew::Response &res);
+  bool ArmNavPlan(cob_arm_navigation_but::ArmNavPlan::Request &req, cob_arm_navigation_but::ArmNavPlan::Response &res);
+  bool ArmNavPlay(cob_arm_navigation_but::ArmNavPlay::Request &req, cob_arm_navigation_but::ArmNavPlay::Response &res);
+  bool ArmNavExecute(cob_arm_navigation_but::ArmNavExecute::Request &req, cob_arm_navigation_but::ArmNavExecute::Response &res);
+  bool ArmNavReset(cob_arm_navigation_but::ArmNavReset::Request &req, cob_arm_navigation_but::ArmNavReset::Response &res);
+  bool ArmNavRefresh(cob_arm_navigation_but::ArmNavRefresh::Request &req, cob_arm_navigation_but::ArmNavRefresh::Response &res);
+  bool ArmNavSuccess(cob_arm_navigation_but::ArmNavSuccess::Request &req, cob_arm_navigation_but::ArmNavSuccess::Response &res);
+  bool ArmNavFailed(cob_arm_navigation_but::ArmNavFailed::Request &req, cob_arm_navigation_but::ArmNavFailed::Response &res);
+  bool ArmNavCollObj(cob_arm_navigation_but::ArmNavCollObj::Request &req, cob_arm_navigation_but::ArmNavCollObj::Response &res);
+
+  void spin_callback(const ros::TimerEvent&);
+
+  void reset();
+
+  ManualArmManipActionServer * action_server_ptr_;
+  tf::TransformListener *tfl_;
+
+protected:
+
+  std::string planning_scene_id;
+  unsigned int mpr_id;
+  unsigned int traj_id;
+  unsigned int filt_traj_id;
+  std::vector<std::string> coll_obj_attached_id;
+  //std::vector<std::string> coll_obj_bb_id;
+  bool inited;
+
+  std::vector<std::string> links_;
+
+  std::string add_coll_obj_attached(double x, double y, double z, double scx, double scz);
+  std::string add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh);
+
+  void armHasStoppedMoving();
+
+  typedef struct {
+
+    std::string name;
+    std::string id;
+    geometry_msgs::PoseStamped pose;
+    geometry_msgs::Point bb_lwh;
+
+  } t_det_obj;
+
+  std::vector<t_det_obj> coll_obj_det;
+
+
+private:
+
+};
+
+#endif

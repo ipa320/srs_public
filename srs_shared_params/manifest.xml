@@ -1,7 +1,7 @@
 <package>
   <description brief="srs_shared_params">
 
-     srs_shared_params
+     srs_shared_params (a place that stores some parameters that can be used and shared by srs components.)
 
   </description>
   <author>Ze Ji</author>

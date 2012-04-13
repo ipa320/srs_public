@@ -1,0 +1,18 @@
+<package>
+  <description brief="srs_shared_params">
+
+     srs_shared_params
+
+  </description>
+  <author>Ze Ji</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_shared_params</url>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+
+</package>
+
+

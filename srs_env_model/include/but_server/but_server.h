@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: but_server.h 617 2012-04-16 13:45:44Z stancl $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -75,7 +75,8 @@
 #include <but_server/plugins/MarkerArrayPlugin.h>
 #include <but_server/plugins/LimitedPointCloudPlugin.h>
 
-
+// Old interactive markers plugin used for testing
+#include <but_server/plugins/OldIMarkersPlugin.h>
 
 /**
   BUT dynamic scene server class.
@@ -137,6 +138,7 @@ protected:
     //======================================================================================================
     // Plugins
 
+
     /// All plugins vector type
     typedef std::vector<srs::CServerPluginBase * > tVecPlugins;
 
@@ -167,10 +169,16 @@ protected:
     srs::SMap2DPluginHolder< srs::COctoMapPlugin > m_plugMap2DHolder;
 
     /// Interactive markers server plugin
-    srs::CIMarkersPlugin m_plugIMarkers;
+    srs::CIMarkersPlugin * m_plugIMarkers;
 
     /// Marker array publisher plugin
     srs::SMarkerArrayHolder< srs::COctoMapPlugin > m_plugMarkerArrayHolder;
+
+    /// Old interactive markers plugin
+    srs::COldIMarkersPlugin * m_plugOldIMarkers;
+
+    /// Use old interactive server plugin?				TODO: Remov this when new is will be finished
+    bool m_bUseOldIMP;
 
 };
 

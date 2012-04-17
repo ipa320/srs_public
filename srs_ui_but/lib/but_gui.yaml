@@ -12,13 +12,13 @@ displays:
     description: |
       Show pointclouds display
   -
-    class_name: CButDistanceVisualizer
-    display_name: Distance Visualizer
+    class_name: CButDistanceLinearVisualizer
+    display_name: Distance Linear Visualizer
     description: |
       Visualization of distance between the link and closest surface.
   -
-    class_name: CButDistanceIndicator
-    display_name: Distance Indicator
+    class_name: CButDistanceCircularIndicator
+    display_name: Distance Circular Indicator
     description: |
       Visualization of distances around robot's links.
   -

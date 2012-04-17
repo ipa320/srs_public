@@ -10,7 +10,7 @@ This package contains scripts for testing srs_arm_manipulation.
   <url>http://ros.org/wiki/srs_arm_navigation_tests</url>
 
 
-  <depend package="srs_arm_navigation"/>
+  <depend package="srs_assisted_arm_navigation"/>
   <depend package="actionlib_msgs"/>
   <depend package="smach"/>
   <depend package="smach_ros"/>

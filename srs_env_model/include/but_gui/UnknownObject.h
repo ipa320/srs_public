@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: UnknownObject.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: UnknownObject.h 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -32,11 +32,16 @@
 
 namespace but_gui
 {
-/*
+/**
  * This class represents an Unknown Object primitive.
  *
- * Unknown Object shows some obstacles in the scene.
+ * Unknown Object will show some obstacles, unreachable objects or dangerous
+ * places in the scene, some the operator will be able to avoid collisions
+ * or crash of the robot.
  * Unknown Object can be rotated, translated and scaled.
+ *
+ * @author Tomas Lokaj
+ * @see http://ros.org/wiki/srs_env_model#Unknown_Object
  */
 
 class UnknownObject : public Primitive
@@ -49,16 +54,17 @@ public:
    * @param name is name of this object
    */
   UnknownObject(InteractiveMarkerServerPtr server, string frame_id, string name);
-  /*
+
+  /**
    * Inserts Unknown object into Interactive marker server
    */
   void insert();
 
-  // Callbacks
   /**
    * Callback for menu
    */
   void menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
+
   /**
    * Callback for interactive markers
    */

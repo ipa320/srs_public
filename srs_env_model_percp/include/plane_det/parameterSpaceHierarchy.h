@@ -53,6 +53,13 @@ namespace but_scenemodel
 #define DEFAULT_SHIFT_STEP 5
 #define DEFAULT_BIN_SIZE 16
 
+class IndexStruct
+{
+	public:
+		int lowResolutionIndex;
+		int highResolutionIndex;
+		int CompleteIndex;
+};
 class ParameterSpaceHierarchy
 {
 	public:
@@ -95,6 +102,7 @@ class ParameterSpaceHierarchy
 		 * @param shift Shift offset
 		 */
 		void addVolume(ParameterSpace &second, int angle1, int angle2, int shift);
+		void addVolume(ParameterSpace &second, int angle1, int angle2, int shift, float factor);
 
 		/**
 		 * Converts index in parameter space into angle value
@@ -124,12 +132,15 @@ class ParameterSpaceHierarchy
 		/**
 		 * Returns an index from given values
 		 */
-		int getIndex(double angle1, double angle2, double z);
+		IndexStruct getIndex(double angle1, double angle2, double z);
+		void fromIndex(int i, int& angle1, int& angle2, int& z);
+		IndexStruct getIndex(int angle1, int angle2, int z);
 
 		/**
 		 * Returns axis indices from given values
 		 */
 		void getIndex(double angle1, double angle2, double z, int &angle1Index, int &angle2Index, int &shiftIndex);
+
 
 		/**
 		 * Conversion from Euclidian representation of normal (x, y, z) to parametrized (a1, a2)
@@ -144,6 +155,8 @@ class ParameterSpaceHierarchy
 		bool m_init;
 		double m_angleStep;
 		double m_shiftStep;
+		double m_angleLoStep;
+		double m_shiftLoStep;
 		double m_shiftmin;
 		double m_shiftmax;
 		double m_anglemin;
@@ -160,6 +173,50 @@ class ParameterSpaceHierarchy
 		int m_hiSize2;
 		Mat m_paramSpace;
 		double **m_dataLowRes;
+};
+
+class ParameterSpaceHierarchyFullIterator
+{
+	public:
+		ParameterSpaceHierarchyFullIterator(ParameterSpaceHierarchy *space)
+		{
+			index = space->m_angleSize*space->m_angleSize*space->m_shiftSize;
+			currentI = 0;
+			end = false;
+			m_space = space;
+			max_size = space->m_size;
+		}
+
+		double getVal()
+		{
+			return m_space->get(currentI);
+		}
+
+		void setVal(double val)
+		{
+			m_space->set(currentI, val);
+		}
+
+		ParameterSpaceHierarchyFullIterator &operator ++()
+		{
+			if (m_space->m_dataLowRes[currentI / m_space->m_hiSize] == NULL)
+				currentI += m_space->m_hiSize;
+			else
+			{
+				++currentI;
+			}
+
+			if (currentI>=max_size) end = true;
+			return *this;
+		}
+
+		int currentI;
+		bool end;
+	private:
+		int index;
+		int max_size;
+
+		ParameterSpaceHierarchy *m_space;
 };
 
 }

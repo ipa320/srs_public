@@ -36,7 +36,6 @@
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
-#include <cv_bridge/CvBridge.h>
 
 //PCL
 #include <pcl/point_types.h>

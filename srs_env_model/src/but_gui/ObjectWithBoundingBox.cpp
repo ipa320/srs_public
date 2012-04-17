@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: ObjectWithBoundingBox.cpp 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -51,6 +51,7 @@ void ObjectWithBoundingBox::objectWithBoundingBoxCallback(const InteractiveMarke
 void ObjectWithBoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
   MenuHandler::EntryHandle handle = feedback->menu_entry_id;
+  MenuHandler::EntryHandle moveToPreGraspHandle = 8;
   MenuHandler::CheckState state;
   string title;
   menu_handler_.getCheckState(handle, state);
@@ -68,12 +69,11 @@ void ObjectWithBoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr
   switch (feedback->menu_entry_id)
   {
     case 1:
-      /**
+      /*
        * Object's bounding box visibility
        */
       if (state == MenuHandler::CHECKED)
       {
-        //TODO predeleat na remove a add
         showBoundingBoxControl(false);
         menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
       }
@@ -84,7 +84,7 @@ void ObjectWithBoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr
       }
       break;
     case 2:
-      /**
+      /*
        * Object's description visibility
        */
       if (state == MenuHandler::CHECKED)
@@ -99,7 +99,7 @@ void ObjectWithBoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr
       }
       break;
     case 3:
-      /**
+      /*
        * Object's measure visibility
        */
       if (state == MenuHandler::CHECKED)
@@ -114,11 +114,12 @@ void ObjectWithBoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr
       }
       break;
     case 4:
-      /**
-       * Object's grasping positions visibility
+      /*
+       * Object's pre-grasp positions visibility
        */
       if (state == MenuHandler::CHECKED)
       {
+        menu_handler_.setVisible(moveToPreGraspHandle, false);
         removePregraspPositions();
         menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
       }
@@ -158,6 +159,12 @@ void ObjectWithBoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr
         menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
       }
       break;
+    case 8:
+      /*
+       * Move arm to pre-grasp position
+       */
+      cout << feedback->control_name << endl;
+      break;
   }
 
   server_->insert(object_);
@@ -190,6 +197,8 @@ void ObjectWithBoundingBox::createMenu()
     menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Rotation",
                                                      boost::bind(&ObjectWithBoundingBox::menuCallback, this, _1)),
                                 MenuHandler::UNCHECKED);
+    menu_handler_.setVisible(menu_handler_.insert("Move arm to pre-grasp position",
+                                                  boost::bind(&ObjectWithBoundingBox::menuCallback, this, _1)), true);
 
   }
 }
@@ -211,7 +220,7 @@ void ObjectWithBoundingBox::createMesh()
       break;
     case SHAPE:
       mesh_.type = Marker::TRIANGLE_LIST;
-      for (int i = 0; i < shape_.triangles.size(); i++)
+      for (unsigned int i = 0; i < shape_.triangles.size(); i++)
         mesh_.points.push_back(shape_.vertices[shape_.triangles[i]]);
       break;
   }
@@ -228,17 +237,17 @@ void ObjectWithBoundingBox::create()
 {
   scale_.x = bounding_box_lwh_.x;
   scale_.y = bounding_box_lwh_.y;
-//  scale_.z = 0.5 * bounding_box_lwh_.z;
+  //  scale_.z = 0.5 * bounding_box_lwh_.z;
   scale_.z = bounding_box_lwh_.z;
-  
-//  if (!translated_)
-//  {
-//    if (frame_id_ == "/map")
-//      pose_.position.z += scale_.z / 2;
-//    else
-//      pose_.position.y += scale_.z / 2;
-//    translated_ = true;
-//  }
+
+  //  if (!translated_)
+  //  {
+  //    if (frame_id_ == "/map")
+  //      pose_.position.z += scale_.z / 2;
+  //    else
+  //      pose_.position.y += scale_.z / 2;
+  //    translated_ = true;
+  //  }
 
   BoundingBox::create();
   createMesh();

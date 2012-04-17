@@ -172,33 +172,30 @@ def main():
 
   grasps_res = None
 
-  # TODO add try except.....
-  try:
+
+  fake_pregrasp_positions = rospy.get_param('~fake_pregrasp_positions', True)
   
-      # TODO uncomment and test.....................................................................................................
-      #grasps_res = get_grasps(object_id=objdb_id,object_pose=obj_pose_transf.pose)
-      
-      if grasps_res.feasible_grasp_available == False:
-      
-        rospy.logerr('Feasible grasp for object ID %s is not available :-( (lets use fake positions...)',int(obj_id))
-        #grasps_res = None
-        
-      else:
-        
-        rospy.loginfo('Hooray, we are able to grasp! ;)')
-      
-  except Exception, e:
-      
-      rospy.logerr('Error on getting grasps: %s',str(e))
-      grasps_res = None
-
+  if not fake_pregrasp_positions:
   
-      #sys.exit(0)
+    try:
+    
+        grasps_res = get_grasps(object_id=objdb_id,object_pose=obj_pose_transf.pose)
+        
+        if grasps_res.feasible_grasp_available == False:
+        
+          rospy.logerr('Feasible grasp for object ID %s is not available :-( (lets use fake positions...)',int(obj_id))
+          grasp_res = None
+          
+        else:
+          
+          rospy.loginfo('Hooray, we are able to grasp! ;)')
+        
+    except Exception, e:
+        
+        rospy.logerr('Error on getting grasps: %s',str(e))
+        grasps_res = None
 
-  #print "GRASPS"
-  #print grasps_res
 
-  # TODO prepare fake grasping positions data....
   
   # test if variable is defined
   if grasps_res is not None:
@@ -211,11 +208,17 @@ def main():
       
          grasps_res.grasp_configuration = None
      
-        
-    
-  if grasps_res is None:
       
-      rospy.logerr('Problem with pre-grasp positions. We will use fake ones...') 
+    
+  if (grasps_res is None) or (fake_pregrasp_positions):
+      
+      if grasps_res is None:
+        
+        rospy.logerr('Problem with pre-grasp positions. We will use fake ones...')
+        
+      if fake_pregrasp_positions:
+        
+         rospy.logerr('Ok. Lets use fake pregrasp positions (required by parameter)')
       
       sm.userdata.list_of_id_for_target_positions = [5,8,13,72]
       
@@ -255,7 +258,6 @@ def main():
       fake_grasp_positions[3].orientation.w = 1 
       
       sm.userdata.list_of_target_positions = fake_grasp_positions
-    
       
   else:
     

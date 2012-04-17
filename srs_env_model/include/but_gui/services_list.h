@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: services_list.h 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -32,6 +32,7 @@
 #include <srs_env_model/AddBoundingBox.h>
 #include <srs_env_model/AddBillboard.h>
 #include <srs_env_model/AddPlane.h>
+#include <srs_env_model/AddPlanePolygon.h>
 #include <srs_env_model/AddObject.h>
 #include <srs_env_model/AddObjectWithBoundingBox.h>
 #include <srs_env_model/AddUnknownObject.h>
@@ -55,6 +56,7 @@
 #define BUT_AddBillboard_SRV BUT_GUI_SERVICE_TOPIC("/add_billboard")
 #define BUT_AddBoundingBox_SRV BUT_GUI_SERVICE_TOPIC("/add_bounding_box")
 #define BUT_AddPlane_SRV BUT_GUI_SERVICE_TOPIC("/add_plane")
+#define BUT_AddPlanePolygon_SRV BUT_GUI_SERVICE_TOPIC("/add_plane_polygon")
 #define BUT_AddObject_SRV BUT_GUI_SERVICE_TOPIC("/add_object")
 #define BUT_AddUnknownObject_SRV BUT_GUI_SERVICE_TOPIC("/add_unknown_object")
 #define BUT_AddObjectWithBoundingBox_SRV BUT_GUI_SERVICE_TOPIC("/add_object_with_bounding_box")
@@ -77,8 +79,8 @@
 /*
  * Services for setting and removing primitive's grasping positions
  */
-#define BUT_SetGraspingPosition_SRV BUT_GUI_SERVICE_TOPIC("/set_grasping_position")
-#define BUT_RemoveGraspingPosition_SRV BUT_GUI_SERVICE_TOPIC("/remove_grasping_position")
+#define BUT_SetGraspingPosition_SRV BUT_GUI_SERVICE_TOPIC("/set_pregrasp_position")
+#define BUT_RemoveGraspingPosition_SRV BUT_GUI_SERVICE_TOPIC("/remove_pregrasp_position")
 
 /*
  * Services for update topics

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: test_observers.cpp 625 2012-04-16 14:06:17Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -34,8 +34,13 @@
 #include <srs_env_model/MenuClicked.h>
 #include <srs_env_model/MovementChanged.h>
 #include <srs_env_model/TagChanged.h>
+#include <srs_env_model/ContextChanged.h>
 
 using namespace std;
+
+/**
+ * THIS IS ONLY A TESTING FILE!
+ */
 
 void scaleCallback(const srs_env_model::ScaleChangedConstPtr &marker_update)
 {
@@ -71,6 +76,12 @@ void tagCallback(const srs_env_model::TagChangedConstPtr &marker_update)
 {
   ROS_INFO("CALLBACK from marker %s", marker_update->marker_name.c_str());
   cout << marker_update->new_tag << endl;
+}
+
+void contextCallback(const srs_env_model::ContextChangedConstPtr &context_update)
+{
+  ROS_INFO("Context changed");
+  cout << context_update->context << endl;
 }
 
 int main(int argc, char** argv)
@@ -114,5 +125,10 @@ int main(int argc, char** argv)
                                                                    poseCallback);
   ros::Subscriber milk3 = n.subscribe<srs_env_model::ScaleChanged> ("/but_gui/milk/update/scale_changed", 20,
                                                                     scaleCallback);
+
+  // Test context changes
+  ros::Subscriber context = n.subscribe<srs_env_model::ContextChanged> ("but_context/context_changed", 20,
+                                                                        contextCallback);
+
   ros::spin();
 }

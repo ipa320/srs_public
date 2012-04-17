@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: Plane.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: Plane.h 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -32,10 +32,13 @@
 
 namespace but_gui
 {
-/*
+/**
  * This class represents a Plane primitive.
  *
  * Plane shows only a simple plane which can be tagged as table desk, wall, etc.
+
+ * @author Tomas Lokaj
+ * @see http://ros.org/wiki/srs_env_model#Plane
  */
 class Plane : public Primitive
 {
@@ -47,21 +50,21 @@ public:
    * @param name_ is name of this plane
    */
   Plane(InteractiveMarkerServerPtr server, string frame_id, string name);
-  /*
+
+  /**
    * Insert this Plane into Interactive Marker Server
    */
   void insert();
-
-  // Callbacks
 
   /**
    * Callback for menu
    */
   void menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
 
-private:
+protected:
   Marker mesh_;
   string tag_;
+
 
   void create();
   void createMenu();

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: Billboard.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: Billboard.cpp 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -53,7 +53,7 @@ void Billboard::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
   switch (feedback->menu_entry_id)
   {
     case 1:
-      /**
+      /*
        * Billboard trajectory
        */
       if (state == MenuHandler::CHECKED)
@@ -68,7 +68,7 @@ void Billboard::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
       }
       break;
     case 2:
-      /**
+      /*
        * Billboard description
        */
       if (state == MenuHandler::CHECKED)

@@ -1,6 +1,6 @@
 /******************************************************************************
  * \file
- * $Id: but_server.cpp 512 2012-04-04 21:07:51Z stancl $
+ * $Id: but_server.cpp 617 2012-04-16 13:45:44Z stancl $
  *
  * Modified by dcgm-robotics@FIT group.
  *
@@ -78,8 +78,10 @@ CButServer::CButServer(const std::string& filename) :
 			m_plugOctoMap("OCM"),
 			m_plugCollisionObjectHolder("COB"),
 			m_plugMap2DHolder("M2D"),
-			m_plugIMarkers("IM"),
-			m_plugMarkerArrayHolder( "MA" )
+			m_plugIMarkers(0),
+			m_plugMarkerArrayHolder( "MA" ),
+			m_plugOldIMarkers( 0 ),
+			m_bUseOldIMP( false )
 {
 	// Get node handle
 	ros::NodeHandle private_nh("~");
@@ -92,6 +94,7 @@ CButServer::CButServer(const std::string& filename) :
 
 	m_latchedTopics = staticMap;
 	private_nh.param("latch", m_latchedTopics, m_latchedTopics);
+	private_nh.param<bool>("use_old_im", m_bUseOldIMP, m_bUseOldIMP);
 
 	std::cerr << "BUTSERVER: Initializing plugins " << std::endl;
 
@@ -103,9 +106,18 @@ CButServer::CButServer(const std::string& filename) :
 	m_plugins.push_back( &m_plugOctoMap );
 	m_plugins.push_back( m_plugCollisionObjectHolder.getPlugin() );
 	m_plugins.push_back( m_plugMap2DHolder.getPlugin() );
-	m_plugins.push_back( &m_plugIMarkers );
 	m_plugins.push_back( m_plugMarkerArrayHolder.getPlugin() );
 
+	if( m_bUseOldIMP )
+	{
+		m_plugOldIMarkers = new srs::COldIMarkersPlugin( "IM" );
+		m_plugins.push_back( m_plugOldIMarkers );
+	}
+	else
+	{
+		m_plugIMarkers = new srs::CIMarkersPlugin( "IM" );
+		m_plugins.push_back( m_plugIMarkers );
+	}
 
 
 	//=========================================================================
@@ -130,6 +142,11 @@ CButServer::CButServer(const std::string& filename) :
 CButServer::~CButServer()
 {
 
+	if( m_plugOldIMarkers != 0 )
+		delete m_plugOldIMarkers;
+
+	if( m_plugIMarkers != 0 )
+		delete m_plugIMarkers;
 
 }
 
@@ -204,6 +221,13 @@ void CButServer::publishAll(const ros::Time& rostime) {
 	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
 	ROS_DEBUG("Map publishing in CButServer took %f sec", total_elapsed);
 
+	// Publish interactive markers
+	if( m_plugIMarkers != 0 && m_plugIMarkers->shouldPublish() )
+		m_plugIMarkers->onPublish( rostime );
+
+	// Old interactive markers
+	if( m_plugOldIMarkers != 0 && m_plugOldIMarkers->shouldPublish() )
+		m_plugOldIMarkers->onPublish( rostime );
 }
 
 

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: dynModelExporter.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: dynModelExporter.cpp 619 2012-04-16 13:47:28Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -34,12 +34,79 @@
 #include <srs_env_model/AddPlane.h>
 #include <srs_env_model/AddPlanes.h>
 #include <srs_env_model/RemovePrimitive.h>
-
+#include <but_gui/Plane.h>
 
 namespace but_scenemodel
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void DynModelExporter::updateDirect(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf)
+{
+	// but dynamic model
+	ros::ServiceClient plane = n->serviceClient<srs_env_model::AddPlane> ("insert_plane");
+
+	// Create calls
+
+	for (unsigned int i = 0; i < planes.size(); ++i)
+	{
+		float x, y, z, w;
+		planes[i].getQuaternionRotation(x, y, z, w);
+
+		PointXYZ center;
+		PointXYZ scale;
+
+		// for each plane
+		if (getCenterAndScale(planes[i], scene_cloud, center, scale))
+		{
+
+			// test if we modify or insert
+
+			// Fill in coords
+			tf::Transformer t;
+			t.setTransform(sensorToWorldTf);
+
+			tf::Stamped<btVector3> pose, pose2;
+			tf::Stamped<btQuaternion> orientation, orientation2;
+			pose.setX(center.x);
+			pose.setY(center.y);
+			pose.setZ(center.z);
+			pose.frame_id_ = "/head_cam3d_link";
+
+			orientation.setX(x);
+			orientation.setY(y);
+			orientation.setZ(z);
+			orientation.setW(w);
+			orientation.frame_id_ = "/head_cam3d_link";
+			t.transformPoint("/map", pose, pose2);
+			t.transformQuaternion("/map", orientation, orientation2);
+
+
+
+			std::cout << "Sending plane: " << planes[i].a << "x + " << planes[i].b << "y + " << planes[i].c << "z + " << planes[i].d << " = 0.0" << std::endl;
+			srs_env_model::AddPlane planeSrv;
+			//planeSrv.request.id = i;
+			planeSrv.request.frame_id = "/map";
+//planeSrv.request.stamp = ros::Time::now();
+			planeSrv.request.pose.position.x = pose2.getX();
+			planeSrv.request.pose.position.y = pose2.getY();
+			planeSrv.request.pose.position.z = pose2.getZ();
+			planeSrv.request.pose.orientation.x = orientation2.getX();
+			planeSrv.request.pose.orientation.y = orientation2.getY();
+			planeSrv.request.pose.orientation.z = orientation2.getZ();
+			planeSrv.request.pose.orientation.w = orientation2.getW();
+			planeSrv.request.scale.x = scale.x;
+			planeSrv.request.scale.y = scale.y;
+			planeSrv.request.scale.z = scale.z;
+
+			// push into array
+			plane.call(planeSrv);
+		}
+	}
+	// fill in header and send
+}
+
+
 void DynModelExporter::update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf)
 {
 	// but dynamic model

@@ -10,6 +10,7 @@ ROS dynamic environment model provided by dcgm-robotics@FIT group.
 	<url>http://ros.org/wiki/srs_env_model</url>
 
 	<depend package="opencv2" />
+	<depend package="eigen"/>
 	<depend package="roscpp" />
 	<depend package="image_transport" />
 	<depend package="camera_calibration_parsers" />
@@ -27,6 +28,7 @@ ROS dynamic environment model provided by dcgm-robotics@FIT group.
 	<depend package="actionlib_msgs" />
 	<depend package="actionlib" />
 	<depend package="cob_object_detection_msgs" />
+	<depend package="image_geometry"/>
 
 	<depend package="srs_env_model_msgs" />
 

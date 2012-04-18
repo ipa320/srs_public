@@ -1,6 +1,8 @@
 <launch>
 
   <!-- fake decision making for TESTing purposes ONLY (it calls two generic states) -->
-  <node name="fake_dm" pkg="srs_arm_navigation_tests" type="fake_dm.py"/>
+  <node name="fake_dm" pkg="srs_arm_navigation_tests" type="fake_dm.py">
+    <param name="fake_pregrasp_positions" type="bool" value="false"/>
+  </node>
 
 </launch>

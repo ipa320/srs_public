@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: ObjectWithBoundingBox.h 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -32,7 +32,16 @@
 
 namespace but_gui
 {
-
+/**
+ * This class represents detected object and it's bounding box.
+ *
+ * Object with Bounding Box is designed to be the direct output of the detectors.
+ * It shows object's mesh together with it's Bounding Box.
+ * It can also show pre-grasp positions and can be translated, rotated or scaled.
+ *
+ * @author Tomas Lokaj
+ * @see http://ros.org/wiki/srs_env_model#Object_with_Bounding_Box
+ */
 class ObjectWithBoundingBox : public BoundingBox
 {
 public:
@@ -58,9 +67,10 @@ public:
     bounding_box_lwh_ = bounding_box_lwh;
   }
 
-  /*
-   * Sets position and orientation
+  /**
+   * Sets position orientation of the object and dimension of the bounding box.
    * @param pose is object's position and orientation
+   * @param bounding_box_lwh is length, width and height of the bounding box
    */
   void setPoseLWH(Pose pose, Point bounding_box_lwh);
 
@@ -68,6 +78,7 @@ public:
    * Callback
    */
   void objectWithBoundingBoxCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
+
   /**
    * Menu callback
    */

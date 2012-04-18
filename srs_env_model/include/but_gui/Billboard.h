@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: Billboard.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: Billboard.h 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -37,37 +37,44 @@ using namespace srs_env_model;
 
 namespace but_gui
 {
-/*
+/**
  * This class represents Billboard primitive.
  *
- * Billboard is a simple object created as a plane mesh with texture
- * representing a real world object.
- * Billboard is view facing and can illustrate the movement of the represented object.
+ * Billboard represents real world object detected around robot, which is hard to describe with some mesh.
+ * Billboard is view facing and iẗ́'s types are specified in srs_env_model/BillboardType message.
+ * Billboard can also illustrate the movement of the represented object, e.g., walking person.
+ *
+ * @author Tomas Lokaj
+ * @see http://ros.org/wiki/srs_env_model#Billboard
  */
 class Billboard : public Primitive
 {
 public:
-  /*
+  /**
    * Constructor.
    * @param server is Interactive marker server
    * @param frame_id is fixed frame
    * @param name is name of this billboard
    */
   Billboard(InteractiveMarkerServerPtr server, string frame_id, string name);
-  /*
+
+  /**
    * Sets type to the billboard
    * @param type is billboard's type
    */
   void setType(int type);
-  /*
+
+  /**
    * Gets billboard's type
+   * @return type of the billboard
    */
   int getType();
 
-  /*
+  /**
    * Inserts this billboard into Interactive marker server
    */
   void insert();
+
   /**
    * Callback for menu
    */

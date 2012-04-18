@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: parameterSpace.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: parameterSpace.cpp 619 2012-04-16 13:47:28Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -285,7 +285,7 @@ int ParameterSpace::findMaxima(std::vector<Plane<float> > &indices)
 //		}
 //	}
 	//std::cout << "=========" << std::endl;
-	for(int i = 0; i < indices.size(); ++i)
+	for(unsigned int i = 0; i < indices.size(); ++i)
 	{
 		int a1, a2, s;
 		toAngles(indices[i].a,indices[i].b, indices[i].c, a, b);

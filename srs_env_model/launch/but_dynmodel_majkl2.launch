@@ -18,7 +18,7 @@
 	<include file="$(find srs_env_model)/launch/only_butserver.launch"/>
     
 	<!-- Run our GUI nodes -->
-	<node pkg="cob_ui_but" type="but_cob_teleop_marker" name="but_cob_teleop_marker" />
+	<node pkg="cob_interactive_teleop" type="but_cob_teleop" name="but_cob_teleop" />
 <!--	<node pkg="srs_ui_but" type="view" name="view" /> -->
 	<node pkg="srs_ui_but" type="but_service_server" name="but_service_server" />
 

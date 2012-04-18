@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_gui_service_server.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: but_gui_service_server.cpp 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -25,11 +25,6 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Description:
- * This server advertises services for but_gui
- */
-
 #include <but_gui/but_gui_service_server.h>
 
 namespace but_gui
@@ -48,6 +43,30 @@ bool addPlane(AddPlane::Request &req, AddPlane::Response &res)
   Plane *plane = new Plane(imServer, req.frame_id, req.name);
   plane->setPose(req.pose);
   plane->setScale(req.scale);
+  plane->setColor(req.color);
+  plane->insert();
+  imServer->applyChanges();
+
+  primitives.insert(make_pair(req.name, plane));
+
+  ROS_INFO("..... DONE");
+  return true;
+}
+
+bool addPlanePolygon(AddPlanePolygon::Request &req, AddPlanePolygon::Response &res)
+{
+  ROS_INFO("ADDING PLANE POLYGON");
+
+  InteractiveMarker tmp;
+  if ((imServer->get(req.name, tmp)) || (primitives.count(req.name) != 0))
+  {
+    ROS_ERROR("Object with that name already exists! Please remove it first.");
+    return false;
+  }
+
+  PlanePolygon *plane = new PlanePolygon(imServer, req.frame_id, req.name);
+  plane->setPolygon(req.polygon);
+  plane->setNormal(req.normal);
   plane->setColor(req.color);
   plane->insert();
   imServer->applyChanges();
@@ -162,7 +181,7 @@ bool addObjectWithBoundingBox(AddObjectWithBoundingBox::Request &req, AddObjectW
     object->setResource(req.resource);
     object->setUseMaterial(req.use_material);
   }
-//  object->setPose(req.pose);
+  //  object->setPose(req.pose);
   object->setPoseLWH(req.pose, req.bounding_box_lwh);
   object->setBoundingBoxLWH(req.bounding_box_lwh);
   object->setColor(req.color);
@@ -266,7 +285,7 @@ bool setGraspingPosition(SetGraspingPosition::Request &req, SetGraspingPosition:
     return false;
   }
 
-  primitives[req.name]->setGraspingPosition(req.pos_id, req.position);
+  primitives[req.name]->addPreGraspPosition(req.pos_id, req.position);
   primitives[req.name]->insert();
   imServer->applyChanges();
 
@@ -285,7 +304,7 @@ bool removeGraspingPosition(RemoveGraspingPosition::Request &req, RemoveGrasping
     return false;
   }
 
-  primitives[req.name]->removeGraspingPosition(req.pos_id);
+  primitives[req.name]->removePreGraspPosition(req.pos_id);
   primitives[req.name]->insert();
   imServer->applyChanges();
 
@@ -437,12 +456,11 @@ bool getUpdateTopic(GetUpdateTopic::Request &req, GetUpdateTopic::Response &res)
 }
 }
 
+/**
+ * \brief Main function
+ */
 int main(int argc, char **argv)
 {
-  /*
-   * Main function
-   */
-
   // ROS initialization (the last argument is the name of the node)
   ros::init(argc, argv, "but_gui_service_server");
 
@@ -454,10 +472,10 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   // Create and advertise this service over ROS
-  //ros::ServiceServer addMarkerService = n.advertiseService(BUT_AddBillboard_SRV, addMarker);
   ros::ServiceServer addBoundingBoxService = n.advertiseService(BUT_AddBoundingBox_SRV, addBoundingBox);
   ros::ServiceServer addBillboardService = n.advertiseService(BUT_AddBillboard_SRV, addBillboard);
   ros::ServiceServer addPlaneService = n.advertiseService(BUT_AddPlane_SRV, addPlane);
+  ros::ServiceServer addPlanePolygonService = n.advertiseService(BUT_AddPlanePolygon_SRV, addPlanePolygon);
   ros::ServiceServer addObjectService = n.advertiseService(BUT_AddObject_SRV, addObject);
   ros::ServiceServer addObjectWithBoundingBoxService = n.advertiseService(BUT_AddObjectWithBoundingBox_SRV,
                                                                           addObjectWithBoundingBox);

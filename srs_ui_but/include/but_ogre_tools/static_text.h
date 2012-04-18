@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: static_text.h 555 2012-04-11 14:32:26Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -32,10 +32,22 @@
 
 namespace ogre_tools
 {
-
+/**
+ * @brief This class overrides MovableText class in order to show non-movable
+ * static text in the scene.
+ *
+ * @author Tomas Lokaj
+ */
 class StaticText : public MovableText
 {
 public:
+  /**
+   * @brief Constructor.
+   * @param caption text
+   * @param fontName name of the font family
+   * @param charHeight height of the characters
+   * @param color color of the text
+   */
   StaticText(const Ogre::String &caption, const Ogre::String &fontName = "Arial", Ogre::Real charHeight = 1.0,
              const Ogre::ColourValue &color = Ogre::ColourValue::White) :
     MovableText(caption, fontName, charHeight, color)
@@ -43,14 +55,23 @@ public:
   }
 
 protected:
+  /**
+   * @brief Overriden method which causes static behaviour.
+   */
   void getWorldTransforms(Ogre::Matrix4 *xform) const
   {
     if (this->isVisible())
     {
+      Ogre::Matrix3 rot3x3 = Ogre::Matrix3::IDENTITY;
+
+      // store rotation in a matrix
+      mParentNode->_getDerivedOrientation().ToRotationMatrix(rot3x3);
+
       // parent node position
       Ogre::Vector3 ppos = mParentNode->_getDerivedPosition() + Ogre::Vector3::UNIT_Y * mGlobalTranslation;
-      ppos += mLocalTranslation;
-      *xform = mParentNode->_getFullTransform();
+      ppos += rot3x3 * mLocalTranslation;
+
+      *xform = rot3x3;
       xform->setTrans(ppos);
     }
   }

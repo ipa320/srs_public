@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: Object.cpp 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -55,7 +55,9 @@ void Object::objectCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 
 void Object::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
+  ROS_INFO("MENU CLICKED");
   MenuHandler::EntryHandle handle = feedback->menu_entry_id;
+  MenuHandler::EntryHandle moveToPreGraspHandle = 8;
   MenuHandler::CheckState state;
   string title;
   menu_handler_.getCheckState(handle, state);
@@ -70,7 +72,7 @@ void Object::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
     switch (feedback->menu_entry_id)
     {
       case 1:
-        /**
+        /*
          * Object description
          */
         if (state == MenuHandler::CHECKED)
@@ -85,7 +87,7 @@ void Object::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
         }
         break;
       case 2:
-        /**
+        /*
          * Object measure
          */
         if (state == MenuHandler::CHECKED)
@@ -100,16 +102,18 @@ void Object::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
         }
         break;
       case 3:
-        /**
-         * Object grasping positions
+        /*
+         * Object pre-grasp positions
          */
         if (state == MenuHandler::CHECKED)
         {
+          menu_handler_.setVisible(moveToPreGraspHandle, false);
           removePregraspPositions();
           menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
         }
         else
         {
+          menu_handler_.setVisible(moveToPreGraspHandle, true);
           addPregraspPositions();
           menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
         }
@@ -159,6 +163,12 @@ void Object::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
           menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
         }
         break;
+      case 8:
+        /*
+         * Move arm to pre-grasp position
+         */
+        cout << feedback->control_name << endl;
+        break;
     }
     server_->insert(object_);
   }
@@ -173,21 +183,24 @@ void Object::createMenu()
   {
     menu_created_ = true;
     menu_handler_.setCheckState(menu_handler_.insert("Show description", boost::bind(&Object::menuCallback, this, _1)),
-                               MenuHandler::UNCHECKED);
+                                MenuHandler::UNCHECKED);
     menu_handler_.setCheckState(menu_handler_.insert("Show measure", boost::bind(&Object::menuCallback, this, _1)),
-                               MenuHandler::UNCHECKED);
-    menu_handler_.setCheckState(menu_handler_.insert("Show grasping positions", boost::bind(&Object::menuCallback, this,
-                                                                                          _1)), MenuHandler::UNCHECKED);
+                                MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_.insert("Show pre-grasp positions", boost::bind(&Object::menuCallback,
+                                                                                             this, _1)),
+                                MenuHandler::UNCHECKED);
 
     MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert("Interaction");
     menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Movement", boost::bind(&Object::menuCallback,
-                                                                                            this, _1)),
-                               MenuHandler::UNCHECKED);
+                                                                                              this, _1)),
+                                MenuHandler::UNCHECKED);
     menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Rotation", boost::bind(&Object::menuCallback,
-                                                                                            this, _1)),
-                               MenuHandler::UNCHECKED);
+                                                                                              this, _1)),
+                                MenuHandler::UNCHECKED);
     menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Scale", boost::bind(&Object::menuCallback, this,
-                                                                                         _1)), MenuHandler::UNCHECKED);
+                                                                                           _1)), MenuHandler::UNCHECKED);
+    menu_handler_.setVisible(menu_handler_.insert("Move arm to pre-grasp position", boost::bind(&Object::menuCallback,
+                                                                                                this, _1)), false);
   }
 }
 

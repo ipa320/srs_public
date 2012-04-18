@@ -57,6 +57,7 @@ import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import ros.pkg.geometry_msgs.msg.Pose;
 import org.srs.srs_knowledge.knowledge_engine.*;
+//import org.srs.srs_knowledge.utils.*;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
@@ -75,8 +76,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
     public GetObjectTask(String taskType, String targetContent) 
     {	
-	//this.nodeHandle = n;
-	//this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);
     }

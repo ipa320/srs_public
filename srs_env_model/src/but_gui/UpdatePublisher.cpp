@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: UpdatePublisher.cpp 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *

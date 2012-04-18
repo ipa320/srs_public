@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: BoundingBox.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: BoundingBox.h 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -37,13 +37,15 @@
 
 namespace but_gui
 {
-/*
+/**
  * This class represents Bounding Box primitive
  *
- * Bounding Box allows interaction with the selected object as a movement or rotation.
- * All actions are available and configurable from the menu (right mouse click on the bounding box).
- * With bounding box you can show the object dimensions.
+ * Bounding Box ilustrates the smallest dimensions of the object.
+ * Bounding Box can visualize object's dimensions.
+ * Bounding Box can be translated or rotated.
  *
+ * @author Tomas Lokaj
+ * http://ros.org/wiki/srs_env_model#Bounding_Box
  */
 class BoundingBox : public Primitive
 {
@@ -55,39 +57,47 @@ public:
    * @param name is name of this bounding box
    */
   BoundingBox(InteractiveMarkerServerPtr server, string frame_id, string name);
+
   /**
    * Constructor.
    */
   BoundingBox()
   {
   }
-  /*
+
+  /**
    * Inserts bounding box into Interactive marker server
    */
   void insert();
-
-  // Callbacks
 
   /**
    * Callback for menu
    */
   void menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
+
   /**
    * Callback for interactive markers
    */
   void bboxCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
 
-  //Getters and setters
 
-  /*
+  /**
    * Gets name of object attached to this bounding box
+   * @return attached object's name
    */
-  string getAttachedObjectName();
-  /*
+  string getAttachedObjectName()
+  {
+    return attached_object_name_;
+  }
+
+  /**
    * Sets name of object attached to this bounding box
    * @param name is name of attached object
    */
-  void setAttachedObjectName(string name);
+  void setAttachedObjectName(string name)
+  {
+    attached_object_name_ = name;
+  }
 
 protected:
   Marker bounding_box_, wire_;

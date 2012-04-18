@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: PointCloudTools.cpp 556 2012-04-11 16:10:40Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *

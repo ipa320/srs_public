@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: UpdatePublisher.h 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -35,60 +35,71 @@
 
 #define BUFFER_SIZE 5
 
-
 namespace but_gui
 {
 
+/**
+ * @brief Type of Primitive's update.
+ */
 enum UpdateType
 {
   UPDATE_POSE, UPDATE_SCALE, MENU_CLICKED, MOVEMENT_CHANGED, TAG_CHANGED
 };
 
-/*
- * This class publishes updates of Interactive Marker
+/**
+ * This class publishes updates of BUT GUI Primitives.
+ *
+ * @author Tomas Lokaj
  */
 class UpdatePublisher
 {
 public:
-  /*
-   * Constructor
+  /**
+   * @brief Constructor
    * @param name is Interactive Marker's name
    */
   UpdatePublisher(std::string im_name, int im_type);
   UpdatePublisher()
   {
   }
-  /*
-   * Destructor
+
+  /**
+   * @brief Destructor
    */
   virtual ~UpdatePublisher()
   {
   }
-  /*
-   * Gets update topic
+
+  /**
+   * @brief Gets update topic
    * @param update type is update's type
    */
   std::string getUpdateTopic(int update_type);
-  /*
-   * Publishes scale changed message
+
+  /**
+   * @brief Publishes scale changed message
    * @param new_scale is new scale value
    * @param scale_change is scale value change
    */
   void publishScaleChanged(geometry_msgs::Vector3 new_scale, geometry_msgs::Vector3 scale_change);
-  /*
-   * Publishes pose changed message
+
+  /**
+   * @brief Publishes pose changed message
    * @param new_pose is new pose value
    * @param pose_change is pose value change
    */
+
   void publishPoseChanged(geometry_msgs::Pose new_pose, geometry_msgs::Pose pose_change);
-  /*
-   * Publishes menu clicked message
+  /**
+   * @brief Publishes menu clicked message
    * @param title is menu entry title
    * @param state is menu entry state
    */
+
   void publishMenuClicked(std::string title, interactive_markers::MenuHandler::CheckState state);
-  /*
-   * Publishes movement changed message
+
+  /**
+   * @brief Publishes movement changed message
    * @param new_direction is new direction value
    * @param direction_change is direction value change
    * @param new_velocity is new velocity value
@@ -96,8 +107,9 @@ public:
    */
   void publishMovementChanged(geometry_msgs::Quaternion new_direction, geometry_msgs::Quaternion direction_change,
                               float new_velocity, float velocity_change);
-  /*
-   * Publishes movement changed message
+
+  /**
+   * @brief Publishes movement changed message
    * @param new_tag is new tag value
    */
   void publishTagChanged(std::string new_tag);

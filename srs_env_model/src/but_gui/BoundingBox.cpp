@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: BoundingBox.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: BoundingBox.cpp 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -34,16 +34,6 @@ BoundingBox::BoundingBox(InteractiveMarkerServerPtr server, string frame_id, str
   Primitive(server, frame_id, name, srs_env_model::PrimitiveType::BOUNDING_BOX)
 {
   description_ = "";
-}
-
-string BoundingBox::getAttachedObjectName()
-{
-  return attached_object_name_;
-}
-
-void BoundingBox::setAttachedObjectName(string name)
-{
-  attached_object_name_ = name;
 }
 
 void BoundingBox::bboxCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
@@ -101,7 +91,7 @@ void BoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback
   switch (feedback->menu_entry_id)
   {
     case 1:
-      /**
+      /*
        * Bounding box visibility
        */
       if (state == MenuHandler::CHECKED)
@@ -116,7 +106,7 @@ void BoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback
       }
       break;
     case 2:
-      /**
+      /*
        * Bounding box description
        */
       if (state == MenuHandler::CHECKED)
@@ -131,7 +121,7 @@ void BoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback
       }
       break;
     case 3:
-      /**
+      /*
        * Bounding box measure
        */
       if (state == MenuHandler::CHECKED)

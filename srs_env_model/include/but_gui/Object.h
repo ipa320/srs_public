@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: Object.h 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -32,8 +32,16 @@
 
 namespace but_gui
 {
-/*
+/**
  * This class represents detected object.
+ *
+ * Object is representation of detected object, which has it's mesh in object database.
+ * Around object can be shown pre-grasp positions, which aids operator to move
+ * gripper to correct position for grasping.
+ * Object can be rotated, translated and scaled.
+ *
+ * @author Tomas Lokaj
+ * @see http://ros.org/wiki/srs_env_model#Object
  */
 class Object : public Primitive
 {
@@ -45,16 +53,17 @@ public:
    * @param name is name of this object
    */
   Object(InteractiveMarkerServerPtr server, string frame_id, string name);
-  /*
+
+  /**
    * Inserts object into Interactive marker server
    */
   void insert();
 
-  // Callbacks
   /**
    * Callback for menu
    */
   void menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback);
+
   /**
    * Callback for interactive markers
    */

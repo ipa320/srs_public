@@ -1,0 +1,31 @@
+<package>
+  <description brief="srs_assisted_arm_navigation">
+
+This package is derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB. 
+Moreover, this package also provides several services that simplifies usage of the COB arm navigation.
+
+  </description>
+  <author>Zdenek Materna/imaterna@fit.vutbr.cz), Michal Spanel/spanel@fit.vutbr.cz</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_assisted_arm_navigation</url>
+
+  <depend package="roscpp"/>
+  <depend package="rviz"/>
+  <depend package="ogre"/>
+  <depend package="ogre_tools"/>
+  <depend package="cob_arm_navigation"/>
+  <depend package="cob_default_env_config"/>
+  <depend package="cob_default_robot_config"/>
+  <depend package="cob_2dnav"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="actionlib"/>
+  <depend package="cob_script_server"/>
+  
+  <export>
+    <rviz plugin="${prefix}/lib/but_cob_gui.yaml"/>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+
+</package>
+

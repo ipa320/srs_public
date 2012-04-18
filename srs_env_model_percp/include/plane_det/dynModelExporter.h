@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: dynModelExporter.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: dynModelExporter.h 619 2012-04-16 13:47:28Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -59,6 +59,8 @@ class DynModelExporter
 		 */
 		void update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
 		void update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud);
+
+		void updateDirect(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
 
 	private:
 		/**

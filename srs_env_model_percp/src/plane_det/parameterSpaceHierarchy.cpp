@@ -43,6 +43,8 @@ ParameterSpaceHierarchy::ParameterSpaceHierarchy(double anglemin, double anglema
 	m_init = false;
 	m_angleStep = (anglemax - anglemin) / (angleRes - 1);
 	m_shiftStep = (zmax - zmin) / (shiftRes - 1);
+	m_angleLoStep = m_angleStep * DEFAULT_BIN_SIZE;
+	m_shiftLoStep = m_shiftStep * DEFAULT_BIN_SIZE;
 
 	m_angleSize = (anglemax - anglemin) / m_angleStep + 1;
 	m_angleSize2 = m_angleSize * m_angleSize;
@@ -98,26 +100,26 @@ void ParameterSpaceHierarchy::toEuklid(float a1, float a2, float &x, float &y, f
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double ParameterSpaceHierarchy::get(int angle1, int angle2, int z)
 {
-	int loIndex = z/DEFAULT_BIN_SIZE * m_angleLoSize2 + angle2/DEFAULT_BIN_SIZE * m_angleLoSize + angle1/DEFAULT_BIN_SIZE;
+	IndexStruct index = getIndex(angle1, angle2, z);
 	//std::cout << m_loSize << std::endl;
 	//std::cout << loIndex << " -> " << z%DEFAULT_BIN_SIZE * m_hiSize2 + angle2%DEFAULT_BIN_SIZE * DEFAULT_BIN_SIZE + angle1%DEFAULT_BIN_SIZE << std::endl;
 	//std::cout << std::endl;
-	if (m_dataLowRes[loIndex] == NULL)
+	if (m_dataLowRes[index.lowResolutionIndex] == NULL)
 		return 0.0;
 	else
-		return m_dataLowRes[loIndex][z%DEFAULT_BIN_SIZE * m_hiSize2 + angle2%DEFAULT_BIN_SIZE * DEFAULT_BIN_SIZE + angle1%DEFAULT_BIN_SIZE];
+		return m_dataLowRes[index.lowResolutionIndex][index.highResolutionIndex];
 
 }
 
 void ParameterSpaceHierarchy::set(int angle1, int angle2, int z, double val)
 {
-	int loIndex = z/DEFAULT_BIN_SIZE * m_angleLoSize2 + angle2/DEFAULT_BIN_SIZE * m_angleLoSize + angle1/DEFAULT_BIN_SIZE;
-	if (m_dataLowRes[loIndex] == NULL)
+	IndexStruct index = getIndex(angle1, angle2, z);
+	if (m_dataLowRes[index.lowResolutionIndex] == NULL)
 	{
-		m_dataLowRes[loIndex] = (double *)malloc(sizeof(double) *m_hiSize);
-		memset(m_dataLowRes[loIndex], 0, m_hiSize * sizeof(double));
+		m_dataLowRes[index.lowResolutionIndex] = (double *)malloc(sizeof(double) *m_hiSize);
+		memset(m_dataLowRes[index.lowResolutionIndex], 0, m_hiSize * sizeof(double));
 	}
-	m_dataLowRes[loIndex][z%DEFAULT_BIN_SIZE * m_hiSize2 + angle2%DEFAULT_BIN_SIZE * DEFAULT_BIN_SIZE + angle1%DEFAULT_BIN_SIZE] = val;
+	m_dataLowRes[index.lowResolutionIndex][index.highResolutionIndex] = val;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,13 +141,52 @@ void ParameterSpaceHierarchy::set(int index, double val)
 	m_dataLowRes[index / m_hiSize][index % m_hiSize] = val;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int ParameterSpaceHierarchy::getIndex(double angle1, double angle2, double z)
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+IndexStruct ParameterSpaceHierarchy::getIndex(double angle1, double angle2, double z)
 {
+	IndexStruct index;
 	int a1 = (angle1-m_anglemin) / m_angleStep;
 	int a2 = (angle2-m_anglemin) / m_angleStep;
 	int zz = (z-m_shiftmin) / m_shiftStep;
-	return zz * m_angleSize2 + a2 * m_angleSize + a1;
+	index.highResolutionIndex = zz%DEFAULT_BIN_SIZE * m_hiSize2 + a2%DEFAULT_BIN_SIZE * DEFAULT_BIN_SIZE + a1%DEFAULT_BIN_SIZE;
+	index.lowResolutionIndex = zz/DEFAULT_BIN_SIZE * m_angleLoSize2 + a2/DEFAULT_BIN_SIZE * m_angleLoSize + a1/DEFAULT_BIN_SIZE;
+	index.CompleteIndex = index.lowResolutionIndex * m_hiSize + index.highResolutionIndex;
+
+	//std::cout << index.highResolutionIndex << " " << index.lowResolutionIndex << " " << index.CompleteIndex << std::endl;
+	return index;
+}
+
+void ParameterSpaceHierarchy::fromIndex(int i, int& angle1, int& angle2, int& z)
+{
+	int iLo = i / m_hiSize;
+	int iHi = i % m_hiSize;
+	int loZ, loA1, loA2;
+
+	z = (iLo / (m_angleLoSize2));
+	loZ = iHi / (m_hiSize2);
+
+	angle2 = ((iLo - z * m_angleLoSize2) / m_angleLoSize);
+	loA2 = (iHi - loZ * m_hiSize2) / DEFAULT_BIN_SIZE;
+
+	angle1 = (iLo - (z * m_angleLoSize2) - angle2 * m_angleLoSize);
+	loA1 =   iHi - (loZ * m_hiSize2) - loA2 * DEFAULT_BIN_SIZE;
+
+	z = z*DEFAULT_BIN_SIZE + loZ;
+	angle2 = angle2*DEFAULT_BIN_SIZE + loA2;
+	angle1 = angle1*DEFAULT_BIN_SIZE + loA1;
+}
+
+IndexStruct ParameterSpaceHierarchy::getIndex(int angle1, int angle2, int z)
+{
+	IndexStruct index;
+	//std::cout << z << " "<< angle2 << " " << angle1 << std::endl;
+	index.highResolutionIndex = z%DEFAULT_BIN_SIZE * m_hiSize2 + angle2%DEFAULT_BIN_SIZE * DEFAULT_BIN_SIZE + angle1%DEFAULT_BIN_SIZE;
+	index.lowResolutionIndex = z/DEFAULT_BIN_SIZE * m_angleLoSize2 + angle2/DEFAULT_BIN_SIZE * m_angleLoSize + angle1/DEFAULT_BIN_SIZE;
+	index.CompleteIndex = index.lowResolutionIndex * m_hiSize + index.highResolutionIndex;
+
+	//std::cout << z/DEFAULT_BIN_SIZE << " "<< angle2/DEFAULT_BIN_SIZE << " " << angle1/DEFAULT_BIN_SIZE << std::endl;
+	//std::cout << index.highResolutionIndex << " " << index.lowResolutionIndex << " " << index.CompleteIndex << std::endl;
+	return index;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,6 +200,7 @@ void ParameterSpaceHierarchy::getIndex(double angle1, double angle2, double z, i
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ParameterSpaceHierarchy::addVolume(ParameterSpace &second, int angle1, int angle2, int shift)
 {
+	//std::cout << angle1 << " " << angle2 << " " << shift << " " << std::endl;
 	double secondAngleHalf = second.m_angleSize / 2;
 	double secondShiftHalf = second.m_shiftSize / 2;
 	int shiftThis, angle1This, angle2This;
@@ -178,90 +220,115 @@ void ParameterSpaceHierarchy::addVolume(ParameterSpace &second, int angle1, int 
 	}
 }
 
+void ParameterSpaceHierarchy::addVolume(ParameterSpace &second, int angle1, int angle2, int shift, float factor)
+{
+	double secondAngleHalf = second.m_angleSize / 2;
+	double secondShiftHalf = second.m_shiftSize / 2;
+	int shiftThis, angle1This, angle2This;
+	int shiftS, angle1S, angle2S;
+
+	for (shiftS = 0, shiftThis = shift - secondShiftHalf; shiftS < second.m_shiftSize; ++shiftS, ++shiftThis)
+	for (angle2S=0, angle2This = angle2 - secondAngleHalf; angle2S < second.m_angleSize; ++angle2S, ++angle2This)
+	for (angle1S=0, angle1This = angle1 - secondAngleHalf; angle1S < second.m_angleSize; ++angle1S, ++angle1This)
+	{
+		if (angle1This >= 0 && angle1This < m_angleSize &&
+			angle2This >= 0 && angle2This < m_angleSize &&
+			shiftThis  >= 0 && shiftThis < m_shiftSize)
+		{
+			set(angle1This, angle2This, shiftThis, get(angle1This, angle2This, shiftThis) + factor * second(angle1S, angle2S, shiftS));
+		}
+
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//int ParameterSpaceHierarchy::findMaxima(std::vector<Plane<float> > &indices)
-//{
-//	int around = 2;
-//	float a, b, c;
-//	int maxind = -1;
-//	float max = -1;
-//
-////	/////////////////////////////////////////////////
-//	for (int shift=around; shift < m_shiftSize-around; ++shift)
-//		{
-//			for (int angle2=around; angle2 < m_angleSize-around; ++angle2)
-//			{
-//				for (int angle1=around; angle1 < m_angleSize-around; ++angle1)
-//				{
-//					double val = this->operator ()(angle1, angle2, shift);
-//					if (val > 1500)
-//					{
-//						val += this->operator()(angle1-1, angle2, shift) +
-//							   this->operator()(angle1+1, angle2, shift) +
-//							   this->operator()(angle1, angle2-1, shift) +
-//							   this->operator()(angle1, angle2+1, shift) +
-//							   this->operator()(angle1, angle2, shift+1) +
-//							   this->operator()(angle1, angle2, shift-1);
-//
-//						bool ok = true;
-//						double aux;
-//						int xx, yy, zz;
-//						for (int x = -1; x <= 1; ++x)
-//						for (int y = -1; y <= 1; ++y)
-//						for (int z = -1; z <= 1; ++z)
-//						{
-//							xx = angle1 + x;
-//							yy = angle2 + y;
-//							zz = shift + z;
-//							aux = this->operator()(xx, yy, zz) +
-//								  this->operator()(xx-1, yy, zz) +
-//								  this->operator()(xx+1, yy, zz) +
-//								  this->operator()(xx, yy-1, zz) +
-//								  this->operator()(xx, yy+1, zz) +
-//								  this->operator()(xx, yy, zz+1) +
-//								  this->operator()(xx, yy, zz-1);
-//							if (val < aux)
-//							{
-//								ok = false;
-//								break;
-//							}
-//						}
-//
-//						if (ok)
-//						{
-//							double aroundx = 0;
-//							double aroundy = 0;
-//							double aroundz = 0;
-//							double arounds = 0;
-//							for (int x = -1; x <= 1; ++x)
-//							for (int y = -1; y <= 1; ++y)
-//							for (int z = -1; z <= 1; ++z)
-//							{
-//								xx = angle1 + x;
-//								yy = angle2 + y;
-//								zz = shift + z;
-//								toEuklid(getAngle(xx), getAngle(yy), a, b, c);
-//								aroundx += a;
-//								aroundy += b;
-//								aroundz += c;
-//								arounds += getShift(zz);
-//							}
-//							aroundx /= 7.0;
-//							aroundy /= 7.0;
-//							aroundz /= 7.0;
-//							arounds /= 7.0;
-//							std::cout << "Found plane size: " << val << " eq: " << aroundx <<" "<< aroundy <<" "<< aroundz <<" "<< arounds <<" "<< std::endl;
-//							indices.push_back(Plane<float>(aroundx, aroundy, aroundz, arounds));
-//							if (val > max)
-//							{
-//								max = val;
-//								maxind = indices.size() - 1;
-//							}
-//						}
-//					}
-//				}
-//			}
-//		}
+int ParameterSpaceHierarchy::findMaxima(std::vector<Plane<float> > &indices)
+{
+	float a, b, c;
+	int maxind = -1;
+	float max = -1;
+	int angle1, angle2, shift;
+	/////////////////////////////////////////////////
+	ParameterSpaceHierarchyFullIterator it(this);
+	while (not it.end)
+	{
+		double val = it.getVal();
+		if (val > 1500)
+		{
+			this->fromIndex(it.currentI, angle1, angle2, shift);
+			if (angle1 >= 1 && angle1 < m_angleSize &&
+				angle2 >= 1 && angle2 < m_angleSize &&
+				shift >= 1 && shift < m_shiftSize)
+			{
+				val +=  get(angle1-1, angle2, shift) +
+						get(angle1+1, angle2, shift) +
+						get(angle1, angle2-1, shift) +
+						get(angle1, angle2+1, shift) +
+						get(angle1, angle2, shift+1) +
+						get(angle1, angle2, shift-1);
+
+				bool ok = true;
+				double aux;
+				int xx, yy, zz;
+				for (int x = -1; x <= 1; ++x)
+				for (int y = -1; y <= 1; ++y)
+				for (int z = -1; z <= 1; ++z)
+				{
+					xx = angle1 + x;
+					yy = angle2 + y;
+					zz = shift + z;
+					aux = 	get(xx, yy, zz) +
+							get(xx-1, yy, zz) +
+							get(xx+1, yy, zz) +
+							get(xx, yy-1, zz) +
+							get(xx, yy+1, zz) +
+							get(xx, yy, zz+1) +
+							get(xx, yy, zz-1);
+						if (val < aux)
+						{
+							ok = false;
+							break;
+						}
+					}
+
+					if (ok)
+					{
+						double aroundx = 0;
+						double aroundy = 0;
+						double aroundz = 0;
+						double arounds = 0;
+						for (int x = -1; x <= 1; ++x)
+						for (int y = -1; y <= 1; ++y)
+						for (int z = -1; z <= 1; ++z)
+						{
+							xx = angle1 + x;
+							yy = angle2 + y;
+							zz = shift + z;
+							toEuklid(getAngle(xx), getAngle(yy), a, b, c);
+							aroundx += a;
+							aroundy += b;
+							aroundz += c;
+							arounds += getShift(zz);
+						}
+						aroundx /= 7.0;
+						aroundy /= 7.0;
+						aroundz /= 7.0;
+						arounds /= 7.0;
+						std::cout << "Found plane size: " << val << " eq: " << aroundx <<" "<< aroundy <<" "<< aroundz <<" "<< arounds <<" "<< std::endl;
+						indices.push_back(Plane<float>(aroundx, aroundy, aroundz, arounds));
+						if (val > max)
+						{
+							max = val;
+							maxind = indices.size() - 1;
+						}
+					}
+			}
+		}
+		++it;
+	}
+
+
+
 ////	for (int shift=around; shift < m_shiftSize-around; ++shift)
 ////	{
 ////		for (int angle2=around; angle2 < m_angleSize-around; ++angle2)
@@ -307,9 +374,10 @@ void ParameterSpaceHierarchy::addVolume(ParameterSpace &second, int angle1, int 
 //		this->operator()(a1, a2, s-1) = 0;
 //		//std::cout << a1 << " " << a2 << " " << s << std::endl;
 //	}
-//	return maxind;
-//}
-//
+	return maxind;
+
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double ParameterSpaceHierarchy::getAngle(int index)
 {
@@ -334,25 +402,25 @@ int ParameterSpaceHierarchy::getSize()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double ParameterSpaceHierarchy::get(double angle1, double angle2, double z)
 {
-	int index = getIndex(angle1, angle2, z);
+	IndexStruct index = getIndex(angle1, angle2, z);
 
-	if (m_dataLowRes[index / m_hiSize] == NULL)
+	if (m_dataLowRes[index.lowResolutionIndex] == NULL)
 			return 0.0;
 		else
-			return m_dataLowRes[index / m_hiSize][index % m_hiSize];
+			return m_dataLowRes[index.lowResolutionIndex][index.highResolutionIndex];
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ParameterSpaceHierarchy::set(double angle1, double angle2, double z, double val)
 {
-	int index = getIndex(angle1, angle2, z);
+	IndexStruct index = getIndex(angle1, angle2, z);
 
-	if (m_dataLowRes[index / m_hiSize] == NULL)
+	if (m_dataLowRes[index.lowResolutionIndex] == NULL)
 		{
-			m_dataLowRes[index / m_hiSize] = (double *)malloc(sizeof(double) *m_hiSize);
-			memset(m_dataLowRes[index / m_hiSize], 0, m_hiSize * sizeof(double));
+			m_dataLowRes[index.lowResolutionIndex] = (double *)malloc(sizeof(double) *m_hiSize);
+			memset(m_dataLowRes[index.lowResolutionIndex], 0, m_hiSize * sizeof(double));
 		}
-		m_dataLowRes[index / m_hiSize][index % m_hiSize] = val;
+		m_dataLowRes[index.lowResolutionIndex][index.highResolutionIndex] = val;
 }
 
 

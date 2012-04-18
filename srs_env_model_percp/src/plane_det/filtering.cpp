@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: filtering.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: filtering.cpp 619 2012-04-16 13:47:28Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -82,7 +82,7 @@ bool Regions::computeStatistics(float threshold)
 			aux = m_regionMatrix.at<int>(i, j);
 			if (aux >= 0)
 			{
-				if (aux >= normals.size())
+				if (aux >= (int)normals.size())
 				{
 					sizes.resize(aux+1, 0);
 					normals.resize(aux+1, Vec4f(0.0, 0.0, 0.0, 0.0));

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: Plane.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: Plane.cpp 625 2012-04-16 14:06:17Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -48,7 +48,7 @@ void Plane::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
   switch (feedback->menu_entry_id)
   {
     case 1:
-      /**
+      /*
        * Plane tag description
        */
       if (state == MenuHandler::CHECKED)
@@ -64,7 +64,7 @@ void Plane::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
       }
       break;
     case 3:
-      /**
+      /*
        * Plane tag
        */
       tag_ = "Unknown";
@@ -84,7 +84,7 @@ void Plane::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
       }
       break;
     case 4:
-      /**
+      /*
        * Plane tag
        */
       tag_ = "Wall";
@@ -104,7 +104,7 @@ void Plane::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
       }
       break;
     case 5:
-      /**
+      /*
        * Plane tag
        */
       tag_ = "Door";
@@ -124,7 +124,7 @@ void Plane::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
       }
       break;
     case 6:
-      /**
+      /*
        * Plane tag
        */
       tag_ = "Table desk";

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: kin2pcl.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: kin2pcl.cpp 619 2012-04-16 13:47:28Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -33,7 +33,7 @@
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
-#include <cv_bridge/CvBridge.h>
+#include <cv_bridge/cv_bridge.h>
 
 //PCL
 #include <pcl/point_types.h>
@@ -81,8 +81,8 @@ void callback( const sensor_msgs::ImageConstPtr& dep, const CameraInfoConstPtr& 
 	std::cerr << "Depth image h:" << dep->height << " w:" << dep->width << " e:" << dep->encoding << " " << dep->step << endl;
 
 	//get image from message
-	sensor_msgs::CvBridge bridge;
-	cv::Mat depth = bridge.imgMsgToCv( dep );
+	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(dep);
+	cv::Mat depth = cv_image->image;
 
 	but_scenemodel::Normals normal(depth, cam_info);
 

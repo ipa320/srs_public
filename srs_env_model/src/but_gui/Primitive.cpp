@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: Primitive.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: Primitive.cpp 603 2012-04-16 10:50:03Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -85,7 +85,7 @@ void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedbac
 
 void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  static Scale scale_change;
+  static Vector3 scale_change;
 
   InteractiveMarker o;
   if (server_->get(name_, o))
@@ -126,7 +126,7 @@ void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbac
     modificator = 1;
   }
 
-  Scale ds;
+  Vector3 ds;
   ds.x = ((max_size_.x - min_size_.x) - scale_.x);
   ds.y = ((max_size_.y - min_size_.y) - scale_.y);
   ds.z = ((max_size_.z - min_size_.z) - scale_.z);
@@ -180,11 +180,6 @@ InteractiveMarkerControl* Primitive::getControl(string name)
   return NULL;
 }
 
-string Primitive::getUpdateTopic(int update_type)
-{
-  return updatePublisher_->getUpdateTopic(update_type);
-}
-
 void Primitive::insert()
 {
   server_->insert(object_);
@@ -195,151 +190,9 @@ void Primitive::erase()
   server_->erase(name_);
 }
 
-string Primitive::getName()
-{
-  return name_;
-}
 
-void Primitive::setColor(ColorRGBA color)
-{
-  color_ = color;
-}
 
-ColorRGBA Primitive::getColor()
-{
-  return color_;
-}
-
-void Primitive::setPose(Pose pose)
-{
-  Pose pose_change;
-  pose_change.position.x = pose.position.x - pose_.position.x;
-  pose_change.position.y = pose.position.y - pose_.position.y;
-  pose_change.position.z = pose.position.z - pose_.position.z;
-  pose_change.orientation.x = pose.orientation.x - pose_.orientation.x;
-  pose_change.orientation.y = pose.orientation.y - pose_.orientation.y;
-  pose_change.orientation.z = pose.orientation.z - pose_.orientation.z;
-  pose_change.orientation.w = pose.orientation.w - pose_.orientation.w;
-
-  pose_ = pose;
-  object_.pose = pose_;
-
-  updatePublisher_->publishPoseChanged(pose_, pose_change);
-}
-
-Pose Primitive::getPose()
-{
-  return pose_;
-}
-
-void Primitive::setScale(Vector3 scale)
-{
-  Scale scale_change;
-  scale_change.x = scale.x - scale_.x;
-  scale_change.y = scale.y - scale_.y;
-  scale_change.z = scale.z - scale_.z;
-  scale_ = scale;
-
-  object_.scale = but_gui::maxScale(scale_);
-
-  updatePublisher_->publishScaleChanged(scale_, scale_change);
-}
-
-Vector3 Primitive::getScale()
-{
-  return scale_;
-}
-
-void Primitive::setDescription(string description)
-{
-  description_ = description;
-}
-
-string Primitive::getDescription()
-{
-  return description_;
-}
-
-void Primitive::setFrameID(string frame_id)
-{
-  frame_id_ = frame_id;
-}
-
-string Primitive::getFrameID()
-{
-  return frame_id_;
-}
-
-void Primitive::setVelocity(double velocity)
-{
-  if (primitive_type_ != srs_env_model::PrimitiveType::BILLBOARD)
-  {
-    ROS_WARN("This is object is not a billboard, you cannot set velocity!");
-    return;
-  }
-
-  updatePublisher_->publishMovementChanged(direction_, geometry_msgs::Quaternion(), velocity, velocity - velocity_);
-
-  velocity_ = velocity;
-}
-
-double Primitive::getVelocity()
-{
-  if (primitive_type_ != srs_env_model::PrimitiveType::BILLBOARD)
-  {
-    ROS_WARN("This is object is not a billboard, you cannot get velocity!");
-  }
-
-  return velocity_;
-}
-
-void Primitive::setDirection(Quaternion direction)
-{
-  if (primitive_type_ != srs_env_model::PrimitiveType::BILLBOARD)
-  {
-    ROS_WARN("This is object is not a billboard, you cannot set direction!");
-    return;
-  }
-
-  geometry_msgs::Quaternion direction_change;
-  direction_change.x = direction.w - direction_.x;
-  direction_change.y = direction.y - direction_.y;
-  direction_change.z = direction.z - direction_.z;
-  direction_change.w = direction.w - direction_.w;
-
-  updatePublisher_->publishMovementChanged(direction, direction_change, velocity_, 0.0f);
-
-  direction_ = direction;
-}
-
-Quaternion Primitive::getDirection()
-{
-  if (primitive_type_ != srs_env_model::PrimitiveType::BILLBOARD)
-  {
-    ROS_WARN("This is object is not a billboard, you cannot get direction!");
-  }
-
-  return direction_;
-}
-
-void Primitive::setResource(string resource)
-{
-  object_resource_ = RESOURCE_FILE;
-  resource_ = resource;
-}
-
-void Primitive::setUseMaterial(bool use_material)
-{
-  use_material_ = use_material;
-}
-
-void Primitive::setShape(arm_navigation_msgs::Shape shape)
-{
-  object_resource_ = SHAPE;
-  shape_ = shape;
-}
-
-void Primitive::setGraspingPosition(int pos_id, Vector3 position)
+void Primitive::addPreGraspPosition(int pos_id, Vector3 position)
 {
   switch (pos_id)
   {
@@ -368,13 +221,13 @@ void Primitive::setGraspingPosition(int pos_id, Vector3 position)
       pregrasp6_.position = position;
       break;
     default:
-      ROS_WARN("Unknown grasping position");
+      ROS_WARN("Unknown pre-grasp position");
       return;
       break;
   }
 }
 
-void Primitive::removeGraspingPosition(int pos_id)
+void Primitive::removePreGraspPosition(int pos_id)
 {
   switch (pos_id)
   {
@@ -397,7 +250,7 @@ void Primitive::removeGraspingPosition(int pos_id)
       pregrasp6_.enabled = false;
       break;
     default:
-      ROS_WARN("Unknown grasping position");
+      ROS_WARN("Unknown pre-grasp position");
       return;
       break;
   }
@@ -732,6 +585,10 @@ void Primitive::addPregraspPositions()
   arrow.scale.x = GRASP_ARROW_LENGTH / 4;
   arrow.scale.y = GRASP_ARROW_LENGTH / 2;
   arrow.scale.z = 0.1;
+  Marker text;
+  text.type = Marker::TEXT_VIEW_FACING;
+  text.scale.z = 0.2;
+  text.color = color_green_a02_;
 
   pregrasp1Control_.markers.clear();
   pregrasp2Control_.markers.clear();
@@ -743,7 +600,7 @@ void Primitive::addPregraspPositions()
   if (pregrasp1_.enabled)
   {
     pregrasp1Control_.name = pregrasp1_.name;
-    pregrasp1Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp1Control_.interaction_mode = InteractiveMarkerControl::MENU;
     pregrasp1Control_.always_visible = true;
     p1.x = pregrasp1_.position.x;
     p1.y = pregrasp1_.position.y;
@@ -763,13 +620,19 @@ void Primitive::addPregraspPositions()
     arrow.points.push_back(p2);
     arrow.points.push_back(p1);
     pregrasp1Control_.markers.push_back(arrow);
+
+    text.pose.position.x = p1.x;
+    text.pose.position.y = p1.y;
+    text.pose.position.z = p1.z + 0.2;
+    text.text = "1";
+    pregrasp1Control_.markers.push_back(text);
     object_.controls.push_back(pregrasp1Control_);
   }
 
   if (pregrasp2_.enabled)
   {
     pregrasp2Control_.name = pregrasp2_.name;
-    pregrasp2Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp2Control_.interaction_mode = InteractiveMarkerControl::MENU;
     pregrasp2Control_.always_visible = true;
     p1.x = pregrasp2_.position.x;
     p1.y = pregrasp2_.position.y;
@@ -790,13 +653,18 @@ void Primitive::addPregraspPositions()
     arrow.points.push_back(p1);
     pregrasp2Control_.markers.push_back(arrow);
 
+    text.pose.position.x = p1.x;
+    text.pose.position.y = p1.y;
+    text.pose.position.z = p1.z + 0.2;
+    text.text = "2";
+    pregrasp2Control_.markers.push_back(text);
     object_.controls.push_back(pregrasp2Control_);
   }
 
   if (pregrasp3_.enabled)
   {
     pregrasp3Control_.name = pregrasp3_.name;
-    pregrasp3Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp3Control_.interaction_mode = InteractiveMarkerControl::MENU;
     pregrasp3Control_.always_visible = true;
     p1.x = pregrasp3_.position.x;
     p1.y = pregrasp3_.position.y;
@@ -819,13 +687,19 @@ void Primitive::addPregraspPositions()
     arrow.points.push_back(p1);
     pregrasp3Control_.markers.push_back(arrow);
 
+    text.pose.position.x = p1.x;
+    text.pose.position.y = p1.y;
+    text.pose.position.z = p1.z + 0.2;
+    text.text = "3";
+    pregrasp3Control_.markers.push_back(text);
+
     object_.controls.push_back(pregrasp3Control_);
   }
 
   if (pregrasp4_.enabled)
   {
     pregrasp4Control_.name = pregrasp4_.name;
-    pregrasp4Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp4Control_.interaction_mode = InteractiveMarkerControl::MENU;
     pregrasp4Control_.always_visible = true;
     p1.x = pregrasp4_.position.x;
     p1.y = pregrasp4_.position.y;
@@ -846,13 +720,19 @@ void Primitive::addPregraspPositions()
     arrow.points.push_back(p1);
     pregrasp4Control_.markers.push_back(arrow);
 
+    text.pose.position.x = p1.x;
+    text.pose.position.y = p1.y;
+    text.pose.position.z = p1.z + 0.2;
+    text.text = "4";
+    pregrasp4Control_.markers.push_back(text);
+
     object_.controls.push_back(pregrasp4Control_);
   }
 
   if (pregrasp5_.enabled)
   {
     pregrasp5Control_.name = pregrasp5_.name;
-    pregrasp5Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp5Control_.interaction_mode = InteractiveMarkerControl::MENU;
     pregrasp5Control_.always_visible = true;
     p1.x = pregrasp5_.position.x;
     p1.y = pregrasp5_.position.y;
@@ -873,13 +753,19 @@ void Primitive::addPregraspPositions()
     arrow.points.push_back(p1);
     pregrasp5Control_.markers.push_back(arrow);
 
+    text.pose.position.x = p1.x;
+    text.pose.position.y = p1.y;
+    text.pose.position.z = p1.z + 0.2;
+    text.text = "5";
+    pregrasp5Control_.markers.push_back(text);
+
     object_.controls.push_back(pregrasp5Control_);
   }
 
   if (pregrasp6_.enabled)
   {
     pregrasp6Control_.name = pregrasp6_.name;
-    pregrasp6Control_.interaction_mode = InteractiveMarkerControl::NONE;
+    pregrasp6Control_.interaction_mode = InteractiveMarkerControl::MENU;
     pregrasp6Control_.always_visible = true;
     p1.x = pregrasp6_.position.x;
     p1.y = pregrasp6_.position.y;
@@ -899,6 +785,12 @@ void Primitive::addPregraspPositions()
     arrow.points.push_back(p2);
     arrow.points.push_back(p1);
     pregrasp6Control_.markers.push_back(arrow);
+
+    text.pose.position.x = p1.x;
+    text.pose.position.y = p1.y;
+    text.pose.position.z = p1.z + 0.2;
+    text.text = "6";
+    pregrasp6Control_.markers.push_back(text);
 
     object_.controls.push_back(pregrasp6Control_);
   }
@@ -996,7 +888,6 @@ void Primitive::updateControls()
   }
   if (show_pregrasp_control_)
   {
-    cout << "SHOWING!" << endl;
     removePregraspPositions();
     addPregraspPositions();
   }

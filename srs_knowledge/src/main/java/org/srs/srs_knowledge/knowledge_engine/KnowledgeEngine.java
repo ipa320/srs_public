@@ -132,7 +132,6 @@ public class KnowledgeEngine
 	nodeHandle = ros.createNodeHandle();
 
 	try{
-	    //    initGenerateSequence();
 	    initQuerySparQL();
 	    initPlanNextAction();
 	    initTaskRequest();
@@ -234,37 +233,6 @@ public class KnowledgeEngine
 	}
 
     }
-
-    /*
-    private GenerateSequence.Response handleGenerateSequence(GenerateSequence.Request request)
-    {
-	GenerateSequence.Response res = new GenerateSequence.Response();
-	ArrayList<CUAction> actSeq = new ArrayList<CUAction>();
-
-	CUAction ca = new CUAction(); 
-	actSeq.add(ca);
-	actSeq.add(ca);
-	
-	res.actionSequence = actSeq;
-	System.out.println(res.actionSequence.size());
-
-	ros.logInfo("INFO: Generate sequence of length: " + actSeq.size());
-	return res;
-    }
-    */
-    
-    /*
-    private void initGenerateSequence() throws RosException
-    {
-	ServiceServer.Callback<GenerateSequence.Request, GenerateSequence.Response> scb = new ServiceServer.Callback<GenerateSequence.Request,GenerateSequence.Response>() {
-            public GenerateSequence.Response call(GenerateSequence.Request request) {
-		return handleGenerateSequence(request);
-            }
-	};
-
-	ServiceServer<GenerateSequence.Request,GenerateSequence.Response,GenerateSequence> srv = nodeHandle.advertiseService(generateSequenceService, new GenerateSequence(), scb);
-    }
-    */
     
     private QuerySparQL.Response handleQuerySparQL(QuerySparQL.Request req)
     {
@@ -297,30 +265,6 @@ public class KnowledgeEngine
 	    return res;
 	    //throw new NullPointerException("Current Task is NULL. Send task request first");
 	}
-
-	/*
-	if(request.stateLastAction.length == 3) {
-	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
-		//ArrayList<String> feedback = new ArrayList<String>();
-		ArrayList<String> feedback = request.genericFeedBack;
-		ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
-	    }
-	    else if(request.stateLastAction[0] == 2 || request.stateLastAction[1] == 2 || request.stateLastAction[2] == 2) {
-		ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
-		ros.logInfo("INFO: Task termintated");
-		
-		currentTask = null;
-		// TODO:
-		//currentSessionId = 1;
-
-		res.nextAction = new CUAction();
-		return res;
-	    }
-	    else{
-		ca = currentTask.getNextCUAction(false, null);
-	    }
-	}
-	*/
 
 	if(request.resultLastAction == 0) {
 	    ArrayList<String> feedback = request.genericFeedBack;
@@ -440,11 +384,6 @@ public class KnowledgeEngine
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
-	    
-	    //currentTask = new TestTask();
-	    //this.loadPredefinedTasksForTest();
-	    
-	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
 	else if(request.task.equals("search")){
 	    if(ontoDB == null) {
@@ -701,53 +640,6 @@ public class KnowledgeEngine
 	    System.out.println("<EMPTY>");
 	}
 	
-	/*
-
-	String targetContent = "kitchen";
-	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
-	    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-	    + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n"
-	    + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
-	String queryString = "SELECT ?objs ?x ?y ?z ?w ?h ?l WHERE { "
-	    + "?objs rdf:type srs:Dishwasher . "
-	    + "?objs srs:xCoord ?x . "
-	    + "?objs srs:yCoord ?y . " 
-	    + "?objs srs:zCoord ?z . " 
-	    + "?objs srs:widthOfObject ?w . " 
-	    + "?objs srs:heightOfObject ?h . " 
-	    + "?objs srs:lengthOfObject ?l . " 
-	    + "}";
-	System.out.println(prefix + queryString + "\n");
-	
-	if (this.ontoDB == null) {
-	    ros.logInfo("INFO: Ontology Database is NULL. Nothing executed. ");
-	    return re;
-	}
-	
-	try {
-	    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix
-								   + queryString);
-	    
-	    if (rset.size() == 0) {
-		ros.logInfo("No move target found from database");
-	    }
-	    else {
-		System.out.println("WARNING: Multiple options... ");
-		QuerySolution qs = rset.get(0);
-		//x = qs.getLiteral("x").getFloat();
-		//y = qs.getLiteral("y").getFloat();
-		//theta = qs.getLiteral("theta").getFloat();
-		//System.out.println("x is " + x + ". y is  " + y
-		//		   + ". theta is " + theta);
-	    }
-	    
-	} catch (Exception e) {
-	    System.out.println("Exception -->  " + e.getMessage());
-	    
-	}
-
-	//re.result = ontoDB.executeQuery(queryString);
-	*/
 	return re;
     }
 
@@ -1072,8 +964,6 @@ public class KnowledgeEngine
 	    return false;
 	}
 
-	//ArrayList<ActionTuple> acts = currentTask.getActionSequence();
-
 	return true;
     }
 
@@ -1212,29 +1102,6 @@ public class KnowledgeEngine
 	return re;
 
     }
-
-    /*
-    public static void testTask(Properties conf)
-    {
-	try{
-	    System.out.println("Create Task Object");
-	    //Task task = new GetObjectTask(Task.TaskType.GET_OBJECT);
-	    Task task = new GetObjectTask("get", null, null);
-
-	    String taskFile = conf.getProperty("taskfile", "task1.seq");
-	    System.out.println(taskFile);
-	    if(task.loadPredefinedSequence(taskFile))   {
-		System.out.println("OK... ");
-	    }
-	    else  {
-		System.out.println("Fail to load... ");
-	    }
-	}
-	catch(Exception e) {
-	    System.out.println(e.getMessage());
-	}
-    }
-    */
 
     private String defaultContextPath()
     {

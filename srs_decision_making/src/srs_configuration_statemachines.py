@@ -146,7 +146,10 @@ def robot_configuration(parent, action_name, action_stage):
                 if robot_config_pre[action_name][component_list[index]] in robot_config_need_no_action: 
                     handles.append(None)
                 else:
-                    handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
+                    if component_list[index] == "arm":
+                        handles.append(sss.move_planned(component_list[index], robot_config_pre[action_name][component_list[index]], False))
+                    else:
+                        handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
                     
         #bring robot into the post-configuration state     
         if action_stage == 'post-config':
@@ -155,7 +158,10 @@ def robot_configuration(parent, action_name, action_stage):
                 if robot_config_post[action_name][component_list[index]] in robot_config_need_no_action: 
                     handles.append(None)
                 else:
-                    handles.append(sss.move(component_list[index], robot_config_post[action_name][component_list[index]], False))                
+                    if component_list[index] == "arm":
+                        handles.append(sss.move_planned(component_list[index], robot_config_post[action_name][component_list[index]], False))
+                    else:
+                        handles.append(sss.move(component_list[index], robot_config_post[action_name][component_list[index]], False))             
                     
     except KeyError:
         print("dictionary key is not found in the set of existing keys")    

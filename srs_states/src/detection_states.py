@@ -37,6 +37,9 @@ class detect_object(smach.State):
         self.srv_name_object_detection = '/object_detection/detect_object'
 
         self.torso_poses = []
+        self.torso_poses.append("back_right")
+        self.torso_poses.append("back")
+        self.torso_poses.append("back_left")
         self.torso_poses.append("back_right_extreme")
         self.torso_poses.append("back_extreme")
         self.torso_poses.append("back_left_extreme")

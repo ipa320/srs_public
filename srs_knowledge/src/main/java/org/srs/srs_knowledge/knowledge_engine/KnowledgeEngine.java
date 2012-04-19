@@ -93,6 +93,16 @@ import java.util.StringTokenizer;
 import java.util.ArrayList; 
 import java.util.Iterator;
 
+import org.srs.srs_knowledge.utils.*;
+
+import tfjava.*;
+
+import javax.vecmath.Quat4d;
+import javax.vecmath.Vector3d;
+import javax.vecmath.Point3d;
+import javax.vecmath.Matrix4d;
+
+
 public class KnowledgeEngine
 {
     public static Ros ros;
@@ -1117,6 +1127,7 @@ public class KnowledgeEngine
 
     public static void main(String[] args)
     {
+	// SpatialCalculator.testTF();
 	String configFile = new String();
 	System.out.print("There are " + args.length + " input arguments: ");
 
@@ -1140,6 +1151,7 @@ public class KnowledgeEngine
 	else {
 	    System.out.println("Something wrong with initialisation");
 	}
+
     }
 
     private Task currentTask;

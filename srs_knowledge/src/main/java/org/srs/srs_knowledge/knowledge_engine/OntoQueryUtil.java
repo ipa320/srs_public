@@ -380,6 +380,13 @@ public class OntoQueryUtil
 	return true;
     }
 
+    public static boolean computeOnSpatialRelation() {
+	// get a list of objects and workspaces
+	
+	// pair-wise comparison --- if condition met, then update the knowledge base
+	
+	return true;
+    }
 
     /*
     public OntoQueryUtil(String objectNameSpace, String globalNameSpace) {

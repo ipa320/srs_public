@@ -95,7 +95,7 @@ class get_pregrasps():
 
 		resp = GetPreGraspResponse();
 		resp.side = []
-		resp._side = []
+		resp.mside = []
 		resp.top = []
 		resp.down = []
 		resp.front = []

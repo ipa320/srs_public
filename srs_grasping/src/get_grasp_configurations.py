@@ -67,11 +67,11 @@ from srs_grasping.srv import *
 class get_grasp_configurations():
 
 	def __init__(self):
+		print "-------------------------------------------------------------------------";
 		rospy.loginfo("Waiting /get_model_grasp service...");
 		rospy.wait_for_service('/get_model_grasp');
 		rospy.loginfo("/get_model_grasp is ready.");
 		rospy.loginfo("/get_grasp_configurations service is ready.");
-		print "-------------------------------------------------------------------------";
 
 
 	def get_grasp_configurations(self, server_goal):

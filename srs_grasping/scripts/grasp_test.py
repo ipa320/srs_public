@@ -293,10 +293,26 @@ class GraspScript(script):
 
 	#Fake function
 	def getObjectID(self, obj_name):
+
 		if (obj_name=="milk"): 
-			return 9;
-		else:
-			return -1;
+			obj_name = "Milkbox";
+
+		s_get_object_id = '/get_models';
+		rospy.loginfo("Waiting for %s service",s_get_object_id)
+		rospy.wait_for_service(s_get_object_id)
+		get_object_id = rospy.ServiceProxy(s_get_object_id, GetObjectId)
+		rospy.loginfo('Calling service %s',s_get_object_id)
+
+		obj_db_id = -1
+		try:
+			res = get_object_id(type=obj_name)
+			obj_db_id = int(res.model_ids[0])
+			rospy.loginfo('Object name (%s) successfully converted to ID (%d)', obj_name, obj_db_id);
+		except:
+			rospy.logerr('Error on converting name (%s) to ID...',obj_name);
+
+		return obj_db_id
+
 
 
 if __name__ == "__main__":

@@ -20,10 +20,10 @@
 # \author
 #   Supervised by: Manuel Rodriguez, email:mrodriguez@robotnik.es
 #
-# \date Date of creation: March 2012
+# \date Date of creation: Abril 2012
 #
 # \brief
-#   Implements a service that returns all the feasible grasping configurations for a given object_id and target pose.
+#   Implements a service that returns a group of pregrasp positions.
 #
 #################################################################
 #
@@ -59,17 +59,15 @@ import roslib
 roslib.load_manifest('srs_grasping')
 import rospy
 import time
-
 import grasping_functions 
+
 from srs_grasping.srv import *
 from srs_msgs.msg import *
-from pr2_controllers_msgs.msg import *
 from tf.transformations import *
 from geometry_msgs.msg import *
-from kinematics_msgs.srv import *
+
 
 class get_pregrasps():
-
 
 	def __init__(self):
 		self.ik_loop_reply = 1
@@ -154,6 +152,7 @@ class get_pregrasps():
 				continue
 
 			if len(resp.top)==num_configurations and len(resp.down)==num_configurations and len(resp.side)==num_configurations and len(resp.mside)==num_configurations and len(resp.back)==num_configurations and len(resp.front)==num_configurations:
+				break;
 	
 		rospy.loginfo("/get_pregrasps call has finished.");
 		print "Time employed: " + str(time.time() - x);

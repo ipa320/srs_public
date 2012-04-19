@@ -129,6 +129,13 @@ public class KnowledgeEngine
     {
 	try {
 	    initProperties(cfgFile);
+	
+
+
+
+this.testFunction();
+
+
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage());
@@ -219,6 +226,7 @@ public class KnowledgeEngine
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
+	OntoQueryUtil.MapName = mapNamespacePrefix;
     }
 
     public void testOnto(String className)
@@ -552,10 +560,16 @@ public class KnowledgeEngine
 
     private GetObjectsOnMap.Response handleGetObjectsOnMap(GetObjectsOnMap.Request req)
     {
+	String map = req.map;
+	boolean ifGeometryInfo = req.ifGeometryInfo;
+	
+	return OntoQueryUtil.getObjectsOnMap(map, ifGeometryInfo);
+	/*
 	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
 
 	String className = globalNamespace;
 	String mapNS = mapNamespace;
+
 		
 	if(req.map != null) {
 	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
@@ -651,6 +665,7 @@ public class KnowledgeEngine
 	}
 	
 	return re;
+	*/
     }
 
     private void initGetObjectsOnMap() throws RosException
@@ -668,6 +683,8 @@ public class KnowledgeEngine
 
     private GetWorkspaceOnMap.Response handleGetWorkspaceOnMap(GetWorkspaceOnMap.Request req)
     {
+	return OntoQueryUtil.getWorkspaceOnMap(req.map, req.ifGeometryInfo);
+	/*
 	GetWorkspaceOnMap.Response re = new GetWorkspaceOnMap.Response();
 
 	String className = globalNamespace;
@@ -737,6 +754,7 @@ public class KnowledgeEngine
 	}
 
 	return re;
+	*/
     }
 
     private float getFloatOfStatement(Statement stm) 
@@ -1125,9 +1143,16 @@ public class KnowledgeEngine
 	return this.confPath;
     }
 
+    public void testFunction() {
+	boolean b = OntoQueryUtil.computeOnSpatialRelation();
+	
+    }
+
     public static void main(String[] args)
     {
-	// SpatialCalculator.testTF();
+	SpatialCalculator.testTF();
+	
+
 	String configFile = new String();
 	System.out.print("There are " + args.length + " input arguments: ");
 
@@ -1179,7 +1204,7 @@ public class KnowledgeEngine
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
     private String confPath;
-    private OntoQueryUtil ontoQueryUtil;
+    //private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing
     int flag = 1;
 }

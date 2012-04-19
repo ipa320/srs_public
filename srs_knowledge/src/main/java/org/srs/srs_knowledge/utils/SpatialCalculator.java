@@ -64,7 +64,15 @@ import javax.vecmath.Quat4d;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Matrix4d;
-import java.awt.geom.Point2D;
+//import java.awt.geom.Point2D;
+
+import math.geom2d.*;
+import math.geom2d.line.LineSegment2D;
+import math.geom2d.polygon.Polygon2DUtils;
+import math.geom2d.polygon.Polygon2D;
+import math.geom2d.polygon.SimplePolygon2D;
+
+import math.geom2d.Point2D;
 
 public class SpatialCalculator 
 {
@@ -105,9 +113,61 @@ public class SpatialCalculator
 	return ret;
     }
 
-    public static boolean isOnWorkspace(SRSSpatialInfo obj1, SRSSpatialInfo obj2) {
+    public static boolean ifOverlapping(Polygon2D p1, Polygon2D p2) {
+	Polygon2D overlap = Polygon2DUtils.intersection(p1, p2);
+	return overlap.getArea() > 0;
+    }
+
+    public static boolean ifOnObject(SRSSpatialInfo obj1, SRSSpatialInfo obj2) {
+	// error checking ..
+
+	ArrayList<ros.pkg.geometry_msgs.msg.Point> corners1 = getBoundingBoxTopCorners(obj1);
+	ArrayList<ros.pkg.geometry_msgs.msg.Point> corners2 = getBoundingBoxTopCorners(obj2);
 	
-	return true;
+	return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && obj1.pose.position.z > obj2.pose.position.z;
+    }
+    
+    private static Polygon2D createPolygon(ArrayList<ros.pkg.geometry_msgs.msg.Point> vertex) {
+	SimplePolygon2D p = new SimplePolygon2D();
+	for (ros.pkg.geometry_msgs.msg.Point v : vertex) {
+	    Point2D p2d = new Point2D(v.x, v.y);
+	    p.addVertex(p2d);
+	}
+	
+	return p;
+    }
+
+    private static ArrayList<ros.pkg.geometry_msgs.msg.Point> getBoundingBoxTopCorners(SRSSpatialInfo obj) {
+	
+	ArrayList<ros.pkg.geometry_msgs.msg.Point> corners = new ArrayList<ros.pkg.geometry_msgs.msg.Point>();
+	Vector3d orig = new Vector3d(obj.pose.position.x, obj.pose.position.y, obj.pose.position.z);
+	Quat4d q4d = new Quat4d(obj.pose.orientation.x, obj.pose.orientation.y, obj.pose.orientation.x, obj.pose.orientation.w);
+	ros.pkg.geometry_msgs.msg.Point point = new ros.pkg.geometry_msgs.msg.Point();
+	point.x = -obj.l/2;
+	point.y = -obj.w/2;
+	point.z = obj.h;
+	ros.pkg.geometry_msgs.msg.Point np = SpatialCalculator.transformPoint(orig, q4d, point);
+	corners.add(np);
+
+	point.x = obj.l/2;
+	point.y = -obj.w/2;
+	point.z = obj.h;
+	np = SpatialCalculator.transformPoint(orig, q4d, point);
+	corners.add(np);
+
+	point.x = obj.l/2;
+	point.y = obj.w/2;
+	point.z = obj.h;
+	np = SpatialCalculator.transformPoint(orig, q4d, point);
+	corners.add(np);
+
+	point.x = -obj.l/2;
+	point.y = obj.w/2;
+	point.z = obj.h;
+	np = SpatialCalculator.transformPoint(orig, q4d, point);
+	corners.add(np);
+
+	return corners;
     }
 
     // simply use awt Polygon.contains() 

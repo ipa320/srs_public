@@ -23,7 +23,7 @@
 # \date Date of creation: March 2012
 #
 # \brief
-#   Implements an action server that returns all the grasping configurations for a given object_id.
+#   Implements a service that shows a GraspSubConfiguration in OpenRAVE.
 #
 #################################################################
 #
@@ -59,55 +59,43 @@ import roslib
 roslib.load_manifest('srs_grasping')
 import time
 import rospy
-import actionlib
 
 import grasping_functions
-from srs_grasping.msg import *
+from srs_grasping.srv import *
 
-class get_grasp_configurations():
+
+class srs_ui_pro_grasp_simulator():
 
 	def __init__(self):
+		rospy.logerr("------------------------------");
 
-		print "-------------------------------------------------------------------------";
-		rospy.loginfo("Waiting /get_model_grasp service...")
-		rospy.wait_for_service('/get_model_grasp')
-		rospy.loginfo("/get_model_grasp is ready.")
 
-		self.ns_global_prefix = "/get_grasp_configurations"
-		self.get_grasp_configurations = actionlib.SimpleActionServer(self.ns_global_prefix, GraspCAction, self.execute_cb, True)
-		rospy.loginfo("/get_grasp_configurations is ready.")
-		self.get_grasp_configurations.start()
+	def srs_ui_pro_grasp_simulator(self, server_goal):
+		x = time.time();
+		rospy.loginfo("/srs_ui_pro_grasp_simulator service has been called...");
 
-	
-	def execute_cb(self, server_goal):
-		x = time.time()
-		rospy.loginfo("/get_grasp_configurations_server has been called...");
-		server_result = GraspCActionResult().result
+		server_result = GraspSimulatorResponse();
 
-		fail = False;
+		try:
+			grasping_functions.grasp_view(server_goal.object_id, server_goal.grasp_configuration, server_goal.object_pose);
+			server_result.result = True;
+			print "ha funcionado oiga!"
+		except:
+			server_result.result = False;
+			print "algo ha cascado!"
 
-		resp = grasping_functions.read_grasps_from_DB(server_goal.object_id);
-		if resp == -1:
-			resp = grasping_functions.generator(server_goal.object_id);
-			if resp != -1:
-				resp = grasping_functions.read_grasps_from_DB(server_goal.object_id);
-				server_result.grasp_configuration = resp.grasp_configuration;
-			else:
-				fail = True;
-		else:
-			server_result.grasp_configuration = resp.grasp_configuration;
-
-		if fail:
-			self.get_grasp_configurations.set_aborted(server_result)
-		else:
-			self.get_grasp_configurations.set_succeeded(server_result)
 
 		print "Time employed: " + str(time.time() - x);
 		print "---------------------------------------";
+		return server_result;
 
 
-## Main routine for running the grasp server
+	def srs_ui_pro_grasp_simulator_server(self):
+		s = rospy.Service('/srs_ui_pro_grasp_simulator', GraspSimulator, self.srs_ui_pro_grasp_simulator);
+
+
 if __name__ == '__main__':
-	rospy.init_node('get_grasp_configurations')
-	SCRIPT = get_grasp_configurations()
+	rospy.init_node('srs_ui_pro_grasp_simulator')
+	SCRIPT = srs_ui_pro_grasp_simulator()
+	SCRIPT.srs_ui_pro_grasp_simulator_server();
 	rospy.spin()

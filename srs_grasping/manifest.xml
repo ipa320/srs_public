@@ -12,20 +12,19 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_grasping</url>
 
-  <depend package="actionlib"/>
   <depend package="rospy"/>
+  <depend package="actionlib"/>
   <depend package="tf"/>
-  <depend package="openrave"/>
-  <depend package="smach"/>
-  <depend package="smach_ros"/>
-  <depend package="cob_script_server"/>
-  <depend package="srs_msgs"/>
   <depend package="trajectory_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="kinematics_msgs"/>
+  <depend package="srs_msgs"/>
   <depend package="srs_object_database"/>
-  <depend package="srs_object_database_msgs"/>
-  <depend package="cob_object_detection_msgs"/>
-  <depend package="schunk_sdh"/>
+  <depend package="openrave"/>
+  <depend package="schunk_sdh"/> 
+
+  <!-- Uncomment this lines to run the grasp_test.py script>
+  <depend package="cob_script_server"/> 
+  <depend package="cob_object_detection_msgs"/--> 
 
 </package>

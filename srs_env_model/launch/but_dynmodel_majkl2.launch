@@ -15,12 +15,15 @@
 	<include file="$(find cob_2dnav)/ros/launch/2dnav.launch" />
        
 	<!-- Run our dynamic scene model server node -->
+	<param name="but_server_node/pointcloud_min_z" value="0.0" type="double"/>
+	<param name="but_server_node/use_old_im" value="true" type="bool"/>	
+	<param name="but_server_node/resolution" value="0.025" type="double"/>	
 	<include file="$(find srs_env_model)/launch/only_butserver.launch"/>
     
 	<!-- Run our GUI nodes -->
-	<node pkg="cob_interactive_teleop" type="but_cob_teleop" name="but_cob_teleop" />
-<!--	<node pkg="srs_ui_but" type="view" name="view" /> -->
-	<node pkg="srs_ui_but" type="but_service_server" name="but_service_server" />
+	<node pkg="cob_interactive_teleop" type="interactive_teleop" name="cob_interactive_teleop" />
+	<!--node pkg="srs_ui_but" type="view" name="view" /> -->
+	<node pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" name="but_interaction_primitives_service_server" />
 
 	<!-- Run rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model)/config/majkl2.vcg"/>

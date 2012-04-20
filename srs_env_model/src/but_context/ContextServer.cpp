@@ -32,9 +32,6 @@ namespace but_context
 
 ContextServer::ContextServer()
 {
-  context_.context_type = Context::DEFAULT;
-  context_.connection_type = Context::UNKNOWN;
-
   publisher_ = nh_.advertise<srs_env_model::ContextChanged> (BUT_ContextChanged_TOPIC, BUFFER_SIZE);
 
   publishContext();

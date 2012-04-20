@@ -150,7 +150,7 @@ void srs::CCMapPlugin::onFrameStart( const SMapParameters & par )
 }
 
 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-void srs::CCMapPlugin::handleOccupiedNode(const srs::tButServerOcTree::iterator& it, const SMapParameters & mp)
+void srs::CCMapPlugin::handleOccupiedNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp)
 {
 	// Should we publish something?
 	if (! m_publishCollisionMap)

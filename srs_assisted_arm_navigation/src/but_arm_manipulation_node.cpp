@@ -146,8 +146,22 @@ void CArmManipulationEditor::reset() {
 
   } else ROS_WARN("Cannot remove planning scene: it has been already removed");
 
+  if (!refresh()) ROS_WARN("Error on refreshing planning scene during reset");
+
 }
 
+bool CArmManipulationEditor::refresh() {
+
+  PlanningSceneData& planningSceneData = planning_scene_map_[planning_scene_id];
+
+  ROS_INFO("Sending planning scene id=%u",planningSceneData.getId());
+
+  //planningScene& ps
+
+  return sendPlanningScene(planningSceneData);
+
+
+}
 
 
 void CArmManipulationEditor::spin_callback(const ros::TimerEvent&)
@@ -239,6 +253,7 @@ int main(int argc, char** argv)
       ros::ServiceServer service_failed = n.advertiseService(SRV_FAILED, &CArmManipulationEditor::ArmNavFailed,ps_editor);
 
       ros::ServiceServer service_collobj = n.advertiseService(SRV_COLLOBJ, &CArmManipulationEditor::ArmNavCollObj,ps_editor);
+      ros::ServiceServer service_movepalmlink = n.advertiseService(SRV_MOVE_PALM_LINK, &CArmManipulationEditor::ArmNavMovePalmLink,ps_editor);
 
       ros::Timer timer1 = n.createTimer(ros::Duration(0.01), &CArmManipulationEditor::spin_callback,ps_editor);
 

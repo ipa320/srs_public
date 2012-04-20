@@ -5,15 +5,15 @@
   <include file="$(find srs_assisted_arm_navigation)/launch/but_arm_nav_sim.launch"/>
 
   <!-- Run but_gui server -->
-  <node name="but_gui_service_server" pkg="srs_env_model" type="but_gui_service_server" />
+  <!--<node name="but_gui_service_server" pkg="srs_env_model" type="but_gui_service_server" />-->
 
   <!-- object db - for grasping -->
   <include file="$(find srs_object_database)/launch/srs_db.launch"/>
 
 <!-- srs_grasping -->
 <!--<include file="$(find srs_grasping)/launch/grasping_services.launch"/>-->
-  <node pkg="srs_grasping" type="get_grasps_from_position.py" name="get_grasps_from_position" ns="get_grasps_from_position" cwd="node" respawn="false" output="screen">
-      <remap from="/arm_kinematics/get_ik" to="/cob_arm_kinematics/get_ik"/>
+  <node pkg="srs_grasping" type="get_pregrasps.py" name="get_pregrasps" ns="get_pregrasps" cwd="node" respawn="false" output="screen">
+     <!-- <remap from="/arm_kinematics/get_ik" to="/cob_arm_kinematics/get_ik"/>-->
   </node>
   <node pkg="srs_grasping" type="get_grasp_configurations.py" name="get_grasp_configurations" ns="get_grasp_configurations" cwd="node" respawn="false" output="screen" />
 

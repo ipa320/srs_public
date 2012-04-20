@@ -54,7 +54,7 @@ public:
 	virtual void onFrameStart( const SMapParameters & par );
 
 	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-	virtual void handleOccupiedNode(const srs::tButServerOcTree::iterator& it, const SMapParameters & mp);
+	virtual void handleOccupiedNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp);
 
 	//! Called when new scan was inserted and now all can be published
 	virtual void onPublish(const ros::Time & timestamp);

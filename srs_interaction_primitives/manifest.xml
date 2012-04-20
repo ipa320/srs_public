@@ -1,0 +1,33 @@
+<package>
+	<description brief="srs_interactive_primitives">
+
+GUI primitives for HRI based on Interactive Markers provided by dcgm-robotics@FIT group.
+
+	</description>
+	<author>Tomas Lokaj, Michal Spanel (spanel@fit.vutbr.cz)</author>
+	<license>LGPL</license>
+	<review status="unreviewed" notes="" />
+	<url>http://ros.org/wiki/srs_interaction_primitives</url>
+
+	<depend package="opencv2" />
+	<depend package="eigen"/>
+	<depend package="roscpp" />
+	<depend package="image_transport" />
+	<depend package="camera_calibration_parsers" />
+	<depend package="visualization_msgs" />
+	<depend package="std_msgs" />
+	<depend package="std_srvs" />
+	<depend package="nav_msgs" />
+	<depend package="arm_navigation_msgs" />
+	<depend package="pcl" />
+	<depend package="pcl_ros" />
+	<depend package="ogre" />
+	<depend package="interactive_markers" /> 
+
+	<export>
+		<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lbut_interaction_primitives" />
+		<rosdoc config="rosdoc.yaml" />
+	</export>
+
+</package>
+

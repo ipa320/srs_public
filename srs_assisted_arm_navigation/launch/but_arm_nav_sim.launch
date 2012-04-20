@@ -11,6 +11,9 @@
   <!-- start COB script server -->
   <include file="$(find cob_script_server)/launch/script_server.launch"/>
   
+  <!-- srs interaction primitives -->
+  <node name="but_im_server" pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" />
+  
   <!-- actionlibserver -->
   <include file="$(find srs_assisted_arm_navigation)/launch/arm_manip_node.launch"/>
   
@@ -26,6 +29,6 @@
   </node>
   
   <!-- BUT cob teleop marker -->
-  <node name="cob_teleop_im" pkg="cob_interactive_teleop" type="but_cob_teleop" />
+  <node name="cob_interactive_teleop" pkg="cob_interactive_teleop" type="interactive_teleop" />
   
 </launch>

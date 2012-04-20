@@ -1,13 +1,18 @@
-# context definition
-uint8 context_type
-uint8 connection_type
+# context tags
+uint8 status_tag
+uint8 action_tag
+uint8 connection_tag
 
-# possible context typed
+# status tags
+uint8 OK=0
+uint8 EMERGENCY=1
+
+# action tags
 uint8 DEFAULT=0
 uint8 GRASPING=1
 uint8 MOVING=2
 
-# possible connection types
+# connection tags
 uint8 UNKNOWN=0
 uint8 SLOW=1
 uint8 FAST=2

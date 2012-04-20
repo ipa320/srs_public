@@ -1,0 +1,4 @@
+string name                         # object's name
+std_msgs/ColorRGBA color            # new color
+--- 
+std_msgs/ColorRGBA old_color        # old color

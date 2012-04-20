@@ -592,19 +592,19 @@ void srs::COctoMapPlugin::onCrawlStart(const ros::Time & currentTime)
 }
 
 /// Handle node
-void srs::COctoMapPlugin::handleNode(const tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs::COctoMapPlugin::handleNode(tButServerOcTree::iterator & it, const SMapParameters & mp)
 {
 	m_sigOnNode( it, mp );
 }
 
 /// Handle free node
-void srs::COctoMapPlugin::handleFreeNode(const tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs::COctoMapPlugin::handleFreeNode(tButServerOcTree::iterator & it, const SMapParameters & mp)
 {
 	m_sigOnFreeNode( it, mp );
 }
 
 /// Handle occupied node
-void srs::COctoMapPlugin::handleOccupiedNode(const tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs::COctoMapPlugin::handleOccupiedNode(tButServerOcTree::iterator & it, const SMapParameters & mp)
 {
 	m_sigOnOccupiedNode( it, mp );
 }

@@ -10,6 +10,9 @@
   
   <!-- start COB script server -->
   <include file="$(find cob_script_server)/launch/script_server.launch"/>
+
+  <!-- srs interaction primitives -->
+  <node name="but_im_server" pkg="srs_interaction_primitives" type="interaction_primitives_service_server" />
   
   <!-- planning environment -->
   <!--<include file="$(find cob_arm_navigation_but)/launch/planning_env_collider.launch"/>-->

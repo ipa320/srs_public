@@ -96,7 +96,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-
+import org.srs.srs_knowledge.utils.*;
 
 /**
  * This class is used for more application specific ontology queries. 
@@ -384,11 +384,11 @@ public class OntoQueryUtil
 
     public static boolean computeOnSpatialRelation() {
 	// get a list of objects and workspaces
-	GetObjectsOnMap.Response res = getObjectsOnMap(OntoQueryUtil.MapName, true);
+	GetObjectsOnMap.Response resOBJ = getObjectsOnMap(OntoQueryUtil.MapName, true);
 	GetWorkspaceOnMap.Response resWS = getWorkspaceOnMap(OntoQueryUtil.MapName, true);
 	// pair-wise comparison --- if condition met, then update the knowledge base
-	System.out.println("RESULT ------->>>>>>  SIZE OF OBJECTS: " + res.objects.size());
-	for (String obj : res.objects) {
+	System.out.println("RESULT ------->>>>>>  SIZE OF OBJECTS: " + resOBJ.objects.size());
+	for (String obj : resOBJ.objects) {
 	    System.out.println(obj);
 	}
 
@@ -397,7 +397,21 @@ public class OntoQueryUtil
 	    System.out.println(ws);
 	}
 
-	
+	for (int i = 0; i < resOBJ.objectsInfo.size(); i++) {
+	    for (int j = 0; j < resWS.objectsInfo.size(); j++) {
+		if(SpatialCalculator.ifOnObject(resOBJ.objectsInfo.get(i), resWS.objectsInfo.get(j), 1)) {
+		    System.out.println("FOUND ONE PAIR MATCH THE ON RELATIONSHIP");
+		    //TODO update rdf graph model
+		    
+		}
+		else {
+		    System.out.println("NO MATCH.... between : " + resOBJ.objects.get(i) + "  and  " + resWS.objects.get(j));
+		    
+		}
+	    }
+	}
+
+	// TODO: Better to use SPARQL CONSTRUCT + RULES ... TO REPLACE
 
 	return true;
     }

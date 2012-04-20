@@ -132,8 +132,8 @@ public class KnowledgeEngine
 	
 
 
-
-this.testFunction();
+	    //////
+	    this.testFunction();
 
 
 	}
@@ -1144,7 +1144,11 @@ this.testFunction();
     }
 
     public void testFunction() {
-	boolean b = OntoQueryUtil.computeOnSpatialRelation();
+	//boolean b = OntoQueryUtil.computeOnSpatialRelation();
+	System.out.println("++++++++++++++++++++++++++++++++++");
+	OntoQueryUtil.computeOnSpatialRelation();
+	System.out.println("++++++++++++++++++++++++++++++++++");
+
 	
     }
 

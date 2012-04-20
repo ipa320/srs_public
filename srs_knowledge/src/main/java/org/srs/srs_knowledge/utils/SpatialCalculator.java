@@ -90,6 +90,36 @@ public class SpatialCalculator
 	point.z = 1;
 	ros.pkg.geometry_msgs.msg.Point np = SpatialCalculator.transformPoint(orig, q4d, point);
 	System.out.println("NEW POINT: " + np.x + "  " + np.y + "  " + np.z);
+
+	System.out.println(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ");
+	
+	SRSSpatialInfo o1 = new SRSSpatialInfo();
+	o1.l = 5;
+	o1.w = 5;
+	o1.h = 5;
+
+	o1.pose.position.x = 3;
+	o1.pose.position.y = 3;
+	o1.pose.position.z = 10;
+	o1.pose.orientation.w = 1;
+
+	SRSSpatialInfo o2 = new SRSSpatialInfo();
+	o2.l = 10;
+	o2.w = 10;
+	o2.h = 10;
+	o2.pose.position.z = 0;
+	o2.pose.orientation.w = 1;
+	if(SpatialCalculator.ifOnObject(o1, o2, 1)) {
+	    System.out.println(" YES. O1 is on O2");
+	}
+	else {
+	    System.out.println(" NO. O1 is NOT on O2");
+	}
+	
+	System.out.println(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ");
+	
+
+	System.out.println(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ");
     }
 
 
@@ -117,14 +147,30 @@ public class SpatialCalculator
 	Polygon2D overlap = Polygon2DUtils.intersection(p1, p2);
 	return overlap.getArea() > 0;
     }
-
-    public static boolean ifOnObject(SRSSpatialInfo obj1, SRSSpatialInfo obj2) {
+    
+    /**
+     * @param poseCfg 0: pose at bottom of object. 1: pose at center of object
+     */
+    public static boolean ifOnObject(SRSSpatialInfo obj1, SRSSpatialInfo obj2, int poseCfg) {
 	// error checking ..
 
 	ArrayList<ros.pkg.geometry_msgs.msg.Point> corners1 = getBoundingBoxTopCorners(obj1);
 	ArrayList<ros.pkg.geometry_msgs.msg.Point> corners2 = getBoundingBoxTopCorners(obj2);
-	
-	return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && obj1.pose.position.z > obj2.pose.position.z;
+	if(ifOverlapping(createPolygon(corners1), createPolygon(corners2))) {
+	    System.out.println("YES.... OVerlapping..");
+	}
+	else{
+	    System.out.println("NOOO.... OVerlapping..");
+	}
+	switch(poseCfg) {
+	case 0:
+	    return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && Math.abs(obj1.pose.position.z - obj2.h + obj2.pose.position.z) <= obj1.h/2;
+	case 1:
+	    	return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && Math.abs(obj1.pose.position.z - obj1.h/2 - obj2.h + obj2.pose.position.z - obj2.h/2) <= obj1.h/2;
+	default:
+	    return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && Math.abs(obj1.pose.position.z - obj2.h + obj2.pose.position.z) <= obj1.h/2;
+
+	}
     }
     
     private static Polygon2D createPolygon(ArrayList<ros.pkg.geometry_msgs.msg.Point> vertex) {

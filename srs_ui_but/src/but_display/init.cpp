@@ -29,8 +29,8 @@
 
 #include "but_display.h"
 #include "but_pointcloud.h"
-#include "but_distance_linear_visualizer.h"
-#include "but_distance_circular_indicator.h"
+#include "but_distance_visualizer.h" //"but_distance_linear_visualizer.h"
+#include "but_distance_indicator.h" //"but_distance_circular_indicator.h"
 #include "but_data_fusion/but_cam_display.h"
 #include "but_camcast.h"
 

@@ -402,6 +402,20 @@ public class OntoQueryUtil
 		if(SpatialCalculator.ifOnObject(resOBJ.objectsInfo.get(i), resWS.objectsInfo.get(j), 1)) {
 		    System.out.println("FOUND ONE PAIR MATCH THE ON RELATIONSHIP");
 		    //TODO update rdf graph model
+		    try {
+			Individual ind1 = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + resOBJ.objects.get(i));
+			Individual ind2 = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + resWS.objects.get(j));
+			if (OntoQueryUtil.updateOnSpatialRelation(ind1, ind2) ) {
+			    System.out.println("Added Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
+			}
+			else {
+			    System.out.println("CANNOT add Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
+			}
+			    
+		    }
+		    catch (NonExistenceEntryException e) {
+			System.out.println("Individual not found in ontology:  ---  " + e.getMessage());
+		    }
 		    
 		}
 		else {
@@ -413,6 +427,28 @@ public class OntoQueryUtil
 
 	// TODO: Better to use SPARQL CONSTRUCT + RULES ... TO REPLACE
 
+	return true;
+    }
+
+    private static boolean updateOnSpatialRelation(Individual obj1, Individual obj2) {
+	try {
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "aboveOf");
+	    com.hp.hpl.jena.rdf.model.Statement stm = obj1.getProperty(pro);
+	    obj1.setPropertyValue(pro, obj2);
+	} 
+	catch(NonExistenceEntryException e) {
+	    System.out.println("NonExistenceEntryException --> " + e.getMessage());
+	    return false;
+	}
+	/*
+	Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
+	// set property
+	Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "xCoord");
+	com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	//Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
+	Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.x));
+	ind.setPropertyValue(pro, x);
+	*/
 	return true;
     }
 

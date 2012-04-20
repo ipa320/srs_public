@@ -13,7 +13,7 @@
  *								
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  *
- * @author Ze Ji, email: jiz1@cf.ac.uk
+ * @author Ze Ji, email: jiz1(at)cf.ac.uk
  *
  * Date of creation: Oct 2011:
  * ToDo: 
@@ -64,7 +64,6 @@ import javax.vecmath.Quat4d;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Matrix4d;
-//import java.awt.geom.Point2D;
 
 import math.geom2d.*;
 import math.geom2d.line.LineSegment2D;
@@ -81,7 +80,8 @@ public class SpatialCalculator
 
     public static void testTF() 
     {
-	System.out.println("HELLO TEST TF");
+	System.out.println(" +++++++++++++++++++HELLO TEST TF+++++++++++++++++++");
+
 	Vector3d orig = new Vector3d(0,0,0);
 	Quat4d q4d = new Quat4d(0.00000000e+00, 0.00000000e+00, 9.99999683e-01, 7.96326711e-04);
 	ros.pkg.geometry_msgs.msg.Point point = new ros.pkg.geometry_msgs.msg.Point();
@@ -115,9 +115,6 @@ public class SpatialCalculator
 	else {
 	    System.out.println(" NO. O1 is NOT on O2");
 	}
-	
-	System.out.println(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ");
-	
 
 	System.out.println(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ");
     }
@@ -169,7 +166,6 @@ public class SpatialCalculator
 	    	return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && Math.abs(obj1.pose.position.z - obj1.h/2 - obj2.h + obj2.pose.position.z - obj2.h/2) <= obj1.h/2;
 	default:
 	    return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && Math.abs(obj1.pose.position.z - obj2.h + obj2.pose.position.z) <= obj1.h/2;
-
 	}
     }
     

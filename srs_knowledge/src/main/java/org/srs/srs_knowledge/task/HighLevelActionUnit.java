@@ -147,10 +147,9 @@ public abstract class HighLevelActionUnit {
 	GenericAction genericAction = actionUnits.get(ind);
 	
 	ca.generic = genericAction;
-	
+
 	ca.actionType = "generic";
 	return ca;
-
     }
 
     public boolean addFeedback(String key, ActionFeedback fb) {

@@ -111,11 +111,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		System.out.println("Created HLActionSeq ");
 		HighLevelActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
 		allSubSeqs.add(subSeq);
-	       
 	    }
 	    catch(RosException e) {
 		System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \t" + e.getMessage() + "\t" + e.toString());
-		
 	    }
 	    catch(Exception e) {
 		System.out.println(e.getMessage());
@@ -281,6 +279,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     }
 
     private CUAction handleFailedMessage() {
+
+	// 
+	updateTargetOfFailedAct();
+
 	currentSubAction++;
 	
 	System.out.println("HANDLE FAILED MESSAGE.... CURRENTSUBACTION IS AT:  " + currentSubAction);
@@ -314,12 +316,56 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	
 	return null;
     }
+
+    private void updateTargetOfSucceededAct(ActionFeedback fb) {
+	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
+	HighLevelActionUnit currentActUnit = currentHLActSeq.getCurrentHighLevelActionUnit();
+	if(currentActUnit.getActionType().equals("MoveAndDetection")) {
+	    this.recentDetectedObject = ActionFeedback.toPose(fb);
+	    // update the knowledge (post-processing)
+	    
+	    // if there exists one same object on the same workspace, update it --- simple solution
+	    
+	    // if there are more objects of the smae type, linke one of them (does not matter which one, as they are identical (not distinguiable).. better to use the closest one)
+	    
+	    // if there does not exist such an object, then insert a new one
+
+	}
+	else if(currentActUnit.getActionType().equals("MoveAndGrasp")) {
+	    // look for the object at the pose 
+	    
+	    // update its relationship with the Robot, and remove its pose information
+	    
+	}
+    }
+
+    private void updateTargetOfFailedAct() {
+	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
+	HighLevelActionUnit currentActUnit = currentHLActSeq.getCurrentHighLevelActionUnit();
+	if(currentActUnit.getActionType().equals("MoveAndDetection")) {
+	    //this.recentDetectedObject = ActionFeedback.toPose(fb);	 
+	    	    
+	    // update the knowledge (post-processing)
+	    
+	    // if there exists one same object on the same workspace, remove it --- simple solution
+	    
+	    // if there are more objects of the smae type, remove one of them (does not matter which one, as they are identical (not distinguiable).. better to use the closest one )
+	    
+	    // if there does not exist such an object, then do nothing
+
+	}
+	else if(currentActUnit.getActionType().equals("MoveAndGrasp")) {
+	    // do nothing
+	    
+	}
+    }
     
     private CUAction handleSuccessMessage(ActionFeedback fb) {
 	// TODO: 
+	updateTargetOfSucceededAct(fb);
     
 	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
-	
+
 	if(currentHLActSeq.hasNextHighLevelActionUnit()) {
 	    HighLevelActionUnit nextHighActUnit = currentHLActSeq.getNextHighLevelActionUnit();
 	    // set feedback? 
@@ -327,14 +373,14 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 
 		Pose2D posBase = calculateGraspPosFromFB(fb);
 		if(posBase == null) {
-		    return handleFailedMessage();		
+		    return handleFailedMessage();
 		}
 
 		ArrayList<String> basePos = constructArrayFromPose2D(posBase);
 		if(!nextHighActUnit.setParameters(basePos)) {
 		    //currentSubAction++;
 		    return handleFailedMessage();		
-	       }
+		}
 	    }
 
 	    if(nextHighActUnit != null) {

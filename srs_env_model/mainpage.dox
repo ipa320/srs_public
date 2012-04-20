@@ -3,8 +3,8 @@
 \htmlinclude manifest.html
 
 ROS dynamic environment model provided by dcgm-robotics@FIT group:
-- global 3D map based on OctoMap library
-- GUI primitives for HRI based on Interactive Markers
+- global voxel-based 3D map of the environment based on OctoMap library
+- octree for objects (bounding boxes, planes, etc.)
 
 <!--
 \section xyz ...

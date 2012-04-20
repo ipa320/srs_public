@@ -1,6 +1,6 @@
 /******************************************************************************
  * \file
- * $Id: but_server.cpp 617 2012-04-16 13:45:44Z stancl $
+ * $Id: but_server.cpp 660 2012-04-18 16:37:04Z stancl $
  *
  * Modified by dcgm-robotics@FIT group.
  *
@@ -80,8 +80,14 @@ CButServer::CButServer(const std::string& filename) :
 			m_plugMap2DHolder("M2D"),
 			m_plugIMarkers(0),
 			m_plugMarkerArrayHolder( "MA" ),
+			m_plugObjTree( "OT" ),
 			m_plugOldIMarkers( 0 ),
 			m_bUseOldIMP( false )
+#ifdef _EXAMPLES_
+			, m_plugExample("Example1")
+			, m_plugExampleCrawlerHolder( "Example2")
+#endif
+
 {
 	// Get node handle
 	ros::NodeHandle private_nh("~");
@@ -107,6 +113,7 @@ CButServer::CButServer(const std::string& filename) :
 	m_plugins.push_back( m_plugCollisionObjectHolder.getPlugin() );
 	m_plugins.push_back( m_plugMap2DHolder.getPlugin() );
 	m_plugins.push_back( m_plugMarkerArrayHolder.getPlugin() );
+	m_plugins.push_back( &m_plugObjTree );
 
 	if( m_bUseOldIMP )
 	{
@@ -118,6 +125,11 @@ CButServer::CButServer(const std::string& filename) :
 		m_plugIMarkers = new srs::CIMarkersPlugin( "IM" );
 		m_plugins.push_back( m_plugIMarkers );
 	}
+
+#ifdef _EXAMPLES_
+	m_plugins.push_back( & m_plugExample );
+	m_plugins.push_back( m_plugExampleCrawlerHolder.getPlugin() );
+#endif
 
 
 	//=========================================================================
@@ -185,8 +197,16 @@ void CButServer::publishAll(const ros::Time& rostime) {
     m_plugMarkerArrayHolder.connect( & m_plugOctoMap );
     m_plugVisiblePointCloudHolder.connect( & m_plugOctoMap );
 
+#ifdef _EXAMPLES_
+    m_plugExampleCrawlerHolder.connect( & m_plugOctoMap );
+#endif
+
 	// Crawl octomap
 	m_plugOctoMap.crawl( rostime );
+
+#ifdef _EXAMPLES_
+	m_plugExampleCrawlerHolder.disconnect();
+#endif
 
 	// Disconnect all
 	m_plugOcMapPointCloudHolder.disconnect();
@@ -228,6 +248,14 @@ void CButServer::publishAll(const ros::Time& rostime) {
 	// Old interactive markers
 	if( m_plugOldIMarkers != 0 && m_plugOldIMarkers->shouldPublish() )
 		m_plugOldIMarkers->onPublish( rostime );
+
+#ifdef _EXAMPLES_
+	// Publish data
+	if( m_plugExample.shouldPublish() )
+	  m_plugExample.onPublish(rostime);
+
+	m_plugExampleCrawlerHolder.publish(rostime);
+#endif
 }
 
 

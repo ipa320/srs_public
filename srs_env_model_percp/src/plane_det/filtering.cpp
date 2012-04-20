@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: filtering.cpp 619 2012-04-16 13:47:28Z ihulik $
+ * $Id: filtering.cpp 694 2012-04-20 10:24:24Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -27,7 +27,7 @@
 
 /**
  * Description:
- *
+ *	 Contains necessary classes for depth map filtering
  */
 
 #include "plane_det/filtering.h"
@@ -39,29 +39,29 @@
 
 namespace but_scenemodel{
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // A class providing an interface to depth image segmenter
 // @param normals Normals object with precomputed real points and normals - not necessary - only if you do not want to compute it in this module (for speed reasons)
 // @see Normals()
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Regions::Regions(Normals *normals)
 {
 	m_normals = normals;
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Destructor - obviously, it destructs this class
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Regions::~Regions()
 {
 	//if (m_normals != NULL)
 	//	free(m_normals);
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Method computes from m_regionMatrix statistical information (fills m_planes and m_stddeviation matrices)
 // @param threshold Not used now (TODO)
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Regions::computeStatistics(float threshold)
 {
 	using namespace cv;
@@ -142,7 +142,7 @@ bool Regions::computeStatistics(float threshold)
 	return true;
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Method which segments a depth image with watershed algorithm. There is several approaches, so please be aware of input parameters
 // @param src Input CV_16UC depth matrix (raw input from kinect)
 // @param cam_info Camera info message (ROS)
@@ -153,7 +153,7 @@ bool Regions::computeStatistics(float threshold)
 // @param beta When simple preprocessing is selected (depth, normal, predictor), it is always a threshold for selecting anomal neighbors (in depth is in milimeters, normal is in radians ). If combined type is selected, it represents a depth difference.
 // @param gamma It is used only in combined and predictor. In combined, it specifiesd normal difference threshold, in predictor a sobel size.
 // @see Normals()
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Regions::watershedRegions(Mat &src, const CameraInfoConstPtr& cam_info,
 						   int type, int seedThreshold,
 						   float alpha, float beta, float gamma
@@ -282,13 +282,13 @@ void Regions::watershedRegions(Mat &src, const CameraInfoConstPtr& cam_info,
 	output1.convertTo(m_regionMatrix, CV_32SC1);
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Method converts an input image into gradient image using comparison of depth data
 // @param src Input CV_16UC depth matrix (raw input from kinect)
 // @param dst Final gradient image
 // @param size Size of neigborhood (number of maximal pixel distance)
 // @param differenceThreshold Difference from center depth to mark a pixel as anomal
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Regions::gradientDepthDifference(Mat &src, Mat& dst, int size, float differenceThreshold)
 {
 	Mat input(src.size(), CV_32FC1);
@@ -353,14 +353,14 @@ void Regions::gradientNormalDifference(Mat &src, Mat& dst, int size, float diffe
 	output.convertTo(dst, CV_16U);
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Method converts an input image into gradient image using expected plane prediction. Pixel value is number of pixels around which are not in difference threshold from expected plane.
 // @param src Input CV_16UC depth matrix (raw input from kinect)
 // @param dst Final gradient image
 // @param differenceThreshold Difference from expected plane threshold to mark a pixel as anomal
 // @param size Size of neigborhood (number of maximal pixel distance)
 // @param sobelSize Size of sobel kernel used for gradient image computation
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Regions::gradientPlanePredictor(Mat &src, Mat& dst, float differenceThreshold, int size, int sobelSize)//, Mat& normals, Mat& coefs, Mat& points)
 {
 	Mat input(src.size(), CV_32FC1);
@@ -525,7 +525,7 @@ void Regions::gradientPlanePredictor(Mat &src, Mat& dst, float differenceThresho
 	input.convertTo(dst, CV_16U, SHRT_MAX/(max-min), -min);
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Auxiliary method which flood fills a tile untill min_planeDistance threshold difference is met
 // @param tile Tile subimage of depth data
 // @param tileMask Mask subimage
@@ -536,7 +536,7 @@ void Regions::gradientPlanePredictor(Mat &src, Mat& dst, float differenceThresho
 // @param ioffset Row offset of tile
 // @param joffset Column offset of tile
 // @param min_planeDistance Minimal distance from plane to fill
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int Regions::floodFillTile(Mat &tile, Mat&tileMask, Mat&pointMask, Vec3f *points, int index, Plane<float> &plane, int ioffset, int joffset, float min_planeDistance /*0.02*/)
 {
 	std::vector<Vec2i> unprocessed;
@@ -601,7 +601,7 @@ int Regions::floodFillTile(Mat &tile, Mat&tileMask, Mat&pointMask, Vec3f *points
 	else return size;
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Auxiliary function extracts current region's plane using LSQ
 // @param plane Extracted plane
 // @param tile Tile subimage of depth data
@@ -609,7 +609,7 @@ int Regions::floodFillTile(Mat &tile, Mat&tileMask, Mat&pointMask, Vec3f *points
 // @param ioffset Row offset of tile
 // @param joffset Column offset of tile
 // @param index Index of filling region
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Regions::getLeastSquaresAndBorder(Plane<float> &plane, Mat &tile, Mat&tileMask, int ioffset, int joffset, int index)
 {
 	int tileSize = tile.rows;
@@ -625,7 +625,7 @@ void Regions::getLeastSquaresAndBorder(Plane<float> &plane, Mat &tile, Mat&tileM
 	plane = Normals::LeastSquaresPlane(points);
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Auxiliary function for filling entire image from mask seed (until threshold from plane is met)
 // @param plane Plane equation
 // @param depth Depth image
@@ -636,7 +636,7 @@ void Regions::getLeastSquaresAndBorder(Plane<float> &plane, Mat &tile, Mat&tileM
 // @param tileSize Size of tile
 // @param index Index of filled region
 // @param min_planeDistance Maximal distance from plane to be filled
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Regions::fillEverything(Plane<float> &plane, Mat & depth, Mat & mask, Mat & points, int i_tile, int j_tile, int tileSize, int index, float min_planeDistance /*0.05*/)
 {
 	int maxi = tileSize+i_tile;
@@ -744,7 +744,7 @@ void Regions::fillEverything(Plane<float> &plane, Mat & depth, Mat & mask, Mat &
 	}
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Method segments a depth image using own tile plane searching RANSAC method.
 // @param src Input CV_16UC depth matrix (raw input from kinect)
 // @param cam_info Camera info message (ROS)
@@ -755,7 +755,7 @@ void Regions::fillEverything(Plane<float> &plane, Mat & depth, Mat & mask, Mat &
 // @param smallestTriangleArea Smalest randomly found triangle to be considered for plane computation (in pixels^2)
 // @param minRegionSize Minimal region size to be considered
 // @param minCandidates Minimal number of pixels in tile to start a RANSAC
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Regions::independentTileRegions(Mat &src, const CameraInfoConstPtr& cam_info, float minimumPlaneDistance, float minimumTriDistance, float minimumFloodDistance, int tileSize, int smallestTriangleArea, int minRegionSize, int minCandidates)
 {
 	Mat input(src.size(), CV_32FC1);

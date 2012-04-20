@@ -122,7 +122,7 @@ void srs::CCollisionObjectPlugin::onFrameStart(const SMapParameters & par)
 
 
 
-void srs::CCollisionObjectPlugin::handleOccupiedNode(const srs::tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs::CCollisionObjectPlugin::handleOccupiedNode(srs::tButServerOcTree::iterator & it, const SMapParameters & mp)
 {
 	// Transform input point
 	Eigen::Vector3f point( it.getX(), it.getY(), it.getZ() );

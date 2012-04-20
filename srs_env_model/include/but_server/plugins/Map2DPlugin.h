@@ -61,10 +61,10 @@ namespace srs
         virtual void onFrameStart( const SMapParameters & par );
 
         //! Handle free node (does nothing here)
-        virtual void handleFreeNode(const tButServerOcTree::iterator & it, const SMapParameters & mp );
+        virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapParameters & mp );
 
         /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-        virtual void handleOccupiedNode(const srs::tButServerOcTree::iterator& it, const SMapParameters & mp);
+        virtual void handleOccupiedNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp);
 
         /// Called when all nodes was visited.
         virtual void handlePostNodeTraversal(const SMapParameters & mp);
@@ -128,7 +128,7 @@ namespace srs
 
         }
 
-    }; // struct SCollisionObjectPluginHolder
+    }; // struct SMap2DPluginHolder
 
 } // namespace srs
 

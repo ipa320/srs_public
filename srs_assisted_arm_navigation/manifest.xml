@@ -1,11 +1,11 @@
 <package>
   <description brief="srs_assisted_arm_navigation">
 
-This package is derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB. 
+This package is derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB.
 Moreover, this package also provides several services that simplifies usage of the COB arm navigation.
 
   </description>
-  <author>Zdenek Materna/imaterna@fit.vutbr.cz), Michal Spanel/spanel@fit.vutbr.cz</author>
+  <author>Zdenek Materna (imaterna@fit.vutbr.cz), Michal Spanel (spanel@fit.vutbr.cz)</author>
   <license>LGPL</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_assisted_arm_navigation</url>

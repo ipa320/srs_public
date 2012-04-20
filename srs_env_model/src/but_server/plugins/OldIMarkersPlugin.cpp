@@ -27,7 +27,7 @@
 
 #include <but_server/plugins/OldIMarkersPlugin.h>
 #include <pcl_ros/transforms.h>
-#include <but_gui/Billboard.h>
+#include <but_interaction_primitives/Billboard.h>
 
 #define IM_SERVER_FRAME_ID "/base_link"
 #define IM_SERVER_TOPIC_NAME "BUT_Old_IM_Server"
@@ -66,8 +66,8 @@ void srs::COldIMarkersPlugin::init(ros::NodeHandle & node_handle)
 	if( m_bUseExternalServer )
 	{
 		// Connect to the services
-		m_removeInteractiveMarkerService = node_handle.serviceClient<srs_env_model::RemovePrimitive> (BUT_RemovePrimitive_SRV);
-		m_addInteractivePlaneService = node_handle.serviceClient<srs_env_model::AddPlane> (BUT_AddPlane_SRV);
+		m_removeInteractiveMarkerService = node_handle.serviceClient<srs_interaction_primitives::RemovePrimitive> (BUT_RemovePrimitive_SRV);
+		m_addInteractivePlaneService = node_handle.serviceClient<srs_interaction_primitives::AddPlane> (BUT_AddPlane_SRV);
 	}
 	else
 	{
@@ -209,7 +209,7 @@ void srs::COldIMarkersPlugin::addPlaneSrvCall(const srs_env_model_msgs::PlaneDes
 	if( m_bUseExternalServer )
 	{
 		// Create service
-		srs_env_model::AddPlane addPlaneSrv;
+		srs_interaction_primitives::AddPlane addPlaneSrv;
 
 		// Modify service
 		addPlaneSrv.request.name = name;
@@ -226,7 +226,7 @@ void srs::COldIMarkersPlugin::addPlaneSrvCall(const srs_env_model_msgs::PlaneDes
 	else
 	{
 		// Creating Plane object with name "plane1"
-		but_gui::Plane *p = new but_gui::Plane(m_imServer, m_IMarkersFrameId, name );
+		but_interaction_primitives::Plane *p = new but_interaction_primitives::Plane(m_imServer, m_IMarkersFrameId, name );
 
 		p->setPose( plane.pose );
 		p->setScale( plane.scale );
@@ -257,7 +257,7 @@ void srs::COldIMarkersPlugin::removePlaneSrvCall(const srs_env_model_msgs::Plane
 	if( m_bUseExternalServer )
 	{
 		// Create service
-		srs_env_model::RemovePrimitive removeObjectSrv;
+		srs_interaction_primitives::RemovePrimitive removeObjectSrv;
 
 		// Modify service
 		removeObjectSrv.request.name = name;

@@ -52,12 +52,15 @@
 #include "srs_assisted_arm_navigation/ArmNavExecute.h"
 #include "srs_assisted_arm_navigation/ArmNavStart.h"
 #include "srs_assisted_arm_navigation/ArmNavCollObj.h"
+#include "srs_assisted_arm_navigation/ArmNavMovePalmLink.h"
 
 #include "srs_assisted_arm_navigation/ArmNavSuccess.h"
 #include "srs_assisted_arm_navigation/ArmNavFailed.h"
 
 #include "srs_assisted_arm_navigation/ManualArmManipAction.h"
 #include <actionlib/server/simple_action_server.h>
+
+using namespace srs_assisted_arm_navigation;
 
 /**
  * Definition of services
@@ -90,6 +93,7 @@
 #define SRV_FAILED BUT_SERVICE("/arm_nav_failed")
 #define SRV_REFRESH BUT_SERVICE("/arm_nav_refresh")
 #define SRV_COLLOBJ BUT_SERVICE("/arm_nav_coll_obj")
+#define SRV_MOVE_PALM_LINK BUT_SERVICE("/arm_nav_move_palm_link")
 
 #define ACT_ARM_MANIP BUT_ACTION("/manual_arm_manip_action")
 
@@ -194,10 +198,10 @@ public:
     ros::NodeHandle nh_;
 
     ///Actionlib server
-    actionlib::SimpleActionServer<srs_assisted_arm_navigation::ManualArmManipAction> server_;
+    actionlib::SimpleActionServer<ManualArmManipAction> server_;
     std::string action_name_;
-    srs_assisted_arm_navigation::ManualArmManipActionFeedback feedback_;
-    srs_assisted_arm_navigation::ManualArmManipActionResult result_;
+    ManualArmManipActionFeedback feedback_;
+    ManualArmManipActionResult result_;
 
     ros::Time start_time_; /**< time at which the task was started */
     ros::Time timeout_; /**< updated on each user action */
@@ -218,7 +222,7 @@ public:
      * \param goal Goal of action (pregrasp position / away)
      *
      */
-    void executeCB(const srs_assisted_arm_navigation::ManualArmManipGoalConstPtr &goal);
+    void executeCB(const ManualArmManipGoalConstPtr &goal);
 
 
   private:
@@ -268,15 +272,16 @@ public:
    * Service callbacks. Each callback performes some action and sets new state of execution.
    *
    */
-  bool ArmNavNew(srs_assisted_arm_navigation::ArmNavNew::Request &req, srs_assisted_arm_navigation::ArmNavNew::Response &res);
-  bool ArmNavPlan(srs_assisted_arm_navigation::ArmNavPlan::Request &req, srs_assisted_arm_navigation::ArmNavPlan::Response &res);
-  bool ArmNavPlay(srs_assisted_arm_navigation::ArmNavPlay::Request &req, srs_assisted_arm_navigation::ArmNavPlay::Response &res);
-  bool ArmNavExecute(srs_assisted_arm_navigation::ArmNavExecute::Request &req, srs_assisted_arm_navigation::ArmNavExecute::Response &res);
-  bool ArmNavReset(srs_assisted_arm_navigation::ArmNavReset::Request &req, srs_assisted_arm_navigation::ArmNavReset::Response &res);
-  bool ArmNavRefresh(srs_assisted_arm_navigation::ArmNavRefresh::Request &req, srs_assisted_arm_navigation::ArmNavRefresh::Response &res);
-  bool ArmNavSuccess(srs_assisted_arm_navigation::ArmNavSuccess::Request &req, srs_assisted_arm_navigation::ArmNavSuccess::Response &res);
-  bool ArmNavFailed(srs_assisted_arm_navigation::ArmNavFailed::Request &req, srs_assisted_arm_navigation::ArmNavFailed::Response &res);
-  bool ArmNavCollObj(srs_assisted_arm_navigation::ArmNavCollObj::Request &req, srs_assisted_arm_navigation::ArmNavCollObj::Response &res);
+  bool ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Response &res);
+  bool ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Response &res);
+  bool ArmNavPlay(ArmNavPlay::Request &req, ArmNavPlay::Response &res);
+  bool ArmNavExecute(ArmNavExecute::Request &req, ArmNavExecute::Response &res);
+  bool ArmNavReset(ArmNavReset::Request &req, ArmNavReset::Response &res);
+  bool ArmNavRefresh(ArmNavRefresh::Request &req, ArmNavRefresh::Response &res);
+  bool ArmNavSuccess(ArmNavSuccess::Request &req, ArmNavSuccess::Response &res);
+  bool ArmNavFailed(ArmNavFailed::Request &req, ArmNavFailed::Response &res);
+  bool ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCollObj::Response &res);
+  bool ArmNavMovePalmLink(ArmNavMovePalmLink::Request &req, ArmNavMovePalmLink::Response &res);
 
   /** This callback is used to send interactive markers. It uses TimerEvent.
    *  @todo Make the period configurable.
@@ -288,6 +293,8 @@ public:
    * @todo Test if it does its job correctly.
    */
   void reset();
+
+  bool refresh();
 
   /// Pointer to action server. It's used to get access to srv_set_state method of ManualArmManipActionServer class
   ManualArmManipActionServer * action_server_ptr_;

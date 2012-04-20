@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 617 2012-04-16 13:45:44Z stancl $
+ * $Id: but_server.h 669 2012-04-19 11:29:59Z stancl $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -74,9 +74,17 @@
 #include <but_server/plugins/IMarkersPlugin.h>
 #include <but_server/plugins/MarkerArrayPlugin.h>
 #include <but_server/plugins/LimitedPointCloudPlugin.h>
+#include <but_server/plugins/ObjTreePlugin.h>
 
 // Old interactive markers plugin used for testing
 #include <but_server/plugins/OldIMarkersPlugin.h>
+
+//#define _EXAMPLES_
+
+#ifdef _EXAMPLES_
+#include <but_server/plugins/ExamplePlugin.h>
+#endif
+
 
 /**
   BUT dynamic scene server class.
@@ -173,6 +181,9 @@ protected:
 
     /// Marker array publisher plugin
     srs::SMarkerArrayHolder< srs::COctoMapPlugin > m_plugMarkerArrayHolder;
+    
+    /// ObjTree plugin
+    srs::CObjTreePlugin m_plugObjTree;
 
     /// Old interactive markers plugin
     srs::COldIMarkersPlugin * m_plugOldIMarkers;
@@ -180,6 +191,13 @@ protected:
     /// Use old interactive server plugin?				TODO: Remov this when new is will be finished
     bool m_bUseOldIMP;
 
+#ifdef _EXAMPLES_
+    /// Create example plugin
+    srs::CExamplePlugin m_plugExample;
+
+    /// Create crawler plugin holder
+    srs::SExampleCrawlerPluginHolder< srs::COctoMapPlugin > m_plugExampleCrawlerHolder;
+#endif
 };
 
 

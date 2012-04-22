@@ -72,6 +72,8 @@ import ros.pkg.srs_symbolic_grounding.msg.*;
 import ros.*;
 import ros.communication.*;
 
+import org.srs.srs_knowledge.utils.*;
+
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
     public GetObjectTask(String taskType, String targetContent) 
@@ -329,6 +331,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    // if there are more objects of the smae type, linke one of them (does not matter which one, as they are identical (not distinguiable).. better to use the closest one)
 	    
 	    // if there does not exist such an object, then insert a new one
+	    // bounding box can be obtained from HHDB
 
 	}
 	else if(currentActUnit.getActionType().equals("MoveAndGrasp")) {

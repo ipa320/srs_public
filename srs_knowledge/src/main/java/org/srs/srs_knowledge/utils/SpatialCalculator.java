@@ -15,7 +15,7 @@
  *
  * @author Ze Ji, email: jiz1(at)cf.ac.uk
  *
- * Date of creation: Oct 2011:
+ * Date of creation: Apr 2012
  * ToDo: 
  *
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -116,6 +116,9 @@ public class SpatialCalculator
 	    System.out.println(" NO. O1 is NOT on O2");
 	}
 
+	System.out.println(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ");
+	BoundingBoxDim bbd = InformationRetrieval.retrieveBoundingBoxInfo(OntoQueryUtil.GlobalNameSpace + "Milkbox");
+	System.out.println("Retrieved DIm: " + bbd.l + "  " + bbd.w + "  " + bbd.h);
 	System.out.println(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ");
     }
 

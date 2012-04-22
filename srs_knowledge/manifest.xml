@@ -18,6 +18,8 @@
   <depend package="srs_pellet"/>
   <depend package="srs_symbolic_grounding"/>
   <depend package="tfjava"/>
+  <!--depend package="srs_object_database"/-->
+  <depend package="srs_object_database_msgs"/>
   <!-- depend package="apache_xmlrpc" /-->
   <!-- depend package="apache_commons_util" /-->
 

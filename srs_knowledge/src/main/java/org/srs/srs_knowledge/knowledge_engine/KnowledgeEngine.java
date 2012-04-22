@@ -129,13 +129,6 @@ public class KnowledgeEngine
     {
 	try {
 	    initProperties(cfgFile);
-	
-
-
-	    //////
-	    this.testFunction();
-
-
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage());
@@ -165,6 +158,20 @@ public class KnowledgeEngine
 	    System.out.println(e.getMessage());
 	    return false;
 	}
+
+
+
+
+	////////  TO REMOVE ::: ONLY FOR TESTING
+	this.testFunction();
+	////////  END:::: TESTING
+
+
+
+
+
+
+
 
 	ros.spin();
 
@@ -973,11 +980,12 @@ public class KnowledgeEngine
 	System.out.println("++++++++++++++++++++++++++++++++++");
 	OntoQueryUtil.computeOnSpatialRelation();
 	System.out.println("++++++++++++++++++++++++++++++++++");
+	SpatialCalculator.testTF();
+
     }
 
     public static void main(String[] args)
     {
-	SpatialCalculator.testTF();
 
 	String configFile = new String();
 	System.out.print("There are " + args.length + " input arguments: ");

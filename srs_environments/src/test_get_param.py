@@ -13,7 +13,7 @@
 # \note
 # ROS stack name: srs
 # \note
-# ROS package name: srs_shared_params
+# ROS package name: srs_environments
 #
 # \author
 # Author: Ze Ji, email: JiZ1@cf.ac.uk
@@ -53,7 +53,7 @@
 
 import roslib;
 
-roslib.load_manifest('srs_shared_params')
+roslib.load_manifest('srs_environments')
 import sys
 import rospy
 

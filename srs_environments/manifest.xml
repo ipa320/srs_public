@@ -1,13 +1,13 @@
 <package>
-  <description brief="srs_shared_params">
+  <description brief="srs_environments">
 
-     srs_shared_params (a place that stores some parameters that can be used and shared by srs components.)
+     srs_environments (a place that stores some parameters that can be used and shared by srs components.)
 
   </description>
   <author>Ze Ji</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/srs_shared_params</url>
+  <url>http://ros.org/wiki/srs_environments</url>
   <depend package="rospy"/>
   <depend package="roscpp"/>
   <depend package="std_msgs"/>

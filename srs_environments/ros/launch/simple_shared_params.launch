@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
 <launch>
-<rosparam command="load" file="$(find srs_shared_params)/param/simple_params_for_dm.yaml" />
+<rosparam command="load" file="$(find srs_environments)/param/simple_params_for_dm.yaml" />
 </launch>

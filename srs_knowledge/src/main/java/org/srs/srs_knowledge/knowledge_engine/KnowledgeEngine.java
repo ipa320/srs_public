@@ -159,19 +159,9 @@ public class KnowledgeEngine
 	    return false;
 	}
 
-
-
-
 	////////  TO REMOVE ::: ONLY FOR TESTING
-	this.testFunction();
+	//this.testFunction();
 	////////  END:::: TESTING
-
-
-
-
-
-
-
 
 	ros.spin();
 

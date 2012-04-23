@@ -61,11 +61,13 @@ namespace srs
         virtual void onFrameStart( const SMapParameters & par );
 
         /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-        virtual void handleOccupiedNode(const srs::tButServerOcTree::iterator& it, const SMapParameters & mp);
+        virtual void handleOccupiedNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp);
 
         /// Called when all nodes was visited.
         virtual void handlePostNodeTraversal(const SMapParameters & mp);
 
+    public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     protected:
         //! Is publishing enabled?

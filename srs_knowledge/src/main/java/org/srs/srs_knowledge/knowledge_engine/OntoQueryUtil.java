@@ -67,8 +67,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import ros.*;
 import ros.communication.*;
-import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
-import ros.pkg.srs_knowledge.srv.GenerateSequence;
+//import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
+//import ros.pkg.srs_knowledge.srv.GenerateSequence;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
@@ -81,6 +81,8 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import ros.pkg.geometry_msgs.msg.Pose;
+import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;
+import ros.pkg.srs_knowledge.srv.GetWorkspaceOnMap;
 
 import java.util.Properties;
 
@@ -93,6 +95,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.srs.srs_knowledge.utils.*;
 
 /**
  * This class is used for more application specific ontology queries. 
@@ -378,6 +382,272 @@ public class OntoQueryUtil
 	return true;
     }
 
+    public static boolean computeOnSpatialRelation() {
+	// get a list of objects and workspaces
+	GetObjectsOnMap.Response resOBJ = getObjectsOnMap(OntoQueryUtil.MapName, true);
+	GetWorkspaceOnMap.Response resWS = getWorkspaceOnMap(OntoQueryUtil.MapName, true);
+	// pair-wise comparison --- if condition met, then update the knowledge base
+	System.out.println("RESULT ------->>>>>>  SIZE OF OBJECTS: " + resOBJ.objects.size());
+	for (String obj : resOBJ.objects) {
+	    System.out.println(obj);
+	}
+
+	System.out.println("RESULT ------>>>>>> SIZE OF WORKSPACES:  " + resWS.objects.size());
+	for (String ws : resWS.objects) {
+	    System.out.println(ws);
+	}
+
+	for (int i = 0; i < resOBJ.objectsInfo.size(); i++) {
+	    for (int j = 0; j < resWS.objectsInfo.size(); j++) {
+		if(SpatialCalculator.ifOnObject(resOBJ.objectsInfo.get(i), resWS.objectsInfo.get(j), 1)) {
+		    System.out.println("FOUND ONE PAIR MATCH THE ON RELATIONSHIP");
+		    //TODO update rdf graph model
+		    try {
+			Individual ind1 = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + resOBJ.objects.get(i));
+			Individual ind2 = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + resWS.objects.get(j));
+			if (OntoQueryUtil.updateOnSpatialRelation(ind1, ind2) ) {
+			    System.out.println("Added Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
+			}
+			else {
+			    System.out.println("CANNOT add Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
+			}
+			    
+		    }
+		    catch (NonExistenceEntryException e) {
+			System.out.println("Individual not found in ontology:  ---  " + e.getMessage());
+		    }
+		    
+		}
+		else {
+		    System.out.println("NO MATCH.... between : " + resOBJ.objects.get(i) + "  and  " + resWS.objects.get(j));
+		    
+		}
+	    }
+	}
+
+	// TODO: Better to use SPARQL CONSTRUCT + RULES ... TO REPLACE
+
+	return true;
+    }
+
+    private static boolean updateOnSpatialRelation(Individual obj1, Individual obj2) {
+	try {
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "aboveOf");
+	    com.hp.hpl.jena.rdf.model.Statement stm = obj1.getProperty(pro);
+	    obj1.setPropertyValue(pro, obj2);
+	} 
+	catch(NonExistenceEntryException e) {
+	    System.out.println("NonExistenceEntryException --> " + e.getMessage());
+	    return false;
+	}
+	/*
+	Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectNSURI + objectName);	    
+	// set property
+	Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "xCoord");
+	com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	//Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
+	Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.x));
+	ind.setPropertyValue(pro, x);
+	*/
+	return true;
+    }
+
+    public static GetWorkspaceOnMap.Response getWorkspaceOnMap(String map, boolean ifGeometryInfo) {
+    	GetWorkspaceOnMap.Response re = new GetWorkspaceOnMap.Response();
+	String className = GlobalNameSpace;
+	String mapNS = ObjectNameSpace;
+		
+	if(map != null) {
+	    if(KnowledgeEngine.ontoDB.getNamespaceByPrefix(map) != null) {
+		mapNS = KnowledgeEngine.ontoDB.getNamespaceByPrefix(map);
+	    }
+	}
+	
+	className = className + "FurniturePiece";
+	//System.out.println(className);
+	try{
+	    Iterator<Individual> instances = KnowledgeEngine.ontoDB.getInstancesOfClass(className);
+	    if(instances == null) {
+		return re;
+	    }
+
+	    if(instances.hasNext()) {
+		while (instances.hasNext()) { 
+		    Individual temp = (Individual)instances.next();
+		    //System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		    if(temp.getNameSpace().equals(ObjectNameSpace)) {
+			re.objects.add(temp.getLocalName());
+			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
+
+			if(ifGeometryInfo == true) { 
+			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
+			    
+			    com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord", temp);
+			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord", temp);
+			    spatialInfo.pose.position.y = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord", temp);
+			    spatialInfo.pose.position.z = getFloatOfStatement(stm);
+			    
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "widthOfObject", temp);
+			    spatialInfo.w = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "heightOfObject", temp);
+			    spatialInfo.h = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "lengthOfObject", temp);
+			    spatialInfo.l = getFloatOfStatement(stm);			    
+
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qu", temp);
+			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qx", temp);
+			    spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qy", temp);
+			    spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qz", temp);
+			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
+
+			    re.objectsInfo.add(spatialInfo);
+
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID", temp);
+			    re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
+			}
+		    }
+		}       
+	    }
+	    else
+		System.out.println("<EMPTY>");
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+	return re;
+    }
+
+    public static GetObjectsOnMap.Response getObjectsOnMap(String map, boolean ifGeometryInfo) {
+	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
+
+	String className = GlobalNameSpace;
+	String mapNS = ObjectNameSpace;
+		
+	if(map != null) {
+	    if(KnowledgeEngine.ontoDB.getNamespaceByPrefix(map) != null) {
+		mapNS = KnowledgeEngine.ontoDB.getNamespaceByPrefix(map);
+	    }
+	}
+	
+	className = className + "FoodVessel";
+
+	System.out.println(className + " --- ");
+	Iterator<Individual> instances = KnowledgeEngine.ontoDB.getInstancesOfClass(className);
+	if(instances == null) {
+	    return re;
+	}
+	com.hp.hpl.jena.rdf.model.Statement stm;
+	if(instances.hasNext()) {
+	    while (instances.hasNext()) { 
+		Individual temp = (Individual)instances.next();
+		System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		if(temp.getNameSpace().equals(ObjectNameSpace)) {
+		    re.objects.add(temp.getLocalName());
+		    re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
+		    try{
+			
+			stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "spatiallyRelated", temp);			
+			re.spatialRelation.add(stm.getPredicate().getLocalName());
+			re.spatialRelatedObject.add(stm.getObject().asResource().getLocalName());
+		    }
+		    catch(Exception e) {
+			System.out.println("CAUGHT exception: " + e.toString());
+			re.spatialRelation.add("NA");
+			re.spatialRelatedObject.add("NA");
+		    }
+		    try{
+			stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID", temp);			
+			re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
+		    }
+		    catch(Exception e) {
+			System.out.println("CAUGHT exception: " + e.toString());
+			re.houseHoldId.add("NA");
+		    }
+		    if(ifGeometryInfo == true) { 
+			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
+			try{
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord", temp);
+			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord", temp);
+			    spatialInfo.pose.position.y = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord", temp);
+			    spatialInfo.pose.position.z = getFloatOfStatement(stm);
+			    
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "widthOfObject", temp);
+			    spatialInfo.w = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "heightOfObject", temp);
+			    spatialInfo.h = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "lengthOfObject", temp);
+			    spatialInfo.l = getFloatOfStatement(stm);
+			    
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qu", temp);
+			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qx", temp);
+			    spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qy", temp);
+			    spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qz", temp);
+			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
+			}
+			catch(Exception e) {
+			    System.out.println("CAUGHT exception: " + e.getMessage()+ ".. added invalid values");
+			    
+			    spatialInfo.pose.position.x = -1000;
+			    spatialInfo.pose.position.y = -1000;
+			    spatialInfo.pose.position.z = -1000;
+			    
+			    spatialInfo.w = -1000;
+			    spatialInfo.h = -1000;
+			    spatialInfo.l = -1000;
+
+			    spatialInfo.pose.orientation.w = -1000;
+			    spatialInfo.pose.orientation.x = -1000;
+			    spatialInfo.pose.orientation.y = -1000;
+			    spatialInfo.pose.orientation.z = -1000;
+			}
+
+			re.objectsInfo.add(spatialInfo);
+		    }
+		    
+		}
+	    }
+	}
+	else {
+	    System.out.println("<EMPTY>");
+	}
+	
+	return re;
+    }
+
+    private static float getFloatOfStatement(Statement stm) 
+    {
+	float t = -1000;
+	try { 
+	    t = stm.getFloat();
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+	return t;
+    }
+
+    private static int getIntOfStatement(Statement stm)
+    {
+	int t = -1000;
+	try { 
+	    t = stm.getInt();
+	}
+	catch(Exception e) {
+	    System.out.println(e.getMessage());
+	}
+	return t;
+    }
 
     /*
     public OntoQueryUtil(String objectNameSpace, String globalNameSpace) {
@@ -401,5 +671,6 @@ public class OntoQueryUtil
     */
     public static String ObjectNameSpace = "";
     public static String GlobalNameSpace = "";
+    public static String MapName = "";
 }
 

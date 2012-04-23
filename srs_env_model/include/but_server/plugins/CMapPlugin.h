@@ -59,7 +59,7 @@ namespace srs
         virtual void onFrameStart( const SMapParameters & par );
 
         /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-        virtual void handleOccupiedNode(const srs::tButServerOcTree::iterator& it, const SMapParameters & mp);
+        virtual void handleOccupiedNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp);
 
         /// Is something to publish and some subscriber to publish to?
         virtual bool shouldPublish(  );
@@ -127,6 +127,9 @@ namespace srs
 
         /// Does need input point to be converted?
         bool m_bConvertPoint;
+
+    public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     }; // class CCollisionMapPublisher
 

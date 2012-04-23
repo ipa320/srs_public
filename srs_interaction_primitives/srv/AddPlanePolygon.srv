@@ -1,0 +1,7 @@
+string frame_id                 # Fixed Frame
+string name                     # Plane name
+string description              # Plane description
+geometry_msgs/Polygon polygon   # Polygon
+geometry_msgs/Vector3 normal    # Normal  
+std_msgs/ColorRGBA color        # color of the Plane
+--- 

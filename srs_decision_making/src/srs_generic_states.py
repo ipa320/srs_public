@@ -139,7 +139,7 @@ class intervention_base_pose(smach.State):
                     userdata.intermediate_pose = list_out  
                     """
                     userdata.intermediate_pose = eval(s.solution.__str__())
-                    rospy.loginfo("New intermediate target is :%s", list_out)    
+                    #rospy.loginfo("New intermediate target is :%s", list_out)    
                     return 'retry'
             return 'failed'
         else:

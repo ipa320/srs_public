@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: but_service_server.h 556 2012-04-11 16:10:40Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -39,10 +39,10 @@ but_services::PointCloudTools * pcTools;
 
 namespace but_services
 {
-/*
- * Gets closest point between link and point cloud.
+/**
+ * @brief Gets closest point between link and point cloud.
  * @param req is request of type GetClosestPoint
- * * @param res is response of type GetClosestPoint
+ * @param res is response of type GetClosestPoint
  */
 bool getClosestPoint(GetClosestPoint::Request &req, GetClosestPoint::Response &res);
 }

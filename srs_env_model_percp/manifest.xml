@@ -1,13 +1,13 @@
 <package>
   <description brief="srs_env_model_percp">
 
-     ROS environment perception package provided by dcgm-robotics@FIT group.
+ROS environment perception package provided by dcgm-robotics@FIT group.
 
   </description>
-  <author>Rostislav Hulik, Tomas Hodan, Michal Spanel</author>
+  <author>Rostislav Hulik (ihulik@fit.vutbr.cz), Tomas Hodan, Michal Spanel (spanel@fit.vutbr.cz)</author>
   <license>LGPL</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/but_env_model_percp</url>
+  <url>http://ros.org/wiki/srs_env_model_percp</url>
 
   <depend package="opencv2"/>
   <depend package="eigen"/>

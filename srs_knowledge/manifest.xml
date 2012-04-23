@@ -1,11 +1,11 @@
 <package>
   <description brief="srs_knowledge">
 
-     srs_knowledge
+     srs_knowledge is a ros package handling the task planning at the symbolic level in the srs project. 
 
   </description>
   <author>Ze Ji</author>
-  <license>BSD</license>
+  <license>LGPL</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_knowledge</url>
   <depend package="roslib"/>
@@ -17,6 +17,9 @@
   <!-- depend package="srs_jena"/-->
   <depend package="srs_pellet"/>
   <depend package="srs_symbolic_grounding"/>
+  <depend package="tfjava"/>
+  <!--depend package="srs_object_database"/-->
+  <depend package="srs_object_database_msgs"/>
   <!-- depend package="apache_xmlrpc" /-->
   <!-- depend package="apache_commons_util" /-->
 

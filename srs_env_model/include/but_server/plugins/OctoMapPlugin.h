@@ -32,6 +32,11 @@
 #include <tf/transform_listener.h>
 #include <std_srvs/Empty.h>
 
+//========================
+// Filtering
+
+#include <image_geometry/pinhole_camera_model.h>
+
 namespace srs
 {
 class COctoMapPlugin : public CServerPluginBase, public CDataHolderBase< tButServerOcMap >
@@ -43,13 +48,13 @@ public:
 	typedef boost::signal< void (const SMapParameters &) > tSigOnStart;
 
 	/// On node
-	typedef boost::signal< void (const tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnNode;
+	typedef boost::signal< void (tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnNode;
 
 	/// On free node
-	typedef boost::signal< void (const tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnFreeNode;
+	typedef boost::signal< void (tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnFreeNode;
 
 	/// On occupied node
-	typedef boost::signal< void (const tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnOccupiedNode;
+	typedef boost::signal< void (tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnOccupiedNode;
 
 	/// Post node traversal
 	typedef boost::signal< void (const SMapParameters &) > tSigOnPost;
@@ -115,13 +120,13 @@ protected:
 	void onCrawlStart(const ros::Time & currentTime);
 
 	/// Handle node
-	void handleNode(const tButServerOcTree::iterator & it, const SMapParameters & mp);
+	void handleNode(tButServerOcTree::iterator & it, const SMapParameters & mp);
 
 	/// Handle free node
-	void handleFreeNode(const tButServerOcTree::iterator & it, const SMapParameters & mp);
+	void handleFreeNode(tButServerOcTree::iterator & it, const SMapParameters & mp);
 
 	/// Handle occupied node
-	void handleOccupiedNode(const tButServerOcTree::iterator & it, const SMapParameters & mp);
+	void handleOccupiedNode(tButServerOcTree::iterator & it, const SMapParameters & mp);
 
 	/// Called when all nodes was visited.
 	virtual void handlePostNodeTraversal(const SMapParameters & mp);
@@ -132,8 +137,29 @@ protected:
 	/// Reset octomap service callback
 	bool resetOctomapCB(std_srvs::Empty::Request& request,	std_srvs::Empty::Response& response);
 
-	/// Test if this node is specle
-	bool isSpeckleNode(const tButServerOcTree::iterator & it) const;
+	/// Camera info callback
+	void cameraInfoCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
+
+	// ------------------------------------------------------------------------
+	// Obstacle cleaning
+
+	/// Remove outdated nodes
+	void degradeOutdatedRaycasting(const std_msgs::Header& sensor_header, const octomap::point3d& sensor_origin);
+
+	/// Remove speckles
+	void degradeSingleSpeckles();
+
+	/// Compute bounding box from the sensor position and cone
+	void computeBBX(const std_msgs::Header& sensor_header, octomap::point3d& bbx_min, octomap::point3d& bbx_max);
+
+	/// Is point in sensor cone?
+	bool inSensorCone(const cv::Point2d& uv) const;
+
+	/// Return true, if occupied cell is between origin and p
+	bool isOccludedMap(const octomap::point3d& sensor_origin, const octomap::point3d& p) const;
+
+	/// Get used sensor origin
+	octomap::point3d getSensorOrigin(const std_msgs::Header& sensor_header);
 
 protected:
 	///
@@ -186,6 +212,41 @@ protected:
 
     /// Remove specle nodes now
     bool m_removeSpecles;
+
+    int filecounter;
+
+    //=========================================================================
+    // Filtering
+
+    /// Should be outdated nodes be removed?
+    bool m_bRemoveOutdated;
+
+    /// Camera model
+    image_geometry::PinholeCameraModel m_camera_model;
+
+    /// Is camera model initialized?
+    bool m_bCamModelInitialized;
+
+    /// Camera size
+    cv::Size m_camera_size;
+
+    /// Camera info topic name
+    std::string m_camera_info_topic;
+
+    /// Camera info subscriber
+    ros::Subscriber*  m_ciSubscriber;
+
+    /// Should be markers visualized
+    bool m_bVisualizeMarkers;
+
+    /// Markers visualizing publisher
+    ros::Publisher m_markerPublisher;
+
+    /// Markers topic name
+    std::string m_markers_topic_name;
+
+    /// Camera offsets
+    int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
 
 }; // class COctoMapPlugin;
 

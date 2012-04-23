@@ -7,7 +7,7 @@
  *
  * This file is part of software developed by dcgm-robotics@FIT group.
  *
- * Author: Vladimir Blahoz
+ * Author: Vladimir Blahoz (xblaho02@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
  * 
@@ -29,7 +29,7 @@
 
 #include <OgreVector3.h>
 
-#include "topics_list.h""
+#include "topics_list.h"
 #include <visualization_msgs/Marker.h>
 #include <srs_ui_but/ButCamMsg.h>
 
@@ -53,9 +53,11 @@
 #include <sstream>
 #include <float.h>
 
+// maximal depth of view frustum lines
 #define MAX_FRUSTUM_DEPTH 15.0f
+
+// maximal distance of camera display rendering
 #define MAX_DISPLAY_DEPTH 15.0f
-#define DISTANCE_CORRECTION 0.1f
 
 using namespace std;
 using namespace sensor_msgs;
@@ -66,6 +68,7 @@ pair<float, float> countPclDepths(const PointCloud2ConstPtr& pcl);
 void publishViewFrustumMarker(const CameraInfoConstPtr cam_info,
 		float frustum_depth);
 void publishButDisplay(const CameraInfoConstPtr cam_info, float display_depth);
+void updateCameraTopic(ros::NodeHandle& nh);
 
 // Camera parameters
 float elev_d, steer_r, elev_u, steer_l = 0;
@@ -73,30 +76,80 @@ float elev_d, steer_r, elev_u, steer_l = 0;
 // TF transformation listener for camera info message
 tf::TransformListener *tf_cam_info_Listener;
 
+// ROS messages subscribers
+message_filters::Subscriber<CameraInfo> *cam_info_sub;
+
 // ROS messages publishers
 ros::Publisher frustum_marker_pub, but_display_pub;
 
+// parameters regularly updated from parameter server
+std::string camera_topic_par = "/stereo/left/camera_info";
+double depth_par = 1.0f;
+
 /*
- * callback for time-synchronised cameraInfo and PointCloud2 messages
+ * @brief Callback for time-synchronised cameraInfo and PointCloud2 messages
  * cameraInfo also with available TF transformation
+ *
+ * @param nh Node handle
+ * @param cam_info CameraInfo message
+ * @param pcl PointCloud2 message
  */
-void callback(const CameraInfoConstPtr cam_info, const PointCloud2ConstPtr& pcl) {
+void callback(ros::NodeHandle& nh, const CameraInfoConstPtr cam_info,
+		const PointCloud2ConstPtr& pcl) {
 	ROS_DEBUG("Got everything synced");
 
+	// check parameter server for change of desired camera
+	ros::param::getCached(BUT_CAMERA_PAR, camera_topic_par);
+	if (!camera_topic_par.empty())
+		updateCameraTopic(nh);
+
+	//check parameter server for change of desired polygon depth
+	ros::param::getCached(BUT_DEPTH_PAR, depth_par);
+
+	// Count internal parameters of view volume
 	countCameraParams(cam_info);
+
+	// count maximal and minimal point cloud distance
 	pair<float, float> distances = countPclDepths(pcl);
 
 	ROS_DEBUG_STREAM("nearest point " << distances.first << " most distant point " << distances.second);
 
 	publishViewFrustumMarker(cam_info, distances.second);
 
-	publishButDisplay(cam_info, distances.first);
+	publishButDisplay(cam_info, distances.first*depth_par);
 }
 
+/**
+ * @brief Updates subscriber for camera parameters according to set topic camera_topic_par
+ *
+ * @param nh Node handle
+ */
+void updateCameraTopic(ros::NodeHandle& nh) {
+	std::string cam3d("/cam3d/");
+	std::string camLeft("/stereo/left/");
+	std::string camRight("/stereo/right/");
+	if (!camera_topic_par.compare(0, cam3d.size(), cam3d))
+		cam_info_sub->subscribe(nh, "/cam3d/camera_info", 10);
+	else if (!camera_topic_par.compare(0, camLeft.size(), camLeft))
+		cam_info_sub->subscribe(nh, camLeft.append("camera_info"), 10);
+	else if (!camera_topic_par.compare(0, camRight.size(), camRight))
+		cam_info_sub->subscribe(nh, camRight.append("camera_info"), 10);
+	else
+		ROS_ERROR("UNKNOWN KAMERA");
+}
+
+/**
+ * @brief Publishes message with camera display geometry
+ *
+ * @param cam_info Given camera info
+ * @param display_depth Chosen depth of camera display
+ */
 void publishButDisplay(const CameraInfoConstPtr cam_info, float display_depth) {
 
+	// recalculate real maximal polygon depth from closest point cloud point
+	float real_depth = cos(elev_d)*display_depth;
+
 	srs_ui_but::ButCamMsg rectangle;
-	visualization_msgs::Marker polygon;
 
 	rectangle.header.frame_id = "/map";
 	rectangle.header.stamp = cam_info->header.stamp;
@@ -127,19 +180,19 @@ void publishButDisplay(const CameraInfoConstPtr cam_info, float display_depth) {
 	geometry_msgs::PointStamped tl, tr, bl;
 
 	Ogre::Vector3 tl_vec;
-	tl_vec.x = +steer_l * display_depth;
-	tl_vec.y = +elev_u * display_depth;
-	tl_vec.z = display_depth;
+	tl_vec.x = +steer_l * real_depth;
+	tl_vec.y = +elev_u * real_depth;
+	tl_vec.z = real_depth;
 
 	Ogre::Vector3 tr_vec;
-	tr_vec.x = -steer_r * display_depth;
-	tr_vec.y = +elev_u * display_depth;
-	tr_vec.z = display_depth;
+	tr_vec.x = -steer_r * real_depth;
+	tr_vec.y = +elev_u * real_depth;
+	tr_vec.z = real_depth;
 
 	Ogre::Vector3 bl_vec;
-	bl_vec.x = +steer_l * display_depth;
-	bl_vec.y = -elev_d * display_depth;
-	bl_vec.z = display_depth;
+	bl_vec.x = +steer_l * real_depth;
+	bl_vec.y = -elev_d * real_depth;
+	bl_vec.z = real_depth;
 
 	rectangle.scale.x = (tl_vec.distance(tr_vec));
 	rectangle.scale.y = (tl_vec.distance(bl_vec));
@@ -150,9 +203,9 @@ void publishButDisplay(const CameraInfoConstPtr cam_info, float display_depth) {
 
 	br_map.header.frame_id = cam_info->header.frame_id;
 	br_map.header.stamp = cam_info->header.stamp;
-	br_map.point.x = -steer_r * display_depth;
-	br_map.point.y = -elev_d * display_depth;
-	br_map.point.z = display_depth;
+	br_map.point.x = -steer_r * real_depth;
+	br_map.point.y = -elev_d * real_depth;
+	br_map.point.z = real_depth;
 	// transform point into /map frame
 	tf_cam_info_Listener->transformPoint("/map", br_map, br_map);
 
@@ -165,6 +218,12 @@ void publishButDisplay(const CameraInfoConstPtr cam_info, float display_depth) {
 
 }
 
+/**
+ * @brief Publishes the marker representing view frustum
+ *
+ * @param cam_info given CameraInfo
+ * @param frustum_deph chosen depth of view frustum lines
+ */
 void publishViewFrustumMarker(const CameraInfoConstPtr cam_info,
 		float frustum_depth) {
 	visualization_msgs::Marker marker;
@@ -264,7 +323,7 @@ void publishViewFrustumMarker(const CameraInfoConstPtr cam_info,
 }
 
 /*
- * Counts possible distance for rendering cameraDisplay according to closest
+ * @brief Counts possible distance for rendering cameraDisplay according to closest
  * point in point cloud (so that display doesn't collide with pcl) and
  * depth of view frustum according to most distant point in point cloud
  */
@@ -284,10 +343,10 @@ pair<float, float> countPclDepths(const PointCloud2ConstPtr& pcl) {
 	// distance of current point from origin (3D camera position)
 	float dist;
 	// Get closest point and the most distant point
-	BOOST_FOREACH (const pcl::PointXYZ& pt, pcl_pointCloud.points) {
-		dist = pt.x*pt.x + pt.y*pt.y + pt.z*pt.z;
-		if (dist > far_distance) far_distance = dist;
-		if (dist < near_distance) near_distance = dist;
+	BOOST_FOREACH (const pcl::PointXYZ& pt, pcl_pointCloud.points)
+	{	dist = pt.x*pt.x + pt.y*pt.y + pt.z*pt.z;
+	if (dist > far_distance) far_distance = dist;
+	if (dist < near_distance) near_distance = dist;
 
 	}
 
@@ -296,16 +355,18 @@ pair<float, float> countPclDepths(const PointCloud2ConstPtr& pcl) {
 
 	// some points could be too far away from camera causing infinite frustum
 	if (far_distance > MAX_FRUSTUM_DEPTH)
-		far_distance = MAX_FRUSTUM_DEPTH;
+	far_distance = MAX_FRUSTUM_DEPTH;
 	if (near_distance > MAX_DISPLAY_DEPTH)
-		near_distance = MAX_DISPLAY_DEPTH;
+	near_distance = MAX_DISPLAY_DEPTH;
 
-	return make_pair(near_distance-DISTANCE_CORRECTION, far_distance);
+	return make_pair(near_distance, far_distance);
 }
 
 /*
- * Counts angle parameters of view frustum of one camera specified in given
- * CameraInfo message
+ * @brief Counts angle parameters of view frustum of one camera specified in given
+ * CameraInfo message and sets internal variables elev_d, elev_u, steer_l and steer_r
+ *
+ * @param camInfo given CamerInfo message
  */
 void countCameraParams(const CameraInfoConstPtr& camInfo) {
 
@@ -358,11 +419,12 @@ int main(int argc, char** argv) {
 	frustum_marker_pub = nh.advertise<visualization_msgs::Marker> (
 			BUT_VIEW_FRUSTUM_TOP, 1);
 	// but rectangle as srs_ui_but::ButCamMsg
-	but_display_pub = nh.advertise<srs_ui_but::ButCamMsg> (BUT_CAMERA_VIEW_TOP, 1);
+	but_display_pub = nh.advertise<srs_ui_but::ButCamMsg> (BUT_CAMERA_VIEW_TOP,
+			1);
 
 	// subscribers to required topics
-	message_filters::Subscriber<CameraInfo> cam_info_sub(nh,
-			"/stereo/left/camera_info", 10);
+	cam_info_sub = new message_filters::Subscriber<CameraInfo>(nh,
+			camera_topic_par, 10);
 
 	message_filters::Subscriber<PointCloud2> pcl_sub(nh, "/cam3d/depth/points",
 			10);
@@ -370,7 +432,7 @@ int main(int argc, char** argv) {
 	// initializing of listeners for tf transformation and tf message filter
 	tf_cam_info_Listener = new tf::TransformListener();
 	tf::MessageFilter<CameraInfo> *cam_info_transform_filter =
-			new tf::MessageFilter<CameraInfo>(cam_info_sub,
+			new tf::MessageFilter<CameraInfo>(*cam_info_sub,
 					*tf_cam_info_Listener, "/map", 10);
 
 	// synchronization policy - approximate time (exact time has too low hit rate)
@@ -385,7 +447,7 @@ int main(int argc, char** argv) {
 	//			*cam_info_transform_filter, pcl_sub, 10);
 
 	// callback for TimeSynchronizer
-	time_sync.registerCallback(boost::bind(&callback, _1, _2));
+	time_sync.registerCallback(boost::bind(&callback, nh, _1, _2));
 
 	ros::spin();
 

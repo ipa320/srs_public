@@ -7,7 +7,7 @@
  *
  * This file is part of software developed by dcgm-robotics@FIT group.
  *
- * Author: Vladimir Blahoz
+ * Author: Vladimir Blahoz (xblaho02@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
  * 
@@ -48,19 +48,26 @@
 
 namespace rviz {
 
+/**
+ * Constructor
+ */
 CButCamDisplay::CButCamDisplay(const std::string& name,
 		VisualizationManager* manager) :
-	Display(name, manager), manual_object_(NULL), marker_loaded_(false),
-			image_loaded_(false), marker_sub_ptr_(NULL), marker_subscribed_(
-					false), image_sub_ptr_(NULL), image_subscribed_(false),
-			time_sync_ptr_(NULL), time_synced_(false), resolution_(0.0f),
-			image_width_(0), image_height_(0), width_(0), height_(0),
-			position_(Ogre::Vector3::ZERO), orientation_(
-					Ogre::Quaternion::IDENTITY), draw_under_(false) {
+			// Default values
+			Display(name, manager), manual_object_(NULL),
+			marker_loaded_(false), image_loaded_(false), marker_sub_ptr_(NULL),
+			marker_subscribed_(false), image_sub_ptr_(NULL), image_subscribed_(
+					false), time_sync_ptr_(NULL), time_synced_(false),
+			image_width_(0), image_height_(0), width_(0),
+			height_(0), position_(Ogre::Vector3::ZERO), orientation_(
+					Ogre::Quaternion::IDENTITY), distance_(1.0), draw_under_(
+					false) {
 	ROS_DEBUG("CButCamDisplay: constructor");
 
+	// Create new scene node
 	scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
+	// Create new material for polygon
 	static int count = 0;
 	std::stringstream ss;
 	ss << "CamObjectMaterial" << count++;
@@ -72,18 +79,26 @@ CButCamDisplay::CButCamDisplay(const std::string& name,
 	material_->setCullingMode(Ogre::CULL_NONE);
 	material_->setDepthWriteEnabled(false);
 
+	// Default alpha value
 	setAlpha(0.7f);
 }
 
+/**
+ * Destructor
+ */
 CButCamDisplay::~CButCamDisplay() {
+	// Unsubscribe from all topics
 	unsubscribe();
 	imUnsubscribe();
 
+	// Destroy all Ogre created resources
 	clear();
 }
 
 void CButCamDisplay::onEnable() {
 	ROS_DEBUG("CButCamDisplay: onEnable");
+
+	// Subscribe to all topics
 	subscribe();
 	imSubscribe();
 
@@ -92,6 +107,8 @@ void CButCamDisplay::onEnable() {
 
 void CButCamDisplay::onDisable() {
 	ROS_DEBUG("CButCamDisplay: onDisable");
+
+	// Unsubscribe from all topics
 	unsubscribe();
 	imUnsubscribe();
 
@@ -101,21 +118,23 @@ void CButCamDisplay::onDisable() {
 
 void CButCamDisplay::synchronise() {
 	ROS_DEBUG("CButCamDisplay: synchronise1");
+
 	if (marker_subscribed_ && image_subscribed_) {
-		ROS_DEBUG("CButCamDisplay: synchronise2");
+		// check if both needed topcs are subscribed to
+
 		if (!time_synced_) {
-			ROS_DEBUG("CButCamDisplay: synchronise3");
-			// time-synchronizing both messages with CameraInfo tf transformation
+			// create new synchronizer if needed
+
 			time_sync_ptr_
 					= new message_filters::Synchronizer<App_sync_policy>(
 							App_sync_policy(10), *marker_sub_ptr_,
 							*image_sub_ptr_);
-			//			time_sync_ptr_ = new message_filters::TimeSynchronizer<srs_ui_but::ButCamMsg, sensor_msgs::Image>(*marker_sub_ptr_,*image_sub_ptr_, 10);
 			time_sync_ptr_->registerCallback(boost::bind(
 					&CButCamDisplay::incoming, this, _1, _2));
 			time_synced_ = true;
 		} else {
-			ROS_DEBUG("CButCamDisplay: synchronise4");
+			// redirect inputs of previous time synchronizer
+
 			time_sync_ptr_->connectInput(*marker_sub_ptr_, *image_sub_ptr_);
 		}
 	}
@@ -128,6 +147,7 @@ void CButCamDisplay::subscribe() {
 		return;
 	}
 
+	// subscribe to marker_topic_ if set
 	if (!marker_topic_.empty()) {
 		//marker_sub_ = update_nh_.subscribe(marker_topic_, 1, this);
 		//marker_sub_.subscribe(update_nh_, marker_topic_, 1);
@@ -142,6 +162,8 @@ void CButCamDisplay::subscribe() {
 
 void CButCamDisplay::unsubscribe() {
 	ROS_DEBUG("CButCamDisplay: unsubscribe");
+
+	// unsubscribe from marker_sub_ptr_ if set
 	if (marker_sub_ptr_ != NULL)
 		marker_sub_ptr_->unsubscribe();
 	marker_subscribed_ = false;
@@ -153,6 +175,7 @@ void CButCamDisplay::imSubscribe() {
 		return;
 	}
 
+	// subscribe to image_topic_ if set
 	if (!image_topic_.empty()) {
 		//image_sub_.subscribe(update_nh_, image_topic_, 1);
 		//image_sub_ = update_nh_.subscribe(image_topic_, 1, this);
@@ -166,16 +189,39 @@ void CButCamDisplay::imSubscribe() {
 
 void CButCamDisplay::imUnsubscribe() {
 	ROS_DEBUG("CButCamDisplay: imUnubscribe");
+
+	// unsubscribe from image_sub_ptr_ if set
 	if (image_sub_ptr_ != NULL)
 		image_sub_ptr_->unsubscribe();
 	image_subscribed_ = false;
 }
 
+void CButCamDisplay::setDistance(float distance) {
+
+	// check if distance is between 0.0 and 1.0
+	if (distance > 1)
+		distance_ = 1;
+	else if (distance < 0)
+		distance_ = 0;
+	else
+		distance_ = distance;
+
+	// set parameter, view node listens for it to recalculate position
+	ros::param::set(BUT_DEPTH_PAR, distance_);
+}
+
 void CButCamDisplay::setAlpha(float alpha) {
 	ROS_DEBUG("CButCamDisplay: setAlpha");
 
-	alpha_ = alpha;
+	// check if alpha is between 0.0 and 1.0
+	if (alpha > 1)
+		alpha_ = 1;
+	else if (alpha < 0)
+		alpha_ = 0;
+	else
+		alpha_ = alpha;
 
+	// get Texture unit
 	Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
 	Ogre::TextureUnitState* tex_unit = NULL;
 	if (pass->getNumTextureUnitStates() > 0) {
@@ -184,9 +230,11 @@ void CButCamDisplay::setAlpha(float alpha) {
 		tex_unit = pass->createTextureUnitState();
 	}
 
+	// set transparency to texture
 	tex_unit->setAlphaOperation(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL,
 			Ogre::LBS_CURRENT, alpha_);
 
+	// set transparency to material
 	if (alpha_ < 0.9998) {
 		material_->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 		material_->setDepthWriteEnabled(false);
@@ -201,7 +249,9 @@ void CButCamDisplay::setAlpha(float alpha) {
 void CButCamDisplay::setDrawUnder(bool under) {
 	ROS_DEBUG("CButCamDisplay: setDrawUnder");
 
+	// set internal variabla
 	draw_under_ = under;
+
 	if (alpha_ >= 0.9998) {
 		material_->setDepthWriteEnabled(!draw_under_);
 	}
@@ -221,12 +271,15 @@ void CButCamDisplay::setDrawUnder(bool under) {
 void CButCamDisplay::setMarkerTopic(const std::string& topic) {
 	ROS_DEBUG("CButCamDisplay: setMarkerTopic");
 
+	// unsubscribe from previous topic
 	unsubscribe();
 
 	marker_topic_ = topic;
 
+	// subscribe to new topic
 	subscribe();
 
+	// destroy previously created Ogre objects
 	clear();
 
 	propertyChanged(marker_topic_property_);
@@ -235,18 +288,27 @@ void CButCamDisplay::setMarkerTopic(const std::string& topic) {
 void CButCamDisplay::setImageTopic(const std::string& topic) {
 	ROS_DEBUG("CButCamDisplay: setImageTopic");
 
+	// unsubscribe from previous topic
 	imUnsubscribe();
 
 	image_topic_ = topic;
 
+	// set corresponding parameter, view node listens to for
+	// recalculating camera parameters
+	ros::param::set(BUT_CAMERA_PAR, image_topic_);
+
+	// subscribe to new topic
 	imSubscribe();
 
+	// destroy previously created Ogre objects
 	clear();
 
 	propertyChanged(image_topic_property_);
 }
 void CButCamDisplay::clearMarker() {
 	ROS_DEBUG("CButCamDisplay: clearMarker");
+
+	// Destroy Ogre object if created
 	if (marker_loaded_) {
 		scene_manager_->destroyManualObject(manual_object_);
 		manual_object_ = NULL;
@@ -259,6 +321,7 @@ void CButCamDisplay::clearMarker() {
 void CButCamDisplay::clear() {
 	ROS_DEBUG("CButCamDisplay: clear()");
 
+	// Destroy Ogre object if created
 	if (marker_loaded_) {
 		scene_manager_->destroyManualObject(manual_object_);
 		manual_object_ = NULL;
@@ -266,6 +329,7 @@ void CButCamDisplay::clear() {
 	} else
 		setStatus(status_levels::Warn, "Marker", "No marker message received");
 
+	// Destroy Ogre texture if created
 	if (image_loaded_) {
 		std::string tex_name = texture_->getName();
 		texture_.setNull();
@@ -284,9 +348,11 @@ void CButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 	ROS_DEBUG("CButCamDisplay: loadImage");
 	//	setStatus(status_levels::Ok, "Image", "Image received");
 
+	// set internal variables
 	image_width_ = image->width;
 	image_height_ = image->height;
 
+	// check image size
 	if (image->height * image->width == 0) {
 		std::stringstream ss;
 		ss << "Image is zero-sized (" << image_height_ << "x" << image_width_
@@ -303,6 +369,7 @@ void CButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 			image->data.size()
 	);
 
+	// check image encoding
 	if (image->encoding != "rgb8") {
 		std::stringstream ss;
 		ss << "Unsupported image encoding (" << image->encoding.c_str()
@@ -311,14 +378,12 @@ void CButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 		return;
 	}
 
-	// Expand it to be RGB data
+	// Prepair image RGB data array
 	unsigned int pixels_size = image_width_ * image_height_ * 3;
 	unsigned char* pixels = new unsigned char[pixels_size];
 	//memset(pixels, 255, pixels_size);
 
-
-	//bool image_status_set = false;
-	//unsigned int num_pixels_to_copy = pixels_size;
+	// check if image size matches its data size
 	if (pixels_size != image->data.size()) {
 		std::stringstream ss;
 		ss << "Data size doesn't match width*height: width = " << image_width_
@@ -327,20 +392,14 @@ void CButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 		setStatus(status_levels::Error, "Image", ss.str());
 
 		return;
-		/*
-		 image_status_set = true;
-
-		 // Keep going, but don't read past the end of the data.
-		 if( image->data.size() < pixels_size )
-		 {
-		 num_pixels_to_copy = image->data.size();
-		 }*/
 	}
 
+	// copy image data to data array
 	for (unsigned int pixel_index = 0; pixel_index < pixels_size; pixel_index++) {
 		pixels[pixel_index] = image->data[pixel_index];
 	}
 
+	// Create new Ogre texture
 	Ogre::DataStreamPtr pixel_stream;
 	pixel_stream.bind(new Ogre::MemoryDataStream(pixels, pixels_size));
 	static int tex_count = 0;
@@ -350,6 +409,7 @@ void CButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 	ss.clear();
 	ss << "CamTexture" << tex_count++;
 
+	// Try to fill texture with rgb data
 	try {
 		Ogre::TextureManager::getSingleton().remove(ss2.str());
 		texture_ = Ogre::TextureManager::getSingleton().loadRawData(ss.str(),
@@ -360,6 +420,8 @@ void CButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 		setStatus(status_levels::Ok, "Image", "Image OK");
 
 	} catch (Ogre::RenderingAPIException&) {
+		// if resolution is too big, downsample the image
+
 		Ogre::Image image;
 		pixel_stream->seek(0);
 		float width = image_width_;
@@ -393,8 +455,10 @@ void CButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 				Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
 	}
 
+	// delete data array
 	delete[] pixels;
 
+	// Get polygon texture unit
 	Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
 	Ogre::TextureUnitState* tex_unit = NULL;
 	if (pass->getNumTextureUnitStates() > 0) {
@@ -403,10 +467,14 @@ void CButCamDisplay::loadImage(const sensor_msgs::Image::ConstPtr& image) {
 		tex_unit = pass->createTextureUnitState();
 	}
 
+	// Bind polygon texture unit with new texture
 	tex_unit->setTextureName(texture_->getName());
 	tex_unit->setTextureFiltering(Ogre::TFO_NONE);
 
 	image_loaded_ = true;
+
+	propertyChanged(image_width_property_);
+	propertyChanged(image_height_property_);
 
 	causeRender();
 
@@ -416,6 +484,7 @@ void CButCamDisplay::load(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
 
 	setStatus(status_levels::Ok, "Marker", "Marker OK");
 
+	// chcek floating point values
 	if (!validateFloats(*msg)) {
 		setStatus(status_levels::Error, "Marker",
 				"Message contained invalid floating point values (nans or infs)");
@@ -424,11 +493,9 @@ void CButCamDisplay::load(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
 
 	//clearMarker();
 
-	// Pad dimensions to power of 2
+	// Set internal variables
 	width_ = msg->scale.x;//(int)pow(2,ceil(log2(msg->info.width)));
 	height_ = msg->scale.y;//(int)pow(2,ceil(log2(msg->info.height)));
-
-	//printf("Padded dimensions to %d X %d\n", width_, height_);
 
 	marker_ = msg;
 	position_.x = msg->pose.position.x;
@@ -442,7 +509,10 @@ void CButCamDisplay::load(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
 
 	//material->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
 
+
 	if (!image_loaded_) {
+		// set material parameters
+
 		material_->getTechnique(0)->setLightingEnabled(true);
 
 		float r = 1.0;
@@ -453,6 +523,7 @@ void CButCamDisplay::load(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
 
 		material_->getTechnique(0)->setDiffuse(r, g, b, a);
 
+		// Create new Ogre object representing polygon with camera image
 		static int cam_count = 0;
 		std::stringstream ss2;
 		ss2 << "CamObject" << cam_count++;
@@ -461,6 +532,7 @@ void CButCamDisplay::load(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
 
 		//manual_object_->setMaterialName()
 
+		// Set the polygon geometry (1x1 square at the coordinates origin)
 		manual_object_->begin(material_->getName(),
 				Ogre::RenderOperation::OT_TRIANGLE_LIST);
 		{
@@ -503,15 +575,16 @@ void CButCamDisplay::load(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
 		manual_object_->end();
 	}
 	if (draw_under_) {
+		// map is in RENDER_QUEUE_4, don't want this display under map
 		manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_3);
 	}
 
-	propertyChanged(resolution_property_);
 	propertyChanged(width_property_);
-	propertyChanged(width_property_);
+	propertyChanged(height_property_);
 	propertyChanged(position_property_);
 	propertyChanged(orientation_property_);
 
+	// transform polygon to its real position and size
 	transformCam();
 
 	marker_loaded_ = true;
@@ -526,6 +599,7 @@ void CButCamDisplay::transformCam() {
 		return;
 	}
 
+	// get polygon real geometry from last message
 	Ogre::Vector3 position;
 	Ogre::Quaternion orientation;
 	if (!vis_manager_->getFrameManager()->transform(frame_, ros::Time(),
@@ -540,6 +614,8 @@ void CButCamDisplay::transformCam() {
 		setStatus(status_levels::Ok, "Transform", "Transform OK");
 	}
 
+	// transform polygon to its real position and size
+	// (transforming scene node, polygon is the only object attached)
 	scene_node_->setPosition(position);
 	scene_node_->setOrientation(orientation);
 	scene_node_->setScale(Ogre::Vector3(marker_->scale.x, marker_->scale.y,
@@ -548,12 +624,12 @@ void CButCamDisplay::transformCam() {
 
 void CButCamDisplay::update(float wall_dt, float ros_dt) {
 	//ROS_DEBUG("CButCamDisplay: update");
-	//ROS_DEBUG_NAMED("CButCamDisplay", "update");
 }
 
 void CButCamDisplay::createProperties() {
 	ROS_DEBUG("CButCamDisplay: createProperties");
 
+	// Subscribed Marker Topic
 	// the name "marker_topic" is residue, when polygon was defined by marker message
 	marker_topic_property_ = property_manager_->createProperty<
 			ROSTopicStringProperty> ("Marker Topic", property_prefix_,
@@ -567,6 +643,7 @@ void CButCamDisplay::createProperties() {
 			srs_ui_but::ButCamMsg>());
 	marker_topic_prop->addLegacyName("Service"); // something of a hack, but should provide reasonable backwards compatibility
 
+	// Subscribed Image Topic
 	image_topic_property_ = property_manager_->createProperty<
 			ROSTopicStringProperty> ("Image Topic", property_prefix_,
 			boost::bind(&CButCamDisplay::getImageTopic, this), boost::bind(
@@ -579,12 +656,25 @@ void CButCamDisplay::createProperties() {
 			sensor_msgs::Image>());
 	image_topic_prop->addLegacyName("Service"); // something of a hack, but should provide reasonable backwards compatibility
 
+	// Polygon transparency
 	alpha_property_ = property_manager_->createProperty<FloatProperty> (
 			"Alpha", property_prefix_, boost::bind(&CButCamDisplay::getAlpha,
 					this), boost::bind(&CButCamDisplay::setAlpha, this, _1),
 			parent_category_, this);
 	setPropertyHelpText(alpha_property_,
 			"Amount of transparency to apply to the marker.");
+
+	// Polygon distance
+	distance_property_ = property_manager_->createProperty<FloatProperty> (
+			"Video distance", property_prefix_, boost::bind(
+					&CButCamDisplay::getDistance, this), boost::bind(
+					&CButCamDisplay::setDistance, this, _1), parent_category_,
+			this);
+	setPropertyHelpText(
+			distance_property_,
+			"Distance of the video polygon from the robot. Value 1 means the biggest distance possible, 0.5 is the half way to the robot and so forth...");
+
+	// Draw under
 	draw_under_property_ = property_manager_->createProperty<BoolProperty> (
 			"Draw Behind", property_prefix_, boost::bind(
 					&CButCamDisplay::getDrawUnder, this), boost::bind(
@@ -594,18 +684,15 @@ void CButCamDisplay::createProperties() {
 			draw_under_property_,
 			"Rendering option, controls whether or not the marker is always drawn behind everything else.");
 
-	resolution_property_ = property_manager_->createProperty<FloatProperty> (
-			"Resolution", property_prefix_, boost::bind(
-					&CButCamDisplay::getResolution, this),
-			FloatProperty::Setter(), parent_category_, this);
-	setPropertyHelpText(resolution_property_,
-			"Resolution of the image. (not editable)");
+	// Polygon width
 	width_property_ = property_manager_->createProperty<FloatProperty> (
 			"Marker Width", property_prefix_, boost::bind(
 					&CButCamDisplay::getWidth, this), FloatProperty::Setter(),
 			parent_category_, this);
 	setPropertyHelpText(width_property_,
 			"Width of the marker, in meters. (not editable)");
+
+	// Polygon height
 	height_property_ = property_manager_->createProperty<FloatProperty> (
 			"Marker Height", property_prefix_, boost::bind(
 					&CButCamDisplay::getHeight, this), FloatProperty::Setter(),
@@ -613,12 +700,15 @@ void CButCamDisplay::createProperties() {
 	setPropertyHelpText(height_property_,
 			"Height of the marker, in meters. (not editable)");
 
+	// Image width
 	image_width_property_ = property_manager_->createProperty<IntProperty> (
 			"Image Width", property_prefix_, boost::bind(
 					&CButCamDisplay::getImageWidth, this),
 			IntProperty::Setter(), parent_category_, this);
 	setPropertyHelpText(image_width_property_,
 			"Width of the camera image, in pixels. (not editable)");
+
+	// Image height
 	image_height_property_ = property_manager_->createProperty<IntProperty> (
 			"Image Height", property_prefix_, boost::bind(
 					&CButCamDisplay::getImageHeight, this),
@@ -626,18 +716,22 @@ void CButCamDisplay::createProperties() {
 	setPropertyHelpText(image_height_property_,
 			"Height of the camera image, in pixels. (not editable)");
 
+	// Polygon position
 	position_property_ = property_manager_->createProperty<Vector3Property> (
 			"Position", property_prefix_, boost::bind(
 					&CButCamDisplay::getPosition, this),
 			Vector3Property::Setter(), parent_category_, this);
 	setPropertyHelpText(position_property_,
 			"Position of the middle of the marker, in meters. (not editable)");
+
+	// Polygon orientation
 	orientation_property_ = property_manager_->createProperty<
 			QuaternionProperty> ("Orientation", property_prefix_, boost::bind(
 			&CButCamDisplay::getOrientation, this),
 			QuaternionProperty::Setter(), parent_category_, this);
 	setPropertyHelpText(orientation_property_,
 			"Orientation of the marker. (not editable)");
+
 }
 
 void CButCamDisplay::fixedFrameChanged() {
@@ -649,7 +743,9 @@ void CButCamDisplay::reset() {
 	ROS_DEBUG("CButCamDisplay: reset");
 	Display::reset();
 
+	// Destroy all Ogre object created
 	clear();
+
 	// Force resubscription so that the marker will be re-sent
 	setMarkerTopic(marker_topic_);
 	setImageTopic(image_topic_);
@@ -658,19 +754,26 @@ void CButCamDisplay::reset() {
 void CButCamDisplay::incoming(const srs_ui_but::ButCamMsg::ConstPtr& msg,
 		const sensor_msgs::Image::ConstPtr& image) {
 	ROS_DEBUG("CButCamDisplay: incoming");
+	// incoming synchronised geometry and texture
+
+	// update geometry
 	load(msg);
+
+	// update texture
 	loadImage(image);
 }
 
+// function is not being used, CButCamDisplay::incoming is called instead
 void CButCamDisplay::incomingMarker(const srs_ui_but::ButCamMsg::ConstPtr& msg) {
 	ROS_DEBUG_NAMED("CButCamDisplay", "incoming marker");
-
+	// incoming geometry, update it
 	load(msg);
 }
 
+// function is not being used, CButCamDisplay::incoming is called instead
 void CButCamDisplay::incomingImage(const sensor_msgs::Image::ConstPtr& image) {
 	ROS_DEBUG_NAMED("CButCamDisplay", "incoming image");
-
+	// incoming texture, update it
 	loadImage(image);
 }
 

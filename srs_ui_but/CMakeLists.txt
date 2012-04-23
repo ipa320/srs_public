@@ -26,20 +26,13 @@ rosbuild_gensrv()
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
+
+rosbuild_add_boost_directories()
+#rosbuild_link_boost( thread)
+
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-# BUT cob teleop
-set( BUT_COB_TELEOP_SOURCE_FILES src/but_cob_teleop/interactive_markers_tools.cpp
-                             src/but_cob_teleop/TeleopCOBMarker.cpp )
-                      
-set( BUT_COB_TELEOP_PROJECT_NAME but_cob_teleop )
-rosbuild_add_library( ${BUT_COB_TELEOP_PROJECT_NAME} ${BUT_COB_TELEOP_SOURCE_FILES} )
-
-rosbuild_add_executable(but_cob_teleop_marker src/but_cob_teleop/but_cob_teleop.cpp)  
-target_link_libraries(but_cob_teleop_marker ${BUT_COB_TELEOP_PROJECT_NAME})     
 
 # BUT services
 set( BUT_SERVICES_SOURCE_FILES src/but_services/PointCloudTools.cpp
@@ -52,15 +45,13 @@ rosbuild_add_executable(but_service_server src/but_services/but_service_server.c
 target_link_libraries(but_service_server ${BUT_SERVICES_PROJECT_NAME})      
 
 
-
 # BUT rviz display
 set( DISPLAY_SOURCE_FILES src/but_display/but_display.cpp
                           src/but_display/but_pointcloud.cpp
                           src/but_display/point_cloud_base.cpp
-                          src/but_display/but_arm_manipulation.cpp
                           src/but_display/but_examplepane.cpp
-                          src/but_display/but_distance_visualizer.cpp
-                          src/but_display/but_distance_indicator.cpp
+                          src/but_display/but_distance_linear_visualizer.cpp
+                          src/but_display/but_distance_circular_indicator.cpp
 			  			  src/but_data_fusion/but_cam_display.cpp
 			  			  src/but_display/but_camcast.cpp
 			  			  src/but_display/CRosRttTexture.cpp
@@ -70,12 +61,16 @@ set( BUT_DISPLAY_PROJECT_NAME but_gui )
 include_directories(include/but_display include/but_data_fusion srv_gen/cpp/include/srs_ui_but/)
 rosbuild_add_library( ${BUT_DISPLAY_PROJECT_NAME} ${DISPLAY_SOURCE_FILES} )
 
+
 # Add wx widgets
 find_package(wxWidgets REQUIRED)
 include(${wxWidgets_USE_FILE})
 include_directories( ${wxWidgets_INCLUDE_DIRS} )
 
 target_link_libraries(${BUT_DISPLAY_PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES} )
+rosbuild_link_boost(${BUT_DISPLAY_PROJECT_NAME} thread)
+
 
 # BUT data fusion
 rosbuild_add_executable(view src/but_data_fusion/view.cpp)
+

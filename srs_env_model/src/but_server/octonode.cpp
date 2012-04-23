@@ -31,7 +31,11 @@
  * Constructor
  */
 octomap::EModelTreeNode::EModelTreeNode()
-: OcTreeNode()
+: OcTreeNodeStamped()
+, m_r( 255 )
+, m_g( 5 )
+, m_b( 255 )
+, m_a( 255 )
 {
 
 }
@@ -78,4 +82,31 @@ octomap::EMOcTree::EMOcTree(std::string _filename)
     tree_size++;
 
     readBinary(_filename);
+  }
+
+unsigned int octomap::EMOcTree::getLastUpdateTime() {
+    // this value is updated whenever inner nodes are
+    // updated using updateOccupancyChildren()
+    return itsRoot->getTimestamp();
+  }
+
+  void octomap::EMOcTree::degradeOutdatedNodes(unsigned int time_thres) {
+    unsigned int query_time = (unsigned int) time(NULL);
+
+    for(leaf_iterator it = this->begin_leafs(), end=this->end_leafs();
+        it!= end; ++it) {
+      if ( this->isNodeOccupied(*it)
+           && ((query_time - it->getTimestamp()) > time_thres) ) {
+        integrateMissNoTime(&*it);
+      }
+    }
+  }
+
+  void octomap::EMOcTree::updateNodeLogOdds(EModelTreeNode* node, const float& update) const {
+    OccupancyOcTreeBase<EModelTreeNode>::updateNodeLogOdds(node, update);
+    node->updateTimestamp();
+  }
+
+  void octomap::EMOcTree::integrateMissNoTime(EModelTreeNode* node) const{
+    OccupancyOcTreeBase<EModelTreeNode>::updateNodeLogOdds(node, probMissLog);
   }

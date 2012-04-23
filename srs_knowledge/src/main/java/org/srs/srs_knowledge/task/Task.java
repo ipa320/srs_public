@@ -70,16 +70,6 @@ public abstract class Task {
 	GET_OBJECT, MOVETO_LOCATION, SEARCH_OBJECT, SCAN_AROUND, STOP_TASK, UNSPECIFIED
 	    };
     
-    /*
-      public Task(TaskType type) {
-      acts = new ArrayList<ActionTuple>();
-      // actionSequence = new ArrayList<CUAction>();
-      setTaskType(type);
-      currentAction = null;
-      ontoDB = new OntologyDB();
-      }
-    */
-    
     public Task() {
 	// empty constructor.
 	acts = new ArrayList<ActionTuple>();     // to be deprecated and replaced with allSubSeqs
@@ -157,7 +147,7 @@ public abstract class Task {
 	return acts.add(act);
     }
     
-     public boolean loadPredefinedSequence(String filename) throws IOException,
+    public boolean loadPredefinedSequence(String filename) throws IOException,
 								  Exception {
 	System.out.println("LOAD " + filename);
 	File file = null;
@@ -326,6 +316,6 @@ public abstract class Task {
     protected int currentActionId = 1;
     protected ActionTuple currentAction;
     protected int currentActionLoc = 0;
-    protected NodeHandle nodeHandle;
+    //   protected NodeHandle nodeHandle;
     protected ArrayList<HighLevelActionSequence> allSubSeqs = new ArrayList<HighLevelActionSequence>();
 }

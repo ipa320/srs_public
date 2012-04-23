@@ -12,23 +12,22 @@ displays:
     description: |
       Show pointclouds display
   -
-    class_name: CButDistanceVisualizer
-    display_name: Distance Visualizer
+    class_name: CButDistanceLinearVisualizer
+    display_name: Distance Linear Visualizer
     description: |
       Visualization of distance between the link and closest surface.
   -
-    class_name: CButDistanceIndicator
-    display_name: Distance Indicator
+    class_name: CButDistanceCircularIndicator
+    display_name: Distance Circular Indicator
     description: |
       Visualization of distances around robot's links.
   -
     class_name: CButCamDisplay
     display_name: CButCamDisplay
     description: |
-      This display allows to create rectangular polygon reading its position from desired topic, with dynamic texture
+      This display allows to create rectangular polygon reading its position from desired topic, with dynamic texture.
   -
     class_name: CButCamCast
     display_name: CButCamCast
     description: |
       This display allows to screencast rviz camera to the ros topic as a image message.
-      

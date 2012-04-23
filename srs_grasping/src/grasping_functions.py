@@ -434,8 +434,14 @@ def array_from_pose(gp):
 
 def rotation_matrix(obj):
 
-	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
-	rotacion =  euler_matrix(e[0],e[1],e[2], axes='sxyz');
+	#real robot
+	#e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
+	#rotacion =  euler_matrix(e[0],e[1],e[2], axes='sxyz');
+
+	#hack for gazebo
+	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxzy');
+	rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz');
+
 	rotacion[0,3] = obj.position.x;
 	rotacion[1,3] = obj.position.y;
 	rotacion[2,3] = obj.position.z;
@@ -498,10 +504,13 @@ def show_all_grasps(object_id, grasps):		#Group of grasps (grasp of GraspConfigu
 			raw_input('Next config.')
 
 
-def grasp_view(env, object_id, grasp, object_pose):	#Individual grasp (grasp of GraspSubConfiguration)
+def grasp_view(object_id, grasp, object_pose):	#Individual grasp (grasp of GraspSubConfiguration)
 
-	env = SetRobot(env);
-	env = SetTarget(env, object_id);
+	(gmodel, env) = init_env(object_id);
+
+	env.SetViewer('qtcoin')
+	time.sleep(1.0)
+
 
 	m = matrix_from_pose(grasp.grasp);
 	rot = numpy.matrix(rotation_matrix(object_pose));
@@ -529,8 +538,8 @@ def grasp_view(env, object_id, grasp, object_pose):	#Individual grasp (grasp of 
 		for link in manip.GetChildLinks():
 			link.SetTransform(dot(Tdelta,link.GetTransform()))
 		env.UpdatePublishedBodies()
-		rospy.sleep(5);
-		env.Reset();
+		rospy.sleep(60);
+	return 0;
 
 
 def init_simulator():

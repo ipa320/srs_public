@@ -93,6 +93,16 @@ import java.util.StringTokenizer;
 import java.util.ArrayList; 
 import java.util.Iterator;
 
+import org.srs.srs_knowledge.utils.*;
+
+import tfjava.*;
+
+import javax.vecmath.Quat4d;
+import javax.vecmath.Vector3d;
+import javax.vecmath.Point3d;
+import javax.vecmath.Matrix4d;
+
+
 public class KnowledgeEngine
 {
     public static Ros ros;
@@ -132,7 +142,6 @@ public class KnowledgeEngine
 	nodeHandle = ros.createNodeHandle();
 
 	try{
-	    //    initGenerateSequence();
 	    initQuerySparQL();
 	    initPlanNextAction();
 	    initTaskRequest();
@@ -149,6 +158,10 @@ public class KnowledgeEngine
 	    System.out.println(e.getMessage());
 	    return false;
 	}
+
+	////////  TO REMOVE ::: ONLY FOR TESTING
+	//this.testFunction();
+	////////  END:::: TESTING
 
 	ros.spin();
 
@@ -210,6 +223,7 @@ public class KnowledgeEngine
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
+	OntoQueryUtil.MapName = mapNamespacePrefix;
     }
 
     public void testOnto(String className)
@@ -234,37 +248,6 @@ public class KnowledgeEngine
 	}
 
     }
-
-    /*
-    private GenerateSequence.Response handleGenerateSequence(GenerateSequence.Request request)
-    {
-	GenerateSequence.Response res = new GenerateSequence.Response();
-	ArrayList<CUAction> actSeq = new ArrayList<CUAction>();
-
-	CUAction ca = new CUAction(); 
-	actSeq.add(ca);
-	actSeq.add(ca);
-	
-	res.actionSequence = actSeq;
-	System.out.println(res.actionSequence.size());
-
-	ros.logInfo("INFO: Generate sequence of length: " + actSeq.size());
-	return res;
-    }
-    */
-    
-    /*
-    private void initGenerateSequence() throws RosException
-    {
-	ServiceServer.Callback<GenerateSequence.Request, GenerateSequence.Response> scb = new ServiceServer.Callback<GenerateSequence.Request,GenerateSequence.Response>() {
-            public GenerateSequence.Response call(GenerateSequence.Request request) {
-		return handleGenerateSequence(request);
-            }
-	};
-
-	ServiceServer<GenerateSequence.Request,GenerateSequence.Response,GenerateSequence> srv = nodeHandle.advertiseService(generateSequenceService, new GenerateSequence(), scb);
-    }
-    */
     
     private QuerySparQL.Response handleQuerySparQL(QuerySparQL.Request req)
     {
@@ -297,30 +280,6 @@ public class KnowledgeEngine
 	    return res;
 	    //throw new NullPointerException("Current Task is NULL. Send task request first");
 	}
-
-	/*
-	if(request.stateLastAction.length == 3) {
-	    if(request.stateLastAction[0] == 0 && request.stateLastAction[1] == 0 && request.stateLastAction[2] == 0) {
-		//ArrayList<String> feedback = new ArrayList<String>();
-		ArrayList<String> feedback = request.genericFeedBack;
-		ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
-	    }
-	    else if(request.stateLastAction[0] == 2 || request.stateLastAction[1] == 2 || request.stateLastAction[2] == 2) {
-		ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
-		ros.logInfo("INFO: Task termintated");
-		
-		currentTask = null;
-		// TODO:
-		//currentSessionId = 1;
-
-		res.nextAction = new CUAction();
-		return res;
-	    }
-	    else{
-		ca = currentTask.getNextCUAction(false, null);
-	    }
-	}
-	*/
 
 	if(request.resultLastAction == 0) {
 	    ArrayList<String> feedback = request.genericFeedBack;
@@ -393,53 +352,133 @@ public class KnowledgeEngine
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    currentTask = new MoveTask(request.content, null);
-	    System.out.println("Created CurrentTask " + "move " + request.content);
+
+	    try{
+		if(request.parameters.size() == 0) {
+		    currentTask = new MoveTask(request.content, null);
+		    System.out.println("Created CurrentTask " + "move " + request.content);
+		}
+		else {	
+		    currentTask = new MoveTask((String)request.parameters.get(0), null);
+		    System.out.println("Created CurrentTask " + "move " + (String)request.parameters.get(0));	    
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
+	    
 	}
 	else if(request.task.equals("get")){
-	    
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 
-	    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, nodeHandle);
-	    currentTask = (Task)got;
-	    System.out.println("Created CurrentTask " + "get " + request.content);	    
+	    try{
+		if(request.parameters.size() == 0) {
+
+		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		    GetObjectTask got = new GetObjectTask(request.task, request.content);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "get " + request.content);	    
+		}
+		else {	
+		    GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "get " + request.parameters.get(0));	    
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
 
 	    // TODO: for other types of task, should be dealt separately. 
 	    // here is just for testing
-	    
-	    //currentTask = new TestTask();
-	    //this.loadPredefinedTasksForTest();
-	    
-	    //currentTask.setOntoQueryUtil(ontoQueryUtil);
 	}
 	else if(request.task.equals("search")){
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    SearchObjectTask got = new SearchObjectTask(request.task, request.content, nodeHandle);
-	    currentTask = (Task)got;
-	    System.out.println("Created CurrentTask " + "search " + request.content);	    
+	    try{
+		if(request.parameters.size() == 0) {
+		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "search " + request.content);	    
+		}
+		else {	
+		    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "search " + request.content);	    
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
+
 	}
 	else if(request.task.equals("fetch")){
 	    
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-
-	    FetchObjectTask got = new FetchObjectTask(request.task, request.content, request.userPose, nodeHandle);
-	    currentTask = (Task)got;
-	    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
+	    try{
+		if(request.parameters.size() == 0) {
+		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		    FetchObjectTask got = new FetchObjectTask(request.task, request.content, request.userPose);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
+		}
+		else if (request.parameters.size() == 2) {	
+		    FetchObjectTask got = new FetchObjectTask(request.task, request.parameters.get(0), request.parameters.get(1));
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "fetch " + request.parameters.get(0) + " to " + request.parameters.get(1));	    
+		}
+		else {
+		    currentTask = null;
+		    res.result = 1;
+		    res.description = "No action";
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
 	}
 	else if(request.task.equals("deliver")){
 	    if(ontoDB == null) {
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
-	    GetObjectTask got = new GetObjectTask(request.task, request.content, nodeHandle);
-	    currentTask = (Task)got;
-	    System.out.println("Created CurrentTask " + "search " + request.content);	    
+	    try{
+		if(request.parameters.size() == 0) {
+		    
+		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		    GetObjectTask got = new GetObjectTask(request.task, request.content);
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "get " + request.content);	    
+		}
+		else {	
+		    GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
+		    currentTask = (Task)got;
+		    System.out.println("Created CurrentTask " + "get " + request.content);	    
+		}
+	    }
+	    catch(Exception e) {
+		System.out.println(">>>  " + e.getMessage());
+		currentTask = null;
+		res.result = 1;
+		res.description = "No action";
+	    }
 	}
 	else if(request.task.equals("charging")) {
 	    if(ontoDB == null) {
@@ -518,152 +557,10 @@ public class KnowledgeEngine
 
     private GetObjectsOnMap.Response handleGetObjectsOnMap(GetObjectsOnMap.Request req)
     {
-	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
-
-	String className = globalNamespace;
-	String mapNS = mapNamespace;
-		
-	if(req.map != null) {
-	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
-		mapNS = ontoDB.getNamespaceByPrefix(req.map);
-	    }
-	}
+	String map = req.map;
+	boolean ifGeometryInfo = req.ifGeometryInfo;
 	
-	className = className + "FoodVessel";
-
-	System.out.println(className + " --- ");
-	Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
-	if(instances == null) {
-	    return re;
-	}
-	com.hp.hpl.jena.rdf.model.Statement stm;
-	if(instances.hasNext()) {
-	    while (instances.hasNext()) { 
-		Individual temp = (Individual)instances.next();
-		System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
-		if(temp.getNameSpace().equals(mapNamespace)) {
-		    re.objects.add(temp.getLocalName());
-		    re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
-		    try{
-			
-			stm = ontoDB.getPropertyOf(globalNamespace, "spatiallyRelated", temp);			
-			re.spatialRelation.add(stm.getPredicate().getLocalName());
-			re.spatialRelatedObject.add(stm.getObject().asResource().getLocalName());
-		    }
-		    catch(Exception e) {
-			System.out.println("CAUGHT exception: " + e.toString());
-			re.spatialRelation.add("NA");
-			re.spatialRelatedObject.add("NA");
-		    }
-		    try{
-			stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);			
-			re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
-		    }
-		    catch(Exception e) {
-			System.out.println("CAUGHT exception: " + e.toString());
-			re.houseHoldId.add("NA");
-		    }
-		    if(req.ifGeometryInfo == true) { 
-			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
-			try{
-			    stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
-			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
-			    spatialInfo.pose.position.y = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
-			    spatialInfo.pose.position.z = getFloatOfStatement(stm);
-			    
-			    stm = ontoDB.getPropertyOf(globalNamespace, "widthOfObject", temp);
-			    spatialInfo.w = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "heightOfObject", temp);
-			    spatialInfo.h = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
-			    spatialInfo.l = getFloatOfStatement(stm);
-			    
-			    stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
-			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "qx", temp);
-			    spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "qy", temp);
-			    spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
-			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
-			}
-			catch(Exception e) {
-			    System.out.println("CAUGHT exception: " + e.getMessage()+ ".. added invalid values");
-			    
-			    spatialInfo.pose.position.x = -1000;
-			    spatialInfo.pose.position.y = -1000;
-			    spatialInfo.pose.position.z = -1000;
-			    
-			    spatialInfo.w = -1000;
-			    spatialInfo.h = -1000;
-			    spatialInfo.l = -1000;
-
-			    spatialInfo.pose.orientation.w = -1000;
-			    spatialInfo.pose.orientation.x = -1000;
-			    spatialInfo.pose.orientation.y = -1000;
-			    spatialInfo.pose.orientation.z = -1000;
-			}
-
-			re.objectsInfo.add(spatialInfo);
-		    }
-		    
-		}
-	    }
-	}
-	else {
-	    System.out.println("<EMPTY>");
-	}
-	
-	/*
-
-	String targetContent = "kitchen";
-	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
-	    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-	    + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n"
-	    + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
-	String queryString = "SELECT ?objs ?x ?y ?z ?w ?h ?l WHERE { "
-	    + "?objs rdf:type srs:Dishwasher . "
-	    + "?objs srs:xCoord ?x . "
-	    + "?objs srs:yCoord ?y . " 
-	    + "?objs srs:zCoord ?z . " 
-	    + "?objs srs:widthOfObject ?w . " 
-	    + "?objs srs:heightOfObject ?h . " 
-	    + "?objs srs:lengthOfObject ?l . " 
-	    + "}";
-	System.out.println(prefix + queryString + "\n");
-	
-	if (this.ontoDB == null) {
-	    ros.logInfo("INFO: Ontology Database is NULL. Nothing executed. ");
-	    return re;
-	}
-	
-	try {
-	    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix
-								   + queryString);
-	    
-	    if (rset.size() == 0) {
-		ros.logInfo("No move target found from database");
-	    }
-	    else {
-		System.out.println("WARNING: Multiple options... ");
-		QuerySolution qs = rset.get(0);
-		//x = qs.getLiteral("x").getFloat();
-		//y = qs.getLiteral("y").getFloat();
-		//theta = qs.getLiteral("theta").getFloat();
-		//System.out.println("x is " + x + ". y is  " + y
-		//		   + ". theta is " + theta);
-	    }
-	    
-	} catch (Exception e) {
-	    System.out.println("Exception -->  " + e.getMessage());
-	    
-	}
-
-	//re.result = ontoDB.executeQuery(queryString);
-	*/
-	return re;
+	return OntoQueryUtil.getObjectsOnMap(map, ifGeometryInfo);
     }
 
     private void initGetObjectsOnMap() throws RosException
@@ -681,75 +578,7 @@ public class KnowledgeEngine
 
     private GetWorkspaceOnMap.Response handleGetWorkspaceOnMap(GetWorkspaceOnMap.Request req)
     {
-	GetWorkspaceOnMap.Response re = new GetWorkspaceOnMap.Response();
-
-	String className = globalNamespace;
-	String mapNS = mapNamespace;
-		
-	if(req.map != null) {
-	    if(ontoDB.getNamespaceByPrefix(req.map) != null) {
-		mapNS = ontoDB.getNamespaceByPrefix(req.map);
-	    }
-	}
-
-	className = className + "FurniturePiece";
-	//System.out.println(className);
-	try{
-	    Iterator<Individual> instances = ontoDB.getInstancesOfClass(className);
-	    if(instances == null) {
-		return re;
-	    }
-
-	    if(instances.hasNext()) {
-		while (instances.hasNext()) { 
-		    Individual temp = (Individual)instances.next();
-		    //System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
-		    if(temp.getNameSpace().equals(mapNamespace)) {
-			re.objects.add(temp.getLocalName());
-			re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
-
-			if(req.ifGeometryInfo == true) { 
-			    SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
-			    
-			    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoord", temp);
-			    spatialInfo.pose.position.x = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "yCoord", temp);
-			    spatialInfo.pose.position.y = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "zCoord", temp);
-			    spatialInfo.pose.position.z = getFloatOfStatement(stm);
-			    
-			    stm = ontoDB.getPropertyOf(globalNamespace, "widthOfObject", temp);
-			    spatialInfo.w = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "heightOfObject", temp);
-			    spatialInfo.h = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "lengthOfObject", temp);
-			    spatialInfo.l = getFloatOfStatement(stm);			    
-
-			    stm = ontoDB.getPropertyOf(globalNamespace, "qu", temp);
-			    spatialInfo.pose.orientation.w = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "qx", temp);
-			    spatialInfo.pose.orientation.x = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "qy", temp);
-			    spatialInfo.pose.orientation.y = getFloatOfStatement(stm);
-			    stm = ontoDB.getPropertyOf(globalNamespace, "qz", temp);
-			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
-
-			    re.objectsInfo.add(spatialInfo);
-
-			    stm = ontoDB.getPropertyOf(globalNamespace, "houseHoldObjectID", temp);
-			    re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
-			}
-		    }
-		}       
-	    }
-	    else
-		System.out.println("<EMPTY>");
-	}
-	catch(Exception e) {
-	    System.out.println(e.getMessage());
-	}
-
-	return re;
+	return OntoQueryUtil.getWorkspaceOnMap(req.map, req.ifGeometryInfo);
     }
 
     private float getFloatOfStatement(Statement stm) 
@@ -987,8 +816,6 @@ public class KnowledgeEngine
 	    return false;
 	}
 
-	//ArrayList<ActionTuple> acts = currentTask.getActionSequence();
-
 	return true;
     }
 
@@ -1106,7 +933,6 @@ public class KnowledgeEngine
 		Individual temp = (Individual)instances.next();
 		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		if(temp.getNameSpace().equals(mapNamespace)) {
-		    		    
 		    Pose2D pos2d = new Pose2D();
 		    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoordinate", temp);
 		    pos2d.x = getFloatOfStatement(stm);
@@ -1125,31 +951,7 @@ public class KnowledgeEngine
 	}
 
 	return re;
-
     }
-
-    /*
-    public static void testTask(Properties conf)
-    {
-	try{
-	    System.out.println("Create Task Object");
-	    //Task task = new GetObjectTask(Task.TaskType.GET_OBJECT);
-	    Task task = new GetObjectTask("get", null, null);
-
-	    String taskFile = conf.getProperty("taskfile", "task1.seq");
-	    System.out.println(taskFile);
-	    if(task.loadPredefinedSequence(taskFile))   {
-		System.out.println("OK... ");
-	    }
-	    else  {
-		System.out.println("Fail to load... ");
-	    }
-	}
-	catch(Exception e) {
-	    System.out.println(e.getMessage());
-	}
-    }
-    */
 
     private String defaultContextPath()
     {
@@ -1163,8 +965,18 @@ public class KnowledgeEngine
 	return this.confPath;
     }
 
+    public void testFunction() {
+	//boolean b = OntoQueryUtil.computeOnSpatialRelation();
+	System.out.println("++++++++++++++++++++++++++++++++++");
+	OntoQueryUtil.computeOnSpatialRelation();
+	System.out.println("++++++++++++++++++++++++++++++++++");
+	SpatialCalculator.testTF();
+
+    }
+
     public static void main(String[] args)
     {
+
 	String configFile = new String();
 	System.out.print("There are " + args.length + " input arguments: ");
 
@@ -1215,7 +1027,7 @@ public class KnowledgeEngine
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
     private String confPath;
-    private OntoQueryUtil ontoQueryUtil;
+    //private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing
     int flag = 1;
 }

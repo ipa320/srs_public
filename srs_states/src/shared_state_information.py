@@ -127,7 +127,12 @@ class goal_structure():
         
         self.stop_acknowledged = False
         
-        self.language_set = 'English'
+        self.language_set = ''
+        
+        try:
+            self.language_set = rospy.get_param("/srs/language")
+        except Exception, e:
+            self.language_set = 'English'
         
         #try reading the parameter server
         

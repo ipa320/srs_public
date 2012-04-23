@@ -324,10 +324,21 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	HighLevelActionUnit currentActUnit = currentHLActSeq.getCurrentHighLevelActionUnit();
 	if(currentActUnit.getActionType().equals("MoveAndDetection")) {
 	    this.recentDetectedObject = ActionFeedback.toPose(fb);
+	    BoundingBoxDim bbDim = InformationRetrieval.retrieveBoundingBoxInfo(OntoQueryUtil.GlobalNameSpace + this.targetContent);
+	    ros.pkg.srs_knowledge.msg.SRSSpatialInfo spaObj = new ros.pkg.srs_knowledge.msg.SRSSpatialInfo();
+	    spaObj.l = bbDim.l;
+	    spaObj.h = bbDim.h;
+	    spaObj.w = bbDim.w;
+
+	    spaObj.pose = this.recentDetectedObject;
+
 	    // update the knowledge (post-processing)
 	    
 	    // if there exists one same object on the same workspace, update it --- simple solution
-	    
+	    String ws = SpatialCalculator.workspaceHolding(spaObj);
+	    if(!ws.equals("")) {
+		
+	    }
 	    // if there are more objects of the smae type, linke one of them (does not matter which one, as they are identical (not distinguiable).. better to use the closest one)
 	    
 	    // if there does not exist such an object, then insert a new one

@@ -55,6 +55,7 @@ import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
 import ros.pkg.srs_knowledge.msg.*;
+import ros.pkg.srs_knowledge.srv.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import org.srs.srs_knowledge.knowledge_engine.*;
 
@@ -220,5 +221,27 @@ public class SpatialCalculator
 	
     //	return false;
     // }
+
+    public static String nearestSameObject(SRSSpatialInfo spaInfo
+
+    public static String workspaceHolding(SRSSpatialInfo spaInfo) {
+
+	GetWorkspaceOnMap.Response resWS = OntoQueryUtil.getWorkspaceOnMap(OntoQueryUtil.GlobalNameSpace, true);
+	// pair-wise comparison --- if condition met, then update the knowledge base
+
+	for (int j = 0; j < resWS.objectsInfo.size(); j++) {
+	    if(SpatialCalculator.ifOnObject(spaInfo, resWS.objectsInfo.get(j), 1)) {
+		return OntoQueryUtil.ObjectNameSpace + resWS.objects.get(j);
+	    }
+	}
+
+	//if (j == resWS.objectsInfo.size()) {
+	System.out.println("NO MATCH.... found for : [" + spaInfo.l + "  " + spaInfo.h + "  " + spaInfo.w + "]");
+	//return "";
+	//}
+	
+	return "";
+    }
+
 }
 

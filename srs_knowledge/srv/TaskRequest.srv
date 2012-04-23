@@ -9,12 +9,6 @@ string content   ## to be deprecated and replaced with parameters
 
 string[] parameters  # not in use at the moment. 
 
-# if to get an object (milk0) or any in the general class (eg. Milk)
-#string objectOrClass 
-
-#ABoxObject aboxObject
-#TBoxObject tboxObject
-
 # Or other task information
 
 # geometry_msgs/Pose2D userPose

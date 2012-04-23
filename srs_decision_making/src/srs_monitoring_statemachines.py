@@ -91,7 +91,7 @@ class state_checking_during_operation (smach.State):
                     #acknowledge the request
                     current_task_info.set_stop_acknowledged(True)
                     try:
-                        sss.say(["I am stopping."],False)
+                        sss.say([current_task_info.speaking_language['Stop']],False)
                         _feedback.current_state =  "the task has been stopped"
                         _feedback.solution_required = False
                         _feedback.exceptional_case_id = 0
@@ -108,7 +108,7 @@ class state_checking_during_operation (smach.State):
                     _feedback.solution_required = False
                     _feedback.exceptional_case_id = 0
                     current_task_info._srs_as._as.publish_feedback(_feedback)
-                    sss.say(["I am pausing."],False)
+                    sss.say([current_task_info.speaking_language['Pause']],False)
                 except:
                     print sys.exc_info()
                 return 'paused'
@@ -126,7 +126,7 @@ class state_checking_during_operation (smach.State):
                         _feedback.solution_required = False
                         _feedback.exceptional_case_id = 0
                         current_task_info._srs_as._as.publish_feedback(_feedback)
-                        sss.say(["A new task with higher priority received, i am stopping the current task."],False) 
+                        sss.say([current_task_info.speaking_language['Preempt']],False) 
                         #acknowledge the request
                     except:
                         print sys.exc_info()
@@ -141,7 +141,7 @@ class state_checking_during_operation (smach.State):
             
         if self.state_checking_outcome == 'stopped':
             try:
-                sss.say(["I am stopping."],False)        		
+                sss.say([current_task_info.speaking_language['Stop']],False)        		
                 _feedback.current_state =  "the task has been stopped"
                 _feedback.solution_required = False
                 _feedback.exceptional_case_id = 0
@@ -155,7 +155,7 @@ class state_checking_during_operation (smach.State):
                 _feedback.solution_required = False
                 _feedback.exceptional_case_id = 0
                 current_task_info._srs_as._as.publish_feedback(_feedback)
-                sss.say(["A new task with higher priority received, i am stopping the current task."],False) 
+                sss.say([current_task_info.speaking_language['Preempt']],False) 
                 #acknowledge the request
             except:
                 print sys.exc_info()

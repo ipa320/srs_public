@@ -29,11 +29,11 @@
 #define OldIMarkersPlugin_H_included
 
 #include <but_server/ServerTools.h>
-#include <but_gui/Plane.h>
-#include <but_gui/services_list.h>
-#include <srs_env_model/RemovePrimitive.h>
+#include <but_interaction_primitives/Plane.h>
+#include <but_interaction_primitives/services_list.h>
+#include <srs_interaction_primitives/RemovePrimitive.h>
 #include <srs_env_model/AddPlanes.h>
-#include <srs_env_model/AddPlane.h>
+#include <srs_interaction_primitives/AddPlane.h>
 #include <srs_env_model_msgs/PlaneDesc.h>
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
@@ -106,7 +106,7 @@ protected:
     std::string m_IMarkersFrameId;
 
     /// Interactive markers server pointer
-    but_gui::InteractiveMarkerServerPtr m_imServer;
+    but_interaction_primitives::InteractiveMarkerServerPtr m_imServer;
 
     // DETECTED ENTITIES
     /// Plane

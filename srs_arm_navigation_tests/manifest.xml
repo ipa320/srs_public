@@ -24,6 +24,7 @@ This package contains scripts for testing srs_arm_manipulation.
   <depend package="tf"/>
   <depend package="srs_env_model"/>
   <depend package="std_msgs"/>
+  <depend package="srs_interaction_primitives"/>
   
   <export>
     <rosdoc config="rosdoc.yaml" />

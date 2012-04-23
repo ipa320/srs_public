@@ -4,7 +4,7 @@
 ROS dynamic environment model provided by dcgm-robotics@FIT group.
 
 	</description>
-	<author>Vit Stancl/stancl@fit.vutbr.cz, Tomas Lokaj, Michal Spanel/spanel@fit.vutbr.cz</author>
+	<author>Vit Stancl (stancl@fit.vutbr.cz), Tomas Lokaj, Jan Gorig, Michal Spanel (spanel@fit.vutbr.cz)</author>
 	<license>LGPL</license>
 	<review status="unreviewed" notes="" />
 	<url>http://ros.org/wiki/srs_env_model</url>
@@ -31,17 +31,11 @@ ROS dynamic environment model provided by dcgm-robotics@FIT group.
 	<depend package="image_geometry"/>
 
 	<depend package="srs_env_model_msgs" />
-
-	<!--
-		export> <cpp cflags="-I${prefix}/include -I${prefix}/msg/cpp"
-		lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lfeatures_2d" />
-		</export>
-	-->
+	<depend package="srs_interaction_primitives" />
 
 	<export>
-		<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros" />
-		<cpp os="osx" cflags="-I${prefix}/include"
-			lflags="-L${prefix}/lib -Wl,-rpath,-L${prefix}lib -lrosthread -framework CoreServices" />
+		<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />
+		<rosdoc config="rosdoc.yaml" />
 	</export>
 
 </package>

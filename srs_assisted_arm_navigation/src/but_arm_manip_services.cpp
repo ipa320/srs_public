@@ -29,10 +29,11 @@
 
 
 using namespace planning_scene_utils;
+using namespace srs_assisted_arm_navigation;
 
 
 
-bool CArmManipulationEditor::ArmNavNew(srs_assisted_arm_navigation::ArmNavNew::Request &req, srs_assisted_arm_navigation::ArmNavNew::Response &res) {
+bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Response &res) {
 
 
     planning_scene_id = createNewPlanningScene();
@@ -89,7 +90,7 @@ bool CArmManipulationEditor::ArmNavNew(srs_assisted_arm_navigation::ArmNavNew::R
   return true;
 }
 
-bool CArmManipulationEditor::ArmNavPlan(srs_assisted_arm_navigation::ArmNavPlan::Request &req, srs_assisted_arm_navigation::ArmNavPlan::Response &res) {
+bool CArmManipulationEditor::ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Response &res) {
 
   ROS_DEBUG("Planning trajectory...");
 
@@ -140,7 +141,7 @@ bool CArmManipulationEditor::ArmNavPlan(srs_assisted_arm_navigation::ArmNavPlan:
   return true;
 }
 
-bool CArmManipulationEditor::ArmNavPlay(srs_assisted_arm_navigation::ArmNavPlay::Request &req, srs_assisted_arm_navigation::ArmNavPlay::Response &res) {
+bool CArmManipulationEditor::ArmNavPlay(ArmNavPlay::Request &req, ArmNavPlay::Response &res) {
 
   ROS_INFO("Playing trajectory...");
 
@@ -154,7 +155,7 @@ bool CArmManipulationEditor::ArmNavPlay(srs_assisted_arm_navigation::ArmNavPlay:
   return true;
 }
 
-bool CArmManipulationEditor::ArmNavExecute(srs_assisted_arm_navigation::ArmNavExecute::Request &req, srs_assisted_arm_navigation::ArmNavExecute::Response &res) {
+bool CArmManipulationEditor::ArmNavExecute(ArmNavExecute::Request &req, ArmNavExecute::Response &res) {
 
   ROS_INFO("Executing trajectory...");
 
@@ -172,7 +173,7 @@ bool CArmManipulationEditor::ArmNavExecute(srs_assisted_arm_navigation::ArmNavEx
   return true;
 }
 
-bool CArmManipulationEditor::ArmNavReset(srs_assisted_arm_navigation::ArmNavReset::Request &req, srs_assisted_arm_navigation::ArmNavReset::Response &res) {
+bool CArmManipulationEditor::ArmNavReset(ArmNavReset::Request &req, ArmNavReset::Response &res) {
 
   reset();
 
@@ -184,7 +185,7 @@ bool CArmManipulationEditor::ArmNavReset(srs_assisted_arm_navigation::ArmNavRese
   return true;
 }
 
-bool CArmManipulationEditor::ArmNavSuccess(srs_assisted_arm_navigation::ArmNavSuccess::Request &req, srs_assisted_arm_navigation::ArmNavSuccess::Response &res) {
+bool CArmManipulationEditor::ArmNavSuccess(ArmNavSuccess::Request &req, ArmNavSuccess::Response &res) {
 
   reset();
 
@@ -194,7 +195,7 @@ bool CArmManipulationEditor::ArmNavSuccess(srs_assisted_arm_navigation::ArmNavSu
   return true;
 }
 
-bool CArmManipulationEditor::ArmNavFailed(srs_assisted_arm_navigation::ArmNavFailed::Request &req, srs_assisted_arm_navigation::ArmNavFailed::Response &res) {
+bool CArmManipulationEditor::ArmNavFailed(ArmNavFailed::Request &req, ArmNavFailed::Response &res) {
 
   reset();
 
@@ -204,11 +205,9 @@ bool CArmManipulationEditor::ArmNavFailed(srs_assisted_arm_navigation::ArmNavFai
   return true;
 }
 
-bool CArmManipulationEditor::ArmNavRefresh(srs_assisted_arm_navigation::ArmNavRefresh::Request &req, srs_assisted_arm_navigation::ArmNavRefresh::Response &res) {
+bool CArmManipulationEditor::ArmNavRefresh(ArmNavRefresh::Request &req, ArmNavRefresh::Response &res) {
 
-  PlanningSceneData& planningSceneData = planning_scene_map_[planning_scene_id];
-
-  if (sendPlanningScene(planningSceneData)) {
+  if (refresh()) {
 
     res.completed = true;
     ROS_INFO("Refreshing planning scene");
@@ -224,7 +223,13 @@ bool CArmManipulationEditor::ArmNavRefresh(srs_assisted_arm_navigation::ArmNavRe
 
 }
 
-bool CArmManipulationEditor::ArmNavCollObj(srs_assisted_arm_navigation::ArmNavCollObj::Request &req, srs_assisted_arm_navigation::ArmNavCollObj::Response &res) {
+/**
+ * @todo Store object coords. in map frame. Then on each refresh add it transformed into base_link
+ * @param req
+ * @param res
+ * @return
+ */
+bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCollObj::Response &res) {
 
   ROS_INFO("Trying to add collision object name: %s",req.object_name.c_str());
 
@@ -246,6 +251,49 @@ bool CArmManipulationEditor::ArmNavCollObj(srs_assisted_arm_navigation::ArmNavCo
     ROS_WARN("We have to do transform - NOT implemented yet.");
 
   }
+
+  return true;
+
+}
+
+bool CArmManipulationEditor::ArmNavMovePalmLink(ArmNavMovePalmLink::Request &req, ArmNavMovePalmLink::Response &res) {
+
+  ROS_INFO("Lets try to move arm little bit... :)");
+
+  // void MotionPlanRequestData::setGoalAndPathPositionOrientationConstraints(arm_navigation_msgs::MotionPlanRequest& mpr, planning_scene_utils::PositionType type) const
+
+  // this is what I need... probably
+  /*bool PlanningSceneEditor::solveIKForEndEffectorPose(MotionPlanRequestData& data,
+                                                      planning_scene_utils::PositionType type,
+                                                      bool coll_aware,
+                                                      double change_redundancy)*/
+
+  //bool has_ik;
+  //MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
+
+  // it would be great - just set pose of int. marker....
+  // void getMotionPlanningMarkers(visualization_msgs::MarkerArray& arr);
+
+  /*lockScene();
+
+  visualization_msgs::MarkerArray arr;
+
+  getTrajectoryMarkers(arr);
+  getMotionPlanningMarkers(arr);
+
+  arr
+
+  unlockScene();*/
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // tohle je ono....
+  /*void PlanningSceneEditor::setJointState(MotionPlanRequestData& data, PositionType position, std::string& jointName,
+                                          tf::Transform value)*/
+
+
+  //cout << "End effector link: " << data.getEndEffectorLink();
+
+
 
   return true;
 

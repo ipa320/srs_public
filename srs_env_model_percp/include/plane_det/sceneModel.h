@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: sceneModel.h 619 2012-04-16 13:47:28Z ihulik $
+ * $Id: sceneModel.h 693 2012-04-20 09:22:39Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -49,8 +49,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
 
-// srs_but
-#include "normals.h"
+// but_scenemodel
+#include "plane_det/normals.h"
 #include "plane_det/parameterSpace.h"
 #include "plane_det/parameterSpaceHierarchy.h"
 
@@ -137,6 +137,6 @@ namespace but_scenemodel
 		 */
 		double m_depth;
 	};
-}
+} // but_scenemodel
 
 #endif /* SCENEMODEL_H_ */

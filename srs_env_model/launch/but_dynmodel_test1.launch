@@ -17,6 +17,7 @@
 	<!-- Run our dynamic scene model server node -->
 	<param name="but_server_node/pointcloud_min_z" value="0.0" type="double"/>
 	<param name="but_server_node/use_old_im" value="true" type="bool"/>	
+	<param name="but_server_node/resolution" value="0.025" type="double"/>	
 	<include file="$(find srs_env_model)/launch/only_butserver.launch"/>
     
 	<!-- Run rviz -->

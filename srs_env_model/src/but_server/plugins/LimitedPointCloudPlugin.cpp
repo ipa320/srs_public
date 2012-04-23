@@ -184,7 +184,7 @@ void srs::CLimitedPointCloudPlugin::onFrameStart( const SMapParameters & par )
 /**
  * hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
  */
-void srs::CLimitedPointCloudPlugin::handleOccupiedNode(const srs::tButServerOcTree::iterator& it, const SMapParameters & mp)
+void srs::CLimitedPointCloudPlugin::handleOccupiedNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp)
 {
     Eigen::Vector3f p( it.getX(), it.getY(), it.getZ() );
 

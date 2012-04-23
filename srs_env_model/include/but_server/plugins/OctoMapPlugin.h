@@ -48,13 +48,13 @@ public:
 	typedef boost::signal< void (const SMapParameters &) > tSigOnStart;
 
 	/// On node
-	typedef boost::signal< void (const tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnNode;
+	typedef boost::signal< void (tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnNode;
 
 	/// On free node
-	typedef boost::signal< void (const tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnFreeNode;
+	typedef boost::signal< void (tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnFreeNode;
 
 	/// On occupied node
-	typedef boost::signal< void (const tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnOccupiedNode;
+	typedef boost::signal< void (tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnOccupiedNode;
 
 	/// Post node traversal
 	typedef boost::signal< void (const SMapParameters &) > tSigOnPost;
@@ -120,13 +120,13 @@ protected:
 	void onCrawlStart(const ros::Time & currentTime);
 
 	/// Handle node
-	void handleNode(const tButServerOcTree::iterator & it, const SMapParameters & mp);
+	void handleNode(tButServerOcTree::iterator & it, const SMapParameters & mp);
 
 	/// Handle free node
-	void handleFreeNode(const tButServerOcTree::iterator & it, const SMapParameters & mp);
+	void handleFreeNode(tButServerOcTree::iterator & it, const SMapParameters & mp);
 
 	/// Handle occupied node
-	void handleOccupiedNode(const tButServerOcTree::iterator & it, const SMapParameters & mp);
+	void handleOccupiedNode(tButServerOcTree::iterator & it, const SMapParameters & mp);
 
 	/// Called when all nodes was visited.
 	virtual void handlePostNodeTraversal(const SMapParameters & mp);

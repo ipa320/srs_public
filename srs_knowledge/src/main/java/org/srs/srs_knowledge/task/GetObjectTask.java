@@ -335,17 +335,33 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    // update the knowledge (post-processing)
 	    
 	    // if there exists one same object on the same workspace, update it --- simple solution
-	    String ws = SpatialCalculator.workspaceHolding(spaObj);
-	    if(!ws.equals("")) {
-		
+	    //String ws = SpatialCalculator.workspaceHolding(spaObj);
+	    
+	    String neighbour = SpatialCalculator.nearestObject(spaObj.pose, OntoQueryUtil.GlobalNameSpace + this.targetContent);
+	    if(!neighbour.trim().equals("")) {
+		System.out.println("Found neighbour of " + neighbour);
+		// update its pose
+		try{
+		    OntoQueryUtil.updatePoseOfObject(spaObj.pose, OntoQueryUtil.GlobalNameSpace, neighbour.trim());
+		    OntoQueryUtil.computeOnSpatialRelation();
+		}
+		catch(Exception e) {
+		    System.out.println(e.getMessage());
+		}
 	    }
-	    // if there are more objects of the smae type, linke one of them (does not matter which one, as they are identical (not distinguiable).. better to use the closest one)
 	    
 	    // if there does not exist such an object, then insert a new one
 	    // bounding box can be obtained from HHDB
-
+	    // TODO
+	    
 	}
 	else if(currentActUnit.getActionType().equals("MoveAndGrasp")) {
+	    // look for the object at the pose 
+	    
+	    // update its relationship with the Robot, and remove its pose information
+	    
+	}
+	else if(currentActUnit.getActionType().equals("PutOnTray")) {
 	    // look for the object at the pose 
 	    
 	    // update its relationship with the Robot, and remove its pose information

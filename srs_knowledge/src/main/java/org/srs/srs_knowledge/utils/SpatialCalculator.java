@@ -73,6 +73,7 @@ import math.geom2d.polygon.Polygon2D;
 import math.geom2d.polygon.SimplePolygon2D;
 
 import math.geom2d.Point2D;
+import math.geom3d.Point3D;
 
 public class SpatialCalculator 
 {
@@ -167,9 +168,9 @@ public class SpatialCalculator
 	case 0:
 	    return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && Math.abs(obj1.pose.position.z - obj2.h + obj2.pose.position.z) <= obj1.h/2;
 	case 1:
-	    	return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && Math.abs(obj1.pose.position.z - obj1.h/2 - obj2.h + obj2.pose.position.z - obj2.h/2) <= obj1.h/2;
+	    return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && Math.abs(obj1.pose.position.z - obj1.h/2 - obj2.h + obj2.pose.position.z - obj2.h/2) <= obj1.h/2;
 	default:
-	    return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && Math.abs(obj1.pose.position.z - obj2.h + obj2.pose.position.z) <= obj1.h/2;
+	    return ifOverlapping(createPolygon(corners1), createPolygon(corners2)) && obj2.pose.position.z <= obj1.pose.position.z;
 	}
     }
     
@@ -222,17 +223,64 @@ public class SpatialCalculator
     //	return false;
     // }
 
-    public static String nearestSameObject(SRSSpatialInfo spaInfo, String objectTypeURI) {
-	return "";
+    public static String nearestObject(ros.pkg.geometry_msgs.msg.Pose pose, String objectTypeURI) {
+	//GetObjectsOnMap.Response resObj = OntoQueryUtil.getObjectsOnMap(OntoQueryUtil.MapName, true);
+	
+	//Iterator<Individual> instancesOfObject = KnowledgeEngine.ontoDB.getInstancesOfClass(className);
+	
+	/*
+	  double minDis = 0;
+	String res = "";
+	for (int i = 0; i < resObj.objects.size(); i++) {
+	    double temp = SpatialCalculator.distanceBetween(pose, resObj.objectsInfo.get(i).pose);
+
+	    if(temp <= minDis) {
+		minDis = temp;
+		res = resObj.objects.get(i);
+	    }
+	}
+	return res;
+	*/
+	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
+	re = OntoQueryUtil.getObjectsOnMapOfType(objectTypeURI, true);
+	double minDis = 0;
+	String res = "";
+	if(re.objects.size() > 0) {
+	    minDis = SpatialCalculator.distanceBetween(pose, re.objectsInfo.get(0).pose);
+	    res = re.objects.get(0);
+	}
+	else {
+	    return "";
+	}
+
+	for(int i = 1; i < re.objects.size(); i++) {
+	    double temp = SpatialCalculator.distanceBetween(pose, re.objectsInfo.get(i).pose);
+	    
+	    if(temp <= minDis) {
+		minDis = temp;
+		res = re.objects.get(i);
+	    }
+	}
+	return OntoQueryUtil.ObjectNameSpace + res;
     } 
 
+    private static double distanceBetween(ros.pkg.geometry_msgs.msg.Pose obj1, ros.pkg.geometry_msgs.msg.Pose obj2) {
+	
+	math.geom3d.Point3D p1 = new math.geom3d.Point3D(obj1.position.x, obj1.position.y, obj1.position.z);
+	math.geom3d.Point3D p2 = new math.geom3d.Point3D(obj2.position.x, obj2.position.y, obj2.position.z);
+	return p1.getDistance(p2);
+    }
+
+    /**
+     * 
+     */
     public static String workspaceHolding(SRSSpatialInfo spaInfo) {
 
-	GetWorkspaceOnMap.Response resWS = OntoQueryUtil.getWorkspaceOnMap(OntoQueryUtil.GlobalNameSpace, true);
+	GetWorkspaceOnMap.Response resWS = OntoQueryUtil.getWorkspaceOnMap(OntoQueryUtil.MapName, true);
 	// pair-wise comparison --- if condition met, then update the knowledge base
 
 	for (int j = 0; j < resWS.objectsInfo.size(); j++) {
-	    if(SpatialCalculator.ifOnObject(spaInfo, resWS.objectsInfo.get(j), 1)) {
+	    if(SpatialCalculator.ifOnObject(spaInfo, resWS.objectsInfo.get(j), -1)) {
 		return OntoQueryUtil.ObjectNameSpace + resWS.objects.get(j);
 	    }
 	}

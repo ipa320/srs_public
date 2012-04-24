@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: dynModelExporter.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: dynModelExporter.h 693 2012-04-20 09:22:39Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -27,48 +27,83 @@
 
 /**
  * Description:
- *	 Encapsulates a class of plane exporter (export to but_gui module - interactive markers)
+ *	 Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
  */
 
 #ifndef DYNMODELEXPORTER_H
 #define DYNMODELEXPORTER_H
 
+// ros
 #include <ros/ros.h>
-#include "normals.h"
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
-
 #include <tf/transform_listener.h>
 #include <tf/message_filter.h>
 #include <tf/tfMessage.h>
+
+// pcl
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+
+// but_scenemodel
+#include "plane_det/normals.h"
 
 using namespace pcl;
 
 namespace but_scenemodel
 {
-class DynModelExporter
-{
-	public:
-		/**
-		 * Initialization
-		 */
-		DynModelExporter(ros::NodeHandle *node);
+	/**
+	 * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
+	 */
+	class DynModelExporter
+	{
+		public:
+			/**
+			 * Initialization
+			 */
+			DynModelExporter(ros::NodeHandle *node);
 
-		/**
-		 * Updates sent planes using rosservice
-		 */
-		void update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
-		void update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud);
+			/**
+			 * Updates sent planes using but environment model server
+			 * @param planes Vector of found planes
+			 * @param scene_cloud point cloud of the scene
+			 * @param sensorToWorldTf Sendor to map transformation matrix
+			 */
+			void update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+			
+			/**
+			 * Updates sent planes using but environment model server
+			 * @param planes Vector of found planes
+			 * @param scene_cloud point cloud of the scene
+			 */
+			void update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud);
 
-	private:
-		/**
-		 * Returns center and scale of plane marker
-		 */
-		bool getCenterAndScale(Plane<float> &plane, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, PointXYZ &center, PointXYZ &scale);
+			/**
+			 * Updates sent planes using direct but interactive marker server
+			 * @param planes Vector of found planes
+			 * @param scene_cloud point cloud of the scene
+			 * @param sensorToWorldTf Sendor to map transformation matrix
+			 */
+			void updateDirect(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
 
-		ros::NodeHandle *n;
-		std::vector<bool> managedInd;
-};
-}
+		private:
+			/**
+			 * Returns center and scale of plane marker
+			 * @param plane Vector of found planes
+			 * @param scene_cloud point cloud of the scene
+			 * @param center Sendor to map transformation matrix
+			 * @param scale Sendor to map transformation matrix
+			 */
+			bool getCenterAndScale(Plane<float> &plane, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, PointXYZ &center, PointXYZ &scale);
+
+			/**
+			 * Auxiliary node handle variable
+			 */
+			ros::NodeHandle *n;
+			
+			/**
+			 * Auxiliary index vector for managing modifications
+			 */
+			std::vector<bool> managedInd;
+	};
+} // but_scenemodel
 
 #endif

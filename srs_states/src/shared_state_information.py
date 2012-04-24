@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #################################################################
 ##\file
 #
@@ -51,6 +52,7 @@
 #
 #################################################################
 # ROS imports
+import os, sys
 
 import roslib
 roslib.load_manifest('srs_states')
@@ -60,6 +62,7 @@ import threading
 import tf
 from std_msgs.msg import String, Bool, Int32
 from geometry_msgs.msg import *
+
 
 """
 current_task_info is a global shared memory for exchanging task information among statuses 
@@ -123,7 +126,46 @@ class goal_structure():
         self.stop_required = False 
         
         self.stop_acknowledged = False
-
+        
+        self.language_set = ''
+        
+        try:
+            self.language_set = rospy.get_param("/srs/language")
+        except Exception, e:
+            self.language_set = 'English'
+        
+        #try reading the parameter server
+        
+        self.speaking_language = dict()
+        
+        if self.language_set.lower() == 'italian':
+            self.speaking_language['Grasp']= "Ora sto afferrare il "
+            self.speaking_language['Search']= "Ora sto cercando il "
+            self.speaking_language['Navigation']= "Ora mi sto muovendo"
+            self.speaking_language['Stop']= "Ora sto fermare l attività corrente "
+            self.speaking_language['Pause']= "Ora sto pausa l attività corrente "
+            self.speaking_language['Resume']= "Ora sto riprendendo l'attività corrente "
+            self.speaking_language['Preempted']= "Ora vengo fermato da un altro task con priorità maggiore"
+            
+            
+        elif self.language_set.lower()== 'german':
+            self.speaking_language['Grasp']= "Jetzt bin ich Ergreifen der "
+            self.speaking_language['Search']= "Jetzt suche ich die  "
+            self.speaking_language['Navigation']= "Jetzt bin ich bewegt "
+            self.speaking_language['Stop']= "Jetzt bin ich Anhalten der aktuellen Aufgabe "
+            self.speaking_language['Pause']= "Jetzt bin ich Anhalten der aktuellen Aufgabe"
+            self.speaking_language['Resume']= "Jetzt bin ich die Wiederaufnahme der aktuellen Aufgabe"
+            self.speaking_language['Preempted']= "Jetzt bin ich von einer anderen Task mit höherer Priorität unterbrochen"           
+            
+        else:
+            #default language is English 
+            self.speaking_language['Grasp']= "Now I am grasping the "
+            self.speaking_language['Search']= "Now I am searching the "
+            self.speaking_language['Navigation']= "Now I am moving "
+            self.speaking_language['Stop']= "Now I am stopping the current task "
+            self.speaking_language['Pause']= "Now I am pausing the current task "
+            self.speaking_language['Resume']= "Now I am resuming the current task "
+            self.speaking_language['Preempt']= "Now I am stopped by another task with higher priority"
         
     def get_post_grasp_adjustment_state(self):
         self.lock.acquire()
@@ -243,6 +285,6 @@ class goal_structure():
         
         return rb_pose
 
-        
+    
 
 current_task_info = goal_structure() 

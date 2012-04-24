@@ -83,7 +83,7 @@ class state_checking_during_paused (smach.State):
                 #reset the flag to normal
                 current_task_info.set_stop_acknowledged(True)
                 try:
-                    sss.say(["I am stopping."],False)
+                    sss.say([current_task_info.speaking_language['Stop']],False)
                 except:
                     print sys.exc_info()
                     
@@ -101,7 +101,7 @@ class state_checking_during_paused (smach.State):
             elif not current_task_info.get_pause_required():
                 #return to last operation
                 try:
-                    sss.say(["I am resuming the task."],False)
+                    sss.say([current_task_info.speaking_language['Resume']],False)
                 except:
                     print sys.exc_info()                
                 return 'resume'
@@ -146,7 +146,10 @@ def robot_configuration(parent, action_name, action_stage):
                 if robot_config_pre[action_name][component_list[index]] in robot_config_need_no_action: 
                     handles.append(None)
                 else:
-                    handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
+                    if component_list[index] == "arm":
+                        handles.append(sss.move_planned(component_list[index], robot_config_pre[action_name][component_list[index]], False))
+                    else:
+                        handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
                     
         #bring robot into the post-configuration state     
         if action_stage == 'post-config':
@@ -155,7 +158,10 @@ def robot_configuration(parent, action_name, action_stage):
                 if robot_config_post[action_name][component_list[index]] in robot_config_need_no_action: 
                     handles.append(None)
                 else:
-                    handles.append(sss.move(component_list[index], robot_config_post[action_name][component_list[index]], False))                
+                    if component_list[index] == "arm":
+                        handles.append(sss.move_planned(component_list[index], robot_config_post[action_name][component_list[index]], False))
+                    else:
+                        handles.append(sss.move(component_list[index], robot_config_post[action_name][component_list[index]], False))             
                     
     except KeyError:
         print("dictionary key is not found in the set of existing keys")    

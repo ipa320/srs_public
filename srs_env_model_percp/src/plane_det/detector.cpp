@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: detector.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: detector.cpp 620 2012-04-16 13:49:27Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -36,7 +36,7 @@
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
-#include <cv_bridge/CvBridge.h>
+#include <cv_bridge/cv_bridge.h>
 
 //PCL
 #include <pcl/point_types.h>
@@ -69,6 +69,7 @@
 #include "plane_det/normals.h"
 #include "plane_det/sceneModel.h"
 #include "plane_det/dynModelExporter.h"
+#include <srs_env_model_percp/ClearPlanes.h>
 
 #include <tf/transform_listener.h>
 #include <tf/message_filter.h>
@@ -80,6 +81,8 @@ using namespace pcl;
 using namespace sensor_msgs;
 using namespace message_filters;
 
+string target_topic = "/map";
+
 sensor_msgs::PointCloud2 cloud_msg;
 tf::MessageFilter<sensor_msgs::PointCloud2> *transform_filter;
 tf::TransformListener *tfListener;
@@ -89,6 +92,7 @@ but_scenemodel::DynModelExporter *exporter = NULL;
 
 CameraInfo cam_info_legacy;
 CameraInfoConstPtr cam_info_aux (&cam_info_legacy);
+but_scenemodel::SceneModel *model;
 
 /**
  * Callback function manages sync of messages
@@ -111,8 +115,8 @@ void callbackpcl(const PointCloud2ConstPtr& cloud)
 	// transform to world
 	tf::StampedTransform sensorToWorldTf;
     try {
-    	tfListener->waitForTransform("/map", cloud->header.frame_id, cloud->header.stamp, ros::Duration(0.2));
-    	tfListener->lookupTransform("/map", cloud->header.frame_id, cloud->header.stamp, sensorToWorldTf);
+    	tfListener->waitForTransform(target_topic, cloud->header.frame_id, cloud->header.stamp, ros::Duration(0.2));
+    	tfListener->lookupTransform(target_topic, cloud->header.frame_id, cloud->header.stamp, sensorToWorldTf);
     }
     catch(tf::TransformException& ex){
         std::cerr << "Transform error: " << ex.what() << ", quitting callback" << std::endl;
@@ -138,19 +142,19 @@ void callbackpcl(const PointCloud2ConstPtr& cloud)
 
 	but_scenemodel::Normals normal(depth, cam_info_aux, but_scenemodel::NormalType::LSQAROUND);
 	//but_scenemodel::Normals normal(depth, pointcloud, cam_info_aux, but_scenemodel::NormalType::LSQAROUND);
-	but_scenemodel::SceneModel model(depth, cam_info_aux, normal);
 
+	model->AddNext(depth, cam_info_aux, normal);
+	model->recomputePlanes();
 	// send scene cloud and HT cloud if necessary
 	//	pcl::VoxelGrid<pcl::PointXYZ> voxelgrid;
 	//	voxelgrid.setInputCloud(cloud);
 	//	voxelgrid.setLeafSize(0.05, 0.05, 0.05);
 	//	voxelgrid.filter(*cloud);
 
-	model.scene_cloud->header.frame_id = "/map";
-	model.current_hough_cloud->header.frame_id = "/map";
-	pub1.publish(model.scene_cloud);
-	//	pub2.publish(model.current_hough_cloud);
-	exporter->update(model.planes, model.scene_cloud, sensorToWorldTf);
+	model->scene_cloud->header.frame_id = target_topic;
+	pub1.publish(model->scene_cloud);
+	//pub2.publish(model->current_hough_cloud);
+	exporter->update(model->planes, model->scene_cloud, sensorToWorldTf);
 
 	// Control out
 	ros::Time end = ros::Time::now();
@@ -168,19 +172,20 @@ void callbackkinect( const sensor_msgs::ImageConstPtr& dep, const CameraInfoCons
 	std::cerr << "=========================================================" << endl;
 
 	//get image from message
-	sensor_msgs::CvBridge bridge;
-	cv::Mat depth = bridge.imgMsgToCv( dep );
+	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(dep);
+	cv::Mat depth = cv_image->image;
 
 
 	but_scenemodel::Normals normal(depth, cam_info, but_scenemodel::NormalType::LSQAROUND);
-	but_scenemodel::SceneModel model(depth, cam_info, normal);
 
-	model.scene_cloud->header.frame_id = "/head_cam3d_link";
-	model.current_hough_cloud->header.frame_id = dep->header.frame_id;
+	model->AddNext(depth, cam_info_aux, normal);
+	model->recomputePlanes();
 
-	pub1.publish(model.scene_cloud);
-	//	pub2.publish(model.current_hough_cloud);
-	exporter->update(model.planes, model.scene_cloud);
+	model->scene_cloud->header.frame_id = "/head_cam3d_link";
+
+	pub1.publish(model->scene_cloud);
+	//	pub2.publish(model->current_hough_cloud);
+	exporter->update(model->planes, model->scene_cloud);
 
 	// Control out
 	ros::Time end = ros::Time::now();
@@ -188,6 +193,16 @@ void callbackkinect( const sensor_msgs::ImageConstPtr& dep, const CameraInfoCons
 	std::cerr << "=========================================================" << endl<< endl;
 }
 
+bool clear(srs_env_model_percp::ClearPlanes::Request &req,srs_env_model_percp::ClearPlanes::Response &res)
+{
+	std::cout << "Clearing plane settings..." << std::endl;
+	delete model;
+	model = new but_scenemodel::SceneModel();
+
+	res.message = "Hough space successfully reset.\n";
+	std::cout << "Hough space successfully reset." << std::endl;
+	return true;
+}
 /**
  * Main detector module body
  */
@@ -197,7 +212,7 @@ int main( int argc, char** argv )
 	ros::NodeHandle n;
 
 	string input = "";
-	if (argc == 3)
+	if (argc == 3 || argc == 5)
 	{
 		if (strcmp(argv[1], "-input")==0)
 		{
@@ -206,7 +221,15 @@ int main( int argc, char** argv )
 			else if (strcmp(argv[2], "kinect")==0)
 				input = "kinect";
 		}
+		if (argc==5)
+		{
+			if (strcmp(argv[3], "-target")==0)
+			target_topic = argv[4];
+		}
 	}
+	model = new but_scenemodel::SceneModel();
+	ros::ServiceServer service = n.advertiseService("/detector/clear_planes", clear);
+
 	if (input == "pcl")
 	{
 		exporter = new but_scenemodel::DynModelExporter(&n);
@@ -224,7 +247,7 @@ int main( int argc, char** argv )
 
 		// sync images
 		tfListener = new tf::TransformListener();
-		transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2> (point_cloud, *tfListener, "/map", 1);
+		transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2> (point_cloud, *tfListener, target_topic, 1);
 		transform_filter->registerCallback(boost::bind(&callbackpcl, _1));
 		std::cerr << "Plane detector initialized and listening point clouds..." << std::endl;
 		ros::spin();

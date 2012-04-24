@@ -1,7 +1,0 @@
-<launch>
-      	<!-- Run rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-f /world -d $(find srs_env_model)/config/but_gui/but_gui1.vcg"/>
-
-        <!-- Run example node -->
-        <node name="but_gui_objects" pkg="srs_env_model" type="but_gui_objects" />
-</launch>

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: normals.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: normals.cpp 694 2012-04-20 10:24:24Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -27,7 +27,7 @@
 
 /**
  * Description:
- *
+ *	 Contains necessary classes for normal estimation from point clouds and height maps
  */
 
 #include "plane_det/normals.h"
@@ -45,7 +45,7 @@
 using namespace but_scenemodel;
 using namespace sensor_msgs;
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Constructor - computes real point positions (in scene coordinates) and normals and initiates all variables
 // @param points Input CV_16UC depth matrix (raw input from kinect)
 // @param cam_info Camera info message (ROS)
@@ -55,7 +55,7 @@ using namespace sensor_msgs;
 // @param threshold Threshold for depth difference outlier marking (if depth of neighbor is greater than this threshold, point is skipped)
 // @param outlierThreshold Outlier threshold for least trimmed squares regression (max error between point depth and proposed plane)
 // @param iter Maximum RANSAC iterations
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Normals::Normals(cv::Mat &points, const CameraInfoConstPtr& cam_info, int normalType, int neighborhood, float threshold, float outlierThreshold, int iter):
 													m_points(points.size(), CV_32FC3),
 													m_planes(points.size(), CV_32FC4)
@@ -259,12 +259,12 @@ Normals::Normals(cv::Mat &points, const CameraInfoConstPtr& cam_info, int normal
 
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Constructor - computes real point positions (in scene coordinates) and normals and initiates all variables
 // @param pointcloud Input point cloud
 // @param threshold Threshold for depth difference outlier marking (if depth of neighbor is greater than this threshold, point is skipped)
 // @param neighborhood Neighborhood from which normals are computed
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Normals::Normals(const sensor_msgs::PointCloud2ConstPtr& pointcloud, float threshold, int neighborhood):
 													m_points(cvSize(pointcloud->width, pointcloud->height), CV_32FC3),
 													m_planes(cvSize(pointcloud->width, pointcloud->height), CV_32FC4)
@@ -346,13 +346,13 @@ Normals::Normals(const sensor_msgs::PointCloud2ConstPtr& pointcloud, float thres
 			}
 		}
 }
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function computes normal for point (i, j) using direct computation (mean of surrounding triangles)
 // @param i row index
 // @param j column index
 // @param step Neighborhood to compute with
 // @param depthThreshold Threshold for depth difference outlier marking (if depth of neighbor is greater than this threshold, point is skipped)
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cv::Vec4f Normals::getNormal(int i, int j, int step, float depthThreshold)
 {
 	int size = (step*2)*4;
@@ -438,13 +438,13 @@ cv::Vec4f Normals::getNormal(int i, int j, int step, float depthThreshold)
 	return normalVec;
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function computes normal for point (i, j) using least squares regression
 // @param i row index
 // @param j column index
 // @param step Neighborhood to compute with
 // @param depthThreshold Threshold for depth difference outlier marking (if depth of neighbor is greater than this threshold, point is skipped)
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cv::Vec4f Normals::getNormalLSQ(int i, int j, int step, float depthThreshold)
 {
 	using namespace cv;
@@ -482,13 +482,13 @@ cv::Vec4f Normals::getNormalLSQ(int i, int j, int step, float depthThreshold)
 	return Vec4f(plane.a, plane.b, plane.c, plane.d);
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function computes normal for point (i, j) using least squares regression with using only outer neighborhood ring
 // @param i row index
 // @param j column index
 // @param step Neighborhood to compute with
 // @param depthThreshold Threshold for depth difference outlier marking (if depth of neighbor is greater than this threshold, point is skipped)
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cv::Vec4f Normals::getNormalLSQAround(int i, int j, int step, float depthThreshold)
 {
 	using namespace cv;
@@ -532,7 +532,7 @@ cv::Vec4f Normals::getNormalLSQAround(int i, int j, int step, float depthThresho
 	return Vec4f(plane.a, plane.b, plane.c, plane.d);
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function computes normal for point (i, j) using least trimmed squares regression
 // @param i row index
 // @param j column index
@@ -540,7 +540,7 @@ cv::Vec4f Normals::getNormalLSQAround(int i, int j, int step, float depthThresho
 // @param depthThreshold Threshold for depth difference outlier marking (if depth of neighbor is greater than this threshold, point is skipped)
 // @param outlierThreshold Threshold for marking outliers in RANSAC (maximum difference from proposed plane)
 // @param maxIter Maximum RANSAC iterations
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cv::Vec4f Normals::getNormalLTS(int i, int j, int step, float depthThreshold, float outlierThreshold, int maxIter)
 {
 	using namespace cv;
@@ -603,7 +603,7 @@ cv::Vec4f Normals::getNormalLTS(int i, int j, int step, float depthThreshold, fl
 	return Vec4f(best.a, best.b, best.c, best.d);
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function computes normal for point (i, j) using least trimmed squares regression with using only outer neighborhood ring
 // @param i row index
 // @param j column index
@@ -611,7 +611,7 @@ cv::Vec4f Normals::getNormalLTS(int i, int j, int step, float depthThreshold, fl
 // @param depthThreshold Threshold for depth difference outlier marking (if depth of neighbor is greater than this threshold, point is skipped)
 // @param outlierThreshold Threshold for marking outliers in RANSAC (maximum difference from proposed plane)
 // @param maxIter Maximum RANSAC iterations
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cv::Vec4f Normals::getNormalLTSAround(int i, int j, int step, float depthThreshold, float outlierThreshold, int maxIter)
 {
 	using namespace cv;
@@ -685,12 +685,12 @@ cv::Vec4f Normals::getNormalLTSAround(int i, int j, int step, float depthThresho
 	return Vec4f(best.a, best.b, best.c, best.d);
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function computes plane using least squares regression from given point set
 // @param points Vector of Vec3f points
 // @return Plane object
 // @see Plane()
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Plane<float> Normals::LeastSquaresPlane(std::vector<cv::Vec3f> &points)
 {
 	if (points.size() == 0) return Plane<float>(0,0,0,0);
@@ -760,14 +760,14 @@ Plane<float> Normals::LeastSquaresPlane(std::vector<cv::Vec3f> &points)
 	return plane;
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helper function for "Around" functions - sets next point on outer ring
 // @param step Maximum distance from center (neighborhood)
 // @param x Current x offset
 // @param y Current y offset
 // @param plusX Next x shift
 // @param plusY Next y shift
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Normals::nextStep(int step, int &x, int &y, int &plusX, int &plusY)
 {
 	if (x == -step && y == -step)
@@ -794,11 +794,11 @@ void Normals::nextStep(int step, int &x, int &y, int &plusX, int &plusY)
 	y += plusY;
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helper function which initializes quantization vectors (not used, TODO)
 // @param n_bins Number of quantization bins
 // @param vec Vector of computed quantization vectors
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Normals::initQuantVectors(int n_bins, std::vector<cv::Vec3f> &vec)
 {
 	float twoPI = (2.0 * M_PI);
@@ -814,11 +814,11 @@ void Normals::initQuantVectors(int n_bins, std::vector<cv::Vec3f> &vec)
 	}
 }
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helper function which returns bin index for given vector (not used, TODO)
 // @param vec Vector of computed quantization vectors
 // @param vector Vector whos bin we are computing
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned int Normals::getQuantVector(std::vector<cv::Vec3f> &vec, cv::Vec3f &vector)
 {
 	unsigned int size = vec.size();

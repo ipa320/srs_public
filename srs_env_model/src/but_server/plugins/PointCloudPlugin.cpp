@@ -36,8 +36,8 @@
 
 #define POINTCLOUD_CENTERS_PUBLISHER_NAME std::string("butsrv_pointcloud_centers")
 #define SUBSCRIBER_POINT_CLOUD_NAME std::string("/cam3d/depth/points")
-#define DEFAULT_FRAME_ID std::string("/base_footprint")
-#define BASE_FRAME_ID std::string("/base_footprint")
+#define DEFAULT_FRAME_ID std::string("/head_cam3d_link")
+#define BASE_FRAME_ID std::string("base_footprint")
 
 /// Constructor
 srs::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bool subscribe)
@@ -112,7 +112,7 @@ void srs::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	// Clear old pointcloud data
 	m_data->clear();
 
-	PERROR( "PointCloudPlugin initialized..." );
+//	PERROR( "PointCloudPlugin initialized..." );
 }
 
 //! Called when new scan was inserted and now all can be published
@@ -131,9 +131,10 @@ void srs::CPointCloudPlugin::onPublish(const ros::Time & timestamp)
 	pcl::toROSMsg< tPclPoint >(*m_data, cloud);
 
 	// Set message parameters and publish
-	cloud.header.frame_id = m_pcFrameId;
+	cloud.header.frame_id = m_ocFrameId;
 	cloud.header.stamp = timestamp;
 	m_pcPublisher.publish(cloud);
+
 }
 
 //! Set used octomap frame id and timestamp
@@ -146,7 +147,7 @@ void srs::CPointCloudPlugin::onFrameStart( const SMapParameters & par )
 }
 
 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-void srs::CPointCloudPlugin::handleOccupiedNode(const srs::tButServerOcTree::iterator& it, const SMapParameters & mp)
+void srs::CPointCloudPlugin::handleOccupiedNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp)
 {
 //	std::cerr << "PCP: handle occupied" << std::endl;
 	tPclPoint point;
@@ -175,7 +176,7 @@ void srs::CPointCloudPlugin::handleOccupiedNode(const srs::tButServerOcTree::ite
 
 void srs::CPointCloudPlugin::handlePostNodeTraversal(const SMapParameters & mp)
 {
-
+/*
 	// If different frame id
 	if( m_ocFrameId != m_pcFrameId )
 	{
@@ -208,6 +209,7 @@ void srs::CPointCloudPlugin::handlePostNodeTraversal(const SMapParameters & mp)
 
 //	PERROR( "Publishing cloud. Size: " << m_data->size() );
 
+*/
 	// Invalidate data
 	invalidate();
 }
@@ -224,22 +226,26 @@ void srs::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::C
 
 	// Convert input pointcloud
 	m_data->clear();
+//	pcl::fromROSMsg(*cloud, *m_data);
 
-	// Use this when input pointcloud is pcl type
-//	pcl::copyPointCloud(*cloud, *m_data );
 
+	/*
+	pcl::fromROSMsg(*cloud, *m_data);
+
+*/
 	pcl::PointCloud< pcl::PointXYZ >::Ptr bufferCloud( new pcl::PointCloud< pcl::PointXYZ > );
 
 	pcl::fromROSMsg(*cloud, *bufferCloud);
 
 
 	pcl::copyPointCloud<pcl::PointXYZ, tPclPoint>( *bufferCloud, *m_data );
-
+	//*/
 
 	// If different frame id
 	if( cloud->header.frame_id != m_pcFrameId )
 	{
-		// Some transforms
+
+	    // Some transforms
 		tf::StampedTransform sensorToPcTf;
 
 		// Get transforms
@@ -271,14 +277,17 @@ void srs::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::C
 	if( m_bFilterPC )		// TODO: Optimize this by removing redundant transforms
 	{
 		// Get transforms to and from base id
-		tf::StampedTransform pcToBaseTf;
+		tf::StampedTransform pcToBaseTf, baseToPcTf;
 		try {
-			// Transformation - from, to, time, waiting time
+			// Transformation - to, from, time, waiting time
 			m_tfListener.waitForTransform(BASE_FRAME_ID, m_pcFrameId,
 					cloud->header.stamp, ros::Duration(0.2));
 
 			m_tfListener.lookupTransform(BASE_FRAME_ID, m_pcFrameId,
 					cloud->header.stamp, pcToBaseTf);
+
+			m_tfListener.lookupTransform(m_pcFrameId, BASE_FRAME_ID,
+					cloud->header.stamp, baseToPcTf );
 
 		} catch (tf::TransformException& ex) {
 			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
@@ -290,8 +299,7 @@ void srs::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::C
 
 		// Get transformation matrix
 		pcl_ros::transformAsMatrix(pcToBaseTf, pcToBaseTM);	// Sensor TF to defined base TF
-		baseToPcTM = pcToBaseTM;
-		baseToPcTM.inverse();
+		pcl_ros::transformAsMatrix(baseToPcTf, baseToPcTM);	// Sensor TF to defined base TF
 
 
 		// transform pointcloud from pc frame to the base frame

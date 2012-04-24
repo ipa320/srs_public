@@ -37,7 +37,9 @@ import std_msgs.msg
 import sensor_msgs.msg
 from srs_knowledge.srv import GetObjectsOnMap 
 from geometry_msgs.msg import Pose
-from srs_grasping.srv import GetGraspsFromPosition
+from geometry_msgs.msg import PoseStamped
+#from srs_grasping.srv import GetGraspsFromPosition
+from srs_grasping.srv import GetPreGrasp
 from tf import TransformListener
 from numpy import *
 import sys
@@ -110,8 +112,9 @@ def main():
   rospy.loginfo('Fine, ID for %s is %s',sm.userdata.name_of_the_target_object,obj_id)
   
   # ok, get grasps...
-  rospy.loginfo('Waiting for /get_grasps_from_position service')
-  get_grasps = rospy.ServiceProxy('/get_grasps_from_position',GetGraspsFromPosition)
+  rospy.loginfo('Waiting for /get_pregrasp service')
+  #get_grasps = rospy.ServiceProxy('/get_grasps_from_position',GetGraspsFromPosition)
+  get_grasps = rospy.ServiceProxy('/get_pregrasps',GetPreGrasp)
     
   print "obj_position"
   print object.pose
@@ -172,106 +175,132 @@ def main():
 
   grasps_res = None
 
-  # TODO add try except.....
-  try:
+
+  fake_pregrasp_positions = rospy.get_param('~fake_pregrasp_positions', False)
   
-      # TODO uncomment and test.....................................................................................................
-      #grasps_res = get_grasps(object_id=objdb_id,object_pose=obj_pose_transf.pose)
-      
-      if grasps_res.feasible_grasp_available == False:
-      
-        rospy.logerr('Feasible grasp for object ID %s is not available :-( (lets use fake positions...)',int(obj_id))
-        #grasps_res = None
+  if not fake_pregrasp_positions:
+  
+    try:
+    
+        #grasps_res = get_grasps(object_id=objdb_id,object_pose=obj_pose_transf.pose)
+        grasps_res = get_grasps(object_id=objdb_id,object_pose=obj_pose_transf.pose,num_configurations=1)
         
-      else:
+        print "Real pregrasp positions from srs_grasping:"
+        print grasps_res
         
-        rospy.loginfo('Hooray, we are able to grasp! ;)')
-      
-  except Exception, e:
-      
-      rospy.logerr('Error on getting grasps: %s',str(e))
-      grasps_res = None
+        #if grasps_res.feasible_grasp_available == False:
+        
+        #  rospy.logerr('Feasible grasp for object ID %s is not available :-( (lets use fake positions...)',int(obj_id))
+        #  grasps_res = None
+          
+        #else:
+          
+        #  rospy.loginfo('Hooray, we are able to grasp! ;)')
+        
+    except Exception, e:
+        
+        rospy.logerr('Error on getting grasps: %s',str(e))
+        grasps_res = None
+
 
   
-      #sys.exit(0)
-
-  #print "GRASPS"
-  #print grasps_res
-
-  # TODO prepare fake grasping positions data....
-  
-  # test if variable is defined
+  # test if variables are defined
   if grasps_res is not None:
       
       try:
           
-           grasps_res.grasp_configuration
+           grasps_res.side
+           grasps_res.mside
+           grasps_res.front
+           grasps_res.back
+           grasps_res.top
+           grasps_res.down
            
       except NameError:
       
-         grasps_res.grasp_configuration = None
+         ROS_ERROR("Some name in pregrasps positions is not defined. We will use fake pregr. positions.");
+         grasps_res = None
      
-        
-    
-  if grasps_res is None:
       
-      rospy.logerr('Problem with pre-grasp positions. We will use fake ones...') 
+    
+  if (grasps_res is None) or (fake_pregrasp_positions):
+      
+      if grasps_res is None:
+        
+        rospy.logerr('Problem with pre-grasp positions. We will use fake ones...')
+        
+      if fake_pregrasp_positions:
+        
+         rospy.logerr('Ok. Lets use fake pregrasp positions (required by parameter)')
       
       sm.userdata.list_of_id_for_target_positions = [5,8,13,72]
       
       fake_grasp_positions = [Pose(),Pose(),Pose(),Pose()]
+
+      # TRANSFORM POSES FROM OBJECT COORDS INTO BASE_LINK
   
-      # relative position to object
-      fake_grasp_positions[0].position.x = -0.2
+      
+      #fake_grasp_positions[0].header.frame_id = 'base_link'
+      fake_grasp_positions[0].position.x = -0.25
       fake_grasp_positions[0].position.y = 0
-      fake_grasp_positions[0].position.z = 0.1
+      fake_grasp_positions[0].position.z = 0
       fake_grasp_positions[0].orientation.x = 0
       fake_grasp_positions[0].orientation.y = 0
       fake_grasp_positions[0].orientation.z = 0
-      fake_grasp_positions[0].orientation.w = 1 
-          
-      fake_grasp_positions[1].position.x = 0.2
+      fake_grasp_positions[0].orientation.w = 1
+      
+      #fake_grasp_positions[1].header.frame_id = 'base_link'    
+      fake_grasp_positions[1].position.x = 0.25
       fake_grasp_positions[1].position.y = 0
-      fake_grasp_positions[1].position.z = 0.1
+      fake_grasp_positions[1].position.z = 0
       fake_grasp_positions[1].orientation.x = 0
       fake_grasp_positions[1].orientation.y = 0
-      fake_grasp_positions[1].orientation.z = 0
-      fake_grasp_positions[1].orientation.w = 1 
-          
+      fake_grasp_positions[1].orientation.z = 1
+      fake_grasp_positions[1].orientation.w = 0
+      
+      #fake_grasp_positions[2].header.frame_id = 'base_link'
       fake_grasp_positions[2].position.x = 0
-      fake_grasp_positions[2].position.y = -0.2
-      fake_grasp_positions[2].position.z = 0.1
+      fake_grasp_positions[2].position.y = -0.25
+      fake_grasp_positions[2].position.z = 0
       fake_grasp_positions[2].orientation.x = 0
       fake_grasp_positions[2].orientation.y = 0
-      fake_grasp_positions[2].orientation.z = 0
-      fake_grasp_positions[2].orientation.w = 1 
+      fake_grasp_positions[2].orientation.z = 0.707
+      fake_grasp_positions[2].orientation.w = 0.707
           
+     # fake_grasp_positions[3].header.frame_id = 'base_link'
       fake_grasp_positions[3].position.x = 0
-      fake_grasp_positions[3].position.y = 0.2 
-      fake_grasp_positions[3].position.z = 0.1
+      fake_grasp_positions[3].position.y = 0.25
+      fake_grasp_positions[3].position.z = 0
       fake_grasp_positions[3].orientation.x = 0
       fake_grasp_positions[3].orientation.y = 0
-      fake_grasp_positions[3].orientation.z = 0
-      fake_grasp_positions[3].orientation.w = 1 
+      fake_grasp_positions[3].orientation.z = -0.707
+      fake_grasp_positions[3].orientation.w = 0.707
       
       sm.userdata.list_of_target_positions = fake_grasp_positions
-    
       
   else:
     
       rospy.loginfo('We will use real pre-gr positions') 
       
-      pre_gr = list()    
-      sm.userdata.list_of_id_for_target_positions = list()
-      idx = 100
-
-      for it in grasps_res.grasp_configuration:
-  
-        pre_gr.append(it.pre_grasp)
-        sm.userdata.list_of_id_for_target_positions.append(idx)
-        idx = idx+1
+      sm.userdata.list_of_id_for_target_positions = [1,2,3,4,5,6]
+      sm.userdata.list_of_target_positions = [grasps_res.side[0],
+                                              grasps_res.mside[0],
+                                              grasps_res.front[0],
+                                              grasps_res.back[0],
+                                              grasps_res.top[0],
+                                              grasps_res.down[0]]
       
-      sm.userdata.list_of_target_positions = pre_gr
+      #pre_gr = list()    
+      #sm.userdata.list_of_id_for_target_positions = list()
+      #idx = 100
+
+      #for it in grasps_res:
+  
+      #  pre_gr.append(it.pre_grasp)
+      #  sm.userdata.list_of_id_for_target_positions.append(idx)
+      #  idx = idx+1
+      
+     # sm.userdata.list_of_target_positions = pre_gr
       
   
   

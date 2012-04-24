@@ -74,8 +74,8 @@ from tf.transformations import *
 class get_grasps_from_position_server():
 
 	def __init__(self):
+		self.ik_loop_reply = 1
 
-		print "---------------------------------------------------------------------------";
 		rospy.loginfo("Waiting /arm_kinematics/get_ik service...");
 		rospy.wait_for_service('/arm_kinematics/get_ik')
 		rospy.loginfo("/arm_kinematics/get_ik is ready.");
@@ -88,8 +88,9 @@ class get_grasps_from_position_server():
 		self.ns_global_prefix = "/get_grasps_from_position"
 		self.get_grasps_from_position_server = actionlib.SimpleActionServer(self.ns_global_prefix, GraspFAction, self.execute_cb, True)
 		rospy.loginfo("/get_grasps_from_position is ready.")
-		self.get_grasps_from_position_server.start()
 		print "---------------------------------------------------------------------------";
+		self.get_grasps_from_position_server.start()
+
 	
 	def execute_cb(self, server_goal):
 		x = time.time()
@@ -169,10 +170,10 @@ class get_grasps_from_position_server():
 
 
 			sol = False;
-			for w in range(0,5):
+			for w in range(0,self.ik_loop_reply):
 				(pre_grasp_conf, error_code) = grasping_functions.callIKSolver(current_joint_configuration, pre);		
 				if(error_code.val == error_code.SUCCESS):
-					for k in range(0,5):
+					for k in range(0,self.ik_loop_reply):
 						(grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, g);
 						if(error_code.val == error_code.SUCCESS):
 							print i

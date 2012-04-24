@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: filtering.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: filtering.h 619 2012-04-16 13:47:28Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -33,9 +33,14 @@
 #ifndef FILTERING_H
 #define FILTERING_H
 
+// opencv
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
+
+// ros
 #include <sensor_msgs/CameraInfo.h>
+
+// but_scenemodel
 #include "normals.h"
 
 #define DEFAULT_SIZE 2

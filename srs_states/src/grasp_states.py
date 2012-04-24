@@ -220,7 +220,7 @@ class grasp_simple(smach.State):
                 self.service_preempt()
                 return 'preempted'
             
-            sss.say(["I am grasping the " + userdata.object.label + " now."],False)
+            sss.say([current_task_info.speaking_language['Grasp'] + userdata.object.label ],False)
             sss.move("torso","home")
             handle_arm = sss.move("arm", [pre_grasp_conf , grasp_conf],False)
             

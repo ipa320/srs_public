@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: sceneModel.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: sceneModel.h 693 2012-04-20 09:22:39Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -44,10 +44,15 @@
 #include <pcl/io/vtk_io.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl_ros/point_cloud.h>
-//better opencv 2
+
+// opencv
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
-#include "normals.h"
+
+// but_scenemodel
+#include "plane_det/normals.h"
+#include "plane_det/parameterSpace.h"
+#include "plane_det/parameterSpaceHierarchy.h"
 
 using namespace pcl;
 
@@ -57,15 +62,81 @@ namespace but_scenemodel
 	{
 		public:
 		/**
-		 * Constructor - creates a HT from depth map and finds planes
+		 * Constructor - initializes a scene and allocates necessary space - a space of (angle, angle, d) where angles are angles of plane normal and d is d parameter of plane equation.
+		 * @param max_depth Maximum computed depth by each frame in meters (default 3.0)
+		 * @param min_shift Minimal d parameter value (ax + by + cz + d = 0) in Hough space (default -40.0)
+		 * @param max_shift Maximal d parameter value (ax + by + cz + d = 0) in Hough space (default 40.0)
+		 * @param angle_resolution Angle coordinates resolution (Hough space size in angle directions) (default 512)
+		 * @param shift_resolution d parameter coordinates resolution (Hough space size in angle directions) (default 4096)
+		 * @param gauss_angle_res Angle resolution of added Gauss function (default 11)
+		 * @param gauss_shift_res d parameter resolution of added Gauss function (default 11)
+		 * @param gauss_angle_sigma Sigma of added Gauss function in angle coordinates (default 11)
+		 * @param gauss_shift_sigma Sigma of added Gauss function in d parameter coordinates (default 11)
 		 */
-		SceneModel(cv::Mat &depth, const CameraInfoConstPtr& cam_info, Normals &normals);
+		SceneModel(	double max_depth = 3.0,
+					double min_shift = -40.0,
+					double max_shift = 40.0,
+					int angle_resolution = 512,
+					int shift_resolution = 4096,
+					int gauss_angle_res = 11,
+					int gauss_shift_res = 11,
+					double gauss_angle_sigma = 0.04,
+					double gauss_shift_sigma = 0.15);
 
+		/**
+		 * Function adds a depth map with computed normals into existing Hough space
+		 * @param depth Depth image
+		 * @param cam_info Camera info object
+		 * @param normals Computed normals of depth image
+		 */
+		void AddNext(cv::Mat &depth, const CameraInfoConstPtr& cam_info, Normals &normals);
+
+		/**
+		 * Function recomputes a list of planes saved in this class (scene model)
+		 */
+		void recomputePlanes();
+
+		/**
+		 * Point cloud representation of Hough space for visualisation purposes
+		 */
 		pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud;
-		pcl::PointCloud<PointXYZI>::Ptr current_hough_cloud;
+
+		/**
+		 * Detected planes vector
+		 */
 		std::vector<Plane<float> > planes;
+
+	protected:
+		/**
+		 * Hough space representation
+		 */
+		ParameterSpaceHierarchy space;
+
+		/**
+		 * Cached Hough space aux
+		 */
+		ParameterSpaceHierarchy cache_space;
+
+		/**
+		 * Discretized Gauss function
+		 */
+		ParameterSpace gauss;
+
+		/**
+		 * Maximum plane index
+		 */
 		int max_plane;
+
+		/**
+		 *
+		 */
+		double indexFactor;
+
+		/**
+		 *
+		 */
+		double m_depth;
 	};
-}
+} // but_scenemodel
 
 #endif /* SCENEMODEL_H_ */

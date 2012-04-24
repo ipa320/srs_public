@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: services_list.h 556 2012-04-11 16:10:40Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -33,7 +33,7 @@
 #define BUT_SERVICES_PREFIX std::string("/but_services")
 #define BUT_SERVICES_SERVICE_TOPIC(topic) BUT_SERVICES_PREFIX + std::string(topic)
 
-/*
+/**
  * Get closest point service topic
  */
 #define BUT_GetClosestPoint_SRV BUT_SERVICES_SERVICE_TOPIC("/get_closest_point")

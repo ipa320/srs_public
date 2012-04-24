@@ -1,0 +1,4 @@
+string name                         # object's name
+uint8 pos_id                        # position id
+geometry_msgs/Pose pose             # pre-grasp pose
+--- 

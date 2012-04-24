@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: polygonization.h 397 2012-03-29 12:50:30Z spanel $
+ * $Id: polygonization.h 693 2012-04-20 09:22:39Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -34,9 +34,11 @@
 #ifndef POLYGONIZATION_H
 #define POLYGONIZATION_H
 
-//better opencv 2
+// Opencv 2
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
+
+// rROS
 #include <sensor_msgs/CameraInfo.h>
 
 using namespace std;
@@ -45,15 +47,17 @@ using namespace cv;
 
 namespace but_scenemodel
 {
-
-/**
- * Class encapsulating region transformation into poly representation
- * IN CONSTRUCTION, TODO
- */
-class Polygonizer
-{
-	public:
-		void GetPolyRegions(cv::Mat &regionImage);
-};
-}
+	/**
+	 * Class encapsulating region transformation into poly representation
+	 * IN CONSTRUCTION, TODO
+	 */
+	class Polygonizer
+	{
+		public:
+			/**
+			 * TODO
+			 */
+			void GetPolyRegions(cv::Mat &regionImage);
+	};
+} // but_scenemodel
 #endif

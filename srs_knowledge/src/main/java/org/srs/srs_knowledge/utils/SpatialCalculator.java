@@ -222,7 +222,9 @@ public class SpatialCalculator
     //	return false;
     // }
 
-    public static String nearestSameObject(SRSSpatialInfo spaInfo
+    public static String nearestSameObject(SRSSpatialInfo spaInfo, String objectTypeURI) {
+	return "";
+    } 
 
     public static String workspaceHolding(SRSSpatialInfo spaInfo) {
 

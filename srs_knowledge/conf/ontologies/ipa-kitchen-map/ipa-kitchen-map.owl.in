@@ -341,6 +341,38 @@
     
 
 
+    <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOB33 -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOB33">
+        <rdf:type rdf:resource="&srs;COB3_3"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOBGripper -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOBGripper">
+        <rdf:type rdf:resource="&srs;RobotGripper"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOBTray -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOBTray">
+        <rdf:type rdf:resource="&srs;COBTray"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCobManipulator -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCobManipulator">
+        <rdf:type rdf:resource="&srs;RobotManipulator"/>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Salt0 -->
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Salt0">
@@ -436,9 +468,9 @@
         <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
         <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:zCoord rdf:datatype="&xsd;float">0.37</srs:zCoord>
         <srs:xCoord rdf:datatype="&xsd;float">0.67</srs:xCoord>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.74</srs:heightOfObject>
-        <srs:zCoord rdf:datatype="&xsd;float">0.37</srs:zCoord>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.9</srs:widthOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.9</srs:lengthOfObject>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>

@@ -53,15 +53,18 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
 
    ROS_DEBUG("Created a new MPR: %d", mpr_id);
 
-   inited = true;
-
    MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
 
    data.setStartVisible(false);
 
    #define TR 0.1
 
-   coll_obj_attached_id.push_back(add_coll_obj_attached(0,0,0.25,0.2,0.15));
+   if (aco_) {
+
+     ROS_INFO("Adding attached collision object to planning scene");
+     coll_obj_attached_id.push_back(add_coll_obj_attached(0,0,0.25,0.2,0.15));
+
+   }
 
    /// @bug why it's not possible to add more objects?? -> Size mismatch between poses size 2 and shapes size 1
    /*coll_obj_id.push_back(add_coll_obj(TR,TR,0.15,0.05,0.25));
@@ -86,6 +89,7 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
      action_server_ptr_->srv_set_state(ManualArmManipActionServer::S_NEW);
 
 
+   inited = true;
 
   return true;
 }
@@ -189,6 +193,8 @@ bool CArmManipulationEditor::ArmNavSuccess(ArmNavSuccess::Request &req, ArmNavSu
 
   reset();
 
+  remove_coll_objects();
+
   if (action_server_ptr_!=NULL)
       action_server_ptr_->srv_set_state(ManualArmManipActionServer::S_SUCCESS);
 
@@ -199,8 +205,22 @@ bool CArmManipulationEditor::ArmNavFailed(ArmNavFailed::Request &req, ArmNavFail
 
   reset();
 
+  remove_coll_objects();
+
   if (action_server_ptr_!=NULL)
       action_server_ptr_->srv_set_state(ManualArmManipActionServer::S_FAILED);
+
+  return true;
+}
+
+bool CArmManipulationEditor::ArmNavRepeat(ArmNavRepeat::Request &req, ArmNavRepeat::Response &res) {
+
+  reset();
+
+  remove_coll_objects();
+
+  if (action_server_ptr_!=NULL)
+      action_server_ptr_->srv_set_state(ManualArmManipActionServer::S_REPEAT);
 
   return true;
 }
@@ -223,6 +243,8 @@ bool CArmManipulationEditor::ArmNavRefresh(ArmNavRefresh::Request &req, ArmNavRe
 
 }
 
+
+
 /**
  * @todo Store object coords. in map frame. Then on each refresh add it transformed into base_link
  * @param req
@@ -233,9 +255,9 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
 
   ROS_INFO("Trying to add collision object name: %s",req.object_name.c_str());
 
-  if (req.pose.header.frame_id=="/base_link") {
+  if (req.pose.header.frame_id=="/map") {
 
-    ROS_INFO("Ok, object pose is in /base_link coord. system. Lets store it.");
+    ROS_INFO("Ok, object pose is in /map coord. system. Lets store it.");
 
     t_det_obj obj;
 
@@ -247,10 +269,61 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
 
   } else {
 
-    /// @todo Implement transformation of collision object if it is not in base_link coord. system.
-    ROS_WARN("We have to do transform - NOT implemented yet.");
+    /// @todo Implement transformation of collision object if it is not in map coord. system.
+    //ROS_WARN("We have to do transform - NOT implemented yet.");
 
-  }
+    ros::Time now = ros::Time::now();
+    geometry_msgs::PoseStamped pose_transf;
+
+    std::string target = "/map";
+
+    ROS_INFO("Trying to transform collision object from %s to %s frame",req.pose.header.frame_id.c_str(),target.c_str());
+
+    bool transf = false;
+
+    ROS_INFO("Waiting for transformation between %s and %s",req.pose.header.frame_id.c_str(),target.c_str());
+
+    try {
+
+            if (tfl_->waitForTransform(target, req.pose.header.frame_id, now, ros::Duration(2.0))) {
+
+              tfl_->transformPose(target,req.pose,pose_transf);
+
+            } else {
+
+              req.pose.header.stamp = ros::Time(0);
+              tfl_->transformPose(target,req.pose,pose_transf);
+              ROS_WARN("Using latest transform available, may be wrong.");
+
+            }
+
+            transf = true;
+
+       }
+
+        // In case of absence of transformation path
+        catch(tf::TransformException& ex){
+           std::cerr << "Transform error: " << ex.what() << std::endl;
+           transf = false;
+        }
+
+
+     if (transf) {
+
+       ROS_INFO("Successfully transformed - adding object %s to list.",req.object_name.c_str());
+
+       t_det_obj obj;
+
+       obj.name = req.object_name;
+       obj.bb_lwh = req.bb_lwh;
+       obj.pose = pose_transf;
+
+       coll_obj_det.push_back(obj);
+
+
+     } // transf
+
+  } // else
 
   return true;
 
@@ -258,43 +331,44 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
 
 bool CArmManipulationEditor::ArmNavMovePalmLink(ArmNavMovePalmLink::Request &req, ArmNavMovePalmLink::Response &res) {
 
-  ROS_INFO("Lets try to move arm little bit... :)");
+  ROS_INFO("Lets try to move arm IMs little bit... :)");
 
-  // void MotionPlanRequestData::setGoalAndPathPositionOrientationConstraints(arm_navigation_msgs::MotionPlanRequest& mpr, planning_scene_utils::PositionType type) const
+  if (inited) {
 
-  // this is what I need... probably
-  /*bool PlanningSceneEditor::solveIKForEndEffectorPose(MotionPlanRequestData& data,
-                                                      planning_scene_utils::PositionType type,
-                                                      bool coll_aware,
-                                                      double change_redundancy)*/
+    if (interactive_marker_server_->setPose("MPR 0_end_control",req.sdh_palm_link_pose)) {
 
-  //bool has_ik;
-  //MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
+      interactive_marker_server_->applyChanges();
 
-  // it would be great - just set pose of int. marker....
-  // void getMotionPlanningMarkers(visualization_msgs::MarkerArray& arr);
+      res.completed = true;
+      return true;
 
-  /*lockScene();
+    }
 
-  visualization_msgs::MarkerArray arr;
+    res.completed = false;
+    return true;
 
-  getTrajectoryMarkers(arr);
-  getMotionPlanningMarkers(arr);
+  } else {
 
-  arr
+    std::string str = SRV_NEW;
 
-  unlockScene();*/
+    ROS_ERROR("Cannot move arm to specified position. Call %s service first.",str.c_str());
+    res.completed = false;
+    return true;
 
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // tohle je ono....
-  /*void PlanningSceneEditor::setJointState(MotionPlanRequestData& data, PositionType position, std::string& jointName,
-                                          tf::Transform value)*/
+  }
 
+}
 
-  //cout << "End effector link: " << data.getEndEffectorLink();
+bool CArmManipulationEditor::ArmNavSwitchACO(ArmNavSwitchAttCO::Request &req, ArmNavSwitchAttCO::Response &res) {
 
+  // TODO allow the change only if inited=false
 
+  aco_ = req.state;
 
+  if (aco_ ) ROS_INFO("ACO set to true");
+  else ROS_INFO("ACO set to false");
+
+  res.completed = true;
   return true;
 
 }

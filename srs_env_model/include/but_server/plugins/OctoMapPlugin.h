@@ -31,6 +31,11 @@
 #include <but_server/ServerTools.h>
 #include <tf/transform_listener.h>
 #include <std_srvs/Empty.h>
+#include <but_server/plugins/OctomapPluginTools/TestingOrientedBox.h>
+#include <but_server/plugins/OctomapPluginTools/TestingSphere.h>
+#include <but_server/plugins/OctomapPluginTools/TestingPolymesh.h>
+
+#include <srs_env_model/RemoveCube.h>
 
 //========================
 // Filtering
@@ -65,6 +70,9 @@ public:
 
 	/// Constructor - load data from the file
 	COctoMapPlugin( const std::string & name, const std::string & filename );
+
+	/// Destructor
+	virtual ~COctoMapPlugin();
 
 	/// Insert pointcloud
 	void insertCloud( const tPointCloud& cloud);
@@ -161,6 +169,13 @@ protected:
 	/// Get used sensor origin
 	octomap::point3d getSensorOrigin(const std_msgs::Header& sensor_header);
 
+	/// Do octomap testing by object
+	long int doObjectTesting( srs::CTestingObjectBase * object );
+
+	/// Remove cube as a service - callback
+	bool removeCubeCB( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res );
+
+
 protected:
 	///
 
@@ -198,6 +213,9 @@ protected:
 
     /// Reset octomap service
     ros::ServiceServer m_serviceResetOctomap;
+
+    /// Remove oriented box from octomap service
+    ros::ServiceServer m_serviceRemoveCube;
 
     /// Should octomap be published
     bool m_bPublishOctomap;
@@ -247,6 +265,15 @@ protected:
 
     /// Camera offsets
     int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
+
+    /// Filtering object
+    CTestingObjectBase * m_removeTester;
+
+    /// Tester life in scans count
+    unsigned int m_testerLife;
+
+    /// Tester life counter
+    unsigned int m_testerLifeCounter;
 
 }; // class COctoMapPlugin;
 

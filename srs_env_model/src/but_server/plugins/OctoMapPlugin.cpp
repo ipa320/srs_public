@@ -72,6 +72,13 @@ void srs::COctoMapPlugin::setDefaults()
 	m_camera_info_topic = CAMERA_INFO_TOPIC_NAME;
 	m_bVisualizeMarkers = true;
 	m_markers_topic_name = MARKERS_TOPIC_NAME;
+
+	// CTestingPolymesh::tQuaternion quat(Eigen::AngleAxisf(0.33*M_PI, Eigen::Vector3f::UnitZ()) ) ;
+
+	m_removeTester = 0; //new CTestingPolymesh(CTestingPolymesh::tPoint( 1.0, 1.0, 0.5 ), quat, CTestingPolymesh::tPoint( 1.0, 1.5, 2.0 ));
+
+	m_testerLife = 10;
+
 }
 
 srs::COctoMapPlugin::COctoMapPlugin(const std::string & name)
@@ -138,6 +145,16 @@ srs::COctoMapPlugin::COctoMapPlugin( const std::string & name, const std::string
 	}
 }
 
+/**
+ * Destructor
+ */
+srs::COctoMapPlugin::~COctoMapPlugin()
+{
+	// Remove tester
+	if( m_removeTester != 0 )
+		delete m_removeTester;
+}
+
 //! Initialize plugin - called in server constructor
 void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 {
@@ -162,9 +179,6 @@ void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 		node_handle.param<int>("camera_stereo_offset_left", m_camera_stereo_offset_left, 128);
 		node_handle.param<int>("camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
 	}
-
-	// TODO: Remove this line!!!
-	// m_mapParameters.maxRange = 20.0;
 
 	// Set octomap parameters...
 	{
@@ -194,6 +208,9 @@ void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	// Advertise services
 	m_serviceResetOctomap = node_handle.advertiseService("reset_octomap",
 			&srs::COctoMapPlugin::resetOctomapCB, this);
+
+	m_serviceRemoveCube =   node_handle.advertiseService( "remove_cube",
+			&srs::COctoMapPlugin::removeCubeCB, this );
 
 	// Create publisher
 	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary>(m_ocPublisherName, 100, m_latchedTopics);
@@ -284,142 +301,39 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(),
 			pc_nonground.size(), total_elapsed);
 
+	if( m_removeTester != 0 )
+	{
+		long removed = doObjectTesting( m_removeTester );
+
+//		PERROR( "Removed leafs: " << removed);
+
+		if( removed > 0 )
+			m_data->octree.prune();
+
+		--m_testerLifeCounter;
+
+		if( m_testerLifeCounter <= 0 )
+		{
+			delete m_removeTester;
+			m_removeTester = 0;
+		}
+	}
 	// Publish new data
 	invalidate();
 }
 
 
-
+/**
+ * Insert pointcloud scan TODO: Modify to add ground
+ */
 void srs::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf, const tPointCloud & ground, const tPointCloud & nonground)
 {
-	// Write some debug info
-	//    ROS_INFO("Inserting scan. Points: %u ", ground.size() + nonground.size() );
-
 	octomap::point3d sensorOrigin = octomap::pointTfToOctomap(sensorOriginTf);
 
-//	PERROR( "Sensor origin: " << sensorOrigin );
-
-
 	double maxRange(m_mapParameters.maxRange);
-//*
 	octomap::Pointcloud pcNonground;
 	octomap::pointcloudPCLToOctomap( nonground, pcNonground );
 	m_data->octree.insertScan( pcNonground, sensorOrigin, maxRange, true );
-
-//	PERROR( "Scan inserted. Size: " << nonground.size() << ", " << pcNonground.size() << ", " << m_data->octree.getNumLeafNodes() );
-
-/*/
-//	std::cerr << "OCM:  Insert ground. MR: " << maxRange << ", SO: " << sensorOrigin << std::endl;
-
-	// instead of direct scan insertion, compute update to filter ground:
-	octomap::KeySet free_cells, occupied_cells;
-
-	// insert ground points only as free:
-	for (tPointCloud::const_iterator it = ground.begin(); it != ground.end(); ++it)
-	{
-		octomap::point3d point(it->x, it->y, it->z);
-
-		// maxrange check
-		if ((maxRange > 0.0) && ((point - sensorOrigin).norm() > maxRange))
-		{
-			point = sensorOrigin + (point - sensorOrigin).normalized()
-					* maxRange;
-		}
-
-		// only clear space (ground points)
-		if (m_data->octree.computeRayKeys(sensorOrigin, point, m_keyRay))
-		{
-			free_cells.insert(m_keyRay.begin(), m_keyRay.end());
-		}
-	}
-
-
-	// all other points: free on ray, occupied on endpoint:
-	int miss(0), hit(0);
-
-	for (tPointCloud::const_iterator it( nonground.begin() ), end( nonground.end() ); it != end; ++it)
-	{
-
-		octomap::point3d point(it->x, it->y, it->z);
-
-		// maxrange check
-		if ((maxRange < 0.0) || ((point - sensorOrigin).norm() <= maxRange))
-		{
-			//*
-			// free cells
-			if (m_data->octree.computeRayKeys(sensorOrigin, point, m_keyRay))
-			//if(computeRayKeys(sensorOrigin, point, m_keyRay))
-			{
-				free_cells.insert(m_keyRay.begin(), m_keyRay.end());
-			}
-			///
-			// occupied endpoint
-			octomap::OcTreeKey key;
-			if (m_data->octree.genKey(point, key))
-			{
-				occupied_cells.insert(key);
-			}
-
-		}
-		else
-		{// ray longer than maxrange:;
-
-			octomap::point3d new_end = sensorOrigin	+ (point - sensorOrigin).normalized() * maxRange;
-
-			if (m_data->octree.computeRayKeys(sensorOrigin, new_end,	m_keyRay))
-			//if(computeRayKeys(sensorOrigin, point, m_keyRay))
-			{
-				free_cells.insert(m_keyRay.begin(), m_keyRay.end());
-			}
-
-		}
-	}
-
-//	PERROR( "Rays hit: " << hit << ", miss: " << miss );
-
-	long fcounter(0), fchanged(0), ocounter(0), nfound(0);
-
-	// mark free cells only if not seen occupied in this cloud
-	for (octomap::KeySet::iterator it = free_cells.begin(), end = free_cells.end(); it != end; ++it)
-	{
-		if (occupied_cells.find(*it) == occupied_cells.end())
-		{
-			double o1, o2;
-			tButServerOcNode * node( m_data->octree.search( *it ) );
-			if( node != 0 )
-				o1 = node->getOccupancy();
-			else
-				++nfound;
-			m_data->octree.updateNode(*it, true, false);
-
-			if( node != 0 )
-				o2 = node->getOccupancy();
-
-			if( node != 0 && o1 != o2 )
-			{
-//				PERROR( "Node changed: " << o1 << " -> " << o2 );
-				++fchanged;
-			}
-			++fcounter;
-		}
-	}
-
-	// now mark all occupied cells:
-	for (octomap::KeySet::iterator it = occupied_cells.begin(), end = occupied_cells.end(); it != end; it++)
-	{
-		m_data->octree.updateNode(*it, true, false);
-		++ocounter;
-	}
-
-//	PERROR( "Free cells: " << fcounter << ", occupied:" << ocounter << ", MaxRange: " << maxRange << ", free changed: " << fchanged << ", not found: " << nfound );
-//	PERROR( "OC stats. LN: " << m_data->octree.getNumLeafNodes() );
-
-	// TODO: eval lazy+updateInner vs. proper insertion
-	m_data->octree.updateInnerOccupancy();
-	m_data->octree.prune();
-	//*/
-
-
 }
 
 
@@ -553,7 +467,7 @@ void srs::COctoMapPlugin::crawl( const ros::Time & currentTime )
 	// Fill needed structures
 	onCrawlStart(currentTime);
 
-	// Crawl through node
+	// Crawl through nodes
 	for (srs::tButServerOcTree::leaf_iterator it = m_data->octree.begin_leafs(), end = m_data->octree.end_leafs(); it != end; ++it)
 		{
 
@@ -945,4 +859,56 @@ octomap::point3d srs::COctoMapPlugin::getSensorOrigin(const std_msgs::Header& se
 	octomap::point3d retval (stamped_out.point.x, stamped_out.point.y, stamped_out.point.z);
 
 	return retval;
+}
+
+/**
+ * Do octomap testing by object
+ */
+long int srs::COctoMapPlugin::doObjectTesting( srs::CTestingObjectBase * object )
+{
+	if( object == 0 )
+	{
+		PERROR( "Wrong testing object - NULL. ");
+		return 0;
+	}
+
+	// Create removed nodes counter
+	long int counter( 0 );
+
+	// For all leaves
+	for (srs::tButServerOcTree::leaf_iterator it = m_data->octree.begin_leafs(), end = m_data->octree.end_leafs(); it != end; ++it)
+	{
+		// Node is occupied?
+		if (m_data->octree.isNodeOccupied(*it))
+		{
+			// Node is in testing object
+			if( object->isIn( it.getX(), it.getY(), it.getZ() ) )
+			{
+				// "Remove" node
+				m_data->octree.integrateMissNoTime(&*it);
+				++counter;
+			}
+
+		}
+	}
+
+	return counter;
+}
+/**
+ * Remove cube as a service - callback
+ */
+bool srs::COctoMapPlugin::removeCubeCB( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res )
+{
+	if( m_removeTester != 0 )
+		delete m_removeTester;
+
+	// Create new tester
+	m_removeTester = new srs::CTestingPolymesh( srs::CTestingPolymesh::tPoint(req.center_x, req.center_y, req.center_z),
+			srs::CTestingPolymesh::tQuaternion( req.pose_x, req.pose_y, req.pose_z, req.pose_w ),
+			srs::CTestingPolymesh::tPoint( req.size_x, req.size_y, req.size_z ));
+
+	// Set it to life
+	m_testerLifeCounter = m_testerLife;
+
+	return true;
 }

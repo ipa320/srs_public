@@ -50,6 +50,8 @@ const int ID_BUTTON_GRIPPER_O(109);
 const int ID_BUTTON_GRIPPER_C(110);
 const int ID_BUTTON_LOOK(111);
 const int ID_BUTTON_REFRESH(112);
+const int ID_BUTTON_SWITCH(113);
+const int ID_BUTTON_REPEAT(114);
 
 
 //DEFINE_EVENT_TYPE( C_UPDATE_GUI )
@@ -80,8 +82,11 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     m_button_look_around = new wxButton(this, ID_BUTTON_LOOK, wxT("Look around"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     m_button_refresh = new wxButton(this, ID_BUTTON_REFRESH, wxT("Refresh"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
-    m_button_success = new wxButton(this, ID_BUTTON_SUCCESS, wxT("Success"));
-    m_button_failed = new wxButton(this, ID_BUTTON_FAILED, wxT("Failed"));
+    m_button_switch = new wxButton(this, ID_BUTTON_SWITCH, wxT("Disable ACO"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+
+    m_button_success = new wxButton(this, ID_BUTTON_SUCCESS, wxT("Success"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    m_button_failed = new wxButton(this, ID_BUTTON_FAILED, wxT("Failed"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    m_button_repeat = new wxButton(this, ID_BUTTON_REPEAT, wxT("Repeat"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
     m_text_status = new wxStaticText(this, -1, wxT("status: waiting"));
     m_text_object = new wxStaticText(this, -1, wxT("object: none"));
@@ -96,7 +101,10 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     m_button_reset->Enable(false);
 
     m_button_success->Enable(false);
+    m_button_repeat->Enable(false);
     m_button_failed->Enable(false);
+
+    m_button_switch->Enable(true);
 
     m_button_autoadj->Enable(false);
 
@@ -132,6 +140,7 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     hsizer_traj_mid->Add(m_button_reset, ID_BUTTON_RESET);
 
     hsizer_traj_bot->Add(m_button_success, ID_BUTTON_SUCCESS);
+    hsizer_traj_bot->Add(m_button_repeat, ID_BUTTON_REPEAT);
     hsizer_traj_bot->Add(m_button_failed, ID_BUTTON_FAILED);
 
     vsizer_top->Add(hsizer_traj_top,1,wxEXPAND);
@@ -149,9 +158,10 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     hsizer_add_top->Add(m_button_gripper_c);
     hsizer_add_bot->Add(m_button_look_around);
     hsizer_add_bot->Add(m_button_refresh);
+    hsizer_add_bot->Add(m_button_switch);
 
-    vsizer_add->Add(hsizer_add_top);
-    vsizer_add->Add(hsizer_add_bot);
+    vsizer_add->Add(hsizer_add_top,1,wxEXPAND);
+    vsizer_add->Add(hsizer_add_bot,1,wxEXPAND);
 
     vsizer->Add(vsizer_top,0,wxEXPAND);
     vsizer->Add(vsizer_add,0,wxEXPAND);
@@ -161,6 +171,12 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
 
     goal_pregrasp = false;
     goal_away = false;
+
+    // TODO make it configurable - read same parameter from here and from but_arm_manip_node...
+    aco_ = true;
+
+    if (aco_) m_button_switch->SetLabel(wxT("ACO enabled"));
+    else m_button_switch->SetLabel(wxT("ACO disabled"));
 
 
     vsizer->SetSizeHints(this);
@@ -204,6 +220,8 @@ CArmManipulationControls::~CArmManipulationControls() {
   delete m_text_object;
   delete m_text_timeout;
   delete m_text_dist;
+  delete m_button_switch;
+  delete m_button_repeat;
 
 }
 
@@ -248,7 +266,9 @@ void CArmManipulationControls::NewThread() {
      m_button_play->Enable(false);
      m_button_reset->Enable(true);
      m_button_success->Enable(false);
+     m_button_repeat->Enable(true);
      m_button_failed->Enable(true);
+     m_button_switch->Enable(false);
 
    } else {
 
@@ -256,6 +276,7 @@ void CArmManipulationControls::NewThread() {
      m_button_plan->Enable(false);
      m_button_play->Enable(false);
      m_button_reset->Enable(false);
+     m_button_repeat->Enable(true);
      m_button_success->Enable(false);
      m_button_failed->Enable(true);
 
@@ -328,6 +349,7 @@ void CArmManipulationControls::PlanThread() {
      m_button_execute->Enable(true);
      m_button_reset->Enable(true);
      m_button_success->Enable(false);
+     m_button_repeat->Enable(true);
      m_button_failed->Enable(true);
 
    } else {
@@ -338,6 +360,7 @@ void CArmManipulationControls::PlanThread() {
      m_button_execute->Enable(true);
      m_button_reset->Enable(true);
      m_button_success->Enable(false);
+     m_button_repeat->Enable(true);
      m_button_failed->Enable(true);
 
 
@@ -405,7 +428,47 @@ void CArmManipulationControls::OnPlay(wxCommandEvent& event)
    m_button_execute->Enable(true);
    m_button_reset->Enable(true);
    m_button_success->Enable(false);
+   m_button_repeat->Enable(true);
    m_button_failed->Enable(true);
+
+}
+
+void CArmManipulationControls::OnSwitch(wxCommandEvent& event)
+{
+
+  if (aco_) ROS_INFO("Lets switch attached collision object OFF");
+  else ROS_INFO("Lets switch attached collision object ON");
+
+   srs_assisted_arm_navigation::ArmNavSwitchAttCO srv;
+
+   srv.request.state = !aco_;
+
+   if ( ros::service::exists(SRV_SWITCH,true) && ros::service::call(SRV_SWITCH,srv) ) {
+
+     if (srv.response.completed) {
+
+       //m_text_status->SetLabel(wxString::FromAscii("status: Playing trajectory..."));
+
+       aco_ = !aco_;
+
+       if (aco_) m_button_switch->SetLabel(wxT("ACO enabled"));
+       else m_button_switch->SetLabel(wxT("ACO disabled"));
+
+     } else {
+
+       m_text_status->SetLabel(wxString::FromAscii("Can't switch state of ACO"));
+
+     }
+
+   } else {
+
+     std::string tmp = SRV_SWITCH;
+
+     ROS_ERROR("failed when calling %s service",tmp.c_str());
+     m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
+
+   }
+
 
 }
 
@@ -475,6 +538,8 @@ void CArmManipulationControls::ExecuteThread()
      m_button_new->Enable(true);
      m_button_success->Enable(true);
      m_button_failed->Enable(true);
+     m_button_repeat->Enable(true);
+     m_button_switch->Enable(true);
 
    } else {
 
@@ -484,7 +549,9 @@ void CArmManipulationControls::ExecuteThread()
      m_button_play->Enable(false);
      m_button_new->Enable(false);
      m_button_success->Enable(false);
+     m_button_repeat->Enable(true);
      m_button_failed->Enable(true);
+     m_button_switch->Enable(true);
 
    }
 
@@ -519,11 +586,13 @@ void CArmManipulationControls::OnReset(wxCommandEvent& event)
 
    m_button_plan->Enable(false);
    m_button_execute->Enable(false);
-   m_button_reset->Enable(true);
+   m_button_reset->Enable(false);
    m_button_play->Enable(false);
    m_button_new->Enable(true);
    m_button_success->Enable(false);
+   m_button_repeat->Enable(true);
    m_button_failed->Enable(true);
+   m_button_switch->Enable(true);
 
 }
 
@@ -555,6 +624,7 @@ void CArmManipulationControls::OnSuccess(wxCommandEvent& event)
 
    m_button_success->Enable(false);
    m_button_failed->Enable(false);
+   m_button_repeat->Enable(false);
 
 }
 
@@ -587,6 +657,42 @@ void CArmManipulationControls::OnFailed(wxCommandEvent& event)
    if (wait_for_start_) m_button_new->Enable(false);
    else m_button_new->Enable(true);
 
+   m_button_success->Enable(false);
+   m_button_repeat->Enable(false);
+
+
+}
+
+void CArmManipulationControls::OnRepeat(wxCommandEvent& event)
+{
+   ROS_ERROR("Request for repeat of manual arm navigation task");
+
+   srs_assisted_arm_navigation::ArmNavRepeat srv;
+
+   if ( ros::service::exists(SRV_REPEAT,true) && ros::service::call(SRV_REPEAT,srv) ) {
+
+       m_button_repeat->Enable(false);
+
+       m_text_status->SetLabel(wxString::FromAscii("status: Repeating action..."));
+       m_text_object->SetLabel(wxString::FromAscii("object: none"));
+
+   } else {
+
+     ROS_ERROR("failed when calling arm_nav_repeat service");
+     m_text_status->SetLabel(wxString::FromAscii("Communication error"));
+
+     m_button_repeat->Enable(true);
+
+   }
+
+   m_button_plan->Enable(false);
+   m_button_execute->Enable(false);
+   m_button_reset->Enable(false);
+   m_button_play->Enable(false);
+   if (wait_for_start_) m_button_new->Enable(false);
+   else m_button_new->Enable(true);
+
+   m_button_failed->Enable(false);
    m_button_success->Enable(false);
 
 
@@ -649,14 +755,8 @@ void CArmManipulationControls::GripperThread(unsigned char action) {
 
     }
 
-    m_button_gripper_o->Enable(false);
-    m_button_gripper_c->Enable(false);
-    m_button_look_around->Enable(false);
-    m_button_refresh->Enable(false);
+    std::string status = "";
 
-
-    if (action==G_OPEN) m_text_status->SetLabel(wxString::FromAscii("status: Opening gripper."));
-    else m_text_status->SetLabel(wxString::FromAscii("status: Closing gripper."));
 
     cob_script_server::ScriptAction goal;
 
@@ -676,28 +776,37 @@ void CArmManipulationControls::GripperThread(unsigned char action) {
 
       if (action==G_OPEN) {
 
-          m_text_status->SetLabel(wxString::FromAscii("status: Gripper opened."));
+          //m_text_status->SetLabel(wxString::FromAscii("status: Gripper opened."));
+          status = "status: Gripper opened.";
           ROS_INFO("Gripper should be opened...");
       }
       else {
 
-        m_text_status->SetLabel(wxString::FromAscii("status: Gripper closed."));
+        //m_text_status->SetLabel(wxString::FromAscii("status: Gripper closed."));
+        status = "status: Gripper closed.";
         ROS_INFO("Gripper should be closed...");
 
       }
 
     } else {
 
-      m_text_status->SetLabel(wxString::FromAscii("status: Error during gripper action."));
+      //m_text_status->SetLabel(wxString::FromAscii("status: Error during gripper action."));
+      status = "status: Error during gripper action.";
       ROS_ERROR("Error on opening/closing gripper.");
 
     }
 
+    wxMutexGuiEnter();
 
+    m_text_status->SetLabel(wxString::FromAscii(status.c_str()));
     m_button_gripper_o->Enable(true);
     m_button_gripper_c->Enable(true);
     m_button_look_around->Enable(true);
     m_button_refresh->Enable(true);
+
+    wxMutexGuiLeave();
+
+
 
 }
 
@@ -709,6 +818,13 @@ void CArmManipulationControls::OnGripperO(wxCommandEvent& event) {
   if (t_gripper.timed_join(td)) {
 
     unsigned char action = G_OPEN;
+
+    m_button_gripper_o->Enable(false);
+    m_button_gripper_c->Enable(false);
+    m_button_look_around->Enable(false);
+    m_button_refresh->Enable(false);
+
+    m_text_status->SetLabel(wxString::FromAscii("status: Opening gripper."));
 
     t_gripper = boost::thread(&CArmManipulationControls::GripperThread,this,action);
 
@@ -726,13 +842,7 @@ void CArmManipulationControls::LookThread() {
 
   }
 
-  m_button_gripper_o->Enable(false);
-  m_button_gripper_c->Enable(false);
-  m_button_look_around->Enable(false);
-  m_button_refresh->Enable(false);
-
-  m_text_status->SetLabel(wxString::FromAscii("status: Looking around."));
-  ROS_INFO("Looking around to improve collision map.");
+  std::string status = "";
 
   cob_script_server::ScriptAction goal;
 
@@ -771,20 +881,29 @@ void CArmManipulationControls::LookThread() {
 
   if (cob_script->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
 
-    m_text_status->SetLabel(wxString::FromAscii("status: Looking around completed."));
+    //m_text_status->SetLabel(wxString::FromAscii("status: Looking around completed."));
+    status = "status: Looking around completed.";
     ROS_INFO("Looking around completed - collision map should be improved.");
 
   } else {
 
-      m_text_status->SetLabel(wxString::FromAscii("status: Looking around failed."));
+      //m_text_status->SetLabel(wxString::FromAscii("status: Looking around failed."));
+      status = "status: Looking around failed.";
       ROS_INFO("Looking around failed.");
 
   }
 
-      m_button_look_around->Enable(true);
-      m_button_gripper_o->Enable(true);
-      m_button_gripper_c->Enable(true);
-      m_button_refresh->Enable(true);
+
+  wxMutexGuiEnter();
+
+  m_text_status->SetLabel(wxString::FromAscii(status.c_str()));
+
+  m_button_look_around->Enable(true);
+  m_button_gripper_o->Enable(true);
+  m_button_gripper_c->Enable(true);
+  m_button_refresh->Enable(true);
+
+  wxMutexGuiLeave();
 
 }
 
@@ -794,6 +913,14 @@ void CArmManipulationControls::OnLook(wxCommandEvent& event) {
 
   // wait for some time
   if (t_look.timed_join(td)) {
+
+    m_button_gripper_o->Enable(false);
+    m_button_gripper_c->Enable(false);
+    m_button_look_around->Enable(false);
+    m_button_refresh->Enable(false);
+
+    m_text_status->SetLabel(wxString::FromAscii("status: Looking around."));
+    ROS_INFO("Looking around to improve collision map.");
 
     t_look = boost::thread(&CArmManipulationControls::LookThread,this);
 
@@ -837,6 +964,13 @@ void CArmManipulationControls::OnGripperC(wxCommandEvent& event) {
   if (t_gripper.timed_join(td)) {
 
     unsigned char action = G_CLOSE;
+
+    m_button_gripper_o->Enable(false);
+    m_button_gripper_c->Enable(false);
+    m_button_look_around->Enable(false);
+    m_button_refresh->Enable(false);
+
+    m_text_status->SetLabel(wxString::FromAscii("status: Closing gripper."));
 
     t_gripper = boost::thread(&CArmManipulationControls::GripperThread,this,action);
 
@@ -902,4 +1036,6 @@ BEGIN_EVENT_TABLE(CArmManipulationControls, wxPanel)
     EVT_BUTTON(ID_BUTTON_GRIPPER_C,  CArmManipulationControls::OnGripperC)
     EVT_BUTTON(ID_BUTTON_LOOK,  CArmManipulationControls::OnLook)
     EVT_BUTTON(ID_BUTTON_REFRESH,  CArmManipulationControls::OnRefresh)
+    EVT_BUTTON(ID_BUTTON_SWITCH,  CArmManipulationControls::OnSwitch)
+    EVT_BUTTON(ID_BUTTON_REPEAT,  CArmManipulationControls::OnRepeat)
 END_EVENT_TABLE()

@@ -3,7 +3,7 @@
 ##\file
 #
 # \note
-# Copyright (c) 2011 \n
+# Copyright (c) 2012 \n
 # Cardiff University \n\n
 #
 #################################################################
@@ -18,7 +18,7 @@
 # \author
 # Author: Renxi Qiu, email: renxi.qiu@gmail.com
 #
-# \date Date of creation: Oct 2011
+# \date Date of creation: April 2012
 #
 # \brief
 # Task coordination and interfacing for SRS decision making
@@ -150,3 +150,33 @@ class sm_asisted_detection(SRS_StateMachine):
 					transitions={'succeeded':'DETECT_OBJECT-assisted', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
 					remapping={'base_pose':'new_scan_pose'})	
 			
+################################################################################
+#Simple detection state machine with environment confirmation
+#
+#Robot would detect the object autonomously
+#No environment confirmation is needed for this detection
+################################################################################
+
+class sm_simple_detection_env(SRS_StateMachine):
+    def __init__(self):
+        smach.StateMachine.__init__(self,
+                                    outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
+                                    input_keys=['target_object_name', 'target_workspace_pose'],
+                                    output_keys=['target_object','target_object_pose'])
+        self.max_retries = 5  # default value for max retries 
+        try:
+            self.max_retries = rospy.get_param("srs/common/detection_max_retries")
+        except Exception, e:
+            rospy.INFO('can not read parameter of max retries, use the default value')
+        
+        self.customised_initial("sm_simple_detection_env")
+        self.userdata.target_object=''
+        self.userdata.target_object_pose=''
+
+        with self:
+            smach.StateMachine.add('DETECT_OBJECT-simple', detect_object(self.max_retries),
+                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-2', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose' })
+            smach.StateMachine.add('DETECT_OBJECT-simple', detect_object(self.max_retries),
+                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-2', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose' })

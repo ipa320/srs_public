@@ -46,6 +46,9 @@
 #include "srs_assisted_arm_navigation/ArmNavSuccess.h"
 #include "srs_assisted_arm_navigation/ArmNavFailed.h"
 #include "srs_assisted_arm_navigation/ArmNavRefresh.h"
+#include "srs_assisted_arm_navigation/ArmNavSwitchAttCO.h"
+#include "srs_assisted_arm_navigation/ArmNavRepeat.h"
+
 
 #include "cob_script_server/ScriptAction.h"
 #include <actionlib/client/simple_action_client.h>
@@ -70,6 +73,8 @@
 #define SRV_SUCCESS BUT_SERVICE("/arm_nav_success")
 #define SRV_FAILED BUT_SERVICE("/arm_nav_failed")
 #define SRV_REFRESH BUT_SERVICE("/arm_nav_refresh")
+#define SRV_SWITCH BUT_SERVICE("/arm_nav_switch_aco")
+#define SRV_REPEAT BUT_SERVICE("/arm_nav_repeat")
 
 /** This parameter defines if it's possible to start arm planning at any time.
 * When it's true, the NEW button is always active. It can be configured in launch file.
@@ -104,11 +109,14 @@ public:
     //virtual void OnFinish(wxCommandEvent& event);
     virtual void OnSuccess(wxCommandEvent& event);
     virtual void OnFailed(wxCommandEvent& event);
+    virtual void OnRepeat(wxCommandEvent& event);
 
     virtual void OnGripperO(wxCommandEvent& event);
     virtual void OnGripperC(wxCommandEvent& event);
     virtual void OnLook(wxCommandEvent& event);
     virtual void OnRefresh(wxCommandEvent& event);
+
+    virtual void OnSwitch(wxCommandEvent& event);
 
     //void UpdateGui(wxCommandEvent &event);
 
@@ -140,12 +148,15 @@ protected:
     
     wxButton * m_button_success;
     wxButton * m_button_failed;
+    wxButton * m_button_repeat;
 
     wxButton * m_button_autoadj;
     wxButton * m_button_gripper_o;
     wxButton * m_button_gripper_c;
     wxButton * m_button_look_around;
     wxButton * m_button_refresh;
+
+    wxButton * m_button_switch;
 
     wxStaticText *m_text_status;
     wxStaticText *m_text_object;
@@ -193,6 +204,8 @@ private:
     boost::thread t_look;
 
     bool cob_script_inited;
+
+    bool aco_;
 
 };
 

@@ -8,6 +8,7 @@ int32[] positions_ids
 # result
 bool success
 bool failed
+bool repeat
 bool timeout
 bool collision
 duration time_elapsed

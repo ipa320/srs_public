@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import roslib
-roslib.load_manifest('srs_asisted_detection')
+roslib.load_manifest('srs_assisted_detection')
 
 from srs_grasping.srv import *
 from geometry_msgs.msg import *
@@ -44,7 +44,7 @@ def asisted_BBmove_server():
     s = rospy.Service('asisted_BBmove', BBMove, moveBBSrv)
 
 
-    rospy.loginfo("Asisted BBmove ready.")
+    rospy.loginfo("Assisted BBmove ready.")
     rospy.spin()
         
 

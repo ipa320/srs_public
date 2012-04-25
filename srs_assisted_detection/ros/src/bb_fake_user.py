@@ -1,6 +1,9 @@
 #!/usr/bin/python
 import roslib
-roslib.load_manifest('srs_asisted_detection')
+roslib.load_manifest('srs_assisted_detection')
+
+from array import *
+
 
 
 import rospy
@@ -11,18 +14,17 @@ from std_msgs.msg import *
 
 from geometry_msgs.msg import *
 
-from array import array
 
 
 def user_msg():    
-    rospy.wait_for_service('asisted_answer')
-    s=String()
-    s.data='test'
+    rospy.wait_for_service('assisted_BBmove')
+
     try:
-        add_two_ints = rospy.ServiceProxy('asisted_answer', UiAnswer)
+        add_two_ints = rospy.ServiceProxy('assisted_BBmove', BBMove)
         rospy.loginfo("client")
-        a=array('i',[2,3,4,5])
-        resp1 = add_two_ints(a,0,s)
+        pose=Pose()
+      
+        resp1 = add_two_ints(2,4,4,pose)
         rospy.loginfo(resp1)
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e

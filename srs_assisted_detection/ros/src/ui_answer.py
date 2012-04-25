@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import roslib
-roslib.load_manifest('srs_asisted_detection')
+roslib.load_manifest('srs_assisted_detection')
 
 from srs_grasping.srv import *
 from geometry_msgs.msg import *
@@ -73,16 +73,16 @@ def moveBBSrv(req):
     
     
     
-def asisted_answer_server(detections):
+def assisted_answer_server(detections):
     #rospy.init_node('asisted_answer_server')
     global detect
     detect=detections
     global s
     global s2
-    s = rospy.Service('asisted_answer', UiAnswer, answerObjectSrv)
-    s2 = rospy.Service('asisted_BBmove', BBMove, moveBBSrv)
+    s = rospy.Service('assisted_answer', UiAnswer, answerObjectSrv)
+    s2 = rospy.Service('assisted_BBmove', BBMove, moveBBSrv)
 
-    rospy.loginfo("Asisted answer ready.")
+    rospy.loginfo("Assisted answer ready.")
     s.spin()
     s2.spin()
     return [func,pose,action]

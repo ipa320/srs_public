@@ -1,9 +1,6 @@
 #!/usr/bin/python
 import roslib
-roslib.load_manifest('srs_asisted_detection')
-
-from array import *
-
+roslib.load_manifest('srs_assisted_detection')
 
 
 import rospy
@@ -12,20 +9,17 @@ from cob_object_detection_msgs.msg import *
 from srs_asisted_detection.srv import *
 from std_msgs.msg import *
 
-from geometry_msgs.msg import *
-
 
 
 def user_msg():    
-    rospy.wait_for_service('asisted_BBmove')
-
+    rospy.wait_for_service('assisted_detection')
+    string=String()
+    string.data='milk'
     try:
-        add_two_ints = rospy.ServiceProxy('asisted_BBmove', BBMove)
+        add_two_ints = rospy.ServiceProxy('assisted_detection', UiDetector)
         rospy.loginfo("client")
-        pose=Pose()
-      
-        resp1 = add_two_ints(2,4,4,pose)
-        rospy.loginfo(resp1)
+        resp1 = add_two_ints(string)
+        rospy.loginfo(resp1.object_list)
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
     

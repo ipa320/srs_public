@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import roslib
-roslib.load_manifest('srs_asisted_detection')
+roslib.load_manifest('srs_assisted_detection')
 
 
 import rospy
@@ -44,8 +44,8 @@ def detectObjectSrv(req):
 def asisted_Detection_server():
  #   rospy.init_node('asisted_Detection_server')
     global s
-    s = rospy.Service('asisted_detection', UiDetector, detectObjectSrv)
-    rospy.loginfo("Asisted Detection ready.")
+    s = rospy.Service('assisted_detection', UiDetector, detectObjectSrv)
+    rospy.loginfo("Assisted Detection ready.")
     s.spin()
     return detector_response
 

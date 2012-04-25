@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import roslib
-roslib.load_manifest('srs_asisted_detection')
+roslib.load_manifest('srs_assisted_detection')
 
 import rospy
 

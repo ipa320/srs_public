@@ -1,5 +1,0 @@
-srs/language: 'English'
-srs/grasping_type: 'Simple'
-srs/detection_type: 'Simple' 
-srs/linear_travel_threshold: 0.5
-srs/nav_params: {max_dis_linear_nav: 10}

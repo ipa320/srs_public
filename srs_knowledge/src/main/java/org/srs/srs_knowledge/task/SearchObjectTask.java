@@ -73,9 +73,9 @@ import ros.communication.*;
 
 public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    public SearchObjectTask(String taskType, String targetContent, NodeHandle n) 
+    public SearchObjectTask(String taskType, String targetContent) 
     {	
-	this.nodeHandle = n;
+	//this.nodeHandle = n;
 	// this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);

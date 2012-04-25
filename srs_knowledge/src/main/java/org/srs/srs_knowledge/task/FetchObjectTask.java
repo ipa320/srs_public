@@ -73,9 +73,9 @@ import ros.communication.*;
 
 public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    public FetchObjectTask(String taskType, String targetContent, String userPose, NodeHandle n) 
+    public FetchObjectTask(String taskType, String targetContent, String userPose) 
     {	
-	this.nodeHandle = n;
+	//	this.nodeHandle = n;
 	this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent, this.userPose);

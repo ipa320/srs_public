@@ -32,12 +32,14 @@ import smach
 import smach_ros
 import actionlib
 from srs_assisted_arm_navigation.msg import *
-from srs_env_model.srv import AddObjectWithBoundingBox
-from srs_env_model.srv import RemovePrimitive
-from srs_env_model.srv import SetGraspingPosition
-from srs_env_model.srv import RemoveGraspingPosition
+from srs_interaction_primitives.srv import AddObject
+from srs_interaction_primitives.srv import RemovePrimitive
+from srs_interaction_primitives.srv import SetPreGraspPosition
+from srs_interaction_primitives.srv import RemovePreGraspPosition
+from srs_interaction_primitives.msg import MoveArmToPreGrasp
 from math import fabs
 from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import ColorRGBA
 from srs_object_database_msgs.srv import GetMesh
 from srs_object_database_msgs.srv import GetObjectId
@@ -50,6 +52,7 @@ from geometry_msgs.msg import Pose
 from tf import TransformListener
 import threading
 from srs_assisted_arm_navigation.srv import ArmNavCollObj
+from srs_assisted_arm_navigation.srv import ArmNavMovePalmLink
 
 class coll_obj_publisher (threading.Thread):
   
@@ -100,9 +103,9 @@ class move_arm_to_given_positions_assisted(smach.State):
                          output_keys=['id_of_the_reached_position'])
     
  
-    but_gui_ns = '/but_gui'
+    but_gui_ns = '/but_interaction_primitives'
     self.s_set_gr_pos = but_gui_ns + '/set_pregrasp_position'
-    self.s_add_object = but_gui_ns + '/add_object_with_bounding_box'
+    self.s_add_object = but_gui_ns + '/add_object'
     self.s_remove_object = but_gui_ns + '/remove_primitive'
     
     # object database
@@ -114,6 +117,8 @@ class move_arm_to_given_positions_assisted(smach.State):
     #action_name = rospy.get_param('/manual_arm_manip_action','~arm_action_name')
     self.action_name = arm_manip_ns + '/manual_arm_manip_action'
     self.s_coll_obj = arm_manip_ns + '/arm_nav_coll_obj';
+    self.s_move_arm = arm_manip_ns + '/arm_nav_move_palm_link';
+    
       
   def add_grpos(self,userdata):
     
@@ -131,7 +136,7 @@ class move_arm_to_given_positions_assisted(smach.State):
     #s_set_gr_pos = '/but_gui/set_grasping_position'
     rospy.loginfo("Waiting for %s service",self.s_set_gr_pos)
     rospy.wait_for_service(self.s_set_gr_pos)
-    set_gr_pos = rospy.ServiceProxy(self.s_set_gr_pos, SetGraspingPosition)
+    set_gr_pos = rospy.ServiceProxy(self.s_set_gr_pos, SetPreGraspPosition)
     rospy.loginfo('Calling service %s',self.s_set_gr_pos)
     
     
@@ -139,21 +144,32 @@ class move_arm_to_given_positions_assisted(smach.State):
     
       try:
         
-        vec = Vector3()
+        gpose = Pose()
         
-        vec.x = userdata.list_of_target_positions[idx].position.x
-        vec.y = userdata.list_of_target_positions[idx].position.y
-        vec.z = userdata.list_of_target_positions[idx].position.z
+        #vec = Vector3()
+        #vec.x = userdata.list_of_target_positions[idx].position.x
+        #vec.y = userdata.list_of_target_positions[idx].position.y
+        #vec.z = userdata.list_of_target_positions[idx].position.z
         
-        rospy.loginfo('Adding gr pos id %d [x=%f,y=%f,z=%f]',userdata.list_of_id_for_target_positions[idx],vec.x,vec.y,vec.z)
+        # we should receive it as PoseStamped
+        # TODO maybe it will be necessary to do some transform of coordinates
+        gpose = userdata.list_of_target_positions[idx]
+        
+        # shift position to be relative to detected object 
+        gpose.position.x = gpose.position.x - userdata.pose_of_the_target_object.pose.position.x
+        gpose.position.y = gpose.position.y - userdata.pose_of_the_target_object.pose.position.y
+        gpose.position.z = gpose.position.z - userdata.pose_of_the_target_object.pose.position.z
+        
+        
+        rospy.loginfo('Adding gr pos id %d [x=%f,y=%f,z=%f]',userdata.list_of_id_for_target_positions[idx],gpose.position.x,gpose.position.y,gpose.position.z)
         
         res = set_gr_pos(name=userdata.name_of_the_target_object,
-                         pos_id=idx,
-                         position=vec)
+                         pos_id=idx+1,
+                         pose=gpose)
         
       except Exception, e:
         
-        rospy.logerr('Cannot add gr pos IM for pos ID: %d, error: %s',idx,str(e))
+        rospy.logerr('Cannot add gr pos IM for pos ID: %d, error: %s',idx+1,str(e))
     
     
     
@@ -205,7 +221,7 @@ class move_arm_to_given_positions_assisted(smach.State):
        
     rospy.loginfo("Waiting for %s service",self.s_add_object)
     rospy.wait_for_service(self.s_add_object)
-    add_object = rospy.ServiceProxy('but_gui/add_object_with_bounding_box', AddObjectWithBoundingBox)
+    add_object = rospy.ServiceProxy(self.s_add_object, AddObject)
     rospy.loginfo('Calling %s service',self.s_add_object)
 
     # color of the bounding box
@@ -298,8 +314,29 @@ class move_arm_to_given_positions_assisted(smach.State):
     except Exception, e:
       
       rospy.logerr('Cannot remove IM object from the scene, error: %s',str(e))
+ 
+ 
+  def pregr_im_callback(self,data):
+    
+    rospy.loginfo("Move arm to pregrasp pos. ID=%d, object=%s",data.pos_id,data.marker_name);
+    
+    # TODO call service provided by arm_manip_node which will move the arm appropriately
+    rospy.wait_for_service(self.s_move_arm)
+    move_arm = rospy.ServiceProxy(self.s_move_arm, ArmNavMovePalmLink);
+    
+    try:
+      
+      move_arm(sdh_palm_link_pose=self.userdata.list_of_target_positions[data.pos_id]);
+      
+    except Exception, e:
+      
+      rospy.logerr('Cannot move sdh_palm_link to given position, error: %s',str(e))
+    
+    
   
   def execute(self,userdata):
+        
+    self.userdata = userdata
         
     rospy.loginfo('Executing state move_arm_to_given_positions_assisted (%s)',userdata.name_of_the_target_object)    
        
@@ -310,6 +347,10 @@ class move_arm_to_given_positions_assisted(smach.State):
     
     # add IM for grasping positions
     self.add_grpos(userdata)
+    
+    pregr_topic = "/but_interaction_primitives/" + userdata.name_of_the_target_object + "/update/move_arm_to_pregrasp"
+    rospy.loginfo("Subscribing to %s topic",pregr_topic);
+    rospy.Subscriber(pregr_topic, MoveArmToPreGrasp, self.pregr_im_callback)
     
     rospy.loginfo("Waiting for %s service",self.s_coll_obj)
     rospy.wait_for_service(self.s_coll_obj)
@@ -347,6 +388,7 @@ class move_arm_to_given_positions_assisted(smach.State):
     client.wait_for_server()
     
     goal = ManualArmManipGoal()
+       
     
     goal.pregrasp = True
     goal.object_name = userdata.name_of_the_target_object

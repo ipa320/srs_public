@@ -28,10 +28,9 @@
  *	 * Redistributions in binary form must reproduce the above copyright
  *	   notice, this list of conditions and the following disclaimer in the
  *	   documentation and/or other materials provided with the distribution.
- *	 * Neither the name of the Fraunhofer Institute for Manufacturing 
- *	   Engineering and Automation (IPA) nor the names of its
- *	   contributors may be used to endorse or promote products derived from
- *	   this software without specific prior written permission.
+ *	 * Neither the name of the school of Engineering, Cardiff University nor 
+ *         the names of its contributors may be used to endorse or promote products 
+ *         derived from this software without specific prior written permission.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License LGPL as 
@@ -108,80 +107,12 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	}
     }
 
+    @Override
     public String getActionType() {
 	actionType = "MoveAndDetection";
 	return actionType;
     }
-    /*
-    public int getNextCUActionIndex(boolean statusLastStep) {
-	//currentActionInd++;
 
-	if(currentActionInd == -1) {
-	    return 0;
-	}
-
-
-	if ( currentActionInd >= 0 && currentActionInd < actionUnits.size() ) {
-	    if(statusLastStep) {
-		System.out.println("NEXT ACTION IND (if Successful): " + currentActionInd);
-		return nextActionMapIfSuccess[currentActionInd];
-	    }
-	    else {
-		System.out.println("NEXT ACTION IND (if Failed): " + currentActionInd);
-		return nextActionMapIfFail[currentActionInd];
-	    }
-	}
-	else {
-	    return INVALID_INDEX;
-	}
-    }
-
-    public CUAction getNextCUAction(int ind) {
-	//int ind = getNextCUActionIndex(statusLastStep);
-	currentActionInd = ind;
-	CUAction ca = new CUAction(); 
-
-	if(ind == COMPLETED_FAIL) {
-	    GenericAction genericAction = new GenericAction();
-	    genericAction.actionInfo.add("finish_fail");
-	    
-	    ca.generic = genericAction;
-	    ca.actionType = "generic";
-	    
-	    ca.status = -1;
-	    
-	    return ca;
-	}
-	else if (ind == COMPLETED_SUCCESS){
-	    GenericAction genericAction = new GenericAction();
-	    genericAction.actionInfo.add("finish_success");
-	    
-	    ca.generic = genericAction;
-	    ca.actionType = "generic";
-	    
-	    ca.status = 1;
-	    
-	    return ca;
-	}
-	else if (ind == INVALID_INDEX) {
-	    GenericAction genericAction = new GenericAction();
-	    genericAction.actionInfo.add("no_action");
-	    
-	    ca.generic = genericAction;
-	    ca.actionType = "generic";
-	    
-	    ca.status = -1;
-	    return ca;
-	}
-
-	GenericAction genericAction = actionUnits.get(ind);
-	
-	ca.generic = genericAction;
-	
-	ca.actionType = "generic";
-	return ca;
-    }
-    */
     // a not very safe, but flexible way to assign parameters, using arraylist<string> 
     // set robot move target and object pose etc.
     public boolean setParameters(ArrayList<String> para) {

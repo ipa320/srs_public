@@ -12,6 +12,7 @@ bool timeout
 bool collision
 duration time_elapsed
 int32 reached_position
+bool pregrasps_not_suitable
 ---
 # feedback
 bool starting

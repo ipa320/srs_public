@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: bb_estimator_client.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: bb_estimator_client.cpp 699 2012-04-20 12:41:14Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -72,9 +72,9 @@
 #include "ros/ros.h"
 #include "bb_estimator/services_list.h"
 #include "srs_env_model_percp/EstimateBB.h" // Definition of the service for BB estimation
-#include "srs_env_model/AddBoundingBox.h"
-#include "srs_env_model/ChangePose.h"
-#include "srs_env_model/ChangeScale.h"
+#include "srs_interaction_primitives/AddBoundingBox.h"
+#include "srs_interaction_primitives/ChangePose.h"
+#include "srs_interaction_primitives/ChangeScale.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -276,7 +276,7 @@ void visualizeWithMarkers()
     if(!isBBPrimitiveCreated) {
 
         // Set parameters to the new bounding box
-        srs_env_model::AddBoundingBox bbAddSrv;
+        srs_interaction_primitives::AddBoundingBox bbAddSrv;
         
         bbAddSrv.request.name = bbPrimitiveName;
         bbAddSrv.request.frame_id = sceneFrameId;
@@ -301,7 +301,7 @@ void visualizeWithMarkers()
     else {
         // Change pose of the BB
         //--------------------
-        srs_env_model::ChangePose bbChangePoseSrv;
+        srs_interaction_primitives::ChangePose bbChangePoseSrv;
         bbChangePoseSrv.request.name = bbPrimitiveName;
         bbChangePoseSrv.request.pose = bbPose;
 
@@ -310,7 +310,7 @@ void visualizeWithMarkers()
         
         // Change scale of the BB
         //--------------------
-        srs_env_model::ChangeScale bbChangeScaleSrv;
+        srs_interaction_primitives::ChangeScale bbChangeScaleSrv;
         bbChangeScaleSrv.request.name = bbPrimitiveName;
         bbChangeScaleSrv.request.scale = bbScale;
 
@@ -678,9 +678,9 @@ int main(int argc, char **argv)
     
     // Create clients for the add_bounding_box, change_pose and change_scale services
     // (for manipulation with a visualization of BB)
-    bbAddClient = n.serviceClient<srs_env_model::AddBoundingBox>("/but_gui/add_bounding_box");
-    bbChangePoseClient = n.serviceClient<srs_env_model::ChangePose>("/but_gui/change_pose");
-    bbChangeScaleClient = n.serviceClient<srs_env_model::ChangeScale>("/but_gui/change_scale");
+    bbAddClient = n.serviceClient<srs_interaction_primitives::AddBoundingBox>("/but_interaction_primitives/add_bounding_box");
+    bbChangePoseClient = n.serviceClient<srs_interaction_primitives::ChangePose>("/but_interaction_primitives/change_pose");
+    bbChangeScaleClient = n.serviceClient<srs_interaction_primitives::ChangeScale>("/but_interaction_primitives/change_scale");
     
     // Create a TF listener
     tfListener = new tf::TransformListener();

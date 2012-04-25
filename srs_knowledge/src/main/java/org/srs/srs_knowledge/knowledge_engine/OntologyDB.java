@@ -134,6 +134,7 @@ public class OntologyDB
 
     public String executeQuery(String queryString)
     {
+	/*
 	//System.out.println(queryString);
 	Query query = QueryFactory.create(queryString);
 
@@ -141,6 +142,7 @@ public class OntologyDB
 	ResultSet results = qe.execSelect();
 
 	ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+
 	ResultSetFormatter.out(ostream, results, query);
 	//ResultSetFormatter.out(System.out, results, query);
 	String r = "";
@@ -153,6 +155,29 @@ public class OntologyDB
 	}
 	qe.close();
 	return r;
+	*/
+
+	//// new added for test JSON output
+	Query query = QueryFactory.create(queryString);
+
+	QueryExecution qe = QueryExecutionFactory.create(query, model);
+	ResultSet results = qe.execSelect();
+
+	ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+	ResultSetFormatter.outputAsJSON(ostream, results);
+	//ResultSetFormatter.out(ostream, results, query);
+	//ResultSetFormatter.out(System.out, results, query);
+	String r = "";
+	try{
+	    r = new String(ostream.toByteArray(), "UTF-8");
+	    //System.out.println(r);
+	}
+	catch(Exception e){
+	    System.out.println(e.getMessage());
+	}
+	qe.close();
+	return r;
+
     }
     
     public ArrayList<QuerySolution> executeQueryRaw(String queryString)
@@ -175,6 +200,8 @@ public class OntologyDB
 	    System.out.println(e.getMessage());
 	}
 	*/
+
+	/*
 	ArrayList<QuerySolution> resList = new ArrayList<QuerySolution>();
 	if(results.hasNext()) {
 	    
@@ -184,7 +211,8 @@ public class OntologyDB
 	    //Literal y = qs.getLiteral("y");
 	    //Literal theta = qs.getLiteral("theta");
 	}
-
+	*/
+	ArrayList<QuerySolution> resList = (ArrayList)ResultSetFormatter.toList(results);
 	qe.close();
 	return resList; //results;
     }

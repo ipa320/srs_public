@@ -194,7 +194,7 @@ void srs::CMap2DPlugin::onFrameStart(const SMapParameters & par)
 
 
 
-void srs::CMap2DPlugin::handleOccupiedNode(const srs::tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs::CMap2DPlugin::handleOccupiedNode(srs::tButServerOcTree::iterator & it, const SMapParameters & mp)
 {
 	if (it.getDepth() == mp.treeDepth)
 	{
@@ -219,7 +219,7 @@ void srs::CMap2DPlugin::handleOccupiedNode(const srs::tButServerOcTree::iterator
 }
 
 
-void srs::CMap2DPlugin::handleFreeNode(const srs::tButServerOcTree::iterator & it, const SMapParameters & mp )
+void srs::CMap2DPlugin::handleFreeNode(srs::tButServerOcTree::iterator & it, const SMapParameters & mp )
 {
 	if (it.getDepth() == mp.treeDepth) {
 		octomap::OcTreeKey nKey = it.getKey(); //TODO: remove intermedate obj (1.4)

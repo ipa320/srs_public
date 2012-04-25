@@ -147,7 +147,7 @@ void srs::CPointCloudPlugin::onFrameStart( const SMapParameters & par )
 }
 
 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-void srs::CPointCloudPlugin::handleOccupiedNode(const srs::tButServerOcTree::iterator& it, const SMapParameters & mp)
+void srs::CPointCloudPlugin::handleOccupiedNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp)
 {
 //	std::cerr << "PCP: handle occupied" << std::endl;
 	tPclPoint point;

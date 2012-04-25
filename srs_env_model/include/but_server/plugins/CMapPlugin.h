@@ -31,6 +31,7 @@
 #include <but_server/ServerTools.h>
 #include <arm_navigation_msgs/CollisionMap.h>
 #include <srs_env_model/GetCollisionMap.h>
+#include <srs_env_model/IsNewCmap.h>
 #include <tf/transform_listener.h>
 #include <tf/message_filter.h>
 
@@ -80,6 +81,12 @@ namespace srs
         */
         bool getCollisionMapSrvCallback( srs_env_model::GetCollisionMap::Request & req, srs_env_model::GetCollisionMap::Response & res );
 
+        /**
+         * @brief Get true if given timestamp is older then current map time
+         * @param req request - caller's map timestamp
+         * @param res response - true, if new map and current timestamp
+         */
+        bool isNewCmapSrvCallback( srs_env_model::IsNewCmap::Request & req, srs_env_model::IsNewCmap::Response & res );
 
     protected:
         //! Collision map publisher name
@@ -112,6 +119,9 @@ namespace srs
         //! Get current collision map service
         ros::ServiceServer m_serviceGetCollisionMap;
 
+        //! Is new cmap service
+        ros::ServiceServer m_serviceIsNewCMap;
+
         //! Transform listener
         tf::TransformListener m_tfListener;
 
@@ -127,6 +137,9 @@ namespace srs
 
         /// Does need input point to be converted?
         bool m_bConvertPoint;
+
+        /// Current cmap timestamp
+        ros::Time m_mapTime;
 
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW

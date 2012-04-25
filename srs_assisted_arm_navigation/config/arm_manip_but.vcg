@@ -1,10 +1,10 @@
 Background\ ColorR=0,878431
 Background\ ColorG=0,878431
 Background\ ColorB=0,878431
-Fixed\ Frame=/base_link
+Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
 CButCobDisplay.Enabled=1
-CButCobDisplay.Position\:\ =-4.29435, 3.64457, -1.18001
+CButCobDisplay.Position\:\ =-5.01476, 4.173, 0.773798
 CollisionMap.Alpha=1
 CollisionMap.ColorR=0,1
 CollisionMap.ColorG=1
@@ -55,16 +55,17 @@ PC\ filtered..IntensityChannel\ Name=z
 PC\ filtered..IntensityMax\ ColorR=1
 PC\ filtered..IntensityMax\ ColorG=1
 PC\ filtered..IntensityMax\ ColorB=1
-PC\ filtered..IntensityMax\ Intensity=1,44949
+PC\ filtered..IntensityMax\ Intensity=3,28135
 PC\ filtered..IntensityMin\ ColorR=0
 PC\ filtered..IntensityMin\ ColorG=0
 PC\ filtered..IntensityMin\ ColorB=0
-PC\ filtered..IntensityMin\ Intensity=0,719738
+PC\ filtered..IntensityMin\ Intensity=2,22786
 PC\ filtered..IntensityUse\ full\ RGB\ spectrum=0
 PSV\ Markers.Enabled=1
 PSV\ Markers.Marker\ Topic=/planning_scene_visualizer_markers
 Plannning\ Scene.Enabled=1
 Plannning\ Scene.Marker\ Topic=/planning_scene_markers
+Plannning\ Scene.collision_map_markers=1
 Robot\ Model.Alpha=1
 Robot\ Model.Collision\ Enabled=0
 Robot\ Model.Enabled=1
@@ -171,8 +172,8 @@ teleop\ marker.Update\ Topic=/cob_interactive_teleop/update
 Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.286 3.74692 5.31012 -0.749367 1.28812 1.99452
-Property\ Grid\ State=selection=CollisionMap.Enabled;expanded=.Global Options,PSV Markers.Enabled.PSV Markers.Namespaces,Plannning Scene.Enabled.Plannning Scene.Namespaces,CollisionMap.Enabled.CollisionMap.StatusTopStatus,CButCobDisplay.Enabled.CButCobDisplay.StatusTopStatus,CButCobDisplay.Enabled.CButCobDisplay.Camera position;scrollpos=0,0;splitterpos=164,328;ispageselected=1
+Camera\ Config=1.146 3.67691 5.73053 -0.515368 1.1871 2.044
+Property\ Grid\ State=selection=;expanded=PSV Markers.Enabled.PSV Markers.Namespaces,Plannning Scene.Enabled.Plannning Scene.Namespaces,CollisionMap.Enabled.CollisionMap.StatusTopStatus,CButCobDisplay.Enabled.CButCobDisplay.StatusTopStatus,CButCobDisplay.Enabled.CButCobDisplay.Camera position;scrollpos=0,0;splitterpos=135,271;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz

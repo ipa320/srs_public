@@ -37,6 +37,8 @@ void ManualArmManipActionServer::executeCB(const srs_assisted_arm_navigation::Ma
 
   result_.result.collision = false;
   result_.result.success = false;
+  result_.result.repeat = false;
+  result_.result.failed = false;
   result_.result.timeout = false;
   result_.result.time_elapsed = ros::Duration(0);
 
@@ -118,7 +120,7 @@ void ManualArmManipActionServer::executeCB(const srs_assisted_arm_navigation::Ma
       }
 
 
-      if ((state_ != S_SUCCESS) && (state_ != S_FAILED)) {
+      if ((state_ != S_SUCCESS) && (state_ != S_FAILED) && (state_ != S_REPEAT)) {
 
         // send feedback
         setFeedbackFalse();
@@ -132,6 +134,8 @@ void ManualArmManipActionServer::executeCB(const srs_assisted_arm_navigation::Ma
 
       } else {
 
+        result_.result.failed = false;
+
         // send result
         result_.result.time_elapsed = ros::Time::now() - start_time_;
 
@@ -144,7 +148,16 @@ void ManualArmManipActionServer::executeCB(const srs_assisted_arm_navigation::Ma
 
         if (state_ == S_FAILED) {
 
+          ROS_INFO("S_FAILED");
           result_.result.failed = true;
+          server_.setAborted(result_.result);
+
+        }
+
+        if (state_ == S_REPEAT) {
+
+          ROS_INFO("S_REPEAT");
+          result_.result.repeat = true;
           server_.setAborted(result_.result);
 
         }

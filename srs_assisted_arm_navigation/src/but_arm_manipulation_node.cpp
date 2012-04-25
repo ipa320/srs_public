@@ -45,6 +45,9 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
     inited = false;
     params_ = params;
 
+    // TODO make it configurable through param.
+    aco_ = true;
+
     links_ = clist;
 
 }
@@ -93,6 +96,12 @@ void CArmManipulationEditor::armHasStoppedMoving() {
 
 }
 
+
+void CArmManipulationEditor::remove_coll_objects() {
+
+  coll_obj_det.clear();
+
+}
 
 void CArmManipulationEditor::reset() {
 
@@ -251,9 +260,12 @@ int main(int argc, char** argv)
 
       ros::ServiceServer service_success = n.advertiseService(SRV_SUCCESS, &CArmManipulationEditor::ArmNavSuccess,ps_editor);
       ros::ServiceServer service_failed = n.advertiseService(SRV_FAILED, &CArmManipulationEditor::ArmNavFailed,ps_editor);
+      ros::ServiceServer service_repeat = n.advertiseService(SRV_REPEAT, &CArmManipulationEditor::ArmNavRepeat,ps_editor);
 
       ros::ServiceServer service_collobj = n.advertiseService(SRV_COLLOBJ, &CArmManipulationEditor::ArmNavCollObj,ps_editor);
       ros::ServiceServer service_movepalmlink = n.advertiseService(SRV_MOVE_PALM_LINK, &CArmManipulationEditor::ArmNavMovePalmLink,ps_editor);
+
+      ros::ServiceServer service_switch_aco = n.advertiseService(SRV_SWITCH, &CArmManipulationEditor::ArmNavSwitchACO,ps_editor);
 
       ros::Timer timer1 = n.createTimer(ros::Duration(0.01), &CArmManipulationEditor::spin_callback,ps_editor);
 

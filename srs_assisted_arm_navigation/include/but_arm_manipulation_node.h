@@ -53,9 +53,11 @@
 #include "srs_assisted_arm_navigation/ArmNavStart.h"
 #include "srs_assisted_arm_navigation/ArmNavCollObj.h"
 #include "srs_assisted_arm_navigation/ArmNavMovePalmLink.h"
+#include "srs_assisted_arm_navigation/ArmNavSwitchAttCO.h"
 
 #include "srs_assisted_arm_navigation/ArmNavSuccess.h"
 #include "srs_assisted_arm_navigation/ArmNavFailed.h"
+#include "srs_assisted_arm_navigation/ArmNavRepeat.h"
 
 #include "srs_assisted_arm_navigation/ManualArmManipAction.h"
 #include <actionlib/server/simple_action_server.h>
@@ -94,6 +96,8 @@ using namespace srs_assisted_arm_navigation;
 #define SRV_REFRESH BUT_SERVICE("/arm_nav_refresh")
 #define SRV_COLLOBJ BUT_SERVICE("/arm_nav_coll_obj")
 #define SRV_MOVE_PALM_LINK BUT_SERVICE("/arm_nav_move_palm_link")
+#define SRV_SWITCH BUT_SERVICE("/arm_nav_switch_aco")
+#define SRV_REPEAT BUT_SERVICE("/arm_nav_repeat")
 
 #define ACT_ARM_MANIP BUT_ACTION("/manual_arm_manip_action")
 
@@ -179,7 +183,7 @@ public:
 
 
   /// List of possible states of arm manipulation task
-  enum {S_NONE,S_NEW,S_PLAN,S_EXECUTE,S_RESET,S_SUCCESS,S_FAILED};
+  enum {S_NONE,S_NEW,S_PLAN,S_EXECUTE,S_RESET,S_SUCCESS,S_FAILED, S_REPEAT};
 
   /*!
    * Method for changing state of execution (state, new_state variables).
@@ -278,10 +282,14 @@ public:
   bool ArmNavExecute(ArmNavExecute::Request &req, ArmNavExecute::Response &res);
   bool ArmNavReset(ArmNavReset::Request &req, ArmNavReset::Response &res);
   bool ArmNavRefresh(ArmNavRefresh::Request &req, ArmNavRefresh::Response &res);
+
   bool ArmNavSuccess(ArmNavSuccess::Request &req, ArmNavSuccess::Response &res);
   bool ArmNavFailed(ArmNavFailed::Request &req, ArmNavFailed::Response &res);
+  bool ArmNavRepeat(ArmNavRepeat::Request &req, ArmNavRepeat::Response &res);
+
   bool ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCollObj::Response &res);
   bool ArmNavMovePalmLink(ArmNavMovePalmLink::Request &req, ArmNavMovePalmLink::Response &res);
+  bool ArmNavSwitchACO(ArmNavSwitchAttCO::Request &req, ArmNavSwitchAttCO::Response &res);
 
   /** This callback is used to send interactive markers. It uses TimerEvent.
    *  @todo Make the period configurable.
@@ -294,6 +302,11 @@ public:
    */
   void reset();
 
+  /**
+   * Remove detected objects from list.
+   */
+  void remove_coll_objects();
+
   bool refresh();
 
   /// Pointer to action server. It's used to get access to srv_set_state method of ManualArmManipActionServer class
@@ -304,6 +317,8 @@ public:
    * \see INFLATE_BB
    */
   double inflate_bb_;
+
+  bool aco_;
 
 protected:
 
@@ -337,7 +352,7 @@ protected:
   void armHasStoppedMoving();
 
   /**
-   * Struct to store data of detected object.
+   * Struct to store data of detected object - in /map coord. system. It's recalculated to /base_link on each creation of planning scene.
    */
   typedef struct {
 
@@ -349,7 +364,7 @@ protected:
   } t_det_obj;
 
   /**
-   * List of detected object which should be in added in collision map.
+   * List of detected objects which should be in added in collision map.
    */
   std::vector<t_det_obj> coll_obj_det;
 

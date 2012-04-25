@@ -32,6 +32,7 @@
 #define COLLISION_MAP_PUBLISHER_NAME std::string("butsrv_collision_map")
 #define COLLISIONMAP_FRAME_ID std::string("/base_footprint")
 #define GETCOLLISIONMAP_SERVICE_NAME "but_srv_getcollisionmap"
+#define ISNEWCMAP_SERVICE_NAME "but_srv_isnewcmap"
 
 
 srs::CCMapPlugin::CCMapPlugin(const std::string & name)
@@ -43,6 +44,7 @@ srs::CCMapPlugin::CCMapPlugin(const std::string & name)
 , m_publishCollisionMap( true )
 , m_latchedTopics(false)
 , m_bConvertPoint( false )
+, m_mapTime(0)
 {
 	// Create collision map and the buffer
 	m_data = new arm_navigation_msgs::CollisionMap();
@@ -70,8 +72,11 @@ void srs::CCMapPlugin::init(ros::NodeHandle & node_handle)
 	// Connect publisher
 	m_cmapPublisher = node_handle.advertise<arm_navigation_msgs::CollisionMap> (	m_cmapPublisherName, 100, m_latchedTopics);
 
-	// Create and publish service
+	// Create and publish service - get collision map
 	m_serviceGetCollisionMap = node_handle.advertiseService( GETCOLLISIONMAP_SERVICE_NAME, 	&CCMapPlugin::getCollisionMapSrvCallback, this);
+
+	// Create and publish service - is new collision map
+	m_serviceIsNewCMap = node_handle.advertiseService( ISNEWCMAP_SERVICE_NAME, &CCMapPlugin::isNewCmapSrvCallback, this );
 }
 
 //! Called when new scan was inserted and now all can be published
@@ -85,6 +90,7 @@ void srs::CCMapPlugin::onPublish(const ros::Time & timestamp)
 	{
 		// CMaps differs, increase version index and swap them
 		++m_collisionMapVersion;
+		m_mapTime = timestamp;
 		swap( m_data, m_dataBuffer );
 
 		// Call invalidation
@@ -276,3 +282,19 @@ bool srs::CCMapPlugin::shouldPublish(  )
 {
 	return(m_publishCollisionMap && (m_latchedTopics || m_cmapPublisher.getNumSubscribers() > 0));
 }
+
+/**
+ * @brief Get true if given timestamp is older then current map time
+ * @param req request - caller's map timestamp
+ * @param res response - true, if new map and current timestamp
+ */
+bool srs::CCMapPlugin::isNewCmapSrvCallback( srs_env_model::IsNewCmap::Request & req, srs_env_model::IsNewCmap::Response & res )
+{
+	PERROR( "Is new cmap service called ");
+
+	res.is_newer = req.my_time < m_mapTime;
+	res.current_time = m_mapTime;
+
+	return true;
+}
+

@@ -12,7 +12,7 @@
   <include file="$(find cob_script_server)/launch/script_server.launch"/>
 
   <!-- srs interaction primitives -->
-  <node name="but_im_server" pkg="srs_interaction_primitives" type="interaction_primitives_service_server" />
+  <node name="but_im_server" pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" />
   
   <!-- planning environment -->
   <!--<include file="$(find cob_arm_navigation_but)/launch/planning_env_collider.launch"/>-->
@@ -31,7 +31,7 @@
   
   <!-- RVIZ with proper configuration -->
   <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer_but' args="-d $(find srs_assisted_arm_navigation)/config/arm_manip_collider.vcg">
-    <param name="wait_for_start" type="bool" value="false"/>
+    <param name="wait_for_start" type="bool" value="true"/>
   </node>
   
   <!-- BUT cob teleop marker -->

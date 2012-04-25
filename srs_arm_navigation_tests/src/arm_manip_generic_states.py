@@ -53,6 +53,7 @@ from tf import TransformListener
 import threading
 from srs_assisted_arm_navigation.srv import ArmNavCollObj
 from srs_assisted_arm_navigation.srv import ArmNavMovePalmLink
+import copy
 
 class coll_obj_publisher (threading.Thread):
   
@@ -98,7 +99,7 @@ class coll_obj_publisher (threading.Thread):
 
 class move_arm_to_given_positions_assisted(smach.State):
   def __init__(self):
-    smach.State.__init__(self,outcomes=['completed','not_completed','failed','pre-empted'],
+    smach.State.__init__(self,outcomes=['completed','not_completed','failed','pre-empted','repeat'],
                          input_keys=['list_of_target_positions','list_of_id_for_target_positions','name_of_the_target_object','pose_of_the_target_object','bb_of_the_target_object'],
                          output_keys=['id_of_the_reached_position'])
     
@@ -139,6 +140,7 @@ class move_arm_to_given_positions_assisted(smach.State):
     set_gr_pos = rospy.ServiceProxy(self.s_set_gr_pos, SetPreGraspPosition)
     rospy.loginfo('Calling service %s',self.s_set_gr_pos)
     
+    pregr_tmp = list(userdata.list_of_target_positions)
     
     for idx in range(0,len(userdata.list_of_id_for_target_positions)):
     
@@ -153,12 +155,12 @@ class move_arm_to_given_positions_assisted(smach.State):
         
         # we should receive it as PoseStamped
         # TODO maybe it will be necessary to do some transform of coordinates
-        gpose = userdata.list_of_target_positions[idx]
+        gpose = pregr_tmp[idx]
         
         # shift position to be relative to detected object 
-        gpose.position.x = gpose.position.x - userdata.pose_of_the_target_object.pose.position.x
-        gpose.position.y = gpose.position.y - userdata.pose_of_the_target_object.pose.position.y
-        gpose.position.z = gpose.position.z - userdata.pose_of_the_target_object.pose.position.z
+        gpose.position.x -= userdata.pose_of_the_target_object.pose.position.x
+        gpose.position.y -= userdata.pose_of_the_target_object.pose.position.y
+        gpose.position.z -= userdata.pose_of_the_target_object.pose.position.z
         
         
         rospy.loginfo('Adding gr pos id %d [x=%f,y=%f,z=%f]',userdata.list_of_id_for_target_positions[idx],gpose.position.x,gpose.position.y,gpose.position.z)
@@ -175,7 +177,7 @@ class move_arm_to_given_positions_assisted(smach.State):
     
   def add_im(self,userdata):
     
-    tfl = TransformListener()
+    #tfl = TransformListener()
     
     rospy.loginfo("Waiting for %s service",self.s_get_object_id)
     rospy.wait_for_service(self.s_get_object_id)
@@ -230,65 +232,32 @@ class move_arm_to_given_positions_assisted(smach.State):
     color.g = 1
     color.b = 0
     color.a = 1
-    
-    # try to transform pose of detected object from /base_link to /map
-    transf_target = '/map'
-  
-    rospy.loginfo('Lets transform pose from %s to %s frame',userdata.pose_of_the_target_object.header.frame_id,transf_target)
-  
-    #if not tfl.frameExists(userdata.pose_of_the_target_object.header.frame_id):
-    #  rospy.logerr('Frame %s does not exist',userdata.pose_of_the_target_object.header.frame_id)
-    #  sys.exit(0)
-  
-    #if not tfl.frameExists(transf_target):
-    #  rospy.logerr('Frame %s does not exist',transf_target)
-    #  sys.exit(0) 
-    
-
-    t = rospy.Time(0)
-  
-    rospy.loginfo('Waiting for transform for some time...')
-    tfl.waitForTransform(transf_target,userdata.pose_of_the_target_object.header.frame_id,t,rospy.Duration(5))
-  
-    if tfl.canTransform(transf_target,userdata.pose_of_the_target_object.header.frame_id,t):
-    
-      obj_pose_transf = tfl.transformPose(transf_target,userdata.pose_of_the_target_object)
-    
-    else:
-    
-      rospy.logerr('Transformation is not possible!')
-      sys.exit(0) 
       
-    #print "Transformed pose of object"
-    #print obj_pose_transf
-      
-      
-    bpose = obj_pose_transf.pose
-    #bpose = userdata.pose_of_the_target_object.pose
-    
+    bpose = copy.deepcopy(self.pose_of_the_target_object_in_map.pose)
+    bpose.position.z += userdata.bb_of_the_target_object['bb_lwh'].z/2
     
     try:
       
       if use_default_mesh:
       
-        add_object(frame_id = transf_target,
+        add_object(frame_id = '/map',
                    name = userdata.name_of_the_target_object,
                    description = 'Object to grasp',
                    pose = bpose,
                    bounding_box_lwh = userdata.bb_of_the_target_object['bb_lwh'],
                    color = color,
-                   resource = 'package://cob_gazebo_objects/Media/models/milk.dae', # TODO udelat na zaklade toho co se mi povede ziskat volani bud z mesh nebo shape...
+                   resource = 'package://cob_gazebo_objects/Media/models/milk.dae',
                    #shape = shape,
                    use_material = True)
       else:
         
-        add_object(frame_id = transf_target,
+        add_object(frame_id = '/map',
                    name = userdata.name_of_the_target_object,
                    description = 'Object to grasp',
                    pose = bpose,
                    bounding_box_lwh = userdata.bb_of_the_target_object['bb_lwh'],
                    color = color,
-                   #resource = 'package://cob_gazebo_objects/Media/models/milk.dae', # TODO udelat na zaklade toho co se mi povede ziskat volani bud z mesh nebo shape...
+                   #resource = 'package://cob_gazebo_objects/Media/models/milk.dae', 
                    shape = shape,
                    use_material = True)
       
@@ -318,24 +287,95 @@ class move_arm_to_given_positions_assisted(smach.State):
  
   def pregr_im_callback(self,data):
     
-    rospy.loginfo("Move arm to pregrasp pos. ID=%d, object=%s",data.pos_id,data.marker_name);
+    rospy.loginfo("Move arm to pregrasp pos. ID=%d, object=%s, x=%d, y=%d, z=%d",
+                  data.pos_id,
+                  data.marker_name,
+                  self.userdata.list_of_target_positions[data.pos_id-1].position.x,
+                  self.userdata.list_of_target_positions[data.pos_id-1].position.y,
+                  self.userdata.list_of_target_positions[data.pos_id-1].position.z);
     
-    # TODO call service provided by arm_manip_node which will move the arm appropriately
     rospy.wait_for_service(self.s_move_arm)
     move_arm = rospy.ServiceProxy(self.s_move_arm, ArmNavMovePalmLink);
     
+    print "test - list_of_trg_pos"
+    print self.userdata.list_of_target_positions[data.pos_id-1]
+    
+    target_pos = []
+    #target_pos = list(self.userdata.list_of_target_positions)
+    target_pos = copy.deepcopy(self.userdata.list_of_target_positions)
+    
+    pose_of_the_target_object_in_base_link = None
+    # self.pose_of_the_target_object_in_map -> transform it to /base_link
+    
+    t = rospy.Time(0)
+
+    transf_target = '/base_link'
+
+    self.tfl.waitForTransform(transf_target,'/map',t,rospy.Duration(5))
+  
+    if self.tfl.canTransform(transf_target,'/map',t):
+    
+      pose_of_the_target_object_in_base_link = self.tfl.transformPose(transf_target,self.pose_of_the_target_object_in_map)
+    
+    else:
+    
+      rospy.logerr('Transformation is not possible!')
+      sys.exit(0) 
+    
+    target_pos[data.pos_id-1].position.x += pose_of_the_target_object_in_base_link.pose.position.x
+    target_pos[data.pos_id-1].position.y += pose_of_the_target_object_in_base_link.pose.position.y
+    target_pos[data.pos_id-1].position.z += (pose_of_the_target_object_in_base_link.pose.position.z + self.userdata.bb_of_the_target_object['bb_lwh'].z/2)
+    
+    #target_pos[data.pos_id-1].position.x += self.userdata.pose_of_the_target_object.pose.position.x
+    #target_pos[data.pos_id-1].position.y += self.userdata.pose_of_the_target_object.pose.position.y
+    #target_pos[data.pos_id-1].position.z += (self.userdata.pose_of_the_target_object.pose.position.z + self.userdata.bb_of_the_target_object['bb_lwh'].z/2)
+    
+
+    
+    
+    print "Moving arm's IM to this position:"
+    print target_pos[data.pos_id-1]
+    
     try:
       
-      move_arm(sdh_palm_link_pose=self.userdata.list_of_target_positions[data.pos_id]);
+      move_arm(sdh_palm_link_pose=target_pos[data.pos_id-1]);
       
     except Exception, e:
       
       rospy.logerr('Cannot move sdh_palm_link to given position, error: %s',str(e))
+      
+    del target_pos
     
     
   
   def execute(self,userdata):
         
+    self.tfl = TransformListener()
+    
+        # try to transform pose of detected object from /base_link to /map
+    transf_target = '/map'
+  
+    rospy.loginfo('Lets transform pose of object from %s to %s frame',userdata.pose_of_the_target_object.header.frame_id,transf_target)
+
+    t = rospy.Time(0)
+  
+    rospy.loginfo('Waiting for transform for some time...')
+    self.tfl.waitForTransform(transf_target,userdata.pose_of_the_target_object.header.frame_id,t,rospy.Duration(5))
+  
+    if self.tfl.canTransform(transf_target,userdata.pose_of_the_target_object.header.frame_id,t):
+    
+      self.pose_of_the_target_object_in_map = self.tfl.transformPose(transf_target,userdata.pose_of_the_target_object)
+    
+    else:
+    
+      rospy.logerr('Transformation is not possible!')
+      sys.exit(0) 
+      
+    #print "Transformed pose of object"
+    #print obj_pose_transf
+     
+    #self.pose_of_the_target_object_in_map = copy.deepcopy(obj_pose_transf)
+    
     self.userdata = userdata
         
     rospy.loginfo('Executing state move_arm_to_given_positions_assisted (%s)',userdata.name_of_the_target_object)    
@@ -392,7 +432,7 @@ class move_arm_to_given_positions_assisted(smach.State):
     
     goal.pregrasp = True
     goal.object_name = userdata.name_of_the_target_object
-    goal.target_positions = userdata.list_of_target_positions
+    goal.target_positions = list(userdata.list_of_target_positions)
     goal.positions_ids = userdata.list_of_id_for_target_positions
     
     rospy.loginfo("Sending goal...")
@@ -423,14 +463,22 @@ class move_arm_to_given_positions_assisted(smach.State):
       rospy.loginfo('action timeouted')
       userdata.id_of_the_reached_position = -1
       return 'not_completed'
+  
+    if result.repeat:
+      rospy.loginfo('request for repeating action')
+      userdata.id_of_the_reached_position = -1
+      return 'repeat'
     
-    rospy.loginfo('action failed')
+    if result.failed:
+      rospy.loginfo('Oou... Action failed')
+      userdata.id_of_the_reached_position = -1
+      return 'failed'
+    
+    rospy.loginfo('Ups... Unknown state of action')
     userdata.id_of_the_reached_position = -1
     return 'failed'
 
     
-
-
 
 class move_arm_from_a_given_position_assisted(smach.State):
   def __init__(self):
@@ -471,5 +519,9 @@ class move_arm_from_a_given_position_assisted(smach.State):
       rospy.loginfo('action timeouted')
       return 'not_completed'
     
-    rospy.loginfo('action failed')
+    if result.failed:
+      rospy.loginfo('Oou... Action failed')
+      return 'failed'
+    
+    rospy.loginfo('Ups... Unknown state of action')
     return 'failed'

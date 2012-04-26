@@ -70,6 +70,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.ontology.OntResource;
+import com.hp.hpl.jena.ontology.OntProperty;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -369,6 +370,19 @@ public class OntologyDB
 	model.leaveCriticalSection();
 	return pro;
     }
+
+    public OntProperty getOntProperty(String uri) throws NonExistenceEntryException 
+    {
+	model.enterCriticalSection(Lock.READ);
+	OntProperty pro = model.getOntProperty(uri);
+	if (pro == null) {
+	    model.leaveCriticalSection();
+	    throw new NonExistenceEntryException(uri);
+	}
+	model.leaveCriticalSection();
+	return pro;
+    }
+
 
     //private String modelFileName;    
     //private Model model;

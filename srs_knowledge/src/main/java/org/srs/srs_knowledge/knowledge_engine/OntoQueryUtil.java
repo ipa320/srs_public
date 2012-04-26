@@ -62,8 +62,12 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
+import com.hp.hpl.jena.ontology.OntProperty;
 import java.io.*;
 import java.util.ArrayList; 
+import java.util.ConcurrentModificationException;
+import java.util.NoSuchElementException;
+ import java.util.HashSet;
 import java.util.Iterator;
 import ros.*;
 import ros.communication.*;
@@ -459,8 +463,9 @@ public class OntoQueryUtil
 		    try {
 			Individual ind1 = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + resOBJ.objects.get(i));
 			Individual ind2 = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + resWS.objects.get(j));
-			Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
-			ind1.removeProperty(proExist, ind2);
+			//Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+			//ind1.removeProperty(proExist, ind2);
+			OntoQueryUtil.removeAllSubPropertiesOf(OntoQueryUtil.ObjectNameSpace + resOBJ.objects.get(i), OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
 
 			if (OntoQueryUtil.updateOnSpatialRelation(ind1, ind2) ) {
 			    System.out.println("Added Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
@@ -596,9 +601,8 @@ public class OntoQueryUtil
 		    re.objects.add(temp.getLocalName());
 		    re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
 		    try{
-			
-			//stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "spatiallyRelated", temp);			
-			stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "aboveOf", temp);
+			stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "spatiallyRelated", temp);
+			//stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "aboveOf", temp);
 			re.spatialRelation.add(stm.getPredicate().getLocalName());
 			re.spatialRelatedObject.add(stm.getObject().asResource().getLocalName());
 		    }
@@ -775,6 +779,84 @@ public class OntoQueryUtil
 	
 	return re;
 	*/
+    }
+
+    public static void removeAllSubPropertiesOf(String subjectURI, String propertyURI) {
+	try{
+	Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(subjectURI);
+	OntProperty proExist = KnowledgeEngine.ontoDB.getOntProperty(propertyURI);
+
+	com.hp.hpl.jena.util.iterator.ExtendedIterator<OntProperty> subPros = (com.hp.hpl.jena.util.iterator.ExtendedIterator<OntProperty>)proExist.listSubProperties();
+
+	while(subPros.hasNext()) {
+	    com.hp.hpl.jena.rdf.model.Statement stm = targetInd.getProperty(subPros.next());
+	    if(stm != null) {
+		KnowledgeEngine.ontoDB.removeStatement(stm);
+		targetInd.removeAll(proExist);
+	    }
+	}
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString() + "  " + e.getMessage());
+	    return;
+	}
+    }
+
+    public static void testRemoveProperty() {
+	try {
+	    String targetObj = OntoQueryUtil.ObjectNameSpace + "MilkBox0";
+	    System.out.println("TARGET OBJECT IS ::: " + targetObj);
+	    if(!targetObj.trim().equals("")) {
+		Pose tmpPose = new Pose();
+		tmpPose.position.x = -1000;
+		tmpPose.position.y = -1000;
+		tmpPose.position.z = -1000;
+		tmpPose.orientation.x = -1000;
+		tmpPose.orientation.y = -1000;
+		tmpPose.orientation.z = -1000;
+		tmpPose.orientation.w = -1000;
+
+		// update its pose
+		try{
+		    OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, targetObj.trim());
+		    OntoQueryUtil.computeOnSpatialRelation();
+		}
+		catch(Exception e) {
+		    System.out.println(e.getMessage() + "   " + e.toString());
+		}
+	    }
+	    
+	    Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(targetObj);
+
+	    OntoQueryUtil.removeAllSubPropertiesOf(targetObj, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+
+	    String gripper = OntoQueryUtil.ObjectNameSpace + "SRSCOBGripper";
+	    System.out.println("<<<<<  " + gripper + "  >>>>>");
+	    
+	    Individual gripInd = KnowledgeEngine.ontoDB.getIndividual(gripper);
+
+	    /*
+	    OntProperty proExist = KnowledgeEngine.ontoDB.getOntProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+	    com.hp.hpl.jena.util.iterator.ExtendedIterator<OntProperty> subPros = (com.hp.hpl.jena.util.iterator.ExtendedIterator<OntProperty>)proExist.listSubProperties();
+
+	    while(subPros.hasNext()) {
+		com.hp.hpl.jena.rdf.model.Statement stm = targetInd.getProperty(subPros.next());
+		if(stm != null) {
+		    KnowledgeEngine.ontoDB.removeStatement(stm);
+		    targetInd.removeAll(proExist);
+		}
+	    }
+	    */
+
+	    Property pro = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "grippedBy");
+	    
+	    targetInd.setPropertyValue(pro, gripInd);
+	    
+	}
+	catch (Exception e) {
+	    System.out.println(" ==================   " + e.getMessage() + "   " + e.toString());
+	}
+	
     }
 
     private static float getFloatOfStatement(Statement stm) 

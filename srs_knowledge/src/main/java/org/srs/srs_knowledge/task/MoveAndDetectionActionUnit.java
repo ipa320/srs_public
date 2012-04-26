@@ -80,6 +80,8 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	    detAct.actionInfo.add("detect");
 	    detAct.actionInfo.add(Integer.toString(houseHoldId));
 	    detAct.actionInfo.add(objectClassName);
+	    // detAct.actionInfo.add(tableName);
+	   
 
 	    actionUnits.add(detAct);
 	}

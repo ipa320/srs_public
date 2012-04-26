@@ -66,6 +66,28 @@ def queryGrippedBy():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
+def queryGetWorkspace():
+    rospy.wait_for_service('query_sparql')
+    try:
+        print '\n---- Try SparQL to query all instances of type Table ----'
+        spql = rospy.ServiceProxy('query_sparql', QuerySparQL)
+
+        queryString = """
+                PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>
+	        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+		PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                SELECT ?ws ?rel ?obj WHERE { 
+		?obj srs:spatiallyRelated ipa-kitchen-map:SRSCOBTray .   
+		}
+                """
+        print queryString
+	print '----\n'
+	resp1 = spql(queryString)
+        return resp1.result
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
 
 def testNextActionService(result):
     print 'Plan next Action service'
@@ -112,6 +134,7 @@ if __name__ == "__main__":
     print querySparQL()
     print queryGripper()
     print queryGrippedBy()
+    print queryGetWorkspace()
     #print requestNewTask()
     #print testNextActionService([0,0,0])
     #print testNextActionService([0,0,0])

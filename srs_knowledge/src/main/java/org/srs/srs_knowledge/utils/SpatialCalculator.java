@@ -159,10 +159,10 @@ public class SpatialCalculator
 	ArrayList<ros.pkg.geometry_msgs.msg.Point> corners1 = getBoundingBoxTopCorners(obj1);
 	ArrayList<ros.pkg.geometry_msgs.msg.Point> corners2 = getBoundingBoxTopCorners(obj2);
 	if(ifOverlapping(createPolygon(corners1), createPolygon(corners2))) {
-	    System.out.println("YES.... OVerlapping..");
+	    //System.out.println("YES.... OVerlapping..");
 	}
 	else{
-	    System.out.println("NOOO.... OVerlapping..");
+	    //System.out.println("NOOO.... OVerlapping..");
 	}
 	switch(poseCfg) {
 	case 0:

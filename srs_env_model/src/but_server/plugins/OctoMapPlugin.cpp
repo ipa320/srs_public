@@ -897,15 +897,15 @@ long int srs::COctoMapPlugin::doObjectTesting( srs::CTestingObjectBase * object 
 /**
  * Remove cube as a service - callback
  */
+#define G2EPOINT( gp ) (Eigen::Vector3f( gp.x, gp.y, gp.z ))
+#define G2EQUAT( gp ) (Eigen::Quaternionf( gp.x, gp.y, gp.z, gp.w ))
 bool srs::COctoMapPlugin::removeCubeCB( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res )
 {
 	if( m_removeTester != 0 )
 		delete m_removeTester;
 
 	// Create new tester
-	m_removeTester = new srs::CTestingPolymesh( srs::CTestingPolymesh::tPoint(req.center_x, req.center_y, req.center_z),
-			srs::CTestingPolymesh::tQuaternion( req.pose_x, req.pose_y, req.pose_z, req.pose_w ),
-			srs::CTestingPolymesh::tPoint( req.size_x, req.size_y, req.size_z ));
+	m_removeTester = new srs::CTestingPolymesh( G2EPOINT( req.pose.position ), G2EQUAT( req.pose.orientation ), G2EPOINT( req.size ) );
 
 	// Set it to life
 	m_testerLifeCounter = m_testerLife;

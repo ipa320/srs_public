@@ -30,6 +30,9 @@
 
 #include "BoundingBox.h"
 
+#define PARAMETER_ALLOW_INTERACTION "/but_interaction_primitives/allow_object_interaction"
+#define PARAMETER_SHOW_PREGRASP "/but_interaction_primitives/show_object_pregrasp"
+
 namespace but_interaction_primitives
 {
 /**

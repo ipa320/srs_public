@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_display.cpp 521 2012-04-05 13:55:58Z spanel $
+ * $Id: but_display.cpp 743 2012-04-25 19:07:28Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -66,13 +66,22 @@ CButDisplay::CButDisplay(const std::string & name,rviz::VisualizationManager * m
 
     rviz::WindowManagerInterface * wi( manager->getWindowManager() );
 
-/*    if( wi != 0 )
-    {     
+    if( wi != 0 )
+    {
+    	m_ocmap_window = new COctomapControlPane( wi->getParentWindow(), _T("Octomap control"), wi );
+
+    	if( m_ocmap_window != 0 )
+    	{
+    		wi->addPane( "Octomap control", m_ocmap_window );
+    		wi->showPane( m_ocmap_window );
+    		std::cerr << "Octomap control pane added..." << std::endl;
+
+    	}
     }
     else
     {
         std::cerr << "No window manager, no panes :( " << std::endl;
-    }*/
+    }
 
     // Create publisher
     this->m_cameraPositionPub = private_nh.advertise< srs_env_model_msgs::RVIZCameraPosition >(
@@ -121,11 +130,13 @@ void CButDisplay::createProperties()
 }
 
 /*
- *  Display enablet callback
+ *  Display enabled callback
  */
 void CButDisplay::onEnable()
 {
     m_sceneNode->setVisible( true );
+
+//    m_ocmap_window->Show(true);
 }
 
 /*
@@ -134,6 +145,7 @@ void CButDisplay::onEnable()
 void CButDisplay::onDisable()
 {
     m_sceneNode->setVisible( false );
+//    m_ocmap_window->Show(false);
 }
 
 /*

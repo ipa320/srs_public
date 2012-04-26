@@ -357,9 +357,78 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	else if(currentActUnit.getActionType().equals("MoveAndGrasp")) {
 	    // look for the object at the pose 
-	    
 	    // update its relationship with the Robot, and remove its pose information
-	    
+	    //	    Individual rob = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + OntoQueryUtil.RobotName);
+	    String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
+	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+		+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
+	    String queryString = "SELECT DISTINCT ?gripper WHERE { "
+		+ "<" + mapNameSpace + OntoQueryUtil.RobotName + ">"
+		+ " srs:hasPart ?gripper . " 
+		+ " ?gripper a srs:RobotGripper . " 
+		+ "}";
+
+	    try {
+		String targetObj = SpatialCalculator.nearestObject(this.recentDetectedObject, OntoQueryUtil.GlobalNameSpace + this.targetContent);
+		System.out.println("TARGET OBJECT IS ::: " + targetObj);
+		if(!targetObj.trim().equals("")) {
+		   
+		    Pose tmpPose = new Pose();
+		    tmpPose.position.x = -1000;
+		    tmpPose.position.y = -1000;
+		    tmpPose.position.z = -1000;
+		    tmpPose.orientation.x = -1000;
+		    tmpPose.orientation.y = -1000;
+		    tmpPose.orientation.z = -1000;
+		    tmpPose.orientation.w = -1000;
+		    
+		    // update its pose
+		    try{
+			OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, targetObj.trim());
+			OntoQueryUtil.computeOnSpatialRelation();
+		    }
+		    catch(Exception e) {
+			System.out.println(e.getMessage());
+		    }
+		}
+	       
+		
+		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
+		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
+		if(rset.size() == 0) {
+		    System.out.println("<<<< NO GRIPPER INSTANCE FOUND >>>");   
+		}
+		else {
+		    System.out.println("<<<< FOUND GRIPPER INSTANCE >>>");   
+		    Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(targetObj);
+		    QuerySolution qs = rset.get(0);
+
+		    //TODO ERROR::::  com.hp.hpl.jena.rdf.model.impl.ResourceImpl cannot be cast to com.hp.hpl.jena.rdf.model.Literal
+		    //String gripper = qs.get("gripper").asResource().getURI();
+		    //String gripper = qs.getURI();
+		    String gripper = qs.get("gripper").toString();
+		    System.out.println("<<<<<  " + gripper + "  >>>>>");
+
+		    Individual gripInd = KnowledgeEngine.ontoDB.getIndividual(gripper);
+		    //Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "aboveOf");
+		    Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+		    //com.hp.hpl.jena.rdf.model.Statement stm = targetInd.getProperty(proExist);
+		    //KnowledgeEngine.ontoDB.removeStatement(stm);
+		    //targetInd.removeAll(proExist);
+		    NodeIterator it = targetInd.listPropertyValues(proExist);
+		    while(it.hasNext()) {
+			targetInd.removeProperty(proExist, it.next());
+		    }
+		    
+		    Property pro = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "grippedBy");
+
+		    targetInd.setPropertyValue(pro, gripInd);
+		}
+	    }
+	    catch (Exception e) {
+		System.out.println(" ==================   " + e.getMessage() + "   " + e.toString());
+	    }
 	}
 	else if(currentActUnit.getActionType().equals("PutOnTray")) {
 	    // look for the object at the pose 

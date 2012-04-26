@@ -341,14 +341,6 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOB33 -->
-
-    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOB33">
-        <rdf:type rdf:resource="&srs;COB3_3"/>
-    </owl:NamedIndividual>
-    
-
-
     <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOBGripper -->
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOBGripper">
@@ -477,6 +469,17 @@
         <srs:yCoord rdf:datatype="&xsd;float">1.26</srs:yCoord>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">7</srs:houseHoldObjectID>
         <srs:inFrontOf-Generally rdf:resource="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#Sofa0"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#cob3-3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#cob3-3">
+        <rdf:type rdf:resource="&srs;COB3_3"/>
+        <srs:hasPart rdf:resource="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOBGripper"/>
+        <srs:hasPart rdf:resource="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCOBTray"/>
+        <srs:hasPart rdf:resource="http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#SRSCobManipulator"/>
     </owl:NamedIndividual>
     
 

@@ -213,7 +213,8 @@ public class KnowledgeEngine
 	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
 
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
-	
+	String robotName = config.getProperty("robot_name",  System.getenv("ROBOT"));
+
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	    System.out.println("Map Name Space: " + mapNamespace);
@@ -224,6 +225,7 @@ public class KnowledgeEngine
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
 	OntoQueryUtil.MapName = mapNamespacePrefix;
+	OntoQueryUtil.RobotName = robotName;
     }
 
     public void testOnto(String className)

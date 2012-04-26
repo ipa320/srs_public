@@ -295,38 +295,38 @@ public class OntoQueryUtil
 	    Individual ind = KnowledgeEngine.ontoDB.getIndividual(objectURI);	    
 	    // set property
 	    Property pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "xCoord");
-	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
+	    //	    com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(pro);
 	    //Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(10.0f);
 	    Literal x = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.x));
        	    ind.setPropertyValue(pro, x);
 
 	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "yCoord");
-	    stm = ind.getProperty(pro);
+	    //stm = ind.getProperty(pro);
 	    Literal y = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.y));
        	    ind.setPropertyValue(pro, y);
 
 	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "zCoord");
-	    stm = ind.getProperty(pro);
+	    //stm = ind.getProperty(pro);
 	    Literal z = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.position.z));
        	    ind.setPropertyValue(pro, z);
 
 	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qx");
-	    stm = ind.getProperty(pro);
+	    //stm = ind.getProperty(pro);
 	    Literal qx = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.x));
        	    ind.setPropertyValue(pro, qx);
 
 	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qy");
-	    stm = ind.getProperty(pro);
+	    //stm = ind.getProperty(pro);
 	    Literal qy = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.y));
        	    ind.setPropertyValue(pro, qy);
 
 	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qz");
-	    stm = ind.getProperty(pro);
+	    //stm = ind.getProperty(pro);
 	    Literal qz = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.z));
        	    ind.setPropertyValue(pro, qz);
 
 	    pro = KnowledgeEngine.ontoDB.getProperty(propertyNSURI + "qu");
-	    stm = ind.getProperty(pro);
+	    //stm = ind.getProperty(pro);
 	    Literal qw = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.w));
        	    ind.setPropertyValue(pro, qw);
 
@@ -441,15 +441,15 @@ public class OntoQueryUtil
 	GetObjectsOnMap.Response resOBJ = getObjectsOnMap(OntoQueryUtil.MapName, true);
 	GetWorkspaceOnMap.Response resWS = getWorkspaceOnMap(OntoQueryUtil.MapName, true);
 	// pair-wise comparison --- if condition met, then update the knowledge base
-	System.out.println("RESULT ------->>>>>>  SIZE OF OBJECTS: " + resOBJ.objects.size());
-	for (String obj : resOBJ.objects) {
-	    System.out.println(obj);
-	}
+	//System.out.println("RESULT ------->>>>>>  SIZE OF OBJECTS: " + resOBJ.objects.size());
+	//for (String obj : resOBJ.objects) {
+	//    System.out.println(obj);
+	//}
 
-	System.out.println("RESULT ------>>>>>> SIZE OF WORKSPACES:  " + resWS.objects.size());
-	for (String ws : resWS.objects) {
-	    System.out.println(ws);
-	}
+	//System.out.println("RESULT ------>>>>>> SIZE OF WORKSPACES:  " + resWS.objects.size());
+	//for (String ws : resWS.objects) {
+	//   System.out.println(ws);
+	//}
 
 	for (int i = 0; i < resOBJ.objectsInfo.size(); i++) {
 	    for (int j = 0; j < resWS.objectsInfo.size(); j++) {
@@ -459,6 +459,9 @@ public class OntoQueryUtil
 		    try {
 			Individual ind1 = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + resOBJ.objects.get(i));
 			Individual ind2 = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + resWS.objects.get(j));
+			Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+			ind1.removeProperty(proExist, ind2);
+
 			if (OntoQueryUtil.updateOnSpatialRelation(ind1, ind2) ) {
 			    System.out.println("Added Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
 			}
@@ -473,7 +476,7 @@ public class OntoQueryUtil
 		    
 		}
 		else {
-		    System.out.println("NO MATCH.... between : " + resOBJ.objects.get(i) + "  and  " + resWS.objects.get(j));
+		    //System.out.println("NO MATCH.... between : " + resOBJ.objects.get(i) + "  and  " + resWS.objects.get(j));
 		    
 		}
 	    }
@@ -487,7 +490,7 @@ public class OntoQueryUtil
     private static boolean updateOnSpatialRelation(Individual obj1, Individual obj2) {
 	try {
 	    Property pro = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "aboveOf");
-	    com.hp.hpl.jena.rdf.model.Statement stm = obj1.getProperty(pro);
+	    //com.hp.hpl.jena.rdf.model.Statement stm = obj1.getProperty(pro);
 	    obj1.setPropertyValue(pro, obj2);
 	} 
 	catch(NonExistenceEntryException e) {
@@ -594,7 +597,8 @@ public class OntoQueryUtil
 		    re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
 		    try{
 			
-			stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "spatiallyRelated", temp);			
+			//stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "spatiallyRelated", temp);			
+			stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "aboveOf", temp);
 			re.spatialRelation.add(stm.getPredicate().getLocalName());
 			re.spatialRelatedObject.add(stm.getObject().asResource().getLocalName());
 		    }
@@ -820,5 +824,6 @@ public class OntoQueryUtil
     public static String ObjectNameSpace = "";
     public static String GlobalNameSpace = "";
     public static String MapName = "";
+    public static String RobotName = "cob3-3";
 }
 

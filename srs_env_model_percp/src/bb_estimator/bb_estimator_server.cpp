@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: bb_estimator_server.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: bb_estimator_server.cpp 742 2012-04-25 15:18:28Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -9,7 +9,7 @@
  *
  * Author: Tomas Hodan (xhodan04@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
- * Date: 02.03.2012 (version 5.0)
+ * Date: 25.4.2012 (version 6.0)
  * 
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -54,6 +54,9 @@
 #include "ros/ros.h"
 #include "bb_estimator/services_list.h"
 #include "srs_env_model_percp/EstimateBB.h" // Definition of the service for BB estimation
+#include "srs_env_model_percp/EstimateBBAlt.h"
+#include "srs_env_model_percp/EstimateRect.h"
+#include "srs_env_model_percp/EstimateRectAlt.h"
 #include <algorithm>
 
 #include <message_filters/subscriber.h>
@@ -83,6 +86,7 @@ using namespace message_filters;
 //------------------------------------------------------------------------------
 static const float PI = 3.1415926535;
 const bool DEBUG = false; // If true, verbose outputs are written to console.
+//const bool DEBUG = true; // If true, verbose outputs are written to console.
 
 // Cache
 const int CACHE_SIZE = 10;
@@ -110,6 +114,7 @@ const std::string sceneFrameIdDefault("/map"); // Default scene (world) frame id
 // Subscription variants
 enum subVariantsEnum {SV_NONE=0, SV_1, SV_2};
 int subVariant = SV_NONE;
+//int subVariant = SV_2;
 
 // Percentage of furthest points from mean considered as outliers when
 // calculating statistics of ROI
@@ -170,6 +175,25 @@ tf::TransformListener *tfListener;
 Point3f backProject(Point2i p, float z, float fx, float fy)
 {
     return Point3f((p.x * z) / fx, (p.y * z) / fy, z);
+}
+
+
+/*==============================================================================
+ * Perspective projection of a 3D point to the image plane.
+ * Intrinsic camera matrix for the raw (distorted) images is used:
+ *     [fx  0 cx]
+ * K = [ 0 fy cy]
+ *     [ 0  0  1]
+ * [u v w] = K * [X Y Z]
+ *       x = u / w = fx * X / Z + cx
+ *       y = v / w = fy * Y / Z + cy
+ * Projects 3D points in the camera coordinate frame to 2D pixel
+ * coordinates using the focal lengths (fx, fy) and principal point
+ * (cx, cy).
+ */
+Point2i fwdProject(Point3f p, float fx, float fy, float cx, float cy)
+{
+    return Point2i(int(p.x * fx / p.z + cx + 0.5), int(p.y * fy / p.z + cy + 0.5));
 }
 
 
@@ -350,18 +374,28 @@ bool calcNearAndFarFaceDepth(Mat &m, float f, float *z1, float *z2)
 }
 
 
+typedef boost::array<int16_t, 2> point2_t;
+
 /*==============================================================================
  * Bounding box estimation.
  *
- * @param req  Request of type estimateBB.
- * @param res  Response of type estimateBB.
+ * @param stamp     time stamp obtained from message header.
+ * @param p1,p2     input 2D rectangle.
+ * @param mode      estimation mode.
+ * @param bbXYZ     resulting bounding box corners.
  */
-bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
-                srs_env_model_percp::EstimateBB::Response &res)
+
+bool estimateBB(const ros::Time& stamp,
+                const point2_t& p1, const point2_t& p2, int mode,
+                Point3f& bbLBF, Point3f& bbRBF,
+                Point3f& bbRTF, Point3f& bbLTF,
+                Point3f& bbLBB, Point3f& bbRBB,
+                Point3f& bbRTB, Point3f& bbLTB
+                )
 {
     // Set estimation mode. If it is not specified in the request or the value
     // is not valid => set MODE1 (== 1) as default estimation mode.
-    estimationMode = req.mode;
+    estimationMode = mode;
     if(estimationMode == 0 || estimationMode > 3) {
         estimationMode = 1;
     }
@@ -370,7 +404,7 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
 
     // Read the messages from cache (the latest ones before the request timestamp)
     //--------------------------------------------------------------------------
-    sensor_msgs::CameraInfoConstPtr camInfo = camInfoCache.getElemBeforeTime(req.header.stamp);
+    sensor_msgs::CameraInfoConstPtr camInfo = camInfoCache.getElemBeforeTime(stamp);
     if(camInfo == 0) {
         ROS_ERROR("Cannot calculate the bounding box. "
                   "No frames were obtained before the request time.");
@@ -380,7 +414,7 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     // Subscription variant #1 - there is an Image message with a depth map
     //----------------------
     if(subVariant == SV_1) {
-        sensor_msgs::ImageConstPtr depth = depthCache.getElemBeforeTime(req.header.stamp);
+        sensor_msgs::ImageConstPtr depth = depthCache.getElemBeforeTime(stamp);
 
         // Get depth from the message
         try {
@@ -400,7 +434,7 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     // Subscription variant #2 - the depth map must be created from a point clound
     //----------------------
     else if(subVariant == SV_2) {
-        sensor_msgs::PointCloud2ConstPtr pointCloud = pointCloudCache.getElemBeforeTime(req.header.stamp);
+        sensor_msgs::PointCloud2ConstPtr pointCloud = pointCloudCache.getElemBeforeTime(stamp);
     
         // Convert the sensor_msgs/PointCloud2 data to depth map
         // At first convert to pcl/PointCloud
@@ -431,7 +465,8 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     camFrameId = camInfo->header.frame_id;
     try {
         tfListener->waitForTransform(camFrameId, sceneFrameId,
-                                     camInfo->header.stamp, ros::Duration(0.2));
+                                     camInfo->header.stamp, ros::Duration(2.0));
+//                                     camInfo->header.stamp, ros::Duration(0.2));
         tfListener->lookupTransform(camFrameId, sceneFrameId,
                                     camInfo->header.stamp, sensorToWorldTf);
     }
@@ -452,11 +487,11 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     Point2i roiLBi; // Left-bottom corner of ROI (in image coordinates)
     Point2i roiRTi; // Right-top corner of ROI (in image coordinates)
     
-    if(req.p1[0] < req.p2[0]) {roiLBi.x = req.p1[0]; roiRTi.x = req.p2[0];}
-    else {roiLBi.x = req.p2[0]; roiRTi.x = req.p1[0];}
+    if(p1[0] < p2[0]) {roiLBi.x = p1[0]; roiRTi.x = p2[0];}
+    else {roiLBi.x = p2[0]; roiRTi.x = p1[0];}
     
-    if(req.p1[1] < req.p2[1]) {roiRTi.y = req.p1[1]; roiLBi.y = req.p2[1];}
-    else {roiRTi.y = req.p2[1]; roiLBi.y = req.p1[1];}
+    if(p1[1] < p2[1]) {roiRTi.y = p1[1]; roiLBi.y = p2[1];}
+    else {roiRTi.y = p2[1]; roiLBi.y = p1[1];}
     
     // Consider only the part of the ROI which is within the image
     roiLBi.x = min(max(roiLBi.x, 0), width);
@@ -493,7 +528,7 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     // bb{L=left,R=right}{B=bottom,T=top}{F=front,B=back}
     // (This notation provides more readable code, in comparison with
     // e.g. an array with 8 items.)
-    Point3f bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB;
+//    Point3f bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB;
     
     // Vector with pointers to the BB vertices (to be able to iterate over them)
     vector<Point3f *> bbVertices(8);
@@ -765,7 +800,29 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
         bbVertices[i]->y = vertex.getY();
         bbVertices[i]->z = vertex.getZ();
     }
-    
+
+    return true;
+}
+
+
+/*==============================================================================
+ * Bounding box pose estimation.
+ *
+ * @param bbXYZ         input bounding box corners.
+ * @param position      calculated BB position (i.e. position of its center).
+ * @param orientation   calculated BB orientation (i.e. quaternion).
+ * @param scale         BB dimensions.
+ */
+
+bool estimateBBPose(const Point3f& bbLBF, const Point3f& bbRBF,
+                    const Point3f& bbRTF, const Point3f& bbLTF,
+                    const Point3f& bbLBB, const Point3f& bbRBB,
+                    const Point3f& bbRTB, const Point3f& bbLTB,
+                    Point3f& position,
+                    btQuaternion& orientation,
+                    Point3f& scale
+                    )
+{
     // Calculate also a representation of the BB given by position, orientation
     // and scale
     //--------------------------------------------------------------------------
@@ -799,7 +856,7 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     // (the steps for Y and Z axis are analogous):
     // 1) Project edges (the ones to be aligned with Y and Z axis; the one to be
     //    aligned with X axis is not considered here, because its rotation around
-    //    X axis won't get us any closer to the axis-aligned BB) onto YZ plane
+    //    X axis won't get us any closer tbtQuaterniono the axis-aligned BB) onto YZ plane
     //    and normalize them.
     // 2) Angle = arcus cosinus of the dot product of a normalized
     //    projected edge and a unit vector describing the corresponding axis.
@@ -903,7 +960,7 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
 	                anglesMinSum = actualSum;
 	                rotBest = rot;
 
-                    // Calculate size (scale) of the BB, w.r.t. X, Y and Z axis
+                    // Calculate size (scale) of tbtQuaternionhe BB, w.r.t. X, Y and Z axis
                     // (using the current permutation)
 	                bbSize.x = norm(edges[xi]);
 	                bbSize.y = norm(edges[yi]);
@@ -915,16 +972,206 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     
     // Create a quaternion representing the calculated rotation
     //--------------------------------------------------------------------------
-    btQuaternion q = tf::createQuaternionFromRPY(-rotBest.x, -rotBest.y, -rotBest.z);
+    orientation = tf::createQuaternionFromRPY(-rotBest.x, -rotBest.y, -rotBest.z);
     
     // Get the center of mass of the BB (in world coordinates)
     //--------------------------------------------------------------------------
-    Point3f COM(0, 0, 0);
-    for(int i = 0; i < (int)bbVertices.size(); i++) {
-        COM += *(bbVertices[i]);
-    }
-    COM *= 1.0/8.0;
+//    position = Point3f(0, 0, 0);
+//    for(int i = 0; i < (int)bbVertices.size(); i++) {
+//        position += *(bbVertices[i]);
+//    }
+    position = bbLBF;
+    position += bbRBF;
+    position += bbRTF;
+    position += bbLTF;
+    position += bbLBB;
+    position += bbRBB;
+    position += bbRTB;
+    position += bbLTB;
+    position *= 1.0/8.0;
 
+    // Scale
+    //--------------------------------------------------------------------------
+    scale.x = bbSize.x;
+    scale.y = bbSize.y;
+    scale.z = bbSize.z;
+    
+    return true;
+}
+
+
+/*==============================================================================
+ * Image rectangle estimation.
+ *
+ * @param stamp     time stamp obtained from message header.
+ * @param bbXYZ     input bounding box corners.
+ * @param p1,p2     resulting 2D image rectangle.
+ */
+
+bool estimateRect(const ros::Time& stamp,
+                  const Point3f& bbLBF, const Point3f& bbRBF,
+                  const Point3f& bbRTF, const Point3f& bbLTF,
+                  const Point3f& bbLBB, const Point3f& bbRBB,
+                  const Point3f& bbRTB, const Point3f& bbLTB,
+                  point2_t& p1, point2_t& p2
+                  )
+{
+    // Read the messages from cache (the latest ones before the request timestamp)
+    //--------------------------------------------------------------------------
+    sensor_msgs::CameraInfoConstPtr camInfo = camInfoCache.getElemBeforeTime(stamp);
+    if(camInfo == 0) {
+        ROS_ERROR("Cannot calculate the image rectangle. "
+                  "No camera info was obtained before the request time.");
+        return false;
+    }
+    
+    // Obtain the corresponding transformation from camera to world coordinate system
+    //--------------------------------------------------------------------------
+    tf::StampedTransform worldToSensorTf;
+    camFrameId = camInfo->header.frame_id;
+    try {
+        tfListener->waitForTransform(sceneFrameId, camFrameId,
+                                     camInfo->header.stamp, ros::Duration(2.0));
+//                                     camInfo->header.stamp, ros::Duration(0.2));
+        tfListener->lookupTransform(sceneFrameId, camFrameId,
+                                    camInfo->header.stamp, worldToSensorTf);
+    }
+    catch(tf::TransformException& ex) {
+        string errorMsg = String("Transform error: ") + ex.what();
+        ROS_ERROR("%s", errorMsg.c_str());
+        return false;
+    }
+    
+    // Width and height of the image
+    int width = camInfo->width;
+    int height = camInfo->height;
+
+    // Get the intrinsic camera parameters (needed for back-projection)
+    //--------------------------------------------------------------------------
+    Mat K = Mat(3, 3, CV_64F, (double *)camInfo->K.data());
+    float cx = (float)K.at<double>(0, 2);
+    float cy = (float)K.at<double>(1, 2);
+    float fx = (float)K.at<double>(0, 0);
+    float fy = (float)K.at<double>(1, 1);
+//    float f = (fx + fy) / 2.0;
+    
+    if(fx == 0 || fy == 0 || cx == 0 || cy == 0) {
+        ROS_ERROR("Intrinsic camera parameters are undefined.");
+    }
+
+    // Vertices (corners) defining the bounding box.
+    // Each is noted using this template:
+    // bb{L=left,R=right}{B=bottom,T=top}{F=front,B=back}
+    // (This notation provides more readable code, in comparison with
+    // e.g. an array with 8 items.)
+//    Point3f bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB;
+    
+    // Vector with pointers to the BB vertices (to be able to iterate over them)
+    vector<const Point3f *> bbVertices(8);
+    bbVertices[0] = &bbLBF;
+    bbVertices[1] = &bbRBF;
+    bbVertices[2] = &bbRTF;
+    bbVertices[3] = &bbLTF;
+    bbVertices[4] = &bbLBB;
+    bbVertices[5] = &bbRBB;
+    bbVertices[6] = &bbRTB;
+    bbVertices[7] = &bbLTB;
+
+    // 2D points after projection to the image plane
+    vector<Point2i> trVertices(8);
+
+    // Transform the BB vertices to the image plane
+    //--------------------------------------------------------------------------
+    tf::Transformer t;
+    t.setTransform(worldToSensorTf);
+    
+    for( int i = 0; i < (int)bbVertices.size(); i++ )
+    {
+        // Transformation to the camera coordinates
+        tf::Stamped<tf::Point> vertex;
+        vertex.frame_id_ = sceneFrameId;
+        vertex.setX(bbVertices[i]->x);
+        vertex.setY(bbVertices[i]->y);
+        vertex.setZ(bbVertices[i]->z);
+        t.transformPoint(camFrameId, vertex, vertex);
+        
+        // Projection to the image plane
+        trVertices[i] = fwdProject(Point3f(vertex.getX(), vertex.getY(), vertex.getZ()), fx, fy, cx, cy);
+    }
+
+    // Get the coordinates of the ROI (Region of Interest)
+    //--------------------------------------------------------------------------
+
+    // Determine the left-bottom and the right-top ROI corner.
+    // It is assumed that the origin (0,0) is in the top-left image corner.
+    Point2i ap1(trVertices[0].x, trVertices[0].y);
+    Point2i ap2(trVertices[0].x, trVertices[0].y);
+    for( int i = 1; i < (int)bbVertices.size(); i++ )
+    {
+        ap1.x = min(trVertices[i].x, ap1.x);
+        ap1.y = min(trVertices[i].y, ap1.y);
+        ap2.x = max(trVertices[i].x, ap2.x);
+        ap2.y = max(trVertices[i].y, ap2.y);
+    }
+    
+    // Consider only the part of the ROI which is within the image
+    p1[0] = min(max(ap1.x, 0), width);
+    p1[1] = min(max(ap1.y, 0), height);
+    p2[0] = min(max(ap2.x, 0), width);
+    p2[1] = min(max(ap2.y, 0), height);
+
+    return true;
+}
+
+
+/*==============================================================================
+ * Bounding box estimation service.
+ *
+ * @param req  Request of type EstimateBB.
+ * @param res  Response of type EstimateBB.
+ */
+bool estimateBB_callback(srs_env_model_percp::EstimateBB::Request  &req,
+                         srs_env_model_percp::EstimateBB::Response &res
+                         )
+{
+    if( DEBUG )
+    {
+        std::cout << "EstimateBB service called:" 
+            << " p1.x = " << req.p1[0]
+            << ", p1.y = " << req.p1[1]
+            << ", p2.x = " << req.p2[0]
+            << ", p2.y = " << req.p2[1]
+            << std::endl;
+    }
+
+    // Estimate the bounding box
+    //--------------------------------------------------------------------------
+
+    // Vertices (corners) defining the bounding box.
+    // Each is noted using this template:
+    // bb{L=left,R=right}{B=bottom,T=top}{F=front,B=back}
+    // (This notation provides more readable code, in comparison with
+    // e.g. an array with 8 items.)
+    Point3f bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB;
+
+    if( !estimateBB(req.header.stamp,
+                    req.p1, req.p2, req.mode,
+                    bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB) )
+    {
+        return false;
+    }
+
+    // Calculate also Pose of the bounding box
+    //--------------------------------------------------------------------------
+    btQuaternion q;
+    Point3f p, s;
+
+    if( !estimateBBPose(bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB,
+                        p, q, s) )
+    {
+        return false;
+    }
+    
     // Set response
     //--------------------------------------------------------------------------
     res.p1[0] = bbLBF.x; res.p1[1] = bbLBF.y; res.p1[2] = bbLBF.z;
@@ -936,22 +1183,281 @@ bool estimateBB(srs_env_model_percp::EstimateBB::Request  &req,
     res.p7[0] = bbRTB.x; res.p7[1] = bbRTB.y; res.p7[2] = bbRTB.z;
     res.p8[0] = bbLTB.x; res.p8[1] = bbLTB.y; res.p8[2] = bbLTB.z;
     
-    res.pose.position.x = COM.x;
-    res.pose.position.y = COM.y;
-    res.pose.position.z = COM.z;
-
+    res.pose.position.x = p.x;
+    res.pose.position.y = p.y;
+    res.pose.position.z = p.z;
+    
     res.pose.orientation.x = q.x();
     res.pose.orientation.y = q.y();
     res.pose.orientation.z = q.z();
     res.pose.orientation.w = q.w();
-
-    res.scale.x = bbSize.x;
-    res.scale.y = bbSize.y;
-    res.scale.z = bbSize.z;
+    
+    res.scale.x = s.x;
+    res.scale.y = s.y;
+    res.scale.z = s.z;
     
     // Log request timestamp
     //--------------------------------------------------------------------------
     ROS_INFO("Request timestamp: %d.%d", req.header.stamp.sec, req.header.stamp.nsec);
+
+    return true;
+}
+
+
+/*==============================================================================
+ * Bounding box estimation alternative service.
+ *
+ * @param req  Request of type EstimateBBAlt.
+ * @param res  Response of type EstimateBBAlt.
+ */
+bool estimateBBAlt_callback(srs_env_model_percp::EstimateBBAlt::Request  &req,
+                            srs_env_model_percp::EstimateBBAlt::Response &res
+                            )
+{
+    // Estimate the bounding box
+    //--------------------------------------------------------------------------
+
+    // Vertices (corners) defining the bounding box.
+    // Each is noted using this template:
+    // bb{L=left,R=right}{B=bottom,T=top}{F=front,B=back}
+    // (This notation provides more readable code, in comparison with
+    // e.g. an array with 8 items.)
+    Point3f bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB;
+
+    if( !estimateBB(req.header.stamp,
+                    req.p1, req.p2, req.mode,
+                    bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB) )
+    {
+        return false;
+    }
+
+    // Calculate also Pose of the bounding box
+    //--------------------------------------------------------------------------
+    btQuaternion q;
+    Point3f p, s;
+
+    if( !estimateBBPose(bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB,
+                        p, q, s) )
+    {
+        return false;
+    }
+    
+    // Set response
+    //--------------------------------------------------------------------------   
+    res.pose.position.x = p.x;
+    res.pose.position.y = p.y;
+    res.pose.position.z = p.z - 0.5f * s.z;
+    
+    res.pose.orientation.x = q.x();
+    res.pose.orientation.y = q.y();
+    res.pose.orientation.z = q.z();
+    res.pose.orientation.w = q.w();
+    
+    res.bounding_box_lwh.x = 0.5f * s.x;
+    res.bounding_box_lwh.y = 0.5f * s.y;
+    res.bounding_box_lwh.z = s.z;
+    
+    // Log request timestamp
+    //--------------------------------------------------------------------------
+    ROS_INFO("Request timestamp: %d.%d", req.header.stamp.sec, req.header.stamp.nsec);
+
+    return true;
+}
+
+
+/*==============================================================================
+ * Rectangle estimation service.
+ *
+ * @param req  Request of type EstimateRect.
+ * @param res  Response of type EstimateRect.
+ */
+bool estimateRect_callback(srs_env_model_percp::EstimateRect::Request  &req,
+                           srs_env_model_percp::EstimateRect::Response &res
+                           )
+{
+    // Vertices (corners) defining the bounding box.
+    // Each is noted using this template:
+    // bb{L=left,R=right}{B=bottom,T=top}{F=front,B=back}
+    // (This notation provides more readable code, in comparison with
+    // e.g. an array with 8 items.)
+    Point3f bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB;
+
+    // Vector with pointers to the BB vertices (to be able to iterate over them)
+    vector<Point3f *> bbVertices(8);
+    bbVertices[0] = &bbLBF;
+    bbVertices[1] = &bbRBF;
+    bbVertices[2] = &bbRTF;
+    bbVertices[3] = &bbLTF;
+    bbVertices[4] = &bbLBB;
+    bbVertices[5] = &bbRBB;
+    bbVertices[6] = &bbRTB;
+    bbVertices[7] = &bbLTB;
+    
+    // Calculate coordinates of corners of the bounding box relative to its center
+    bbLBF.x = -0.5f * req.scale.x;
+    bbLBF.y = -0.5f * req.scale.y;
+    bbLBF.z = -0.5f * req.scale.z;
+
+    bbLTF.x = -0.5f * req.scale.x;
+    bbLTF.y = -0.5f * req.scale.y;
+    bbLTF.z =  0.5f * req.scale.z;
+
+    bbRBF.x =  0.5f * req.scale.x;
+    bbRBF.y = -0.5f * req.scale.y;
+    bbRBF.z = -0.5f * req.scale.z;
+
+    bbRTF.x =  0.5f * req.scale.x;
+    bbRTF.y = -0.5f * req.scale.y;
+    bbRTF.z =  0.5f * req.scale.z;
+    
+    bbRBB.x =  0.5f * req.scale.x;
+    bbRBB.y =  0.5f * req.scale.y;
+    bbRBF.z = -0.5f * req.scale.z;
+
+    bbRTB.x =  0.5f * req.scale.x;
+    bbRTB.y =  0.5f * req.scale.y;
+    bbRTB.z =  0.5f * req.scale.z;
+
+    bbLBB.x = -0.5f * req.scale.x;
+    bbLBB.y =  0.5f * req.scale.y;
+    bbRBF.z = -0.5f * req.scale.z;
+
+    bbLTB.x = -0.5f * req.scale.x;
+    bbLTB.y =  0.5f * req.scale.y;
+    bbLTB.z =  0.5f * req.scale.z;
+
+    // Apply the rotation and translation stored in the Pose parameter
+    btQuaternion q(req.pose.orientation.x, 
+                   req.pose.orientation.y, 
+                   req.pose.orientation.z, 
+                   req.pose.orientation.w);
+    btTransform trMat(q);
+    for( int i = 0; i < (int)bbVertices.size(); i++ )
+    {
+        btVector3 res = trMat * btVector3(bbVertices[i]->x, bbVertices[i]->y, bbVertices[i]->z);
+        bbVertices[i]->x = res.x() + req.pose.position.x;
+        bbVertices[i]->y = res.y() + req.pose.position.y;
+        bbVertices[i]->z = res.z() + req.pose.position.z;
+    }
+    
+    // Estimate the rectangle
+    point2_t p1, p2;
+    if( !estimateRect(req.header.stamp,
+                      bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB,
+                      p1, p2) )
+    {
+        return false;
+    }
+    
+    // Set response
+    //--------------------------------------------------------------------------   
+    res.p1[0] = p1[0];
+    res.p1[1] = p1[1];
+    res.p2[0] = p2[0];
+    res.p2[1] = p2[1];
+    
+    // Log request timestamp
+    //--------------------------------------------------------------------------
+    ROS_INFO("Request timestamp: %d.%d", req.header.stamp.sec, req.header.stamp.nsec);   
+
+    return true;
+}
+
+
+/*==============================================================================
+ * Rectangle estimation service.
+ *
+ * @param req  Request of type EstimateRectAlt.
+ * @param res  Response of type EstimateRectAlt.
+ */
+bool estimateRectAlt_callback(srs_env_model_percp::EstimateRectAlt::Request  &req,
+                              srs_env_model_percp::EstimateRectAlt::Response &res
+                              )
+{
+    // Vertices (corners) defining the bounding box.
+    // Each is noted using this template:
+    // bb{L=left,R=right}{B=bottom,T=top}{F=front,B=back}
+    // (This notation provides more readable code, in comparison with
+    // e.g. an array with 8 items.)
+    Point3f bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB;
+
+    // Vector with pointers to the BB vertices (to be able to iterate over them)
+    vector<Point3f *> bbVertices(8);
+    bbVertices[0] = &bbLBF;
+    bbVertices[1] = &bbRBF;
+    bbVertices[2] = &bbRTF;
+    bbVertices[3] = &bbLTF;
+    bbVertices[4] = &bbLBB;
+    bbVertices[5] = &bbRBB;
+    bbVertices[6] = &bbRTB;
+    bbVertices[7] = &bbLTB;
+    
+    // Calculate coordinates of corners of the bounding box relative to its center
+    bbLBF.x = -req.bounding_box_lwh.x;
+    bbLBF.y = -req.bounding_box_lwh.y;
+    bbLBF.z =  0.0f;
+
+    bbLTF.x = -req.bounding_box_lwh.x;
+    bbLTF.y = -req.bounding_box_lwh.y;
+    bbLTF.z =  req.bounding_box_lwh.z;
+
+    bbRBF.x =  req.bounding_box_lwh.x;
+    bbRBF.y = -req.bounding_box_lwh.y;
+    bbRBF.z =  0.0f;
+
+    bbRTF.x =  req.bounding_box_lwh.x;
+    bbRTF.y = -req.bounding_box_lwh.y;
+    bbRTF.z =  req.bounding_box_lwh.z;
+    
+    bbRBB.x =  req.bounding_box_lwh.x;
+    bbRBB.y =  req.bounding_box_lwh.y;
+    bbRBF.z =  0.0f;
+
+    bbRTB.x =  req.bounding_box_lwh.x;
+    bbRTB.y =  req.bounding_box_lwh.y;
+    bbRTB.z =  req.bounding_box_lwh.z;
+
+    bbLBB.x = -req.bounding_box_lwh.x;
+    bbLBB.y =  req.bounding_box_lwh.y;
+    bbRBF.z =  0.0f;
+
+    bbLTB.x = -req.bounding_box_lwh.x;
+    bbLTB.y =  req.bounding_box_lwh.y;
+    bbLTB.z =  req.bounding_box_lwh.z;
+
+    // Apply the rotation and translation stored in the Pose parameter
+    btQuaternion q(req.pose.orientation.x, 
+                   req.pose.orientation.y, 
+                   req.pose.orientation.z, 
+                   req.pose.orientation.w);
+    btTransform trMat(q);
+    for( int i = 0; i < (int)bbVertices.size(); i++ )
+    {
+        btVector3 res = trMat * btVector3(bbVertices[i]->x, bbVertices[i]->y, bbVertices[i]->z);
+        bbVertices[i]->x = res.x() + req.pose.position.x;
+        bbVertices[i]->y = res.y() + req.pose.position.y;
+        bbVertices[i]->z = res.z() + req.pose.position.z;
+    }
+    
+    // Estimate the rectangle
+    point2_t p1, p2;
+    if( !estimateRect(req.header.stamp,
+                      bbLBF, bbRBF, bbRTF, bbLTF, bbLBB, bbRBB, bbRTB, bbLTB,
+                      p1, p2) )
+    {
+        return false;
+    }
+    
+    // Set response
+    //--------------------------------------------------------------------------   
+    res.p1[0] = p1[0];
+    res.p1[1] = p1[1];
+    res.p2[0] = p2[0];
+    res.p2[1] = p2[1];
+    
+    // Log request timestamp
+    //--------------------------------------------------------------------------
+    ROS_INFO("Request timestamp: %d.%d", req.header.stamp.sec, req.header.stamp.nsec);   
 
     return true;
 }
@@ -1073,7 +1579,10 @@ int main(int argc, char **argv)
     
     // Create and advertise this service over ROS
     //--------------------------------------------------------------------------
-    ros::ServiceServer service = n.advertiseService(BB_ESTIMATOR_Estimate_SRV, estimateBB);   
+    ros::ServiceServer service = n.advertiseService(BB_ESTIMATOR_Estimate_SRV, estimateBB_callback);   
+    ros::ServiceServer serviceAlt = n.advertiseService(BB_ESTIMATOR_EstimateAlt_SRV, estimateBBAlt_callback);
+    ros::ServiceServer serviceRect = n.advertiseService(BB_ESTIMATOR_EstimateRect_SRV, estimateRect_callback);   
+    ros::ServiceServer serviceRectAlt = n.advertiseService(BB_ESTIMATOR_EstimateRectAlt_SRV, estimateRectAlt_callback);
     ROS_INFO("Ready.");
     
     // Enters a loop, calling message callbacks

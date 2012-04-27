@@ -28,10 +28,10 @@ add_java_source_dir(${PROJECT_SOURCE_DIR}/src)
 rosbuild_find_ros_package(srs_knowledge)
 
 include(cmake/utils.cmake)
-set(OWL_PATH_PREFIX ${srs_knowledge_PACKAGE_PATH})
+set(OWL_PATH_PREFIX ${srs_knowledge_PACKAGE_PATH}/conf/ontologies)
 fix_ros_destination_path(OWL_PATH_PREFIX)
 
-file(GLOB inputs conf/ontologies/ipa-kitchen-map/*.in conf/ontologies/empty-map/*.in)
+file(GLOB inputs conf/ontologies/ipa-kitchen-map/*.in conf/ontologies/empty-map/*.in conf/*.in)
 
 foreach( _in ${inputs} )
   string(REPLACE ".in" "" _out ${_in})

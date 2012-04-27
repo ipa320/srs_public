@@ -159,6 +159,7 @@ public class OntologyDB
 	*/
 
 	//// new added for test JSON output
+	try {
 	Query query = QueryFactory.create(queryString);
 
 	QueryExecution qe = QueryExecutionFactory.create(query, model);
@@ -178,12 +179,17 @@ public class OntologyDB
 	}
 	qe.close();
 	return r;
-
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	    return "";
+	}
     }
     
     public ArrayList<QuerySolution> executeQueryRaw(String queryString)
     {
 	//System.out.println(queryString);
+	try {
 	Query query = QueryFactory.create(queryString);
 	
 	QueryExecution qe = QueryExecutionFactory.create(query, model);
@@ -216,6 +222,11 @@ public class OntologyDB
 	ArrayList<QuerySolution> resList = (ArrayList)ResultSetFormatter.toList(results);
 	qe.close();
 	return resList; //results;
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	    return new ArrayList<QuerySolution>();
+	}
     }
 
     public void reloadOWLFile(String file)

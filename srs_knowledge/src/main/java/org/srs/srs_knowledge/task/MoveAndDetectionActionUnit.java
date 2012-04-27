@@ -67,6 +67,15 @@ import org.srs.srs_knowledge.knowledge_engine.*;
 public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 
     public MoveAndDetectionActionUnit(ArrayList<Pose2D> positions, String objectClassName, int houseHoldId) {
+	init(positions, objectClassName, houseHoldId, "");
+    }
+
+
+    public MoveAndDetectionActionUnit(ArrayList<Pose2D> positions, String objectClassName, int houseHoldId, String workspace) {
+	init(positions, objectClassName, houseHoldId, workspace);
+    }
+
+    private void init(ArrayList<Pose2D> positions, String objectClassName, int houseHoldId, String workspace) {
 	for(Pose2D position:positions) {
 	    GenericAction ga = new GenericAction();
 	    ga.actionInfo.add("move");
@@ -80,9 +89,8 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
 	    detAct.actionInfo.add("detect");
 	    detAct.actionInfo.add(Integer.toString(houseHoldId));
 	    detAct.actionInfo.add(objectClassName);
-	    // detAct.actionInfo.add(tableName);
+	    detAct.actionInfo.add(workspace);
 	   
-
 	    actionUnits.add(detAct);
 	}
 

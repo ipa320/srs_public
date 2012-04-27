@@ -53,7 +53,8 @@ package org.srs.srs_knowledge.task;
 import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
-
+import java.util.HashMap;
+import java.util.Set;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 
@@ -122,7 +123,21 @@ public class HighLevelActionSequence {
 	return false;
     }
 
+    public void setParameter(String key, Object value) {
+	parameters.put(key, value);
+    }
+
+    public Object getParameter(String key) {
+	return parameters.get(key);
+    }
+
+    public Set<String> parametersSet() {
+	return (Set<String>)parameters.keySet();
+    }
+
     protected int indOfCurrent;
     
     protected ArrayList<HighLevelActionUnit> highLevelActionList = new ArrayList<HighLevelActionUnit>();
+
+    protected HashMap<String, Object> parameters = new HashMap<String, Object>();
 }

@@ -71,6 +71,8 @@ import ros.pkg.srs_symbolic_grounding.msg.*;
 import ros.*;
 import ros.communication.*;
 
+import org.srs.srs_knowledge.utils.*;
+
 public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 {
     public FetchObjectTask(String taskType, String targetContent, String userPose) 
@@ -96,8 +98,6 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	System.out.println("Create New GET OBJECT Task --- ");
 
 	try {
-	    //ArrayList<String> workspaces = OntoQueryUtil.getWorkspaceNamesOfObject(this.targetContent, this.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), this.ontoDB);
-	    //	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, OntoQueryUtilthis.ontoQueryUtil.getObjectNameSpace(), this.ontoQueryUtil.getGlobalNameSpace(), KnowledgeEngine.ontoDB);
 	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, OntoQueryUtil.ObjectNameSpace, OntoQueryUtil.GlobalNameSpace, KnowledgeEngine.ontoDB);
 	}
 	catch(Exception e) {
@@ -175,11 +175,14 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	    throw e;
 	}
 
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID",  KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.GlobalNameSpace + this.targetContent));
+	int hhid = OntoQueryUtil.getIntOfStatement(stm);
+
 	// TODO:
-	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, targetContent, 9);
+	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, targetContent, hhid, workspace.asResource().getLocalName());
 	
 	// create MoveAndGraspActionUnit
-	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, targetContent, 9, "side");
+	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
 
 	// create PutOnTrayActionUnit
 	PutOnTrayActionUnit trayAction = new PutOnTrayActionUnit("side");
@@ -204,6 +207,12 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	actionList.appendHighLevelAction(fau);
 		
 	System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
+
+	// set parameters for the workspace information
+	actionList.setParameter("workspaceURI", workspace.asResource().getURI());
+	actionList.setParameter("workspace", workspace.asResource().getLocalName());
+	actionList.setParameter("workspaceNameSpace", workspace.asResource().getNameSpace());
+
 	return actionList;
     }
     
@@ -280,6 +289,10 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
     }
 
     private CUAction handleFailedMessage() {
+
+	// 
+	updateTargetOfFailedAct();
+
 	currentSubAction++;
 	
 	System.out.println("HANDLE FAILED MESSAGE.... CURRENTSUBACTION IS AT:  " + currentSubAction);
@@ -316,7 +329,8 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
     
     private CUAction handleSuccessMessage(ActionFeedback fb) {
 	// TODO: 
-    
+    	updateTargetOfSucceededAct(fb);
+
 	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
 	
 	if(currentHLActSeq.hasNextHighLevelActionUnit()) {
@@ -508,6 +522,241 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	    return true;
 	}
 	return false;
+    }
+
+    /**
+     * TODO: TOO LONG... SHOULD CUT DOWN LATER
+     */
+    private void updateTargetOfSucceededAct(ActionFeedback fb) {
+	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
+	HighLevelActionUnit currentActUnit = currentHLActSeq.getCurrentHighLevelActionUnit();
+	if(currentActUnit.getActionType().equals("MoveAndDetection")) {
+	    this.recentDetectedObject = ActionFeedback.toPose(fb);
+	    BoundingBoxDim bbDim = InformationRetrieval.retrieveBoundingBoxInfo(OntoQueryUtil.GlobalNameSpace + this.targetContent);
+	    ros.pkg.srs_knowledge.msg.SRSSpatialInfo spaObj = new ros.pkg.srs_knowledge.msg.SRSSpatialInfo();
+	    spaObj.l = bbDim.l;
+	    spaObj.h = bbDim.h;
+	    spaObj.w = bbDim.w;
+
+	    spaObj.pose = this.recentDetectedObject;
+
+	    // update the knowledge (post-processing)
+	    
+	    // if there exists one same object on the same workspace, update it --- simple solution
+	    //String ws = SpatialCalculator.workspaceHolding(spaObj);
+	    
+	    String neighbour = SpatialCalculator.nearestObject(spaObj.pose, OntoQueryUtil.GlobalNameSpace + this.targetContent);
+	    if(!neighbour.trim().equals("")) {
+		System.out.println("Found neighbour of " + neighbour);
+		// update its pose
+		try{
+		    OntoQueryUtil.updatePoseOfObject(spaObj.pose, OntoQueryUtil.GlobalNameSpace, neighbour.trim());
+		    OntoQueryUtil.computeOnSpatialRelation();
+		}
+		catch(Exception e) {
+		    System.out.println(e.getMessage());
+		}
+	    }
+	    
+	    // if there does not exist such an object, then insert a new one
+	    // bounding box can be obtained from HHDB
+	    // TODO
+	    
+	}
+	else if(currentActUnit.getActionType().equals("MoveAndGrasp")) {
+	    // look for the object at the pose 
+	    // update its relationship with the Robot, and remove its pose information
+	    //	    Individual rob = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + OntoQueryUtil.RobotName);
+	    String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
+	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+		+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
+	    String queryString = "SELECT DISTINCT ?gripper WHERE { "
+		+ "<" + mapNameSpace + OntoQueryUtil.RobotName + ">"
+		+ " srs:hasPart ?gripper . " 
+		+ " ?gripper a srs:RobotGripper . " 
+		+ "}";
+
+	    try {
+		String targetObj = SpatialCalculator.nearestObject(this.recentDetectedObject, OntoQueryUtil.GlobalNameSpace + this.targetContent);
+		System.out.println("TARGET OBJECT IS ::: " + targetObj);
+		if(!targetObj.trim().equals("")) {
+		   
+		    Pose tmpPose = new Pose();
+		    tmpPose.position.x = -1000;
+		    tmpPose.position.y = -1000;
+		    tmpPose.position.z = -1000;
+		    tmpPose.orientation.x = -1000;
+		    tmpPose.orientation.y = -1000;
+		    tmpPose.orientation.z = -1000;
+		    tmpPose.orientation.w = -1000;
+		    
+		    // update its pose
+		    try{
+			OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, targetObj.trim());
+			OntoQueryUtil.computeOnSpatialRelation();
+		    }
+		    catch(Exception e) {
+			System.out.println(e.getMessage());
+		    }
+		}
+	       
+		
+		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
+		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
+		if(rset.size() == 0) {
+		    System.out.println("<<<< NO GRIPPER INSTANCE FOUND >>>");   
+		}
+		else {
+		    System.out.println("<<<< FOUND GRIPPER INSTANCE >>>");
+		    Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(targetObj);
+		    
+		    OntoQueryUtil.removeAllSubPropertiesOf(targetObj, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+		    QuerySolution qs = rset.get(0);
+
+		    String gripper = qs.get("gripper").toString();
+		    System.out.println("<<<<<  " + gripper + "  >>>>>");
+
+		    Individual gripInd = KnowledgeEngine.ontoDB.getIndividual(gripper);
+		    Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+		    
+		    Property pro = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "grippedBy");
+
+		    targetInd.setPropertyValue(pro, gripInd);
+		}
+	    }
+	    catch (Exception e) {
+		System.out.println(" ==================   " + e.getMessage() + "   " + e.toString());
+	    }
+	}
+	else if(currentActUnit.getActionType().equals("PutOnTray")) {
+	    // look for the object at the pose 
+	    
+	    // update its relationship with the Robot, and remove its pose information
+	    String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
+	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+		+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
+	    String queryString = "SELECT DISTINCT ?tray WHERE { "
+		+ "<" + mapNameSpace + OntoQueryUtil.RobotName + ">"
+		+ " srs:hasPart ?tray . " 
+		+ " ?tray a srs:COBTray . " 
+		+ "}";
+
+	    try {
+		String targetObj = SpatialCalculator.nearestObject(this.recentDetectedObject, OntoQueryUtil.GlobalNameSpace + this.targetContent);
+		System.out.println("TARGET OBJECT IS ::: " + targetObj);
+		if(!targetObj.trim().equals("")) {
+		   
+		    Pose tmpPose = new Pose();
+		    tmpPose.position.x = -1000;
+		    tmpPose.position.y = -1000;
+		    tmpPose.position.z = -1000;
+		    tmpPose.orientation.x = -1000;
+		    tmpPose.orientation.y = -1000;
+		    tmpPose.orientation.z = -1000;
+		    tmpPose.orientation.w = -1000;
+		    
+		    // update its pose
+		    try{
+			OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, targetObj.trim());
+			OntoQueryUtil.computeOnSpatialRelation();
+		    }
+		    catch(Exception e) {
+			System.out.println(e.getMessage());
+		    }
+		}
+	       
+		
+		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
+		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
+		if(rset.size() == 0) {
+		    System.out.println("<<<< NO TRAY INSTANCE FOUND >>>");   
+		}
+		else {
+		    System.out.println("<<<< FOUND TRAY INSTANCE >>>");
+		    Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(targetObj);
+		    
+		    OntoQueryUtil.removeAllSubPropertiesOf(targetObj, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+		    QuerySolution qs = rset.get(0);
+
+		    String gripper = qs.get("tray").toString();
+		    System.out.println("<<<<<  " + gripper + "  >>>>>");
+
+		    Individual gripInd = KnowledgeEngine.ontoDB.getIndividual(gripper);
+		    Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+		    
+		    Property pro = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "aboveOf");
+
+		    targetInd.setPropertyValue(pro, gripInd);
+		}
+	    }
+	    catch (Exception e) {
+		System.out.println(" ==================   " + e.getMessage() + " ----  " + e.toString());
+	    }
+	    
+	}
+    }
+
+    private void updateTargetOfFailedAct() {
+	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
+	HighLevelActionUnit currentActUnit = currentHLActSeq.getCurrentHighLevelActionUnit();
+	if(currentActUnit.getActionType().equals("MoveAndDetection")) {
+	    //this.recentDetectedObject = ActionFeedback.toPose(fb);	 
+	    	    
+	    // update the knowledge (post-processing)
+	    String currentWorkSpace = (String)currentHLActSeq.getParameter("workspaceURI");
+	    String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
+	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+		+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
+	    String queryString = "SELECT DISTINCT ?obj WHERE { \n"
+		+ "?obj srs:spatiallyRelated <" + currentWorkSpace + "> . \n" 
+		+ " ?obj a srs:" + this.targetContent + " . \n" 
+		+ "}";
+	    //		+ " <" + currentWorkSpace + "> a srs:FurniturePiece . \n"
+
+	    ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
+	    if(rset.size() == 0) {
+		System.out.println("<<<< NO OBJECT INSTANCE FOUND >>>");   
+	    }
+	    else {
+		System.out.println("<<<< FOUND OBJECT INSTANCES ON WORKSPACE " + this.targetContent + " >>>");
+		//Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(target);
+		//Iterator targetIt = KnowledgeEngine.ontoDB.getInstancesOfClass(OntoQueryUtil.GlobalNameSpace + this.targetContent);
+		for (QuerySolution qs : rset) {
+		    String temp = qs.get("obj").toString();
+		    System.out.println("<<<<<  " + temp + "  >>>>>");
+		    
+		    //System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		    OntoQueryUtil.removeAllSubPropertiesOf(temp, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+		    Pose tmpPose = new Pose();
+		    tmpPose.position.x = -1000;
+		    tmpPose.position.y = -1000;
+		    tmpPose.position.z = -1000;
+		    tmpPose.orientation.x = -1000;
+		    tmpPose.orientation.y = -1000;
+		    tmpPose.orientation.z = -1000;
+		    tmpPose.orientation.w = -1000;
+		    
+		    // update its pose
+		    try{
+			OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, temp.trim());
+			OntoQueryUtil.computeOnSpatialRelation();
+		    }
+		    catch(Exception e) {
+			System.out.println(e.getMessage());
+		    }
+
+		}
+	    }	    
+	}
+	else if(currentActUnit.getActionType().equals("MoveAndGrasp")) {
+	    // do nothing
+	}
+	else if(currentActUnit.getActionType().equals("PutOnTray")) {
+	    // do nothing
+    	}
     }
 
     private ArrayList<Individual> workspaces = new ArrayList<Individual>();

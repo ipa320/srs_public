@@ -67,7 +67,7 @@ import java.io.*;
 import java.util.ArrayList; 
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
- import java.util.HashSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import ros.*;
 import ros.communication.*;
@@ -859,7 +859,7 @@ public class OntoQueryUtil
 	
     }
 
-    private static float getFloatOfStatement(Statement stm) 
+    public static float getFloatOfStatement(Statement stm) 
     {
 	float t = -1000;
 	try { 
@@ -871,7 +871,7 @@ public class OntoQueryUtil
 	return t;
     }
 
-    private static int getIntOfStatement(Statement stm)
+    public static int getIntOfStatement(Statement stm)
     {
 	int t = -1000;
 	try { 

@@ -175,11 +175,14 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    throw e;
 	}
 
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID",  KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.GlobalNameSpace + this.targetContent));
+	int hhid = OntoQueryUtil.getIntOfStatement(stm);
+
 	// TODO:
-	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, targetContent, 9);
+	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, targetContent, hhid, workspace.asResource().getLocalName());
 	
 	// create MoveAndGraspActionUnit
-	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, targetContent, 9, "side");
+	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
 
 	// create PutOnTrayActionUnit
 	PutOnTrayActionUnit trayAction = new PutOnTrayActionUnit("side");
@@ -205,6 +208,12 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	actionList.appendHighLevelAction(fau);
 		
 	System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
+	
+	// set parameters for the workspace information
+	actionList.setParameter("workspaceURI", workspace.asResource().getURI());
+	actionList.setParameter("workspace", workspace.asResource().getLocalName());
+	actionList.setParameter("workspaceNameSpace", workspace.asResource().getNameSpace());
+	
 	return actionList;
     }
     
@@ -466,10 +475,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
 		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
 		if(rset.size() == 0) {
-		    System.out.println("<<<< NO GRIPPER INSTANCE FOUND >>>");   
+		    System.out.println("<<<< NO TRAY INSTANCE FOUND >>>");   
 		}
 		else {
-		    System.out.println("<<<< FOUND GRIPPER INSTANCE >>>");
+		    System.out.println("<<<< FOUND TRAY INSTANCE >>>");
 		    Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(targetObj);
 		    
 		    OntoQueryUtil.removeAllSubPropertiesOf(targetObj, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
@@ -487,7 +496,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		}
 	    }
 	    catch (Exception e) {
-		System.out.println(" ==================   " + e.getMessage() + "   " + e.toString());
+		System.out.println(" ==================   " + e.getMessage() + " ----  " + e.toString());
 	    }
 	    
 	}
@@ -500,13 +509,51 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    //this.recentDetectedObject = ActionFeedback.toPose(fb);	 
 	    	    
 	    // update the knowledge (post-processing)
-	    
-	    // if there exists one same object on the same workspace, remove it --- simple solution
-	    
-	    // if there are more objects of the smae type, remove one of them (does not matter which one, as they are identical (not distinguiable).. better to use the closest one )
-	    
-	    // if there does not exist such an object, then do nothing
+	    String currentWorkSpace = (String)currentHLActSeq.getParameter("workspaceURI");
+	    String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
+	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+		+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
+	    String queryString = "SELECT DISTINCT ?obj WHERE { \n"
+		+ "?obj srs:spatiallyRelated <" + currentWorkSpace + "> . \n" 
+		+ " ?obj a srs:" + this.targetContent + " . \n" 
+		+ "}";
+	    //		+ " <" + currentWorkSpace + "> a srs:FurniturePiece . \n"
 
+	    ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
+	    if(rset.size() == 0) {
+		System.out.println("<<<< NO OBJECT INSTANCE FOUND >>>");   
+	    }
+	    else {
+		System.out.println("<<<< FOUND OBJECT INSTANCES ON WORKSPACE " + this.targetContent + " >>>");
+		//Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(target);
+		//Iterator targetIt = KnowledgeEngine.ontoDB.getInstancesOfClass(OntoQueryUtil.GlobalNameSpace + this.targetContent);
+		for (QuerySolution qs : rset) {
+		    String temp = qs.get("obj").toString();
+		    System.out.println("<<<<<  " + temp + "  >>>>>");
+		    
+		    //System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		    OntoQueryUtil.removeAllSubPropertiesOf(temp, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
+		    Pose tmpPose = new Pose();
+		    tmpPose.position.x = -1000;
+		    tmpPose.position.y = -1000;
+		    tmpPose.position.z = -1000;
+		    tmpPose.orientation.x = -1000;
+		    tmpPose.orientation.y = -1000;
+		    tmpPose.orientation.z = -1000;
+		    tmpPose.orientation.w = -1000;
+		    
+		    // update its pose
+		    try{
+			OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, temp.trim());
+			OntoQueryUtil.computeOnSpatialRelation();
+		    }
+		    catch(Exception e) {
+			System.out.println(e.getMessage());
+		    }
+
+		}
+	    }	    
 	}
 	else if(currentActUnit.getActionType().equals("MoveAndGrasp")) {
 	    // do nothing

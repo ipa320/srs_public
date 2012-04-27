@@ -411,6 +411,9 @@ class semantic_dm(smach.State):
                     #testing purpose, this value should come from knowledge service
                     #userdata.target_workspace_name='Table0'
                     
+                    rospy.loginfo ("target_object_name: %s", userdata.target_object_name)
+                    rospy.loginfo ("target_object_id: %s", userdata.target_object_id)
+                    rospy.loginfo ("target_workspace_name: %s", userdata.target_workspace_name)                    
                     return nextStep
 		    ####  END OF HARD CODED FOR TESTING ##
 

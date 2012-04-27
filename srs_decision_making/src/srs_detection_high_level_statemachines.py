@@ -126,7 +126,7 @@ class sm_simple_detection(smach.StateMachine):
 			rospy.INFO('can not read the parameter of max retries, use the default value')	
 
         with self:   
-            smach.StateMachine.add('DETECT_OBJECT-simple', detect_object(self.max_retries),
+            smach.StateMachine.add('DETECT_OBJECT-simple', detect_object('',self.max_retries),
                     transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-simple', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose' })
 
@@ -223,7 +223,7 @@ class sm_simple_detection_env(smach.StateMachine):
             smach.StateMachine.add('WORKSPACE_CONFRIMATION', workspace_confirmation(),
                     transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'target_workspace_name':'target_workspace_name'})
-            smach.StateMachine.add('DETECT_OBJECT-simple', detect_object(self.max_retries),
+            smach.StateMachine.add('DETECT_OBJECT-simple', detect_object('',self.max_retries),
                     transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-simple', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose' })
             

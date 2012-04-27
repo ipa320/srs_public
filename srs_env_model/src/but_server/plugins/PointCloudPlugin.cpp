@@ -35,7 +35,7 @@
 #include <pcl/point_types.h>
 
 #define POINTCLOUD_CENTERS_PUBLISHER_NAME std::string("butsrv_pointcloud_centers")
-#define SUBSCRIBER_POINT_CLOUD_NAME std::string("/cam3d/depth/points")
+#define SUBSCRIBER_POINT_CLOUD_NAME std::string("/cam3d/rgb/points")
 #define DEFAULT_FRAME_ID std::string("/head_cam3d_link")
 #define BASE_FRAME_ID std::string("base_footprint")
 
@@ -163,6 +163,7 @@ void srs::CPointCloudPlugin::handleOccupiedNode(srs::tButServerOcTree::iterator&
 	point.g = it->g();
 	point.b = it->b();
 
+//	std::cerr << "Occupied node r " << (int)point.r << ", g " << (int)point.g << ", b " << (int)point.b << std::endl;
 	/*
 	// Set color
 	point.r = 255 - counter % 255;
@@ -233,12 +234,12 @@ void srs::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::C
 	pcl::fromROSMsg(*cloud, *m_data);
 
 */
-	pcl::PointCloud< pcl::PointXYZ >::Ptr bufferCloud( new pcl::PointCloud< pcl::PointXYZ > );
+	pcl::PointCloud< pcl::PointXYZRGB >::Ptr bufferCloud( new pcl::PointCloud< pcl::PointXYZRGB > );
 
 	pcl::fromROSMsg(*cloud, *bufferCloud);
 
 
-	pcl::copyPointCloud<pcl::PointXYZ, tPclPoint>( *bufferCloud, *m_data );
+	pcl::copyPointCloud<pcl::PointXYZRGB, tPclPoint>( *bufferCloud, *m_data );
 	//*/
 
 	// If different frame id

@@ -52,6 +52,7 @@
 #################################################################
 # ROS imports
 import roslib; roslib.load_manifest('srs_decision_making')
+import os
 
 #import states within srs_decision_making
 from srs_generic_states import *
@@ -61,6 +62,11 @@ from mapping_states import *
 from detection_states  import *
 from assisted_detection_states import *
 
+#import service form semantic KB
+from srs_knowledge.srv import *
+
+#import other high level state machines
+from srs_common_high_level_statemachines import *
 
 #from generic_grasp_state import *
 
@@ -86,37 +92,42 @@ The default mode is semi_autonomous_mode=False assuming no UI connected to the r
     sm_simple_detection_env()
     #simple detection with no user intervention but with environment confirmation
     
+    sm_assisted_detection()
+    #assisted detection with user intervention and no environment confirmation 
+    
     sm_assisted_detection_env()
-    #assisted detection with  user intervention and environment confirmation    
+    #assisted detection with user intervention and environment confirmation    
 """
-
 
 ################################################################################
 #Simple detection state machine
 #
-#Robot would detect the object autonomously
-#No environment confirmation is needed for this detection
+#robot would detect the object autonomously
+#no environment confirmation is needed for this detection
+#
+#if the name/id is empty, then the robot will search all the objects in the field of view
+#if the environment confirmation/verification is not needed, the target workspace name is not used
+#in the simple detection, only the nearest object to the camera is detected
+#
+#the id of the object is not used by the detection state yet, this should be changed
 ################################################################################
 
-class sm_simple_detection(SRS_StateMachine):
-	def __init__(self):
-		smach.StateMachine.__init__(self,
+class sm_simple_detection(smach.StateMachine):
+    def __init__(self):    
+        smach.StateMachine.__init__(self,
                                     outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
-                                    input_keys=['target_object_name'],
+                                    input_keys=['target_object_name', 'target_object_id', 'target_workspace_name'],
                                     output_keys=['target_object','target_object_pose'])
-		self.max_retries = 5  # default value for max retries 
-		try:
-			self.max_retries = rospy.get_param("srs/common/detection_max_retries")
-		except Exception, e:
-			rospy.INFO('can not read parameter of max retries, use the default value')
-		
-		self.customised_initial("sm_simple_detection")
-		self.userdata.target_object=''
-		self.userdata.target_object_pose=''
 
-        with self:
+        self.max_retries = 5  # default value for max retries
+        try:
+            self.max_retries = rospy.get_param("srs/common/detection_max_retries")
+        except Exception, e:
+			rospy.INFO('can not read the parameter of max retries, use the default value')	
+
+        with self:   
             smach.StateMachine.add('DETECT_OBJECT-simple', detect_object(self.max_retries),
-                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-2', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-simple', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose' })
 
 ################################################################################
@@ -124,16 +135,22 @@ class sm_simple_detection(SRS_StateMachine):
 #
 #Robot would detect the object autonomously first, and then wait for the use for confirmation and adjustment via bounding box
 #No environment confirmation is needed for this detection
+#
+#If the target object name/id is empty, then the robot will search all the objects in the field of view
+#if the environment confirmation/verification is not needed, the target workspace name is not used
+#in the assisted detection, all detected objects will be processed, user will choice the best object from the list
+#
+#the id of the object is not used by the detection state yet, this should be changed
 ################################################################################
 
 #detection assisted by remote operator or KB, they specify region of interest for detection
-class sm_asisted_detection(SRS_StateMachine):
+class sm_asisted_detection(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self,
                                     outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
-                                    input_keys=['target_object_name'],
+                                    input_keys=['target_object_name', 'target_object_id', 'target_workspace_name'],
                                     output_keys=['target_object','target_object_pose'])
-        self.customised_initial("sm_asisted_detection")
+
         self.userdata.target_object_list=''
         self.userdata.new_scan_pose = ''
 
@@ -149,34 +166,105 @@ class sm_asisted_detection(SRS_StateMachine):
             smach.StateMachine.add('BB_MOVE', approach_pose_without_retry(),
 					transitions={'succeeded':'DETECT_OBJECT-assisted', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
 					remapping={'base_pose':'new_scan_pose'})	
-			
+
+
+################################################################################
+#Confirm the workspace is exist and it is not empty
+#
+###############################################################################
+class workspace_confirmation(smach.StateMachine):
+    def __init__(self):
+        smach.StateMachine.__init__(self,
+                                    outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
+                                    input_keys=['target_workspace_name'])
+        self.userdata.verified_workspace_pose =""
+        
+        with self:
+            smach.StateMachine.add('VERIFY_EXISTENCE_OF_THE_WORKSPACE', Verify_Object_by_Name(),
+                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'object_name':'target_workspace_name',  'verfified_target_object_pose':'verified_workspace_pose'})
+            """        
+            smach.StateMachine.add('VERIFY_THE_WORKSPACE_IS_NOT_EMPTY', GetTableObjectCluster(),
+                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose' })
+            """
+
 ################################################################################
 #Simple detection state machine with environment confirmation
 #
 #Robot would detect the object autonomously
-#No environment confirmation is needed for this detection
+#Environment confirmation is needed for this detection
+#
+#If the target object name/id is empty, then the robot will search all the objects in the field of view
+#if the environment confirmation/verification is needed, the target workspace name is used to get the pose of the work space
+#in the simple detection, only the nearest object to the camera is detected
+#
+#the id of the object is not used by the detection state yet, this should be changed
 ################################################################################
 
-class sm_simple_detection_env(SRS_StateMachine):
+class sm_simple_detection_env(smach.StateMachine):
     def __init__(self):
         smach.StateMachine.__init__(self,
                                     outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
-                                    input_keys=['target_object_name', 'target_workspace_pose'],
+                                    input_keys=['target_object_name', 'target_object_id', 'target_workspace_name'],
                                     output_keys=['target_object','target_object_pose'])
+
         self.max_retries = 5  # default value for max retries 
         try:
             self.max_retries = rospy.get_param("srs/common/detection_max_retries")
         except Exception, e:
             rospy.INFO('can not read parameter of max retries, use the default value')
         
-        self.customised_initial("sm_simple_detection_env")
         self.userdata.target_object=''
+        
         self.userdata.target_object_pose=''
 
         with self:
+            smach.StateMachine.add('WORKSPACE_CONFRIMATION', workspace_confirmation(),
+                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'target_workspace_name':'target_workspace_name'})
             smach.StateMachine.add('DETECT_OBJECT-simple', detect_object(self.max_retries),
-                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-2', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-simple', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose' })
-            smach.StateMachine.add('DETECT_OBJECT-simple', detect_object(self.max_retries),
-                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-2', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose' })
+            
+            
+################################################################################
+#Assisted detection state machine with environment confirmation
+#
+#Robot would detect the object autonomously first, and then wait for the use for confirmation and adjustment via bounding box
+#Environment confirmation is needed for this detection
+#
+#If the target object name/id is empty, then the robot will search all the objects in the field of view
+#if the environment confirmation/verification is needed, the target workspace name is used to get the pose of the work space
+#in the assisted detection, all detected objects will be processed, user will choice the best object from the list
+#
+#the id of the object is not used by the detection state yet, this should be changed
+################################################################################
+
+class sm_assisted_detection_env(smach.StateMachine):
+    def __init__(self):
+        smach.StateMachine.__init__(self,
+                                    outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
+                                    input_keys=['target_object_name', 'target_object_id', 'target_workspace_name'],
+                                    output_keys=['target_object','target_object_pose'])
+
+        
+        self.userdata.target_object_list=''
+        self.userdata.new_scan_pose = ''
+
+        with self:
+            smach.StateMachine.add('WORKSPACE_CONFRIMATION', workspace_confirmation(),
+                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'target_workspace_name':'target_workspace_name'})  
+                      
+            smach.StateMachine.add('DETECT_OBJECT-assisted', detect_object_assited(),
+                    transitions={'succeeded':'USER_INTERVENTION', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'object_name':'target_object_name', 'object_list':'target_object_list' })
+            
+            smach.StateMachine.add('USER_INTERVENTION', user_intervention_on_detection(),
+                    transitions={'succeeded':'succeeded', 'bb_move':'BB_MOVE', 'give_up':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'target_object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose', 'bb_pose':'new_scan_pose', 'target_object_list':'target_object_list'})
+            
+            smach.StateMachine.add('BB_MOVE', approach_pose_without_retry(),
+                    transitions={'succeeded':'DETECT_OBJECT-assisted', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
+                    remapping={'base_pose':'new_scan_pose'})    

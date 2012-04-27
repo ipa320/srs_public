@@ -212,6 +212,8 @@ public class KnowledgeEngine
 	getRoomsOnMapService = config.getProperty("getRoomsOnMapService", "get_rooms_on_map");
 	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
 
+	graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
+
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
 	String robotName = config.getProperty("robot_name",  System.getenv("ROBOT"));
 
@@ -382,8 +384,20 @@ public class KnowledgeEngine
 		if(request.parameters.size() == 0) {
 
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    GetObjectTask got = new GetObjectTask(request.task, request.content);
-		    currentTask = (Task)got;
+		    GetObjectTask got = null;
+		    if(this.graspActionMode.equals("move_and_grasp")) {
+			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else if(this.graspActionMode.equals("just_grasp")) {
+			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else {
+			/// default
+			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
 		}
 		else {	
@@ -409,8 +423,20 @@ public class KnowledgeEngine
 	    try{
 		if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
-		    currentTask = (Task)got;
+		    SearchObjectTask got = null;
+		    if(this.graspActionMode.equals("move_and_grasp")) {
+			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else if(this.graspActionMode.equals("just_grasp")) {
+			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else {
+			/// default
+			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
 		    System.out.println("Created CurrentTask " + "search " + request.content);	    
 		}
 		else {	
@@ -435,8 +461,20 @@ public class KnowledgeEngine
 	    try{
 		if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    FetchObjectTask got = new FetchObjectTask(request.task, request.content, request.userPose);
-		    currentTask = (Task)got;
+		    FetchObjectTask got = null;
+		    if(this.graspActionMode.equals("move_and_grasp")) {
+			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else if(this.graspActionMode.equals("just_grasp")) {
+			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.JUST_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else {
+			/// default
+			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
 		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
 		}
 		else if (request.parameters.size() == 2) {	
@@ -1047,6 +1085,7 @@ public class KnowledgeEngine
 
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
+    private String graspActionMode = "move_and_grasp";
     private String confPath;
     //private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing

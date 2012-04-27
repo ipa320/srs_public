@@ -53,6 +53,7 @@ package org.srs.srs_knowledge.task;
 import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import ros.pkg.geometry_msgs.msg.Pose;
@@ -75,8 +76,18 @@ import org.srs.srs_knowledge.utils.*;
 
 public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 {
+    private GetObjectTask.GraspType graspType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+
     public FetchObjectTask(String taskType, String targetContent, String userPose) 
     {	
+	//	this.nodeHandle = n;
+	this.userPose = userPose;
+	// this.init(taskType, targetContent, userPose);
+	this.initTask(targetContent, this.userPose);
+    }
+    public FetchObjectTask(String taskType, String targetContent, String userPose, GetObjectTask.GraspType graspMode) 
+    {	
+	this.graspType = graspMode;
 	//	this.nodeHandle = n;
 	this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
@@ -175,8 +186,12 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	    throw e;
 	}
 
-	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID",  KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.GlobalNameSpace + this.targetContent));
-	int hhid = OntoQueryUtil.getIntOfStatement(stm);
+	Iterator<Individual> itInd = KnowledgeEngine.ontoDB.getInstancesOfClass(OntoQueryUtil.GlobalNameSpace + this.targetContent);
+	int hhid = -1000;
+	if(itInd.hasNext()) { 
+	    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID",  (Individual)itInd.next());
+	    hhid = OntoQueryUtil.getIntOfStatement(stm);
+	}
 
 	// TODO:
 	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, targetContent, hhid, workspace.asResource().getLocalName());

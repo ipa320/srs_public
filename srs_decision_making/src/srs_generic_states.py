@@ -429,14 +429,14 @@ class semantic_dm(smach.State):
                     userdata.target_workspace_name='Table0'
                     return nextStep
                 
-                elif resp1.nextAction.generic.actionInfo[0] == 'new_grasp':
+                elif resp1.nextAction.generic.actionInfo[0] == 'just_grasp':
                     nextStep = 'grasp'
                     
                     #userdata.target_object_name = 'milk_box'
                     userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
                     userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
                     # name of the workspace
-                    #userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[???]
+                    userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[4]
                     return nextStep
                 
                 elif resp1.nextAction.generic.actionInfo[0] == 'check':

@@ -63,17 +63,20 @@ class detect_object(smach.State):
         if self.preempt_requested():
             self.service_preempt()
             return 'preempted'
-
+        
+        """
         # checking extra information
         if userdata.key_region == '':
             pass #normal detection
         else:
             pass #detection in bounding box specified by key_region
-
+        """
         #add initial value to output keys
         userdata.object = ""
         userdata.object_pose=""
-
+        
+        rospy.loginfo("object_name: %s", userdata.object_name)
+        
         # determine object name
         if self.object_name != "":
             object_name = self.object_name
@@ -94,6 +97,7 @@ class detect_object(smach.State):
 
         # make the robot ready to inspect the scene
         if self.retries == 0: # only move arm, sdh and head for the first try
+            rospy.loginfo ("object_name: %s", object_name)
             sss.say([current_task_info.speaking_language['Search'] + object_name + "."],False)
             handle_arm = sss.move("arm","folded-to-look_at_table",False)
             handle_torso = sss.move("torso","shake",False)

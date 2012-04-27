@@ -160,7 +160,7 @@ public class KnowledgeEngine
 	}
 
 	////////  TO REMOVE ::: ONLY FOR TESTING
-	//this.testFunction();
+	this.testFunction();
 	////////  END:::: TESTING
 
 	ros.spin();
@@ -213,7 +213,8 @@ public class KnowledgeEngine
 	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
 
 	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
-	
+	String robotName = config.getProperty("robot_name",  System.getenv("ROBOT"));
+
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	    System.out.println("Map Name Space: " + mapNamespace);
@@ -224,6 +225,7 @@ public class KnowledgeEngine
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
 	OntoQueryUtil.MapName = mapNamespacePrefix;
+	OntoQueryUtil.RobotName = robotName;
     }
 
     public void testOnto(String className)
@@ -253,7 +255,7 @@ public class KnowledgeEngine
     {
 	QuerySparQL.Response re = new QuerySparQL.Response();
 	String queryString = req.query;
-	System.out.println(queryString);
+	//System.out.println(queryString);
 
 	re.result = ontoDB.executeQuery(queryString);
 	return re;
@@ -739,15 +741,20 @@ public class KnowledgeEngine
     private GetObjectsOnTray.Response handleGetObjectsOnTray(GetObjectsOnTray.Request request)
     {
 	GetObjectsOnTray.Response res = new GetObjectsOnTray.Response();
+	String mapName = request.map;
 
-	String targetContent = "kitchen";
+	//String targetContent = "kitchen";
+	// + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n"
+
 	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
 	    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-	    + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n"
+	    + "PREFIX mapname: " + "<" + OntoQueryUtil.ObjectNameSpace + ">\n"
 	    + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
-	String queryString = "SELECT ?objs ?tray WHERE { "
-	    + "?tray rdf:type srs:CobTray . "
-	    + "?objs srs:SpatiallyRelated ?tray . "
+	String queryString = "SELECT DISTINCT ?objs ?tray WHERE { "
+	    + "?tray rdf:type srs:COBTray . "
+	    + "<" + OntoQueryUtil.ObjectNameSpace + OntoQueryUtil.RobotName + ">"
+	    + " srs:hasPart ?tray . " 
+	    + "?objs srs:spatiallyRelated ?tray . "
 	    + "}";
 
 	if (this.ontoDB == null) {
@@ -756,26 +763,39 @@ public class KnowledgeEngine
 	}
 	
 	try {
-	    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix
-								   + queryString);
-	    
+	    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix + queryString);
+	    if (rset.size() == 0) {
+		ros.logInfo("No found from database");
+	    }
+
+	    for(int i = 0; i < rset.size(); i++) {
+		QuerySolution qs = rset.get(i);
+		RDFNode rn = qs.get("objs");
+		Individual tmpInd = KnowledgeEngine.ontoDB.getIndividual(rn.toString());
+		res.objects.add(rn.asResource().getLocalName());
+		res.classesOfObjects.add(tmpInd.getRDFType(true).getLocalName());
+	    }
+	    /*
 	    if (rset.size() == 0) {
 		ros.logInfo("No found from database");
 	    }
 	    else {
 		System.out.println("WARNING: Multiple options... ");
+		
 		QuerySolution qs = rset.get(0);
-		String objName = qs.getLiteral("objs").getString();
+		RDFNode rn = qs.get("objs");
+		
+		//String objName = qs.getLiteral("objs").getString();
 		
 		//y = qs.getLiteral("y").getFloat();
 		//theta = qs.getLiteral("theta").getFloat();
 		//System.out.println("x is " + x + ". y is  " + y
 		//		   + ". theta is " + theta);
 	    }
-	    
-	} catch (Exception e) {
+	    */
+	} 
+	catch (Exception e) {
 	    System.out.println("Exception -->  " + e.getMessage());
-	    
 	}
 
 	return res;
@@ -969,9 +989,10 @@ public class KnowledgeEngine
 	//boolean b = OntoQueryUtil.computeOnSpatialRelation();
 	System.out.println("++++++++++++++++++++++++++++++++++");
 	OntoQueryUtil.computeOnSpatialRelation();
+	//System.out.println("++++++++++++++++++++++++++++++++++");
+	//SpatialCalculator.testTF();
 	System.out.println("++++++++++++++++++++++++++++++++++");
-	SpatialCalculator.testTF();
-
+	//OntoQueryUtil.testRemoveProperty();
     }
 
     public static void main(String[] args)

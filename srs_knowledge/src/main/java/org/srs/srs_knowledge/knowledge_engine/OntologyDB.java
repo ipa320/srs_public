@@ -70,6 +70,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.ontology.OntResource;
+import com.hp.hpl.jena.ontology.OntProperty;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -158,6 +159,7 @@ public class OntologyDB
 	*/
 
 	//// new added for test JSON output
+	try {
 	Query query = QueryFactory.create(queryString);
 
 	QueryExecution qe = QueryExecutionFactory.create(query, model);
@@ -177,12 +179,17 @@ public class OntologyDB
 	}
 	qe.close();
 	return r;
-
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	    return "";
+	}
     }
     
     public ArrayList<QuerySolution> executeQueryRaw(String queryString)
     {
 	//System.out.println(queryString);
+	try {
 	Query query = QueryFactory.create(queryString);
 	
 	QueryExecution qe = QueryExecutionFactory.create(query, model);
@@ -215,6 +222,11 @@ public class OntologyDB
 	ArrayList<QuerySolution> resList = (ArrayList)ResultSetFormatter.toList(results);
 	qe.close();
 	return resList; //results;
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	    return new ArrayList<QuerySolution>();
+	}
     }
 
     public void reloadOWLFile(String file)
@@ -369,6 +381,19 @@ public class OntologyDB
 	model.leaveCriticalSection();
 	return pro;
     }
+
+    public OntProperty getOntProperty(String uri) throws NonExistenceEntryException 
+    {
+	model.enterCriticalSection(Lock.READ);
+	OntProperty pro = model.getOntProperty(uri);
+	if (pro == null) {
+	    model.leaveCriticalSection();
+	    throw new NonExistenceEntryException(uri);
+	}
+	model.leaveCriticalSection();
+	return pro;
+    }
+
 
     //private String modelFileName;    
     //private Model model;

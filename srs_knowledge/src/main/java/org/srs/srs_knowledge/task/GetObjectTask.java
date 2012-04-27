@@ -87,6 +87,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     {	
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);
+	System.out.println("MOVE_AND_GRASP");
     }
 
     public GetObjectTask(String taskType, String targetContent, GraspType graspMode) 
@@ -94,6 +95,13 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	this.graspType = graspMode;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);
+	if(graspMode == GraspType.MOVE_AND_GRASP)
+	    {
+		System.out.println("MOVE_AND_GRASP  " + targetContent);
+	    }
+	else {
+	    System.out.println("JUST_GRASP  " + targetContent);
+	    	}
     }
 
     @Override

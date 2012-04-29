@@ -25,6 +25,7 @@ ROS visualization tools provided by dcgm-robotics@FIT group.
   <depend package="cob_script_server"/>
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>
+  <depend package="srs_interaction_primitives" />
   <!-- depend package="cob_arm_navigation_but"/>-->
 
   <export>

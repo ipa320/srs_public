@@ -50,6 +50,7 @@ set( DISPLAY_SOURCE_FILES src/but_display/but_display.cpp
                           src/but_display/but_pointcloud.cpp
                           src/but_display/point_cloud_base.cpp
                           src/but_display/but_examplepane.cpp
+                          src/but_display/but_octomap_control_pane.cpp
                           src/but_display/but_distance_linear_visualizer.cpp
                           src/but_display/but_distance_circular_indicator.cpp
 			  			  src/but_data_fusion/but_cam_display.cpp

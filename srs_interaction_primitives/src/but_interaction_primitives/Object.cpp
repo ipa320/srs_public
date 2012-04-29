@@ -215,22 +215,38 @@ void Object::createMenu()
                                 MenuHandler::UNCHECKED);
     menu_handler_.setCheckState(menu_handler_.insert("Show measure", boost::bind(&Object::menuCallback, this, _1)),
                                 MenuHandler::UNCHECKED);
-    menu_handler_.setCheckState(menu_handler_.insert("Show pre-grasp positions", boost::bind(&Object::menuCallback,
-                                                                                             this, _1)),
-                                MenuHandler::CHECKED);
+
+    bool show_pregrasp = false;
+    if (ros::param::has(PARAMETER_SHOW_PREGRASP))
+      ros::param::get(PARAMETER_SHOW_PREGRASP, show_pregrasp);
+    int handle_pregrasp =
+        menu_handler_.insert("Show pre-grasp positions", boost::bind(&Object::menuCallback, this, _1));
+    if (show_pregrasp)
+    {
+      menu_handler_.setCheckState(handle_pregrasp, MenuHandler::CHECKED);
+      addPregraspPositions();
+    }
+    else
+      menu_handler_.setCheckState(handle_pregrasp, MenuHandler::UNCHECKED);
+
     menu_handler_.setCheckState(menu_handler_.insert("Move arm to pre-grasp position on click",
                                                      boost::bind(&Object::menuCallback, this, _1)),
                                 MenuHandler::UNCHECKED);
-    addPregraspPositions();
 
-    MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert("Interaction");
-    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Movement", boost::bind(&Object::menuCallback,
-                                                                                              this, _1)),
-                                MenuHandler::UNCHECKED);
-    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Rotation", boost::bind(&Object::menuCallback,
-                                                                                              this, _1)),
-                                MenuHandler::UNCHECKED);
+    bool allow_interation = true;
+    if (ros::param::has(PARAMETER_ALLOW_INTERACTION))
+      ros::param::get(PARAMETER_ALLOW_INTERACTION, allow_interation);
 
+    if (allow_interation)
+    {
+      MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert("Interaction");
+      menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Movement", boost::bind(&Object::menuCallback,
+                                                                                                this, _1)),
+                                  MenuHandler::UNCHECKED);
+      menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Rotation", boost::bind(&Object::menuCallback,
+                                                                                                this, _1)),
+                                  MenuHandler::UNCHECKED);
+    }
   }
 }
 

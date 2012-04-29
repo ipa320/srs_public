@@ -163,7 +163,7 @@ class sm_srs_detection(SRS_StateMachine):
             self.detection_type = rospy.get_param("srs/detection_type")
             self.enviroment_confimation_required  = rospy.get_param("srs/enviroment_confirmation")
         except Exception, e:
-            rospy.loginfo("Parameter Server not ready, use default value for grasp, detection and environment update")        
+            rospy.loginfo("Parameter Server not ready, use default value for detection and environment update")        
       
         # states related to detection
         if self.detection_type.lower() == 'assisted':
@@ -228,21 +228,21 @@ class sm_srs_detection(SRS_StateMachine):
 ####################################################################################
 
 
-class sm_srs_grasp(SRS_StateMachine):
+class sm_srs_new_grasp(SRS_StateMachine):
     def __init__(self):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
-            input_keys=['target_object_name','target_object_id','target_object','semi_autonomous_mode'],
+            input_keys=['target_object_name','target_object_id','target_object','target_workspace_name','semi_autonomous_mode'],
             output_keys=['grasp_categorisation'])
         
         self.customised_initial("sm_srs_grasp")
         
         #environment switches for development purpose. Should be assisted by default when the project is completed  
-        self.grasp_type = 'simple'
+        self.grasp_type = 'planned'
         try:
             self.grasp_style = rospy.get_param("/srs/grasping_type")
         except Exception, e:
-            rospy.loginfo("Parameter Server not ready, use default value for grasp, detection and environment update")
+            rospy.loginfo("Parameter Server not ready, use default value for grasp")
         
 
         if self.grasp_type.lower() == 'planned':
@@ -254,6 +254,7 @@ class sm_srs_grasp(SRS_StateMachine):
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_id':'target_object_id',
                                               'target_object':'target_object',
+                                              'target_workspace_name':'target_workspace_name',
                                               'grasp_categorisation':'grasp_categorisation'})
         
         if self.grasp_type.lower() == 'assisted':
@@ -265,6 +266,7 @@ class sm_srs_grasp(SRS_StateMachine):
                                               'semi_autonomous_mode':'semi_autonomous_mode', 	
                                               'target_object_id':'target_object_id',
                                               'target_object':'target_object',
+                                              'target_workspace_name':'target_workspace_name',
                                               'grasp_categorisation':'grasp_categorisation'})
         else:
             #simple grasp    
@@ -275,6 +277,7 @@ class sm_srs_grasp(SRS_StateMachine):
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_id':'target_object_id',
                                               'target_object':'target_object',
+                                              'target_workspace_name':'target_workspace_name',
                                               'grasp_categorisation':'grasp_categorisation'})
 
 ################################################################################
@@ -289,7 +292,7 @@ class sm_srs_old_grasp(SRS_StateMachine):
             input_keys=['target_object_name','target_object_id','target_object','semi_autonomous_mode'],
             output_keys=['grasp_categorisation'])
         
-        self.customised_initial("sm_srs_old_grasp")
+        self.customised_initial("sm_srs_grasp")
         
         with self:
                  smach.StateMachine.add('SM_GRASP-old', sm_pick_object_asisted(),

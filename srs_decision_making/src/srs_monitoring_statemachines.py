@@ -257,20 +257,21 @@ with co_sm_detection:
 # creating the concurrence state machine grasp
 
 
-co_sm_grasp = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
+co_sm_new_grasp = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['target_object_name','target_object_id','target_object','semi_autonomous_mode'],
+                 input_keys=['target_object_name','target_object_id','target_object','target_workspace_name','semi_autonomous_mode'],
                  output_keys=['grasp_categorisation'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
 
-with co_sm_grasp:
+with co_sm_new_grasp:
             smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_srs_grasp(),
+            smach.Concurrence.add('MAIN_OPERATION', sm_srs_new_grasp(),
                             remapping={'target_object_name':'target_object_name',
                                         'semi_autonomous_mode':'semi_autonomous_mode',
                                         'target_object_id':'target_object_id',
                                         'target_object':'target_object',
+                                        'target_workspace_name':'target_workspace_name',
                                         'grasp_categorisation':'grasp_categorisation'})
 
 
@@ -285,7 +286,7 @@ co_sm_old_grasp = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'fa
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
 
-with co_sm_grasp:
+with co_sm_old_grasp:
             smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
             smach.Concurrence.add('MAIN_OPERATION', sm_srs_old_grasp(),
                             remapping={'target_object_name':'target_object_name',

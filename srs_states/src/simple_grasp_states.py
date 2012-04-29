@@ -49,6 +49,8 @@ class select_simple_grasp(smach.State):
     def execute(self, userdata):
         
         global listener
+        
+        rospy.loginfo('userdata is %s', userdata)
         try:
             # transform object_pose into base_link
             object_pose_in = userdata.object.pose

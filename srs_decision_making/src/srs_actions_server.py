@@ -295,6 +295,7 @@ class SRS_DM_ACTION(object):
         self.temp.userdata.target_base_pose=Pose2D()
         self.temp.userdata.target_object_name=''
         self.temp.userdata.target_object_pose=Pose()
+        self.temp.userdata.the_target_object_found = 'sadsadsadsadsda'
         self.temp.userdata.verified_target_object_pose=Pose()
         
         #session id for current task, on id per task.
@@ -320,14 +321,14 @@ class SRS_DM_ACTION(object):
                                                 'navigation':'SM_NAVIGATION',
                                                 'detection':'SM_DETECTION',
                                                 'simple_grasp':'SM_OLD_GRASP',
-                                                'grasp':'SM_GRASP',
+                                                'full_grasp':'SM_NEW_GRASP',
                                                 'put_on_tray':'SM_PUT_ON_TRAY',
                                                 'env_update':'SM_ENV_UPDATE'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
                                                'target_object_pose':'target_object_pose',
                                                'target_object_id':'target_object_id',
-                                               'target_object':'target_object',
+                                               'target_object':'the_target_object_found',
                                                'target_workspace_name':'target_workspace_name',
                                                'semi_autonomous_mode':'semi_autonomous_mode',
                                                'grasp_categorisation':'grasp_categorisation',
@@ -344,22 +345,24 @@ class SRS_DM_ACTION(object):
                                               'target_object_id':'target_object_id',
                                               'target_workspace_name':'target_workspace_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_pose':'target_object_pose',
-                                              'target_object':'target_object' })
+                                              'target_object':'the_target_object_found',
+                                              'target_object_pose':'target_object_pose' })
        
-            smach.StateMachine.add('SM_GRASP', srs_grasp_operation(),
+            smach.StateMachine.add('SM_NEW_GRASP', srs_grasp_operation(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
-                                              'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_id':'target_object_id',
-                                              'target_object':'target_object',
+                                              'target_workspace_name':'target_workspace_name',
+                                              'semi_autonomous_mode':'semi_autonomous_mode',
+                                              'target_object':'the_target_object_found',
+                                              'target_object_pose':'target_object_pose',
                                               'grasp_categorisation':'grasp_categorisation'})
             
             '''
             START
             #Old grasp added for backward compatible, should be removed after knowledge service updated completely
             '''
-            smach.StateMachine.add('SM_OLD_GRASP', srs_grasp_operation(),
+            smach.StateMachine.add('SM_OLD_GRASP', srs_old_grasp_operation(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',

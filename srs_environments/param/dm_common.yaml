@@ -1,3 +1,8 @@
 srs/common/detection_max_retries:  7
 srs/common/grasp_max_retries:  5
 srs/common/navigation_linear_travel_threshold: 0.5
+srs/common/max_time_out: 15
+srs/common/default_navigation_mode: "linear"
+srs/common/max_num_of_grasp_configurations_per_side: 1
+srs/common/scan_pose_scale: 0.5
+srs/common/grasp_pose_scale: 0.8

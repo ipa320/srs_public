@@ -255,7 +255,7 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','grasp', 'put_on_tray','env_update'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','full_grasp', 'put_on_tray','env_update'],
                              io_keys=['target_base_pose',
                                         'target_object_name',
                                         'target_object_pose',
@@ -319,6 +319,7 @@ class semantic_dm(smach.State):
                 if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_srs_detection':
                     print userdata.target_object_pose
                     feedback = pose_to_list(userdata)
+                    #rospy.loginfo ("Detected target_object is: %s", userdata.target_object)    
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
                 print 'Result return not_completed'
                 resultLastStep = 1
@@ -413,7 +414,8 @@ class semantic_dm(smach.State):
                     
                     rospy.loginfo ("target_object_name: %s", userdata.target_object_name)
                     rospy.loginfo ("target_object_id: %s", userdata.target_object_id)
-                    rospy.loginfo ("target_workspace_name: %s", userdata.target_workspace_name)                    
+                    rospy.loginfo ("target_workspace_name: %s", userdata.target_workspace_name)        
+                            
                     return nextStep
 		    ####  END OF HARD CODED FOR TESTING ##
 
@@ -426,17 +428,22 @@ class semantic_dm(smach.State):
                     # name of the workspace
                     #userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[???]
                     #testing purpose, this value should come from knowledge service
-                    userdata.target_workspace_name='Table0'
+                    #userdata.target_workspace_name='Table0'
                     return nextStep
                 
                 elif resp1.nextAction.generic.actionInfo[0] == 'just_grasp':
-                    nextStep = 'grasp'
+                    nextStep = 'full_grasp'
                     
                     #userdata.target_object_name = 'milk_box'
                     userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
                     userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
                     # name of the workspace
                     userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[4]
+                    
+                    rospy.loginfo ("target_object is: %s", userdata.target_object)
+                    
+                    userdata.target_object = userdata.target_object
+                    
                     return nextStep
                 
                 elif resp1.nextAction.generic.actionInfo[0] == 'check':

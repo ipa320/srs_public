@@ -418,7 +418,7 @@ class srs_grasp_operation(smach.StateMachine):
     
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
-                                    input_keys=['target_object_name','target_object_id','target_object','semi_autonomous_mode'],
+                                    input_keys=['target_object_name','target_object_id','target_object','target_workspace_name','semi_autonomous_mode'],
                                     output_keys=['grasp_categorisation'])
         self.userdata.action_name = 'grasp'
         self.userdata.grasp_categorisation = ""
@@ -431,12 +431,13 @@ class srs_grasp_operation(smach.StateMachine):
                     transitions={'succeeded':'ACTION', 'paused':'PAUSED_DURING_PRE_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
                     remapping={'action_name':'action_name'})
             
-            smach.StateMachine.add('ACTION', co_sm_grasp,
+            smach.StateMachine.add('ACTION', co_sm_new_grasp,
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
                     remapping={'target_object_name':'target_object_name',
                                 'semi_autonomous_mode':'semi_autonomous_mode',
                                 'target_object_id':'target_object_id',
                                 'target_object':'target_object',
+                                'target_workspace_name':'target_workspace_name',
                                 'grasp_categorisation':'grasp_categorisation'})       
              
             smach.StateMachine.add('POST_CONFIG', co_sm_post_conf,

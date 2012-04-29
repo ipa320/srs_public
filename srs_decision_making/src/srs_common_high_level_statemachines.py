@@ -148,7 +148,7 @@ class sm_pick_object_asisted(smach.StateMachine):
         
         with self:
             smach.StateMachine.add('DETECT_OBJECT-simple', detect_object(max_retries=5),
-                    transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-simple', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    transitions={'succeeded':'SELECT_GRASP', 'retry':'DETECT_OBJECT-simple', 'no_more_retries':'not_completed', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_old_pose' })
             
             
@@ -258,4 +258,7 @@ class sm_enviroment_object_verification_simple(smach.StateMachine):
                                'target_object_pose':'target_object_pose',
                                'verified_target_object_pose':'verified_target_object_pose'
                                })           
+            
+
+    
             

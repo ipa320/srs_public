@@ -214,19 +214,26 @@ public class KnowledgeEngine
 
 	graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
 
-	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
-	String robotName = config.getProperty("robot_name",  System.getenv("ROBOT"));
+	//mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
+	mapName = config.getProperty("map_name", "ipa-kitchen-map");
 
+	String robotName = config.getProperty("robot_name",  System.getenv("ROBOT"));
+	/*
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	    System.out.println("Map Name Space: " + mapNamespace);
 	    System.out.println("Map Name Space Prefix : " + mapNamespacePrefix);
 	}
+	*/
 
+	mapNamespace = config.getProperty("env_namespace", "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#");
+	globalNamespace = config .getProperty("ont_namespace", "http://www.srs-project.eu/ontologies/srs.owl#");
+	
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
-	OntoQueryUtil.MapName = mapNamespacePrefix;
+	//OntoQueryUtil.MapName = mapNamespacePrefix;
+	OntoQueryUtil.MapName = mapName;
 	OntoQueryUtil.RobotName = robotName;
     }
 
@@ -1080,7 +1087,8 @@ public class KnowledgeEngine
     private String getRoomsOnMapService = "get_rooms_on_map";
     private String getPredefinedPosesService = "get_predefined_poses";
 
-    private String mapNamespacePrefix = "ipa-kitchen-map";
+    //private String mapNamespacePrefix = "ipa-kitchen-map";
+    private String mapName = "ipa-kitchen-map";
     private String mapNamespace = "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#";
 
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";

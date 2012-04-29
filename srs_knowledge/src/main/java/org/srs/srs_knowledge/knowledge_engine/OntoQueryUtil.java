@@ -53,7 +53,9 @@ package org.srs.srs_knowledge.knowledge_engine;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.*;
 import com.hp.hpl.jena.util.FileManager;
-
+import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.SomeValuesFromRestriction;
+import com.hp.hpl.jena.ontology.Restriction;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.ResultSetFormatter;
@@ -174,8 +176,41 @@ public class OntoQueryUtil
         mpWorkspaces.put("Salt", mb);
         mpWorkspaces.put("Bottle", mb);
         mpWorkspaces.put("Pringles", mb);
+	mpWorkspaces.put("Medicine", mb);
+
+	ArrayList<String> mbook = new ArrayList<String>();
+	mbook.add("Table-PieceOfFurniture");
+	mbook.add("Dishwasher");
+	mbook.add("BookShelf");
+	mpWorkspaces.put("Book", mbook);
+	mpWorkspaces.put("BookCopy", mbook);
+
 	return mpWorkspaces.get(objectClassName);
     }	
+
+    //return local names
+    public static ArrayList<String> getFurnituresLinkedToObject(String objectClassName) {
+	ArrayList<String> ret = new ArrayList<String>();
+        OntClass objClass = KnowledgeEngine.ontoDB.model.getOntClass(OntoQueryUtil.GlobalNameSpace  + objectClassName );
+	
+        for (Iterator<OntClass> supers = objClass.listSuperClasses(); supers.hasNext(); ) {
+	    OntClass sup = supers.next();
+	    if (sup.isRestriction()) {
+		if (sup.asRestriction().isSomeValuesFromRestriction()) {
+		    //displayRestriction( "some", sup.getOnProperty(), sup.asSomeValuesFromRestriction().getSomeValuesFrom() );
+		    //}
+		    //displayRestriction( sup.asRestriction() );
+		    OntProperty pro = sup.asRestriction().asSomeValuesFromRestriction().getOnProperty();
+		    if(pro.getURI().equals(OntoQueryUtil.GlobalNameSpace + "storedAtPlace")) {
+			Resource objRes = sup.asRestriction().asSomeValuesFromRestriction().getSomeValuesFrom();
+			ret.add(objRes.getLocalName());
+		    }
+		}
+		// displayType( supers.next() );
+	    }
+	}
+	    return ret;
+	}
 
     public static Pose2D parsePose2D(String targetContent) {
 	Pose2D pos = new Pose2D();
@@ -200,6 +235,7 @@ public class OntoQueryUtil
 	    }
 	} else {
 	    // Ontology queries
+	    /*
 	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
 		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
 		+ "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n";
@@ -209,6 +245,16 @@ public class OntoQueryUtil
 		+ targetContent + " srs:yCoordinate ?y . "
 		+ "ipa-kitchen-map:" + targetContent
 		+ " srs:orientationTheta ?theta .}";
+	    */
+	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+		+ "PREFIX map: <" + OntoQueryUtil.ObjectNameSpace + ">\n";
+	    
+	    String queryString = "SELECT ?x ?y ?theta WHERE { "
+		+ "map:" + targetContent
+		+ " srs:xCoordinate ?x . " 
+		+ "map:" + targetContent + " srs:yCoordinate ?y . "
+		+ "map:" + targetContent + " srs:orientationTheta ?theta .}";
 	    //System.out.println(prefix + queryString + "\n");
 	    
 	    if (KnowledgeEngine.ontoDB == null) {
@@ -334,6 +380,8 @@ public class OntoQueryUtil
 	    Literal qw = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.w));
        	    ind.setPropertyValue(pro, qw);
 
+	    // Update symbolic spatial relation
+	    OntoQueryUtil.computeOnSpatialRelation();
 	}
 	catch(NonExistenceEntryException e) {
 	    throw e;
@@ -341,8 +389,6 @@ public class OntoQueryUtil
     
 	return true;
     }
-
-
 
     public static boolean updatePoseOfObject(Pose pos, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
 	return updatePoseOfObject(pos, propertyNSURI, objectNSURI + objectName);
@@ -687,7 +733,8 @@ public class OntoQueryUtil
 	    }
 	}
 	
-	className = className + "FoodVessel";
+	//	className = className + "FoodVessel";
+	className = className + "GraspableObject";
 
 	return OntoQueryUtil.getObjectsOnMapOfType(className, ifGeometryInfo);
 	/*

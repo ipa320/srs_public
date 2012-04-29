@@ -81,6 +81,7 @@ import ros.pkg.srs_knowledge.srv.DeleteInstance;
 import ros.pkg.srs_knowledge.srv.UpdatePosInfo;
 import ros.pkg.srs_knowledge.srv.GetRoomsOnMap;
 import ros.pkg.srs_knowledge.srv.GetPredefinedPoses;
+import ros.pkg.srs_knowledge.srv.GetWorkspaceForObject;
 
 import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
@@ -153,6 +154,7 @@ public class KnowledgeEngine
 	    initUpdatePosInfo();
 	    initGetRoomsOnMap();
 	    initGetPredefinedPoses();
+	    initGetWorkspaceForObject();
 	}
 	catch(RosException e){
 	    System.out.println(e.getMessage());
@@ -160,8 +162,10 @@ public class KnowledgeEngine
 	}
 
 	////////  TO REMOVE ::: ONLY FOR TESTING
-	this.testFunction();
+	//this.testFunction();
 	////////  END:::: TESTING
+	// init spatial symbolic relation
+	OntoQueryUtil.computeOnSpatialRelation();
 
 	ros.spin();
 
@@ -211,6 +215,7 @@ public class KnowledgeEngine
 	updatePosInfoService = config.getProperty("updatePosInfoService", "update_pos_info");
 	getRoomsOnMapService = config.getProperty("getRoomsOnMapService", "get_rooms_on_map");
 	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
+	getWorkspaceForObjectService = config.getProperty("getWorkspaceForObjectService", "get_workspace_for_object");
 
 	graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
 
@@ -1018,6 +1023,35 @@ public class KnowledgeEngine
 	return re;
     }
 
+    private void initGetWorkspaceForObject() throws RosException 
+    {
+	ServiceServer.Callback<GetWorkspaceForObject.Request, GetWorkspaceForObject.Response> scb = new ServiceServer.Callback<GetWorkspaceForObject.Request, GetWorkspaceForObject.Response>() {
+	    public GetWorkspaceForObject.Response call(GetWorkspaceForObject.Request request) {
+		return handleGetWorkspaceForObject(request);
+	    }
+	};
+
+	System.out.println(getWorkspaceForObjectService);
+	ServiceServer<GetWorkspaceForObject.Request, GetWorkspaceForObject.Response, GetWorkspaceForObject> srv = nodeHandle.advertiseService(getWorkspaceForObjectService, new GetWorkspaceForObject(), scb);
+    }
+
+    private GetWorkspaceForObject.Response handleGetWorkspaceForObject(GetWorkspaceForObject.Request req)
+    {
+	GetWorkspaceForObject.Response re = new GetWorkspaceForObject.Response();
+	try{
+	    if(req.config == 0) {
+		re.workspaces = OntoQueryUtil.getFurnituresLinkedToObject(req.objectType);
+	    }
+	    else if(req.config == 1) {
+		re.workspaces = OntoQueryUtil.getWorkspaceNamesOfObject(req.objectType);
+	    }
+	}
+	catch(Exception e) {
+	    System.out.println("Please check if the object is spelled correctly. ");
+	}
+	return re;
+    }
+
     private String defaultContextPath()
     {
 	 this.confPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();	
@@ -1033,11 +1067,11 @@ public class KnowledgeEngine
     public void testFunction() {
 	//boolean b = OntoQueryUtil.computeOnSpatialRelation();
 	System.out.println("++++++++++++++++++++++++++++++++++");
-	//OntoQueryUtil.computeOnSpatialRelation();
+	OntoQueryUtil.computeOnSpatialRelation();
 	//System.out.println("++++++++++++++++++++++++++++++++++");
 
 	//SpatialCalculator.testTF();
-	//	System.out.println(" ----- " + OntoQueryUtil.getFurnituresLinkedToObject("Milkbox"));
+	//System.out.println(" ----- " + OntoQueryUtil.getFurnituresLinkedToObject("Milkbox"));
 	//System.out.println(" ----- " + OntoQueryUtil.tempGetFurnituresLinkedToObject("Milkbox"));
 
 	System.out.println("++++++++++++++++++++++++++++++++++");
@@ -1058,7 +1092,9 @@ public class KnowledgeEngine
 	    System.out.println(configFile);
 	}
 	else {
-	    configFile = "srsknow.cfg";
+	    String env =  System.getenv("ROBOT_ENV");
+	    configFile = env + ".cfg";
+	    //configFile = "srsknow.cfg";
 	    System.out.println(configFile);
 	}
 
@@ -1093,7 +1129,7 @@ public class KnowledgeEngine
     private String updatePosInfoService = "update_pos_info";
     private String getRoomsOnMapService = "get_rooms_on_map";
     private String getPredefinedPosesService = "get_predefined_poses";
-
+    private String getWorkspaceForObjectService = "get_workspace_for_object";
     //private String mapNamespacePrefix = "ipa-kitchen-map";
     private String mapName = "ipa-kitchen-map";
     private String mapNamespace = "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#";

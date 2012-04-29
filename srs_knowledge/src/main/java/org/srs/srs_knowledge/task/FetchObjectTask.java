@@ -119,7 +119,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	for(Individual u : workspaces) {
 	    System.out.println(u.getLocalName());
 	    try{
-		System.out.println("Created HLActionSeq ");
+		//System.out.println("Created HLActionSeq ");
 		HighLevelActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
 		allSubSeqs.add(subSeq);
 	       
@@ -178,7 +178,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	ArrayList<Pose2D> posList;
 	try {
 	    posList = calculateScanPositions(spatialInfo);
-	    System.out.println(posList.size());
+	    //System.out.println(posList.size());
 	}
 	catch(RosException e) {
 	    System.out.println(e.toString()); 
@@ -221,7 +221,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	actionList.appendHighLevelAction(mau);
 	actionList.appendHighLevelAction(fau);
 		
-	System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
+	//System.out.println("ActionList size is " + actionList.getSizeOfHighLevelActionList());
 
 	// set parameters for the workspace information
 	actionList.setParameter("workspaceURI", workspace.asResource().getURI());
@@ -242,7 +242,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	if(currentSubAction >= 0 && currentSubAction < allSubSeqs.size()) {
 	    // get the current SubActionSequence item
-	    System.out.println("Sequence size is " + allSubSeqs.size());
+	    //System.out.println("Sequence size is " + allSubSeqs.size());
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
 	    
 	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
@@ -255,7 +255,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 		updateDBObjectPose();
 				
 		int ni = highAct.getNextCUActionIndex(stateLastAction); 
-		System.out.println("=========>>>>  " + ni);
+		//System.out.println("=========>>>>  " + ni);
 		switch(ni) {
 		case HighLevelActionUnit.COMPLETED_SUCCESS:
 		    System.out.println("COMPLETED_SUCCESS");
@@ -310,7 +310,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 
 	currentSubAction++;
 	
-	System.out.println("HANDLE FAILED MESSAGE.... CURRENTSUBACTION IS AT:  " + currentSubAction);
+	//System.out.println("HANDLE FAILED MESSAGE.... CURRENTSUBACTION IS AT:  " + currentSubAction);
 	
 	if(currentSubAction >= allSubSeqs.size()) {
 	    return null;
@@ -330,7 +330,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 		return ca;
 	    }
 	    else {
-		System.out.println("GET NEXT CU ACTION AT:  " + tempI);
+		//System.out.println("GET NEXT CU ACTION AT:  " + tempI);
 		CUAction ca = nextHighActUnit.getCUActionAt(tempI);
 		if(ca == null) {
 		    System.out.println("CUACTION IS NULL.......");
@@ -562,7 +562,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	    
 	    String neighbour = SpatialCalculator.nearestObject(spaObj.pose, OntoQueryUtil.GlobalNameSpace + this.targetContent);
 	    if(!neighbour.trim().equals("")) {
-		System.out.println("Found neighbour of " + neighbour);
+		//System.out.println("Found neighbour of " + neighbour);
 		// update its pose
 		try{
 		    OntoQueryUtil.updatePoseOfObject(spaObj.pose, OntoQueryUtil.GlobalNameSpace, neighbour.trim());
@@ -594,7 +594,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 
 	    try {
 		String targetObj = SpatialCalculator.nearestObject(this.recentDetectedObject, OntoQueryUtil.GlobalNameSpace + this.targetContent);
-		System.out.println("TARGET OBJECT IS ::: " + targetObj);
+		//System.out.println("TARGET OBJECT IS ::: " + targetObj);
 		if(!targetObj.trim().equals("")) {
 		   
 		    Pose tmpPose = new Pose();
@@ -620,17 +620,17 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
 		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
 		if(rset.size() == 0) {
-		    System.out.println("<<<< NO GRIPPER INSTANCE FOUND >>>");   
+		    //System.out.println("<<<< NO GRIPPER INSTANCE FOUND >>>");   
 		}
 		else {
-		    System.out.println("<<<< FOUND GRIPPER INSTANCE >>>");
+		    //System.out.println("<<<< FOUND GRIPPER INSTANCE >>>");
 		    Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(targetObj);
 		    
 		    OntoQueryUtil.removeAllSubPropertiesOf(targetObj, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
 		    QuerySolution qs = rset.get(0);
 
 		    String gripper = qs.get("gripper").toString();
-		    System.out.println("<<<<<  " + gripper + "  >>>>>");
+		    //System.out.println("<<<<<  " + gripper + "  >>>>>");
 
 		    Individual gripInd = KnowledgeEngine.ontoDB.getIndividual(gripper);
 		    Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
@@ -641,7 +641,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 		}
 	    }
 	    catch (Exception e) {
-		System.out.println(" ==================   " + e.getMessage() + "   " + e.toString());
+		//System.out.println(" ==================   " + e.getMessage() + "   " + e.toString());
 	    }
 	}
 	else if(currentActUnit.getActionType().equals("PutOnTray")) {
@@ -660,7 +660,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 
 	    try {
 		String targetObj = SpatialCalculator.nearestObject(this.recentDetectedObject, OntoQueryUtil.GlobalNameSpace + this.targetContent);
-		System.out.println("TARGET OBJECT IS ::: " + targetObj);
+		//System.out.println("TARGET OBJECT IS ::: " + targetObj);
 		if(!targetObj.trim().equals("")) {
 		   
 		    Pose tmpPose = new Pose();
@@ -686,17 +686,17 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
 		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
 		if(rset.size() == 0) {
-		    System.out.println("<<<< NO TRAY INSTANCE FOUND >>>");   
+		    //System.out.println("<<<< NO TRAY INSTANCE FOUND >>>");   
 		}
 		else {
-		    System.out.println("<<<< FOUND TRAY INSTANCE >>>");
+		    //System.out.println("<<<< FOUND TRAY INSTANCE >>>");
 		    Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(targetObj);
 		    
 		    OntoQueryUtil.removeAllSubPropertiesOf(targetObj, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
 		    QuerySolution qs = rset.get(0);
 
 		    String gripper = qs.get("tray").toString();
-		    System.out.println("<<<<<  " + gripper + "  >>>>>");
+		    //System.out.println("<<<<<  " + gripper + "  >>>>>");
 
 		    Individual gripInd = KnowledgeEngine.ontoDB.getIndividual(gripper);
 		    Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
@@ -733,15 +733,15 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 
 	    ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
 	    if(rset.size() == 0) {
-		System.out.println("<<<< NO OBJECT INSTANCE FOUND >>>");   
+		//System.out.println("<<<< NO OBJECT INSTANCE FOUND >>>");   
 	    }
 	    else {
-		System.out.println("<<<< FOUND OBJECT INSTANCES ON WORKSPACE " + this.targetContent + " >>>");
+		//System.out.println("<<<< FOUND OBJECT INSTANCES ON WORKSPACE " + this.targetContent + " >>>");
 		//Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(target);
 		//Iterator targetIt = KnowledgeEngine.ontoDB.getInstancesOfClass(OntoQueryUtil.GlobalNameSpace + this.targetContent);
 		for (QuerySolution qs : rset) {
 		    String temp = qs.get("obj").toString();
-		    System.out.println("<<<<<  " + temp + "  >>>>>");
+		    //System.out.println("<<<<<  " + temp + "  >>>>>");
 		    
 		    //System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		    OntoQueryUtil.removeAllSubPropertiesOf(temp, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");

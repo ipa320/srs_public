@@ -1,0 +1,8 @@
+string objectType
+
+# 0: workspace types, 1: workspace individual names. 2. other for future... (unused now)
+int32 config
+
+---
+
+string[] workspaces

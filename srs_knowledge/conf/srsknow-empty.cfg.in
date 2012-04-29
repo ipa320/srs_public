@@ -1,4 +1,4 @@
-ontologyFile ontologies/ipa-kitchen-map/ipa-kitchen-map.owl  
+ontologyFile ontologies/empty-map/empty-map.owl  
 nodename knowledge_srs_node
 taskRequestService task_request
 planNextActionService plan_next_action
@@ -13,4 +13,9 @@ updatePosInfoService update_pos_info
 getRoomsOnMapService get_rooms_on_map
 getPredefinedPosesService get_predefined_poses
 taskfile task1.seq
-map_namespace ipa-kitchen-map
+#map_namespace empty-map
+env_namespace http://www.srs-project.eu/ontologies/empty-map.owl#
+ont_namespace http://www.srs-project.eu/ontologies/srs.owl#
+map_name empty-map
+grasp_mode move_and_grasp
+#grasp_mode just_grasp

@@ -8,6 +8,6 @@ string map
 
 string[] objects
 string[] classesOfObjects
-string[] spatialRelation       # e.g. aboveOf, under, behind etc
-string[] spatialRelatedObject  # e.g. Tray, etc 
-string[] houseHoldId
+#string[] spatialRelation       # e.g. aboveOf, under, behind etc
+#string[] spatialRelatedObject  # e.g. Tray, etc 
+#string[] houseHoldId

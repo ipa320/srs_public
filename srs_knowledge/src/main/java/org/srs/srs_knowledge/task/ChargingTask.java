@@ -99,6 +99,7 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 	
 	targetContent = "ChargingStation0";
 	setTaskTarget(targetContent);
+	/*
 	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
 	    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
 	    + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n";
@@ -108,15 +109,22 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 	    + targetContent + " srs:yCoordinate ?y . "
 	    + "ipa-kitchen-map:" + targetContent
 	    + " srs:orientationTheta ?theta .}";
+	*/
+	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+	    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+	    + "PREFIX map: <" + OntoQueryUtil.ObjectNameSpace.trim() + ">\n";
 	
+	String queryString = "SELECT ?x ?y ?theta WHERE { "
+	    + "map:" + targetContent + " srs:xCoordinate ?x . " 
+	    + "map:" + targetContent + " srs:yCoordinate ?y . "
+	    + "map:" + targetContent + " srs:orientationTheta ?theta .}";
 	if (KnowledgeEngine.ontoDB == null) {
 	    System.out.println("Ontology Database is NULL");
 	    return false;
 	}
 	
 	try {
-	    ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix
-								   + queryString);
+	    ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
 	    if (rset.size() == 0) {
 		System.out.println("ERROR: No move target found from database");
 		return false;

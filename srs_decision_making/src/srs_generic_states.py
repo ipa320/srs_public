@@ -397,7 +397,7 @@ class semantic_dm(smach.State):
 
                     #userdata.target_object_name = 'milk_box'
                     userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
-		    userdata.target_object_name = "milk"
+		    
                     return nextStep
 		    ####  END OF HARD CODED FOR TESTING ##
 
@@ -407,7 +407,7 @@ class semantic_dm(smach.State):
                     userdata.target_object_hh_id = 1
                     
                    # userdata.target_object_name = resp1.nextAction.generic.actionInfo[1]
-		    userdata.target_object_name = "milk"
+		    
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
 
                     
@@ -425,7 +425,7 @@ class semantic_dm(smach.State):
                     
                     #userdata.target_object_name = 'milk_box'
                     userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
-		    userdata.target_object_name = "milk"
+		    
                     return nextStep
                 else:
                     print 'No valid action'

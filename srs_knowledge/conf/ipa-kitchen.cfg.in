@@ -1,4 +1,4 @@
-ontologyFile ontologies/ipa-kitchen-map/ipa-kitchen-map.owl  
+ontologyFile ontologies/ipa-kitchen/ipa-kitchen.owl  
 nodename knowledge_srs_node
 taskRequestService task_request
 planNextActionService plan_next_action
@@ -14,9 +14,9 @@ getRoomsOnMapService get_rooms_on_map
 getPredefinedPosesService get_predefined_poses
 getWorkspaceForObjectService get_workspace_for_object
 taskfile task1.seq
-#map_namespace ipa-kitchen-map
-env_namespace http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#
+#map_namespace ipa-kitchen
+env_namespace http://www.srs-project.eu/ontologies/ipa-kitchen.owl#
 ont_namespace http://www.srs-project.eu/ontologies/srs.owl#
-map_name ipa-kitchen-map
+map_name ipa-kitchen
 grasp_mode move_and_grasp
 #grasp_mode just_grasp

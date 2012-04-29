@@ -73,8 +73,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import ros.*;
 import ros.communication.*;
-//import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
-//import ros.pkg.srs_knowledge.srv.GenerateSequence;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
@@ -140,7 +138,8 @@ public class OntoQueryUtil
 	}
 	
 	// list possible workspace(s), e.g. tables
-	ArrayList<String> otherWorkspaces = tempGetFurnituresLinkedToObject(objectClassName);
+	//ArrayList<String> otherWorkspaces = tempGetFurnituresLinkedToObject(objectClassName);
+	ArrayList<String> otherWorkspaces = getFurnituresLinkedToObject(objectClassName);
 	//workspaceList.addAll(otherWorkspaces);
 
 	Iterator<Individual> otherInstances;
@@ -188,29 +187,67 @@ public class OntoQueryUtil
 	return mpWorkspaces.get(objectClassName);
     }	
 
+    private static HashSet<String> getSuperAndSubClassesOf(String classURI, String rootClassURI, boolean includeSelf) {
+	HashSet<String> ret = new HashSet<String>();
+	String nsDef = 
+	    "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+	    + " PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+	    + " PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
+	String queryString = " SELECT ?sup  WHERE {\n" 
+	    + "<" + classURI + "> rdfs:subClassOf ?sup . \n"
+	    + " ?sup rdfs:subClassOf <" + rootClassURI + "> .}\n";
+	ArrayList<QuerySolution> qr = KnowledgeEngine.ontoDB.executeQueryRaw(nsDef + queryString);
+	for(int i = 0; i < qr.size(); i++) {
+	    String tmp = qr.get(i).getResource("sup").getURI();
+	    //if(!tmp.equals(rootClassURI)) {
+	    ret.add(tmp);
+	    //}
+	}
+	if(includeSelf) {
+	    ret.add(classURI);
+	}
+	
+	return ret;
+    }
+
     //return local names
     public static ArrayList<String> getFurnituresLinkedToObject(String objectClassName) {
 	ArrayList<String> ret = new ArrayList<String>();
         OntClass objClass = KnowledgeEngine.ontoDB.model.getOntClass(OntoQueryUtil.GlobalNameSpace  + objectClassName );
-	
-        for (Iterator<OntClass> supers = objClass.listSuperClasses(); supers.hasNext(); ) {
+	/*	
+		for(Iterator<OntProperty> pros = objClass.listDeclaredProperties(true); pros.hasNext(); ) {
+		System.out.println(pros.next().getLocalName());
+		}
+	*/
+	HashSet<String> supClasses = OntoQueryUtil.getSuperAndSubClassesOf(OntoQueryUtil.GlobalNameSpace + objectClassName, OntoQueryUtil.GlobalNameSpace + "GraspableObject", true);
+	Iterator<String> itSup = supClasses.iterator();
+	while(itSup.hasNext()) {
+	    objClass = KnowledgeEngine.ontoDB.model.getOntClass(itSup.next());
+	    for (Iterator<OntClass> supers = objClass.listSuperClasses(false); supers.hasNext(); ) {
 	    OntClass sup = supers.next();
 	    if (sup.isRestriction()) {
 		if (sup.asRestriction().isSomeValuesFromRestriction()) {
-		    //displayRestriction( "some", sup.getOnProperty(), sup.asSomeValuesFromRestriction().getSomeValuesFrom() );
-		    //}
-		    //displayRestriction( sup.asRestriction() );
+		//displayRestriction( "some", sup.getOnProperty(), sup.asSomeValuesFromRestriction().getSomeValuesFrom() );
+		//}
+		//displayRestriction( sup.asRestriction() );
 		    OntProperty pro = sup.asRestriction().asSomeValuesFromRestriction().getOnProperty();
-		    if(pro.getURI().equals(OntoQueryUtil.GlobalNameSpace + "storedAtPlace")) {
-			Resource objRes = sup.asRestriction().asSomeValuesFromRestriction().getSomeValuesFrom();
-			ret.add(objRes.getLocalName());
-		    }
+		System.out.println(" Found Pro --- " + pro.asResource().toString());
+		
+		if(pro.getURI().equals(OntoQueryUtil.GlobalNameSpace + "storedAtPlace")) {
+		    Resource objRes = sup.asRestriction().asSomeValuesFromRestriction().getSomeValuesFrom();
+		    ret.add(objRes.getLocalName());
+		    System.out.println();
+		}
 		}
 		// displayType( supers.next() );
 	    }
 	}
-	    return ret;
+	
 	}
+	
+	
+	return ret;
+    }
 
     public static Pose2D parsePose2D(String targetContent) {
 	Pose2D pos = new Pose2D();

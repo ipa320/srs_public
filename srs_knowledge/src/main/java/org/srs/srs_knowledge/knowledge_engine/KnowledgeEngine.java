@@ -1033,10 +1033,17 @@ public class KnowledgeEngine
     public void testFunction() {
 	//boolean b = OntoQueryUtil.computeOnSpatialRelation();
 	System.out.println("++++++++++++++++++++++++++++++++++");
-	OntoQueryUtil.computeOnSpatialRelation();
+	//OntoQueryUtil.computeOnSpatialRelation();
 	//System.out.println("++++++++++++++++++++++++++++++++++");
+
 	//SpatialCalculator.testTF();
+	//	System.out.println(" ----- " + OntoQueryUtil.getFurnituresLinkedToObject("Milkbox"));
+	//System.out.println(" ----- " + OntoQueryUtil.tempGetFurnituresLinkedToObject("Milkbox"));
+
 	System.out.println("++++++++++++++++++++++++++++++++++");
+
+	//System.out.println(" ----- " + OntoQueryUtil.getFurnituresLinkedToObject("FoodVessel"));
+	//System.out.println(" ----- " + OntoQueryUtil.tempGetFurnituresLinkedToObject("FoodVessel"));
 	//OntoQueryUtil.testRemoveProperty();
     }
 

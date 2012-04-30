@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+        <!-- SRS enviroment parameters -->
+	<include file="$(find srs_environments)/ros/launch/assisted_grasp.launch"/>
+
+	<!-- start SRS common -->
+	<include file="$(find srs_scenarios)/ros/launch/srs_scenario_common.launch"/>
+</launch>

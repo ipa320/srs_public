@@ -240,7 +240,7 @@ class sm_srs_new_grasp(SRS_StateMachine):
         #environment switches for development purpose. Should be assisted by default when the project is completed  
         self.grasp_type = 'assisted'
         try:
-            self.grasp_style = rospy.get_param("/srs/grasping_type")
+            self.grasp_type = rospy.get_param("/srs/grasping_type")
         except Exception, e:
             rospy.loginfo("Parameter Server not ready, use default value for grasp")
         

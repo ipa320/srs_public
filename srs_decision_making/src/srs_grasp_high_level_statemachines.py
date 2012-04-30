@@ -61,11 +61,26 @@ from srs_generic_states import *
 #simple grasp from IPA
 from simple_grasp_states import *
 #grasp based on configuration from ROB
-from srs_grasp_states import *
+
 #arm manipulation from IPA
 from move_arm_states import *
-#assisted arm manipulation from BUT
-from arm_manip_states import *
+
+try:
+    #grasp state from ROB, need working openrave
+    from srs_grasp_states import *
+except ImportError:
+    rospy.logwarn ('Package srs_grasping NOT ready! You can NOT use srs grasp')
+    # the package is not ready use dummy function instead
+    from srs_grasp_dummy_states import *
+    
+try:
+    #assisted arm manipulation from BUT
+    from arm_manip_states import *
+except ImportError:
+    rospy.logwarn ('Package srs_assisted_arm_navigation NOT ready, You can NOT use srs assisted grasp')
+    # the package is not working use dummy function instead
+    from arm_manip_dummy_states import *
+
 
 #import service form semantic KB
 from srs_knowledge.srv import *

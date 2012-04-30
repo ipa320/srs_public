@@ -17,7 +17,7 @@ from shared_state_information import *
 from eval_objects import *
 from cob_3d_mapping_msgs.msg import *
 
-from srs_grasping.srv import *
+#from srs_grasping.srv import *
 from geometry_msgs.msg import *
 
 from sensor_msgs.msg import *

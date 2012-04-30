@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import roslib
-roslib.load_manifest('srs_grasping')
+roslib.load_manifest('srs_states')
 import rospy
 import grasping_functions
 from shared_state_information import *

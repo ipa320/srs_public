@@ -21,15 +21,15 @@ from srs_grasping.srv import *
 from geometry_msgs.msg import *
 
 from sensor_msgs.msg import *
-from srs_asisted_detection.srv import *
+from srs_assisted_detection.srv import *
 from geometry_msgs.msg import *
 ## Detect state
 #
 # This state will try to detect an object.
 outcome = ''
 outcome2 = ''
-call=false
-call2=false
+call=False
+call2=False
 
 
 class detect_object_assited(smach.State):
@@ -70,7 +70,7 @@ class detect_object_assited(smach.State):
     
     def detectObjectSrv(self,req):
        
-
+        global outcome
         # move sdh as feedback
         sss.move("sdh","cylclosed",False)
 
@@ -87,7 +87,7 @@ class detect_object_assited(smach.State):
                 handle_arm.client.cancel_goal()
                 handle_torso.client.cancel_goal()
                 handle_head.client.cancel_goal()
-                global outcome
+                
                 outcome= 'preempted'
             else:
                 handle_arm.wait()
@@ -109,7 +109,7 @@ class detect_object_assited(smach.State):
         except rospy.ROSException, e:
             print "Service not available: %s"%e
             self.retries = 0 # no object found within min_dist start value
-            global outcome
+
             outcome= 'failed'
 
         # call object detection service
@@ -120,11 +120,11 @@ class detect_object_assited(smach.State):
             res = detector_service(req)
             userdata.object_list=res.object_list
             
-            global outcome
+
             outcome= 'succeeded'
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
-            global outcome
+
             outcome= 'failed'
 
         global detector_response
@@ -133,7 +133,7 @@ class detect_object_assited(smach.State):
             for x in range(len(resp1.object_list.detections)):
                 detector_response.object_list.detections.insert(x,resp1.object_list.detections[x])
         global call
-        call=true
+        call=True
         s.shutdown()
         userdata.object_list=detector_response.object_list
         return detector_response  
@@ -170,7 +170,7 @@ class user_intervention_on_detection(smach.State):
             return outcome2
         
     def answerObjectSrv(self,req):    
-        call2=true
+        call2=True
         rospy.loginfo("Get Object information")
         answer=UiAnswerResponse()
         
@@ -215,7 +215,7 @@ class user_intervention_on_detection(smach.State):
         
     def moveBBSrv(self,req):
         rospy.loginfo("Get BB information")
-        call2=true
+        call2=True
         #BBmove service base and then movement
         moveBB=BBMoveResponse()
         moveBB.message.data='moving to better position'

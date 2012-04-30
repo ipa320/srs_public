@@ -42,7 +42,7 @@ class select_srs_grasp(smach.State):
         req = GetGraspsFromPositionRequest(userdata.target_object_id, object_pose_bl.pose)
         grasp_configuration = (get_grasps_from_position(req)).grasp_configuration
         
-        print ('grasp configs %s', grasp_configuration)
+        #print ('grasp configs %s', grasp_configuration)
         
         if len(grasp_configuration) < 1: # no valid configuration found
             return 'not possible'

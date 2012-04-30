@@ -6,7 +6,7 @@ roslib.load_manifest('srs_assisted_detection')
 import rospy
 
 from cob_object_detection_msgs.msg import *
-from srs_asisted_detection.srv import *
+from srs_assisted_detection.srv import *
 from std_msgs.msg import *
 
 from geometry_msgs.msg import *

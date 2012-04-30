@@ -5,7 +5,7 @@ roslib.load_manifest('srs_assisted_detection')
 
 import rospy
 
-from srs_asisted_detection.srv import *
+from srs_assisted_detection.srv import *
 from cob_object_detection_msgs.msg import *
 from cob_object_detection_msgs.srv import *
 from sensor_msgs.msg import *

@@ -126,7 +126,7 @@ class sm_approach_pose_assisted(smach.StateMachine):
 					remapping={'semi_autonomous_mode':'semi_autonomous_mode','intermediate_pose':'intermediate_pose'})
 		
 			smach.StateMachine.add('INTERMEDIATE_MOVE', approach_pose_without_retry(),
-					transitions={'succeeded':'APPROACH_POSE', 'not_completed':'INTERVENTION', 'failed':'failed', 'preempted':'preempted'},
+					transitions={'succeeded':'succeeded', 'not_completed':'INTERVENTION', 'failed':'failed', 'preempted':'preempted'},
 					remapping={'base_pose':'intermediate_pose'})
         
 

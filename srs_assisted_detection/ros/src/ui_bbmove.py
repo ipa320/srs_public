@@ -3,8 +3,10 @@
 import roslib
 roslib.load_manifest('srs_assisted_detection')
 
-from srs_grasping.srv import *
+#from srs_grasping.srv import *
 from geometry_msgs.msg import *
+from srs_assisted_detection.srv import *
+import rospy
 
 def moveBBSrv(req):
     rospy.loginfo("kam was an")

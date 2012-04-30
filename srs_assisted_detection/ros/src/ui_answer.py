@@ -3,11 +3,11 @@
 import roslib
 roslib.load_manifest('srs_assisted_detection')
 
-from srs_grasping.srv import *
+#from srs_grasping.srv import *
 from geometry_msgs.msg import *
 
 from sensor_msgs.msg import *
-from srs_asisted_detection.srv import *
+from srs_assisted_detection.srv import *
 from geometry_msgs.msg import *
 
 
@@ -87,4 +87,4 @@ def assisted_answer_server(detections):
     s2.spin()
     return [func,pose,action]
 if __name__ == "__main__":
-    asisted_answer_server()
+    assisted_answer_server('test')

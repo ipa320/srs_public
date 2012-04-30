@@ -144,7 +144,7 @@ class sm_simple_detection(smach.StateMachine):
 ################################################################################
 
 #detection assisted by remote operator or KB, they specify region of interest for detection
-class sm_asisted_detection(smach.StateMachine):
+class sm_assisted_detection(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self,
                                     outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],

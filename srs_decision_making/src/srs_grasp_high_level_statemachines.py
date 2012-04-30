@@ -156,30 +156,49 @@ class sm_srs_grasp_simple (smach.StateMachine):
 class sm_srs_grasp_assisted (smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, 
-            outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
+            outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
             input_keys=['target_object_name','target_object_id', 'target_object','target_workspace_name','semi_autonomous_mode'],
             output_keys=['grasp_categorisation'])
         
-        self.userdata.grasp_categorisation=""
-        self.userdata.target_object_old_pose=""
-        self.userdata.grasp_configuration = ""
+        self.userdata.grasp_configuration = ""   #list of possible grasp configuration
+        self.userdata.poses = ""                 #list of pre grasp pose of the above configuration
+        self.userdata.base_pose = ""             #best base pose for grasp
+        self.userdata.index_of_the_selected_pose = -1   #the id of the pre grasp which has been reached
+        self.pose_of_the_target_object = ''
+        self.bb_of_the_target_object = ''
         
         self.max_retries = 5  # default value for max retries 
+        self.detection_type = 'simple'
+
+        try:
+            self.detection_type = rospy.get_param("srs/detection_type")
+        except Exception, e:
+            rospy.INFO('can not read parameter of detection type, use the default value')
+
         try:
             self.max_retries = rospy.get_param("srs/common/grasp_max_retries")
         except Exception, e:
             rospy.INFO('can not read parameter of max retries, use the default value')
         
         
-        with self:         
-            smach.StateMachine.add('SELECT_GRASP-simple', select_simple_grasp(),
-                    transitions={'succeeded':'GRASP-simple', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'grasp_categorisation':'grasp_categorisation', 'object':'target_object'})
-                
-            smach.StateMachine.add('GRASP-simple', simple_grasp(self.max_retries),
-                    transitions={'succeeded':'succeeded', 'retry':'GRASP-simple', 'no_more_retries':'not_completed', 'failed':'failed','preempted':'preempted'},
-                    remapping={'object':'target_object', 'grasp_categorisation':'grasp_categorisation'})
-
+        with self:          
+                #guided grasp with simple detection      
+                smach.StateMachine.add('PREPARE', assisted_arm_navigation_prepare(),
+                    transitions={'succeeded':'GRASP_SELECT', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'pose_of_the_target_object':'pose_of_the_target_object', 'bb_of_the_target_object':'bb_of_the_target_object', 'object':'target_object'})
+                                
+                smach.StateMachine.add('GRASP_SELECT', select_srs_grasp(),
+                    transitions={'succeeded':'GRASP_MOVE_ARM', 'not_possible':'GRASP_MOVE_ARM', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'grasp_configuration':'grasp_configuration', 'poses':'poses', 'object':'target_object', 'target_object_id':'target_object_id'})
+            
+                smach.StateMachine.add('GRASP_MOVE_ARM', move_arm_to_given_positions_assisted(),
+                    transitions={'succeeded':'GRASP_SRS_GRASP', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'name_of_the_target_object':'target_object_name', 'list_of_target_positions':'poses', 'pose_of_the_target_object':'pose_of_the_target_object', 'bb_of_the_target_object':'bb_of_the_target_object'})
+            
+                smach.StateMachine.add('GRASP_SRS_GRASP', srs_grasp(),
+                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
+                    remapping={'grasp_configuration_id':'index_of_the_selected_pose', 'grasp_configuration':'grasp_configuration', 'grasp_categorisation':'grasp_categorisation' })
+            
 
 ################################################################################
 #grasp state machine
@@ -262,7 +281,7 @@ class sm_srs_grasp_planned (smach.StateMachine):
                     transitions={'succeeded':'GRASP_DETECT_ASSISTED', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
                     remapping={'object':'target_object', 'grasp_configuration':'grasp_configuration', 'base_pose':'base_pose'})
                 
-                smach.StateMachine.add('GRASP_DETECT_ASSISTED', sm_asisted_detection(),
+                smach.StateMachine.add('GRASP_DETECT_ASSISTED', sm_assisted_detection(),
                     transitions={'succeeded':'GRASP_SELECT', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
                     remapping={'target_object':'target_object', 'target_object_name':'target_object_name', 'target_object_id':'target_object_id', 'target_workspace_name':'target_workspace_name'})
             

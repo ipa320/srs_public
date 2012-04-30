@@ -156,7 +156,7 @@ class simple_grasp(smach.State):
         
                 pre_grasp_bl.pose.position.x = pre_grasp_bl.pose.position.x + 0.10 # x offset for pre grasp position
                 pre_grasp_bl.pose.position.y = pre_grasp_bl.pose.position.y + 0.10 # y offset for pre grasp position
-                pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.15 # y offset for pre grasp position
+                pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.2 # z offset for pre grasp position
                 post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
                 post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.17 # z offset for post grasp position
                 
@@ -194,10 +194,16 @@ class simple_grasp(smach.State):
                 #unknown categorisation
                
                 
-    
+            
             # calculate ik solutions for pre grasp configuration
-            arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp_top")
-            (pre_grasp_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_grasp_bl)        
+            if userdata.grasp_categorisation == 'top':
+                arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp_top")
+            else:
+                # userdata.grasp_categorisation == 'side':
+                arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp")
+            
+            (pre_grasp_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_grasp_bl)
+                        
             if(error_code.val != error_code.SUCCESS):
                 rospy.logerr("Ik pre_grasp Failed")
                 self.retries += 1

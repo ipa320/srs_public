@@ -543,6 +543,68 @@ class prepare_robot(smach.State):
         #initialisation of the robot
         # move to initial positions
         global sss
+        
+        sss.set_light("yellow")
+
+        # initialize components
+        handle_head = sss.init("head")
+        if handle_head.get_error_code() != 0:
+            return 'failed'
+
+        handle_torso = sss.init("torso")
+        if handle_torso.get_error_code() != 0:
+            return 'failed'
+
+        handle_tray = sss.init("tray")
+        if handle_tray.get_error_code() != 0:
+            return 'failed'
+
+        #handle_arm = sss.init("arm")
+        #if handle_arm.get_error_code() != 0:
+        # return 'failed'
+
+        handle_sdh = sss.init("sdh")
+        #if handle_sdh.get_error_code() != 0:
+        # return 'failed'
+
+        handle_base = sss.init("base")
+        if handle_base.get_error_code() != 0:
+            return 'failed'
+
+        # recover components
+        handle_head = sss.recover("head")
+        if handle_head.get_error_code() != 0:
+            return 'failed'
+
+        handle_torso = sss.recover("torso")
+        if handle_torso.get_error_code() != 0:
+            return 'failed'
+
+        handle_tray = sss.recover("tray")
+        if handle_tray.get_error_code() != 0:
+            return 'failed'
+
+        handle_arm = sss.recover("arm")
+        #if handle_arm.get_error_code() != 0:
+        # return 'failed'
+
+        #handle_sdh = sss.recover("sdh")
+        #if handle_sdh.get_error_code() != 0:
+        # return 'failed'
+
+        handle_base = sss.recover("base")
+        if handle_base.get_error_code() != 0:
+            return 'failed'
+        
+        # set light
+        sss.set_light("green")
+        
+        return 'succeeded'
+        
+        
+        """
+        
+        
         handle_torso = sss.move("torso", "home", False)
         handle_tray = sss.move("tray", "down", False)
         handle_arm = sss.move("arm", "folded", False)
@@ -560,7 +622,7 @@ class prepare_robot(smach.State):
         
 
         return 'succeeded'
-    
+        """
 
 
 def pose_to_list(userdata):

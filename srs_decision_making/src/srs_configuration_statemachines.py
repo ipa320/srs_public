@@ -147,7 +147,8 @@ def robot_configuration(parent, action_name, action_stage):
                     handles.append(None)
                 else:
                     if component_list[index] == "arm":
-                        handles.append(sss.move_planned(component_list[index], robot_config_pre[action_name][component_list[index]], False))
+                        #handles.append(sss.move_planned(component_list[index], robot_config_pre[action_name][component_list[index]], False))
+                        handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
                     else:
                         handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
                     

@@ -367,7 +367,7 @@ class SRS_DM_ACTION(object):
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_id':'target_object_id',
-                                              'target_object':'target_object',
+                                              'target_object':'the_target_object_found',
                                               'grasp_categorisation':'grasp_categorisation'})
             '''
             #Old grasp added for backward compatible, should be removed after knowledge service updated completely

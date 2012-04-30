@@ -68,6 +68,7 @@ class get_grasp_configurations():
 
 	def __init__(self):
 
+		print "-------------------------------------------------------------------------";
 		rospy.loginfo("Waiting /get_model_grasp service...")
 		rospy.wait_for_service('/get_model_grasp')
 		rospy.loginfo("/get_model_grasp is ready.")
@@ -75,7 +76,6 @@ class get_grasp_configurations():
 		self.ns_global_prefix = "/get_grasp_configurations"
 		self.get_grasp_configurations = actionlib.SimpleActionServer(self.ns_global_prefix, GraspCAction, self.execute_cb, True)
 		rospy.loginfo("/get_grasp_configurations is ready.")
-
 		self.get_grasp_configurations.start()
 
 	

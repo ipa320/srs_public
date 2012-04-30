@@ -438,7 +438,7 @@
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:xCoord rdf:datatype="&xsd;float">0.67</srs:xCoord>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.74</srs:heightOfObject>
-        <srs:zCoord rdf:datatype="&xsd;float">0.74</srs:zCoord>
+        <srs:zCoord rdf:datatype="&xsd;float">0.37</srs:zCoord>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.9</srs:widthOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.9</srs:lengthOfObject>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>

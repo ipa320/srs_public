@@ -26,32 +26,16 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-# BUT gui primitives
-set( GUI_SOURCE_FILES src/but_gui/BoundingBox.cpp
-                      src/but_gui/Primitive.cpp
-                      src/but_gui/Billboard.cpp
-                      src/but_gui/Plane.cpp
-                      src/but_gui/Object.cpp
-                      src/but_gui/ObjectWithBoundingBox.cpp
-                      src/but_gui/UnknownObject.cpp
-                      src/but_gui/UpdatePublisher.cpp
-                      src/but_gui/but_gui_service_server.cpp  )
+# BUT context server
+set( CONTEXT_SOURCE_FILES src/but_context/ContextServer.cpp)
 
-set( BUT_GUI_PROJECT_NAME but_gui )
-rosbuild_add_library( ${BUT_GUI_PROJECT_NAME} ${GUI_SOURCE_FILES} )
+set( BUT_CONTEXT_PROJECT_NAME but_context )
+rosbuild_add_library( ${BUT_CONTEXT_PROJECT_NAME} ${CONTEXT_SOURCE_FILES} )
 
-rosbuild_add_executable(but_gui_objects src/but_gui/but_gui_objects.cpp)
-rosbuild_add_executable(but_gui_service_server src/but_gui/but_gui_service_server.cpp)
-rosbuild_add_executable(but_gui_client src/but_gui/but_gui_client.cpp)
-rosbuild_add_executable(but_gui_gripper src/but_gui/gripper.cpp)
-rosbuild_add_executable(but_gui_observers src/but_gui/test_observers.cpp)
+rosbuild_add_executable( but_context_server src/but_context/but_context_server.cpp )
+target_link_libraries( but_context_server ${BUT_CONTEXT_PROJECT_NAME} )
 
-target_link_libraries(but_gui_objects ${BUT_GUI_PROJECT_NAME})
-target_link_libraries(but_gui_service_server ${BUT_GUI_PROJECT_NAME})
-target_link_libraries(but_gui_client ${BUT_GUI_PROJECT_NAME})
-target_link_libraries(but_gui_gripper ${BUT_GUI_PROJECT_NAME})
-target_link_libraries(but_gui_observers ${BUT_GUI_PROJECT_NAME})
-
+# BUT env. model server
 set( SERVER_SOURCES src/but_server/servernode.cpp
                     src/but_server/but_server.cpp
                     src/but_server/ServerTools.cpp
@@ -64,11 +48,28 @@ set( SERVER_SOURCES src/but_server/servernode.cpp
                     src/but_server/plugins/IMarkersPlugin.cpp
                     src/but_server/plugins/MarkerArrayPlugin.cpp
                     src/but_server/plugins/LimitedPointCloudPlugin.cpp
+                    src/but_server/plugins/ObjTreePlugin.cpp
+                    src/but_server/plugins/OldIMarkersPlugin.cpp
+                    src/but_server/plugins/OctomapPluginTools/TestingOrientedBox.cpp
+                    src/but_server/plugins/OctomapPluginTools/TestingPlanes.cpp
+                    src/but_server/plugins/OctomapPluginTools/TestingPolymesh.cpp
                     )
 
-# Add servernode executable
-set( BUT_DYNMODEL_PROJECT_NAME but_dynmodel )
-rosbuild_add_executable(but_server_node ${SERVER_SOURCES} )
+set( OBJTREE_SOURCE_FILES src/but_server/objtree/bbox.cpp
+                          src/but_server/objtree/filter.cpp
+                          src/but_server/objtree/node.cpp
+                          src/but_server/objtree/object.cpp
+                          src/but_server/objtree/octree.cpp
+                          src/but_server/objtree/plane.cpp
+                          )
 
-target_link_libraries(but_server_node ${OCTOMAP_LIBRARIES} ${BUT_GUI_PROJECT_NAME} )
+# Objtree library
+set( OBJTREE_LIB_NAME but_objtree )
+rosbuild_add_library( ${OBJTREE_LIB_NAME} ${OBJTREE_SOURCE_FILES} )
+
+# Add servernode executable
+rosbuild_add_executable( but_server_node ${SERVER_SOURCES} )
+target_link_libraries( but_server_node ${OCTOMAP_LIBRARIES} ${OBJTREE_LIB_NAME} )
+
+include_directories( include/but_server )
 

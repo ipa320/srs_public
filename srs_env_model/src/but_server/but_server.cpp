@@ -1,6 +1,6 @@
 /******************************************************************************
  * \file
- * $Id: but_server.cpp 512 2012-04-04 21:07:51Z stancl $
+ * $Id: but_server.cpp 660 2012-04-18 16:37:04Z stancl $
  *
  * Modified by dcgm-robotics@FIT group.
  *
@@ -78,8 +78,16 @@ CButServer::CButServer(const std::string& filename) :
 			m_plugOctoMap("OCM"),
 			m_plugCollisionObjectHolder("COB"),
 			m_plugMap2DHolder("M2D"),
-			m_plugIMarkers("IM"),
-			m_plugMarkerArrayHolder( "MA" )
+			m_plugIMarkers(0),
+			m_plugMarkerArrayHolder( "MA" ),
+			m_plugObjTree( "OT" ),
+			m_plugOldIMarkers( 0 ),
+			m_bUseOldIMP( false )
+#ifdef _EXAMPLES_
+			, m_plugExample("Example1")
+			, m_plugExampleCrawlerHolder( "Example2")
+#endif
+
 {
 	// Get node handle
 	ros::NodeHandle private_nh("~");
@@ -92,6 +100,7 @@ CButServer::CButServer(const std::string& filename) :
 
 	m_latchedTopics = staticMap;
 	private_nh.param("latch", m_latchedTopics, m_latchedTopics);
+	private_nh.param<bool>("use_old_im", m_bUseOldIMP, m_bUseOldIMP);
 
 	std::cerr << "BUTSERVER: Initializing plugins " << std::endl;
 
@@ -103,9 +112,24 @@ CButServer::CButServer(const std::string& filename) :
 	m_plugins.push_back( &m_plugOctoMap );
 	m_plugins.push_back( m_plugCollisionObjectHolder.getPlugin() );
 	m_plugins.push_back( m_plugMap2DHolder.getPlugin() );
-	m_plugins.push_back( &m_plugIMarkers );
 	m_plugins.push_back( m_plugMarkerArrayHolder.getPlugin() );
+	m_plugins.push_back( &m_plugObjTree );
 
+	if( m_bUseOldIMP )
+	{
+		m_plugOldIMarkers = new srs::COldIMarkersPlugin( "IM" );
+		m_plugins.push_back( m_plugOldIMarkers );
+	}
+	else
+	{
+		m_plugIMarkers = new srs::CIMarkersPlugin( "IM" );
+		m_plugins.push_back( m_plugIMarkers );
+	}
+
+#ifdef _EXAMPLES_
+	m_plugins.push_back( & m_plugExample );
+	m_plugins.push_back( m_plugExampleCrawlerHolder.getPlugin() );
+#endif
 
 
 	//=========================================================================
@@ -130,6 +154,11 @@ CButServer::CButServer(const std::string& filename) :
 CButServer::~CButServer()
 {
 
+	if( m_plugOldIMarkers != 0 )
+		delete m_plugOldIMarkers;
+
+	if( m_plugIMarkers != 0 )
+		delete m_plugIMarkers;
 
 }
 
@@ -168,8 +197,16 @@ void CButServer::publishAll(const ros::Time& rostime) {
     m_plugMarkerArrayHolder.connect( & m_plugOctoMap );
     m_plugVisiblePointCloudHolder.connect( & m_plugOctoMap );
 
+#ifdef _EXAMPLES_
+    m_plugExampleCrawlerHolder.connect( & m_plugOctoMap );
+#endif
+
 	// Crawl octomap
 	m_plugOctoMap.crawl( rostime );
+
+#ifdef _EXAMPLES_
+	m_plugExampleCrawlerHolder.disconnect();
+#endif
 
 	// Disconnect all
 	m_plugOcMapPointCloudHolder.disconnect();
@@ -204,6 +241,21 @@ void CButServer::publishAll(const ros::Time& rostime) {
 	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
 	ROS_DEBUG("Map publishing in CButServer took %f sec", total_elapsed);
 
+	// Publish interactive markers
+	if( m_plugIMarkers != 0 && m_plugIMarkers->shouldPublish() )
+		m_plugIMarkers->onPublish( rostime );
+
+	// Old interactive markers
+	if( m_plugOldIMarkers != 0 && m_plugOldIMarkers->shouldPublish() )
+		m_plugOldIMarkers->onPublish( rostime );
+
+#ifdef _EXAMPLES_
+	// Publish data
+	if( m_plugExample.shouldPublish() )
+	  m_plugExample.onPublish(rostime);
+
+	m_plugExampleCrawlerHolder.publish(rostime);
+#endif
 }
 
 

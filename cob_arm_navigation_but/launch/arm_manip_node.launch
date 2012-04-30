@@ -1,9 +1,0 @@
-<launch>
-
-  <!-- arm manipulation actionlib server -->
-  <node pkg="cob_arm_navigation_but" name="but_arm_manipulation_node" type="but_arm_manipulation_node" respawn="false">
-    <param name="start_timeout" type="double" value="60.0"/>
-    <param name="solve_timeout" type="double" value="300.0"/>
-  </node>
-  
-</launch>

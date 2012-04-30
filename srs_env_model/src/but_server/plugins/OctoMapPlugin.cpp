@@ -33,18 +33,25 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl_ros/transforms.h>
 
+// Filtering
+#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
+
+
 #define OCTOMAP_FRAME_ID std::string("/map")
 #define OCTOMAP_PUBLISHER_NAME std::string("butsrv_binary_octomap")
+#define CAMERA_INFO_TOPIC_NAME std::string("/cam3d/camera_info")
+#define MARKERS_TOPIC_NAME std::string("visualization_marker")
 
 void srs::COctoMapPlugin::setDefaults()
 {
 	// Set octomap parameters
-	m_mapParameters.resolution = 0.05;
+	m_mapParameters.resolution = 0.1;
 	m_mapParameters.treeDepth = 0;
 	m_mapParameters.probHit = 0.7;         	// Probability of node, if node is occupied: 0.7
 	m_mapParameters.probMiss = 0.4;        	// Probability of node, if node is free: 0.4
-	m_mapParameters.thresMin = 0.45;		// Clamping minimum threshold: 0.1192;
-	m_mapParameters.thresMax = 0.55; 		// Clamping maximum threshold: 0.971;
+	m_mapParameters.thresMin = 0.12;		// Clamping minimum threshold: 0.1192;
+	m_mapParameters.thresMax = 0.97; 		// Clamping maximum threshold: 0.971;
 	m_mapParameters.thresOccupancy = 0.5; 	// Occupied node threshold: 0.5
 	m_mapParameters.maxRange = -1.0;
 
@@ -58,6 +65,19 @@ void srs::COctoMapPlugin::setDefaults()
 	m_mapParameters.frameId = "/map";
 
 	m_bPublishOctomap = true;
+
+	// Filtering
+	m_bRemoveOutdated = true;
+	m_bCamModelInitialized = false;
+	m_camera_info_topic = CAMERA_INFO_TOPIC_NAME;
+	m_bVisualizeMarkers = true;
+	m_markers_topic_name = MARKERS_TOPIC_NAME;
+
+	// CTestingPolymesh::tQuaternion quat(Eigen::AngleAxisf(0.33*M_PI, Eigen::Vector3f::UnitZ()) ) ;
+
+	m_removeTester = 0; //new CTestingPolymesh(CTestingPolymesh::tPoint( 1.0, 1.0, 0.5 ), quat, CTestingPolymesh::tPoint( 1.0, 1.5, 2.0 ));
+
+	m_testerLife = 10;
 
 }
 
@@ -125,6 +145,16 @@ srs::COctoMapPlugin::COctoMapPlugin( const std::string & name, const std::string
 	}
 }
 
+/**
+ * Destructor
+ */
+srs::COctoMapPlugin::~COctoMapPlugin()
+{
+	// Remove tester
+	if( m_removeTester != 0 )
+		delete m_removeTester;
+}
+
 //! Initialize plugin - called in server constructor
 void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 {
@@ -140,8 +170,15 @@ void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("sensor_model/max", m_mapParameters.thresMax, m_mapParameters.thresMax);
 	node_handle.param("max_range", m_mapParameters.maxRange, m_mapParameters.maxRange);
 
-	// TODO: Remove this line!!!
-	// m_mapParameters.maxRange = 2.0;
+	// Filtering presets
+	{
+		node_handle.param("camera_info_topic", m_camera_info_topic, m_camera_info_topic);
+		node_handle.param("visualize_markers", m_bVisualizeMarkers, m_bVisualizeMarkers );
+		node_handle.param("markers_topic", m_markers_topic_name, m_markers_topic_name );
+		// stereo cam params for sensor cone:
+		node_handle.param<int>("camera_stereo_offset_left", m_camera_stereo_offset_left, 128);
+		node_handle.param<int>("camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
+	}
 
 	// Set octomap parameters...
 	{
@@ -172,8 +209,18 @@ void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	m_serviceResetOctomap = node_handle.advertiseService("reset_octomap",
 			&srs::COctoMapPlugin::resetOctomapCB, this);
 
+	m_serviceRemoveCube =   node_handle.advertiseService( "remove_cube",
+			&srs::COctoMapPlugin::removeCubeCB, this );
+
 	// Create publisher
 	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary>(m_ocPublisherName, 100, m_latchedTopics);
+
+	// Add camera info subscriber
+	m_ciSubscriber = new ros::Subscriber;
+	*m_ciSubscriber = node_handle.subscribe( m_camera_info_topic, 10, &srs::COctoMapPlugin::cameraInfoCB, this );
+
+	// If should publish, create markers publisher
+	m_markerPublisher = node_handle.advertise<visualization_msgs::Marker>(m_markers_topic_name, 10);
 
 	PERROR( "OctoMapPlugin initialized..." );
 }
@@ -216,6 +263,7 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 		return;
 	}
 
+
 	// transform clouds to world frame for insertion
 	if( m_mapParameters.frameId != cloud.header.frame_id )
 	{
@@ -227,144 +275,65 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 
 	}
 
+	pc_ground.header = cloud.header;
+	pc_ground.header.frame_id = m_mapParameters.frameId;
+
+	pc_nonground.header = cloud.header;
+	pc_nonground.header.frame_id = m_mapParameters.frameId;
+
 	insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
+
+	if( m_removeSpecles )
+	{
+		degradeSingleSpeckles();
+	}
+
+	if( m_bRemoveOutdated )
+	{
+		octomap::point3d sensor_origin = getSensorOrigin(cloud.header);
+		octomap::pose6d  sensor_pose(sensor_origin.x(), sensor_origin.y(), sensor_origin.z(), 0, 0, 0);
+
+
+		degradeOutdatedRaycasting(cloud.header, sensor_origin );
+	}
 
 	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
 	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(),
 			pc_nonground.size(), total_elapsed);
 
+	if( m_removeTester != 0 )
+	{
+		long removed = doObjectTesting( m_removeTester );
+
+//		PERROR( "Removed leafs: " << removed);
+
+		if( removed > 0 )
+			m_data->octree.prune();
+
+		--m_testerLifeCounter;
+
+		if( m_testerLifeCounter <= 0 )
+		{
+			delete m_removeTester;
+			m_removeTester = 0;
+		}
+	}
 	// Publish new data
 	invalidate();
 }
 
 
-
+/**
+ * Insert pointcloud scan TODO: Modify to add ground
+ */
 void srs::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf, const tPointCloud & ground, const tPointCloud & nonground)
 {
-	// Write some debug info
-	//    ROS_INFO("Inserting scan. Points: %u ", ground.size() + nonground.size() );
-
-
 	octomap::point3d sensorOrigin = octomap::pointTfToOctomap(sensorOriginTf);
 
-	// instead of direct scan insertion, compute update to filter ground:
-	octomap::KeySet free_cells, occupied_cells;
-
 	double maxRange(m_mapParameters.maxRange);
-/*
 	octomap::Pointcloud pcNonground;
 	octomap::pointcloudPCLToOctomap( nonground, pcNonground );
 	m_data->octree.insertScan( pcNonground, sensorOrigin, maxRange, true );
-
-//	PERROR( "Scan inserted. Size: " << nonground.size() << ", " << pcNonground.size() << ", " << m_data->octree.getNumLeafNodes() );
-
-/*/
-//	std::cerr << "OCM:  Insert ground. MR: " << maxRange << ", SO: " << sensorOrigin << std::endl;
-
-	// insert ground points only as free:
-	for (tPointCloud::const_iterator it = ground.begin(); it != ground.end(); ++it)
-	{
-		octomap::point3d point(it->x, it->y, it->z);
-
-		// maxrange check
-		if ((maxRange > 0.0) && ((point - sensorOrigin).norm() > maxRange))
-		{
-			point = sensorOrigin + (point - sensorOrigin).normalized()
-					* maxRange;
-		}
-
-		// only clear space (ground points)
-		if (m_data->octree.computeRayKeys(sensorOrigin, point, m_keyRay))
-		{
-			free_cells.insert(m_keyRay.begin(), m_keyRay.end());
-		}
-	}
-
-
-	// all other points: free on ray, occupied on endpoint:
-	int miss(0), hit(0);
-
-	for (tPointCloud::const_iterator it( nonground.begin() ), end( nonground.end() ); it != end; ++it)
-	{
-
-		octomap::point3d point(it->x, it->y, it->z);
-
-		// maxrange check
-		if ((maxRange < 0.0) || ((point - sensorOrigin).norm() <= maxRange))
-		{
-			//*
-			// free cells
-			if (m_data->octree.computeRayKeys(sensorOrigin, point, m_keyRay))
-			{
-				free_cells.insert(m_keyRay.begin(), m_keyRay.end());
-			}
-			///
-			// occupied endpoint
-			octomap::OcTreeKey key;
-			if (m_data->octree.genKey(point, key))
-			{
-				occupied_cells.insert(key);
-			}
-
-		}
-		else
-		{// ray longer than maxrange:;
-
-			octomap::point3d new_end = sensorOrigin	+ (point - sensorOrigin).normalized() * maxRange;
-
-			if (m_data->octree.computeRayKeys(sensorOrigin, new_end,	m_keyRay))
-			{
-				free_cells.insert(m_keyRay.begin(), m_keyRay.end());
-			}
-
-		}
-	}
-
-//	PERROR( "Rays hit: " << hit << ", miss: " << miss );
-
-	long fcounter(0), fchanged(0), ocounter(0), nfound(0);
-
-	// mark free cells only if not seen occupied in this cloud
-	for (octomap::KeySet::iterator it = free_cells.begin(), end = free_cells.end(); it != end; ++it)
-	{
-		if (occupied_cells.find(*it) == occupied_cells.end())
-		{
-			double o1, o2;
-			tButServerOcNode * node( m_data->octree.search( *it ) );
-			if( node != 0 )
-				o1 = node->getOccupancy();
-			else
-				++nfound;
-			m_data->octree.updateNode(*it, false, false);
-
-			if( node != 0 )
-				o2 = node->getOccupancy();
-
-			if( node != 0 && o1 != o2 )
-			{
-//				PERROR( "Node changed: " << o1 << " -> " << o2 );
-				++fchanged;
-			}
-			++fcounter;
-		}
-	}
-
-	// now mark all occupied cells:
-	for (octomap::KeySet::iterator it = occupied_cells.begin(), end = occupied_cells.end(); it != end; it++)
-	{
-		m_data->octree.updateNode(*it, true, false);
-		++ocounter;
-	}
-
-//	PERROR( "Free cells: " << fcounter << ", occupied:" << ocounter << ", MaxRange: " << maxRange << ", free changed: " << fchanged << ", not found: " << nfound );
-//	PERROR( "OC stats. LN: " << m_data->octree.getNumLeafNodes() );
-
-	// TODO: eval lazy+updateInner vs. proper insertion
-	m_data->octree.updateInnerOccupancy();
-//	m_data->octree.prune();
-	//*/
-
-
 }
 
 
@@ -498,7 +467,7 @@ void srs::COctoMapPlugin::crawl( const ros::Time & currentTime )
 	// Fill needed structures
 	onCrawlStart(currentTime);
 
-	// Crawl through node
+	// Crawl through nodes
 	for (srs::tButServerOcTree::leaf_iterator it = m_data->octree.begin_leafs(), end = m_data->octree.end_leafs(); it != end; ++it)
 		{
 
@@ -508,14 +477,7 @@ void srs::COctoMapPlugin::crawl( const ros::Time & currentTime )
 			// Node is occupied?
 			if (m_data->octree.isNodeOccupied(*it))
 			{
-			    if( m_removeSpecles )
-			    {
-			        if( !isSpeckleNode(it) )
-			        {
-			            handleOccupiedNode(it, m_mapParameters);
-			        }
-			    }else
-					handleOccupiedNode(it, m_mapParameters);
+				handleOccupiedNode(it, m_mapParameters);
 			} else { // node not occupied => mark as free in 2D map if unknown so far
 
 				handleFreeNode(it, m_mapParameters);
@@ -544,19 +506,19 @@ void srs::COctoMapPlugin::onCrawlStart(const ros::Time & currentTime)
 }
 
 /// Handle node
-void srs::COctoMapPlugin::handleNode(const tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs::COctoMapPlugin::handleNode(tButServerOcTree::iterator & it, const SMapParameters & mp)
 {
 	m_sigOnNode( it, mp );
 }
 
 /// Handle free node
-void srs::COctoMapPlugin::handleFreeNode(const tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs::COctoMapPlugin::handleFreeNode(tButServerOcTree::iterator & it, const SMapParameters & mp)
 {
 	m_sigOnFreeNode( it, mp );
 }
 
 /// Handle occupied node
-void srs::COctoMapPlugin::handleOccupiedNode(const tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs::COctoMapPlugin::handleOccupiedNode(tButServerOcTree::iterator & it, const SMapParameters & mp)
 {
 	m_sigOnOccupiedNode( it, mp );
 }
@@ -606,30 +568,347 @@ bool srs::COctoMapPlugin::resetOctomapCB(std_srvs::Empty::Request& request,	std_
 	return true;
 }
 
-/**
- * Find if this node is specle
- * @param it - node iterator
- * @return true, if this node is specle
- */
-bool srs::COctoMapPlugin::isSpeckleNode(const tButServerOcTree::iterator & it) const
+// ============================================================================
+// Filtering
+
+void srs::COctoMapPlugin::cameraInfoCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info)
 {
-    const octomap::OcTreeKey nKey( it.getKey() );
-    octomap::OcTreeKey key;
+	PERROR( std::endl << std::endl << "CAMERA INFO CALLBACK" << std::endl << std::endl)
+	// Get camera info
+	ROS_DEBUG("OctMapPlugin: Set camera info: %d x %d\n", cam_info->height, cam_info->width);
+	m_camera_model.fromCameraInfo(*cam_info);
+	m_camera_size = m_camera_model.fullResolution();
 
-    bool neighborFound = false;
-    for (key[2] = nKey[2] - 1; !neighborFound && key[2] <= nKey[2] + 1; ++key[2]){
-        for (key[1] = nKey[1] - 1; !neighborFound && key[1] <= nKey[1] + 1; ++key[1]){
-            for (key[0] = nKey[0] - 1; !neighborFound && key[0] <= nKey[0] + 1; ++key[0]){
-                if (key != nKey){
-                    tButServerOcNode* node = m_data->octree.search(key);
-                    if (node && m_data->octree.isNodeOccupied(node)){
-                        // we have a neighbor => break!
-                        neighborFound = true;
-                    }
-                }
-            }
-        }
-    }
+	// Set flag
+	m_bCamModelInitialized = true;
 
-    return neighborFound;
+	// Disconnect subscriber
+	delete m_ciSubscriber;
+}
+
+/**
+ * Remove outdated nodes
+ */
+void srs::COctoMapPlugin::degradeOutdatedRaycasting( const std_msgs::Header& sensor_header, const octomap::point3d& sensor_origin )
+{
+	if (!m_bCamModelInitialized)
+	{
+		ROS_INFO ("ERROR: camera model not initialized.");
+		return;
+	}
+
+	// Get tree
+	tButServerOcTree & tree ( m_data->octree );
+
+	tf::StampedTransform trans;
+	m_tfListener.lookupTransform (sensor_header.frame_id, m_mapParameters.frameId, sensor_header.stamp, trans);
+	tf::Transform to_sensor = trans;
+
+	// compute bbx from sensor cone
+	octomap::point3d min;
+	octomap::point3d max;
+	computeBBX(sensor_header, min, max);
+
+	unsigned query_time = time(NULL);
+	unsigned max_update_time = 1;
+	for(tButServerOcTree::leaf_bbx_iterator it = tree.begin_leafs_bbx(min,max),
+			end=tree.end_leafs_bbx(); it!= end; ++it)
+	{
+		if (tree.isNodeOccupied(*it) &&
+				((query_time - it->getTimestamp()) > max_update_time))
+		{
+			tf::Point pos(it.getX(), it.getY(), it.getZ());
+			tf::Point posRel = to_sensor(pos);
+			cv::Point2d uv = m_camera_model.project3dToPixel(cv::Point3d(posRel.x(), posRel.y(), posRel.z()));
+
+			// ignore point if not in sensor cone
+			if (!inSensorCone(uv))
+				continue;
+
+			// ignore point if it is occluded in the map
+			if (isOccludedMap(sensor_origin, it.getCoordinate()))
+				continue;
+
+			// otherwise: degrade node
+			tree.integrateMissNoTime(&*it);
+
+		}
+	}
+}
+
+/**
+ * Remove speckles
+ */
+void srs::COctoMapPlugin::degradeSingleSpeckles()
+{
+	tButServerOcTree & tree( m_data->octree );
+
+	for(tButServerOcTree::leaf_iterator it = m_data->octree.begin_leafs(),
+			end=m_data->octree.end_leafs(); it!= end; ++it)
+	{
+		// Test if node is occupied
+		if (m_data->octree.isNodeOccupied(*it))
+		{
+			octomap::OcTreeKey nKey = it.getKey();
+			octomap::OcTreeKey key;
+			bool neighborFound = false;
+
+			// Find neighbours
+			for (key[2] = nKey[2] - 1; !neighborFound && key[2] <= nKey[2] + 1; ++key[2]){
+				for (key[1] = nKey[1] - 1; !neighborFound && key[1] <= nKey[1] + 1; ++key[1]){
+					for (key[0] = nKey[0] - 1; !neighborFound && key[0] <= nKey[0] + 1; ++key[0]){
+						if (key != nKey){
+							tButServerOcTree::NodeType* node = tree.search(key);
+							if (node && tree.isNodeOccupied(node)){
+								// we have a neighbor => break!
+								neighborFound = true;
+							}
+						}
+					}
+				}
+			}
+
+			// done with search, see if found and degrade otherwise:
+			if (!neighborFound){
+				ROS_DEBUG("Degrading single speckle at (%f,%f,%f)", it.getX(), it.getY(), it.getZ());
+
+				// Remove it...
+				m_data->octree.integrateMissNoTime(&*it);
+			}
+
+		}
+	}
+}
+
+/**
+ * Compute bounding box from the sensor position and cone
+ */
+void srs::COctoMapPlugin::computeBBX(const std_msgs::Header& sensor_header, octomap::point3d& bbx_min, octomap::point3d& bbx_max) {
+
+  std::string sensor_frame = sensor_header.frame_id;
+
+  //  transform sensor FOV
+  geometry_msgs::PointStamped stamped_in;
+  geometry_msgs::PointStamped stamped_out;
+  stamped_in.header = sensor_header;
+  stamped_in.header.frame_id = sensor_frame;
+
+  // get max 3d points from camera at 0.5m and 5m.
+  geometry_msgs::Point p[8];
+
+  // define min/max 2d points
+  cv::Point2d uv [4];
+  uv[0].x = m_camera_stereo_offset_left;
+  uv[0].y = 0;
+  uv[1].x = m_camera_size.width + m_camera_stereo_offset_right;
+  uv[1].y = 0;
+  uv[2].x = m_camera_size.width + m_camera_stereo_offset_right;
+  uv[2].y = m_camera_size.height;
+  uv[3].x = m_camera_stereo_offset_left;
+  uv[3].y = m_camera_size.height;
+
+  // transform to 3d space
+  cv::Point3d xyz [4];
+  for (int i=0;i<4;i++) {
+	xyz[i] = m_camera_model.projectPixelTo3dRay(uv[i]);
+    cv::Point3d xyz_05 = xyz[i] * 0.5;
+    xyz[i] *= 5.; // 5meters
+    p[i].x = xyz[i].x;
+    p[i].y = xyz[i].y;
+    p[i].z = xyz[i].z;
+    p[i+4].x = xyz_05.x;
+    p[i+4].y = xyz_05.y;
+    p[i+4].z = xyz_05.z;
+  }
+
+  // transform to world coodinates and find axis-aligned bbx
+  bbx_min.x() = bbx_min.y() = bbx_min.z() = 1e6;
+  bbx_max.x() = bbx_max.y() = bbx_max.z() = -1e6;
+  for (int i=0; i<8; i++) {
+    stamped_in.point = p[i];
+    m_tfListener.transformPoint(m_mapParameters.frameId, stamped_in, stamped_out);
+    p[i].x = stamped_out.point.x;
+    p[i].y = stamped_out.point.y;
+    p[i].z = stamped_out.point.z;
+    if (p[i].x < bbx_min.x()) bbx_min.x() = p[i].x;
+    if (p[i].y < bbx_min.y()) bbx_min.y() = p[i].y;
+    if (p[i].z < bbx_min.z()) bbx_min.z() = p[i].z;
+    if (p[i].x > bbx_max.x()) bbx_max.x() = p[i].x;
+    if (p[i].y > bbx_max.y()) bbx_max.y() = p[i].y;
+    if (p[i].z > bbx_max.z()) bbx_max.z() = p[i].z;
+  }
+
+  // Should be markers visualized
+  if( !m_bVisualizeMarkers )
+	  return;
+
+  // // visualize axis-aligned querying bbx
+  visualization_msgs::Marker bbx;
+  bbx.header.frame_id = m_mapParameters.frameId;
+  bbx.header.stamp = ros::Time::now();
+  bbx.ns = "OCM_plugin";
+  bbx.id = 1;
+  bbx.action = visualization_msgs::Marker::ADD;
+  bbx.type = visualization_msgs::Marker::CUBE;
+  bbx.pose.orientation.w = 1.0;
+  bbx.pose.position.x = (bbx_min.x() + bbx_max.x()) / 2.;
+  bbx.pose.position.y = (bbx_min.y() + bbx_max.y()) / 2.;
+  bbx.pose.position.z = (bbx_min.z() + bbx_max.z()) / 2.;
+  bbx.scale.x = bbx_max.x()-bbx_min.x();
+  bbx.scale.y = bbx_max.y()-bbx_min.y();
+  bbx.scale.z = bbx_max.z()-bbx_min.z();
+  bbx.color.g = 1;
+  bbx.color.a = 0.3;
+  m_markerPublisher.publish(bbx);
+
+
+  // visualize sensor cone
+  visualization_msgs::Marker bbx_points;
+  bbx_points.header.frame_id = m_mapParameters.frameId;
+  bbx_points.header.stamp = ros::Time::now();
+  bbx_points.ns = "OCM_plugin";
+  bbx_points.id = 2;
+  bbx_points.action = visualization_msgs::Marker::ADD;
+  bbx_points.type = visualization_msgs::Marker::LINE_STRIP;
+  bbx_points.pose.orientation.w = 1.0;
+  bbx_points.scale.x = 0.02;
+  bbx_points.scale.y = 0.02;
+  bbx_points.color.g = 1;
+  bbx_points.color.a = 0.3;
+  bbx_points.points.push_back(p[0]);
+  bbx_points.points.push_back(p[1]);
+  bbx_points.points.push_back(p[2]);
+  bbx_points.points.push_back(p[3]);
+  bbx_points.points.push_back(p[0]);
+  bbx_points.points.push_back(p[4]);
+  bbx_points.points.push_back(p[5]);
+  bbx_points.points.push_back(p[6]);
+  bbx_points.points.push_back(p[7]);
+  bbx_points.points.push_back(p[4]);
+  bbx_points.points.push_back(p[7]);
+  bbx_points.points.push_back(p[3]);
+  bbx_points.points.push_back(p[2]);
+  bbx_points.points.push_back(p[6]);
+  bbx_points.points.push_back(p[5]);
+  bbx_points.points.push_back(p[1]);
+  m_markerPublisher.publish(bbx_points);
+}
+
+bool srs::COctoMapPlugin::inSensorCone(const cv::Point2d& uv) const
+{
+	// Check if projected 2D coordinate in pixel range.
+	// This check is a little more restrictive than it should be by using
+	// 1 pixel less to account for rounding / discretization errors.
+	// Otherwise points on the corner are accounted to be in the sensor cone.
+	return ( (uv.x > m_camera_stereo_offset_left+1)
+			&& (uv.x < m_camera_size.width + m_camera_stereo_offset_right - 2)
+			&& (uv.y > 1)
+			&& (uv.y < m_camera_size.height-2) );
+}
+
+/**
+ * Return true, if occupied cell is between origin and p
+ */
+bool srs::COctoMapPlugin::isOccludedMap(const octomap::point3d& sensor_origin, const octomap::point3d& p) const {
+
+  octomap::point3d direction (p-sensor_origin);
+  octomap::point3d obstacle;
+  double range = direction.norm() - m_mapParameters.resolution;
+
+  if (m_data->octree.castRay(sensor_origin, direction, obstacle, true, range)) {
+    // fprintf(stderr, "<%.2f , %.2f , %.2f> -> <%.2f , %.2f , %.2f> // obs at: <%.2f , %.2f , %.2f>, range: %.2f\n",
+    //         sensor_origin.x(), sensor_origin.y(), sensor_origin.z(),
+    //         p.x(), p.y(), p.z(),
+    //         obstacle.x(), obstacle.y(), obstacle.z(), (obstacle-p).norm());
+    return true;
+  }
+  return false;
+}
+
+octomap::point3d srs::COctoMapPlugin::getSensorOrigin(const std_msgs::Header& sensor_header)
+{
+	geometry_msgs::PointStamped stamped_in;
+	geometry_msgs::PointStamped stamped_out;
+	stamped_in.header = sensor_header;
+
+	std::string fixed_frame_( m_mapParameters.frameId );
+
+	// HACK: laser origin
+	if (sensor_header.frame_id == "base_footprint") {
+		stamped_in.header.frame_id = "laser_tilt_link";
+	}
+
+	geometry_msgs::Point p;
+	p.x=p.y=p.z=0;
+	try {
+		m_tfListener.transformPoint(fixed_frame_, stamped_in, stamped_out);
+	} catch(tf::TransformException& ex) {
+		ros::Time t;
+		std::string err_string;
+		ROS_INFO_STREAM("Transforming sensor origin using latest common time because there's a tf problem");
+		if (m_tfListener.getLatestCommonTime(fixed_frame_, stamped_in.header.frame_id, stamped_in.header.stamp, &err_string) == tf::NO_ERROR) {
+			try {
+				m_tfListener.transformPoint(fixed_frame_, stamped_in, stamped_out);
+			} catch(...) {
+				ROS_WARN_STREAM("Still can't transform sensor origin between " << fixed_frame_ << " and " << stamped_in.header.frame_id);
+			}
+		} else {
+			ROS_WARN_STREAM("No common time between " << fixed_frame_ << " and " << stamped_in.header.frame_id);
+		}
+	}
+	octomap::point3d retval (stamped_out.point.x, stamped_out.point.y, stamped_out.point.z);
+
+	return retval;
+}
+
+/**
+ * Do octomap testing by object
+ */
+long int srs::COctoMapPlugin::doObjectTesting( srs::CTestingObjectBase * object )
+{
+	if( object == 0 )
+	{
+		PERROR( "Wrong testing object - NULL. ");
+		return 0;
+	}
+
+	// Create removed nodes counter
+	long int counter( 0 );
+
+	// For all leaves
+	for (srs::tButServerOcTree::leaf_iterator it = m_data->octree.begin_leafs(), end = m_data->octree.end_leafs(); it != end; ++it)
+	{
+		// Node is occupied?
+		if (m_data->octree.isNodeOccupied(*it))
+		{
+			// Node is in testing object
+			if( object->isIn( it.getX(), it.getY(), it.getZ() ) )
+			{
+				// "Remove" node
+				m_data->octree.integrateMissNoTime(&*it);
+				++counter;
+			}
+
+		}
+	}
+
+	return counter;
+}
+/**
+ * Remove cube as a service - callback
+ */
+bool srs::COctoMapPlugin::removeCubeCB( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res )
+{
+	if( m_removeTester != 0 )
+		delete m_removeTester;
+
+	// Create new tester
+	m_removeTester = new srs::CTestingPolymesh( srs::CTestingPolymesh::tPoint(req.center_x, req.center_y, req.center_z),
+			srs::CTestingPolymesh::tQuaternion( req.pose_x, req.pose_y, req.pose_z, req.pose_w ),
+			srs::CTestingPolymesh::tPoint( req.size_x, req.size_y, req.size_z ));
+
+	// Set it to life
+	m_testerLifeCounter = m_testerLife;
+
+	return true;
 }

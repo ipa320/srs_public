@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id:$
+ * $Id: PointCloudTools.h 556 2012-04-11 16:10:40Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -47,27 +47,37 @@
 namespace but_services
 {
 
+/**
+ * @brief This class gathers actual point cloud data and provides method which returns
+ * closest point from a specified link.
+ *
+ * @author Tomas Lokaj
+ */
 class PointCloudTools
 {
 public:
-  /*
-   * Constructor
+  /**
+   * @brief Constructor
    */
   PointCloudTools();
-  /*
-   * Destructor
+  /**
+   * @brief Destructor
    */
   virtual ~PointCloudTools()
   {
   }
 
-  /*
-   * This function calculates closest point from a robot link from latest point cloud
+  /**
+   * @brief This function calculates closest point from a robot link from latest point cloud.
    * @param link is robot link from which we want to get the closest point
    */
   srs_ui_but::ClosestPoint getClosestPoint(std::string link);
 
 private:
+  /**
+   * @brief Callback function for handling incoming point cloud data.
+   * @param cloud is incoming point cloud
+   */
   void incomingCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   // PCL PointCloud
@@ -98,7 +108,6 @@ private:
   message_filters::Subscriber<sensor_msgs::PointCloud2> point_cloud;
 
 public:
-
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 

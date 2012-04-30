@@ -70,21 +70,20 @@ from kinematics_msgs.srv import *
 
 class get_grasps_from_position():
 
+	
 
 	def __init__(self):
-		print "-------------------------------------------------------------------------";
+		self.ik_loop_reply = 1
+
 		rospy.loginfo("Waiting /arm_kinematics/get_ik service...");
 		rospy.wait_for_service('/arm_kinematics/get_ik')
 		rospy.loginfo("/arm_kinematics/get_ik is ready.");
-
-
-
 
 		rospy.loginfo("Waiting /get_grasp_configurations service...");
 		rospy.wait_for_service('/get_grasp_configurations')
 		self.client = rospy.ServiceProxy('/get_grasp_configurations', GetGraspConfigurations)
 		rospy.loginfo("/get_grasps_from_position service is ready.");
-
+		print "---------------------------------------------------------------------------";
 
 	def get_grasps_from_position(self, req):
 		x = time.time();
@@ -156,10 +155,10 @@ class get_grasps_from_position():
 
 		
 			sol = False;
-			for w in range(0,5):
+			for w in range(0,self.ik_loop_reply):
 				(pre_grasp_conf, error_code) = grasping_functions.callIKSolver(current_joint_configuration, pre);		
 				if(error_code.val == error_code.SUCCESS):
-					for k in range(0,5):
+					for k in range(0,self.ik_loop_reply):
 						(grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, g);
 						if(error_code.val == error_code.SUCCESS):
 							new_valid_grasp = GraspSubConfiguration();

@@ -193,7 +193,7 @@ class sm_detect_asisted_region(SRS_StateMachine):
         self.userdata.target_object_pose=''
 
         with self:
-            smach.StateMachine.add('DETECT_OBJECT-2', detect_object(),
+            smach.StateMachine.add('DETECT_OBJECT-2', detect_object(max_retries = 7),
                     transitions={'succeeded':'succeeded', 'retry':'DETECT_OBJECT-2', 'no_more_retries':'INTERVENTION', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose','key_region':'key_region' })
                     # detection need to be updated to take the key region

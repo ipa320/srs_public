@@ -65,7 +65,7 @@ def usage():
 
 if __name__ == "__main__":
     print querySparQL()
-    print requestNewTask()
+    #print requestNewTask()
     #print testNextActionService([0,0,0])
     #print testNextActionService([0,0,0])
     #print testNextActionService([0,1,0])

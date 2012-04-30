@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: segmenter.cpp 397 2012-03-29 12:50:30Z spanel $
+ * $Id: segmenter.cpp 619 2012-04-16 13:47:28Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -35,7 +35,7 @@
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
-#include <cv_bridge/CvBridge.h>
+
 
 //PCL
 #include <pcl/point_types.h>
@@ -51,7 +51,7 @@
 //better opencv 2
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
-
+#include <cv_bridge/cv_bridge.h>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
@@ -181,8 +181,8 @@ void callback( const sensor_msgs::ImageConstPtr& dep, const CameraInfoConstPtr& 
 	std::cerr << "=========================================================" << endl;
 
 	//get image from message
-	sensor_msgs::CvBridge bridge;
-	cv::Mat depth = bridge.imgMsgToCv( dep );
+	cv_bridge::CvImagePtr image = cv_bridge::toCvCopy(dep);
+	cv::Mat depth = image->image;
 	double min, max;
 	Mat xxx = Mat(depth.size(), CV_32FC1);
 	minMaxLoc(depth, &min, &max);
@@ -211,8 +211,8 @@ void callback( const sensor_msgs::ImageConstPtr& dep, const CameraInfoConstPtr& 
 		reg.computeStatistics(0.3);
 		minMaxLoc(reg.m_stddeviation, &min, &max);
 		reg.m_stddeviation.convertTo(depth, CV_16U, 255.0/(max-min), -min);
-
-		deviation_image.publish(bridge.cvToImgMsg(&IplImage(depth)));
+		image->image = depth;
+		deviation_image.publish(image->toImageMsg());
 	}
 	if (typeRegions == REGIONS_COMBINED)
 	{
@@ -222,7 +222,8 @@ void callback( const sensor_msgs::ImageConstPtr& dep, const CameraInfoConstPtr& 
 		reg.m_stddeviation.convertTo(depth, CV_16U, 255.0/(max-min), -min);
 		minMaxLoc(reg.m_regionMatrix, &min, &max);
 
-		deviation_image.publish(bridge.cvToImgMsg(&IplImage(depth)));
+		image->image = depth;
+		deviation_image.publish(image->toImageMsg());
 	}
 	if (typeRegions == REGIONS_PREDICTOR)
 	{
@@ -234,14 +235,18 @@ void callback( const sensor_msgs::ImageConstPtr& dep, const CameraInfoConstPtr& 
 		reg.computeStatistics(0.3);
 		minMaxLoc(reg.m_stddeviation, &min, &max);
 		reg.m_stddeviation.convertTo(depth, CV_16U, 255.0/(max-min), -min);
-		deviation_image.publish(bridge.cvToImgMsg(&IplImage(depth)));
+
+		image->image = depth;
+		deviation_image.publish(image->toImageMsg());
 	}
 
 
 
 	minMaxLoc(reg.m_regionMatrix, &min, &max);
 	reg.m_regionMatrix.convertTo(depth, CV_16U, 255.0/(max-min), -min);
-	region_image.publish(bridge.cvToImgMsg(&IplImage(depth)));
+
+	image->image = depth;
+	region_image.publish(image->toImageMsg());
 
 	ros::Time end = ros::Time::now();
 	std::cout << "Computation time: " << (end - begin).toNSec()/1000000.0 << "ms" << std::endl;

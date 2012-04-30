@@ -1,0 +1,10 @@
+int32 object_id
+geometry_msgs/Pose object_pose
+int32 num_configurations
+---
+geometry_msgs/Pose[] side
+geometry_msgs/Pose[] mside
+geometry_msgs/Pose[] front
+geometry_msgs/Pose[] back
+geometry_msgs/Pose[] top
+geometry_msgs/Pose[] down

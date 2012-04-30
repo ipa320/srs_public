@@ -1,3 +1,0 @@
-string name                         # object's name
-std_msgs/ColorRGBA color            # new color
---- 

@@ -1,0 +1,2 @@
+string marker_name
+uint8 pos_id

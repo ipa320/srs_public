@@ -25,8 +25,8 @@
   <depend package="srs_object_verification"/>
   <depend package="srs_assisted_detection"/>
   <depend package="srs_grasping"/>
-  <depend package="srs_assisted_arm_navigation"/>
-  <depend package="srs_interaction_primitives"/>
+  <!--depend package="srs_assisted_arm_navigation"/>
+  <depend package="srs_interaction_primitives"/-->
   <depend package="srs_knowledge"/>
 </package>
 

@@ -33,7 +33,7 @@ call2=False
 
 
 class detect_object_assited(smach.State):
-    def __init__(self,object_name = "",max_retries = 1):
+    def __init__(self,object_name = ""):
         smach.State.__init__(
             self,
             outcomes=['succeeded','failed','preempted'],
@@ -57,31 +57,38 @@ class detect_object_assited(smach.State):
 
 
     def execute(self, userdata):
-        if self.preempt_requested():
-            self.service_preempt()
-            return 'preempted'
                 
         global s
-        s = rospy.Service('assisted_detection', UiDetector, detectObjectSrv)
         rospy.loginfo("Assisted Detection ready.")
+        self.object_name=userdata.object_name
+        s = rospy.Service('assisted_detection', UiDetector, self.detectObjectSrv)
         s.spin()
         if (call):
+            userdata.object_list=self.object_list
             return outcome
     
     def detectObjectSrv(self,req):
        
+       
+       
         global outcome
+       
+        if self.preempt_requested():
+           self.service_preempt()
+           outcome= 'preempted'
+           return detector_response
+        
         # move sdh as feedback
         sss.move("sdh","cylclosed",False)
 
         # make the robot ready to inspect the scene
-        if self.retries == 0: # only move arm, sdh and head for the first try
-            sss.say([current_task_info.speaking_language['Search'] + object_name + "."],False)
-            handle_arm = sss.move("arm","folded-to-look_at_table",False)
-            handle_torso = sss.move("torso","shake",False)
-            handle_head = sss.move("head","back",False)
+       
+        sss.say([current_task_info.speaking_language['Search'] + self.object_name + "."],False)
+        handle_arm = sss.move("arm","folded-to-look_at_table",False)
+        handle_torso = sss.move("torso","shake",False)
+        handle_head = sss.move("head","back",False)
 
-            if self.preempt_requested():
+        if self.preempt_requested():
                 self.service_preempt()
                 #handle_base.set_failed(4)
                 handle_arm.client.cancel_goal()
@@ -89,12 +96,12 @@ class detect_object_assited(smach.State):
                 handle_head.client.cancel_goal()
                 
                 outcome= 'preempted'
-            else:
+        else:
                 handle_arm.wait()
                 handle_head.wait()
                 handle_torso.wait()
 
-        handle_torso = sss.move("torso",self.torso_poses[self.retries % len(self.torso_poses)]) # have an other viewing point for each retry
+        
 
         # move sdh as feedback
         sss.move("sdh","home",False)
@@ -108,17 +115,15 @@ class detect_object_assited(smach.State):
             rospy.wait_for_service(self.srv_name_object_detection,10)
         except rospy.ROSException, e:
             print "Service not available: %s"%e
-            self.retries = 0 # no object found within min_dist start value
-
             outcome= 'failed'
 
         # call object detection service
         try:
             detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
             req = DetectObjectsRequest()
-            req.object_name.data = userdata.object_name
+            req.object_name.data = self.object_name
             res = detector_service(req)
-            userdata.object_list=res.object_list
+            self.object_list=res.object_list
             
 
             outcome= 'succeeded'
@@ -127,15 +132,15 @@ class detect_object_assited(smach.State):
 
             outcome= 'failed'
 
-        global detector_response
-        if len(resp1.object_list.detections) > 0:
-            detector_response.object_list.header=resp1.object_list.header
-            for x in range(len(resp1.object_list.detections)):
-                detector_response.object_list.detections.insert(x,resp1.object_list.detections[x])
+        detector_response=UiDetectorResponse()
+        if len(res.object_list.detections) > 0:
+            detector_response.object_list.header=res.object_list.header
+            for x in range(len(res.object_list.detections)):
+                detector_response.object_list.detections.insert(x,res.object_list.detections[x])
         global call
         call=True
         s.shutdown()
-        userdata.object_list=detector_response.object_list
+        self.object_list=detector_response.object_list
         return detector_response  
     
 
@@ -151,25 +156,42 @@ class user_intervention_on_detection(smach.State):
     def __init__(self):
         smach.State.__init__(self, 
                              outcomes=['succeeded', 'bb_move', 'give_up', 'failed', 'preempted'],
-                             input_keys = ['target_object_name', 'object_list'],
+                             input_keys = ['target_object_name', 'target_object_list'],
                              output_keys=['object','object_pose','bb_pose'])
+        
+        self.target_object_name=''
+        self.object_list=UiDetectorResponse()
+        
+        self.object=Detection()
+        self.object_pose=Pose()
+        self.bbpose=Pose()
         
     def execute(self, userdata):
         if self.preempt_requested():
             self.service_preempt()
             return 'preempted'
+        
+        self.target_object_name=userdata.target_object_name
+        
+        self.object_list=userdata.target_object_list
+        print self.object_list
         global s
         global s2
-        s = rospy.Service('assisted_answer', UiAnswer, answerObjectSrv)
-        s2 = rospy.Service('assisted_BBmove', BBMove, moveBBSrv)
+        s = rospy.Service('assisted_answer', UiAnswer, self.answerObjectSrv)
+        s2 = rospy.Service('assisted_BBmove', BBMove, self.moveBBSrv)
 
         rospy.loginfo("Assisted answer ready.")
         s.spin()
         s2.spin()
         if(call2):
+            userdata.object=self.object
+            userdata.object_pose=self.object_pose
+            userdata.bb_pose=self.bbpose
             return outcome2
         
     def answerObjectSrv(self,req):    
+        global call2
+        global outcome2
         call2=True
         rospy.loginfo("Get Object information")
         answer=UiAnswerResponse()
@@ -187,17 +209,17 @@ class user_intervention_on_detection(smach.State):
        
         #get position from good object
         pose=Pose()
-        pose.position.x=userdata.object_list.detections[req.id].pose.pose.position.x
-        pose.position.y=userdata.object_list.detections[req.id].pose.pose.position.y
-        pose.position.z=userdata.object_list.detections[req.id].pose.pose.position.z
-        pose.orientation.x=userdata.object_list.detections[req.id].pose.pose.orientation.x
-        pose.orientation.y=userdata.object_list.detections[req.id].pose.pose.orientation.y
-        pose.orientation.z=userdata.object_list.detections[req.id].pose.pose.orientation.z
-        pose.orientation.w=userdata.object_list.detections[req.id].pose.pose.orientation.w
+        pose.position.x=self.object_list.detections[req.id].pose.pose.position.x
+        pose.position.y=self.object_list.detections[req.id].pose.pose.position.y
+        pose.position.z=self.object_list.detections[req.id].pose.pose.position.z
+        pose.orientation.x=self.object_list.detections[req.id].pose.pose.orientation.x
+        pose.orientation.y=self.object_list.detections[req.id].pose.pose.orientation.y
+        pose.orientation.z=self.object_list.detections[req.id].pose.pose.orientation.z
+        pose.orientation.w=self.object_list.detections[req.id].pose.pose.orientation.w
         
         
-        userdata.object_pose=pose
-        userdata.object=userdata.object_list.detections[req.id]
+        self.object_pose=pose
+        self.object=self.object_list.detections[req.id]
         
        
         #global action
@@ -206,6 +228,7 @@ class user_intervention_on_detection(smach.State):
     
         s.shutdown()
         s2.shutdown()
+
         outcome2 = 'succeeded'
         answer.message.data='Action is running'
         return answer
@@ -215,6 +238,9 @@ class user_intervention_on_detection(smach.State):
         
     def moveBBSrv(self,req):
         rospy.loginfo("Get BB information")
+        global call2
+        global outcome2
+        
         call2=True
         #BBmove service base and then movement
         moveBB=BBMoveResponse()
@@ -227,7 +253,7 @@ class user_intervention_on_detection(smach.State):
         pose.position.x=1
         pose.position.y=2
         pose.position.z=3
-        userdata.bbpose=pose
+        self.bbpose=pose
         
         outcome2='bb_move'
         

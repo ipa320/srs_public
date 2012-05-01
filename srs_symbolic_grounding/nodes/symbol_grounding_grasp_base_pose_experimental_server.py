@@ -165,9 +165,15 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 
 
 	#right grasp
+	
+	grasp_pose_scale = 0.85 	#the default value
+	try:
+		grasp_pose_scale = rospy.get_param("srs/common/grasp_pose_scale")
+	except Exception, e:
+		rospy.loginfo("Parameter Server not ready, use default value for grasp pose estimation") 
 
-	best_grasp_pose_x = robot_base_pose_x - 0.8 * math.cos(robot_base_pose_th) + 0.15 * math.sin(robot_base_pose_th)
-	best_grasp_pose_y = robot_base_pose_y - 0.8 * math.sin(robot_base_pose_th) - 0.15 * math.cos(robot_base_pose_th) 
+	best_grasp_pose_x = robot_base_pose_x - grasp_pose_scale * math.cos(robot_base_pose_th) + 0.15 * math.sin(robot_base_pose_th)
+	best_grasp_pose_y = robot_base_pose_y - grasp_pose_scale * math.sin(robot_base_pose_th) - 0.15 * math.cos(robot_base_pose_th) 
 
 	delta_x = math.sqrt((target_obj_x - best_grasp_pose_x) ** 2 + (target_obj_y - best_grasp_pose_y) ** 2) * math.cos(target_obj_th - robot_base_pose_th) 
 	delta_y = math.sqrt((target_obj_x - best_grasp_pose_x) ** 2 + (target_obj_y - best_grasp_pose_y) ** 2) * math.sin(target_obj_th - robot_base_pose_th) 
@@ -186,26 +192,26 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	right_grasp_base_pose_list = list()
 	
 	right_grasp_base_pose_1 = Pose2D()
-	right_grasp_base_pose_1.x = target_obj_x + 0.8 * math.cos(parent_obj_th) - 0.15 * math.sin(parent_obj_th)
-	right_grasp_base_pose_1.y = target_obj_y + 0.8 * math.sin(parent_obj_th) + 0.15 * math.cos(parent_obj_th)
+	right_grasp_base_pose_1.x = target_obj_x + grasp_pose_scale * math.cos(parent_obj_th) - 0.15 * math.sin(parent_obj_th)
+	right_grasp_base_pose_1.y = target_obj_y + grasp_pose_scale * math.sin(parent_obj_th) + 0.15 * math.cos(parent_obj_th)
 	right_grasp_base_pose_1.theta = parent_obj_th
 	right_grasp_base_pose_list.append(right_grasp_base_pose_1)
 
 	right_grasp_base_pose_2 = Pose2D()
-	right_grasp_base_pose_2.x = target_obj_x + 0.8 * math.sin(parent_obj_th) + 0.15 * math.cos(parent_obj_th)
-	right_grasp_base_pose_2.y = target_obj_y - 0.8 * math.cos(parent_obj_th) + 0.15 * math.sin(parent_obj_th)
+	right_grasp_base_pose_2.x = target_obj_x + grasp_pose_scale * math.sin(parent_obj_th) + 0.15 * math.cos(parent_obj_th)
+	right_grasp_base_pose_2.y = target_obj_y - grasp_pose_scale * math.cos(parent_obj_th) + 0.15 * math.sin(parent_obj_th)
 	right_grasp_base_pose_2.theta = parent_obj_th + 1.5 * math.pi
 	right_grasp_base_pose_list.append(right_grasp_base_pose_2)
 
 	right_grasp_base_pose_3 = Pose2D()
-	right_grasp_base_pose_3.x = target_obj_x - 0.8 * math.cos(parent_obj_th) + 0.15 * math.sin(parent_obj_th)
-	right_grasp_base_pose_3.y = target_obj_y - 0.8 * math.sin(parent_obj_th) - 0.15 * math.cos(parent_obj_th)
+	right_grasp_base_pose_3.x = target_obj_x - grasp_pose_scale * math.cos(parent_obj_th) + 0.15 * math.sin(parent_obj_th)
+	right_grasp_base_pose_3.y = target_obj_y - grasp_pose_scale * math.sin(parent_obj_th) - 0.15 * math.cos(parent_obj_th)
 	right_grasp_base_pose_3.theta = parent_obj_th + math.pi
 	right_grasp_base_pose_list.append(right_grasp_base_pose_3)
 
 	right_grasp_base_pose_4 = Pose2D()
-	right_grasp_base_pose_4.x = target_obj_x - 0.8 * math.sin(parent_obj_th) - 0.15 * math.cos(parent_obj_th)
-	right_grasp_base_pose_4.y = target_obj_y + 0.8 * math.cos(parent_obj_th) - 0.15 * math.sin(parent_obj_th)
+	right_grasp_base_pose_4.x = target_obj_x - grasp_pose_scale * math.sin(parent_obj_th) - 0.15 * math.cos(parent_obj_th)
+	right_grasp_base_pose_4.y = target_obj_y + grasp_pose_scale * math.cos(parent_obj_th) - 0.15 * math.sin(parent_obj_th)
 	right_grasp_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
 	right_grasp_base_pose_list.append(right_grasp_base_pose_4)
 
@@ -230,8 +236,8 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	
 	#front grasp
 
-	best_grasp_pose_x = robot_base_pose_x - 0.85 * math.cos(robot_base_pose_th) + 0.1 * math.sin(robot_base_pose_th)
-	best_grasp_pose_y = robot_base_pose_y - 0.85 * math.sin(robot_base_pose_th) - 0.1 * math.cos(robot_base_pose_th) 
+	best_grasp_pose_x = robot_base_pose_x - (grasp_pose_scale+0.05) * math.cos(robot_base_pose_th) + 0.1 * math.sin(robot_base_pose_th)
+	best_grasp_pose_y = robot_base_pose_y - (grasp_pose_scale+0.05) * math.sin(robot_base_pose_th) - 0.1 * math.cos(robot_base_pose_th) 
 
 	delta_x = math.sqrt((target_obj_x - best_grasp_pose_x) ** 2 + (target_obj_y - best_grasp_pose_y) ** 2) * math.cos(target_obj_th - robot_base_pose_th)
 	delta_y = math.sqrt((target_obj_x - best_grasp_pose_x) ** 2 + (target_obj_y - best_grasp_pose_y) ** 2) * math.sin(target_obj_th - robot_base_pose_th)
@@ -249,26 +255,26 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	front_grasp_base_pose_list = list()
 	
 	front_grasp_base_pose_1 = Pose2D()
-	front_grasp_base_pose_1.x = target_obj_x + 0.85 * math.cos(parent_obj_th) - 0.1 * math.sin(parent_obj_th)
-	front_grasp_base_pose_1.y = target_obj_y + 0.85 * math.sin(parent_obj_th) + 0.1 * math.cos(parent_obj_th)
+	front_grasp_base_pose_1.x = target_obj_x + (grasp_pose_scale+0.05) * math.cos(parent_obj_th) - 0.1 * math.sin(parent_obj_th)
+	front_grasp_base_pose_1.y = target_obj_y + (grasp_pose_scale+0.05) * math.sin(parent_obj_th) + 0.1 * math.cos(parent_obj_th)
 	front_grasp_base_pose_1.theta = parent_obj_th
 	front_grasp_base_pose_list.append(front_grasp_base_pose_1)
 
 	front_grasp_base_pose_2 = Pose2D()
-	front_grasp_base_pose_2.x = target_obj_x + 0.85 * math.sin(parent_obj_th) + 0.1 * math.cos(parent_obj_th)
-	front_grasp_base_pose_2.y = target_obj_y - 0.85 * math.cos(parent_obj_th) + 0.1 * math.sin(parent_obj_th)
+	front_grasp_base_pose_2.x = target_obj_x + (grasp_pose_scale+0.05) * math.sin(parent_obj_th) + 0.1 * math.cos(parent_obj_th)
+	front_grasp_base_pose_2.y = target_obj_y - (grasp_pose_scale+0.05) * math.cos(parent_obj_th) + 0.1 * math.sin(parent_obj_th)
 	front_grasp_base_pose_2.theta = parent_obj_th + 1.5 * math.pi
 	front_grasp_base_pose_list.append(front_grasp_base_pose_2)
 
 	front_grasp_base_pose_3 = Pose2D()
-	front_grasp_base_pose_3.x = target_obj_x - 0.85 * math.cos(parent_obj_th) + 0.1 * math.sin(parent_obj_th)
-	front_grasp_base_pose_3.y = target_obj_y - 0.85 * math.sin(parent_obj_th) - 0.1 * math.cos(parent_obj_th)
+	front_grasp_base_pose_3.x = target_obj_x - (grasp_pose_scale+0.05) * math.cos(parent_obj_th) + 0.1 * math.sin(parent_obj_th)
+	front_grasp_base_pose_3.y = target_obj_y - (grasp_pose_scale+0.05) * math.sin(parent_obj_th) - 0.1 * math.cos(parent_obj_th)
 	front_grasp_base_pose_3.theta = parent_obj_th + math.pi
 	front_grasp_base_pose_list.append(front_grasp_base_pose_3)
 
 	front_grasp_base_pose_4 = Pose2D()
-	front_grasp_base_pose_4.x = target_obj_x - 0.85 * math.sin(parent_obj_th) - 0.1 * math.cos(parent_obj_th)
-	front_grasp_base_pose_4.y = target_obj_y + 0.85 * math.cos(parent_obj_th) - 0.1 * math.sin(parent_obj_th)
+	front_grasp_base_pose_4.x = target_obj_x - (grasp_pose_scale+0.05) * math.sin(parent_obj_th) - 0.1 * math.cos(parent_obj_th)
+	front_grasp_base_pose_4.y = target_obj_y + (grasp_pose_scale+0.05) * math.cos(parent_obj_th) - 0.1 * math.sin(parent_obj_th)
 	front_grasp_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
 	front_grasp_base_pose_list.append(front_grasp_base_pose_4)
 
@@ -293,8 +299,8 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 
 	#top grasp
 
-	best_grasp_pose_x = robot_base_pose_x - 0.8 * math.cos(robot_base_pose_th) + 0.1 * math.sin(robot_base_pose_th)
-	best_grasp_pose_y = robot_base_pose_y - 0.8 * math.sin(robot_base_pose_th) - 0.1 * math.cos(robot_base_pose_th) 
+	best_grasp_pose_x = robot_base_pose_x - grasp_pose_scale * math.cos(robot_base_pose_th) + 0.1 * math.sin(robot_base_pose_th)
+	best_grasp_pose_y = robot_base_pose_y - grasp_pose_scale * math.sin(robot_base_pose_th) - 0.1 * math.cos(robot_base_pose_th) 
 
 	delta_x = math.sqrt((target_obj_x - best_grasp_pose_x) ** 2 + (target_obj_y - best_grasp_pose_y) ** 2) * math.cos(target_obj_th - robot_base_pose_th)
 	delta_y = math.sqrt((target_obj_x - best_grasp_pose_x) ** 2 + (target_obj_y - best_grasp_pose_y) ** 2) * math.sin(target_obj_th - robot_base_pose_th)
@@ -312,26 +318,26 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	top_grasp_base_pose_list = list()
 	
 	top_grasp_base_pose_1 = Pose2D()
-	top_grasp_base_pose_1.x = target_obj_x + 0.8 * math.cos(parent_obj_th) - 0.1 * math.sin(parent_obj_th)
-	top_grasp_base_pose_1.y = target_obj_y + 0.8 * math.sin(parent_obj_th) + 0.1 * math.cos(parent_obj_th)
+	top_grasp_base_pose_1.x = target_obj_x + grasp_pose_scale * math.cos(parent_obj_th) - 0.1 * math.sin(parent_obj_th)
+	top_grasp_base_pose_1.y = target_obj_y + grasp_pose_scale * math.sin(parent_obj_th) + 0.1 * math.cos(parent_obj_th)
 	top_grasp_base_pose_1.theta = parent_obj_th
 	top_grasp_base_pose_list.append(top_grasp_base_pose_1)
 
 	top_grasp_base_pose_2 = Pose2D()
-	top_grasp_base_pose_2.x = target_obj_x + 0.8 * math.sin(parent_obj_th) + 0.1 * math.cos(parent_obj_th)
-	top_grasp_base_pose_2.y = target_obj_y - 0.8 * math.cos(parent_obj_th) + 0.1 * math.sin(parent_obj_th)
+	top_grasp_base_pose_2.x = target_obj_x + grasp_pose_scale * math.sin(parent_obj_th) + 0.1 * math.cos(parent_obj_th)
+	top_grasp_base_pose_2.y = target_obj_y - grasp_pose_scale * math.cos(parent_obj_th) + 0.1 * math.sin(parent_obj_th)
 	top_grasp_base_pose_2.theta = parent_obj_th + 1.5 * math.pi
 	top_grasp_base_pose_list.append(top_grasp_base_pose_2)
 
 	top_grasp_base_pose_3 = Pose2D()
-	top_grasp_base_pose_3.x = target_obj_x - 0.8 * math.cos(parent_obj_th) + 0.1 * math.sin(parent_obj_th)
-	top_grasp_base_pose_3.y = target_obj_y - 0.8 * math.sin(parent_obj_th) - 0.1 * math.cos(parent_obj_th)
+	top_grasp_base_pose_3.x = target_obj_x - grasp_pose_scale * math.cos(parent_obj_th) + 0.1 * math.sin(parent_obj_th)
+	top_grasp_base_pose_3.y = target_obj_y - grasp_pose_scale * math.sin(parent_obj_th) - 0.1 * math.cos(parent_obj_th)
 	top_grasp_base_pose_3.theta = parent_obj_th + math.pi
 	top_grasp_base_pose_list.append(top_grasp_base_pose_3)
 
 	top_grasp_base_pose_4 = Pose2D()
-	top_grasp_base_pose_4.x = target_obj_x - 0.8 * math.sin(parent_obj_th) - 0.1 * math.cos(parent_obj_th)
-	top_grasp_base_pose_4.y = target_obj_y + 0.8 * math.cos(parent_obj_th) - 0.1 * math.sin(parent_obj_th)
+	top_grasp_base_pose_4.x = target_obj_x - grasp_pose_scale * math.sin(parent_obj_th) - 0.1 * math.cos(parent_obj_th)
+	top_grasp_base_pose_4.y = target_obj_y + grasp_pose_scale * math.cos(parent_obj_th) - 0.1 * math.sin(parent_obj_th)
 	top_grasp_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
 	top_grasp_base_pose_list.append(top_grasp_base_pose_4)
 	if delta_x > 0.1 or delta_x < -0.15:

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+	<node pkg="srs_assisted_detection" type="ui_detection.py" name="ui_detection" output="screen">
+        </node>
+
+	<node pkg="srs_assisted_detection" type="ui_bbmove.py" name="ui_bbmove" output="screen">
+        </node>
+
+	<node pkg="srs_assisted_detection" type="ui_answer.py" name="ui_answer" output="screen">
+        </node>
+
+</launch>

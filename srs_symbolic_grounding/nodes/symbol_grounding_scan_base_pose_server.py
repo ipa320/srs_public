@@ -164,14 +164,20 @@ def handle_symbol_grounding_scan_base_pose(req):
 	obstacle_checked_scan_base_pose_list_3 = list()
 	obstacle_checked_scan_base_pose_list_4 = list()
 	
+	
+	scan_pose_scale = 0.55 	#the default value
+	try:
+		scan_pose_scale = rospy.get_param("srs/common/scan_pose_scale")
+	except Exception, e:
+		rospy.loginfo("Parameter Server not ready, use default value for scan pose estimation") 
 
 	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 
 			scan_base_pose_1 = Pose2D()
-			scan_base_pose_1.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
-			scan_base_pose_1.y = parent_obj_y - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 *  detection_w - num * detection_w) * math.cos(parent_obj_th)
+			scan_base_pose_1.x = parent_obj_x - (parent_obj_w * scan_pose_scale + rb_distance) * math.cos(parent_obj_th) - (scan_pose_scale * parent_obj_l - scan_pose_scale * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			scan_base_pose_1.y = parent_obj_y - (parent_obj_w * scan_pose_scale + rb_distance) * math.sin(parent_obj_th) + (scan_pose_scale * parent_obj_l - scan_pose_scale *  detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_1.theta = parent_obj_th + math.pi
 			scan_base_pose_list_1.append(scan_base_pose_1)
 
@@ -193,7 +199,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 				while index_2 < len(furniture_geometry_list):
 					delta_x = math.sqrt((wall_checked_scan_base_pose_list_1[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_1[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_scan_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
 					delta_y = math.sqrt((wall_checked_scan_base_pose_list_1[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_1[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_scan_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale)):
 						index_2 += 1
 					else:
 						index_1 += 1
@@ -204,8 +210,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 				
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 			scan_base_pose_2 = Pose2D()
-			scan_base_pose_2.x = parent_obj_x + (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
-			scan_base_pose_2.y = parent_obj_y + (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			scan_base_pose_2.x = parent_obj_x + (parent_obj_w * scan_pose_scale + rb_distance) * math.cos(parent_obj_th) + (scan_pose_scale * parent_obj_l - scan_pose_scale * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			scan_base_pose_2.y = parent_obj_y + (parent_obj_w * scan_pose_scale + rb_distance) * math.sin(parent_obj_th) - (scan_pose_scale * parent_obj_l - scan_pose_scale * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_2.theta = parent_obj_th
 			scan_base_pose_list_2.append(scan_base_pose_2)
 
@@ -227,7 +233,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 				while index_2 < len(furniture_geometry_list):
 					delta_x = math.sqrt((wall_checked_scan_base_pose_list_2[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_2[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_scan_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
 					delta_y = math.sqrt((wall_checked_scan_base_pose_list_2[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_2[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_scan_base_pose_list_2[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale)):
 						index_2 += 1
 					else:
 						index_1 += 1
@@ -238,9 +244,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 		for num in range(int((parent_obj_w / detection_w) + 0.99)):
 
 			scan_base_pose_3 = Pose2D()
-			scan_base_pose_3.x = parent_obj_x + (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
-			scan_base_pose_3.y = parent_obj_y - (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_w - 0.5 *  detection_w - num * detection_w) * math.sin(parent_obj_th)
-			scan_base_pose_3.theta = parent_obj_th - 0.5 * math.pi
+			scan_base_pose_3.x = parent_obj_x + (parent_obj_l * scan_pose_scale + rb_distance) * math.sin(parent_obj_th) - (scan_pose_scale * parent_obj_w - scan_pose_scale * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			scan_base_pose_3.y = parent_obj_y - (parent_obj_l * scan_pose_scale + rb_distance) * math.cos(parent_obj_th) - (scan_pose_scale * parent_obj_w - scan_pose_scale *  detection_w - num * detection_w) * math.sin(parent_obj_th)
+			scan_base_pose_3.theta = parent_obj_th - scan_pose_scale * math.pi
 			scan_base_pose_list_3.append(scan_base_pose_3)
 
 		#obstacle check 3
@@ -261,7 +267,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 				while index_2 < len(furniture_geometry_list):
 					delta_x = math.sqrt((wall_checked_scan_base_pose_list_3[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_3[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_scan_base_pose_list_3[index_1].theta - furniture_geometry_list[index_2].pose.theta)
 					delta_y = math.sqrt((wall_checked_scan_base_pose_list_3[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_3[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_scan_base_pose_list_3[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale)):
 						index_2 += 1
 					else:
 						index_1 += 1
@@ -271,9 +277,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 				
 		for num in range(int((parent_obj_w / detection_w) + 0.99)):
 			scan_base_pose_4 = Pose2D()
-			scan_base_pose_4.x = parent_obj_x - (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
-			scan_base_pose_4.y = parent_obj_y + (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
-			scan_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
+			scan_base_pose_4.x = parent_obj_x - (parent_obj_l * scan_pose_scale + rb_distance) * math.sin(parent_obj_th) + (scan_pose_scale * parent_obj_w - scan_pose_scale * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			scan_base_pose_4.y = parent_obj_y + (parent_obj_l * scan_pose_scale + rb_distance) * math.cos(parent_obj_th) + (scan_pose_scale * parent_obj_w - scan_pose_scale * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			scan_base_pose_4.theta = parent_obj_th + scan_pose_scale * math.pi
 			scan_base_pose_list_4.append(scan_base_pose_4)
 
 		#obstacle check 4
@@ -294,7 +300,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 				while index_2 < len(furniture_geometry_list):
 					delta_x = math.sqrt((wall_checked_scan_base_pose_list_4[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_4[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_scan_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
 					delta_y = math.sqrt((wall_checked_scan_base_pose_list_4[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_4[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_scan_base_pose_list_4[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale)):
 						index_2 += 1
 					else:
 						index_1 += 1
@@ -307,8 +313,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 		for num in range(int((parent_obj_w / detection_w) + 0.99)):
 
 			scan_base_pose_1 = Pose2D()
-			scan_base_pose_1.x = parent_obj_x - (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
-			scan_base_pose_1.y = parent_obj_y - (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_w - 0.5 *  detection_w - num * detection_w) * math.cos(parent_obj_th)
+			scan_base_pose_1.x = parent_obj_x - (parent_obj_l * scan_pose_scale + rb_distance) * math.cos(parent_obj_th) - (scan_pose_scale * parent_obj_w - scan_pose_scale * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			scan_base_pose_1.y = parent_obj_y - (parent_obj_l * scan_pose_scale + rb_distance) * math.sin(parent_obj_th) + (scan_pose_scale * parent_obj_w - scan_pose_scale *  detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_1.theta = parent_obj_th + math.pi
 			scan_base_pose_list_1.append(scan_base_pose_1)
 
@@ -330,7 +336,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 				while index_2 < len(furniture_geometry_list):
 					delta_x = math.sqrt((wall_checked_scan_base_pose_list_1[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_1[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_scan_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
 					delta_y = math.sqrt((wall_checked_scan_base_pose_list_1[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_1[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_scan_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale)):
 						index_2 += 1
 					else:
 						index_1 += 1
@@ -341,8 +347,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 				
 		for num in range(int((parent_obj_w / detection_w) + 0.99)):
 			scan_base_pose_2 = Pose2D()
-			scan_base_pose_2.x = parent_obj_x + (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
-			scan_base_pose_2.y = parent_obj_y + (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			scan_base_pose_2.x = parent_obj_x + (parent_obj_l * scan_pose_scale + rb_distance) * math.cos(parent_obj_th) + (scan_pose_scale * parent_obj_w - scan_pose_scale * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			scan_base_pose_2.y = parent_obj_y + (parent_obj_l * scan_pose_scale + rb_distance) * math.sin(parent_obj_th) - (scan_pose_scale * parent_obj_w - scan_pose_scale * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_2.theta = parent_obj_th
 			scan_base_pose_list_2.append(scan_base_pose_2)
 
@@ -364,7 +370,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 				while index_2 < len(furniture_geometry_list):
 					delta_x = math.sqrt((wall_checked_scan_base_pose_list_2[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_2[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_scan_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
 					delta_y = math.sqrt((wall_checked_scan_base_pose_list_2[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_2[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_scan_base_pose_list_2[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale)):
 						index_2 += 1
 					else:
 						index_1 += 1
@@ -375,9 +381,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 
 			scan_base_pose_3 = Pose2D()
-			scan_base_pose_3.x = parent_obj_x + (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
-			scan_base_pose_3.y = parent_obj_y - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 *  detection_w - num * detection_w) * math.sin(parent_obj_th)
-			scan_base_pose_3.theta = parent_obj_th - 0.5 * math.pi
+			scan_base_pose_3.x = parent_obj_x + (parent_obj_w * scan_pose_scale + rb_distance) * math.sin(parent_obj_th) - (scan_pose_scale * parent_obj_l - scan_pose_scale * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			scan_base_pose_3.y = parent_obj_y - (parent_obj_w * scan_pose_scale + rb_distance) * math.cos(parent_obj_th) - (scan_pose_scale * parent_obj_l - scan_pose_scale *  detection_w - num * detection_w) * math.sin(parent_obj_th)
+			scan_base_pose_3.theta = parent_obj_th - scan_pose_scale * math.pi
 			scan_base_pose_list_3.append(scan_base_pose_3)
 
 		#obstacle check 3
@@ -398,7 +404,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 				while index_2 < len(furniture_geometry_list):
 					delta_x = math.sqrt((wall_checked_scan_base_pose_list_3[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_3[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_scan_base_pose_list_3[index_1].theta - furniture_geometry_list[index_2].pose.theta)
 					delta_y = math.sqrt((wall_checked_scan_base_pose_list_3[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_3[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_scan_base_pose_list_3[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale)):
 						index_2 += 1
 					else:
 						index_1 += 1
@@ -408,9 +414,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 				
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 			scan_base_pose_4 = Pose2D()
-			scan_base_pose_4.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
-			scan_base_pose_4.y = parent_obj_y + (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
-			scan_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
+			scan_base_pose_4.x = parent_obj_x - (parent_obj_w * scan_pose_scale + rb_distance) * math.sin(parent_obj_th) + (scan_pose_scale * parent_obj_l - scan_pose_scale * detection_w - num * detection_w) * math.cos(parent_obj_th)
+			scan_base_pose_4.y = parent_obj_y + (parent_obj_w * scan_pose_scale + rb_distance) * math.cos(parent_obj_th) + (scan_pose_scale * parent_obj_l - scan_pose_scale * detection_w - num * detection_w) * math.sin(parent_obj_th)
+			scan_base_pose_4.theta = parent_obj_th + scan_pose_scale * math.pi
 			scan_base_pose_list_4.append(scan_base_pose_4)
 
 		#obstacle check 4
@@ -431,7 +437,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 				while index_2 < len(furniture_geometry_list):
 					delta_x = math.sqrt((wall_checked_scan_base_pose_list_4[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_4[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(wall_checked_scan_base_pose_list_1[index_1].theta - furniture_geometry_list[index_2].pose.theta)
 					delta_y = math.sqrt((wall_checked_scan_base_pose_list_4[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (wall_checked_scan_base_pose_list_4[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(wall_checked_scan_base_pose_list_4[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + 0.5) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + 0.5)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + 0.5) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + 0.5)):
+					if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + scan_pose_scale)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + scan_pose_scale)):
 						index_2 += 1
 					else:
 						index_1 += 1

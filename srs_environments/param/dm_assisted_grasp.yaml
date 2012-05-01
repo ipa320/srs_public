@@ -1,0 +1,4 @@
+srs/language: 'English'
+srs/grasping_type: 'Assisted'
+srs/detection_type: 'Simple' 
+srs/enviroment_confirmation: 'False'

@@ -35,7 +35,10 @@
 
 #include <boost/shared_ptr.hpp>
 #include <interactive_markers/interactive_marker_server.h>
-#include <but_interaction_primitives/UnknownObject.h>
+#include <srs_interaction_primitives/AddUnknownObject.h>
+#include <srs_interaction_primitives/PoseChanged.h>
+#include <srs_interaction_primitives/ScaleChanged.h>
+#include <ros/ros.h>
 
 namespace rviz
 {
@@ -61,6 +64,9 @@ public:
 	/// On clear map event handler
 	virtual void OnClearMap( wxCommandEvent &event );
 
+	/// On cancel clera map
+	virtual void OnCancelClear( wxCommandEvent &event );
+
 protected:
 	//! Add gizmo to the scene
 	void addGizmo();
@@ -68,7 +74,14 @@ protected:
 	//! Remove gizmo from the scene
 	void removeGizmo();
 
+	//! Gizmo pose topic callback
+	void gizmoPoseCB( const srs_interaction_primitives::PoseChangedConstPtr &marker_update );
 
+	//! Gizmo scale topic callback
+	void gizmoScaleCB( const srs_interaction_primitives::ScaleChangedConstPtr &marker_update );
+
+	//! Set gizmo pose-scale from the local copy
+	void setGizmoPoseScale();
 
 protected:
     //! stored window manager interface pointer
@@ -83,12 +96,32 @@ protected:
     //! Do map erase
     wxButton *m_buttonClearMap;
 
-    /// Interactive server
-	InteractiveMarkerServerPtr m_server;
+    //! Cancel clearing
+    wxButton *m_buttonCancelClear;
 
 	//! Gizmo
-	but_interaction_primitives::UnknownObject * m_uoGizmo;
+    srs_interaction_primitives::AddUnknownObject m_uoGizmo;
 
+	//! Used services - add gizmo
+	ros::ServiceClient m_srvAddGizmo;
+
+	//! Used services - remove gizmo
+	ros::ServiceClient m_srvRemoveGizmo;
+
+	//! Used services - remove cube from octomap
+	ros::ServiceClient m_srvRemoveCubeFromOCmap;
+
+	//! Subscribers - gizmo position and scale
+    ros::Subscriber m_subGizmoPose, m_subGizmoScale;
+
+    //! Gizmo pose
+    geometry_msgs::Pose m_gizmoPose;
+
+    //! Gizmo scale
+    geometry_msgs::Point m_gizmoScale;
+
+    //! Gizmo was added to the scene
+    bool m_bGizmoAdded;
 
 private:
     DECLARE_EVENT_TABLE()

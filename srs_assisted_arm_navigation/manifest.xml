@@ -17,7 +17,7 @@ Moreover, this package also provides several services that simplifies usage of t
   <depend package="cob_arm_navigation"/>
   <depend package="cob_default_env_config"/>
   <depend package="cob_default_robot_config"/>
-  <depend package="cob_navigation_global"/>
+  <!--depend package="cob_navigation_global"/-->
   <depend package="actionlib_msgs"/>
   <depend package="actionlib"/>
   <depend package="cob_script_server"/>

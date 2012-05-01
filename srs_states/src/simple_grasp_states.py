@@ -26,7 +26,7 @@ from shared_state_information import *
 ## Select grasp state
 #
 # This state select a grasping strategy. A high object will be grasped from the side, a low one from top.
-class select_grasp(smach.State):
+class select_simple_grasp(smach.State):
 
     def __init__(self):
         smach.State.__init__(
@@ -49,6 +49,8 @@ class select_grasp(smach.State):
     def execute(self, userdata):
         
         global listener
+        
+        rospy.loginfo('userdata is %s', userdata)
         try:
             # transform object_pose into base_link
             object_pose_in = userdata.object.pose
@@ -74,7 +76,7 @@ class select_grasp(smach.State):
 ## Grasp general state
 #
 # This state will grasp an object with a side grasp
-class grasp_simple(smach.State):
+class simple_grasp(smach.State):
 
     def __init__(self, max_retries = 1):
         smach.State.__init__(
@@ -154,7 +156,7 @@ class grasp_simple(smach.State):
         
                 pre_grasp_bl.pose.position.x = pre_grasp_bl.pose.position.x + 0.10 # x offset for pre grasp position
                 pre_grasp_bl.pose.position.y = pre_grasp_bl.pose.position.y + 0.10 # y offset for pre grasp position
-                pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.15 # y offset for pre grasp position
+                pre_grasp_bl.pose.position.z = pre_grasp_bl.pose.position.z + 0.2 # z offset for pre grasp position
                 post_grasp_bl.pose.position.x = post_grasp_bl.pose.position.x + 0.05 # x offset for post grasp position
                 post_grasp_bl.pose.position.z = post_grasp_bl.pose.position.z + 0.17 # z offset for post grasp position
                 
@@ -192,10 +194,16 @@ class grasp_simple(smach.State):
                 #unknown categorisation
                
                 
-    
+            
             # calculate ik solutions for pre grasp configuration
-            arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp_top")
-            (pre_grasp_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_grasp_bl)        
+            if userdata.grasp_categorisation == 'top':
+                arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp_top")
+            else:
+                # userdata.grasp_categorisation == 'side':
+                arm_pre_grasp = rospy.get_param("/script_server/arm/pregrasp")
+            
+            (pre_grasp_conf, error_code) = self.callIKSolver(arm_pre_grasp[0], pre_grasp_bl)
+                        
             if(error_code.val != error_code.SUCCESS):
                 rospy.logerr("Ik pre_grasp Failed")
                 self.retries += 1
@@ -220,7 +228,7 @@ class grasp_simple(smach.State):
                 self.service_preempt()
                 return 'preempted'
             
-            sss.say(["I am grasping the " + userdata.object.label + " now."],False)
+            sss.say([current_task_info.speaking_language['Grasp'] + userdata.object.label ],False)
             sss.move("torso","home")
             handle_arm = sss.move("arm", [pre_grasp_conf , grasp_conf],False)
             
@@ -262,57 +270,3 @@ class grasp_simple(smach.State):
         self.retries = 0     
         return 'succeeded'
 
-
-## Grasp general state
-#
-# This state will grasp an object with a side grasp configuration coming from the grasp planner
-class grasp(smach.State):
-
-    def __init__(self):
-        smach.State.__init__(
-            self,
-            outcomes=['succeeded', 'failed', 'preempted'],
-            input_keys=['hand_grasp_configuration', 'arm_pre_grasp_position', 'arm_grasp_position'])
-
-    def poseStampedtoSSS(self,pose_stamped):
-        pose = pose_stamped.pose
-        euler = euler_from_quaternion(pose.orientation.x,pose.orientation.y,pose.orientation.z,pose.orientation.w)
-        return [[pose_stamped.frame_id, [pose.position.x,pose.position.y,pose.position.z],list(euler)]]
-        
-    def execute(self, userdata):
-      config_sdh = [userdata.hand_grasp_configuration]
-      config_pregrasp = self.poseStampedToSSS(userdata.arm_pre_grasp_position)
-      config_grasp = self.poseStampedToSSS(userdata.arm_grasp_position)
-      
-      #1. call IK Solver for pre-grasp
-      ik_pregrasp, error_pregrasp = sss.calculate_ik(config_pregrasp)
-      if error_pregrasp is not error_pregrasp.SUCCESS:
-          return 'failed'    
-          
-      #5. call IK Solver for grasp
-      ik_grasp, error_grasp = sss.calculate_ik(config_grasp)
-      if error_grasp is not error_grasp.SUCCESS:
-          return 'failed'    
-      
-      #2. call arm planner for pre-grasp
-      #3. move arm to pre-grasp
-      sss.move_planned('arm',ik_pregrasp)
-      
-      #4. open gripper
-      sss.move('sdh','cylopen')
-      
-      #6. move arm to grasp (re-planning probably not necessary)
-      
-      #TODO: use interpolated ik planner
-      sss.move('arm',ik_pregrasp)
-      
-      #7. close gripper
-      sss.move('sdh',config_sdh)
-      #8. check if grasp successful
-      successful_grasp = grasping_functions.sdh_tactil_sensor_result();
-      
-      if successful_grasp:
-         return 'succeeded'
-      else:
-         #TODO: open hand, go back to pregrasp to be safe ? 
-         return 'failed'

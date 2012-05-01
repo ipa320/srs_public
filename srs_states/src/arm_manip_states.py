@@ -26,7 +26,10 @@
 # along with this file.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import roslib; roslib.load_manifest('srs_states')
+import roslib; 
+roslib.load_manifest('srs_assisted_arm_navigation')
+roslib.load_manifest('srs_interaction_primitives')
+
 import rospy
 import smach
 import smach_ros

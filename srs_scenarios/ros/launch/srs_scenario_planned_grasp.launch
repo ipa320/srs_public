@@ -5,4 +5,7 @@
 
 	<!-- start SRS common -->
 	<include file="$(find srs_scenarios)/ros/launch/srs_scenario_common.launch"/>
+
+	<!-- grasp service -->	
+	<include file="$(find srs_grasping)/launch/grasping_services.launch"/>
 </launch>

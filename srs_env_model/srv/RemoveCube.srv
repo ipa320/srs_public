@@ -1,11 +1,4 @@
-float32 center_x
-float32 center_y
-float32 center_z
-float32 pose_x
-float32 pose_y
-float32 pose_z
-float32 pose_w
-float32 size_x
-float32 size_y
-float32 size_z
+string frame_id
+geometry_msgs/Pose pose
+geometry_msgs/Point size
 ---

@@ -28,9 +28,6 @@
         <!-- object data base -->
 	<include file="$(find srs_object_database)/launch/srs_db.launch"/>
   
-	<!-- grasp service -->	
-	<include file="$(find srs_grasping)/launch/grasping_services.launch"/>
-
 	<!-- table -->
 	<include file="$(find srs_scenarios)/ros/launch/table_ikea.launch"/>
 

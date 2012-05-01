@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_display.h 521 2012-04-05 13:55:58Z spanel $
+ * $Id: but_display.h 743 2012-04-25 19:07:28Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -39,6 +39,7 @@
 #include <OgreCamera.h>
 #include <string>
 #include "but_examplepane.h"
+#include "but_octomap_control_pane.h"
 #include "srs_env_model_msgs/RVIZCameraPosition.h"
 
 
@@ -156,6 +157,9 @@ protected:
     //! Controls window example
     CExamplePanelControls * m_controls_window;
     
+    //! Octomap controls window
+    COctomapControlPane * m_ocmap_window;
+
     //! Camera position publisher name
     std::string m_cameraPositionPublisherName;
 

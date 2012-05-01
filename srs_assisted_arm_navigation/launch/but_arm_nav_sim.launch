@@ -5,14 +5,17 @@
   <!-- Configuration for COB, bringup simulation -->
   <include file="$(find cob_default_robot_config)/upload_param.launch" />
   <include file="$(find cob_default_env_config)/upload_param.launch" />
-  <include file="$(find cob_navigation_global)/launch/2dnav_dwa.launch" />
+  <include file="$(find cob_navigation_global)/launch/2dnav_ros.launch" />
   <include file="$(find cob_bringup_sim)/launch/robot.launch" />
   
   <!-- start COB script server -->
   <include file="$(find cob_script_server)/launch/script_server.launch"/>
   
   <!-- srs interaction primitives -->
-  <node name="but_im_server" pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" />
+  <node name="but_interaction_primitives" pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server">
+    <param name="allow_object_interaction" type="bool" value="false"/>
+    <param name="show_object_pregrasp" type="bool" value="true"/>
+  </node>
   
   <!-- actionlibserver -->
   <include file="$(find srs_assisted_arm_navigation)/launch/arm_manip_node.launch"/>

@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
 import roslib
-roslib.load_manifest('srs_states')
+roslib.load_manifest('srs_grasping')
 import rospy
 import grasping_functions
 from shared_state_information import *
-
+import copy
 
 from simple_script_server import *
 sss = simple_script_server()
@@ -19,7 +19,7 @@ class select_srs_grasp(smach.State):
             self,
             outcomes=['succeeded', 'not_possible', 'failed', 'preempted'],
             input_keys=['object', 'target_object_id'],
-            output_keys=['grasp_configs', 'poses'])
+            output_keys=['grasp_configuration', 'poses'])
         
         #default grasp categorisation
         #self.grasp_configuration = ""
@@ -40,8 +40,10 @@ class select_srs_grasp(smach.State):
         
         get_grasps_from_position = rospy.ServiceProxy('get_grasps_from_position', GetGraspsFromPosition)
         req = GetGraspsFromPositionRequest(userdata.target_object_id, object_pose_bl.pose)
-        grasp_configuration = (get_grasps_from_position(req)).grasp_configuration
+        grasp_configuration = copy.deepcopy((get_grasps_from_position(req)).grasp_configuration)
         
+        
+        print("grasp configuration is", grasp_configuration[1])
         #print ('grasp configs %s', grasp_configuration)
         
         if len(grasp_configuration) < 1: # no valid configuration found
@@ -54,7 +56,7 @@ class select_srs_grasp(smach.State):
                 pose.pose = grasp_configuration[index].pre_grasp
                 poses.append(pose)
             userdata.poses = poses
-            userdata.grasp_configs = grasp_configuration
+            userdata.grasp_configuration = grasp_configuration
         return 'succeeded'
         
         """
@@ -84,6 +86,11 @@ class srs_grasp(smach.State):
         smach.State.__init__(self, outcomes=['succeeded','not_completed','failed', 'preempted'], 
                              input_keys=['grasp_configuration','grasp_configuration_id'], 
                              output_keys=['grasp_categorisation'])
+        rospy.loginfo("Waiting /arm_kinematics/get_ik service...")
+        rospy.wait_for_service('/arm_kinematics/get_ik')
+        rospy.loginfo("/arm_kinematics/get_ik has been found!")
+        self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
+        
 	
     def get_joint_state(self, msg):
         global current_joint_configuration
@@ -96,16 +103,19 @@ class srs_grasp(smach.State):
     	#Open SDH at the pre-grasp position -----------------------------------------------
     	#sss.move("sdh", "cylopen")
         
+        print("configuration[0] is %s", userdata.grasp_configuration[1])
+        print('configuration id is: %s', userdata.grasp_configuration_id )
+        
         pre_p = userdata.grasp_configuration[userdata.grasp_configuration_id].pre_grasp.position
         g_p = userdata.grasp_configuration[userdata.grasp_configuration_id].grasp.position
         
         category = grasping_functions.get_grasp_category(pre_p , g_p);
         
         if category == "TOP" or category == "DOWN":
-            userdata.grasp_categorisation == 'top'
+            userdata.grasp_categorisation = 'top'
             arm_handle=sss.move("sdh", "spheropen")
         else:
-            userdata.grasp_categorisation == 'side'
+            userdata.grasp_categorisation = 'side'
             arm_handle=sss.move("sdh", "cylopen")
         arm_handle.wait()
         rospy.sleep(2)
@@ -140,55 +150,56 @@ class srs_grasp(smach.State):
     	grasp_stamped.pose.position.y += offset_y
     	grasp_stamped.pose.position.z -= offset_z
     	"""
-    
-        """
-        #no need, shifted to grasp select or arm planning state
-    	sol = False
-    	for i in range(0,10):
-    		(pre_grasp_conf, error_code) = grasping_functions.callIKSolver(current_joint_configuration, pre_grasp_stamped)
-    		if(error_code.val == error_code.SUCCESS):	
-    			for j in range(0,10):	
-    				(grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, grasp_stamped)
-    				sol = True
-    				break
-    		if sol:
-    			break;
-        """
-     
-    
-        # Arm is in pre_grasp already
-    	# arm_handle = sss.move("arm", [pre_grasp_conf], False)  
-        # arm_handle.wait();
-    	# rospy.sleep(2);
-        arm_handle = sss.move("arm", [grasp_conf], False)
-        arm_handle.wait()
-        rospy.sleep(2)
-        #Close SDH based on the grasp configuration to grasp.
-        arm_handle = sss.move("sdh", [list(userdata.grasp_configuration[userdata.grasp_configuration_id].sdh_joint_values)], False)
-        arm_handle.wait()
-        rospy.sleep(2)
+
+        global current_joint_configuration
         
-        #TODO: Confirm the grasp based on force feedback
-        successful_grasp = grasping_functions.sdh_tactil_sensor_result()
-        
-            
-        if successful_grasp == True:
-            return 'succeeded'
+        sol = False
+        for i in range(0,10):
+            (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(current_joint_configuration, pre_grasp_stamped)
+            if(error_code.val == error_code.SUCCESS):
+                for j in range(0,10):
+                    (grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, grasp_stamped)
+                    sol = True
+                    break
+                if sol:
+                    break;
+
+        if not sol:
+            return 'failed';
         else:
-            #TODO: Regrasp (close MORE the fingers)
-            regrasp = list(userdata.grasp_configuration.sdh_joint_values)
-            regrasp[2] -= 0.1
-            regrasp[4] -= 0.1
-            regrasp[6] -= 0.1
-            arm_handle = sss.move("sdh", [regrasp], False)
-            arm_handle.wait()
-    
-            successful_regrasp =  grasping_functions.sdh_tactil_sensor_result()
-            if successful_regrasp == True:
+            arm_handle = sss.move("arm", [pre_grasp_conf], False)
+            arm_handle.wait();
+            rospy.sleep(2);
+            arm_handle = sss.move("arm", [grasp_conf], False)
+            arm_handle.wait();
+            rospy.sleep(2);
+
+            #Close SDH based on the grasp configuration to grasp.
+            arm_handle = sss.move("sdh", [list(userdata.grasp_configuration[userdata.grasp_configuration_id].sdh_joint_values)], False)
+            arm_handle.wait();
+            rospy.sleep(2);
+
+            #TODO: Confirm the grasp based on force feedback
+            successful_grasp = grasping_functions.sdh_tactil_sensor_result();
+
+            if successful_grasp:
                 return 'succeeded'
             else:
-                return 'not_completed'
-                #return 'failed'
+                #TODO: Regrasp (close MORE the fingers)
+                regrasp = list(userdata.grasp_configuration.sdh_joint_values)
+                regrasp[2] -= 0.1
+                regrasp[4] -= 0.1
+                regrasp[6] -= 0.1
+                arm_handle = sss.move("sdh", [regrasp], False)
+                arm_handle.wait();
+                successful_regrasp = grasping_functions.sdh_tactil_sensor_result();
+                if successful_regrasp:
+                    return 'succeeded'
+                else:
+                    return 'failed'
+                    #return 'failed'
+        
+
 
 # estimate the best grasp position
 class grasp_base_pose_estimation(smach.State):

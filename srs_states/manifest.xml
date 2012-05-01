@@ -24,10 +24,15 @@
   <depend package="kinematics_msgs"/>
   <depend package="srs_object_verification"/>
   <depend package="srs_assisted_detection"/>
-  <depend package="srs_grasping"/>
-  <depend package="srs_assisted_arm_navigation"/>
-  <depend package="srs_interaction_primitives"/>
   <depend package="srs_knowledge"/>
+
+  <!--Start-->
+  <!--Packages removed for simplifying the testing process, they will be loaded dynamicly within the states-->
+  <!--depend package="srs_grasping"/-->
+  <!--depend package="srs_assisted_arm_navigation"/-->
+  <!--depend package="srs_interaction_primitives"/-->
+  <!--End-->
+
 </package>
 
 

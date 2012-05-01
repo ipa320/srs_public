@@ -261,23 +261,18 @@ void CArmManipulationControls::NewThread() {
 
    if (success) {
 
-     m_button_new->Enable(false);
      m_button_plan->Enable(true);
-     m_button_play->Enable(false);
      m_button_reset->Enable(true);
-     m_button_success->Enable(false);
-     m_button_repeat->Enable(true);
+
+     if (goal_pregrasp) m_button_repeat->Enable(true);
+
      m_button_failed->Enable(true);
-     m_button_switch->Enable(false);
+
 
    } else {
 
      m_button_new->Enable(true);
-     m_button_plan->Enable(false);
-     m_button_play->Enable(false);
-     m_button_reset->Enable(false);
-     m_button_repeat->Enable(true);
-     m_button_success->Enable(false);
+     if (goal_pregrasp) m_button_repeat->Enable(true);
      m_button_failed->Enable(true);
 
    }
@@ -302,7 +297,14 @@ void CArmManipulationControls::OnNew(wxCommandEvent& event)
   /// wait for some time
   if (t_new.timed_join(td)) {
 
+    m_button_plan->Enable(false);
+    m_button_reset->Enable(false);
     m_button_new->Enable(false);
+    m_button_play->Enable(false);
+    m_button_success->Enable(false);
+    m_button_switch->Enable(false);
+    m_button_repeat->Enable(false);
+
     m_text_status->SetLabel(wxString::FromAscii("status: Please wait..."));
 
     t_new = boost::thread(&CArmManipulationControls::NewThread,this);
@@ -625,6 +627,10 @@ void CArmManipulationControls::OnSuccess(wxCommandEvent& event)
    m_button_success->Enable(false);
    m_button_failed->Enable(false);
    m_button_repeat->Enable(false);
+   m_button_switch->Enable(true);
+
+   goal_pregrasp = false;
+   goal_away = false;
 
 }
 
@@ -659,7 +665,11 @@ void CArmManipulationControls::OnFailed(wxCommandEvent& event)
 
    m_button_success->Enable(false);
    m_button_repeat->Enable(false);
+   m_button_repeat->Enable(false);
+   m_button_switch->Enable(true);
 
+   goal_pregrasp = false;
+   goal_away = false;
 
 }
 
@@ -694,6 +704,11 @@ void CArmManipulationControls::OnRepeat(wxCommandEvent& event)
 
    m_button_failed->Enable(false);
    m_button_success->Enable(false);
+   m_button_repeat->Enable(false);
+   m_button_switch->Enable(true);
+
+   goal_pregrasp = false;
+   goal_away = false;
 
 
 }

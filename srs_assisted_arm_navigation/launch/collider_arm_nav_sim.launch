@@ -5,7 +5,7 @@
   <!-- Configuration for COB, bringup simulation -->
   <include file="$(find cob_default_robot_config)/upload_param.launch" />
   <include file="$(find cob_default_env_config)/upload_param.launch" />
-  <include file="$(find cob_navigation_global)/launch/2dnav_dwa.launch" />
+  <include file="$(find cob_navigation_global)/launch/2dnav_ros.launch" />
   <include file="$(find cob_bringup_sim)/launch/robot.launch" />
   
   <!-- start COB script server -->

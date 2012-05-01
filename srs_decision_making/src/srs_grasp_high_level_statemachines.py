@@ -69,7 +69,7 @@ try:
     #grasp state from ROB, need working openrave
     from srs_grasp_states import *
 except ImportError:
-    rospy.logwarn ('Package srs_grasping NOT ready! You can NOT use srs grasp')
+    rospy.logwarn ('Package srs_grasping NOT ready! You can only use simple grasp NOT srs grasp')
     # the package is not ready use dummy function instead
     from srs_grasp_dummy_states import *
     
@@ -178,7 +178,7 @@ class sm_srs_grasp_assisted (smach.StateMachine):
         self.userdata.grasp_configuration = ""   #list of possible grasp configuration
         self.userdata.poses = ""                 #list of pre grasp pose of the above configuration
         self.userdata.base_pose = ""             #best base pose for grasp
-        self.userdata.index_of_the_selected_pose = -1   #the id of the pre grasp which has been reached
+        self.userdata.index_of_the_selected_pose = 1   #the id of the pre grasp which has been reached
         self.pose_of_the_target_object = ''
         self.bb_of_the_target_object = ''
         
@@ -230,11 +230,11 @@ class sm_srs_grasp_planned (smach.StateMachine):
         self.userdata.grasp_configuration = ""   #list of possible grasp configuration
         self.userdata.poses = ""                 #list of pre grasp pose of the above configuration
         self.userdata.base_pose = ""             #best base pose for grasp
-        self.userdata.index_of_the_selected_pose = -1   #the id of the pre grasp which has been reached
+        self.userdata.index_of_the_selected_pose = 0   #the id of the pre grasp which has been reached, the default value is the first one
         
         self.max_retries = 5  # default value for max retries 
         self.detection_type = 'simple'
-
+                   
         try:
             self.detection_type = rospy.get_param("srs/detection_type")
         except Exception, e:
@@ -244,14 +244,34 @@ class sm_srs_grasp_planned (smach.StateMachine):
             self.max_retries = rospy.get_param("srs/common/grasp_max_retries")
         except Exception, e:
             rospy.INFO('can not read parameter of max retries, use the default value')
+            
+        
+        step_after_grasp_select = 'GRASP_SRS_GRASP'
+        
+        self.ipa_arm_navigation = 'False'
+        
+        #default value is failed, would be replaced by proper value below:
+        self.step_after_grasp_select = 'failed'
+        
+        try:
+            self.ipa_arm_navigation = rospy.get_param("srs/ipa_arm_navigation")
+        except Exception, e:
+            rospy.INFO('can not read parameter of srs/ipa_arm_navigation, use the default value planned arm navigation disabled')
+        
+        if self.ipa_arm_navigation == 'True':
+            #move arm planned before grasp
+            step_after_grasp_select = 'GRASP_MOVE_ARM'
+        else:
+            #move arm unplanned before grasp
+            step_after_grasp_select = 'GRASP_SRS_GRASP'
         
         
         if self.detection_type == 'simple':
             with self:          
                 #guided grasp with simple detection        
                 smach.StateMachine.add('GRASP_SELECT', select_srs_grasp(),
-                    transitions={'succeeded':'GRASP_MOVE_ARM', 'not_possible':'GRASP_BEST_BASE_POSE_ESTIMATION', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'grasp_configs':'grasp_configuration', 'poses':'poses', 'object':'target_object', 'target_object_id':'target_object_id'})
+                    transitions={'succeeded':step_after_grasp_select, 'not_possible':'GRASP_BEST_BASE_POSE_ESTIMATION', 'failed':'failed', 'preempted':'preempted'},
+                    remapping={'grasp_configuration':'grasp_configuration', 'poses':'poses', 'object':'target_object', 'target_object_id':'target_object_id'})
             
                 smach.StateMachine.add('GRASP_MOVE_ARM', move_arm_planned(),
                     transitions={'succeeded':'GRASP_SRS_GRASP', 'not_completed':'GRASP_BEST_BASE_POSE_ESTIMATION', 'failed':'failed', 'preempted':'preempted'},
@@ -277,7 +297,7 @@ class sm_srs_grasp_planned (smach.StateMachine):
             with self: 
                 # guided grasp with assisted detection
                 smach.StateMachine.add('GRASP_SELECT', select_srs_grasp(),
-                    transitions={'succeeded':'GRASP_MOVE_ARM', 'not_possible':'GRASP_BEST_BASE_POSE_ESTIMATION', 'failed':'failed', 'preempted':'preempted'},
+                    transitions={'succeeded':step_after_grasp_select, 'not_possible':'GRASP_BEST_BASE_POSE_ESTIMATION', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'grasp_configuration':'grasp_configuration', 'poses':'poses', 'object':'target_object', 'target_object_id':'target_object_id'})
             
                 smach.StateMachine.add('GRASP_MOVE_ARM', move_arm_planned(),

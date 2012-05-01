@@ -176,6 +176,9 @@ protected:
 	/// Remove cube as a service - callback
 	bool removeCubeCB( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res );
 
+	/// For debugging purpouses - add cubical interactive marker to the scene
+	void addCubeGizmo( const geometry_msgs::Pose & pose, const geometry_msgs::Point & size );
+
 
 protected:
 	///

@@ -30,6 +30,7 @@
 
 #include <but_server/octonode.h>
 #include <boost/signal.hpp>
+#include <boost/thread/mutex.hpp>
 
 // Small double number
 #define SMALL_DOUBLE double(0.00000001);
@@ -340,6 +341,9 @@ namespace srs
 
 		/// Data changed signal
 		tSigDataHasChanged m_sigDataChanged;
+
+		/// You can use this mutex to lock data
+		boost::mutex m_lockData;
 	};
 
 } // namespace srs

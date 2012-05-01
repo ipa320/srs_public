@@ -36,6 +36,7 @@
 
 #define POINTCLOUD_CENTERS_PUBLISHER_NAME std::string("butsrv_pointcloud_centers")
 #define SUBSCRIBER_POINT_CLOUD_NAME std::string("/cam3d/rgb/points")
+//#define SUBSCRIBER_POINT_CLOUD_NAME std::string("/cam3d/depth/points_filtered2")
 #define DEFAULT_FRAME_ID std::string("/head_cam3d_link")
 #define BASE_FRAME_ID std::string("base_footprint")
 
@@ -233,7 +234,7 @@ void srs::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::C
 	/*
 	pcl::fromROSMsg(*cloud, *m_data);
 
-*/
+/*/
 	pcl::PointCloud< pcl::PointXYZRGB >::Ptr bufferCloud( new pcl::PointCloud< pcl::PointXYZRGB > );
 
 	pcl::fromROSMsg(*cloud, *bufferCloud);

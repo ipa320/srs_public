@@ -197,7 +197,17 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	MoveAndDetectionActionUnit mdAction = new MoveAndDetectionActionUnit(posList, targetContent, hhid, workspace.asResource().getLocalName());
 	
 	// create MoveAndGraspActionUnit
-	MoveAndGraspActionUnit mgAction = new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
+	HighLevelActionUnit mgAction = null;
+	//new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
+	if(this.graspType == GetObjectTask.GraspType.MOVE_AND_GRASP) {
+	    mgAction = new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
+	}
+	else if(this.graspType == GetObjectTask.GraspType.JUST_GRASP) {
+	    mgAction = new JustGraspActionUnit(targetContent, hhid, "side", workspace.asResource().getLocalName());
+	}
+	else {
+	    mgAction = new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
+	}
 
 	// create PutOnTrayActionUnit
 	PutOnTrayActionUnit trayAction = new PutOnTrayActionUnit("side");

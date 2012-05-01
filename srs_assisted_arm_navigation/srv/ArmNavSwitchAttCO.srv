@@ -1,0 +1,4 @@
+bool state # true=attached collision object is on
+---
+bool completed
+string msg

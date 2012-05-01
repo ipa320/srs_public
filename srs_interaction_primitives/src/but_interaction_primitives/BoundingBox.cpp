@@ -230,7 +230,7 @@ void BoundingBox::createBoundingBoxControl()
   wire_.color.r = color_.b;
   wire_.color.g = color_.r;
   wire_.color.b = color_.g;
-  wire_.color.a = 1.0;
+  wire_.color.a = BBOX_MAX_ALPHA;
   wire_.scale.x = 0.002;
 
   p1.x = -sx;

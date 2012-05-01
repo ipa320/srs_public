@@ -45,8 +45,8 @@ if __name__ == '__main__':
     name = "object"
     
     # remove old objects from scene
-    rospy.wait_for_service('interaction_primitives/remove_primitive')
-    remove_object = rospy.ServiceProxy('interaction_primitives/remove_primitive', RemovePrimitive)
+    rospy.wait_for_service('but_interaction_primitives/remove_primitive')
+    remove_object = rospy.ServiceProxy('but_interaction_primitives/remove_primitive', RemovePrimitive)
     try:
         resp = remove_object(name)
         print "Deleted"
@@ -54,18 +54,22 @@ if __name__ == '__main__':
         print "Not deleted"
         pass
     
-    rospy.wait_for_service('interaction_primitives/add_object')
+    rospy.wait_for_service('but_interaction_primitives/add_object')
     #add_object = rospy.ServiceProxy('interaction_primitives/add_object', AddObject)
     #add_object('/world', name, '', 'package://cob_gazebo_objects/Media/models/milk.dae', True, ColorRGBA(), Pose(), Vector3())
-    add_object = rospy.ServiceProxy('interaction_primitives/add_object', AddObject)
-    scale = Vector3()
-    scale.x = 0.001;
-    scale.y = 0.001;
-    scale.z = 0.001;
-    add_object('/world', name, "Detected milk", Pose(), scale, ColorRGBA(0,1,1,1), None, 'package://cob_gazebo_objects/Media/models/milk.dae', True)
+    add_object = rospy.ServiceProxy('but_interaction_primitives/add_object', AddObject)
     
-    rospy.wait_for_service('interaction_primitives/set_pregrasp_position')
-    set_pregrasp = rospy.ServiceProxy('interaction_primitives/set_pregrasp_position', SetPreGraspPosition)
+    box_min = (-0.06, -0.095, 0, 1)
+    box_max = (0.06, 0.095, 0.2, 1)
+    scale = Vector3()
+    scale.x = 0.5*(box_max[0] - box_min[0])
+    scale.y = 0.5*(box_max[1] - box_min[1])
+    scale.z = box_max[2]
+
+    add_object('/sdh_palm_link', name, "Detected milk", Pose(), scale, ColorRGBA(0,1,1,1), None, 'package://cob_gazebo_objects/Media/models/milk.dae', True)
+    
+    rospy.wait_for_service('but_interaction_primitives/set_pregrasp_position')
+    set_pregrasp = rospy.ServiceProxy('but_interaction_primitives/set_pregrasp_position', SetPreGraspPosition)
     set_pregrasp(name, 1, Pose(Vector3(0.1, 0.1, 0.1), Quaternion(0.2, 0.7, 0.6, 0.3)))
     set_pregrasp(name, 2, Pose(Vector3(0.3, 0.3, 0.1), Quaternion(0.8, -0.4, 0.9, 0.7)))
     set_pregrasp(name, 3, Pose(Vector3(-0.1, -0.1, -0.1), Quaternion(-0.1, 0, -0.3, 0)))

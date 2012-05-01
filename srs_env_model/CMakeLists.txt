@@ -50,6 +50,9 @@ set( SERVER_SOURCES src/but_server/servernode.cpp
                     src/but_server/plugins/LimitedPointCloudPlugin.cpp
                     src/but_server/plugins/ObjTreePlugin.cpp
                     src/but_server/plugins/OldIMarkersPlugin.cpp
+                    src/but_server/plugins/OctomapPluginTools/TestingOrientedBox.cpp
+                    src/but_server/plugins/OctomapPluginTools/TestingPlanes.cpp
+                    src/but_server/plugins/OctomapPluginTools/TestingPolymesh.cpp
                     )
 
 set( OBJTREE_SOURCE_FILES src/but_server/objtree/bbox.cpp

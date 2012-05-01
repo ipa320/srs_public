@@ -65,8 +65,11 @@ void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedbac
       pose_change.orientation.z = pose_.orientation.z - object.pose.orientation.z;
       pose_change.orientation.w = pose_.orientation.w - object.pose.orientation.w;
 
-      pose_ = object.pose;
-      object_.pose = pose_;
+      pose_ = feedback->pose;
+      frame_id_ = feedback->header.frame_id;
+
+      insert();
+      server_->applyChanges();
 
       updatePublisher_->publishPoseChanged(object.pose, pose_change);
     }
@@ -75,12 +78,12 @@ void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedbac
     ROS_WARN("Cannot find object in IM Server!");
 
   // Transfer object into IMS frame
-  if (feedback->header.frame_id != frame_id_)
-  {
-    frame_id_ = feedback->header.frame_id;
-    pose_ = object.pose;
-    insert();
-  }
+  /* if (feedback->header.frame_id != frame_id_)
+   {
+   frame_id_ = feedback->header.frame_id;
+   pose_ = object.pose;
+   insert();
+   }*/
 }
 
 void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)

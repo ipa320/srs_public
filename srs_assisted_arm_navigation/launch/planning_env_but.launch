@@ -41,6 +41,7 @@
     <param name="pointcloud_subscriber" value="/cam3d/depth/points_filtered2"/>
     <param name="max_range" type="double" value="2.5"/>
     <param name="pointcloud_min_z" value="0.2" type="double"/>
+    <param name="resolution" value="0.025" type="double"/>
   </node>
 	
 	</group>

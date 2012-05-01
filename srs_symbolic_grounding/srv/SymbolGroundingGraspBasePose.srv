@@ -1,6 +1,8 @@
-int32 grasp
-geometry_msgs/Pose obj_pose
-geometry_msgs/Pose2D rb_pose
+geometry_msgs/Pose target_obj_pose
+SRSSpatialInfo parent_obj_geometry
+SRSSpatialInfo[] furniture_geometry_list
 ---
+bool obstacle_check
 float32 reach
-geometry_msgs/Pose2D gbp
+geometry_msgs/Pose2D grasp_base_pose
+

@@ -272,6 +272,7 @@ class goal_structure():
         
     def get_robot_pos(self):
         try:
+            #listener.waitForTransform("/map", "/base_link", rospy.Time(0), rospy.Duration(4.0))
             (trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
         except rospy.ROSException, e:
             print "Transformation not possible: %s"%e

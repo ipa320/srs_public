@@ -51,7 +51,7 @@ class detect_object(smach.State):
     def execute(self, userdata):
 
         global current_task_info
-	userdata.object_name = "milk"
+	    #userdata.object_name = "milk"
         # if the object has been identified, and there was no base movement of grasp, then no need to detect again
         if current_task_info.get_object_identification_state() == True:
             userdata.object_pose = self.the_object_pose
@@ -92,7 +92,7 @@ class detect_object(smach.State):
 
         # make the robot ready to inspect the scene
         if self.retries == 0: # only move arm, sdh and head for the first try
-            sss.say(["I will now search for the " + object_name + "."],False)
+            sss.say([current_task_info.speaking_language['Search'] + object_name + "."],False)
             handle_arm = sss.move("arm","folded-to-look_at_table",False)
             handle_torso = sss.move("torso","shake",False)
             handle_head = sss.move("head","back",False)

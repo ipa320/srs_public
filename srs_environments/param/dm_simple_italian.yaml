@@ -1,5 +1,5 @@
-srs/language: 'English'
+srs/language: 'Italian'
 srs/grasping_type: 'Simple'
 srs/detection_type: 'Simple' 
+srs/enviroment_confirmation: 'False'
 srs/linear_travel_threshold: 0.5
-srs/nav_params: {max_dis_linear_nav: 10}

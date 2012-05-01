@@ -160,7 +160,7 @@ public class KnowledgeEngine
 	}
 
 	////////  TO REMOVE ::: ONLY FOR TESTING
-	//this.testFunction();
+	this.testFunction();
 	////////  END:::: TESTING
 
 	ros.spin();
@@ -212,18 +212,29 @@ public class KnowledgeEngine
 	getRoomsOnMapService = config.getProperty("getRoomsOnMapService", "get_rooms_on_map");
 	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
 
-	mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
-	
+	graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
+
+	//mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
+	mapName = config.getProperty("map_name", "ipa-kitchen-map");
+
+	String robotName = config.getProperty("robot_name",  System.getenv("ROBOT"));
+	/*
 	if(ontoDB.getNamespaceByPrefix(mapNamespacePrefix) != null) {
 	    mapNamespace = ontoDB.getNamespaceByPrefix(mapNamespacePrefix);
 	    System.out.println("Map Name Space: " + mapNamespace);
 	    System.out.println("Map Name Space Prefix : " + mapNamespacePrefix);
 	}
+	*/
 
+	mapNamespace = config.getProperty("env_namespace", "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#");
+	globalNamespace = config .getProperty("ont_namespace", "http://www.srs-project.eu/ontologies/srs.owl#");
+	
 	//ontoQueryUtil = new OntoQueryUtil(mapNamespace, globalNamespace);
 	OntoQueryUtil.ObjectNameSpace = mapNamespace;
 	OntoQueryUtil.GlobalNameSpace = globalNamespace;
-	OntoQueryUtil.MapName = mapNamespacePrefix;
+	//OntoQueryUtil.MapName = mapNamespacePrefix;
+	OntoQueryUtil.MapName = mapName;
+	OntoQueryUtil.RobotName = robotName;
     }
 
     public void testOnto(String className)
@@ -253,7 +264,7 @@ public class KnowledgeEngine
     {
 	QuerySparQL.Response re = new QuerySparQL.Response();
 	String queryString = req.query;
-	System.out.println(queryString);
+	//System.out.println(queryString);
 
 	re.result = ontoDB.executeQuery(queryString);
 	return re;
@@ -380,8 +391,20 @@ public class KnowledgeEngine
 		if(request.parameters.size() == 0) {
 
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    GetObjectTask got = new GetObjectTask(request.task, request.content);
-		    currentTask = (Task)got;
+		    GetObjectTask got = null;
+		    if(this.graspActionMode.equals("move_and_grasp")) {
+			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else if(this.graspActionMode.equals("just_grasp")) {
+			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else {
+			/// default
+			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
 		}
 		else {	
@@ -407,8 +430,20 @@ public class KnowledgeEngine
 	    try{
 		if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
-		    currentTask = (Task)got;
+		    SearchObjectTask got = null;
+		    if(this.graspActionMode.equals("move_and_grasp")) {
+			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else if(this.graspActionMode.equals("just_grasp")) {
+			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else {
+			/// default
+			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
 		    System.out.println("Created CurrentTask " + "search " + request.content);	    
 		}
 		else {	
@@ -433,8 +468,20 @@ public class KnowledgeEngine
 	    try{
 		if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    FetchObjectTask got = new FetchObjectTask(request.task, request.content, request.userPose);
-		    currentTask = (Task)got;
+		    FetchObjectTask got = null;
+		    if(this.graspActionMode.equals("move_and_grasp")) {
+			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else if(this.graspActionMode.equals("just_grasp")) {
+			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.JUST_GRASP);
+			currentTask = (Task)got;
+		    }
+		    else {
+			/// default
+			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			currentTask = (Task)got;
+		    }
 		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
 		}
 		else if (request.parameters.size() == 2) {	
@@ -739,15 +786,20 @@ public class KnowledgeEngine
     private GetObjectsOnTray.Response handleGetObjectsOnTray(GetObjectsOnTray.Request request)
     {
 	GetObjectsOnTray.Response res = new GetObjectsOnTray.Response();
+	String mapName = request.map;
 
-	String targetContent = "kitchen";
+	//String targetContent = "kitchen";
+	// + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n"
+
 	String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
 	    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-	    + "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n"
+	    + "PREFIX mapname: " + "<" + OntoQueryUtil.ObjectNameSpace + ">\n"
 	    + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
-	String queryString = "SELECT ?objs ?tray WHERE { "
-	    + "?tray rdf:type srs:CobTray . "
-	    + "?objs srs:SpatiallyRelated ?tray . "
+	String queryString = "SELECT DISTINCT ?objs ?tray WHERE { "
+	    + "?tray rdf:type srs:COBTray . "
+	    + "<" + OntoQueryUtil.ObjectNameSpace + OntoQueryUtil.RobotName + ">"
+	    + " srs:hasPart ?tray . " 
+	    + "?objs srs:spatiallyRelated ?tray . "
 	    + "}";
 
 	if (this.ontoDB == null) {
@@ -756,26 +808,39 @@ public class KnowledgeEngine
 	}
 	
 	try {
-	    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix
-								   + queryString);
-	    
+	    ArrayList<QuerySolution> rset = ontoDB.executeQueryRaw(prefix + queryString);
+	    if (rset.size() == 0) {
+		ros.logInfo("No found from database");
+	    }
+
+	    for(int i = 0; i < rset.size(); i++) {
+		QuerySolution qs = rset.get(i);
+		RDFNode rn = qs.get("objs");
+		Individual tmpInd = KnowledgeEngine.ontoDB.getIndividual(rn.toString());
+		res.objects.add(rn.asResource().getLocalName());
+		res.classesOfObjects.add(tmpInd.getRDFType(true).getLocalName());
+	    }
+	    /*
 	    if (rset.size() == 0) {
 		ros.logInfo("No found from database");
 	    }
 	    else {
 		System.out.println("WARNING: Multiple options... ");
+		
 		QuerySolution qs = rset.get(0);
-		String objName = qs.getLiteral("objs").getString();
+		RDFNode rn = qs.get("objs");
+		
+		//String objName = qs.getLiteral("objs").getString();
 		
 		//y = qs.getLiteral("y").getFloat();
 		//theta = qs.getLiteral("theta").getFloat();
 		//System.out.println("x is " + x + ". y is  " + y
 		//		   + ". theta is " + theta);
 	    }
-	    
-	} catch (Exception e) {
+	    */
+	} 
+	catch (Exception e) {
 	    System.out.println("Exception -->  " + e.getMessage());
-	    
 	}
 
 	return res;
@@ -968,10 +1033,18 @@ public class KnowledgeEngine
     public void testFunction() {
 	//boolean b = OntoQueryUtil.computeOnSpatialRelation();
 	System.out.println("++++++++++++++++++++++++++++++++++");
-	OntoQueryUtil.computeOnSpatialRelation();
-	System.out.println("++++++++++++++++++++++++++++++++++");
-	SpatialCalculator.testTF();
+	//OntoQueryUtil.computeOnSpatialRelation();
+	//System.out.println("++++++++++++++++++++++++++++++++++");
 
+	//SpatialCalculator.testTF();
+	//	System.out.println(" ----- " + OntoQueryUtil.getFurnituresLinkedToObject("Milkbox"));
+	//System.out.println(" ----- " + OntoQueryUtil.tempGetFurnituresLinkedToObject("Milkbox"));
+
+	System.out.println("++++++++++++++++++++++++++++++++++");
+
+	//System.out.println(" ----- " + OntoQueryUtil.getFurnituresLinkedToObject("FoodVessel"));
+	//System.out.println(" ----- " + OntoQueryUtil.tempGetFurnituresLinkedToObject("FoodVessel"));
+	//OntoQueryUtil.testRemoveProperty();
     }
 
     public static void main(String[] args)
@@ -1021,11 +1094,13 @@ public class KnowledgeEngine
     private String getRoomsOnMapService = "get_rooms_on_map";
     private String getPredefinedPosesService = "get_predefined_poses";
 
-    private String mapNamespacePrefix = "ipa-kitchen-map";
+    //private String mapNamespacePrefix = "ipa-kitchen-map";
+    private String mapName = "ipa-kitchen-map";
     private String mapNamespace = "http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#";
 
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
+    private String graspActionMode = "move_and_grasp";
     private String confPath;
     //private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing

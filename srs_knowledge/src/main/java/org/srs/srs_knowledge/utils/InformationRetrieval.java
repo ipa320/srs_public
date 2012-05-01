@@ -93,7 +93,7 @@ import ros.pkg.srs_object_database_msgs.srv.GetObjectId;
 //import ros.pkg.srs_object_database_msgs.msg.*;
 
 public class InformationRetrieval 
-{    
+{
     /**
      * @param objectClassURI  the object name that the bounding box info is needed. Should be the full URI (not only the local name) 
      */

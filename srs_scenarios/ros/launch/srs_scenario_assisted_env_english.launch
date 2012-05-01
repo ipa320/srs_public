@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <launch>
+        <!-- SRS enviroment parameters -->
+	<include file="$(find srs_environments)/ros/launch/assisted_env_english.launch"/>
 
 	<!-- start Gazebo -->
 	<include file="$(find cob_bringup_sim)/launch/robot.launch"/>

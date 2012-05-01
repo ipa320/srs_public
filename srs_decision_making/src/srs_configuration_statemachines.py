@@ -83,7 +83,7 @@ class state_checking_during_paused (smach.State):
                 #reset the flag to normal
                 current_task_info.set_stop_acknowledged(True)
                 try:
-                    sss.say(["I am stopping."],False)
+                    sss.say([current_task_info.speaking_language['Stop']],False)
                 except:
                     print sys.exc_info()
                     
@@ -101,7 +101,7 @@ class state_checking_during_paused (smach.State):
             elif not current_task_info.get_pause_required():
                 #return to last operation
                 try:
-                    sss.say(["I am resuming the task."],False)
+                    sss.say([current_task_info.speaking_language['Resume']],False)
                 except:
                     print sys.exc_info()                
                 return 'resume'

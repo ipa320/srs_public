@@ -67,6 +67,7 @@ import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
+import csv
 '''
 def getWorkspaceOnMap():
 	print 'test get all workspace (furnitures basically here) from map'
@@ -116,9 +117,10 @@ def obstacleCheck(sbpl, fgl):
 			
 		#wall check
 		data = getMapClient()
+
 		#rospy.loginfo(data.map.info)
 		dist_to_walls = 0.5
-		threshold = 20
+		threshold = 10.0
 		step_angle = 45.0
 
 		index_3 = 0
@@ -126,13 +128,14 @@ def obstacleCheck(sbpl, fgl):
 			map_index_list = list()
 			n = 0
 			while n < int(360.0 / step_angle):
-				wall_check_point_x = obstacle_checked_scan_base_pose_list[index_3].x + dist_to_walls * math.sin(n * step_angle / 180.0 * math.pi)
-				wall_check_point_y = obstacle_checked_scan_base_pose_list[index_3].y + dist_to_walls * math.cos(n * step_angle / 180.0 * math.pi)
-				map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution)
+				wall_check_point_x = obstacle_checked_scan_base_pose_list[index_3].x + dist_to_walls * math.cos(n * step_angle / 180.0 * math.pi)
+				wall_check_point_y = obstacle_checked_scan_base_pose_list[index_3].y + dist_to_walls * math.sin(n * step_angle / 180.0 * math.pi)
+				#rospy.loginfo([wall_check_point_x, wall_check_point_y])
+				map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
 				map_index_list.append(map_index)
 				n += 1
 				
-			map_index = int((obstacle_checked_scan_base_pose_list[index_3].y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (obstacle_checked_scan_base_pose_list[index_3].x - data.map.info.origin.position.x) / data.map.info.resolution)
+			map_index = int((obstacle_checked_scan_base_pose_list[index_3].y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (obstacle_checked_scan_base_pose_list[index_3].x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
 			map_index_list.append(map_index)
 			#rospy.loginfo(map_index_list)
 
@@ -151,6 +154,15 @@ def obstacleCheck(sbpl, fgl):
 
 
 def handle_symbol_grounding_scan_base_pose(req):
+
+
+	#record the map for checking
+	data = getMapClient()
+	spamWriter = csv.writer(open('map_data.csv', 'wb'), delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+	for n in range(80, 250):
+		spamWriter.writerow(data.map.data[130 + 320 * n : 200 + 320 * n])
+		n += 1
+
 
 	'''	
 	#get furniture information from knowledge base
@@ -211,6 +223,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 	detection_angle = (30.0 / 180.0) * math.pi
 	camera_distance = math.sqrt((robot_h - parent_obj_h) ** 2 + (rb_distance - 0.2) ** 2)
 	detection_w = 2 * (camera_distance * math.tan(0.5 * detection_angle))	
+	rospy.loginfo(detection_w)
 
 
 
@@ -236,15 +249,14 @@ def handle_symbol_grounding_scan_base_pose(req):
 	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
-
 			scan_base_pose_1 = Pose2D()
 			scan_base_pose_1.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_1.y = parent_obj_y - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 *  detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_1.theta = parent_obj_th + math.pi
 			scan_base_pose_list_1.append(scan_base_pose_1)
 
-
-	
+		#rospy.loginfo(scan_base_pose_list_1)
+		
 				
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 			scan_base_pose_2 = Pose2D()
@@ -315,12 +327,12 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_4.y = parent_obj_y + (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
 			scan_base_pose_list_4.append(scan_base_pose_4)
-	'''	
-	rospy.loginfo([scan_base_pose_1])
-	rospy.loginfo([scan_base_pose_2])
-	rospy.loginfo([scan_base_pose_3])
-	rospy.loginfo([scan_base_pose_4])
-	'''
+		
+	rospy.loginfo(scan_base_pose_list_1)
+	rospy.loginfo(scan_base_pose_list_2)
+	rospy.loginfo(scan_base_pose_list_3)
+	rospy.loginfo(scan_base_pose_list_4)
+	
 	#obstacle check
 	obstacle_checked_scan_base_pose_list_1 = obstacleCheck(scan_base_pose_list_1, furniture_geometry_list)
 	obstacle_checked_scan_base_pose_list_2 = obstacleCheck(scan_base_pose_list_2, furniture_geometry_list)

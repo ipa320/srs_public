@@ -183,9 +183,9 @@ def obstacleCheck(gbpl, po_x, po_y, po_th, po_w, po_l, fgl):
 				map_index_list = list()
 				n = 0
 				while n < int(360.0 / step_angle):
-					wall_check_point_x = obstacle_checked_grasp_base_pose_list[index_4].x + dist_to_walls * math.sin(n * step_angle / 180.0 * math.pi)
-					wall_check_point_y = obstacle_checked_grasp_base_pose_list[index_4].y + dist_to_walls * math.cos(n * step_angle / 180.0 * math.pi)
-					map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution)
+					wall_check_point_x = obstacle_checked_grasp_base_pose_list[index_4].x + dist_to_walls * math.cos(n * step_angle / 180.0 * math.pi)
+					wall_check_point_y = obstacle_checked_grasp_base_pose_list[index_4].y + dist_to_walls * math.sin(n * step_angle / 180.0 * math.pi)
+					map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
 					map_index_list.append(map_index)
 					n += 1
 				

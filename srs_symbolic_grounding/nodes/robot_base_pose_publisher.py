@@ -59,6 +59,8 @@ roslib.load_manifest('srs_symbolic_grounding')
 from geometry_msgs.msg import *
 import rospy
 import tf
+import csv
+
 
 
 
@@ -68,6 +70,7 @@ def publisher():
 	rospy.init_node('publisher')
 	listener = tf.TransformListener()
 	listener.waitForTransform("/map", "/base_link", rospy.Time(0), rospy.Duration(4.0))
+	spamWriter = csv.writer(open('trajectory.csv', 'wb'), delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 	while not rospy.is_shutdown():
 		(trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
 		rb_pose.x = trans[0]
@@ -76,6 +79,7 @@ def publisher():
 		rb_pose.theta = rb_pose_rpy[2]
 		rospy.loginfo(rb_pose)
 		pub.publish(rb_pose)
+		spamWriter.writerow([rb_pose.x, rb_pose.y, rb_pose.theta])
 		rospy.sleep(0.5)
 if __name__ == '__main__':
 	try: 

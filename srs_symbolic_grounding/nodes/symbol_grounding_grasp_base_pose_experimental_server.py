@@ -59,21 +59,17 @@
 
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 
-from srs_symbolic_grounding.srv import *
+from srs_symbolic_grounding.srv import SymbolGroundingGraspBasePoseExperimental
 from srs_symbolic_grounding.msg import *
 from std_msgs.msg import *
 from geometry_msgs.msg import *
-from nav_msgs.msg import *
-#from srs_knowledge.msg import *
 import rospy
 import math
+
 import tf
 from tf.transformations import euler_from_quaternion
 
-
-
 '''
-#get furniture list from the knowledge base (part 1)
 def getWorkspaceOnMap():
 	print 'test get all workspace (furnitures basically here) from map'
 	try:
@@ -84,31 +80,20 @@ def getWorkspaceOnMap():
 		print "Service call failed: %s"%e
 '''
 
-
-
-
 def handle_symbol_grounding_grasp_base_pose_experimental(req):
-	
 
-	#get the robot's current pose
+
+		
+
 	rb_pose = Pose2D()
-	listener = tf.TransformListener()
-	listener.waitForTransform("/map", "/base_link", rospy.Time(0), rospy.Duration(4.0))
-	(trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
-	rb_pose.x = trans[0]
-	rb_pose.y = trans[1]
-	rb_pose_rpy = tf.transformations.euler_from_quaternion(rot)
-	rb_pose.theta = rb_pose_rpy[2]
-	rospy.sleep(0.5)
-
-	rospy.loginfo(rb_pose)
+	rospy.Subscriber("robot_base_pose", Pose2D)
+	#print rb_pose.x
 
 	#membership functions
 	mf1_x = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.75, 0.5, 0.25, 0]
 	mf1_y = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125, 0]
 	mf1_th = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
 
-	'''
 	mf2_x = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.75, 0.5, 0.25, 0]
 	mf2_y = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.84, 0.67, 0.49, 0.33, 0]
 	mf2_th = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
@@ -116,9 +101,7 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	mf3_x = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.75, 0.5, 0.25, 0]
 	mf3_y = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.84, 0.67, 0.49, 0.33, 0]
 	mf3_th = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
-	'''
-
-
+	
 	#transfrom
 	target_obj_x = req.target_obj_pose.position.x
 	target_obj_y = req.target_obj_pose.position.y
@@ -140,8 +123,7 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 
 
 	'''
-	#get furniture list from the knowledge base (part 2)
-
+	#get furniture information from knowledge base
 	workspace_info = getWorkspaceOnMap()	
 	furniture_geometry_list = list()
 	furniture_geometry_list = workspace_info.objectsInfo
@@ -182,41 +164,15 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 
 
 
-	#calculate the reachability 
+	#right grasp
 
-	best_grasp_pose_x = robot_base_pose_x - 0.8 * math.cos(robot_base_pose_th) + 0.1 * math.sin(robot_base_pose_th)
-	best_grasp_pose_y = robot_base_pose_y - 0.8 * math.sin(robot_base_pose_th) - 0.1 * math.cos(robot_base_pose_th) 
+	best_grasp_pose_x = robot_base_pose_x - 0.8 * math.cos(robot_base_pose_th) + 0.15 * math.sin(robot_base_pose_th)
+	best_grasp_pose_y = robot_base_pose_y - 0.8 * math.sin(robot_base_pose_th) - 0.15 * math.cos(robot_base_pose_th) 
 
 	delta_x = math.sqrt((target_obj_x - best_grasp_pose_x) ** 2 + (target_obj_y - best_grasp_pose_y) ** 2) * math.cos(target_obj_th - robot_base_pose_th) 
 	delta_y = math.sqrt((target_obj_x - best_grasp_pose_x) ** 2 + (target_obj_y - best_grasp_pose_y) ** 2) * math.sin(target_obj_th - robot_base_pose_th) 
-	delta_th = robot_base_pose_th - math.atan((rb_pose.y - target_obj_y) / (rb_pose.x - target_obj_x))
-	if delta_th >= 350.0 / 180.0 * math.pi:
-		delta_th -= 360.0 / 180.0 * math.pi
+	delta_th = robot_base_pose_th - parent_obj_th
 
-
-	if delta_x > 0.1 or delta_x < -0.15:
-		reach = 0
-	elif delta_y > 0.15 or delta_y < -0.1:
-		reach = 0
-	elif delta_th < -10.0 / 180.0 * math.pi or delta_th > 10.0 / 180 * math.pi:
-		reach = 0
-	else:
-		index_x = int(round(delta_x / 0.025 + 6))
-		index_y = int(round(delta_y / 0.025 + 6))
-		index_th = int(round(delta_th / (1.0 / 180.0 * math.pi) + 10)) 
-		member_x = mf1_x[index_x]
-		member_y = mf1_y[index_y]
-		member_th = mf1_th[index_th]
-		#Apply the fuzzy rule.
-		reach = min(member_x, member_y, member_th)
-		#rospy.loginfo(reach)
-
-
-
-	#calculate a list of base poses for grasping 	
-	grasp_base_pose_list = list()
-	for n in range (0,11)
-	
 
 	if 80.0 / 180.0 * math.pi <= delta_th <= 100.0 / 180.0 * math.pi:
 		delta_th = delta_th - 0.5 * math.pi
@@ -488,4 +444,3 @@ def symbol_grounding_grasp_base_pose_experimental_server():
 
 if __name__ == "__main__":
 	symbol_grounding_grasp_base_pose_experimental_server()
-	

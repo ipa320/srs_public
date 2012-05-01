@@ -36,7 +36,6 @@
 
 #define POINTCLOUD_CENTERS_PUBLISHER_NAME std::string("butsrv_pointcloud_centers")
 #define SUBSCRIBER_POINT_CLOUD_NAME std::string("/cam3d/rgb/points")
-//#define SUBSCRIBER_POINT_CLOUD_NAME std::string("/cam3d/depth/points_filtered2")
 #define DEFAULT_FRAME_ID std::string("/head_cam3d_link")
 #define BASE_FRAME_ID std::string("base_footprint")
 
@@ -52,6 +51,7 @@ srs::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bool subscri
 , m_bFilterPC(true)
 , m_pointcloudMinZ(-std::numeric_limits<double>::max())
 , m_pointcloudMaxZ(std::numeric_limits<double>::max())
+, m_bUseRGB( false )
 {
 	m_data = new tData;
 	assert( m_data != 0 );
@@ -85,6 +85,9 @@ void srs::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	// Point cloud limits
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
 	node_handle.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
+
+	// Contains input pointcloud RGB?
+	node_handle.param("input_has_rgb", m_bUseRGB, m_bUseRGB );
 
 	// Create publisher
 	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
@@ -228,19 +231,23 @@ void srs::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::C
 
 	// Convert input pointcloud
 	m_data->clear();
-//	pcl::fromROSMsg(*cloud, *m_data);
+	if( ! isRGBCloud( cloud ) )
+	{
+		pcl::PointCloud< pcl::PointXYZ >::Ptr bufferCloud( new pcl::PointCloud< pcl::PointXYZ> );
+
+		pcl::fromROSMsg(*cloud, *bufferCloud );
+		pcl::copyPointCloud< pcl::PointXYZ, tPclPoint >( *bufferCloud, *m_data );
+
+	}
+	else
+	{
+		pcl::PointCloud< pcl::PointXYZRGB >::Ptr bufferCloud( new pcl::PointCloud< pcl::PointXYZRGB > );
+
+		pcl::fromROSMsg(*cloud, *bufferCloud);
+		pcl::copyPointCloud<pcl::PointXYZRGB, tPclPoint>( *bufferCloud, *m_data );
+	}
 
 
-	/*
-	pcl::fromROSMsg(*cloud, *m_data);
-
-/*/
-	pcl::PointCloud< pcl::PointXYZRGB >::Ptr bufferCloud( new pcl::PointCloud< pcl::PointXYZRGB > );
-
-	pcl::fromROSMsg(*cloud, *bufferCloud);
-
-
-	pcl::copyPointCloud<pcl::PointXYZRGB, tPclPoint>( *bufferCloud, *m_data );
 	//*/
 
 	// If different frame id
@@ -332,5 +339,13 @@ void srs::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::C
 bool srs::CPointCloudPlugin::shouldPublish()
 {
 	return( m_publishPointCloud && m_pcPublisher.getNumSubscribers() > 0 );
+}
+
+/**
+ * Test if incomming pointcloud2 has rgb part - parameter driven
+ */
+bool srs::CPointCloudPlugin::isRGBCloud( const tIncommingPointCloud::ConstPtr& cloud )
+{
+	return m_bUseRGB;
 }
 

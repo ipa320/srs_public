@@ -26,7 +26,10 @@
 # along with this file.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import roslib; roslib.load_manifest('srs_states')
+import roslib; 
+roslib.load_manifest('srs_assisted_arm_navigation')
+roslib.load_manifest('srs_interaction_primitives')
+
 import rospy
 import smach
 import smach_ros
@@ -94,11 +97,55 @@ class coll_obj_publisher (threading.Thread):
       rospy.sleep(2)
       
     return 0
+
+# estimate the best grasp position
+class assisted_arm_navigation_prepare(smach.State):
     
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed', 'preempted'],
+            input_keys=['object'],
+            output_keys=['pose_of_the_target_object','bb_of_the_target_object'])
+        
+        self.counter = 0 
+
+
+    def execute(self, userdata):
+        
+        """
+        #object formation
+        #############
+        pose: 
+          header: 
+            seq: 0
+            stamp: 
+              secs: 139
+              nsecs: 877000000
+            frame_id: /head_color_camera_l_link
+          pose: 
+            position: 
+              x: 0.0757232808843
+              y: -0.299051730792
+              z: 1.00000055144
+            orientation: 
+              x: 0.0246255429105
+              y: 0.790639668039
+              z: 0.609547053964
+              w: -0.0522961467358
+        bounding_box_lwh: 
+          x: 0.06
+          y: 0.095
+          z: 0.2
+        """       
+        userdata.pose_of_the_target_object = userdata.object.pose
+        userdata.bb_of_the_target_object = userdata.object.bounding_box_lwh
+        return 'succeeded'
+
 
 class move_arm_to_given_positions_assisted(smach.State):
   def __init__(self):
-    smach.State.__init__(self,outcomes=['completed','not_completed','failed','pre-empted'],
+    smach.State.__init__(self,outcomes=['succeeded','not_completed','failed','preempted'],
                          input_keys=['list_of_target_positions','list_of_id_for_target_positions','name_of_the_target_object','pose_of_the_target_object','bb_of_the_target_object'],
                          output_keys=['id_of_the_reached_position'])
     

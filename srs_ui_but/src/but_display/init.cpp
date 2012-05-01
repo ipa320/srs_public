@@ -38,8 +38,8 @@ extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
 {
   reg->registerDisplay<CButDisplay> ("CButDisplay");
   reg->registerDisplay<rviz::CButPointCloud> ("CButPointCloud");
-  reg->registerDisplay<rviz::CButDistanceVisualizer> ("CButDistanceVisualizer");
-  reg->registerDisplay<rviz::CButDistanceIndicator> ("CButDistanceIndicator");
+  reg->registerDisplay<rviz::CButDistanceLinearVisualizer> ("CButDistanceLinearVisualizer");
+  reg->registerDisplay<rviz::CButDistanceCircularIndicator> ("CButDistanceCircularIndicator");
   reg->registerDisplay<rviz::CButCamDisplay> ("CButCamDisplay");
   reg->registerDisplay<CButCamCast> ("CButCamCast");
 }

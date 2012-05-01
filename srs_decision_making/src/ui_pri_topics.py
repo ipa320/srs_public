@@ -35,6 +35,13 @@ class UI_PRI_TOPICS:
         rospy.loginfo("The user will be invited to enter a new position to solve problem :")
         self.solfromUser = xsrv.errorsResponse()
         satisfaction_flag = False
+        
+        self.time_out_max = 30  
+        try:
+            self.time_out_max = rospy.get_param("srs/common/max_time_out")
+        except Exception, e:
+            rospy.loginfo("Parameter Server not ready, use default value for max time_out") 
+        
         while (not satisfaction_flag):
             rospy.loginfo("Message sent to user to ask if he wants to continue:")
             self.user_respsol = ""
@@ -43,7 +50,7 @@ class UI_PRI_TOPICS:
             self.pubUIerr.publish(message1)
             
             timeout=0
-            while (self.user_respsol =="" and timeout < 30):
+            while (self.user_respsol =="" and timeout < self.time_out_max):
                 print "waiting for response",timeout," seconds from the user"
                 timeout = timeout + 1
                 print "user_respsol is :",self.user_respsol
@@ -64,7 +71,7 @@ class UI_PRI_TOPICS:
                 #t2= raw_input()              
                 
                 timeout=0
-                while (self.user_respsol =="" and timeout < 90):
+                while (self.user_respsol =="" and timeout < 3*self.time_out_max ):
                   print "waiting for response for",timeout," seconds from the user"
                   print "user_respsol is :",self.user_respsol
                   timeout = timeout + 1

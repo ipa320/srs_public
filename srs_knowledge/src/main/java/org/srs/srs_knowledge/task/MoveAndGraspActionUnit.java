@@ -74,6 +74,14 @@ import com.hp.hpl.jena.ontology.Individual;
 public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 
     public MoveAndGraspActionUnit(Pose2D position, String objectClassName, int houseHoldId, String graspConfig) {
+	init(position, objectClassName, houseHoldId, graspConfig, "");
+    }
+
+    public MoveAndGraspActionUnit(Pose2D position, String objectClassName, int houseHoldId, String graspConfig, String workspace) {
+	init(position, objectClassName, houseHoldId, graspConfig, workspace);
+    }
+
+    private void init(Pose2D position, String objectClassName, int houseHoldId, String graspConfig, String workspace) {
 	    GenericAction ga = new GenericAction();
 	    ga.actionInfo.add("move");
 	    if(position != null) {
@@ -102,7 +110,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    else {
 		graspAct.actionInfo.add(Integer.toString(houseHoldId));
 		graspAct.actionInfo.add("");
-		ifObjectInfoSet = false;
+		ifObjectInfoSet = false;   
 	    }
 
 	    if (graspConfig != null || !graspConfig.equals("")) {
@@ -114,6 +122,8 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 		graspAct.actionInfo.add("");
 		ifObjectInfoSet = false;
 	    }
+
+	    graspAct.actionInfo.add(workspace);
 
 	    actionUnits.add(graspAct);
 
@@ -140,8 +150,6 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 		    nextActionMapIfFail[i] = COMPLETED_FAIL;  
 		}	    
 	}
-
-
     }
     
     public String getActionType() {
@@ -150,15 +158,11 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
     }
 
     public int getNextCUActionIndex(boolean statusLastStep) {
-	System.out.println(" ==> DEBUG 0");
 	if(currentActionInd == -1) {
-	    System.out.println(" ==> DEBUG 1");
 	    return 0;
 	}
-	System.out.println(" ==> DEBUG 2");
 
 	if ( currentActionInd >= 0 && currentActionInd < actionUnits.size() ) {
-	    System.out.println(" ==> DEBUG 3");
 
 	    if(statusLastStep) {
 		

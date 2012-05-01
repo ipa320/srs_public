@@ -31,6 +31,11 @@
  *------------------------------------------------------------------------------
  */
 
-// Service performing bounding box estimation
+// Services performing bounding box estimation
 const std::string BB_ESTIMATOR_Estimate_SRV("/bb_estimator/estimate_bb");
+const std::string BB_ESTIMATOR_EstimateAlt_SRV("/bb_estimator/estimate_bb_alt");
+
+// Services performing 2D ractangle estimation
+const std::string BB_ESTIMATOR_EstimateRect_SRV("/bb_estimator/estimate_rect");
+const std::string BB_ESTIMATOR_EstimateRectAlt_SRV("/bb_estimator/estimate_rect_alt");
 

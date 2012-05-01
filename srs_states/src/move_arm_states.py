@@ -15,13 +15,13 @@ from shared_state_information import *
 
 # base class for all move arm states
 class _move_arm_base(smach.State):
-   def __init__(self, additional_input_keys = []):
+    def __init__(self, additional_input_keys = []):
        smach.State.__init__(
             self,
             outcomes=['succeeded', 'not_completed','failed', 'preempted'],
             output_keys=['pose_id'],
             input_keys=['poses'] + additional_input_keys)
-
+       
     def poseStampedtoSSS(self,pose_stamped):
         pose = pose_stamped.pose
         euler = euler_from_quaternion(pose.orientation.x,pose.orientation.y,pose.orientation.z,pose.orientation.w)
@@ -73,25 +73,26 @@ class _move_arm_base(smach.State):
                 break
             else:
                 ret = 'failed'
-         return ret
+                
+        return ret
 
 
 # move arm state with flag for planning
 class move_arm(_move_arm_base):
-   def __init__(self):
-       _move_arm_base.__init__(self,['planned'])
+    def __init__(self):
+        _move_arm_base.__init__(self,['planned'])
     def execute(self, userdata):
         return self.moveArm(userdata,userdata.poses,userdata.planned)
         
 # move arm state with planning
 class move_arm_planned(_move_arm_base):
-   def __init__(self):
-       _move_arm_base.__init__(self)
-   def execute(self, userdata):
-       return self.moveArm(userdata, userdata.poses,True)
+    def __init__(self):
+        _move_arm_base.__init__(self)
+    def execute(self, userdata):
+        return self.moveArm(userdata, userdata.poses,True)
 # move arm stat without planning
 class move_arm_unplanned(_move_arm_base):
-   def __init__(self):
-       _move_arm_base.__init__(self)
-   def execute(self, userdata):
-       return self.moveArm(userdata, userdata.poses,False)
+    def __init__(self):
+        _move_arm_base.__init__(self)
+    def execute(self, userdata):
+        return self.moveArm(userdata, userdata.poses,False)

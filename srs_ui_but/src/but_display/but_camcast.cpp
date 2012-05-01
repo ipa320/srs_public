@@ -325,7 +325,7 @@ CButCamCast::CControllPane::CControllPane(wxWindow *parent, const wxString& titl
 , m_wmi( wmi )
 {
   // Create controls
-  m_button = new wxButton(this, ID_SAVE_BUTTON, wxT("Save screenshot"));
+  m_button = new wxButton(this, ID_SAVE_BUTTON, wxT("Save screenshot"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
 
   m_chkb = new wxCheckBox(this, ID_CHECKBOX, wxT("Publish images"),
       wxPoint(20, 20));
@@ -334,12 +334,12 @@ CButCamCast::CControllPane::CControllPane(wxWindow *parent, const wxString& titl
   // Create layout
   wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
   this->SetSizer(sizer);
+
   wxSizer *hsizer = new wxBoxSizer(wxHORIZONTAL);
+  hsizer->Add(m_chkb, ID_CHECKBOX, wxALIGN_LEFT);
+  hsizer->Add(m_button, ID_SAVE_BUTTON, wxALIGN_RIGHT);
 
-  sizer->Add(m_button, ID_SAVE_BUTTON, wxALIGN_RIGHT);
   sizer->Add(hsizer, 0, wxALIGN_LEFT);
-
-  hsizer->Add(m_chkb);
 
   sizer->SetSizeHints(this);
 

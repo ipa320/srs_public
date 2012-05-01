@@ -14,10 +14,7 @@
 	<depend package="geometry_msgs"/>
 	<depend package="nav_msgs"/>
 	<depend package="map_server"/>
-<<<<<<< HEAD
-=======
-	<depend package="srs_states"/>
->>>>>>> 19f9a727e8c06111dd7660122e9f83cd07f71afe
+
 	
 	
 	

@@ -347,23 +347,19 @@ def handle_symbol_grounding_grasp_base_pose(req):
 	#optimisation
 	obstacle_check = 1
 	grasp_base_pose_list = obstacleCheck(grasp_base_pose_list_1, parent_obj_x, parent_obj_y, parent_obj_th, parent_obj_w, parent_obj_l, furniture_geometry_list)
-<<<<<<< HEAD
+
 	grasp_base_pose = Pose2D()
 	#rospy.loginfo(grasp_base_pose_list)
 	if grasp_base_pose_list:
 		obstacle_check = 0
 		grasp_base_pose = grasp_base_pose_list[0]
-=======
-	#rospy.loginfo(grasp_base_pose_list)
-	if grasp_base_pose_list:
-		obstacle_check = 0
->>>>>>> 19f9a727e8c06111dd7660122e9f83cd07f71afe
+
 	else:
 		grasp_base_pose_list = obstacleCheck(grasp_base_pose_list_2, parent_obj_x, parent_obj_y, parent_obj_th, parent_obj_w, parent_obj_l, furniture_geometry_list)
 	
 	#rospy.loginfo(grasp_base_pose_list)
 	if grasp_base_pose_list:
-<<<<<<< HEAD
+
 		obstacle_check = 0
 		grasp_base_pose = grasp_base_pose_list[0]		
 	
@@ -375,12 +371,8 @@ def handle_symbol_grounding_grasp_base_pose(req):
 		
 	#return value
 	return obstacle_check, reach, grasp_base_pose
-=======
-		obstacle_check = 0		
-			
-	#return results					
-	return obstacle_check, reach, grasp_base_pose_list
->>>>>>> 19f9a727e8c06111dd7660122e9f83cd07f71afe
+
+
 
 
 

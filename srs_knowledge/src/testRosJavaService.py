@@ -152,8 +152,28 @@ def requestNewTask():
         print "Service call failed: %s"%e
 
 
-def usage():
-    return "%s [x y]"%sys.argv[0]
+def querySuperClasses():
+    rospy.wait_for_service('query_sparql')
+    try:
+        print '\n---- Try SparQL to query all instances of type Table ----'
+        spql = rospy.ServiceProxy('query_sparql', QuerySparQL)
+
+        queryString = """
+                PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>
+	        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+		PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                SELECT ?sup  WHERE { 
+		srs:Milkbox rdfs:subClassOf ?sup .
+                ?sup rdfs:subClassOf srs:GraspableObject .
+		}
+                """
+        print queryString
+	print '----\n'
+	resp1 = spql(queryString)
+        return resp1.result
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
 
 if __name__ == "__main__":
     print querySparQL()
@@ -161,6 +181,7 @@ if __name__ == "__main__":
     print queryGrippedBy()
     print queryGetWorkspace()
     print queryGetObjOnWorkspace()
+    print querySuperClasses()
     #print requestNewTask()
     #print testNextActionService([0,0,0])
     #print testNextActionService([0,0,0])

@@ -53,7 +53,9 @@ package org.srs.srs_knowledge.knowledge_engine;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.*;
 import com.hp.hpl.jena.util.FileManager;
-
+import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.SomeValuesFromRestriction;
+import com.hp.hpl.jena.ontology.Restriction;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.ResultSetFormatter;
@@ -71,8 +73,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import ros.*;
 import ros.communication.*;
-//import ros.pkg.srs_knowledge.srv.AskForActionSequence;  // deprecated
-//import ros.pkg.srs_knowledge.srv.GenerateSequence;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
@@ -118,6 +118,10 @@ public class OntoQueryUtil
 	return workspaceIndList;
     }
 
+    public static ArrayList<String> getWorkspaceNamesOfObject(String objectClassName) {
+	return OntoQueryUtil.getWorkspaceNamesOfObject(objectClassName, OntoQueryUtil.ObjectNameSpace, OntoQueryUtil.GlobalNameSpace);
+    }
+
     /**
      * e.g. get workspace of milk box
      */
@@ -138,7 +142,8 @@ public class OntoQueryUtil
 	}
 	
 	// list possible workspace(s), e.g. tables
-	ArrayList<String> otherWorkspaces = tempGetFurnituresLinkedToObject(objectClassName);
+	//ArrayList<String> otherWorkspaces = tempGetFurnituresLinkedToObject(objectClassName);
+	ArrayList<String> otherWorkspaces = getFurnituresLinkedToObject(objectClassName);
 	//workspaceList.addAll(otherWorkspaces);
 
 	Iterator<Individual> otherInstances;
@@ -174,8 +179,79 @@ public class OntoQueryUtil
         mpWorkspaces.put("Salt", mb);
         mpWorkspaces.put("Bottle", mb);
         mpWorkspaces.put("Pringles", mb);
+	mpWorkspaces.put("Medicine", mb);
+
+	ArrayList<String> mbook = new ArrayList<String>();
+	mbook.add("Table-PieceOfFurniture");
+	mbook.add("Dishwasher");
+	mbook.add("BookShelf");
+	mpWorkspaces.put("Book", mbook);
+	mpWorkspaces.put("BookCopy", mbook);
+
 	return mpWorkspaces.get(objectClassName);
     }	
+
+    private static HashSet<String> getSuperAndSubClassesOf(String classURI, String rootClassURI, boolean includeSelf) {
+	HashSet<String> ret = new HashSet<String>();
+	String nsDef = 
+	    "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+	    + " PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+	    + " PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
+	String queryString = " SELECT ?sup  WHERE {\n" 
+	    + "<" + classURI + "> rdfs:subClassOf ?sup . \n"
+	    + " ?sup rdfs:subClassOf <" + rootClassURI + "> .}\n";
+	ArrayList<QuerySolution> qr = KnowledgeEngine.ontoDB.executeQueryRaw(nsDef + queryString);
+	for(int i = 0; i < qr.size(); i++) {
+	    String tmp = qr.get(i).getResource("sup").getURI();
+	    //if(!tmp.equals(rootClassURI)) {
+	    ret.add(tmp);
+	    //}
+	}
+	if(includeSelf) {
+	    ret.add(classURI);
+	}
+	
+	return ret;
+    }
+
+    //return local names
+    public static ArrayList<String> getFurnituresLinkedToObject(String objectClassName) {
+	ArrayList<String> ret = new ArrayList<String>();
+        OntClass objClass = KnowledgeEngine.ontoDB.model.getOntClass(OntoQueryUtil.GlobalNameSpace  + objectClassName );
+	/*	
+		for(Iterator<OntProperty> pros = objClass.listDeclaredProperties(true); pros.hasNext(); ) {
+		System.out.println(pros.next().getLocalName());
+		}
+	*/
+	HashSet<String> supClasses = OntoQueryUtil.getSuperAndSubClassesOf(OntoQueryUtil.GlobalNameSpace + objectClassName, OntoQueryUtil.GlobalNameSpace + "GraspableObject", true);
+	Iterator<String> itSup = supClasses.iterator();
+	while(itSup.hasNext()) {
+	    objClass = KnowledgeEngine.ontoDB.model.getOntClass(itSup.next());
+	    for (Iterator<OntClass> supers = objClass.listSuperClasses(false); supers.hasNext(); ) {
+		OntClass sup = supers.next();
+		if (sup.isRestriction()) {
+		    if (sup.asRestriction().isSomeValuesFromRestriction()) {
+			//displayRestriction( "some", sup.getOnProperty(), sup.asSomeValuesFromRestriction().getSomeValuesFrom() );
+			//}
+			//displayRestriction( sup.asRestriction() );
+			OntProperty pro = sup.asRestriction().asSomeValuesFromRestriction().getOnProperty();
+			//System.out.println(" Found Pro --- " + pro.asResource().toString());
+			
+			if(pro.getURI().equals(OntoQueryUtil.GlobalNameSpace + "storedAtPlace")) {
+			    Resource objRes = sup.asRestriction().asSomeValuesFromRestriction().getSomeValuesFrom();
+			    ret.add(objRes.getLocalName());
+			    //System.out.println();
+			}
+		    }
+		    // displayType( supers.next() );
+		}
+	    }
+	    
+	}
+	
+	
+	return ret;
+    }
 
     public static Pose2D parsePose2D(String targetContent) {
 	Pose2D pos = new Pose2D();
@@ -200,6 +276,7 @@ public class OntoQueryUtil
 	    }
 	} else {
 	    // Ontology queries
+	    /*
 	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
 		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
 		+ "PREFIX ipa-kitchen-map: <http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#>\n";
@@ -209,6 +286,16 @@ public class OntoQueryUtil
 		+ targetContent + " srs:yCoordinate ?y . "
 		+ "ipa-kitchen-map:" + targetContent
 		+ " srs:orientationTheta ?theta .}";
+	    */
+	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+		+ "PREFIX map: <" + OntoQueryUtil.ObjectNameSpace + ">\n";
+	    
+	    String queryString = "SELECT ?x ?y ?theta WHERE { "
+		+ "map:" + targetContent
+		+ " srs:xCoordinate ?x . " 
+		+ "map:" + targetContent + " srs:yCoordinate ?y . "
+		+ "map:" + targetContent + " srs:orientationTheta ?theta .}";
 	    //System.out.println(prefix + queryString + "\n");
 	    
 	    if (KnowledgeEngine.ontoDB == null) {
@@ -255,7 +342,7 @@ public class OntoQueryUtil
     public static ArrayList<Individual> getWorkspaceByName(String objectClassName, String objectNameSpace, String globalNameSpace) { 
 	// TODO: 
 	String className = globalNameSpace + objectClassName; 
-	System.out.println(className + "  ---");
+	
 	// first, retrieve instance(s) of objectClassName
 	Iterator<Individual> workspaceIndList = KnowledgeEngine.ontoDB.getInstancesOfClass(className);
 	ArrayList<Individual> wList = new ArrayList<Individual>();
@@ -334,6 +421,8 @@ public class OntoQueryUtil
 	    Literal qw = KnowledgeEngine.ontoDB.model.createTypedLiteral(new Float(pos.orientation.w));
        	    ind.setPropertyValue(pro, qw);
 
+	    // Update symbolic spatial relation
+	    OntoQueryUtil.computeOnSpatialRelation();
 	}
 	catch(NonExistenceEntryException e) {
 	    throw e;
@@ -341,8 +430,6 @@ public class OntoQueryUtil
     
 	return true;
     }
-
-
 
     public static boolean updatePoseOfObject(Pose pos, String propertyNSURI, String objectNSURI, String objectName) throws NonExistenceEntryException {
 	return updatePoseOfObject(pos, propertyNSURI, objectNSURI + objectName);
@@ -458,7 +545,7 @@ public class OntoQueryUtil
 	for (int i = 0; i < resOBJ.objectsInfo.size(); i++) {
 	    for (int j = 0; j < resWS.objectsInfo.size(); j++) {
 		if(SpatialCalculator.ifOnObject(resOBJ.objectsInfo.get(i), resWS.objectsInfo.get(j), -1)) {
-		    System.out.println("FOUND ONE PAIR MATCH THE ON RELATIONSHIP");
+		    //System.out.println("FOUND ONE PAIR MATCH THE ON RELATIONSHIP");
 		    //TODO update rdf graph model
 		    try {
 			Individual ind1 = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + resOBJ.objects.get(i));
@@ -468,10 +555,10 @@ public class OntoQueryUtil
 			OntoQueryUtil.removeAllSubPropertiesOf(OntoQueryUtil.ObjectNameSpace + resOBJ.objects.get(i), OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
 
 			if (OntoQueryUtil.updateOnSpatialRelation(ind1, ind2) ) {
-			    System.out.println("Added Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
+			    // System.out.println("Added Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
 			}
 			else {
-			    System.out.println("CANNOT add Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
+			    //System.out.println("CANNOT add Property: Object " + resOBJ.objects.get(i) + " is aboveOf Object " + resWS.objects.get(j));
 			}
 			    
 		    }
@@ -587,7 +674,7 @@ public class OntoQueryUtil
 
     public static GetObjectsOnMap.Response getObjectsOnMapOfType(String objectTypeURI, boolean ifGeometryInfo) {
 	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
-	System.out.println(objectTypeURI + " --- ");
+	//System.out.println(objectTypeURI + " --- ");
 	Iterator<Individual> instances = KnowledgeEngine.ontoDB.getInstancesOfClass(objectTypeURI);
 	if(instances == null) {
 	    return re;
@@ -596,7 +683,7 @@ public class OntoQueryUtil
 	if(instances.hasNext()) {
 	    while (instances.hasNext()) { 
 		Individual temp = (Individual)instances.next();
-		System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
+		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		if(temp.getNameSpace().equals(ObjectNameSpace)) {
 		    re.objects.add(temp.getLocalName());
 		    re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
@@ -607,7 +694,7 @@ public class OntoQueryUtil
 			re.spatialRelatedObject.add(stm.getObject().asResource().getLocalName());
 		    }
 		    catch(Exception e) {
-			System.out.println("CAUGHT exception: " + e.toString());
+			//System.out.println("CAUGHT exception: " + e.toString());
 			re.spatialRelation.add("NA");
 			re.spatialRelatedObject.add("NA");
 		    }
@@ -616,7 +703,7 @@ public class OntoQueryUtil
 			re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
 		    }
 		    catch(Exception e) {
-			System.out.println("CAUGHT exception: " + e.toString());
+			//System.out.println("CAUGHT exception: " + e.toString());
 			re.houseHoldId.add("NA");
 		    }
 		    if(ifGeometryInfo == true) { 
@@ -646,7 +733,7 @@ public class OntoQueryUtil
 			    spatialInfo.pose.orientation.z = getFloatOfStatement(stm);
 			}
 			catch(Exception e) {
-			    System.out.println("CAUGHT exception: " + e.getMessage()+ ".. added invalid values");
+			    //System.out.println("CAUGHT exception: " + e.getMessage()+ ".. added invalid values");
 			    
 			    spatialInfo.pose.position.x = -1000;
 			    spatialInfo.pose.position.y = -1000;
@@ -687,7 +774,8 @@ public class OntoQueryUtil
 	    }
 	}
 	
-	className = className + "FoodVessel";
+	//	className = className + "FoodVessel";
+	className = className + "GraspableObject";
 
 	return OntoQueryUtil.getObjectsOnMapOfType(className, ifGeometryInfo);
 	/*
@@ -797,7 +885,7 @@ public class OntoQueryUtil
 	}
 	}
 	catch(Exception e) {
-	    System.out.println(e.toString() + "  " + e.getMessage());
+	    //System.out.println(e.toString() + "  " + e.getMessage());
 	    return;
 	}
     }
@@ -831,7 +919,7 @@ public class OntoQueryUtil
 	    OntoQueryUtil.removeAllSubPropertiesOf(targetObj, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
 
 	    String gripper = OntoQueryUtil.ObjectNameSpace + "SRSCOBGripper";
-	    System.out.println("<<<<<  " + gripper + "  >>>>>");
+	    //System.out.println("<<<<<  " + gripper + "  >>>>>");
 	    
 	    Individual gripInd = KnowledgeEngine.ontoDB.getIndividual(gripper);
 
@@ -854,7 +942,7 @@ public class OntoQueryUtil
 	    
 	}
 	catch (Exception e) {
-	    System.out.println(" ==================   " + e.getMessage() + "   " + e.toString());
+	    // System.out.println(" ==================   " + e.getMessage() + "   " + e.toString());
 	}
 	
     }

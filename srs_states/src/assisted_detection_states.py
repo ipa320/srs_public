@@ -125,6 +125,7 @@ class detect_object_assited(smach.State):
             res = detector_service(req)
             self.object_list=res.object_list
             
+            
 
             outcome= 'succeeded'
         except rospy.ServiceException, e:
@@ -187,6 +188,7 @@ class user_intervention_on_detection(smach.State):
             userdata.object=self.object
             userdata.object_pose=self.object_pose
             userdata.bb_pose=self.bbpose
+            print self.object_pose
             return outcome2
         
     def answerObjectSrv(self,req):    

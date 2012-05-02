@@ -4,4 +4,5 @@ SRSSpatialInfo[] furniture_geometry_list
 ---
 bool obstacle_check
 float32 reach
-geometry_msgs/Pose2D[] grasp_base_pose_list
+geometry_msgs/Pose2D grasp_base_pose
+

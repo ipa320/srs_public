@@ -152,13 +152,10 @@ bool addObject(AddObject::Request &req, AddObject::Response &res)
   Object * object = new Object(imServer, req.frame_id, req.name);
   if (req.resource == "")
   {
-    ROS_INFO("SHAPE");
     object->setShape(req.shape);
-    ROS_INFO("done");
   }
   else
   {
-    ROS_INFO("RESOURCE");
     object->setResource(req.resource);
     object->setUseMaterial(req.use_material);
   }

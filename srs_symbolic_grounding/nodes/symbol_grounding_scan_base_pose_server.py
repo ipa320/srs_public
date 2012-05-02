@@ -163,7 +163,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 		spamWriter.writerow(data.map.data[130 + 320 * n : 200 + 320 * n])
 		n += 1
 	'''
-	'''
+	
 	#test the map
 	data = getMapClient()
 	#test points
@@ -186,7 +186,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 	map_index = int((y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
 	rospy.loginfo(data.map.data[map_index])	
 
-	'''
+	
 
 	'''	
 	#get furniture information from knowledge base

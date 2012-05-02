@@ -448,28 +448,6 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#Stove0 -->
-
-    <owl:NamedIndividual rdf:about="&srs-milan2012;Stove0">
-        <rdf:type rdf:resource="&srs;StoveTop"/>
-        <srs:yCoord rdf:datatype="&xsd;float">-0.54</srs:yCoord>
-        <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
-        <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
-        <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
-        <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">0.6</srs:lengthOfObject>
-        <srs:widthOfObject rdf:datatype="&xsd;float">0.6</srs:widthOfObject>
-        <srs:zCoord rdf:datatype="&xsd;float">0.7</srs:zCoord>
-        <srs:heightOfObject rdf:datatype="&xsd;float">0.85</srs:heightOfObject>
-        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">3</srs:houseHoldObjectID>
-    </owl:NamedIndividual>
-    
-
-
     <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#TVConsolleMilan -->
 
     <owl:NamedIndividual rdf:about="&srs-milan2012;TVConsolleMilan">

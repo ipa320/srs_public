@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: octonode.h 752 2012-04-27 10:27:52Z xblaho02 $
+ * $Id: octonode.h 577 2012-04-12 12:38:50Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -31,16 +31,16 @@
 #include <octomap_ros/OctomapROS.h>
 #include <octomap/OcTreeStamped.h>
 
-namespace octomap {
+namespace octomap
+{
 
 /**
  * Nodes to be used in a environment model server.
  *
  */
-class EModelTreeNode: public OcTreeNodeStamped {
+class EModelTreeNode : public OcTreeNodeStamped {
 
 public:
-
 	/**
 	 * Constructor
 	 */
@@ -58,63 +58,24 @@ public:
 		return static_cast<EModelTreeNode*> (OcTreeDataNode<float>::getChild(i));
 	}
 	inline const EModelTreeNode* getChild(unsigned int i) const {
-		return static_cast<const EModelTreeNode*> (OcTreeDataNode<float>::getChild(
-				i));
+		return static_cast<const EModelTreeNode*> (OcTreeDataNode<float>::getChild(i));
 	}
 
 	//! Get color components
-	unsigned char r() const {
-		return m_r;
-	}
-	unsigned char g() const {
-		return m_g;
-	}
-	unsigned char b() const {
-		return m_b;
-	}
-	unsigned char a() const {
-		return m_a;
-	}
+	unsigned char r() const { return m_r; }
+	unsigned char g() const { return m_g; }
+	unsigned char b() const { return m_b; }
+	unsigned char a() const { return m_a; }
 
 	//! Get color components - reference version
-	unsigned char & r() {
-		return m_r;
-	}
-	unsigned char & g() {
-		return m_g;
-	}
-	unsigned char & b() {
-		return m_b;
-	}
-	unsigned char & a() {
-		return m_a;
-	}
+	unsigned char & r() { return m_r; }
+	unsigned char & g() { return m_g; }
+	unsigned char & b() { return m_b; }
+	unsigned char & a() { return m_a; }
 
 	//! Set color components
-	void setColor(unsigned char r, unsigned char g, unsigned char b,
-			unsigned char a = 255) {
-		m_r = r;
-		m_g = g;
-		m_b = b;
-		m_a = a;
-	}
-
-	// has any color been integrated? (pure white is very unlikely...)
-	inline bool isColorSet() const {
-		return ((m_r != 255) || (m_g != 255) || (m_b != 255));
-	}
-
-	// overloaded tree pruning taking care of node colors
-	bool pruneNode();
-
-	// overloaded tree expanding taking care of node colors
-	void expandNode();
-
-	// update node color
-	void updateColorChildren();
-
-	// set color to average child color
-	void setAverageChildColor();
+	void setColor( unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255 )
+	{ m_r = r; m_g = g; m_b = b; m_a = a; }
 
 protected:
 	//! Color data
@@ -127,7 +88,7 @@ protected:
  * Basic functionality is implemented in OcTreeBase.
  *
  */
-class EMOcTree: public OccupancyOcTreeBase<EModelTreeNode> {
+class EMOcTree : public OccupancyOcTreeBase <EModelTreeNode> {
 
 public:
 	//! Used point type
@@ -135,8 +96,6 @@ public:
 
 	//! Used node type
 	typedef EModelTreeNode tNode;
-
-	typedef pcl::PointCloud<pcl::PointXYZRGB> typePointCloud;
 
 public:
 
@@ -156,92 +115,32 @@ public:
 	/**
 	 * Destructor
 	 */
-	virtual ~EMOcTree() {
-	}
-	;
+	virtual ~EMOcTree(){};
 
 	/// virtual constructor: creates a new object of same type
 	/// (Covariant return type requires an up-to-date compiler)
-	EMOcTree* create() const {
-		return new EMOcTree(resolution);
-	}
+	EMOcTree* create() const {return new EMOcTree(resolution); }
 
 	/**
 	 *  Get tree type as a string.
 	 */
-	std::string getTreeType() const {
-		return "EMOcTree";
-	}
+	std::string getTreeType() const {return "EMOcTree";}
 
-	// set node color at given key or coordinate. Replaces previous color.
-	EModelTreeNode* setNodeColor(const OcTreeKey& key, const unsigned char& r,
-			const unsigned char& g, const unsigned char& b,
-			const unsigned char& a);
+	    //! \return timestamp of last update
+	    unsigned int getLastUpdateTime();
 
-	EModelTreeNode* setNodeColor(const float& x, const float& y,
-			const float& z, const unsigned char& r, const unsigned char& g,
-			const unsigned char& b, const unsigned char& a) {
-		OcTreeKey key;
-		if (!this->genKey(point3d(x, y, z), key))
-			return NULL;
-		return setNodeColor(key, r, g, b, a);
-	}
+	    void degradeOutdatedNodes(unsigned int time_thres);
 
-	// integrate color measurement at given key or coordinate. Average with previous color
-	EModelTreeNode* averageNodeColor(const OcTreeKey& key,
-			const unsigned char& r, const unsigned char& g,
-			const unsigned char& b, const unsigned char& a);
+	    virtual void updateNodeLogOdds(EModelTreeNode* node, const float& update) const;
+	    void integrateMissNoTime(EModelTreeNode* node) const;
 
-	EModelTreeNode* averageNodeColor(const float& x, const float& y,
-			const float& z, const unsigned char& r, const unsigned char& g,
-			const unsigned char& b, const unsigned char& a) {
-		OcTreeKey key;
-		if (!this->genKey(point3d(x, y, z), key))
-			return NULL;
-		return averageNodeColor(key, r, g, b, a);
-	}
-
-	// integrate color measurement at given key or coordinate.
-	// Average with previous color taking account of node probabilities
-	EModelTreeNode* integrateNodeColor(const OcTreeKey& key,
-			const unsigned char& r, const unsigned char& g,
-			const unsigned char& b, const unsigned char& a);
-
-	EModelTreeNode* integrateNodeColor(const float& x, const float& y,
-			const float& z, const unsigned char& r, const unsigned char& g,
-			const unsigned char& b, const unsigned char& a) {
-		OcTreeKey key;
-		if (!this->genKey(point3d(x, y, z), key))
-			return NULL;
-		return integrateNodeColor(key, r, g, b, a);
-	}
-
-	// update inner nodes, sets color to average child color
-	void updateInnerOccupancy();
-
-	//! \return timestamp of last update
-	unsigned int getLastUpdateTime();
-
-	void degradeOutdatedNodes(unsigned int time_thres);
-
-	virtual void
-	updateNodeLogOdds(EModelTreeNode* node, const float& update) const;
-	void integrateMissNoTime(EModelTreeNode* node) const;
-
-
-	// Overloaded. Inserts colored scan
-	void insertColoredScan(const typePointCloud& coloredScan,
-			const octomap::point3d& sensor_origin, double maxrange = -1.,
-			bool pruning = true, bool lazy_eval = false);
 
 protected:
-	void updateInnerOccupancyRecurs(EModelTreeNode* node, unsigned int depth);
-
 	/**
 	 * Static member object which ensures that this EMOcTree prototype
 	 * ends up in the classIDMapping only once
 	 */
-	class StaticMemberInitializer {
+	class StaticMemberInitializer{
 	public:
 		StaticMemberInitializer() {
 			EMOcTree* tree = new EMOcTree(0.1);
@@ -253,7 +152,7 @@ protected:
 	static StaticMemberInitializer ocTreeMemberInit;
 }; // class EMOcTree
 
-}
-; // namespace octomap
+}; // namespace octomap
 
 #endif // OCTONODE_H
+

@@ -2,11 +2,17 @@
 	<!-- Set to use simulation time -->
 	<param name="/use_sim_time" value="true"/>
 
-    <!-- Configuration for COB, bringup simulation -->
-    <include file="$(find cob_default_robot_config)/upload_param.launch" />
-    <include file="$(find cob_default_env_config)/upload_param.launch" />
-    <include file="$(find cob_navigation_global)/launch/2dnav_ros.launch" />
-    <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+	<!-- Load robot parameters -->
+	<include file="$(find cob_default_robot_config)/upload_param.launch" />
+	
+	<!-- Load world parameters -->
+	<include file="$(find cob_default_env_config)/upload_param.launch" />
+    
+	<!-- Run gazebo simulation in the default configuration -->
+	<include file="$(find cob_bringup_sim)/launch/robot.launch" />
+    
+	<!-- Launch 2d navigation -->
+	<include file="$(find cob_2dnav)/ros/launch/2dnav.launch" />
        
 	<!-- Run our dynamic scene model server node -->
 	<include file="$(find srs_env_model)/launch/only_butserver.launch"/>

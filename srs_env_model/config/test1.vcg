@@ -27,17 +27,12 @@ CButPointCloud..IntensityChannel\ Name=z
 CButPointCloud..IntensityMax\ ColorR=1
 CButPointCloud..IntensityMax\ ColorG=1
 CButPointCloud..IntensityMax\ ColorB=1
-CButPointCloud..IntensityMax\ Intensity=2,6875
+CButPointCloud..IntensityMax\ Intensity=2,625
 CButPointCloud..IntensityMin\ ColorR=0
 CButPointCloud..IntensityMin\ ColorG=0
 CButPointCloud..IntensityMin\ ColorB=0
-CButPointCloud..IntensityMin\ Intensity=0,0125
+CButPointCloud..IntensityMin\ Intensity=-0,125
 CButPointCloud..IntensityUse\ full\ RGB\ spectrum=1
-Interactive\ Markers.Enabled=1
-Interactive\ Markers.Show\ Axes=0
-Interactive\ Markers.Show\ Descriptions=1
-Interactive\ Markers.Show\ Tool\ Tips=1
-Interactive\ Markers.Update\ Topic=/but_interaction_primitives/update
 Map.Alpha=0,7
 Map.Draw\ Behind=0
 Map.Enabled=1
@@ -142,15 +137,15 @@ Robot\:\ Robot\ Model\ Link\ torso_lower_neck_tilt_linkShow\ Axes=0
 Robot\:\ Robot\ Model\ Link\ torso_lower_neck_tilt_linkShow\ Trail=0
 Robot\:\ Robot\ Model\ Link\ torso_pan_linkShow\ Axes=0
 Robot\:\ Robot\ Model\ Link\ torso_pan_linkShow\ Trail=0
+Robot\:\ Robot\ Model\ Link\ torso_tray_linkShow\ Axes=0
+Robot\:\ Robot\ Model\ Link\ torso_tray_linkShow\ Trail=0
 Robot\:\ Robot\ Model\ Link\ torso_upper_neck_tilt_linkShow\ Axes=0
 Robot\:\ Robot\ Model\ Link\ torso_upper_neck_tilt_linkShow\ Trail=0
-Robot\:\ Robot\ Model\ Link\ tray_linkShow\ Axes=0
-Robot\:\ Robot\ Model\ Link\ tray_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
 Camera\ Config=0.786001 4.82079 12.7315 -0.628793 0.114604 0.127212
-Property\ Grid\ State=selection=;expanded=CButDisplay.Enabled.CButDisplay.StatusTopStatus,CButDisplay.Enabled.CButDisplay.Camera position;scrollpos=0,0;splitterpos=150,301;ispageselected=1
+Property\ Grid\ State=selection=;expanded=.Global StatusTopStatus,CButDisplay.Enabled,CButDisplay.Enabled.CButDisplay.StatusTopStatus,CButDisplay.Enabled.CButDisplay.Camera position,CButPointCloud.Enabled;scrollpos=0,0;splitterpos=150,288;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz
@@ -171,7 +166,3 @@ ClassName=CButDisplay
 Name=CButPointCloud
 Package=srs_ui_but
 ClassName=CButPointCloud
-[Display5]
-Name=Interactive Markers
-Package=rviz
-ClassName=rviz::InteractiveMarkerDisplay

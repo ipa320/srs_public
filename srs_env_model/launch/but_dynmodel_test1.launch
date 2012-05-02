@@ -2,22 +2,25 @@
 	<!-- Set to use simulation time -->
 	<param name="/use_sim_time" value="true"/>
 
-	<!-- Configuration for COB, bringup simulation -->
+	<!-- Load robot parameters -->
 	<include file="$(find cob_default_robot_config)/upload_param.launch" />
+	
+	<!-- Load world parameters -->
 	<include file="$(find cob_default_env_config)/upload_param.launch" />
-	<include file="$(find cob_navigation_global)/launch/2dnav_ros.launch" />
+    
+	<!-- Run gazebo simulation in the default configuration -->
 	<include file="$(find cob_bringup_sim)/launch/robot.launch" />
+    
+	<!-- Launch 2d navigation -->
+	<include file="$(find cob_2dnav)/ros/launch/2dnav.launch" />
        
-	<!-- Run interaction primitives server -->
-	<node pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" name="but_interaction_primitives_service_server"/>
-
 	<!-- Run our dynamic scene model server node -->
 	<param name="but_server_node/pointcloud_min_z" value="0.0" type="double"/>
 	<param name="but_server_node/use_old_im" value="true" type="bool"/>	
 	<param name="but_server_node/resolution" value="0.025" type="double"/>	
 	<include file="$(find srs_env_model)/launch/only_butserver.launch"/>
-
+    
 	<!-- Run rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model)/config/test1.vcg"/>
+	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model)/config/majkl1.vcg"/>
 </launch>
 

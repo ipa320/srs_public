@@ -37,14 +37,11 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
-// Interactive marker
-#include <srs_interaction_primitives/AddUnknownObject.h>
 
 #define OCTOMAP_FRAME_ID std::string("/map")
 #define OCTOMAP_PUBLISHER_NAME std::string("butsrv_binary_octomap")
 #define CAMERA_INFO_TOPIC_NAME std::string("/cam3d/camera_info")
 #define MARKERS_TOPIC_NAME std::string("visualization_marker")
-#define REMOVE_CUBE_SERVICE_NAME std::string("remove_cube")
 
 void srs::COctoMapPlugin::setDefaults()
 {
@@ -212,7 +209,7 @@ void srs::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	m_serviceResetOctomap = node_handle.advertiseService("reset_octomap",
 			&srs::COctoMapPlugin::resetOctomapCB, this);
 
-	m_serviceRemoveCube =   node_handle.advertiseService( REMOVE_CUBE_SERVICE_NAME,
+	m_serviceRemoveCube =   node_handle.advertiseService( "remove_cube",
 			&srs::COctoMapPlugin::removeCubeCB, this );
 
 	// Create publisher
@@ -334,9 +331,9 @@ void srs::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf, const tPo
 	octomap::point3d sensorOrigin = octomap::pointTfToOctomap(sensorOriginTf);
 
 	double maxRange(m_mapParameters.maxRange);
-//	octomap::Pointcloud pcNonground;
-//	octomap::pointcloudPCLToOctomap( nonground, pcNonground );
-	m_data->octree.insertColoredScan(nonground, sensorOrigin, maxRange, true);
+	octomap::Pointcloud pcNonground;
+	octomap::pointcloudPCLToOctomap( nonground, pcNonground );
+	m_data->octree.insertScan( pcNonground, sensorOrigin, maxRange, true );
 }
 
 
@@ -900,62 +897,18 @@ long int srs::COctoMapPlugin::doObjectTesting( srs::CTestingObjectBase * object 
 /**
  * Remove cube as a service - callback
  */
-#define G2EPOINT( gp ) (Eigen::Vector3f( gp.x, gp.y, gp.z ))
-#define G2EQUAT( gp ) (Eigen::Quaternionf( gp.x, gp.y, gp.z, gp.w ))
 bool srs::COctoMapPlugin::removeCubeCB( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res )
 {
-
-	PERROR( "Remove cube from octomap: " << req.pose << " --- " << req.size );
-
-	// Debug - show cube position
-	// addCubeGizmo( req.pose, req.size );
-
 	if( m_removeTester != 0 )
 		delete m_removeTester;
 
-	// Test frame id
-	if( req.frame_id != m_mapParameters.frameId )
-	{
-		// Transform pose
-		geometry_msgs::PoseStamped ps, psout;
-		ps.header.frame_id = req.frame_id;
-		ps.header.stamp = m_mapParameters.currentTime;
-		ps.pose = req.pose;
-
-		m_tfListener.transformPose( m_mapParameters.frameId, ps, psout );
-		req.pose = psout.pose;
-
-		// Transform size
-		geometry_msgs::PointStamped vs, vsout;
-		vs.header.frame_id = req.frame_id;
-		vs.header.stamp = m_mapParameters.currentTime;
-		vs.point = req.size;
-
-		m_tfListener.transformPoint( m_mapParameters.frameId, vs, vsout );
-		req.size = vsout.point;
-
-		PERROR( "Transformed cube from octomap: " << req.pose << " --- " << req.size );
-	}
-
 	// Create new tester
-	m_removeTester = new srs::CTestingPolymesh( G2EPOINT( req.pose.position ), G2EQUAT( req.pose.orientation ), G2EPOINT( req.size ) );
+	m_removeTester = new srs::CTestingPolymesh( srs::CTestingPolymesh::tPoint(req.center_x, req.center_y, req.center_z),
+			srs::CTestingPolymesh::tQuaternion( req.pose_x, req.pose_y, req.pose_z, req.pose_w ),
+			srs::CTestingPolymesh::tPoint( req.size_x, req.size_y, req.size_z ));
 
 	// Set it to life
 	m_testerLifeCounter = m_testerLife;
 
 	return true;
-}
-
-/**
- * For debugging purpouses - add cubical interactive marker to the scene
- */
-void srs::COctoMapPlugin::addCubeGizmo( const geometry_msgs::Pose & pose, const geometry_msgs::Point & size )
-{
-	srs_interaction_primitives::AddUnknownObject gizmo;
-	gizmo.request.pose = pose;
-	gizmo.request.scale.x = size.x; gizmo.request.scale.y = size.y; gizmo.request.scale.z = size.z;
-	gizmo.request.frame_id = m_mapParameters.frameId;
-	gizmo.request.name = "OctomapGizmo";
-
-	ros::service::call("but_interaction_primitives/add_unknown_object", gizmo );
 }

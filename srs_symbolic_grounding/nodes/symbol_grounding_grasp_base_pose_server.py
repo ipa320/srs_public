@@ -189,7 +189,7 @@ def obstacleCheck(gbpl, po_x, po_y, po_th, po_w, po_l, fgl):
 					map_index_list.append(map_index)
 					n += 1
 				
-				map_index = int((obstacle_checked_grasp_base_pose_list[index_4].y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (obstacle_checked_grasp_base_pose_list[index_4].x - data.map.info.origin.position.x) / data.map.info.resolution)
+				map_index = int((obstacle_checked_grasp_base_pose_list[index_4].y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (obstacle_checked_grasp_base_pose_list[index_4].x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
 				map_index_list.append(map_index)
 				#rospy.loginfo(map_index_list)
 

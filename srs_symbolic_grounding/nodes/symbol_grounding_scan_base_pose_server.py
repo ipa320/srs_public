@@ -155,14 +155,38 @@ def obstacleCheck(sbpl, fgl):
 
 def handle_symbol_grounding_scan_base_pose(req):
 
-
+	'''
 	#record the map for checking
 	data = getMapClient()
 	spamWriter = csv.writer(open('map_data.csv', 'wb'), delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 	for n in range(80, 250):
 		spamWriter.writerow(data.map.data[130 + 320 * n : 200 + 320 * n])
 		n += 1
+	'''
+	'''
+	#test the map
+	data = getMapClient()
+	#test points
+	#x = 0.0 
+	#y = 0.0   #0
+	#x = 0.5
+	#y = 0.0   #0
+	#x = 0.0
+	#y = 0.5   #0
+	#x = 0.0
+	#y = -0.5   #0
+	#x = -3.2
+	#y = 0.0   #-1
+	x = -2.3
+	y = -2.0  # 0
+	
+	
 
+
+	map_index = int((y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
+	rospy.loginfo(data.map.data[map_index])	
+
+	'''
 
 	'''	
 	#get furniture information from knowledge base
@@ -223,7 +247,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 	detection_angle = (30.0 / 180.0) * math.pi
 	camera_distance = math.sqrt((robot_h - parent_obj_h) ** 2 + (rb_distance - 0.2) ** 2)
 	detection_w = 2 * (camera_distance * math.tan(0.5 * detection_angle))	
-	rospy.loginfo(detection_w)
+	#rospy.loginfo(detection_w)
 
 
 
@@ -328,10 +352,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
 			scan_base_pose_list_4.append(scan_base_pose_4)
 		
-	rospy.loginfo(scan_base_pose_list_1)
-	rospy.loginfo(scan_base_pose_list_2)
-	rospy.loginfo(scan_base_pose_list_3)
-	rospy.loginfo(scan_base_pose_list_4)
+	#rospy.loginfo(scan_base_pose_list_1)
+	#rospy.loginfo(scan_base_pose_list_2)
+	#rospy.loginfo(scan_base_pose_list_3)
+	#rospy.loginfo(scan_base_pose_list_4)
 	
 	#obstacle check
 	obstacle_checked_scan_base_pose_list_1 = obstacleCheck(scan_base_pose_list_1, furniture_geometry_list)
@@ -341,7 +365,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 
 
-	rospy.loginfo([obstacle_checked_scan_base_pose_list_1, obstacle_checked_scan_base_pose_list_2, obstacle_checked_scan_base_pose_list_3, obstacle_checked_scan_base_pose_list_4])
+	#rospy.loginfo([obstacle_checked_scan_base_pose_list_1, obstacle_checked_scan_base_pose_list_2, obstacle_checked_scan_base_pose_list_3, obstacle_checked_scan_base_pose_list_4])
 	max_len = max(len(obstacle_checked_scan_base_pose_list_1), len(obstacle_checked_scan_base_pose_list_2), len(obstacle_checked_scan_base_pose_list_3), len(obstacle_checked_scan_base_pose_list_4))
 
 

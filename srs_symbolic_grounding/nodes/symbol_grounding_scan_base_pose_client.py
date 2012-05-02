@@ -106,8 +106,8 @@ if __name__ == "__main__":
 	parent_obj_geometry.w = workspace_info.objectsInfo[6].w
 	parent_obj_geometry.h = workspace_info.objectsInfo[6].h
 
-	parent_obj_geometry.pose.position.x = 0.67
-	parent_obj_geometry.pose.position.y = 1.26
+	parent_obj_geometry.pose.position.x = -3.2
+	parent_obj_geometry.pose.position.y = -1.0
 
 	
 	

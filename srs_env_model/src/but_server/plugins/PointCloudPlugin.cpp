@@ -51,7 +51,8 @@ srs::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bool subscri
 , m_bFilterPC(true)
 , m_pointcloudMinZ(-std::numeric_limits<double>::max())
 , m_pointcloudMaxZ(std::numeric_limits<double>::max())
-, m_bUseRGB( false )
+, m_bUseRGB( true )
+, m_bRGB_byParameter(true)
 {
 	m_data = new tData;
 	assert( m_data != 0 );
@@ -87,7 +88,11 @@ void srs::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
 
 	// Contains input pointcloud RGB?
-	node_handle.param("input_has_rgb", m_bUseRGB, m_bUseRGB );
+	if( node_handle.hasParam("input_has_rgb") )
+	{
+		node_handle.param("input_has_rgb", m_bUseRGB, m_bUseRGB );
+		m_bRGB_byParameter = true;
+	}
 
 	// Create publisher
 	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
@@ -346,6 +351,24 @@ bool srs::CPointCloudPlugin::shouldPublish()
  */
 bool srs::CPointCloudPlugin::isRGBCloud( const tIncommingPointCloud::ConstPtr& cloud )
 {
-	return m_bUseRGB;
+	if(m_bRGB_byParameter)
+		return m_bUseRGB;
+
+	bool testedRgb( false );
+
+	tIncommingPointCloud::_fields_type::const_iterator i, end;
+
+	for( i = cloud->fields.begin(), end = cloud->fields.end(); i != end; ++i )
+	{
+		if( i->name == "rgb" )
+		{
+//			PERROR("HAS RGB");
+			return true;
+		}
+	}
+
+//	PERROR("NO RGB");
+
+	return false;
 }
 

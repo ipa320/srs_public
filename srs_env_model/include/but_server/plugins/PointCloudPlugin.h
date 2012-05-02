@@ -146,6 +146,9 @@ namespace srs
         //! Has input cloud rgb data?
         bool m_bUseRGB;
 
+        //! Input type was set by parameter
+        bool m_bRGB_byParameter;
+
     }; // class CPointCloudPlugin
 
     /// Declare holder object - partial specialization of the default holder with predefined connection settings

@@ -26,8 +26,13 @@ class approach_pose_without_retry(smach.State):
 
         self.pose = pose
         self.counter =0
-        self.mode = "linear"
-        #self.mode = "omni"
+        
+        self.mode = "omni" 
+        try:
+            self.mode = rospy.get_param("srs/common/default_navigation_mode")
+        except Exception, e:
+            rospy.loginfo("Parameter Server not ready, use default value for navigation") 
+        
 
     def execute(self, userdata):
         

@@ -151,7 +151,13 @@ class intervention_base_pose(smach.State):
             userdata.intermediate_pose = "kitchen"   
             return 'no_more_retry'
 
+#################################################################################
+#
+# The following state has been replaced by new high level detection state machines
+#
+#################################################################################
 
+"""
 #get a interested region from UI or KB and then pass it to the object detector
 #intervention to highlight key interested region
 class intervention_key_region(smach.State):
@@ -170,23 +176,22 @@ class intervention_key_region(smach.State):
         if userdata.semi_autonomous_mode == True:
             # user intervention is possible
             # user specify key region on interface device for detection
-            """
-            under development IPA+BAS
-            UI specify a key region based on video stream or map 
-            The key region is translated into the robot coordination to assist current detection
-            """
             userdata.key_region = ""   
             return 'no_more_retry'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
-            """
-            call srs knowledge ros service for a key region. It is then translated into the robot coordination and assist current detection
-            """
             userdata.key_region = ""   
             return 'no_more_retry'
-            
+"""
 
+#################################################################################
+#
+# The following state has been replaced by new high level grasp state machines
+#
+#################################################################################            
+
+"""
 # get a grasp configuration from UI or KB and then pass it to the manipulation module
 # user intervention on specific configuration for grasp
 class intervention_grasp_selection(smach.State):
@@ -206,24 +211,23 @@ class intervention_grasp_selection(smach.State):
         if userdata.semi_autonomous_mode == True:
             # user intervention is possible
             # user specify key region on interface device for detection
-            """
-            under development ROB+BAS
-            UI specify a grasp configuration for the next grasp
-            The configuration is passed to grasp 
-            """
             userdata.grasp_conf = "Top"   
             return 'retry'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
-            """
-            call srs knowledge ros service for a grasp conf. It is then pass to the grasp_general 
-            """
-            userdata.grasp_conf = "Top"   
-            return 'retry'
-            
-        
 
+            userdata.grasp_conf = "Top"   
+            return 'retry'        
+"""
+
+
+#################################################################################
+#
+# The following state has been replaced by new high level detection and grasp state machines
+#
+#################################################################################
+"""
 # get an action sequence from UI and then pass it to the SRS knowledge service to update the existing action sequence
 # 
 class user_intervention_action_sequence(smach.State):
@@ -238,26 +242,29 @@ class user_intervention_action_sequence(smach.State):
         
     def execute(self,userdata):
         # user specify key region on interface device for detection
-        """
-        updated action sequence for completing current task
-        """
+        
+        #updated action sequence for completing current task
+        
         userdata.action_sequence = ""   
         return 'no_more_retry'  
+        
+""" 
 
 #connection to the srs knowledge_ros_service
 class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','put_on_tray','env_object_update'],
-                             input_keys=['target_object_name','target_base_pose','target_object_pose','grasp_categorisation','target_object_pose_list','target_object_hh_id','verified_target_object_pose'],
-                             output_keys=['target_object_name',
-                                          'target_base_pose',
-                                          'semi_autonomous_mode',
-                                          'grasp_categorisation',                                          
-                                          'target_object_pose',
-                                          'target_object_hh_id',
-                                          'scan_pose_list'])
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','full_grasp', 'put_on_tray','env_update'],
+                             io_keys=['target_base_pose',
+                                        'target_object_name',
+                                        'target_object_pose',
+                                        'target_object_id',
+                                        'target_object',
+                                        'target_workspace_name',
+                                        'semi_autonomous_mode',
+                                        'grasp_categorisation',
+                                        'scan_pose_list'])
         
         
         self.pub_fb = rospy.Publisher('fb_executing_solution', Bool)
@@ -309,9 +316,10 @@ class semantic_dm(smach.State):
             elif current_task_info.last_step_info and current_task_info.last_step_info[len_step_info - 1].outcome == 'succeeded':
                 # convert to the format that knowledge_ros_service understands
                 resultLastStep = 0
-                if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_detect_asisted_pose_region':
+                if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_srs_detection':
                     print userdata.target_object_pose
                     feedback = pose_to_list(userdata)
+                    #rospy.loginfo ("Detected target_object is: %s", userdata.target_object)    
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
                 print 'Result return not_completed'
                 resultLastStep = 1
@@ -397,17 +405,59 @@ class semantic_dm(smach.State):
 
                     #userdata.target_object_name = 'milk_box'
                     userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
-		    
+                    userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
+                    
+                    # name of the workspace
+                    userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[3]
+                    #testing purpose, this value should come from knowledge service
+                    #userdata.target_workspace_name='Table0'
+                    
+                    rospy.loginfo ("target_object_name: %s", userdata.target_object_name)
+                    rospy.loginfo ("target_object_id: %s", userdata.target_object_id)
+                    rospy.loginfo ("target_workspace_name: %s", userdata.target_workspace_name)        
+                            
                     return nextStep
 		    ####  END OF HARD CODED FOR TESTING ##
 
+                elif resp1.nextAction.generic.actionInfo[0] == 'grasp':
+                    nextStep = 'simple_grasp'
+                    
+                    #userdata.target_object_name = 'milk_box'
+                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
+                    userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
+                    # name of the workspace
+                    #userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[???]
+                    #testing purpose, this value should come from knowledge service
+                    #userdata.target_workspace_name='Table0'
+                    return nextStep
+                
+                elif resp1.nextAction.generic.actionInfo[0] == 'just_grasp':
+                    nextStep = 'full_grasp'
+                    
+                    #userdata.target_object_name = 'milk_box'
+                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
+                    userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
+                    # name of the workspace
+                    userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[4]
+                    
+                    rospy.loginfo ("target_object is: %s", userdata.target_object)
+                    
+                    userdata.target_object = userdata.target_object
+                    
+                    return nextStep
+                
                 elif resp1.nextAction.generic.actionInfo[0] == 'check':
-                    nextStep = 'env_object_update'
+                    nextStep = 'env_update'
+                    
+                    scan_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
 
+                    userdata.scane_pose_list[0] = scan_base_pose                
+
+                    """
                     userdata.target_object_hh_id = 1
                     
                    # userdata.target_object_name = resp1.nextAction.generic.actionInfo[1]
-		    
+            
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
 
                     
@@ -419,18 +469,14 @@ class semantic_dm(smach.State):
                     userdata.target_object_pose.orientation.y =float(resp1.nextAction.generic.actionInfo[9])
                     userdata.target_object_pose.orientation.z = float(resp1.nextAction.generic.actionInfo[10]) 
                     userdata.target_object_pose.orientation.w =float(resp1.nextAction.generic.actionInfo[11])
+                    """
                     return nextStep
-                elif resp1.nextAction.generic.actionInfo[0] == 'grasp':
-                    nextStep = 'simple_grasp'
-                    
-                    #userdata.target_object_name = 'milk_box'
-                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
-		    
-                    return nextStep
+                
                 else:
                     print 'No valid action'
                     nextStep = 'failed'
                     return nextStep
+                
                     
             else:
                 print 'No valid actionFlags'
@@ -449,45 +495,6 @@ class semantic_dm(smach.State):
         ### End of GetNextAction######################
         ##############################################
 
-        
-        """
-        if current_task_info.task_name=="get" and current_task_info.task_parameter=="milk":
-            userdata.target_base_pose="table1"
-            userdata.target_object_name="milk_box1"    
-                    
-        else: 
-            userdata.target_base_pose="kitchen"
-            userdata.target_object_name="none"
-            
-
-        
-        rospy.loginfo("self.count: %s", self.count)
-        rospy.sleep(1)
-        
-        if self.count>0:     
-            current_task_info.last_step_name = "semantic_dm"
-
-            last_step_info = xmsg.Last_step_info()
-            last_step_info.step_name = "semantic_dm"
-            last_step_info.outcome = 'succeeded'
-            last_step_info.semi_autonomous_mode = False
-            
-            #recording the information of last step
-            current_task_info.last_step_info.append(last_step_info)
-            
-            return 'succeeded'
-        else:
-
-            last_step_info = xmsg.Last_step_info()
-            last_step_info.step_name = "semantic_dm"
-            last_step_info.outcome = 'random'
-            last_step_info.semi_autonomous_mode = False
-            self.count+=1
-            #recording the information of last step
-            current_task_info.last_step_info.append(last_step_info)
-
-            return 'navigation'
-        """
 
 
 #initialisation for a given task
@@ -536,6 +543,68 @@ class prepare_robot(smach.State):
         #initialisation of the robot
         # move to initial positions
         global sss
+        
+        sss.set_light("yellow")
+
+        # initialize components
+        handle_head = sss.init("head")
+        if handle_head.get_error_code() != 0:
+            return 'failed'
+
+        handle_torso = sss.init("torso")
+        if handle_torso.get_error_code() != 0:
+            return 'failed'
+
+        handle_tray = sss.init("tray")
+        if handle_tray.get_error_code() != 0:
+            return 'failed'
+
+        #handle_arm = sss.init("arm")
+        #if handle_arm.get_error_code() != 0:
+        # return 'failed'
+
+        handle_sdh = sss.init("sdh")
+        #if handle_sdh.get_error_code() != 0:
+        # return 'failed'
+
+        handle_base = sss.init("base")
+        if handle_base.get_error_code() != 0:
+            return 'failed'
+
+        # recover components
+        handle_head = sss.recover("head")
+        if handle_head.get_error_code() != 0:
+            return 'failed'
+
+        handle_torso = sss.recover("torso")
+        if handle_torso.get_error_code() != 0:
+            return 'failed'
+
+        handle_tray = sss.recover("tray")
+        if handle_tray.get_error_code() != 0:
+            return 'failed'
+
+        handle_arm = sss.recover("arm")
+        #if handle_arm.get_error_code() != 0:
+        # return 'failed'
+
+        #handle_sdh = sss.recover("sdh")
+        #if handle_sdh.get_error_code() != 0:
+        # return 'failed'
+
+        handle_base = sss.recover("base")
+        if handle_base.get_error_code() != 0:
+            return 'failed'
+        
+        # set light
+        sss.set_light("green")
+        
+        return 'succeeded'
+        
+        
+        """
+        
+        
         handle_torso = sss.move("torso", "home", False)
         handle_tray = sss.move("tray", "down", False)
         handle_arm = sss.move("arm", "folded", False)
@@ -553,7 +622,7 @@ class prepare_robot(smach.State):
         
 
         return 'succeeded'
-    
+        """
 
 
 def pose_to_list(userdata):

@@ -1,0 +1,10 @@
+#parameter of BB
+float32 l
+float32 w
+float32 h
+
+geometry_msgs/Pose pose
+---
+#message when moving is finish
+std_msgs/String message
+

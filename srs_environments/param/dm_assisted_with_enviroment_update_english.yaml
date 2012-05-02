@@ -1,5 +1,0 @@
-srs/language: 'English'
-srs/grasping_type: 'Assisted'
-srs/detection_type: 'Assisted' 
-srs/enviroment_confirmation: 'True'
-srs/linear_travel_threshold: 0.5

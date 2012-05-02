@@ -67,6 +67,7 @@ from smach_ros import ConditionState, IntrospectionServer
 from srs_knowledge.srv import *
 from srs_knowledge.msg import *
 
+from cob_tray_sensors.srv import *
 
 """
 smach introspection server not working in electric yet, modify the executive_smach/smach_msgs/msg/SmachContainerStatus.msg below can bypass error:
@@ -295,70 +296,94 @@ class SRS_DM_ACTION(object):
         self.temp.userdata.target_base_pose=Pose2D()
         self.temp.userdata.target_object_name=''
         self.temp.userdata.target_object_pose=Pose()
+        self.temp.userdata.the_target_object_found = 'sadsadsadsadsda'
         self.temp.userdata.verified_target_object_pose=Pose()
         
-        #session id for current task, on id per task. 
+        #session id for current task, on id per task.
         #session id can be shared by different clients
-        self.session_id = 0         
+        self.session_id = 0
         
-        #user intervention is possible or not. 
+        #user intervention is possible or not.
         #False, DM has to make all the decision by it self
         #True, suitable client has been connected, can be relied on
-        self.temp.semi_autonomous_mode=True
-                
-    	# open the container
-        with self.temp: 
-            # add states to the container 
+        self.temp.userdata.semi_autonomous_mode=True
+        
+        
+     # open the container
+        with self.temp:
+            # add states to the container
             smach.StateMachine.add('INITIALISE', initialise(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'failed':'task_aborted'}) 
+                                   transitions={'succeeded':'SEMANTIC_DM', 'failed':'task_aborted'})
                         
             smach.StateMachine.add('SEMANTIC_DM', semantic_dm(),
-                                   transitions={'succeeded':'task_succeeded', 
-                                                'failed':'task_aborted', 
+                                   transitions={'succeeded':'task_succeeded',
+                                                'failed':'task_aborted',
                                                 'preempted':'task_preempted',
                                                 'navigation':'SM_NAVIGATION',
                                                 'detection':'SM_DETECTION',
-                                                'simple_grasp':'SM_GRASP',
+                                                'simple_grasp':'SM_OLD_GRASP',
+                                                'full_grasp':'SM_NEW_GRASP',
                                                 'put_on_tray':'SM_PUT_ON_TRAY',
-                                                'env_object_update':'SM_ENV_OBJECT_UPDATE'},
+                                                'env_update':'SM_ENV_UPDATE'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
                                                'target_object_pose':'target_object_pose',
-                                               'verified_target_object_pose':'verified_target_object_pose',
-                                               'target_object_hh_id':'target_object_hh_id',
+                                               'target_object_id':'target_object_id',
+                                               'target_object':'the_target_object_found',
+                                               'target_workspace_name':'target_workspace_name',
                                                'semi_autonomous_mode':'semi_autonomous_mode',
                                                'grasp_categorisation':'grasp_categorisation',
-                                               'target_object_name_list':'target_object_name_list',
-                                              'scan_pose_list':'scan_pose_list',
-                                              'target_object_pose_list':'target_object_pose_list'})   
+                                               'scan_pose_list':'scan_pose_list'})
             
-            smach.StateMachine.add('SM_NAVIGATION', srs_navigation(),
+            smach.StateMachine.add('SM_NAVIGATION', srs_navigation_operation(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_base_pose':'target_base_pose',
-                                               'semi_autonomous_mode':'semi_autonomous_mode'})            
+                                               'semi_autonomous_mode':'semi_autonomous_mode'})
 
-            smach.StateMachine.add('SM_DETECTION', srs_detection(),
+            smach.StateMachine.add('SM_DETECTION', srs_detection_operation(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
+                                              'target_object_id':'target_object_id',
+                                              'target_workspace_name':'target_workspace_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                               'target_object_pose':'target_object_pose' })
+                                              'target_object':'the_target_object_found',
+                                              'target_object_pose':'target_object_pose' })
        
-            smach.StateMachine.add('SM_GRASP', srs_grasp(),
+            smach.StateMachine.add('SM_NEW_GRASP', srs_grasp_operation(),
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   remapping={'target_object_name':'target_object_name',
+                                              'target_object_id':'target_object_id',
+                                              'target_workspace_name':'target_workspace_name',
+                                              'semi_autonomous_mode':'semi_autonomous_mode',
+                                              'target_object':'the_target_object_found',
+                                              'target_object_pose':'target_object_pose',
+                                              'grasp_categorisation':'grasp_categorisation'})
+            
+            '''
+            START
+            #Old grasp added for backward compatible, should be removed after knowledge service updated completely
+            '''
+            smach.StateMachine.add('SM_OLD_GRASP', srs_old_grasp_operation(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
-                                              'target_object_old_pose':'target_object_pose',
-                                              'grasp_categorisation':'grasp_categorisation' })
+                                              'target_object_id':'target_object_id',
+                                              'target_object':'the_target_object_found',
+                                              'grasp_categorisation':'grasp_categorisation'})
+            '''
+            #Old grasp added for backward compatible, should be removed after knowledge service updated completely
+            END
+            '''
             
-            smach.StateMachine.add('SM_PUT_ON_TRAY', srs_put_on_tray(),
+            smach.StateMachine.add('SM_PUT_ON_TRAY', srs_put_on_tray_operation(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'grasp_categorisation':'grasp_categorisation' })
 
-            smach.StateMachine.add('SM_ENV_OBJECT_UPDATE', srs_object_verification_simple(),
+            smach.StateMachine.add('SM_ENV_UPDATE', srs_enviroment_update_operation(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_pose':'target_object_pose',
                                               'target_object_hh_id':'target_object_hh_id',
-                                              'verified_target_object_pose':'verified_target_object_pose'})        
+                                              'verified_target_object_pose':'verified_target_object_pose'})
 
                         
 

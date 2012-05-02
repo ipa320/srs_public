@@ -20,7 +20,7 @@
      xmlns:srs-milan2012="http://www.srs-project.eu/ontologies/srs-milan2012.owl#"
      xmlns:srs="http://www.srs-project.eu/ontologies/srs.owl#">
     <owl:Ontology rdf:about="http://www.srs-project.eu/ontologies/srs-milan2012.owl">
-        <owl:imports rdf:resource="file:///home/ze/git/care-o-bot/srs_public/srs_knowledge/conf/ontologies/srs.owl"/>
+        <owl:imports rdf:resource="file://@OWL_PATH_PREFIX@/conf/ontologies/srs.owl"/>
     </owl:Ontology>
     
 
@@ -284,6 +284,16 @@
 
     <owl:NamedIndividual rdf:about="&srs-milan2012;KitchenTableLeft">
         <rdf:type rdf:resource="&srs;KitchenTable"/>
+        <srs:qz rdf:datatype="&xsd;float">-0.60518641</srs:qz>
+        <srs:yCoord rdf:datatype="&xsd;float">-1.5</srs:yCoord>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.60</srs:widthOfObject>
+        <srs:qu rdf:datatype="&xsd;float">0.7960838</srs:qu>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.80</srs:heightOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">1.2</srs:lengthOfObject>
+        <srs:xCoord rdf:datatype="&xsd;float">5.3</srs:xCoord>
     </owl:NamedIndividual>
     
 
@@ -292,6 +302,16 @@
 
     <owl:NamedIndividual rdf:about="&srs-milan2012;KitchenTableRight">
         <rdf:type rdf:resource="&srs;KitchenTable"/>
+        <srs:qz rdf:datatype="&xsd;float">-0.98544973</srs:qz>
+        <srs:yCoord rdf:datatype="&xsd;float">-2.1</srs:yCoord>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
+        <srs:qu rdf:datatype="&xsd;float">0.16996714</srs:qu>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.6</srs:widthOfObject>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.8</srs:heightOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">1.2</srs:lengthOfObject>
+        <srs:xCoord rdf:datatype="&xsd;float">6.6</srs:xCoord>
     </owl:NamedIndividual>
     
 

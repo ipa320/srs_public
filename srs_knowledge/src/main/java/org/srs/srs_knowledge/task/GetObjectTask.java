@@ -749,7 +749,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
         
     private Pose2D newCalculateGraspPosition(ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo furnitureInfo, Pose targetPose) throws RosException {
 	//Pose2D pos = new Pose2D();
-	ArrayList<Pose2D> poses = new ArrayList<Pose2D>();
+	//ArrayList<Pose2D> poses = new ArrayList<Pose2D>();
+	Pose2D pose = new Pose2D();
 	ServiceClient<SymbolGroundingGraspBasePose.Request, SymbolGroundingGraspBasePose.Response, SymbolGroundingGraspBasePose> sc = KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_grasp_base_pose" , new SymbolGroundingGraspBasePose(), false);
 	
 	SymbolGroundingGraspBasePose.Request rq = new SymbolGroundingGraspBasePose.Request();
@@ -759,13 +760,13 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	SymbolGroundingGraspBasePose.Response res = sc.call(rq);
 	boolean obstacleCheck = res.obstacle_check;
 	double reach = res.reach;
-	poses = res.grasp_base_pose_list;
+	pose = res.grasp_base_pose;
 
 	sc.shutdown();
 	if(obstacleCheck) {
 	    return null;
 	}
-	return poses.get(0);
+	return pose;
     }
     
     private SRSFurnitureGeometry getFurnitureGeometryOf(Individual workspace) {

@@ -90,11 +90,11 @@ class srs_grasp(smach.State):
         rospy.wait_for_service('/arm_kinematics/get_ik')
         rospy.loginfo("/arm_kinematics/get_ik has been found!")
         self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
-        
+        self.current_joint_configuration = [];
 
     def get_joint_state(self, msg):
-        global current_joint_configuration
-        current_joint_configuration = list(msg.desired.positions)
+        #global current_joint_configuration
+        self.current_joint_configuration = list(msg.desired.positions)
         rospy.spin()
 
     def execute(self, userdata):
@@ -155,7 +155,7 @@ class srs_grasp(smach.State):
 
         sol = False
         for i in range(0,10):
-	    (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(rospy.get_param('/script_server/arm/look_at_table')[0], pre_grasp_stamped)
+	    (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(self.current_joint_configuration, pre_grasp_stamped)
             if(error_code.val == error_code.SUCCESS):
                 for j in range(0,10):
                     (grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, grasp_stamped)

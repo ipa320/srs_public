@@ -29,7 +29,7 @@ from geometry_msgs.msg import *
 outcome = ''
 outcome2 = ''
 call=False
-call2=False
+call2=0
 
 
 class detect_object_assited(smach.State):
@@ -165,7 +165,7 @@ class user_intervention_on_detection(smach.State):
         
         self.object=Detection()
         self.object_pose=Pose()
-        self.bbpose=Pose()
+        self.bb_pose=Pose()
         
     def execute(self, userdata):
         if self.preempt_requested():
@@ -175,23 +175,21 @@ class user_intervention_on_detection(smach.State):
         self.target_object_name=userdata.target_object_name
         
         self.object_list=userdata.target_object_list
-        print self.object_list
         global s
         global s2
         s = rospy.Service('assisted_answer', UiAnswer, self.answerObjectSrv)
         s2 = rospy.Service('assisted_BBmove', BBMove, self.moveBBSrv)
 
-        rospy.loginfo("Assisted answer ready.")
+        rospy.loginfo("Assisted Answer ready.")
         s.spin()
         s2.spin()
-        if(call2):
+        if(call2==1):
             #userdata.object=self.object
             #userdata.object_pose=self.object_pose
             #userdata.bb_pose=self.bbpose
-            print self.object_pose
             global listener
             try:
-                #transform object_pose into base_link
+            #transform object_pose into base_link
                 object_pose_in = self.object.pose
                 object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
                 object_pose_map = listener.transformPose("/map", object_pose_in)
@@ -199,15 +197,22 @@ class user_intervention_on_detection(smach.State):
                 print "Transformation not possible: %s"%e
                 return 'failed'
             
+            
             userdata.object_pose=object_pose_map
             userdata.object=self.object
             
             return outcome2
+        if(call2==2):
+            print self.bb_pose
+            userdata.bb_pose=self.bb_pose
+            return outcome2
+
+        
         
     def answerObjectSrv(self,req):    
         global call2
         global outcome2
-        call2=True
+        call2=1
         rospy.loginfo("Get Object information")
         answer=UiAnswerResponse()
         
@@ -256,7 +261,7 @@ class user_intervention_on_detection(smach.State):
         global call2
         global outcome2
         
-        call2=True
+        call2=2
         #BBmove service base and then movement
         moveBB=BBMoveResponse()
         moveBB.message.data='moving to better position'
@@ -268,7 +273,7 @@ class user_intervention_on_detection(smach.State):
         pose.position.x=1
         pose.position.y=2
         pose.position.z=3
-        self.bbpose=pose
+        self.bb_pose=pose
         
         outcome2='bb_move'
         

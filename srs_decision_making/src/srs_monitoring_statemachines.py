@@ -227,7 +227,7 @@ co_sm_navigation = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'f
 
 with co_sm_navigation:
             smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_approach_pose_assisted(),
+            smach.Concurrence.add('MAIN_OPERATION', sm_srs_navigation(),
                             remapping={'semi_autonomous_mode':'semi_autonomous_mode','target_base_pose':'target_base_pose'})
 
 
@@ -237,38 +237,63 @@ with co_sm_navigation:
 
 co_sm_detection = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['target_object_name', 'semi_autonomous_mode'],
-                 output_keys=['target_object_pose'],
+                 input_keys=['target_object_name','target_object_id', 'target_workspace_name','semi_autonomous_mode'],
+                 output_keys=['target_object','target_object_pose'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
 
 with co_sm_detection:
             smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_detect_asisted_pose_region(),
+            smach.Concurrence.add('MAIN_OPERATION', sm_srs_detection(),
                             remapping={'target_object_name':'target_object_name',
-                                       'semi_autonomous_mode':'semi_autonomous_mode',
-                                       'target_object_pose':'target_object_pose'})
+                                        'target_object_id':'target_object_id',
+                                        'target_workspace_name':'target_workspace_name',
+                                        'semi_autonomous_mode':'semi_autonomous_mode',
+                                        'target_object_pose':'target_object_pose',
+                                        'target_object':'target_object'})
 
 
 ###################################################
 # creating the concurrence state machine grasp
 
 
-co_sm_grasp = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
+co_sm_new_grasp = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['target_object_name', 'semi_autonomous_mode'],
-                 output_keys=['target_object_old_pose', 'grasp_categorisation'],
+                 input_keys=['target_object_name','target_object_id','target_object','target_workspace_name','semi_autonomous_mode'],
+                 output_keys=['grasp_categorisation'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
 
-with co_sm_grasp:
+with co_sm_new_grasp:
             smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_pick_object_asisted(),
+            smach.Concurrence.add('MAIN_OPERATION', sm_srs_new_grasp(),
                             remapping={'target_object_name':'target_object_name',
-                                       'semi_autonomous_mode':'semi_autonomous_mode',
-                                       'target_object_old_pose':'target_object_old_pose',
-                                       'grasp_categorisation':'grasp_categorisation'})
+                                        'semi_autonomous_mode':'semi_autonomous_mode',
+                                        'target_object_id':'target_object_id',
+                                        'target_object':'target_object',
+                                        'target_workspace_name':'target_workspace_name',
+                                        'grasp_categorisation':'grasp_categorisation'})
 
+
+###################################################
+# creating the concurrence state machine old grasp
+
+
+co_sm_old_grasp = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
+                 default_outcome='failed',
+                 input_keys=['target_object_name','target_object_id','target_object','semi_autonomous_mode'],
+                 output_keys=['grasp_categorisation'],
+                 child_termination_cb = common_child_term_cb,
+                 outcome_cb = common_out_cb)
+
+with co_sm_old_grasp:
+            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
+            smach.Concurrence.add('MAIN_OPERATION', sm_srs_old_grasp(),
+                            remapping={'target_object_name':'target_object_name',
+                                        'semi_autonomous_mode':'semi_autonomous_mode',
+                                        'target_object_id':'target_object_id',
+                                        'target_object':'target_object',
+                                        'grasp_categorisation':'grasp_categorisation'})
 
 ###################################################
 # creating the concurrence state machine put object on tray
@@ -281,7 +306,7 @@ co_sm_transfer_to_tray = smach.Concurrence (outcomes=['succeeded', 'not_complete
                  outcome_cb = common_out_cb)
 with co_sm_transfer_to_tray:
             smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_transfer_object_to_tray(),
+            smach.Concurrence.add('MAIN_OPERATION', sm_srs_put_on_tray(),
                             remapping={'grasp_categorisation':'grasp_categorisation'})
 
 
@@ -289,34 +314,15 @@ with co_sm_transfer_to_tray:
 # creating the concurrence state machine environment object update
 
 
-co_sm_enviroment_object_update = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
+co_sm_enviroment_update = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['target_object_name_list', 'scan_pose_list'],
-                 output_keys=['target_object_pose_list'],
+                 input_keys=['scan_pose_list'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
-with co_sm_enviroment_object_update:
+with co_sm_enviroment_update:
             smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_enviroment_object_update(),
-                            remapping={'target_object_name_list':'target_object_name_list',
-                                       'target_object_pose_list':'target_object_pose_list',
-                                       'scan_pose_list':'scan_pose_list'})
+            smach.Concurrence.add('MAIN_OPERATION', sm_enviroment_update(),
+                            remapping={'scan_pose_list':'scan_pose_list'})
 
 
-###################################################
-# creating the concurrence state machine environment object update
-
-
-co_sm_enviroment_object_verification_simple = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
-                 default_outcome='failed',
-                 input_keys=[ 'target_object_hh_id', 'target_object_pose'],
-                 output_keys=['verified_target_object_pose'],
-                 child_termination_cb = common_child_term_cb,
-                 outcome_cb = common_out_cb)
-with co_sm_enviroment_object_verification_simple:
-            smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
-            smach.Concurrence.add('MAIN_OPERATION', sm_enviroment_object_verification_simple(),
-                            remapping={'target_object_hh_id':'target_object_hh_id',
-                                       'target_object_pose':'target_object_pose',
-                                       'verified_target_object_pose':'verified_target_object_pose'})
 

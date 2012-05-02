@@ -1,0 +1,21 @@
+<package>
+  <description brief="srs_assisted_detection">
+
+     srs_assisted_detection
+
+  </description>
+  <author>Heiko Hoennige</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_assisted_detection</url>
+  <depend package="std_msgs"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+  <depend package="cob_object_detection_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="smach"/>
+  <depend package="smach_ros"/>
+  
+</package>
+
+

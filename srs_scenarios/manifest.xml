@@ -19,8 +19,10 @@
   <depend package="cob_3d_mapping_msgs"/>
   <depend package="cob_3d_mapping_pipeline_fake"/>
   <depend package="cob_bringup_sim"/>
-  <depend package="cob_2dnav"/>
-  <depend package="cob_linear_nav"/>
+  <depend package="srs_grasping"/>
+  <depend package="srs_object_database"/>
+  <!--depend package="cob_navigation_global"/-->
+  <!--depend package="cob_navigation_linear"/-->
 </package>
 
 

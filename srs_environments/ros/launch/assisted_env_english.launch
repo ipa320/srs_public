@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-<rosparam command="load" file="$(find srs_environments)/param/dm_assisted_with_enviroment_update_english.yaml" />
-</launch>
-

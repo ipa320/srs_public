@@ -16,6 +16,8 @@ from cob_object_detection_msgs.srv import *
 from shared_state_information import *
 from eval_objects import *
 from cob_3d_mapping_msgs.msg import *
+#import service form semantic KB
+from srs_knowledge.srv import *
 
 ## Detect state
 #
@@ -27,7 +29,7 @@ class detect_object(smach.State):
         smach.State.__init__(
             self,
             outcomes=['succeeded','retry','no_more_retries','failed','preempted'],
-            input_keys=['object_name','key_region'],
+            input_keys=['object_name'],
             output_keys=['object','object_pose'])
 
         self.object_list = DetectionArray()
@@ -38,12 +40,11 @@ class detect_object(smach.State):
 
         self.torso_poses = []
         self.torso_poses.append("back_right")
-        self.torso_poses.append("back")
-        self.torso_poses.append("back_left")
         self.torso_poses.append("back_right_extreme")
+        self.torso_poses.append("back")
         self.torso_poses.append("back_extreme")
+        self.torso_poses.append("back_left")
         self.torso_poses.append("back_left_extreme")
-        #self.listener = tf.TransformListener()
         self.the_object = ''
         self.the_object_pose = ''
 
@@ -61,17 +62,20 @@ class detect_object(smach.State):
         if self.preempt_requested():
             self.service_preempt()
             return 'preempted'
-
+        
+        """
         # checking extra information
         if userdata.key_region == '':
             pass #normal detection
         else:
             pass #detection in bounding box specified by key_region
-
+        """
         #add initial value to output keys
         userdata.object = ""
         userdata.object_pose=""
-
+        
+        rospy.loginfo("object_name: %s", userdata.object_name)
+        
         # determine object name
         if self.object_name != "":
             object_name = self.object_name
@@ -85,6 +89,8 @@ class detect_object(smach.State):
         # check if maximum retries reached
         if self.retries > self.max_retries:
             self.retries = 0
+            handle_torso = sss.move("torso","home",False)
+            handle_torso.wait()
             return 'no_more_retries'
 
         # move sdh as feedback
@@ -92,6 +98,7 @@ class detect_object(smach.State):
 
         # make the robot ready to inspect the scene
         if self.retries == 0: # only move arm, sdh and head for the first try
+            rospy.loginfo ("object_name: %s", object_name)
             sss.say([current_task_info.speaking_language['Search'] + object_name + "."],False)
             handle_arm = sss.move("arm","folded-to-look_at_table",False)
             handle_torso = sss.move("torso","shake",False)
@@ -222,6 +229,72 @@ class VerifyObject(smach.State):
         return 'succeeded'
     else:
         print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " not found"
+        return 'not_completed'
+    #else:
+    #  print 'Object class not supported'
+    #  return 'failed'
+    
+"""Verifies whether the object expected at target_object_pose is actually there.
+If yes, verfified_target_object_pose is returned."""
+class Verify_Object_by_Name(smach.State):
+
+  def __init__(self):
+
+    smach.State.__init__(
+      self,
+      outcomes=['succeeded', 'failed', 'not_completed', 'preempted'],
+      input_keys=['object_name'],
+      output_keys=['verfified_target_object_pose'])
+    self.eo = EvalObjects()
+    #self.client = actionlib.SimpleActionClient('trigger_mapping', TriggerMappingAction)
+
+  def execute(self, userdata):
+      
+    target_object_pose =''
+    object_id = -1000
+    all_workspaces_on_map = ''
+    index_of_the_target_workspace = ''
+
+    try:
+        getWorkspace = rospy.ServiceProxy('get_workspace_on_map', GetWorkspaceOnMap)
+        all_workspaces_on_map = getWorkspace(os.environ['ROBOT_ENV'], True)
+        
+        #get the index of the target workspace e.g. table0    
+        index_of_the_target_workspace = all_workspaces_on_map.objects.index(userdata.object_name)
+        #get the pose of the workspace from knowledge service
+        target_object_pose = all_workspaces_on_map.objectsInfo[index_of_the_target_workspace].pose
+        #get the houseHoldID of the workspace 
+        object_id = all_workspaces_on_map.houseHoldId[index_of_the_target_workspace]
+        
+        rospy.loginfo ("target name: %s", userdata.object_name)      
+        rospy.loginfo ("target pose: %s", target_object_pose)
+        rospy.loginfo ("target id: %s", object_id)
+
+        
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e 
+        return 'failed'   
+    
+    """
+    #checking object id in HHDB, maybe required for more complicated verification
+    if object_id == -1000:
+        #the object is not available in the HH database
+        #verification not possible
+        return 'not_completed'
+    """
+      
+    #object_to_search =self.eo.semantics_db_get_object_info(userdata.object_id)
+    #print "Searching for object at " + str(object_to_search.objectPose.position.x) + ", " + str(object_to_search.objectPose.position.y)
+    """TODO: get classID for object_id or have class_id as input"""
+    object_list_map = self.eo.map_list_objects(1)#object_to_search.classID)
+    #if object_to_search.classID == 1: #table
+    verified_table = self.eo.verify_table(target_object_pose, object_list_map)
+    if verified_table:
+        userdata.verfified_target_object_pose = verified_table.params[4:7]
+        print "table " + str(target_object_pose.position.x) + "," + str(target_object_pose.position.y) + " found at " + str(verified_table.params[4]) + "," + str(verified_table.params[5])
+        return 'succeeded'
+    else:
+        print "table " + str(target_object_pose.position.x) + "," + str(target_object_pose.position.y) + " not found"
         return 'not_completed'
     #else:
     #  print 'Object class not supported'

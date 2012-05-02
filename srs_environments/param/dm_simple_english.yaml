@@ -1,5 +1,4 @@
 srs/language: 'English'
 srs/grasping_type: 'Simple'
-srs/detection_type: 'Simple' 
+srs/detection_type: 'Assisted' 
 srs/enviroment_confirmation: 'False'
-srs/linear_travel_threshold: 0.5

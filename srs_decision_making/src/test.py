@@ -7,24 +7,27 @@ import tf
 from geometry_msgs.msg import *
 import time
 
+from srs_knowledge.srv import *
+
+
 rospy.init_node('test')
 
-listener = tf.TransformListener()
+getWorkspace = rospy.ServiceProxy('get_workspace_on_map', GetWorkspaceOnMap)
+all_workspaces_on_map = getWorkspace(os.environ['ROBOT_ENV'], True)
 
-rospy.sleep(5)
+target_object_name ='Table0'
+#rospy.INFO ('target object is:', target_object_name)
+        
+#get the index of the target workspace e.g. table0    
+index_of_the_target_workspace = all_workspaces_on_map.objects.index(target_object_name)
+#get the pose of the workspace from knowledge service
+target_object_pose = all_workspaces_on_map.objectsInfo[index_of_the_target_workspace].pose
+#get the houseHoldID of the workspace 
+object_id = all_workspaces_on_map.houseHoldId[index_of_the_target_workspace]
 
-try:
-    (trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
-except rospy.ROSException, e:
-    print "Transformation not possible: %s"%e
-
-rb_pose = Pose2D()
-rb_pose.x = trans[0]
-rb_pose.y = trans[1]
-rb_pose_rpy = tf.transformations.euler_from_quaternion(rot)
-rb_pose.theta = rb_pose_rpy[2]
-print rb_pose
-
+rospy.loginfo ("target name: %s", target_object_name)      
+rospy.loginfo ("target pose: %s", target_object_pose)
+rospy.loginfo ("target id: %s", object_id)
 
 
 """

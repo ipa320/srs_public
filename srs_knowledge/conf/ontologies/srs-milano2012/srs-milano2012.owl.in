@@ -7,19 +7,19 @@
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
     <!ENTITY srs "http://www.srs-project.eu/ontologies/srs.owl#" >
-    <!ENTITY srs-milan2012 "http://www.srs-project.eu/ontologies/srs-milan2012.owl#" >
+    <!ENTITY srs-milano2012 "http://www.srs-project.eu/ontologies/srs-milano2012.owl#" >
 ]>
 
 
-<rdf:RDF xmlns="http://www.srs-project.eu/ontologies/srs-milan2012.owl#"
-     xml:base="http://www.srs-project.eu/ontologies/srs-milan2012.owl"
+<rdf:RDF xmlns="http://www.srs-project.eu/ontologies/srs-milano2012.owl#"
+     xml:base="http://www.srs-project.eu/ontologies/srs-milano2012.owl"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:srs-milan2012="http://www.srs-project.eu/ontologies/srs-milan2012.owl#"
-     xmlns:srs="http://www.srs-project.eu/ontologies/srs.owl#">
-    <owl:Ontology rdf:about="http://www.srs-project.eu/ontologies/srs-milan2012.owl">
+     xmlns:srs="http://www.srs-project.eu/ontologies/srs.owl#"
+     xmlns:srs-milano2012="http://www.srs-project.eu/ontologies/srs-milano2012.owl#">
+    <owl:Ontology rdf:about="http://www.srs-project.eu/ontologies/srs-milano2012.owl">
         <owl:imports rdf:resource="file://@OWL_PATH_PREFIX@/conf/ontologies/srs.owl"/>
     </owl:Ontology>
     
@@ -64,9 +64,9 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#inSRSCoordinateFormat -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#inSRSCoordinateFormat -->
 
-    <owl:DatatypeProperty rdf:about="&srs-milan2012;inSRSCoordinateFormat"/>
+    <owl:DatatypeProperty rdf:about="&srs-milano2012;inSRSCoordinateFormat"/>
     
 
 
@@ -189,9 +189,9 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#AntiGrippal0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#AntiGrippal0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;AntiGrippal0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;AntiGrippal0">
         <rdf:type rdf:resource="&srs;anti_grippal"/>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
@@ -208,13 +208,13 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#BedsideMilan -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#BedsideMilan -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;BedsideMilan">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;BedsideMilan">
         <rdf:type rdf:resource="&srs;BedsideTable"/>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.43</srs:lengthOfObject>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.45</srs:widthOfObject>
         <srs:qz rdf:datatype="&xsd;float">0.68163876</srs:qz>
@@ -227,13 +227,13 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#Book0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Book0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;Book0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Book0">
         <rdf:type rdf:resource="&srs;Book"/>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.02</srs:heightOfObject>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.14</srs:widthOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.2</srs:lengthOfObject>
@@ -246,14 +246,14 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#IkeaShelfMilan -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#IkeaShelfMilan -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;IkeaShelfMilan">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;IkeaShelfMilan">
         <rdf:type rdf:resource="&srs;IkeaShelf"/>
         <srs:qz rdf:datatype="&xsd;float">-0.99978376</srs:qz>
+        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
         <srs:qu rdf:datatype="&xsd;float">0.02079483</srs:qu>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.4</srs:widthOfObject>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.8</srs:heightOfObject>
@@ -265,23 +265,23 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#Ipa-kitchen -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Ipa-kitchen -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;Ipa-kitchen">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Ipa-kitchen">
         <rdf:type rdf:resource="&srs;Kitchen"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#KitchenTableLeft -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#KitchenTableLeft -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;KitchenTableLeft">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;KitchenTableLeft">
         <rdf:type rdf:resource="&srs;KitchenTable"/>
         <srs:qz rdf:datatype="&xsd;float">-0.60518641</srs:qz>
         <srs:yCoord rdf:datatype="&xsd;float">-1.5</srs:yCoord>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.60</srs:widthOfObject>
         <srs:qu rdf:datatype="&xsd;float">0.7960838</srs:qu>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.80</srs:heightOfObject>
@@ -292,14 +292,14 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#KitchenTableRight -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#KitchenTableRight -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;KitchenTableRight">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;KitchenTableRight">
         <rdf:type rdf:resource="&srs;KitchenTable"/>
         <srs:qz rdf:datatype="&xsd;float">-0.98544973</srs:qz>
         <srs:yCoord rdf:datatype="&xsd;float">-2.1</srs:yCoord>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
         <srs:qu rdf:datatype="&xsd;float">0.16996714</srs:qu>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.6</srs:widthOfObject>
@@ -311,23 +311,23 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#LivingRoom0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#LivingRoom0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;LivingRoom0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;LivingRoom0">
         <rdf:type rdf:resource="&srs;LivingRoom"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#MouthWash0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#MouthWash0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;MouthWash0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;MouthWash0">
         <rdf:type rdf:resource="&srs;mouthwash"/>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">0.06</srs:lengthOfObject>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">0.06</srs:lengthOfObject>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.14</srs:heightOfObject>
         <srs:zCoord rdf:datatype="&xsd;float">0.8</srs:zCoord>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
@@ -338,17 +338,17 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#Oven0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Oven0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;Oven0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Oven0">
         <rdf:type rdf:resource="&srs;Oven-PieceOfFurniture"/>
         <srs:qz rdf:datatype="&xsd;float">-0.98544973</srs:qz>
         <srs:yCoord rdf:datatype="&xsd;float">-3</srs:yCoord>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
         <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
+        <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:qu rdf:datatype="&xsd;float">0.16996714</srs:qu>
         <srs:zCoord rdf:datatype="&xsd;float">0.425</srs:zCoord>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.6</srs:widthOfObject>
@@ -360,12 +360,12 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#Pringle0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Pringle0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;Pringle0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Pringle0">
         <rdf:type rdf:resource="&srs;Pringles"/>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
@@ -379,14 +379,14 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#SRSBedMilan -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#SRSBedMilan -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;SRSBedMilan">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;SRSBedMilan">
         <rdf:type rdf:resource="&srs;Bed-PieceOfFurniture"/>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.81</srs:heightOfObject>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:widthOfObject rdf:datatype="&xsd;float">1.03</srs:widthOfObject>
@@ -398,41 +398,41 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#SRSCOBGripper -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#SRSCOBGripper -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;SRSCOBGripper">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;SRSCOBGripper">
         <rdf:type rdf:resource="&srs;RobotGripper"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#SRSCOBTray -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#SRSCOBTray -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;SRSCOBTray">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;SRSCOBTray">
         <rdf:type rdf:resource="&srs;COBTray"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#SRSCobManipulator -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#SRSCobManipulator -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;SRSCobManipulator">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;SRSCobManipulator">
         <rdf:type rdf:resource="&srs;RobotManipulator"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#Salt0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Salt0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;Salt0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Salt0">
         <rdf:type rdf:resource="&srs;Salt"/>
-        <srs:qy rdf:datatype="&xsd;float">-1000</srs:qy>
-        <srs:yCoord rdf:datatype="&xsd;float">-1000</srs:yCoord>
         <srs:xCoord rdf:datatype="&xsd;float">-1000</srs:xCoord>
-        <srs:zCoord rdf:datatype="&xsd;float">-1000</srs:zCoord>
         <srs:qz rdf:datatype="&xsd;float">-1000</srs:qz>
-        <srs:qx rdf:datatype="&xsd;float">-1000</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">-1000</srs:qy>
         <srs:qu rdf:datatype="&xsd;float">-1000</srs:qu>
+        <srs:zCoord rdf:datatype="&xsd;float">-1000</srs:zCoord>
+        <srs:qx rdf:datatype="&xsd;float">-1000</srs:qx>
+        <srs:yCoord rdf:datatype="&xsd;float">-1000</srs:yCoord>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
@@ -441,13 +441,13 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#Sofa0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Sofa0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;Sofa0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Sofa0">
         <rdf:type rdf:resource="&srs;Sofa-PieceOfFurniture"/>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:yCoord rdf:datatype="&xsd;float">0.3</srs:yCoord>
         <srs:qz rdf:datatype="&xsd;float">0.68163876</srs:qz>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.73</srs:heightOfObject>
@@ -460,13 +460,13 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#TVConsolleMilan -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#TVConsolleMilan -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;TVConsolleMilan">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;TVConsolleMilan">
         <rdf:type rdf:resource="&srs;TVTable"/>
         <srs:qz rdf:datatype="&xsd;float">-0.68163876</srs:qz>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.35</srs:heightOfObject>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.55</srs:widthOfObject>
@@ -479,15 +479,15 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#TomatoJuice0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#TomatoJuice0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;TomatoJuice0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;TomatoJuice0">
         <rdf:type rdf:resource="&srs;tomato_juice"/>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">0.06</srs:lengthOfObject>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">0.06</srs:lengthOfObject>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.16</srs:heightOfObject>
         <srs:zCoord rdf:datatype="&xsd;float">0.8</srs:zCoord>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
@@ -498,9 +498,9 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#bed_left -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#bed_left -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;bed_left">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;bed_left">
         <rdf:type rdf:resource="&srs;Point2D"/>
         <srs:orientationTheta rdf:datatype="&xsd;float">-0.7</srs:orientationTheta>
         <srs:xCoordinate rdf:datatype="&xsd;float">0.2</srs:xCoordinate>
@@ -509,32 +509,32 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#bed_right -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#bed_right -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;bed_right">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;bed_right">
         <rdf:type rdf:resource="&srs;Point2D"/>
         <srs:orientationTheta rdf:datatype="&xsd;float">-0.7</srs:orientationTheta>
         <srs:xCoordinate rdf:datatype="&xsd;float">2.6</srs:xCoordinate>
         <srs:yCoordinate rdf:datatype="&xsd;float">4.1</srs:yCoordinate>
-        <owl:sameAs rdf:resource="&srs-milan2012;order"/>
+        <owl:sameAs rdf:resource="&srs-milano2012;order"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#cob3-3 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#cob3-3 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;cob3-3">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;cob3-3">
         <rdf:type rdf:resource="&srs;COB3_3"/>
-        <srs:hasPart rdf:resource="&srs-milan2012;SRSCOBGripper"/>
-        <srs:hasPart rdf:resource="&srs-milan2012;SRSCOBTray"/>
-        <srs:hasPart rdf:resource="&srs-milan2012;SRSCobManipulator"/>
+        <srs:hasPart rdf:resource="&srs-milano2012;SRSCOBGripper"/>
+        <srs:hasPart rdf:resource="&srs-milano2012;SRSCOBTray"/>
+        <srs:hasPart rdf:resource="&srs-milano2012;SRSCobManipulator"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#kitchen_left -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#kitchen_left -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;kitchen_left">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;kitchen_left">
         <rdf:type rdf:resource="&srs;Point2D"/>
         <srs:orientationTheta rdf:datatype="&xsd;float">-1.3</srs:orientationTheta>
         <srs:yCoordinate rdf:datatype="&xsd;float">-2.4</srs:yCoordinate>
@@ -543,9 +543,9 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#kitchen_right -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#kitchen_right -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;kitchen_right">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;kitchen_right">
         <rdf:type rdf:resource="&srs;Point2D"/>
         <srs:yCoordinate rdf:datatype="&xsd;float">-2.6</srs:yCoordinate>
         <srs:orientationTheta rdf:datatype="&xsd;float">-2.7</srs:orientationTheta>
@@ -554,17 +554,17 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#order -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#order -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;order">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;order">
         <rdf:type rdf:resource="&srs;Point2D"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#shelf_front -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#shelf_front -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;shelf_front">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;shelf_front">
         <rdf:type rdf:resource="&srs;Point2D"/>
         <srs:orientationTheta rdf:datatype="&xsd;float">-3.1</srs:orientationTheta>
         <srs:yCoordinate rdf:datatype="&xsd;float">2.6</srs:yCoordinate>
@@ -573,9 +573,9 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#sofa_left -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#sofa_left -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;sofa_left">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;sofa_left">
         <rdf:type rdf:resource="&srs;Point2D"/>
         <srs:orientationTheta rdf:datatype="&xsd;float">-0.5</srs:orientationTheta>
         <srs:yCoordinate rdf:datatype="&xsd;float">0.9</srs:yCoordinate>
@@ -584,9 +584,9 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milan2012.owl#sofa_right -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#sofa_right -->
 
-    <owl:NamedIndividual rdf:about="&srs-milan2012;sofa_right">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;sofa_right">
         <rdf:type rdf:resource="&srs;Point2D"/>
         <srs:orientationTheta rdf:datatype="&xsd;float">-2.4</srs:orientationTheta>
         <srs:yCoordinate rdf:datatype="&xsd;float">1.3</srs:yCoordinate>

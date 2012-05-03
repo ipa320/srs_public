@@ -112,14 +112,15 @@ class GraspScript(script):
 		self.sss.init("sdh")
 		self.sss.init("base")
 		
+
 		# move to initial positions
-		handle_arm = self.sss.move("arm","folded",False)
-		handle_torso = self.sss.move("torso","home",False)
-		handle_sdh = self.sss.move("sdh","home",False)
-		self.sss.move("tray","down")
-		handle_arm.wait()
-		handle_torso.wait()
-		handle_sdh.wait()
+		#handle_arm = self.sss.move("arm","folded",False)
+		#handle_torso = self.sss.move("torso","home",False)
+		#handle_sdh = self.sss.move("sdh","home",False)
+		#self.sss.move("tray","down")
+		#handle_arm.wait()
+		#handle_torso.wait()
+		#handle_sdh.wait()
 
 		if not self.sss.parse:
 			print "Please localize the robot with rviz"
@@ -148,13 +149,13 @@ class GraspScript(script):
 		self.srv_name_object_detection = '/object_detection/detect_object'
 		detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
 		req = DetectObjectsRequest()
-		req.object_name.data = "milk"
+		req.object_name.data = "anti_grippal"
 		res = detector_service(req)
 
 		for i in range(0,len(res.object_list.detections)):
 			print str(i)+": "+res.object_list.detections[i].label
 		
-		index = 0;#-1
+		index = -1;
 		while (index < 0):
 			index = int(raw_input("Select object to grasp: "))
 		
@@ -163,8 +164,8 @@ class GraspScript(script):
 		obj = self.listener.transformPose("/base_link", obj)
 
 
+		object_id = 28#self.getObjectID(req.object_name.data);
 
-		object_id = self.getObjectID("milk");
 		print "Calling get_grasps_from_position service..."
 		get_grasps_from_position = rospy.ServiceProxy('get_grasps_from_position', GetGraspsFromPosition)
 		req = srs_grasping.srv.GetGraspsFromPositionRequest(object_id, obj.pose)	
@@ -226,15 +227,14 @@ class GraspScript(script):
 
 			if sol:
 				print "PREGRASP: #####################################"
-				print grasp_configuration[i].pre_grasp
-				print "Category: "+ grasp_configuration[i].category
+				print grasp_configuration[i]
 				print "###############################################"
-
 				res = raw_input("Execute this grasp? (y/n): ")
 
-				if res != "y":
+				if res != "y":	
 					continue
 				else:
+					##grasping_functions.grasp_view(object_id, grasp_configuration[i], obj.pose)
 					# execute grasp
 					handle_say = self.sss.say(["I am grasping the object now."], False)
 					handle_arm = self.sss.move("arm", [pre_grasp_conf], False)

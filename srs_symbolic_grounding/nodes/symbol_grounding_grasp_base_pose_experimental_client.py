@@ -97,8 +97,8 @@ if __name__ == "__main__":
 
 	target_obj_pose = Pose()
 
-	target_obj_pose.position.x = 0.5
-	target_obj_pose.position.y = 1.0
+	target_obj_pose.position.x = -3.0
+	target_obj_pose.position.y = 0.5
 	target_obj_pose.position.z = 1.1
 	target_obj_pose.orientation.x = 0
 	target_obj_pose.orientation.y = 0
@@ -121,8 +121,8 @@ if __name__ == "__main__":
 	parent_obj_geometry.w = workspace_info.objectsInfo[6].w
 	parent_obj_geometry.h = workspace_info.objectsInfo[6].h
 
-	parent_obj_geometry.pose.position.x = 0.67
-	parent_obj_geometry.pose.position.y = 1.26
+	parent_obj_geometry.pose.position.x = -3.3
+	parent_obj_geometry.pose.position.y = 0.5
 
 
 	furniture_geometry_list = list()

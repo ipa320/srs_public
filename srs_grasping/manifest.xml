@@ -23,8 +23,8 @@
   <depend package="openrave"/>
   <depend package="schunk_sdh"/> 
 
-  <!-- Uncomment this lines to run the grasp_test.py script>
+  <!-- Uncomment this lines to run the grasp_test.py script -->
   <depend package="cob_script_server"/> 
-  <depend package="cob_object_detection_msgs"/--> 
+  <depend package="cob_object_detection_msgs"/> 
 
 </package>

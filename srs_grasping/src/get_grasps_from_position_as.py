@@ -206,9 +206,9 @@ class get_grasps_from_position_server():
 
 	def __cmp__(self, other):
 		if self.grasp.position.z < other.grasp.position.z :
-			rst = -1
-		elif self.grasp.position.z > other.grasp.position.z :
 			rst = 1
+		elif self.grasp.position.z > other.grasp.position.z :
+			rst = -1
 		else :
 			rst = 0
 

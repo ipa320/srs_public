@@ -6,7 +6,9 @@ import rospy
 import grasping_functions
 from shared_state_information import *
 import copy
-
+from srs_knowledge.srv import *
+from srs_symbolic_grounding.srv import *
+from srs_symbolic_grounding.msg import *
 from simple_script_server import *
 sss = simple_script_server()
 
@@ -92,12 +94,13 @@ class srs_grasp(smach.State):
         rospy.wait_for_service('/arm_kinematics/get_ik')
         rospy.loginfo("/arm_kinematics/get_ik has been found!")
         self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
+        self.sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
         self.current_joint_configuration = [];
 
     def get_joint_state(self, msg):
         #global current_joint_configuration
         self.current_joint_configuration = list(msg.desired.positions)
-        rospy.spin()
+
 
     def execute(self, userdata):
         rospy.loginfo('Executing state GRASP')
@@ -105,8 +108,6 @@ class srs_grasp(smach.State):
     	#Open SDH at the pre-grasp position -----------------------------------------------
     	#sss.move("sdh", "cylopen")
         
-        print("configuration[0] is %s", userdata.grasp_configuration[0])
-        print('configuration id is: %s', userdata.grasp_configuration_id )
         
         pre_p = userdata.grasp_configuration[userdata.grasp_configuration_id].pre_grasp.position
         g_p = userdata.grasp_configuration[userdata.grasp_configuration_id].grasp.position
@@ -123,11 +124,11 @@ class srs_grasp(smach.State):
         rospy.sleep(2)
         
         #Get the current arm joint states.
-        sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
-        while sub.get_num_connections() == 0:
+        while self.sub.get_num_connections() == 0:
     		time.sleep(0.3)
     		continue
-    
+
+
     	#Move to grasp position with SDH open ---------------------------------------------
     	#pregrasp
         pre_grasp_stamped = PoseStamped();
@@ -157,7 +158,7 @@ class srs_grasp(smach.State):
 
         sol = False
         for i in range(0,10):
-	    (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(self.current_joint_configuration, pre_grasp_stamped)
+	    (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(self.current_joint_configuration, pre_grasp_stamped)	
             if(error_code.val == error_code.SUCCESS):
                 for j in range(0,10):
                     (grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, grasp_stamped)
@@ -199,7 +200,7 @@ class srs_grasp(smach.State):
                     return 'succeeded'
                 else:
                     return 'failed'
-                    #return 'failed'
+
         
 
 
@@ -250,14 +251,15 @@ class grasp_base_pose_estimation(smach.State):
             #get the houseHoldID of the workspace 
             object_id = all_workspaces_on_map.houseHoldId[index_of_the_target_workspace]
             
-            #rospy.loginfo ("target name: %s", userdata.object_name)      
-            rospy.loginfo ("target pose: %s", target_object_pose)
-            rospy.loginfo ("target id: %s", object_id)
+            #rospy.loginfo ("target name: %s", userdata.target_workspace_name)      
+            #rospy.loginfo ("target pose: %s", target_object_pose)
+            #rospy.loginfo ("target id: %s", object_id)
 
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
             return 'failed'
-        
+
+        parent_obj_geometry = SRSFurnitureGeometry()
         parent_obj_geometry.pose = target_object_pose
         parent_obj_geometry.l = all_workspaces_on_map.objectsInfo[index_of_the_target_workspace].l
         parent_obj_geometry.w = all_workspaces_on_map.objectsInfo[index_of_the_target_workspace].w
@@ -266,7 +268,7 @@ class grasp_base_pose_estimation(smach.State):
         rospy.wait_for_service('symbol_grounding_grasp_base_pose_experimental')
         symbol_grounding_grasp_base_pose_experimental = rospy.ServiceProxy('symbol_grounding_grasp_base_pose_experimental', SymbolGroundingGraspBasePoseExperimental)
         try:
-            userdata.base_pose = symbol_grounding_grasp_base_pose_experimental(object_pose_map, parent_obj_geometry, all_workspaces_on_map)
+            userdata.base_pose = symbol_grounding_grasp_base_pose_experimental(object_pose_map.pose, parent_obj_geometry, all_workspaces_on_map.objectsInfo)
             return 'retry'
         except rospy.ServiceException, e:
             print "Service call failed: %s" %e

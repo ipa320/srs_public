@@ -234,7 +234,7 @@ class GraspScript(script):
 				if res != "y":	
 					continue
 				else:
-					##grasping_functions.grasp_view(object_id, grasp_configuration[i], obj.pose)
+					#grasping_functions.grasp_view(object_id, grasp_configuration[i], obj.pose)
 					# execute grasp
 					handle_say = self.sss.say(["I am grasping the object now."], False)
 					handle_arm = self.sss.move("arm", [pre_grasp_conf], False)

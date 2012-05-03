@@ -90,20 +90,20 @@ class srs_grasp(smach.State):
         rospy.wait_for_service('/arm_kinematics/get_ik')
         rospy.loginfo("/arm_kinematics/get_ik has been found!")
         self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
-        
-	
+        self.current_joint_configuration = [];
+
     def get_joint_state(self, msg):
-        global current_joint_configuration
-        current_joint_configuration = list(msg.desired.positions)
+        #global current_joint_configuration
+        self.current_joint_configuration = list(msg.desired.positions)
         rospy.spin()
 
     def execute(self, userdata):
         rospy.loginfo('Executing state GRASP')
-	
+
     	#Open SDH at the pre-grasp position -----------------------------------------------
     	#sss.move("sdh", "cylopen")
         
-        print("configuration[0] is %s", userdata.grasp_configuration[1])
+        print("configuration[0] is %s", userdata.grasp_configuration[0])
         print('configuration id is: %s', userdata.grasp_configuration_id )
         
         pre_p = userdata.grasp_configuration[userdata.grasp_configuration_id].pre_grasp.position
@@ -151,11 +151,11 @@ class srs_grasp(smach.State):
     	grasp_stamped.pose.position.z -= offset_z
     	"""
 
-        global current_joint_configuration
-        
+	#global current_joint_configuration
+
         sol = False
         for i in range(0,10):
-            (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(current_joint_configuration, pre_grasp_stamped)
+	    (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(self.current_joint_configuration, pre_grasp_stamped)
             if(error_code.val == error_code.SUCCESS):
                 for j in range(0,10):
                     (grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, grasp_stamped)
@@ -186,7 +186,7 @@ class srs_grasp(smach.State):
                 return 'succeeded'
             else:
                 #TODO: Regrasp (close MORE the fingers)
-                regrasp = list(userdata.grasp_configuration.sdh_joint_values)
+                regrasp = list(userdata.grasp_configuration[userdata.grasp_configuration_id].sdh_joint_values)
                 regrasp[2] -= 0.1
                 regrasp[4] -= 0.1
                 regrasp[6] -= 0.1

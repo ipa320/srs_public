@@ -276,7 +276,7 @@
     <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#KitchenTableLeft -->
 
     <owl:NamedIndividual rdf:about="&srs-milano2012;KitchenTableLeft">
-        <rdf:type rdf:resource="&srs;KitchenTable"/>
+        <rdf:type rdf:resource="&srs;KitchenCornerTableLeft"/>
         <srs:qz rdf:datatype="&xsd;float">-0.60518641</srs:qz>
         <srs:yCoord rdf:datatype="&xsd;float">-1.5</srs:yCoord>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
@@ -286,7 +286,7 @@
         <srs:qu rdf:datatype="&xsd;float">0.7960838</srs:qu>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.80</srs:heightOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">1.2</srs:lengthOfObject>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">38</srs:houseHoldObjectID>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">39</srs:houseHoldObjectID>
         <srs:xCoord rdf:datatype="&xsd;float">5.3</srs:xCoord>
     </owl:NamedIndividual>
     

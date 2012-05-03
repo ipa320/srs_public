@@ -189,13 +189,13 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#AntiGrippal0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Anti-Influenzale -->
 
-    <owl:NamedIndividual rdf:about="&srs-milano2012;AntiGrippal0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Anti-Influenzale">
         <rdf:type rdf:resource="&srs;anti_grippal"/>
-        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.04</srs:widthOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.08</srs:lengthOfObject>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.13</srs:heightOfObject>
@@ -208,13 +208,32 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#BedsideMilan -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Colluttorio -->
 
-    <owl:NamedIndividual rdf:about="&srs-milano2012;BedsideMilan">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Colluttorio">
+        <rdf:type rdf:resource="&srs;mouthwash"/>
+        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">0.06</srs:lengthOfObject>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.14</srs:heightOfObject>
+        <srs:zCoord rdf:datatype="&xsd;float">0.8</srs:zCoord>
+        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
+        <srs:yCoord rdf:datatype="&xsd;float">2.5</srs:yCoord>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">31</srs:houseHoldObjectID>
+        <srs:xCoord rdf:datatype="&xsd;float">8.6</srs:xCoord>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Comodino -->
+
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Comodino">
         <rdf:type rdf:resource="&srs;BedsideTable"/>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.43</srs:lengthOfObject>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.45</srs:widthOfObject>
         <srs:qz rdf:datatype="&xsd;float">0.68163876</srs:qz>
@@ -227,13 +246,100 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Book0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Consolle -->
 
-    <owl:NamedIndividual rdf:about="&srs-milano2012;Book0">
-        <rdf:type rdf:resource="&srs;Book"/>
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Consolle">
+        <rdf:type rdf:resource="&srs;TVTable"/>
+        <srs:qz rdf:datatype="&xsd;float">-0.68163876</srs:qz>
+        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.35</srs:heightOfObject>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.55</srs:widthOfObject>
+        <srs:qu rdf:datatype="&xsd;float">0.73168887</srs:qu>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">1.49</srs:lengthOfObject>
+        <srs:yCoord rdf:datatype="&xsd;float">2.0</srs:yCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">2.8</srs:xCoord>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">35</srs:houseHoldObjectID>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Divano -->
+
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Divano">
+        <rdf:type rdf:resource="&srs;Sofa-PieceOfFurniture"/>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
+        <srs:yCoord rdf:datatype="&xsd;float">0.3</srs:yCoord>
+        <srs:qz rdf:datatype="&xsd;float">0.68163876</srs:qz>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.73</srs:heightOfObject>
+        <srs:qu rdf:datatype="&xsd;float">0.73168887</srs:qu>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.87</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">1.60</srs:lengthOfObject>
+        <srs:xCoord rdf:datatype="&xsd;float">2.6</srs:xCoord>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">32</srs:houseHoldObjectID>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Forno -->
+
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Forno">
+        <rdf:type rdf:resource="&srs;Oven-PieceOfFurniture"/>
+        <srs:qz rdf:datatype="&xsd;float">-0.98544973</srs:qz>
+        <srs:yCoord rdf:datatype="&xsd;float">-3</srs:yCoord>
+        <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
+        <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
+        <srs:qu rdf:datatype="&xsd;float">0.16996714</srs:qu>
+        <srs:zCoord rdf:datatype="&xsd;float">0.425</srs:zCoord>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.6</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">0.65</srs:lengthOfObject>
+        <srs:heightOfObject rdf:datatype="&xsd;float">1.45</srs:heightOfObject>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">37</srs:houseHoldObjectID>
+        <srs:xCoord rdf:datatype="&xsd;float">7</srs:xCoord>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Ipa-kitchen -->
+
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Ipa-kitchen">
+        <rdf:type rdf:resource="&srs;Kitchen"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Letto -->
+
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Letto">
+        <rdf:type rdf:resource="&srs;Bed-PieceOfFurniture"/>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.81</srs:heightOfObject>
+        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
+        <srs:widthOfObject rdf:datatype="&xsd;float">1.03</srs:widthOfObject>
+        <srs:xCoord rdf:datatype="&xsd;float">1.3</srs:xCoord>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">2.1</srs:lengthOfObject>
+        <srs:yCoord rdf:datatype="&xsd;float">3.9</srs:yCoord>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">36</srs:houseHoldObjectID>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Libro -->
+
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Libro">
+        <rdf:type rdf:resource="&srs;Book"/>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.02</srs:heightOfObject>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.14</srs:widthOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.2</srs:lengthOfObject>
@@ -246,9 +352,17 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#IkeaShelfMilan -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#LivingRoom0 -->
 
-    <owl:NamedIndividual rdf:about="&srs-milano2012;IkeaShelfMilan">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;LivingRoom0">
+        <rdf:type rdf:resource="&srs;LivingRoom"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Mobiletto-Ingresso -->
+
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Mobiletto-Ingresso">
         <rdf:type rdf:resource="&srs;IkeaShelf"/>
         <srs:qz rdf:datatype="&xsd;float">-0.99978376</srs:qz>
         <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
@@ -265,17 +379,9 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Ipa-kitchen -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Piano-Cottura -->
 
-    <owl:NamedIndividual rdf:about="&srs-milano2012;Ipa-kitchen">
-        <rdf:type rdf:resource="&srs;Kitchen"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#KitchenTableLeft -->
-
-    <owl:NamedIndividual rdf:about="&srs-milano2012;KitchenTableLeft">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Piano-Cottura">
         <rdf:type rdf:resource="&srs;KitchenCornerTableLeft"/>
         <srs:qz rdf:datatype="&xsd;float">-0.60518641</srs:qz>
         <srs:yCoord rdf:datatype="&xsd;float">-1.5</srs:yCoord>
@@ -292,9 +398,9 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#KitchenTableRight -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Piano-Cucina -->
 
-    <owl:NamedIndividual rdf:about="&srs-milano2012;KitchenTableRight">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Piano-Cucina">
         <rdf:type rdf:resource="&srs;KitchenTable"/>
         <srs:qz rdf:datatype="&xsd;float">-0.98544973</srs:qz>
         <srs:yCoord rdf:datatype="&xsd;float">-2.1</srs:yCoord>
@@ -307,55 +413,6 @@
         <srs:lengthOfObject rdf:datatype="&xsd;float">1.2</srs:lengthOfObject>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">38</srs:houseHoldObjectID>
         <srs:xCoord rdf:datatype="&xsd;float">6.6</srs:xCoord>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#LivingRoom0 -->
-
-    <owl:NamedIndividual rdf:about="&srs-milano2012;LivingRoom0">
-        <rdf:type rdf:resource="&srs;LivingRoom"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#MouthWash0 -->
-
-    <owl:NamedIndividual rdf:about="&srs-milano2012;MouthWash0">
-        <rdf:type rdf:resource="&srs;mouthwash"/>
-        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
-        <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">0.06</srs:lengthOfObject>
-        <srs:heightOfObject rdf:datatype="&xsd;float">0.14</srs:heightOfObject>
-        <srs:zCoord rdf:datatype="&xsd;float">0.8</srs:zCoord>
-        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
-        <srs:yCoord rdf:datatype="&xsd;float">2.5</srs:yCoord>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">31</srs:houseHoldObjectID>
-        <srs:xCoord rdf:datatype="&xsd;float">8.6</srs:xCoord>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Oven0 -->
-
-    <owl:NamedIndividual rdf:about="&srs-milano2012;Oven0">
-        <rdf:type rdf:resource="&srs;Oven-PieceOfFurniture"/>
-        <srs:qz rdf:datatype="&xsd;float">-0.98544973</srs:qz>
-        <srs:yCoord rdf:datatype="&xsd;float">-3</srs:yCoord>
-        <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
-        <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
-        <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
-        <srs:qu rdf:datatype="&xsd;float">0.16996714</srs:qu>
-        <srs:zCoord rdf:datatype="&xsd;float">0.425</srs:zCoord>
-        <srs:widthOfObject rdf:datatype="&xsd;float">0.6</srs:widthOfObject>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">0.65</srs:lengthOfObject>
-        <srs:heightOfObject rdf:datatype="&xsd;float">1.45</srs:heightOfObject>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">37</srs:houseHoldObjectID>
-        <srs:xCoord rdf:datatype="&xsd;float">7</srs:xCoord>
     </owl:NamedIndividual>
     
 
@@ -375,25 +432,6 @@
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:yCoord rdf:datatype="&xsd;float">1.26</srs:yCoord>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">10</srs:houseHoldObjectID>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#SRSBedMilan -->
-
-    <owl:NamedIndividual rdf:about="&srs-milano2012;SRSBedMilan">
-        <rdf:type rdf:resource="&srs;Bed-PieceOfFurniture"/>
-        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
-        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:heightOfObject rdf:datatype="&xsd;float">0.81</srs:heightOfObject>
-        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
-        <srs:widthOfObject rdf:datatype="&xsd;float">1.03</srs:widthOfObject>
-        <srs:xCoord rdf:datatype="&xsd;float">1.3</srs:xCoord>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">2.1</srs:lengthOfObject>
-        <srs:yCoord rdf:datatype="&xsd;float">3.9</srs:yCoord>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">36</srs:houseHoldObjectID>
     </owl:NamedIndividual>
     
 
@@ -441,51 +479,13 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Sofa0 -->
+    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Succo-Pomodoro -->
 
-    <owl:NamedIndividual rdf:about="&srs-milano2012;Sofa0">
-        <rdf:type rdf:resource="&srs;Sofa-PieceOfFurniture"/>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
-        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:yCoord rdf:datatype="&xsd;float">0.3</srs:yCoord>
-        <srs:qz rdf:datatype="&xsd;float">0.68163876</srs:qz>
-        <srs:heightOfObject rdf:datatype="&xsd;float">0.73</srs:heightOfObject>
-        <srs:qu rdf:datatype="&xsd;float">0.73168887</srs:qu>
-        <srs:widthOfObject rdf:datatype="&xsd;float">0.87</srs:widthOfObject>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">1.60</srs:lengthOfObject>
-        <srs:xCoord rdf:datatype="&xsd;float">2.6</srs:xCoord>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">32</srs:houseHoldObjectID>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#TVConsolleMilan -->
-
-    <owl:NamedIndividual rdf:about="&srs-milano2012;TVConsolleMilan">
-        <rdf:type rdf:resource="&srs;TVTable"/>
-        <srs:qz rdf:datatype="&xsd;float">-0.68163876</srs:qz>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
-        <srs:heightOfObject rdf:datatype="&xsd;float">0.35</srs:heightOfObject>
-        <srs:widthOfObject rdf:datatype="&xsd;float">0.55</srs:widthOfObject>
-        <srs:qu rdf:datatype="&xsd;float">0.73168887</srs:qu>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">1.49</srs:lengthOfObject>
-        <srs:yCoord rdf:datatype="&xsd;float">2.0</srs:yCoord>
-        <srs:xCoord rdf:datatype="&xsd;float">2.8</srs:xCoord>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">35</srs:houseHoldObjectID>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#TomatoJuice0 -->
-
-    <owl:NamedIndividual rdf:about="&srs-milano2012;TomatoJuice0">
+    <owl:NamedIndividual rdf:about="&srs-milano2012;Succo-Pomodoro">
         <rdf:type rdf:resource="&srs;tomato_juice"/>
-        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.06</srs:lengthOfObject>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.16</srs:heightOfObject>

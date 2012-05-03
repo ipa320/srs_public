@@ -53,26 +53,32 @@ def match_detections ():
 
     pc = PointCloud()
     pc.header = Header(0,rospy.get_rostime(),'/map')
-    pc.points = []
-    pc.points.append(Point32(1.,1.,1.)) 
-    pc.points.append(Point32(1.,1.,1.))
-    pc.points.append(Point32(1.,1.,1.))
-
-    for l in range (len(legs)):
-         distancecol = []
-         for m in range (len(faces)):
-           # measure the distance between the detections and store them
-              distancecol.append (sqrt((faces[m][0]-legs[l][0])**2+(faces[m][1]-legs[l][1])**2))
-         distances.append (distancecol) 
-         pc.points.append(Point32(1.,1.,0.)) 
-    print "distances"
-    print distances
+   
      
     
     
-    pc = PointCloud()
-    pc.header = Header(0,rospy.get_rostime(),'/map')
+
+    for m in range (len(faces)):
+                pc.points.append(Point32(faces[m].x,faces[m].y,1.5))
+   
+    for l in range (len(legs)):
+         pc.points.append(Point32(legs[l].x,legs[l].y,1.0))
+         distancecol = []
+         for m in range (len(faces)):
+                
+           # measure the distance between the detections and store them
+                dist = (sqrt((faces[m].x-legs[l].x)**2+(faces[m].y-legs[l].y)**2))
+                distancecol.append (dist)
+                 
+         distances.append (distancecol) 
+         
+    print "distances"
+    print distances
     
+     
+    
+    
+   
     
     pub.publish (pc)
       

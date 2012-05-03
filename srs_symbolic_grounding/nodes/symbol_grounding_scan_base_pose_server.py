@@ -121,7 +121,7 @@ def obstacleCheck(sbpl, fgl):
 		#rospy.loginfo(data.map.info)
 		dist_to_walls = 0.5
 		threshold = 10.0
-		step_angle = 45.0
+		step_angle = 30.0
 
 		index_3 = 0
 		while index_3 < len(obstacle_checked_scan_base_pose_list):
@@ -130,17 +130,20 @@ def obstacleCheck(sbpl, fgl):
 			while n < int(360.0 / step_angle):
 				wall_check_point_x = obstacle_checked_scan_base_pose_list[index_3].x + dist_to_walls * math.cos(n * step_angle / 180.0 * math.pi)
 				wall_check_point_y = obstacle_checked_scan_base_pose_list[index_3].y + dist_to_walls * math.sin(n * step_angle / 180.0 * math.pi)
+				
 				#rospy.loginfo([wall_check_point_x, wall_check_point_y])
-				map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
+
+				map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution)
 				map_index_list.append(map_index)
 				n += 1
 				
-			map_index = int((obstacle_checked_scan_base_pose_list[index_3].y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (obstacle_checked_scan_base_pose_list[index_3].x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
+			map_index = int((obstacle_checked_scan_base_pose_list[index_3].y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((obstacle_checked_scan_base_pose_list[index_3].x - data.map.info.origin.position.x) / data.map.info.resolution)
 			map_index_list.append(map_index)
 			#rospy.loginfo(map_index_list)
 
 			index_4 = 0
 			while index_4 < len(map_index_list):
+				#rospy.loginfo(data.map.data[map_index_list[index_4]])
 				if -1 < data.map.data[map_index_list[index_4]] < threshold:
 					index_4 += 1
 				else:
@@ -163,30 +166,26 @@ def handle_symbol_grounding_scan_base_pose(req):
 		spamWriter.writerow(data.map.data[130 + 320 * n : 200 + 320 * n])
 		n += 1
 	'''
+
 	'''
 	#test the map
 	data = getMapClient()
 	#test points
-	#x = 0.0 
-	#y = 0.0   #0
-	#x = 0.5
-	#y = 0.0   #0
-	#x = 0.0
-	#y = 0.5   #0
-	#x = 0.0
-	#y = -0.5   #0
-	#x = -3.2
-	#y = 0.0   #-1
-	x = -2.3
-	y = -2.0  # 0
-	
-	
-
-
-	map_index = int((y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
-	rospy.loginfo(data.map.data[map_index])	
-
+	x = -3.2
+	y = -0.58  
+	map_index = int((y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (x - data.map.info.origin.position.x - 6.0) / data.map.info.resolution - 1)
+	for n in range(-20, 100):	
+		map_line = list()
+		for m in range (-9, 9):
+			map_line.append(data.map.data[map_index + n * int(data.map.info.width) + m])
+			m += 1
+		print map_line
+		n += 1
+	rospy.loginfo([data.map.info.origin.position.x, data.map.info.origin.position.y])
+	rospy.loginfo([data.map.info.width, data.map.info.height])
 	'''
+
+	
 
 	'''	
 	#get furniture information from knowledge base

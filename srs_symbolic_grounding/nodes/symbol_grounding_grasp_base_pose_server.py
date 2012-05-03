@@ -176,7 +176,7 @@ def obstacleCheck(gbpl, po_x, po_y, po_th, po_w, po_l, fgl):
 			#rospy.loginfo(data.map.info)
 			dist_to_walls = 0.5
 			threshold = 20
-			step_angle = 45.0
+			step_angle = 30.0
 
 			index_4 = 0
 			while index_4 < len(obstacle_checked_grasp_base_pose_list):
@@ -185,11 +185,11 @@ def obstacleCheck(gbpl, po_x, po_y, po_th, po_w, po_l, fgl):
 				while n < int(360.0 / step_angle):
 					wall_check_point_x = obstacle_checked_grasp_base_pose_list[index_4].x + dist_to_walls * math.cos(n * step_angle / 180.0 * math.pi)
 					wall_check_point_y = obstacle_checked_grasp_base_pose_list[index_4].y + dist_to_walls * math.sin(n * step_angle / 180.0 * math.pi)
-					map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
+					map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution)
 					map_index_list.append(map_index)
 					n += 1
 				
-				map_index = int((obstacle_checked_grasp_base_pose_list[index_4].y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (obstacle_checked_grasp_base_pose_list[index_4].x - data.map.info.origin.position.x) / data.map.info.resolution - 1)
+				map_index = int((obstacle_checked_grasp_base_pose_list[index_4].y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((obstacle_checked_grasp_base_pose_list[index_4].x - data.map.info.origin.position.x) / data.map.info.resolution)
 				map_index_list.append(map_index)
 				#rospy.loginfo(map_index_list)
 

@@ -13,6 +13,7 @@ from simple_script_server import *
 sss = simple_script_server()
 
 from srs_grasping.srv import *
+from srs_knowledge.srv import *
 
 class select_srs_grasp(smach.State):
 
@@ -49,6 +50,7 @@ class select_srs_grasp(smach.State):
         #print ('grasp configs %s', grasp_configuration)
         
         if len(grasp_configuration) < 1: # no valid configuration found
+            print "grasp not possible"
             return 'not_possible'
         else:       
             poses=list()

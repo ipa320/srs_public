@@ -129,36 +129,45 @@ class get_pregrasps():
 			g.orientation.w = qg[3];
 
 
-			category = grasping_functions.get_grasp_category(pre.position, g.position);
-			if category == "TOP":
+
+			aux = GraspConfiguration();
+			aux.object_id = obj_id;
+			aux.hand_type = "SDH";
+			aux.sdh_joint_values = grasp_configuration[i].sdh_joint_values;
+			aux.target_link = "/sdh_palm_link";
+			aux.pre_grasp.pose = pre;
+			aux.grasp.pose = g;
+			aux.category = grasping_functions.get_grasp_category(pre.position, g.position);
+
+			if aux.category == "TOP":
 				if len(resp.top) < num_configurations:
-					resp.top.append(pre);
-			elif category == "DOWN":
+					resp.top.append(aux);
+			elif aux.category == "DOWN":
 				if len(resp.down) < num_configurations:
-					resp.down.append(pre);
-			elif category == "FRONT":
+					resp.down.append(aux);
+			elif aux.category == "FRONT":
 				if len(resp.front) < num_configurations:
-					resp.front.append(pre);
-			elif category == "BACK":
+					resp.front.append(aux);
+			elif aux.category == "BACK":
 				if len(resp.back) < num_configurations:
-					resp.back.append(pre);
-			elif category == "SIDE":
+					resp.back.append(aux);
+			elif aux.category == "SIDE":
 				if len(resp.side) < num_configurations:
-					resp.side.append(pre);
-			elif category == "-SIDE":
+					resp.side.append(aux);
+			elif aux.category == "-SIDE":
 				if len(resp.mside) < num_configurations:
-					resp.mside.append(pre);
+					resp.mside.append(aux);
 			else:
 				continue
 
 			if len(resp.top)==num_configurations and len(resp.down)==num_configurations and len(resp.side)==num_configurations and len(resp.mside)==num_configurations and len(resp.back)==num_configurations and len(resp.front)==num_configurations:
 				break;
-	
+
 		rospy.loginfo("/get_pregrasps call has finished.");
 		print "Time employed: " + str(time.time() - x);
 		print "---------------------------------------";
 		return resp;
-	 
+
 
 	def get_pregrasps_server(self):
 		s = rospy.Service('/get_pregrasps', GetPreGrasp, self.get_pregrasps);

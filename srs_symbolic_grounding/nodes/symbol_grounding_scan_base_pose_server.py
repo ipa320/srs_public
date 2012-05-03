@@ -118,7 +118,7 @@ def obstacleCheck(sbpl, fgl):
 		#wall check
 		data = getMapClient()
 
-		#rospy.loginfo(data.map.info)
+		rospy.loginfo(data.info)
 		dist_to_walls = 0.5
 		threshold = 10.0
 		step_angle = 30.0

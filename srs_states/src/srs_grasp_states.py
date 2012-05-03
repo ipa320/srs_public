@@ -11,6 +11,7 @@ from simple_script_server import *
 sss = simple_script_server()
 
 from srs_grasping.srv import *
+from srs_knowledge.srv import *
 
 class select_srs_grasp(smach.State):
 
@@ -43,11 +44,12 @@ class select_srs_grasp(smach.State):
         grasp_configuration = copy.deepcopy((get_grasps_from_position(req)).grasp_configuration)
         
         
-        print("grasp configuration is", grasp_configuration[1])
+        #print("grasp configuration is", grasp_configuration[1])
         #print ('grasp configs %s', grasp_configuration)
         
         if len(grasp_configuration) < 1: # no valid configuration found
-            return 'not possible'
+            print "grasp not possible"
+            return 'not_possible'
         else:       
             poses=list()
             for index in range(len(grasp_configuration)):
@@ -226,7 +228,7 @@ class grasp_base_pose_estimation(smach.State):
 
         try:
             #transform object_pose into base_link
-            object_pose_in = object.pose
+            object_pose_in = userdata.object.pose
             object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
             object_pose_map = listener.transformPose("/map", object_pose_in)
         except rospy.ROSException, e:
@@ -248,7 +250,7 @@ class grasp_base_pose_estimation(smach.State):
             #get the houseHoldID of the workspace 
             object_id = all_workspaces_on_map.houseHoldId[index_of_the_target_workspace]
             
-            rospy.loginfo ("target name: %s", userdata.object_name)      
+            #rospy.loginfo ("target name: %s", userdata.object_name)      
             rospy.loginfo ("target pose: %s", target_object_pose)
             rospy.loginfo ("target id: %s", object_id)
 

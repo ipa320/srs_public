@@ -118,7 +118,7 @@ def obstacleCheck(sbpl, fgl):
 		#wall check
 		data = getMapClient()
 
-		rospy.loginfo(data.info)
+		
 		dist_to_walls = 0.5
 		threshold = 10.0
 		step_angle = 30.0
@@ -267,7 +267,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 	scan_base_pose_list_4 = list()
 
 
-	
+	if parent_obj_th < 0:
+		parent_obj_th + 2.0 * math.pi
 
 	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 

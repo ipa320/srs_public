@@ -12,4 +12,7 @@
 	<node pkg="srs_symbolic_grounding" type="symbol_grounding_explore_base_pose_server.py" name="symbol_grounding_explore_base_pose_server" output="screen">
         </node>
 
+	<node pkg="srs_symbolic_grounding" type="symbol_grounding_grasp_base_pose_server.py" name="symbol_grounding_grasp_base_pose_server" output="screen">
+        </node>
+
 </launch>

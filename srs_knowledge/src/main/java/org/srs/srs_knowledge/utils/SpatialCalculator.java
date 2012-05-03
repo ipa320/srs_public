@@ -286,7 +286,7 @@ public class SpatialCalculator
 	}
 
 	//if (j == resWS.objectsInfo.size()) {
-	System.out.println("NO MATCH.... found for : [" + spaInfo.l + "  " + spaInfo.h + "  " + spaInfo.w + "]");
+	//System.out.println("NO MATCH.... found for : [" + spaInfo.l + "  " + spaInfo.h + "  " + spaInfo.w + "]");
 	//return "";
 	//}
 	

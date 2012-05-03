@@ -101,7 +101,6 @@ def init_env(object_id):
 		return (-1,-1);
 
 	try:
-
 		mesh_file = "/tmp/mesh.iv"
 		f = open(mesh_file, 'w')
 		res = f.write(resp.msg[0].data)
@@ -538,7 +537,7 @@ def grasp_view(object_id, grasp, object_pose):	#Individual grasp (grasp of Grasp
 		for link in manip.GetChildLinks():
 			link.SetTransform(dot(Tdelta,link.GetTransform()))
 		env.UpdatePublishedBodies()
-		rospy.sleep(60);
+		raw_input("Continue...");
 	return 0;
 
 

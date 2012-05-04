@@ -111,7 +111,7 @@ class put_object_on_tray(smach.State):
         #TODO select position on tray depending on how many objects are on the tray already
         global current_task_info
         
-        if current_task_info.object_in_hand and not current_task_info.object_on_tray:
+        if True:#current_task_info.object_in_hand and not current_task_info.object_on_tray:
         
             # move object to frontside
             handle_arm = sss.move("arm","grasp-to-tray",False)

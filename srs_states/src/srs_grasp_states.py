@@ -202,7 +202,7 @@ class srs_grasp(smach.State):
                 successful_grasp = True#grasping_functions.sdh_tactil_sensor_result();
                 if not successful_grasp:
                     return 'failed'
-            sss.move("arm",[post_grasp_conf,"hold"])
+            sss.move("arm",[post_grasp_conf,"look_at_table","hold"])
             return 'succeeded'
         
 

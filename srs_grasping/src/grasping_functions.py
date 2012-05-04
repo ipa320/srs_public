@@ -101,7 +101,6 @@ def init_env(object_id):
 		return (-1,-1);
 
 	try:
-
 		mesh_file = "/tmp/mesh.iv"
 		f = open(mesh_file, 'w')
 		res = f.write(resp.msg[0].data)
@@ -435,12 +434,12 @@ def array_from_pose(gp):
 def rotation_matrix(obj):
 
 	#real robot
-	#e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
-	#rotacion =  euler_matrix(e[0],e[1],e[2], axes='sxyz');
+	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
+	rotacion =  euler_matrix(e[0],e[1],e[2], axes='sxyz');
 
 	#hack for gazebo
-	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxzy');
-	rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz');
+	#e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxzy');
+	#rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz');
 
 	rotacion[0,3] = obj.position.x;
 	rotacion[1,3] = obj.position.y;
@@ -538,7 +537,7 @@ def grasp_view(object_id, grasp, object_pose):	#Individual grasp (grasp of Grasp
 		for link in manip.GetChildLinks():
 			link.SetTransform(dot(Tdelta,link.GetTransform()))
 		env.UpdatePublishedBodies()
-		rospy.sleep(60);
+		raw_input("Continue...");
 	return 0;
 
 

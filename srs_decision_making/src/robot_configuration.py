@@ -84,7 +84,7 @@ robot_config_need_no_action = ['DM','NC','CALCULATION']
 #pre-config
 robot_config_pre['navigation_no_object']['torso']='home'
 robot_config_pre['navigation_no_object']['tray']='down'
-robot_config_pre['navigation_no_object']['arm']='folded'
+robot_config_pre['navigation_no_object']['arm']='look_at_table-to-folded'
 robot_config_pre['navigation_no_object']['sdh']='DM'
 robot_config_pre['navigation_no_object']['head']='front'
 #post-config

@@ -162,6 +162,7 @@ class GraspScript(script):
 		obj = res.object_list.detections[index].pose
 		obj.header.stamp = self.listener.getLatestCommonTime("/base_link", obj.header.frame_id)
 		obj = self.listener.transformPose("/base_link", obj)
+                print "Object pose in base_link:",obj
 
 
 		object_id = 28#self.getObjectID(req.object_name.data);

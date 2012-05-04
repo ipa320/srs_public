@@ -22,6 +22,7 @@
   <depend package="srs_object_database"/>
   <depend package="openrave"/>
   <depend package="schunk_sdh"/> 
+  <depend package="cob_srvs"/> 
 
   <!-- Uncomment this lines to run the grasp_test.py script -->
   <depend package="cob_script_server"/> 

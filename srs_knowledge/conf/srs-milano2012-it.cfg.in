@@ -1,4 +1,4 @@
-ontologyFile ontologies/srs-milano2012/srs-milano2012.owl  
+ontologyFile ontologies/srs-milano2012-it/srs-milano2012-it.owl  
 nodename knowledge_srs_node
 taskRequestService task_request
 planNextActionService plan_next_action

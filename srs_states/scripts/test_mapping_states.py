@@ -7,7 +7,7 @@ import smach
 import smach_ros
 #import unittest
 
-from generic_mapping_states import *
+from mapping_states import *
 
 class TestStates:
 	def __init__(self, *args):
@@ -19,14 +19,14 @@ class TestStates:
 		#SM.userdata.pose = "home"
 		SM.userdata.angle_range = 0.6
 		#SM.userdata.scan_pose = [-1.3, -1.0, 3.14]
-                SM.userdata.scan_pose = [0.515, -0.614, 1.583]
+                SM.userdata.scan_pose = [0.0, 0.0, 0.0]
 
 		# open the container
 		with SM:
-			smach.StateMachine.add('APPROACH', ApproachScanPose(),
-				transitions={'succeeded':'UPDATE', 'failed':'overall_failed'})
+			#smach.StateMachine.add('APPROACH', ApproachScanPose(),
+			#	transitions={'succeeded':'UPDATE', 'failed':'overall_failed'})
 			smach.StateMachine.add('UPDATE', UpdateEnvMap(),
-				transitions={'succeeded':'overall_succeeded', 'failed':'overall_failed'})
+				transitions={'succeeded':'overall_succeeded', 'failed':'overall_failed', 'preempted':'overall_failed'})
 			#smach.StateMachine.add('UPDATE', Map360(),
 			#	transitions={'succeeded':'overall_succeeded', 'failed':'overall_failed'})
 		try:

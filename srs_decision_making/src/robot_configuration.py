@@ -84,8 +84,8 @@ robot_config_need_no_action = ['DM','NC','CALCULATION']
 #pre-config
 robot_config_pre['navigation_no_object']['torso']='home'
 robot_config_pre['navigation_no_object']['tray']='down'
-robot_config_pre['navigation_no_object']['arm']='folded'
-robot_config_pre['navigation_no_object']['sdh']='DM'
+robot_config_pre['navigation_no_object']['arm']='look_at_table-to-folded'
+robot_config_pre['navigation_no_object']['sdh']='home'
 robot_config_pre['navigation_no_object']['head']='front'
 #post-config
 robot_config_post['navigation_no_object']['torso']='DM' 
@@ -150,7 +150,7 @@ robot_config_pre['detection']['arm']='folded'
 robot_config_pre['detection']['sdh']='DM'
 robot_config_pre['detection']['head']='DM'
 #post-config
-robot_config_post['detection']['torso']='home'
+robot_config_post['detection']['torso']='NC'
 robot_config_post['detection']['tray']='NC'
 robot_config_post['detection']['arm']='NC'
 robot_config_post['detection']['sdh']='DM'
@@ -179,7 +179,7 @@ robot_config_pre['grasp']['arm']='look_at_table'
 robot_config_pre['grasp']['sdh']='DM'
 robot_config_pre['grasp']['head']='back'
 #post-config
-robot_config_post['grasp']['torso']='home'
+robot_config_post['grasp']['torso']='DM'
 robot_config_post['grasp']['tray']='NC'
 robot_config_post['grasp']['arm']='CALCULATION' # can be used for both put object on tray and  hold object
 robot_config_post['grasp']['sdh']='CALCULATION'  #should be closed, but the exact location should have been calculated

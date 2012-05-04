@@ -93,11 +93,12 @@ def getMapClient(): #read map from navigation service
 def obstacleCheck(sbpl, fgl): 
 	obstacle_checked_scan_base_pose_list = list() #used to save obstacle checked poses
 	wall_checked_scan_base_pose_list = list() #used to save wall checked poses
-	scan_base_pose_list = sbpl
+	scan_base_pose_list = sbpl #read inputs
 	furniture_geometry_list = fgl
 
 	#obstacle check
-	dist_to_obstacles = 0.5
+	dist_to_obstacles = 0.5  #set the minimum distance to the household furnitures
+	#check all of the poses from the scan pose list with all the household furnitures to find a obstacle free scan pose list. the poses will be stored in obstacle_checked_scan_base_pose_list.
 	index_1 = 0
 	while index_1 < len(scan_base_pose_list):
 		index_2 = 0
@@ -113,16 +114,17 @@ def obstacleCheck(sbpl, fgl):
 		index_1 += 1
 		#rospy.loginfo(obstacle_checked_scan_base_pose_list)
 
-	if obstacle_checked_scan_base_pose_list:
-
+	if obstacle_checked_scan_base_pose_list: #check if there is a obstacle free pose in the list.
+			
 		#wall check
-		data = getMapClient()
+		data = getMapClient() #get occupancy grid map from the navigation serves 
 
 		
-		dist_to_walls = 0.5
-		threshold = 10.0
-		step_angle = 30.0
+		dist_to_walls = 0.5 #set the minimum distance to the walls
+		threshold = 10.0 #set the threshold to decide if a pose is occupaied. >threshold:occupied.
+		step_angle = 30.0 #set the step angle for putting points around the robot for the wall check (360 / step_angle points will be used)
 
+		#check all of the poses from the obstacle_checked_scan_base_pose_list with the occupancy map to find a wall free scan pose list
 		index_3 = 0
 		while index_3 < len(obstacle_checked_scan_base_pose_list):
 			map_index_list = list()
@@ -155,7 +157,7 @@ def obstacleCheck(sbpl, fgl):
 	return 	wall_checked_scan_base_pose_list			
 	#rospy.loginfo(wall_checked_scan_base_pose_list)
 
-
+#calculate scan base poses
 def handle_symbol_grounding_scan_base_pose(req):
 
 	'''
@@ -213,7 +215,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 
 	
-	'''	
+	'''
+
+	#transform from knowledge base data to function useable data  	
 	parent_obj_x = req.parent_obj_geometry.pose.position.x
 	parent_obj_y = req.parent_obj_geometry.pose.position.y
 	parent_obj_rpy = tf.transformations.euler_from_quaternion([req.parent_obj_geometry.pose.orientation.x, req.parent_obj_geometry.pose.orientation.y, req.parent_obj_geometry.pose.orientation.z, req.parent_obj_geometry.pose.orientation.w])
@@ -224,8 +228,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 	#rospy.loginfo(req.parent_obj_geometry)
 
-
-	#transfrom list
+	
+	#transfrom furniture geometry list
 	index = 0
 	furniture_geometry_list = list()
 	while index < len(req.furniture_geometry_list):
@@ -242,12 +246,12 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 
 
-	#get detection width
-	rb_distance = 0.7
-	robot_h = 1.4
-	detection_angle = (30.0 / 180.0) * math.pi
-	camera_distance = math.sqrt((robot_h - parent_obj_h) ** 2 + (rb_distance - 0.2) ** 2)
-	detection_w = 2 * (camera_distance * math.tan(0.5 * detection_angle))	
+	#calculate the detection width
+	rb_distance = 0.7 #distance between the robot base and the edge of the parent obj
+	robot_h = 1.4 #set the height of the detector
+	detection_angle = (30.0 / 180.0) * math.pi #set the detection angle (wide) of the detector 
+	camera_distance = math.sqrt((robot_h - parent_obj_h) ** 2 + (rb_distance - 0.2) ** 2) #distance between the detector and the surface of the parent obj
+	detection_w = 2 * (camera_distance * math.tan(0.5 * detection_angle)) #detection wide
 	#rospy.loginfo(detection_w)
 
 
@@ -255,33 +259,32 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 
 
-
-
+	
+	#variable structure define
 	scan_base_pose_1 = Pose2D()
 	scan_base_pose_2 = Pose2D()
 	scan_base_pose_3 = Pose2D()
 	scan_base_pose_4 = Pose2D()
-
-
+	
+	#create lists to store scan base poses
 	scan_base_pose_list_1 = list()
 	scan_base_pose_list_2 = list()
 	scan_base_pose_list_3 = list()
 	scan_base_pose_list_4 = list()
 
 	#fix angle problem
-
-	#rospy.loginfo(parent_obj_th)
 	if parent_obj_th < 0:
 		parent_obj_th += 2.0 * math.pi
 
 	elif parent_obj_th > 2.0 * math.pi:
 		parent_obj_th -= 2.0 * math.pi
-
 	#rospy.loginfo(parent_obj_th)
 
+
+	#to decide which side of the table is facing the robot 
 	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 		
-
+		#calculate 4 lists of scan poses, each list is for scanning from one side of the table.
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 			scan_base_pose_1 = Pose2D()
 			scan_base_pose_1.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
@@ -320,7 +323,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
 			scan_base_pose_list_4.append(scan_base_pose_4)
 
-
+	#the short side is facing the robot	
 	else:
 
 		for num in range(int((parent_obj_w / detection_w) + 0.99)):
@@ -378,7 +381,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 	#rospy.loginfo([obstacle_checked_scan_base_pose_list_1, obstacle_checked_scan_base_pose_list_2, obstacle_checked_scan_base_pose_list_3, obstacle_checked_scan_base_pose_list_4])
 	max_len = max(len(obstacle_checked_scan_base_pose_list_1), len(obstacle_checked_scan_base_pose_list_2), len(obstacle_checked_scan_base_pose_list_3), len(obstacle_checked_scan_base_pose_list_4))
 
-
+	#choose the longest scan pose list 
 	if len(obstacle_checked_scan_base_pose_list_1) == max_len:
 		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_1]
 	elif len(obstacle_checked_scan_base_pose_list_2) == max_len:

@@ -86,7 +86,7 @@ def getWorkspaceOnMap():
 		print "Service call failed: %s"%e
 '''
 
-
+#get the occupancy grid map from the navigation services
 def getMapClient():
 
 	try:
@@ -96,7 +96,7 @@ def getMapClient():
 	except rospy.ServiceException, e:
 		print "Service call failed: %s"%e
 
-
+#this function is used to calculate a list of canidate  
 def getRobotBasePoseList(angle, dist, rbp, obj_x, obj_y):
 	grasp_base_pose_list = list()
 	step_angle = angle

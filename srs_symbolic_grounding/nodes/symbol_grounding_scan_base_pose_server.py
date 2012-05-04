@@ -186,8 +186,6 @@ def handle_symbol_grounding_scan_base_pose(req):
 	rospy.loginfo([data.map.info.origin.position.x, data.map.info.origin.position.y])
 	rospy.loginfo([data.map.info.width, data.map.info.height])
 	'''
-<<<<<<< HEAD
-=======
 
 
 

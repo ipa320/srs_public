@@ -31,6 +31,7 @@ class select_srs_grasp(smach.State):
     def execute(self, userdata):
         
         global listener
+        print "Object pose before transformation:", userdata.object.pose
         try:
             # transform object_pose into base_link
             object_pose_in = userdata.object.pose
@@ -41,6 +42,7 @@ class select_srs_grasp(smach.State):
             print ("Transformation not possible: %s", e)
             return 'failed'
         
+        print "Object pose in base_link:",object_pose_bl
         get_grasps_from_position = rospy.ServiceProxy('get_grasps_from_position', GetGraspsFromPosition)
         req = GetGraspsFromPositionRequest(userdata.target_object_id, object_pose_bl.pose)
         grasp_configuration = copy.deepcopy((get_grasps_from_position(req)).grasp_configuration)
@@ -140,6 +142,10 @@ class srs_grasp(smach.State):
         grasp_stamped.header.frame_id = "/base_link";
         grasp_stamped.pose = userdata.grasp_configuration[userdata.grasp_configuration_id].grasp;
     
+    	#postgrasp
+        post_grasp_stamped = copy.deepcopy(grasp_stamped);
+        post_grasp_stamped.pose.position.z += 0.1;
+
     	#offset
         """
         offset_x = 0#(userdata.grasp_configuration.grasp.position.x - userdata.grasp_configuration.pre_grasp.position.x)/3
@@ -157,25 +163,25 @@ class srs_grasp(smach.State):
 	#global current_joint_configuration
 
         sol = False
-        for i in range(0,10):
-	    (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(self.current_joint_configuration, pre_grasp_stamped)	
+        for w in range(0,10):
+            (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(self.current_joint_configuration, pre_grasp_stamped)		
             if(error_code.val == error_code.SUCCESS):
-                for j in range(0,10):
+                for k in range(0,10):
                     (grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, grasp_stamped)
-                    sol = True
-                    break
+                    if(error_code.val == error_code.SUCCESS):	
+                        (post_grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, post_grasp_stamped)	
+                        if(error_code.val == error_code.SUCCESS):
+                            sol = True
+                            break
                 if sol:
-                    break;
+                    break
 
         if not sol:
             return 'failed';
         else:
-            arm_handle = sss.move("arm", [pre_grasp_conf], False)
+            sss.move("torso","home")
+            arm_handle = sss.move("arm", [pre_grasp_conf, grasp_conf], False)
             arm_handle.wait();
-            rospy.sleep(2);
-            arm_handle = sss.move("arm", [grasp_conf], False)
-            arm_handle.wait();
-            rospy.sleep(2);
 
             #Close SDH based on the grasp configuration to grasp.
             arm_handle = sss.move("sdh", [list(userdata.grasp_configuration[userdata.grasp_configuration_id].sdh_joint_values)], False)
@@ -185,9 +191,7 @@ class srs_grasp(smach.State):
             #TODO: Confirm the grasp based on force feedback
             successful_grasp = grasping_functions.sdh_tactil_sensor_result();
 
-            if successful_grasp:
-                return 'succeeded'
-            else:
+            if not successful_grasp:
                 #TODO: Regrasp (close MORE the fingers)
                 regrasp = list(userdata.grasp_configuration[userdata.grasp_configuration_id].sdh_joint_values)
                 regrasp[2] -= 0.1
@@ -195,12 +199,11 @@ class srs_grasp(smach.State):
                 regrasp[6] -= 0.1
                 arm_handle = sss.move("sdh", [regrasp], False)
                 arm_handle.wait();
-                successful_regrasp = grasping_functions.sdh_tactil_sensor_result();
-                if successful_regrasp:
-                    return 'succeeded'
-                else:
+                successful_grasp = True#grasping_functions.sdh_tactil_sensor_result();
+                if not successful_grasp:
                     return 'failed'
-
+            sss.move("arm",[post_grasp_conf,"look_at_table","hold"])
+            return 'succeeded'
         
 
 

@@ -71,6 +71,7 @@ from numpy import *
 from xml.dom import minidom
 
 from srs_msgs.msg import *
+from cob_srvs.srv import *
 from trajectory_msgs.msg import *
 from geometry_msgs.msg import *
 from kinematics_msgs.srv import *
@@ -585,12 +586,13 @@ def SetRobot(env):
 
 def sdh_tactil_sensor_result():
 	rospy.loginfo("Reading SDH tactil sensors...");
-	sub = rospy.Subscriber("/sdh_controller/tactile_data", TactileSensor, sdh_tactil_sensor_result_callback);
-	while sub.get_num_connections() == 0:
-		time.sleep(0.3);
-		continue;
-	rospy.loginfo("SDH tactil sensors has been readed.");
-	return object_grasped;
+	is_grasped = rospy.ServiceProxy('/sdh_controller/is_grasped', Trigger)
+	try:
+		resp = is_grasped()
+	except rospy.ServiceException, e:
+		rospy.logerr("Service did not process request: %s", str(e))
+		return False
+	return resp.success.data;
 
 
 def sdh_tactil_sensor_result_callback(msg):

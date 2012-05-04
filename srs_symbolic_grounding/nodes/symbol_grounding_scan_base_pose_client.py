@@ -111,8 +111,8 @@ if __name__ == "__main__":
 	parent_obj_geometry.pose.position.y = 2.5
 	parent_obj_geometry.pose.orientation.x = 0 
 	parent_obj_geometry.pose.orientation.y = 0
-	parent_obj_geometry.pose.orientation.z = 0
-	parent_obj_geometry.pose.orientation.w = -1
+	parent_obj_geometry.pose.orientation.z = -0.999783754349
+	parent_obj_geometry.pose.orientation.w = 0.0207948293537
 	parent_obj_geometry.l = 1.5
 	parent_obj_geometry.w = 0.4
 

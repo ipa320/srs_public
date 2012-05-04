@@ -266,9 +266,11 @@ def handle_symbol_grounding_scan_base_pose(req):
 	scan_base_pose_list_3 = list()
 	scan_base_pose_list_4 = list()
 
-
+	#fix angle problem
 	if parent_obj_th < 0:
 		parent_obj_th + 2.0 * math.pi
+	elif parent_obj_th > 2.0 * math.pi:
+		parent_obj_th - 2.0 * math.pi
 
 	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 
@@ -352,10 +354,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
 			scan_base_pose_list_4.append(scan_base_pose_4)
 		
-	#rospy.loginfo(scan_base_pose_list_1)
-	#rospy.loginfo(scan_base_pose_list_2)
-	#rospy.loginfo(scan_base_pose_list_3)
-	#rospy.loginfo(scan_base_pose_list_4)
+	rospy.loginfo(scan_base_pose_list_1)
+	rospy.loginfo(scan_base_pose_list_2)
+	rospy.loginfo(scan_base_pose_list_3)
+	rospy.loginfo(scan_base_pose_list_4)
 	
 	#obstacle check
 	obstacle_checked_scan_base_pose_list_1 = obstacleCheck(scan_base_pose_list_1, furniture_geometry_list)

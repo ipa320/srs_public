@@ -177,7 +177,7 @@ class srs_grasp(smach.State):
                     break
 
         if not sol:
-            return 'failed';
+            return 'not_completed';
         else:
             sss.move("torso","home")
             arm_handle = sss.move("arm", [pre_grasp_conf, grasp_conf], False)
@@ -201,7 +201,7 @@ class srs_grasp(smach.State):
                 arm_handle.wait();
                 successful_grasp = True#grasping_functions.sdh_tactil_sensor_result();
                 if not successful_grasp:
-                    return 'failed'
+                    return 'not_completed'
             sss.move("arm",[post_grasp_conf,"look_at_table","hold"])
             return 'succeeded'
         

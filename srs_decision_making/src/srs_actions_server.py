@@ -483,8 +483,18 @@ class SRS_DM_ACTION(object):
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
             req = TaskRequestRequest()
             req.task = current_task_info.task_name
-            req.content = current_task_info.task_parameter
-            req.userPose = "order"
+            
+            ## added by ze
+            pars = current_task_info.task_parameter.split(",")    
+            length = len(pars)
+            if length == 1:
+                req.content = current_task_info.task_parameter
+                req.userPose = "order"
+            elif length == 2:
+                req.content = pars[0]
+                req.userPose = pars[1]
+            print req.content
+            print req.userPose
             req.parameters = current_task_info.parameters
             
             res = requestNewTask(req)

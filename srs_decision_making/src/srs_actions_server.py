@@ -271,19 +271,19 @@ class SRS_DM_ACTION(object):
             #initialisation of the robot
             # move to initial positions
             global sss
-            handle_torso = sss.move("torso", "home", False)
-            handle_tray = sss.move("tray", "down", False)
-            handle_arm = sss.move("arm", "folded", False)
-            handle_sdh = sss.move("sdh", "cylclosed", False)
-            handle_head = sss.move("head", "front", False)
+            #handle_torso = sss.move("torso", "home", False)
+            #handle_tray = sss.move("tray", "down", False)
+            #handle_arm = sss.move("arm", "folded", False)
+            #handle_sdh = sss.move("sdh", "cylclosed", False)
+            #handle_head = sss.move("head", "front", False)
     
         
             # wait for initial movements to finish
-            handle_torso.wait()
-            handle_tray.wait()
-            handle_arm.wait()
-            handle_sdh.wait()
-            handle_head.wait()
+            #handle_torso.wait()
+            #handle_tray.wait()
+            #handle_arm.wait()
+            #handle_sdh.wait()
+            #handle_head.wait()
             self.robot_initialised = True
             
         
@@ -483,8 +483,18 @@ class SRS_DM_ACTION(object):
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, None, None, None, None)
             req = TaskRequestRequest()
             req.task = current_task_info.task_name
-            req.content = current_task_info.task_parameter
-            req.userPose = "order"
+            
+            ## added by ze
+            pars = current_task_info.task_parameter.split(",")    
+            length = len(pars)
+            if length == 1:
+                req.content = current_task_info.task_parameter
+                req.userPose = "order"
+            elif length == 2:
+                req.content = pars[0]
+                req.userPose = pars[1]
+            print req.content
+            print req.userPose
             req.parameters = current_task_info.parameters
             
             res = requestNewTask(req)

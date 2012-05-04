@@ -69,7 +69,7 @@ def publisher():
 	pub = rospy.Publisher('robot_base_pose', Pose2D)
 	rospy.init_node('publisher')
 	listener = tf.TransformListener()
-	listener.waitForTransform("/map", "/base_link", rospy.Time(0), rospy.Duration(4.0))
+	listener.waitForTransform("/map", "/base_link", rospy.Time(0), rospy.Duration(10.0))
 	spamWriter = csv.writer(open('trajectory.csv', 'wb'), delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 	while not rospy.is_shutdown():
 		(trans,rot) = listener.lookupTransform("/map", "/base_link", rospy.Time(0))

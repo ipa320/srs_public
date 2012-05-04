@@ -2,6 +2,7 @@
 
 import roslib; roslib.load_manifest('srs_decision_making')
 import rospy
+import sys
 
 # Brings in the SimpleActionClient
 import actionlib
@@ -10,7 +11,7 @@ import actionlib
 # goal message and the result message.
 import srs_decision_making.msg as xmsg
 
-def DM_client():
+def DM_client(target_pos):
     # Creates the SimpleActionClient, passing the type of the action
     # constructor.
     client = actionlib.SimpleActionClient('srs_decision_making_actions', xmsg.ExecutionAction)
@@ -22,7 +23,7 @@ def DM_client():
     # Creates a goal to send to the action server.
     _goal=xmsg.ExecutionGoal()
     _goal.action="move"
-    _goal.parameter="order"
+    _goal.parameter=target_pos
     _goal.priority=0
     # Sends the goal to the action server.
     client.send_goal(_goal)
@@ -37,8 +38,10 @@ if __name__ == '__main__':
     try:
         # Initializes a rospy node so that the SimpleActionClient can
         # publish and subscribe over ROS.
+        target_pos = sys.argv[1]
+        print "moving to", target_pos
         rospy.init_node('dm_client2')
-        result = DM_client()
+        result = DM_client(target_pos)
         rospy.loginfo('result %s',result)
         # print ("Result:" result)
     except rospy.ROSInterruptException:

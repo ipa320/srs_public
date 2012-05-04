@@ -181,7 +181,7 @@ class detect_object(smach.State):
 
         try:
             #transform object_pose into base_link
-            object_pose_in = obj.pose
+            object_pose_in = copy.deepcopy(obj.pose)
             object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
             object_pose_map = listener.transformPose("/map", object_pose_in)
         except rospy.ROSException, e:

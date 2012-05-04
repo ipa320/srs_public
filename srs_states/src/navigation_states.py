@@ -60,7 +60,7 @@ class approach_pose_without_retry(smach.State):
 
         # try reaching pose
         handle_base = sss.move("base", pose, False, self.mode)
-        move_second = False
+        #move_second = False
         
 
 
@@ -68,11 +68,11 @@ class approach_pose_without_retry(smach.State):
         while not self.preempt_requested():
             try:
                 #print "base_state = ", handle_base.get_state()
-                if (handle_base.get_state() == 3) and (not move_second):
+                #if (handle_base.get_state() == 3) and (not move_second):
                     # do a second movement to place the robot more exactly
-                    handle_base = sss.move("base", pose, False, self.mode)
-                    move_second = True
-                elif (handle_base.get_state() == 3) and (move_second):
+                    #handle_base = sss.move("base", pose, False, self.mode)
+                    #move_second = True
+                if (handle_base.get_state() == 3): #and (move_second):
                     return 'succeeded'        
                 elif (handle_base.get_state() == 2 or handle_base.get_state() == 4):  #error or paused
                     rospy.logerr("base not arrived on target yet")
@@ -103,19 +103,20 @@ class approach_pose_without_retry(smach.State):
         
             # evaluate service response
             if not resp.success.data: # robot stands still
+                print "timer:",timeout
                 if timeout > 10:
                     sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
         
-                    try:
-                        rospy.wait_for_service('base_controller/stop',10)
-                        stop = rospy.ServiceProxy('base_controller/stop',Trigger)
-                        resp = stop()
+                    #try:
+                    sss.stop('base')#rospy.wait_for_service('base_controller/stop',10)
+                        #stop = rospy.ServiceProxy('base_controller/stop',Trigger)
+                    """resp = stop()
                     except rospy.ServiceException, e:
                         error_message = "%s"%e
                         rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
                     except rospy.ROSException, e:
                         error_message = "%s"%e
-                        rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)        
+                        rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)        """
                     return 'not_completed'
                 else:
                     timeout = timeout + 1

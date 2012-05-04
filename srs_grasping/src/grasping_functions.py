@@ -434,12 +434,12 @@ def array_from_pose(gp):
 def rotation_matrix(obj):
 
 	#real robot
-	#e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
-	#rotacion =  euler_matrix(e[0],e[1],e[2], axes='sxyz');
+	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
+	rotacion =  euler_matrix(e[0],e[1],e[2], axes='sxyz');
 
 	#hack for gazebo
-	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxzy');
-	rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz');
+	#e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxzy');
+	#rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz');
 
 	rotacion[0,3] = obj.position.x;
 	rotacion[1,3] = obj.position.y;

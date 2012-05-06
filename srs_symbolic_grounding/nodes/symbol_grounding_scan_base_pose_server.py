@@ -98,13 +98,19 @@ def obstacleCheck(sbpl, fgl):
 
 	#obstacle check
 	dist_to_obstacles = 0.5  #set the minimum distance to the household furnitures
+	#rospy.loginfo(math.atan(-0.5))
 	#check all of the poses from the scan pose list with all the household furnitures to find a obstacle free scan pose list. the poses will be stored in obstacle_checked_scan_base_pose_list.
 	index_1 = 0
 	while index_1 < len(scan_base_pose_list):
 		index_2 = 0
 		while index_2 < len(furniture_geometry_list):
-			delta_x = math.sqrt((scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(scan_base_pose_list[index_1].theta - furniture_geometry_list[index_2].pose.theta)
-			delta_y = math.sqrt((scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(scan_base_pose_list[index_1].theta - furniture_geometry_list[index_2].pose.theta)
+			th = math.atan((scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x))
+			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y > furniture_geometry_list[index_2].pose.y:
+				th = math.pi + th
+			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y < furniture_geometry_list[index_2].pose.y:
+				th = -math.pi + th
+			delta_x = math.sqrt((scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(th - furniture_geometry_list[index_2].pose.theta)
+			delta_y = math.sqrt((scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(th - furniture_geometry_list[index_2].pose.theta)
 			if (delta_x <= -(furniture_geometry_list[index_2].w / 2.0 + dist_to_obstacles) or delta_x >= (furniture_geometry_list[index_2].w / 2.0 + dist_to_obstacles)) or (delta_y <= -(furniture_geometry_list[index_2].l / 2.0 + dist_to_obstacles) or delta_y >= (furniture_geometry_list[index_2].l / 2.0 + dist_to_obstacles)):
 				index_2 += 1
 			else:
@@ -112,7 +118,7 @@ def obstacleCheck(sbpl, fgl):
 		if index_2 == len(furniture_geometry_list):
 			obstacle_checked_scan_base_pose_list.append(scan_base_pose_list[index_1])
 		index_1 += 1
-		#rospy.loginfo(obstacle_checked_scan_base_pose_list)
+	#rospy.loginfo(obstacle_checked_scan_base_pose_list)
 
 	if obstacle_checked_scan_base_pose_list: #check if there is a obstacle free pose in the list.
 			
@@ -122,7 +128,7 @@ def obstacleCheck(sbpl, fgl):
 		
 		dist_to_walls = 0.5 #set the minimum distance to the walls
 		threshold = 10.0 #set the threshold to decide if a pose is occupaied. >threshold:occupied.
-		step_angle = 30.0 #set the step angle for putting points around the robot for the wall check (360 / step_angle points will be used)
+		step_angle = 5.0 #set the step angle for putting points around the robot for the wall check (360 / step_angle points will be used)
 
 		#check all of the poses from the obstacle_checked_scan_base_pose_list with the occupancy map to find a wall free scan pose list
 		index_3 = 0
@@ -224,6 +230,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 	parent_obj_w = req.parent_obj_geometry.w
 	parent_obj_h = req.parent_obj_geometry.h
 
+	#rpy = tf.transformations.euler_from_quaternion([0, 0, -0.68, 0.73])
+	#rospy.loginfo(rpy[2])
+
 	#rospy.loginfo(req.parent_obj_geometry)
 
 	
@@ -288,6 +297,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_1.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_1.y = parent_obj_y - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 *  detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_1.theta = parent_obj_th + math.pi
+			if scan_base_pose_1.theta > math.pi:
+				scan_base_pose_1.theta -= 2.0 * math.pi
+			elif scan_base_pose_1.theta < -math.pi:
+				scan_base_pose_1.theta += 2.0 * math.pi
 			scan_base_pose_list_1.append(scan_base_pose_1)
 
 		#rospy.loginfo(scan_base_pose_list_1)
@@ -298,6 +311,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_2.x = parent_obj_x + (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_2.y = parent_obj_y + (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_2.theta = parent_obj_th
+			if scan_base_pose_2.theta > math.pi:
+				scan_base_pose_2.theta -= 2.0 * math.pi
+			elif scan_base_pose_2.theta < -math.pi:
+				scan_base_pose_2.theta += 2.0 * math.pi
 			scan_base_pose_list_2.append(scan_base_pose_2)
 
 
@@ -309,6 +326,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_3.x = parent_obj_x + (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_3.y = parent_obj_y - (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_w - 0.5 *  detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_3.theta = parent_obj_th - 0.5 * math.pi
+			if scan_base_pose_3.theta > math.pi:
+				scan_base_pose_3.theta -= 2.0 * math.pi
+			elif scan_base_pose_3.theta < -math.pi:
+				scan_base_pose_3.theta += 2.0 * math.pi
 			scan_base_pose_list_3.append(scan_base_pose_3)
 
 		
@@ -319,10 +340,15 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_4.x = parent_obj_x - (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_4.y = parent_obj_y + (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
+			if scan_base_pose_4.theta > math.pi:
+				scan_base_pose_4.theta -= 2.0 * math.pi
+			elif scan_base_pose_4.theta < -math.pi:
+				scan_base_pose_4.theta += 2.0 * math.pi
 			scan_base_pose_list_4.append(scan_base_pose_4)
 
 	#the short side is facing the robot	
 	else:
+		parent_obj_th -= 0.5 * math.pi
 
 		for num in range(int((parent_obj_w / detection_w) + 0.99)):
 
@@ -330,6 +356,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_1.x = parent_obj_x - (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_1.y = parent_obj_y - (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_w - 0.5 *  detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_1.theta = parent_obj_th + math.pi
+			if scan_base_pose_1.theta > math.pi:
+				scan_base_pose_1.theta -= 2.0 * math.pi
+			elif scan_base_pose_1.theta < -math.pi:
+				scan_base_pose_1.theta += 2.0 * math.pi
 			scan_base_pose_list_1.append(scan_base_pose_1)
 
 
@@ -340,6 +370,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_2.x = parent_obj_x + (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_2.y = parent_obj_y + (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_2.theta = parent_obj_th
+			if scan_base_pose_2.theta > math.pi:
+				scan_base_pose_2.theta -= 2.0 * math.pi
+			elif scan_base_pose_2.theta < -math.pi:
+				scan_base_pose_2.theta += 2.0 * math.pi
 			scan_base_pose_list_2.append(scan_base_pose_2)
 
 
@@ -351,6 +385,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_3.x = parent_obj_x + (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_3.y = parent_obj_y - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 *  detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_3.theta = parent_obj_th - 0.5 * math.pi
+			if scan_base_pose_1.theta > math.pi:
+				scan_base_pose_1.theta -= 2.0 * math.pi
+			elif scan_base_pose_1.theta < -math.pi:
+				scan_base_pose_1.theta += 2.0 * math.pi
 			scan_base_pose_list_3.append(scan_base_pose_3)
 
 		
@@ -361,12 +399,16 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_4.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_4.y = parent_obj_y + (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_4.theta = parent_obj_th + 0.5 * math.pi
+			if scan_base_pose_1.theta > math.pi:
+				scan_base_pose_1.theta -= 2.0 * math.pi
+			elif scan_base_pose_1.theta < -math.pi:
+				scan_base_pose_1.theta += 2.0 * math.pi
 			scan_base_pose_list_4.append(scan_base_pose_4)
 		
-	rospy.loginfo(scan_base_pose_list_1)
-	rospy.loginfo(scan_base_pose_list_2)
-	rospy.loginfo(scan_base_pose_list_3)
-	rospy.loginfo(scan_base_pose_list_4)
+	#rospy.loginfo(scan_base_pose_list_1)
+	#rospy.loginfo(scan_base_pose_list_2)
+	#rospy.loginfo(scan_base_pose_list_3)
+	#rospy.loginfo(scan_base_pose_list_4)
 	
 	#obstacle check
 	obstacle_checked_scan_base_pose_list_1 = obstacleCheck(scan_base_pose_list_1, furniture_geometry_list)
@@ -392,7 +434,17 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 	if not scan_base_pose_list:
 		print "no valid scan pose."
-
+	if max_len == 1:
+		th = math.atan((scan_base_pose_list[0][0].y - parent_obj_y) / (scan_base_pose_list[0][0].x - parent_obj_x))
+		if scan_base_pose_list[0][0].x < parent_obj_x and scan_base_pose_list[0][0].y > parent_obj_y:
+			th = math.pi + th
+		if scan_base_pose_list[0][0].x < parent_obj_x and scan_base_pose_list[0][0].y < parent_obj_y:
+			th = -math.pi + th
+		if th > math.pi:
+			th -= 2.0 * math.pi
+		elif th < -math.pi:
+			th += 2.0 * math.pi
+		scan_base_pose_list[0][0].theta = th
 	
 
 	return scan_base_pose_list

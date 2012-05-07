@@ -360,25 +360,6 @@
     
 
 
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Pringle0 -->
-
-    <owl:NamedIndividual rdf:about="&srs-milano2012;Pringle0">
-        <rdf:type rdf:resource="&srs;Pringles"/>
-        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
-        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
-        <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
-        <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
-        <srs:xCoord rdf:datatype="&xsd;float">0.67</srs:xCoord>
-        <srs:zCoord rdf:datatype="&xsd;float">0.90</srs:zCoord>
-        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
-        <srs:yCoord rdf:datatype="&xsd;float">1.26</srs:yCoord>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">10</srs:houseHoldObjectID>
-    </owl:NamedIndividual>
-    
-
-
     <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#SRSBedMilan -->
 
     <owl:NamedIndividual rdf:about="&srs-milano2012;SRSBedMilan">
@@ -418,25 +399,6 @@
 
     <owl:NamedIndividual rdf:about="&srs-milano2012;SRSCobManipulator">
         <rdf:type rdf:resource="&srs;RobotManipulator"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.srs-project.eu/ontologies/srs-milano2012.owl#Salt0 -->
-
-    <owl:NamedIndividual rdf:about="&srs-milano2012;Salt0">
-        <rdf:type rdf:resource="&srs;Salt"/>
-        <srs:xCoord rdf:datatype="&xsd;float">-1000</srs:xCoord>
-        <srs:qz rdf:datatype="&xsd;float">-1000</srs:qz>
-        <srs:qy rdf:datatype="&xsd;float">-1000</srs:qy>
-        <srs:qu rdf:datatype="&xsd;float">-1000</srs:qu>
-        <srs:zCoord rdf:datatype="&xsd;float">-1000</srs:zCoord>
-        <srs:qx rdf:datatype="&xsd;float">-1000</srs:qx>
-        <srs:yCoord rdf:datatype="&xsd;float">-1000</srs:yCoord>
-        <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
-        <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
-        <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
-        <srs:houseHoldObjectID rdf:datatype="&xsd;int">11</srs:houseHoldObjectID>
     </owl:NamedIndividual>
     
 
@@ -588,9 +550,9 @@
 
     <owl:NamedIndividual rdf:about="&srs-milano2012;sofa_right">
         <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:orientationTheta rdf:datatype="&xsd;float">-2.4</srs:orientationTheta>
-        <srs:yCoordinate rdf:datatype="&xsd;float">1.3</srs:yCoordinate>
-        <srs:xCoordinate rdf:datatype="&xsd;float">3.5</srs:xCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">-2.24</srs:orientationTheta>
+        <srs:yCoordinate rdf:datatype="&xsd;float">0.98</srs:yCoordinate>
+        <srs:xCoordinate rdf:datatype="&xsd;float">3.96</srs:xCoordinate>
     </owl:NamedIndividual>
 </rdf:RDF>
 

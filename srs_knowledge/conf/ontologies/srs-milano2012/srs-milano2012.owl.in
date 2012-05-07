@@ -550,9 +550,9 @@
 
     <owl:NamedIndividual rdf:about="&srs-milano2012;sofa_right">
         <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:orientationTheta rdf:datatype="&xsd;float">-2.4</srs:orientationTheta>
-        <srs:yCoordinate rdf:datatype="&xsd;float">1.3</srs:yCoordinate>
-        <srs:xCoordinate rdf:datatype="&xsd;float">3.5</srs:xCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">-2.24</srs:orientationTheta>
+        <srs:yCoordinate rdf:datatype="&xsd;float">0.98</srs:yCoordinate>
+        <srs:xCoordinate rdf:datatype="&xsd;float">3.96</srs:xCoordinate>
     </owl:NamedIndividual>
 </rdf:RDF>
 

@@ -90,14 +90,11 @@ def getMapClient(): #read map from navigation service
 
 
 
-def obstacleCheck(sbpl, fgl, po_x, po_y): 
+def obstacleCheck(sbpl, fgl): 
 	obstacle_checked_scan_base_pose_list = list() #used to save obstacle checked poses
 	wall_checked_scan_base_pose_list = list() #used to save wall checked poses
-	all_checked_scan_base_pose_list = list()
 	scan_base_pose_list = sbpl #read inputs
 	furniture_geometry_list = fgl
-	parent_obj_x = po_x
-	parent_obj_y = po_y
 
 	#obstacle check
 	dist_to_obstacles = 0.5  #set the minimum distance to the household furnitures
@@ -163,36 +160,8 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 				wall_checked_scan_base_pose_list.append(obstacle_checked_scan_base_pose_list[index_3])
 			index_3 += 1
 	
-	if wall_checked_scan_base_pose_list:
-		step_dist = 0.05
-		map_index_list = list()
-		threshold = 20
-		index_5 = 0
-		while index_5 < len(wall_checked_scan_base_pose_list):
-			n = 0
-			dist = math.sqrt((parent_obj_y - wall_checked_scan_base_pose_list[index_5].y) ** 2 + (parent_obj_x - wall_checked_scan_base_pose_list[index_5].x) ** 2)
-			while n < int((dist - 0.5) / step_dist):
-				wall_check_point_x = wall_checked_scan_base_pose_list[index_5].x - (0.5 + n * step_dist) * math.cos(wall_checked_scan_base_pose_list[index_5].theta)
-				wall_check_point_y = wall_checked_scan_base_pose_list[index_5].y - (0.5 + n * step_dist) * math.sin(wall_checked_scan_base_pose_list[index_5].theta)
-				print([wall_check_point_x, wall_check_point_y, wall_checked_scan_base_pose_list[index_5].theta])
-				map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution)
-				map_index_list.append(map_index)
-				n += 1
-			
-			index_6 = 0
-			while index_6 < len(map_index_list):
-				if -1 < data.map.data[map_index_list[index_6]] < threshold:
-					index_6 += 1
-				else:
-					break
-			if index_6 == len(map_index_list):
-				all_checked_scan_base_pose_list.append(wall_checked_scan_base_pose_list[index_5])
-			index_5 += 1
-
-	return 	all_checked_scan_base_pose_list			
+	return 	wall_checked_scan_base_pose_list			
 	#rospy.loginfo(wall_checked_scan_base_pose_list)
-
-
 
 #calculate scan base poses
 def handle_symbol_grounding_scan_base_pose(req):
@@ -442,10 +411,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 	#rospy.loginfo(scan_base_pose_list_4)
 	
 	#obstacle check
-	obstacle_checked_scan_base_pose_list_1 = obstacleCheck(scan_base_pose_list_1, furniture_geometry_list, parent_obj_x, parent_obj_y)
-	obstacle_checked_scan_base_pose_list_2 = obstacleCheck(scan_base_pose_list_2, furniture_geometry_list, parent_obj_x, parent_obj_y)
-	obstacle_checked_scan_base_pose_list_3 = obstacleCheck(scan_base_pose_list_3, furniture_geometry_list, parent_obj_x, parent_obj_y)
-	obstacle_checked_scan_base_pose_list_4 = obstacleCheck(scan_base_pose_list_4, furniture_geometry_list, parent_obj_x, parent_obj_y)
+	obstacle_checked_scan_base_pose_list_1 = obstacleCheck(scan_base_pose_list_1, furniture_geometry_list)
+	obstacle_checked_scan_base_pose_list_2 = obstacleCheck(scan_base_pose_list_2, furniture_geometry_list)
+	obstacle_checked_scan_base_pose_list_3 = obstacleCheck(scan_base_pose_list_3, furniture_geometry_list)
+	obstacle_checked_scan_base_pose_list_4 = obstacleCheck(scan_base_pose_list_4, furniture_geometry_list)
 
 
 

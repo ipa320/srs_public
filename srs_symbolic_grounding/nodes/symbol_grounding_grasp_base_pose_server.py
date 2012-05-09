@@ -114,7 +114,7 @@ def getRobotBasePoseList(angle, dist, rbp, obj_x, obj_y):
 		grasp_base_pose = Pose2D()
 		grasp_base_pose.x = target_obj_x + dist_to_obj * math.cos(th) - 0.1 * math.sin(th) - 2 * math.sqrt(dist_to_obj ** 2 + 0.1 ** 2) * math.sin(0.5 * n * step_angle) * math.sin(0.5 * n * step_angle + math.atan(0.1 / dist_to_obj) + th)
 		grasp_base_pose.y = target_obj_y + dist_to_obj * math.sin(th) + 0.1 * math.cos(th) + 2 * math.sqrt(dist_to_obj ** 2 + 0.1 ** 2) * math.sin(0.5 * n * step_angle) * math.cos(0.5 * n * step_angle + math.atan(0.1 / dist_to_obj) + th)
-		grasp_base_pose.theta = th + n * step_angle + math.atan(0.1 / dist_to_obj)
+		grasp_base_pose.theta = th + n * step_angle
 		rospy.loginfo([th, n * step_angle, math.atan(0.1 / dist_to_obj)])
 		if grasp_base_pose.theta > math.pi:
 			grasp_base_pose.theta -= 2 * math.pi

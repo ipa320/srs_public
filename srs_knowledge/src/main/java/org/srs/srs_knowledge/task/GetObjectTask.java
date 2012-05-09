@@ -655,7 +655,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
 	// call symbol grounding to get parameters for the MoveAndGrasp action
 	try {
+	    
 	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
+	    //ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo furGeo = newGetFurnitureGeometryOf(workspaces.get(currentSubAction));
 	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
 	    recentDetectedObject = ActionFeedback.toPose(fb);
 	    if(recentDetectedObject == null) {
@@ -663,6 +665,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    }
 
 	    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
+	    //Pose2D pos = newCalculateGraspPosition(furGeo, recentDetectedObject);
 	    return pos;
 	}
 	catch (Exception e) {
@@ -722,7 +725,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	sc.shutdown();
 	return posList;
     }
-
+    
     private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
 	Pose2D pos = new Pose2D();
 	
@@ -743,7 +746,29 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	return pos;
     }
+        
+    private Pose2D newCalculateGraspPosition(ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo furnitureInfo, Pose targetPose) throws RosException {
+	//Pose2D pos = new Pose2D();
+	//ArrayList<Pose2D> poses = new ArrayList<Pose2D>();
+	Pose2D pose = new Pose2D();
+	ServiceClient<SymbolGroundingGraspBasePose.Request, SymbolGroundingGraspBasePose.Response, SymbolGroundingGraspBasePose> sc = KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_grasp_base_pose" , new SymbolGroundingGraspBasePose(), false);
+	
+	SymbolGroundingGraspBasePose.Request rq = new SymbolGroundingGraspBasePose.Request();
+	rq.parent_obj_geometry = furnitureInfo;
+	rq.target_obj_pose = targetPose;
 
+	SymbolGroundingGraspBasePose.Response res = sc.call(rq);
+	boolean obstacleCheck = res.obstacle_check;
+	double reach = res.reach;
+	pose = res.grasp_base_pose;
+
+	sc.shutdown();
+	if(obstacleCheck) {
+	    return null;
+	}
+	return pose;
+    }
+    
     private SRSFurnitureGeometry getFurnitureGeometryOf(Individual workspace) {
 	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
 	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
@@ -770,6 +795,35 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	spatialInfo.pose.orientation.z = stm.getFloat();
 	return spatialInfo;
     }
+
+    private ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo newGetFurnitureGeometryOf(Individual workspace) {
+	ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo spatialInfo = new ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo();
+	//SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
+	spatialInfo.pose.position.x = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord",  workspace);
+	spatialInfo.pose.position.y = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord",  workspace);
+	spatialInfo.pose.position.z = stm.getFloat();
+	
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "widthOfObject",  workspace);
+	spatialInfo.w = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "heightOfObject",  workspace);
+	spatialInfo.h = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "lengthOfObject",  workspace);
+	spatialInfo.l = stm.getFloat();
+	
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qu",  workspace);
+	spatialInfo.pose.orientation.w = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qx",  workspace);
+	spatialInfo.pose.orientation.x = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qy",  workspace);
+	spatialInfo.pose.orientation.y = stm.getFloat();
+	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qz",  workspace);
+	spatialInfo.pose.orientation.z = stm.getFloat();
+	return spatialInfo;
+    }
+
 
     private void initTask(String targetContent) {
 	acts = new ArrayList<ActionTuple>();

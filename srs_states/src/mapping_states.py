@@ -90,15 +90,21 @@ class UpdateEnvMap(smach.State):
 		#sss.move("head","front")
 		#sss.move("tray","down")
 		#sss.move("base",scan_position)
-		rospy.wait_for_service('point_map/clear_point_map',10)
+		rospy.wait_for_service('registration/reset',10)
 		try:
-			clear_point_map = rospy.ServiceProxy('point_map/clear_point_map', Trigger)
+			reset_registration = rospy.ServiceProxy('registration/reset', Trigger)
+			resp1 = reset_registration()
+		except rospy.ServiceException, e:
+			print "Service call failed: %s"%e
+		rospy.wait_for_service('point_map/clear_map',10)
+		try:
+			clear_point_map = rospy.ServiceProxy('point_map/clear_map', Trigger)
 			resp1 = clear_point_map()
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
-		rospy.wait_for_service('geometry_map/clear_geometry_map',10)
+		rospy.wait_for_service('geometry_map/clear_map',10)
 		try:
-			clear_geom_map = rospy.ServiceProxy('geometry_map/clear_geometry_map', Trigger)
+			clear_geom_map = rospy.ServiceProxy('geometry_map/clear_map', Trigger)
 			resp1 = clear_geom_map()
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
@@ -110,6 +116,7 @@ class UpdateEnvMap(smach.State):
 		self.client.send_goal(goal)
 		if not self.client.wait_for_result():#rospy.Duration.from_sec(5.0)):
 			return 'failed'
+                sss.sleep(5.0)
 		angle_start = -userdata.angle_range/2
 		angle_stop = userdata.angle_range/2
 		sss.move("torso",[[-0.2,angle_start,-0.1]])

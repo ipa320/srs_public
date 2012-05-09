@@ -71,6 +71,8 @@ import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Collections;
+import java.util.Comparator;
 import ros.*;
 import ros.communication.*;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
@@ -144,15 +146,73 @@ public class OntoQueryUtil
 	// list possible workspace(s), e.g. tables
 	//ArrayList<String> otherWorkspaces = tempGetFurnituresLinkedToObject(objectClassName);
 	ArrayList<String> otherWorkspaces = getFurnituresLinkedToObject(objectClassName);
-	//workspaceList.addAll(otherWorkspaces);
-
+	
 	Iterator<Individual> otherInstances;
+	//ArrayList<String> otherWSInd = new ArrayList<String>();
 	for(int i = 0; i < otherWorkspaces.size(); i++) {
 	    otherInstances = KnowledgeEngine.ontoDB.getInstancesOfClass(globalNameSpace + otherWorkspaces.get(i));
 	    workspaceList = OntoQueryUtil.addUniqueInstances(workspaceList, otherInstances);
+	    //otherWSInd = OntoQueryUtil.addUniqueInstances(otherWSInd, otherInstances);
 	}
 
+	/*
+	// To sort by distance... TODO: robot current location is unknown... to implement in future
+	Collections.sort(otherWSInd, new Comparator<String>() {
+	public int compare(String ind1, String ind2) {
+	
+	// TODO;;;
+	Pose p1 = OntoQueryUtil.getPoseOfObject(ind1);
+	Pose p2 = OntoQueryUtil.getPoseOfObject(ind2);
+	return 0;
+	}
+	}
+	);
+	workspaceList.addAll(otherWSInd);
+	*/
+	
 	return workspaceList;
+    }
+
+    public static Pose getPoseOfObject(String objectURI) {
+	
+	Pose p = new Pose();
+	
+	com.hp.hpl.jena.rdf.model.Statement stm;
+	try{
+	    Individual temp = KnowledgeEngine.ontoDB.getIndividual(objectURI);
+	    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord", temp);
+	    p.position.x = getFloatOfStatement(stm);
+	    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord", temp);
+	    p.position.y = getFloatOfStatement(stm);
+	    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "zCoord", temp);
+	    p.position.z = getFloatOfStatement(stm);
+	    
+	    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qu", temp);
+	    p.orientation.w = getFloatOfStatement(stm);
+	    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qx", temp);
+	    p.orientation.x = getFloatOfStatement(stm);
+	    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qy", temp);
+	    p.orientation.y = getFloatOfStatement(stm);
+	    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "qz", temp);
+	    p.orientation.z = getFloatOfStatement(stm);
+	}
+	catch(NonExistenceEntryException e) {
+	    return null;
+	}
+	catch(Exception e) {
+	    //System.out.println("CAUGHT exception: " + e.getMessage()+ ".. added invalid values");
+	    
+	    p.position.x = -1000;
+	    p.position.y = -1000;
+	    p.position.z = -1000;
+	    
+	    p.orientation.w = -1000;
+	    p.orientation.x = -1000;
+	    p.orientation.y = -1000;
+	    p.orientation.z = -1000;
+	}
+	
+	return p;
     }
 
     public static ArrayList<String> addUniqueInstances(ArrayList<String> original, Iterator<Individual> newList) {

@@ -177,12 +177,26 @@ class get_grasps_from_position():
 			#for
 		#for
 
+		#order grasps
+		if len(resp.grasp_configuration) > 0:
+			(resp.grasp_configuration).sort();
+
 		rospy.loginfo(str(len(resp.grasp_configuration))+" valid grasps for this pose.");	
 		rospy.loginfo("/get_grasps_from_position call has finished.");
 		print "Time employed: " + str(time.time() - x);
 		print "---------------------------------------";
 		return resp;
 	 
+
+	def __cmp__(self, other):
+		if self.grasp.position.z < other.grasp.position.z :
+			rst = 1
+		elif self.grasp.position.z > other.grasp.position.z :
+			rst = -1
+		else :
+			rst = 0
+
+		return rst
 
 	def get_joint_state(self, msg):
 		global current_joint_configuration;

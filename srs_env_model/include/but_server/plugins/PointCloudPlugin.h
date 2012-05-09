@@ -91,6 +91,10 @@ namespace srs
         */
         void insertCloudCallback(const tIncommingPointCloud::ConstPtr& cloud);
 
+        /**
+         * Test if incomming pointcloud2 has rgb part
+         */
+        bool isRGBCloud( const tIncommingPointCloud::ConstPtr& cloud );
 
     protected:
         //! Is publishing enabled?
@@ -138,6 +142,12 @@ namespace srs
 
         //! Counter
         long counter;
+
+        //! Has input cloud rgb data?
+        bool m_bUseRGB;
+
+        //! Input type was set by parameter
+        bool m_bRGB_byParameter;
 
     }; // class CPointCloudPlugin
 

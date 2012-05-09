@@ -234,6 +234,10 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	if( !useFrame() )
 		return;
 
+
+	// Lock data
+	boost::mutex::scoped_lock lock( m_lockData );
+
 	ros::WallTime startTime = ros::WallTime::now();
 
 	tPointCloud pc_ground; // segmented ground plane
@@ -285,7 +289,6 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
 
 	insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
-
 	if( m_removeSpecles )
 	{
 		degradeSingleSpeckles();
@@ -304,6 +307,7 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(),
 			pc_nonground.size(), total_elapsed);
 
+
 	if( m_removeTester != 0 )
 	{
 		long removed = doObjectTesting( m_removeTester );
@@ -321,6 +325,9 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 			m_removeTester = 0;
 		}
 	}
+
+	// Release lock
+	lock.unlock();
 	// Publish new data
 	invalidate();
 }
@@ -331,12 +338,17 @@ void srs::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
  */
 void srs::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf, const tPointCloud & ground, const tPointCloud & nonground)
 {
+
 	octomap::point3d sensorOrigin = octomap::pointTfToOctomap(sensorOriginTf);
 
 	double maxRange(m_mapParameters.maxRange);
-//	octomap::Pointcloud pcNonground;
-//	octomap::pointcloudPCLToOctomap( nonground, pcNonground );
+/*
+	octomap::Pointcloud pcNonground;
+	octomap::pointcloudPCLToOctomap( nonground, pcNonground );
+	m_data->octree.insertScan( pcNonground, sensorOrigin, maxRange, true, false );
+*/
 	m_data->octree.insertColoredScan(nonground, sensorOrigin, maxRange, true);
+
 }
 
 
@@ -457,6 +469,8 @@ void srs::COctoMapPlugin::filterGroundPlane(const tPointCloud & pc, tPointCloud 
 
 void srs::COctoMapPlugin::reset()
 {
+	// Lock data
+	boost::mutex::scoped_lock lock( m_lockData );
 	m_data->octree.clear();
 }
 
@@ -467,6 +481,9 @@ void srs::COctoMapPlugin::reset()
 /// Crawl octomap
 void srs::COctoMapPlugin::crawl( const ros::Time & currentTime )
 {
+	// Lock data
+	boost::mutex::scoped_lock lock( m_lockData );
+
 	// Fill needed structures
 	onCrawlStart(currentTime);
 
@@ -539,13 +556,15 @@ bool srs::COctoMapPlugin::shouldPublish()
 
 void srs::COctoMapPlugin::onPublish(const ros::Time & timestamp)
 {
-  octomap_ros::OctomapBinary map;
-  map.header.frame_id = m_mapParameters.frameId;
-  map.header.stamp = timestamp;
+	// Lock data
+	boost::mutex::scoped_lock lock( m_lockData );
+	octomap_ros::OctomapBinary map;
+	map.header.frame_id = m_mapParameters.frameId;
+	map.header.stamp = timestamp;
 
-  octomap::octomapMapToMsgData(m_data->octree, map.data);
+	octomap::octomapMapToMsgData(m_data->octree, map.data);
 
-  m_ocPublisher.publish(map);
+	m_ocPublisher.publish(map);
 }
 
 /// Fill map parameters

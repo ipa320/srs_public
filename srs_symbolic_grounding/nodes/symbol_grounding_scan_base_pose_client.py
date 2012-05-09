@@ -89,29 +89,34 @@ def getWorkspaceOnMap():
 	except rospy.ServiceException, e:
 		print "Service call failed: %s"%e
 
+
+
 if __name__ == "__main__":
 
 	workspace_info = getWorkspaceOnMap()	
 	
 	parent_obj_geometry = SRSSpatialInfo()
 	
-	#parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[6].pose.position.x
-	#parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[6].pose.position.y
-	parent_obj_geometry.pose.position.z = workspace_info.objectsInfo[6].pose.position.z
-	parent_obj_geometry.pose.orientation.x = workspace_info.objectsInfo[6].pose.orientation.x
-	parent_obj_geometry.pose.orientation.y = workspace_info.objectsInfo[6].pose.orientation.y
-	parent_obj_geometry.pose.orientation.z = workspace_info.objectsInfo[6].pose.orientation.z
-	parent_obj_geometry.pose.orientation.w = workspace_info.objectsInfo[6].pose.orientation.w
-	parent_obj_geometry.l = workspace_info.objectsInfo[6].l
-	parent_obj_geometry.w = workspace_info.objectsInfo[6].w
-	parent_obj_geometry.h = workspace_info.objectsInfo[6].h
+	parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[2].pose.position.x
+	parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[2].pose.position.y
+	parent_obj_geometry.pose.position.z = workspace_info.objectsInfo[2].pose.position.z
+	parent_obj_geometry.pose.orientation.x = workspace_info.objectsInfo[2].pose.orientation.x
+	parent_obj_geometry.pose.orientation.y = workspace_info.objectsInfo[2].pose.orientation.y
+	parent_obj_geometry.pose.orientation.z = workspace_info.objectsInfo[2].pose.orientation.z
+	parent_obj_geometry.pose.orientation.w = workspace_info.objectsInfo[2].pose.orientation.w
+	parent_obj_geometry.l = workspace_info.objectsInfo[2].l
+	parent_obj_geometry.w = workspace_info.objectsInfo[2].w
+	parent_obj_geometry.h = workspace_info.objectsInfo[2].h
+	rospy.loginfo(parent_obj_geometry.pose)
 
-	parent_obj_geometry.pose.position.x = 0.67
-	parent_obj_geometry.pose.position.y = 1.26
-
-	
-	
-	
+	#parent_obj_geometry.pose.position.x = 8.6
+	#parent_obj_geometry.pose.position.y = 2.5
+	#parent_obj_geometry.pose.orientation.x = 0 
+	#parent_obj_geometry.pose.orientation.y = 0
+	#parent_obj_geometry.pose.orientation.z = -0.999783754349
+	#parent_obj_geometry.pose.orientation.w = 0.0207948293537
+	#parent_obj_geometry.l = 1.5
+	#parent_obj_geometry.w = 0.4
 
 	furniture_geometry_list = list()
 	furniture_geometry_list = workspace_info.objectsInfo

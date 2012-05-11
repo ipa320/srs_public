@@ -179,7 +179,7 @@ class srs_grasp(smach.State):
         if not sol:
             return 'not_completed';
         else:
-            sss.move("torso","home")
+            #sss.move("torso","home")
             arm_handle = sss.move("arm", [pre_grasp_conf, grasp_conf], False)
             arm_handle.wait();
 
@@ -189,14 +189,19 @@ class srs_grasp(smach.State):
             rospy.sleep(2);
 
             #TODO: Confirm the grasp based on force feedback
-            successful_grasp = grasping_functions.sdh_tactil_sensor_result();
+            successful_grasp = False#grasping_functions.sdh_tactil_sensor_result();
 
             if not successful_grasp:
                 #TODO: Regrasp (close MORE the fingers)
                 regrasp = list(userdata.grasp_configuration[userdata.grasp_configuration_id].sdh_joint_values)
-                regrasp[2] -= 0.1
-                regrasp[4] -= 0.1
-                regrasp[6] -= 0.1
+                print "Current config, trying regrasp", regrasp
+                #regrasp[2] -= 0.1
+                #regrasp[4] -= 0.1
+                #regrasp[6] -= 0.1
+                regrasp[1] += 0.07
+                regrasp[3] += 0.07
+                regrasp[5] += 0.07
+                print "to", regrasp
                 arm_handle = sss.move("sdh", [regrasp], False)
                 arm_handle.wait();
                 successful_grasp = True#grasping_functions.sdh_tactil_sensor_result();

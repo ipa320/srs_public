@@ -17,6 +17,9 @@ from shared_state_information import *
 from eval_objects import *
 from cob_3d_mapping_msgs.msg import *
 
+from srs_symbolic_grounding.srv import *
+from srs_symbolic_grounding.msg import *
+
 #from srs_grasping.srv import *
 from geometry_msgs.msg import *
 
@@ -171,8 +174,9 @@ class user_intervention_on_detection(smach.State):
         
         self.object=Detection()
         self.object_pose=Pose()
-        self.bb_pose=Pose()
-        
+        self.bb_pose=Pose2D()
+
+                
     def execute(self, userdata):
         if self.preempt_requested():
             self.service_preempt()
@@ -275,21 +279,53 @@ class user_intervention_on_detection(smach.State):
         user_intervention_service_called=2
         #BBmove service base and then movement
         moveBB=BBMoveResponse()
-        moveBB.message.data='moving to better position'
         
-        #
+        try:
+            rospy.wait_for_service('scan_base_pose',10)
+        except rospy.ROSException, e:
+            print "Service not available: %s"%e
+            s.shutdown()
+            s2.shutdown()
+            moveBB.message.data='service failed try again'
+
+            outcome_detectObjectSrv = 'failed'
+        
+        try:
+            base_pose_service = rospy.ServiceProxy('scan_base_pose', ScanBasePose)
+            req_scan = ScanBasePoseRequest()
+            srs_info=SRSSpatialInfo()
+            srs_info.l=req.l
+            srs_info.w=req.w
+            srs_info.h=req.h
+            srs_info.pose=req.pose 
+            req_scan.parent_obj_geometry=srs_info
+            res = base_pose_service(req_scan)
+            self.bb_pose=res.scan_base_pose_list[0]
+            #print res
+            s.shutdown()
+            s2.shutdown()
+            moveBB.message.data='moving to better position'
+
+            
+
+            outcome_user_intervention = 'succeeded'
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+            s.shutdown()
+            s2.shutdown()
+            moveBB.message.data='service failed try again'
+
+            outcome_user_intervention = 'failed'
         
         #service call to get better position 
-        pose=Pose()
-        pose.position.x=1
-        pose.position.y=2
-        pose.position.z=3
-        self.bb_pose=pose
+        #pose=Pose()
+       # pose.position.x=1
+        #pose.position.y=2
+        #pose.position.z=3
+        #self.bb_pose=pose
         
-        outcome_user_intervention='bb_move'
+       # outcome_user_intervention='bb_move'
 
         #shutdown both service
-        s.shutdown()
-        s2.shutdown()
+
         return moveBB
-    

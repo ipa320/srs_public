@@ -25,11 +25,12 @@ from srs_assisted_detection.srv import *
 from geometry_msgs.msg import *
 ## Detect state
 #
-# This state will try to detect an object.
-outcome = ''
-outcome2 = ''
-call=False
-call2=0
+# outcomes save the outcome from the sm from the service function
+outcome_detectObjectSrv  = ''
+outcome_user_intervention = ''
+#flag will be set if the service was called
+assisted_detection_service_called=False
+user_intervention_service_called=0
 
 
 class detect_object_assited(smach.State):
@@ -63,19 +64,19 @@ class detect_object_assited(smach.State):
         self.object_name=userdata.object_name
         s = rospy.Service('assisted_detection', UiDetector, self.detectObjectSrv)
         s.spin()
-        if (call):
+        if (assisted_detection_service_called):
             userdata.object_list=self.object_list
-            return outcome
+            return outcome_detectObjectSrv 
     
     def detectObjectSrv(self,req):
        
        
        
-        global outcome
+        global outcome_detectObjectSrv 
        
         if self.preempt_requested():
            self.service_preempt()
-           outcome= 'preempted'
+           outcome_detectObjectSrv = 'preempted'
            return detector_response
         
         # move sdh as feedback
@@ -95,7 +96,7 @@ class detect_object_assited(smach.State):
                 handle_torso.client.cancel_goal()
                 handle_head.client.cancel_goal()
                 
-                outcome= 'preempted'
+                outcome_detectObjectSrv = 'preempted'
         else:
                 handle_arm.wait()
                 handle_head.wait()
@@ -115,7 +116,7 @@ class detect_object_assited(smach.State):
             rospy.wait_for_service(self.srv_name_object_detection,10)
         except rospy.ROSException, e:
             print "Service not available: %s"%e
-            outcome= 'failed'
+            outcome_detectObjectSrv = 'failed'
 
         # call object detection service
         try:
@@ -127,21 +128,26 @@ class detect_object_assited(smach.State):
             
             
 
-            outcome= 'succeeded'
+            outcome_detectObjectSrv = 'succeeded'
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
 
-            outcome= 'failed'
+            outcome_detectObjectSrv = 'failed'
 
         detector_response=UiDetectorResponse()
         if len(res.object_list.detections) > 0:
             detector_response.object_list.header=res.object_list.header
             for x in range(len(res.object_list.detections)):
                 detector_response.object_list.detections.insert(x,res.object_list.detections[x])
-        global call
-        call=True
+        
+        #shutdown server and set flag true        
+        global assisted_detection_service_called
+        assisted_detection_service_called=True
         s.shutdown()
+        
+        
         self.object_list=detector_response.object_list
+        #return service answer
         return detector_response  
     
 
@@ -177,13 +183,14 @@ class user_intervention_on_detection(smach.State):
         self.object_list=userdata.target_object_list
         global s
         global s2
+        
         s = rospy.Service('assisted_answer', UiAnswer, self.answerObjectSrv)
         s2 = rospy.Service('assisted_BBmove', BBMove, self.moveBBSrv)
 
         rospy.loginfo("Assisted Answer ready.")
         s.spin()
         s2.spin()
-        if(call2==1):
+        if(user_intervention_service_called==1):
             #userdata.object=self.object
             #userdata.object_pose=self.object_pose
             #userdata.bb_pose=self.bbpose
@@ -201,23 +208,25 @@ class user_intervention_on_detection(smach.State):
             userdata.object_pose=object_pose_map
             userdata.object=self.object
             
-            return outcome2
-        if(call2==2):
+            return outcome_user_intervention
+        if(user_intervention_service_called==2):
             print self.bb_pose
             userdata.bb_pose=self.bb_pose
-            return outcome2
+            return outcome_user_intervention
 
         
         
     def answerObjectSrv(self,req):    
-        global call2
-        global outcome2
-        call2=1
+        global user_intervention_service_called
+        global outcome_user_intervention
+        
+        user_intervention_service_called=1
+        
         rospy.loginfo("Get Object information")
         answer=UiAnswerResponse()
         
         if(req.action=='give up'):
-            outcome2 = 'give up'
+            outcome_user_intervention = 'give up'
             answer.message.data='process stopped'
             return answer
             
@@ -237,7 +246,7 @@ class user_intervention_on_detection(smach.State):
         pose.orientation.z=self.object_list.detections[req.id].pose.pose.orientation.z
         pose.orientation.w=self.object_list.detections[req.id].pose.pose.orientation.w
         
-        
+        print pose
         self.object_pose=pose
         self.object=self.object_list.detections[req.id]
         
@@ -246,10 +255,12 @@ class user_intervention_on_detection(smach.State):
         #default for user
         #action='grasp'
     
+    
+        #shutdown both service
         s.shutdown()
         s2.shutdown()
 
-        outcome2 = 'succeeded'
+        outcome_user_intervention = 'succeeded'
         answer.message.data='Action is running'
         return answer
     
@@ -258,10 +269,10 @@ class user_intervention_on_detection(smach.State):
         
     def moveBBSrv(self,req):
         rospy.loginfo("Get BB information")
-        global call2
-        global outcome2
+        global user_intervention_service_called
+        global outcome_user_intervention
         
-        call2=2
+        user_intervention_service_called=2
         #BBmove service base and then movement
         moveBB=BBMoveResponse()
         moveBB.message.data='moving to better position'
@@ -275,8 +286,9 @@ class user_intervention_on_detection(smach.State):
         pose.position.z=3
         self.bb_pose=pose
         
-        outcome2='bb_move'
-        
+        outcome_user_intervention='bb_move'
+
+        #shutdown both service
         s.shutdown()
         s2.shutdown()
         return moveBB

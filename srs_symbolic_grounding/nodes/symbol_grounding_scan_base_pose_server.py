@@ -162,15 +162,15 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 			if index_4 == len(map_index_list):
 				wall_checked_scan_base_pose_list.append(obstacle_checked_scan_base_pose_list[index_3])
 			index_3 += 1
-	
+	'''
 	if wall_checked_scan_base_pose_list:
 		step_dist = 0.05
 		map_index_list = list()
 		threshold = 20
 		index_5 = 0
 		while index_5 < len(wall_checked_scan_base_pose_list):
-			n = 0
 			dist = math.sqrt((parent_obj_y - wall_checked_scan_base_pose_list[index_5].y) ** 2 + (parent_obj_x - wall_checked_scan_base_pose_list[index_5].x) ** 2)
+			n = 0
 			while n < int((dist - 0.5) / step_dist):
 				wall_check_point_x = wall_checked_scan_base_pose_list[index_5].x - (0.5 + n * step_dist) * math.cos(wall_checked_scan_base_pose_list[index_5].theta)
 				wall_check_point_y = wall_checked_scan_base_pose_list[index_5].y - (0.5 + n * step_dist) * math.sin(wall_checked_scan_base_pose_list[index_5].theta)
@@ -188,8 +188,8 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 			if index_6 == len(map_index_list):
 				all_checked_scan_base_pose_list.append(wall_checked_scan_base_pose_list[index_5])
 			index_5 += 1
-
-	return 	all_checked_scan_base_pose_list			
+	'''
+	return 	wall_checked_scan_base_pose_list			
 	#rospy.loginfo(wall_checked_scan_base_pose_list)
 
 

@@ -63,15 +63,15 @@ import rospy
 
 
 
-def symbol_grounding_scan_base_pose_client(parent_obj_geometry, furniture_geometry_list):
+def scan_base_pose_client(parent_obj_geometry):
 
-	rospy.wait_for_service('symbol_grounding_scan_base_pose')
+	rospy.wait_for_service('scan_base_pose')
 	
-	symbol_grounding_scan_base_pose = rospy.ServiceProxy('symbol_grounding_scan_base_pose', SymbolGroundingScanBasePose)
+	scan_base_pose = rospy.ServiceProxy('scan_base_pose', ScanBasePose)
 	
 	try:
 		resp = list()
-		resp.append(symbol_grounding_scan_base_pose(parent_obj_geometry, furniture_geometry_list))
+		resp.append(scan_base_pose(parent_obj_geometry))
 		return resp
 	
 	except rospy.ServiceException, e:
@@ -80,51 +80,31 @@ def symbol_grounding_scan_base_pose_client(parent_obj_geometry, furniture_geomet
 
 
 
-def getWorkspaceOnMap():
-	print 'test get all workspace (furnitures basically here) from map'
-	try:
-		requestNewTask = rospy.ServiceProxy('get_workspace_on_map', GetWorkspaceOnMap)
-		res = requestNewTask('ipa-kitchen-map', True)
-		return res
-	except rospy.ServiceException, e:
-		print "Service call failed: %s"%e
-
 
 
 if __name__ == "__main__":
 
-	workspace_info = getWorkspaceOnMap()	
+
 	
 	parent_obj_geometry = SRSSpatialInfo()
 	
-	parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[4].pose.position.x
-	parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[4].pose.position.y
-	parent_obj_geometry.pose.position.z = workspace_info.objectsInfo[4].pose.position.z
-	parent_obj_geometry.pose.orientation.x = workspace_info.objectsInfo[4].pose.orientation.x
-	parent_obj_geometry.pose.orientation.y = workspace_info.objectsInfo[4].pose.orientation.y
-	parent_obj_geometry.pose.orientation.z = workspace_info.objectsInfo[4].pose.orientation.z
-	parent_obj_geometry.pose.orientation.w = workspace_info.objectsInfo[4].pose.orientation.w
-	parent_obj_geometry.l = workspace_info.objectsInfo[4].l
-	parent_obj_geometry.w = workspace_info.objectsInfo[4].w
-	parent_obj_geometry.h = workspace_info.objectsInfo[4].h
-	rospy.loginfo(parent_obj_geometry.pose)
 
-	#parent_obj_geometry.pose.position.x = 8.6
-	#parent_obj_geometry.pose.position.y = 2.5
-	#parent_obj_geometry.pose.orientation.x = 0 
-	#parent_obj_geometry.pose.orientation.y = 0
-	#parent_obj_geometry.pose.orientation.z = -0.999783754349
-	#parent_obj_geometry.pose.orientation.w = 0.0207948293537
-	#parent_obj_geometry.l = 1.5
-	#parent_obj_geometry.w = 0.4
 
-	furniture_geometry_list = list()
-	furniture_geometry_list = workspace_info.objectsInfo
+	parent_obj_geometry.pose.position.x = 2.0
+	parent_obj_geometry.pose.position.y = 2.5
+	parent_obj_geometry.pose.orientation.x = 0 
+	parent_obj_geometry.pose.orientation.y = 0
+	parent_obj_geometry.pose.orientation.z = -0.999783754349
+	parent_obj_geometry.pose.orientation.w = 0.0207948293537
+	parent_obj_geometry.l = 1.5
+	parent_obj_geometry.w = 0.4
+
+
 
 
 	print "Requesting scan base pose."
 	
-	result = symbol_grounding_scan_base_pose_client(parent_obj_geometry, furniture_geometry_list)
+	result = scan_base_pose_client(parent_obj_geometry)
 	
 	print result
 		

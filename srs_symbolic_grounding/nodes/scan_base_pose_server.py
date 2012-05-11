@@ -67,8 +67,8 @@ import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
-import csv
-'''
+
+
 def getWorkspaceOnMap():
 	print 'test get all workspace (furnitures basically here) from map'
 	try:
@@ -77,7 +77,7 @@ def getWorkspaceOnMap():
 		return res
 	except rospy.ServiceException, e:
 		print "Service call failed: %s"%e
-'''
+
 
 def getMapClient(): #read map from navigation service
 
@@ -90,14 +90,12 @@ def getMapClient(): #read map from navigation service
 
 
 
-def obstacleCheck(sbpl, fgl, po_x, po_y): 
+def obstacleCheck(sbpl, fgl): 
 	obstacle_checked_scan_base_pose_list = list() #used to save obstacle checked poses
 	wall_checked_scan_base_pose_list = list() #used to save wall checked poses
 	all_checked_scan_base_pose_list = list()
 	scan_base_pose_list = sbpl #read inputs
 	furniture_geometry_list = fgl
-	parent_obj_x = po_x
-	parent_obj_y = po_y
 
 	#obstacle check
 	dist_to_obstacles = 0.5  #set the minimum distance to the household furnitures
@@ -162,71 +160,20 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 			if index_4 == len(map_index_list):
 				wall_checked_scan_base_pose_list.append(obstacle_checked_scan_base_pose_list[index_3])
 			index_3 += 1
-	'''
-	if wall_checked_scan_base_pose_list:
-		step_dist = 0.05
-		map_index_list = list()
-		threshold = 20
-		index_5 = 0
-		while index_5 < len(wall_checked_scan_base_pose_list):
-			dist = math.sqrt((parent_obj_y - wall_checked_scan_base_pose_list[index_5].y) ** 2 + (parent_obj_x - wall_checked_scan_base_pose_list[index_5].x) ** 2)
-			n = 0
-			while n < int((dist - 0.5) / step_dist):
-				wall_check_point_x = wall_checked_scan_base_pose_list[index_5].x - (0.5 + n * step_dist) * math.cos(wall_checked_scan_base_pose_list[index_5].theta)
-				wall_check_point_y = wall_checked_scan_base_pose_list[index_5].y - (0.5 + n * step_dist) * math.sin(wall_checked_scan_base_pose_list[index_5].theta)
-				print([wall_check_point_x, wall_check_point_y, wall_checked_scan_base_pose_list[index_5].theta])
-				map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution)
-				map_index_list.append(map_index)
-				n += 1
-			
-			index_6 = 0
-			while index_6 < len(map_index_list):
-				if -1 < data.map.data[map_index_list[index_6]] < threshold:
-					index_6 += 1
-				else:
-					break
-			if index_6 == len(map_index_list):
-				all_checked_scan_base_pose_list.append(wall_checked_scan_base_pose_list[index_5])
-			index_5 += 1
-	'''
+	
 	return 	wall_checked_scan_base_pose_list			
 	#rospy.loginfo(wall_checked_scan_base_pose_list)
 
 
 
 #calculate scan base poses
-def handle_symbol_grounding_scan_base_pose(req):
-
-	'''
-	#record the map for checking
-	data = getMapClient()
-	spamWriter = csv.writer(open('map_data.csv', 'wb'), delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-	for n in range(80, 250):
-		spamWriter.writerow(data.map.data[130 + 320 * n : 200 + 320 * n])
-		n += 1
-	'''
-
-	'''
-	#test the map
-	data = getMapClient()
-	#test points
-	x = -3.2
-	y = -0.58  
-	map_index = int((y - data.map.info.origin.position.y) / data.map.info.resolution * data.map.info.width + (x - data.map.info.origin.position.x - 6.0) / data.map.info.resolution - 1)
-	for n in range(-20, 100):	
-		map_line = list()
-		for m in range (-9, 9):
-			map_line.append(data.map.data[map_index + n * int(data.map.info.width) + m])
-			m += 1
-		print map_line
-		n += 1
-	rospy.loginfo([data.map.info.origin.position.x, data.map.info.origin.position.y])
-	rospy.loginfo([data.map.info.width, data.map.info.height])
-	'''
+def handle_scan_base_pose(req):
 
 	
 
-	'''	
+	
+
+		
 	#get furniture information from knowledge base
 	workspace_info = getWorkspaceOnMap()	
 	furniture_geometry_list = list()
@@ -250,7 +197,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 
 	
-	'''
+	
 
 	#transform from knowledge base data to function useable data  	
 	parent_obj_x = req.parent_obj_geometry.pose.position.x
@@ -267,20 +214,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 	#rospy.loginfo(req.parent_obj_geometry)
 
 	
-	#transfrom furniture geometry list
-	index = 0
-	furniture_geometry_list = list()
-	while index < len(req.furniture_geometry_list):
-		furniture_geometry = FurnitureGeometry()
-		furniture_geometry.pose.x = req.furniture_geometry_list[index].pose.position.x
-		furniture_geometry.pose.y = req.furniture_geometry_list[index].pose.position.y
-		furniture_pose_rpy = tf.transformations.euler_from_quaternion([req.furniture_geometry_list[index].pose.orientation.x, req.furniture_geometry_list[index].pose.orientation.y, req.furniture_geometry_list[index].pose.orientation.z, req.furniture_geometry_list[index].pose.orientation.w])		
-		furniture_geometry.pose.theta = furniture_pose_rpy[2]
-		furniture_geometry.l = req.furniture_geometry_list[index].l
-		furniture_geometry.w = req.furniture_geometry_list[index].w
-		furniture_geometry.h = req.furniture_geometry_list[index].h
-		furniture_geometry_list.append(furniture_geometry)
-		index += 1
+	
 	
 	
 
@@ -442,10 +376,10 @@ def handle_symbol_grounding_scan_base_pose(req):
 	#rospy.loginfo(scan_base_pose_list_4)
 	
 	#obstacle check
-	obstacle_checked_scan_base_pose_list_1 = obstacleCheck(scan_base_pose_list_1, furniture_geometry_list, parent_obj_x, parent_obj_y)
-	obstacle_checked_scan_base_pose_list_2 = obstacleCheck(scan_base_pose_list_2, furniture_geometry_list, parent_obj_x, parent_obj_y)
-	obstacle_checked_scan_base_pose_list_3 = obstacleCheck(scan_base_pose_list_3, furniture_geometry_list, parent_obj_x, parent_obj_y)
-	obstacle_checked_scan_base_pose_list_4 = obstacleCheck(scan_base_pose_list_4, furniture_geometry_list, parent_obj_x, parent_obj_y)
+	obstacle_checked_scan_base_pose_list_1 = obstacleCheck(scan_base_pose_list_1, furniture_geometry_list)
+	obstacle_checked_scan_base_pose_list_2 = obstacleCheck(scan_base_pose_list_2, furniture_geometry_list)
+	obstacle_checked_scan_base_pose_list_3 = obstacleCheck(scan_base_pose_list_3, furniture_geometry_list)
+	obstacle_checked_scan_base_pose_list_4 = obstacleCheck(scan_base_pose_list_4, furniture_geometry_list)
 
 
 
@@ -454,43 +388,43 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 	#choose the longest scan pose list 
 	if len(obstacle_checked_scan_base_pose_list_1) == max_len:
-		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_1]
+		scan_base_pose_list = obstacle_checked_scan_base_pose_list_1
 	elif len(obstacle_checked_scan_base_pose_list_2) == max_len:
-		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_2]
+		scan_base_pose_list = obstacle_checked_scan_base_pose_list_2
 	elif len(obstacle_checked_scan_base_pose_list_3) == max_len:
-		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_3]
+		scan_base_pose_list = obstacle_checked_scan_base_pose_list_3
 	else:
-		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_4]
+		scan_base_pose_list = obstacle_checked_scan_base_pose_list_4
 	
 
 	if not scan_base_pose_list:
 		print "no valid scan pose."
 	if max_len == 1:
-		th = math.atan((scan_base_pose_list[0][0].y - parent_obj_y) / (scan_base_pose_list[0][0].x - parent_obj_x))
-		if scan_base_pose_list[0][0].x < parent_obj_x and scan_base_pose_list[0][0].y > parent_obj_y:
+		th = math.atan((scan_base_pose_list[0].y - parent_obj_y) / (scan_base_pose_list[0].x - parent_obj_x))
+		if scan_base_pose_list[0].x < parent_obj_x and scan_base_pose_list[0].y > parent_obj_y:
 			th = math.pi + th
-		if scan_base_pose_list[0][0].x < parent_obj_x and scan_base_pose_list[0][0].y < parent_obj_y:
+		if scan_base_pose_list[0].x < parent_obj_x and scan_base_pose_list[0].y < parent_obj_y:
 			th = -math.pi + th
 		if th > math.pi:
 			th -= 2.0 * math.pi
 		elif th < -math.pi:
 			th += 2.0 * math.pi
-		scan_base_pose_list[0][0].theta = th
+		scan_base_pose_list[0].theta = th
 	
 
-	return scan_base_pose_list
+	return [scan_base_pose_list]
 
 
 
-def symbol_grounding_scan_base_pose_server():
-	rospy.init_node('symbol_grounding_scan_base_pose_server')
-	s = rospy.Service('symbol_grounding_scan_base_pose', SymbolGroundingScanBasePose, handle_symbol_grounding_scan_base_pose)
+def scan_base_pose_server():
+	rospy.init_node('scan_base_pose_server')
+	s = rospy.Service('scan_base_pose', ScanBasePose, handle_scan_base_pose)
 	print "Ready to receive requests."
 	rospy.spin()
 
 
 
 if __name__ == "__main__":
-    symbol_grounding_scan_base_pose_server()
+	scan_base_pose_server()
 
 

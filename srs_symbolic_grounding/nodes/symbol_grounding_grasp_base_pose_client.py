@@ -24,7 +24,7 @@
 # \date Date of creation: Mar 2012
 #
 # \brief
-# test client for symbol_grounding_grasp_base_pose_experimental_server
+# test client for symbol_grounding_grasp_base_pose_server
 #
 #################################################################
 #
@@ -63,14 +63,14 @@ from geometry_msgs.msg import *
 import rospy
 import tf
 
-def symbol_grounding_grasp_base_pose_experimental_client(target_obj_pose, parent_obj_geometry, furniture_geometry_list):
+def symbol_grounding_grasp_base_pose_client(target_obj_pose, parent_obj_geometry, furniture_geometry_list):
 
 
-	rospy.wait_for_service('symbol_grounding_grasp_base_pose_experimental')
-	symbol_grounding_grasp_base_pose_experimental = rospy.ServiceProxy('symbol_grounding_grasp_base_pose_experimental', SymbolGroundingGraspBasePoseExperimental)
+	rospy.wait_for_service('symbol_grounding_grasp_base_pose')
+	symbol_grounding_grasp_base_pose = rospy.ServiceProxy('symbol_grounding_grasp_base_pose', SymbolGroundingGraspBasePose)
 
 	try:
-		resp1 = symbol_grounding_grasp_base_pose_experimental(target_obj_pose, parent_obj_geometry, furniture_geometry_list)
+		resp1 = symbol_grounding_grasp_base_pose(target_obj_pose, parent_obj_geometry, furniture_geometry_list)
 		return resp1
 	
 	except rospy.ServiceException, e:
@@ -97,8 +97,8 @@ if __name__ == "__main__":
 
 	target_obj_pose = Pose()
 
-	target_obj_pose.position.x = 2.3
-	target_obj_pose.position.y = 2.9
+	target_obj_pose.position.x = 0.5
+	target_obj_pose.position.y = 1.0
 	target_obj_pose.position.z = 1.1
 	target_obj_pose.orientation.x = 0
 	target_obj_pose.orientation.y = 0
@@ -110,8 +110,8 @@ if __name__ == "__main__":
 	
 	parent_obj_geometry = SRSSpatialInfo()
 	
-	parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[6].pose.position.x
-	parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[6].pose.position.y
+	#parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[6].pose.position.x
+	#parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[6].pose.position.y
 	parent_obj_geometry.pose.position.z = workspace_info.objectsInfo[6].pose.position.z
 	parent_obj_geometry.pose.orientation.x = workspace_info.objectsInfo[6].pose.orientation.x
 	parent_obj_geometry.pose.orientation.y = workspace_info.objectsInfo[6].pose.orientation.y
@@ -121,17 +121,16 @@ if __name__ == "__main__":
 	parent_obj_geometry.w = workspace_info.objectsInfo[6].w
 	parent_obj_geometry.h = workspace_info.objectsInfo[6].h
 
-	#parent_obj_geometry.pose.position.x = -3.3
-	#parent_obj_geometry.pose.position.y = 0.5
+	parent_obj_geometry.pose.position.x = 0.67
+	parent_obj_geometry.pose.position.y = 1.26
 
 
 	furniture_geometry_list = list()
 	furniture_geometry_list = workspace_info.objectsInfo
-	rospy.loginfo(workspace_info.objectsInfo[6])
 
 
 	print "Requesting reachability and grasp base pose."
-	result = symbol_grounding_grasp_base_pose_experimental_client(target_obj_pose, parent_obj_geometry, furniture_geometry_list)
+	result = symbol_grounding_grasp_base_pose_client(target_obj_pose, parent_obj_geometry, furniture_geometry_list)
 	print result
 
 		

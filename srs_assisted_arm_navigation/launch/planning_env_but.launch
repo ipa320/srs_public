@@ -22,6 +22,8 @@
     <node pkg="robot_self_filter" type="self_filter" respawn="true" name="stereo_self_filter" output="screen">
       <remap from="cloud_in" to="/cam3d/depth/points" />
       <remap from="cloud_out" to="/cam3d/depth/points_filtered2" />
+<!--      <remap from="cloud_in" to="/cam3d/rgb/points" />
+      <remap from="cloud_out" to="/cam3d/rgb/points_filtered2" />-->
       <param name="sensor_frame" type="string" value="head_cam3d_link" />
       <param name="subsample_value" type="double" value=".02"/>
       <rosparam command="load" file="$(find cob_arm_navigation)/config/$(env ROBOT)/self_filter.yaml" />
@@ -39,6 +41,8 @@
   <!-- Run BUT dynamic scene model server node -->
   <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
     <param name="pointcloud_subscriber" value="/cam3d/depth/points_filtered2"/>
+    <param name="input_has_rgb" type="bool" value="false"/>
+    <!--param name="pointcloud_subscriber" value="/cam3d/rgb/points_filtered2"/-->
     <param name="max_range" type="double" value="2.5"/>
     <param name="pointcloud_min_z" value="0.2" type="double"/>
     <param name="resolution" value="0.025" type="double"/>
@@ -48,3 +52,4 @@
   
   
 </launch>
+

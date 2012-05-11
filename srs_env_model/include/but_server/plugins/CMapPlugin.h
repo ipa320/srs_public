@@ -157,7 +157,7 @@ namespace srs
     public:
         /// Create holder
         SCMapPluginHolder( const std::string & name )
-        : tCMPHolder(  name,  tCMPHolder::ON_START | tCMPHolder::ON_OCCUPIED | tCMPHolder::ON_STOP)
+        : tCMPHolder(  name,  tCMPHolder::ON_START | tCMPHolder::ON_OCCUPIED )
         {
 
         }

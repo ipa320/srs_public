@@ -6,6 +6,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import PointCloud
 from geometry_msgs.msg import Point32
 from cob_people_detection_msgs.msg import PeopleDetectionArray
+from srs_human_sensing.srv import Comp_HS_Detections
 import tf
 from std_msgs.msg import Header
 
@@ -82,6 +83,8 @@ def match_detections ():
     
     pub.publish (pc)
       
+def handle_compare_hs_detections ():
+    return True
 
 def listener():
     
@@ -99,5 +102,6 @@ if __name__ == '__main__':
     tflistener = tf.TransformListener()
     tflistener.waitForTransform("/head_cam3d_link", "/map", rospy.Time(), rospy.Duration(5.0))
     pub = rospy.Publisher('people_detections_cloud', PointCloud)
+    serv = rospy.Service ('compare_hs_detections',Comp_HS_Detections,handle_compare_hs_detections)
     
     listener()

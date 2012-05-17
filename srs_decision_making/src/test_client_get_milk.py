@@ -21,8 +21,8 @@ def DM_client():
 
     # Creates a goal to send to the action server.
     _goal=xmsg.ExecutionGoal()
-    _goal.action="get"
-    _goal.parameter="anti_grippal"
+    _goal.action="fetch"
+    _goal.parameter="Milkbox%order"
     _goal.priority=0
     # Sends the goal to the action server.
     client.send_goal(_goal)

@@ -485,7 +485,7 @@ class SRS_DM_ACTION(object):
             req.task = current_task_info.task_name
             
             ## added by ze
-            pars = current_task_info.task_parameter.split(",")    
+            pars = current_task_info.task_parameter.split("%")    
             length = len(pars)
             if length == 1:
                 req.content = current_task_info.task_parameter

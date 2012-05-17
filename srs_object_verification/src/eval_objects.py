@@ -54,8 +54,8 @@ class EvalObjects:
     d_min = 10000
     d_th = 0.5
     for t in table_list_map.objects.shapes:
-      pose_map = t.params[4:]
-      d = sqrt((pose_map[0]-object_pose.position.x)**2+(pose_map[1]-object_pose.position.y)**2)
+      #pose_map = t.params[4:]
+      d = sqrt((t.centroid.x-object_pose.position.x)**2+(t.centroid.y-object_pose.position.y)**2)
       if d < d_min and d < d_th:
         d_min = d
         closest_table = t

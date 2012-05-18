@@ -38,6 +38,9 @@
 #include "nav_msgs/OccupancyGrid.h"
 #include "nav_msgs/GetMap.h"
 
+// services
+#include <srs_leg_detector/DetectLegs.h>
+
 typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client;
 
 using namespace std;
@@ -168,26 +171,7 @@ int SavedFeature::nextid = 0;
 
 
 
-/*
-class MatchedFeature
-{
-public:
-  SampleSet* candidate_;
-  SavedFeature* closest_;
-  float distance_;
 
-  MatchedFeature(SampleSet* candidate, SavedFeature* closest, float distance)
-  : candidate_(candidate)
-  , closest_(closest)
-  , distance_(distance)
-  {}
-
-  inline bool operator< (const MatchedFeature& b) const
-  {
-    return (distance_ <  b.distance_);
-  }
-};
- */
 
 class Legs
 {
@@ -288,7 +272,8 @@ public:
 	boost::mutex saved_mutex_;
 
 	int feature_id_;
-
+        
+        // topics
 	ros::Publisher leg_cloud_pub_ , leg_detections_pub_ , human_distance_pub_ ;  //ROS topic publishers
 
 	ros::Publisher tracker_measurements_pub_;
@@ -297,6 +282,12 @@ public:
 	message_filters::Subscriber<sensor_msgs::LaserScan> laser_sub_;
 	tf::MessageFilter<srs_msgs::PositionMeasurement> people_notifier_;
 	tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
+
+        // services
+        ros::ServiceServer service_server_detect_legs_;
+
+        // detections data for service_server_detect_legs_ service
+        vector<geometry_msgs::Point32> detected_legs;
 
 
         
@@ -315,7 +306,9 @@ public:
         //	laser_sub_(nh_,"scan_front",10),
 		people_notifier_(people_sub_,tfl_,fixed_frame,10),
 		laser_notifier_(laser_sub_,tfl_,fixed_frame,10),
+                detected_legs (),
                 client ("srs_decision_making_actions",true)
+                
 	{
 		
                 if (g_argc > 1) {
@@ -338,6 +331,11 @@ public:
 		people_notifier_.setTolerance(ros::Duration(0.01));
 		laser_notifier_.registerCallback(boost::bind(&LegDetector::laserCallback, this, _1));
 		laser_notifier_.setTolerance(ros::Duration(0.01));
+                 
+                //services
+                service_server_detect_legs_ = nh_.advertiseService("detect_legs", &LegDetector::detectLegsCallback, this);
+
+                
 
 		feature_id_ = 0;
                 pauseSent = false;
@@ -366,24 +364,10 @@ public:
                     for (int k = 0; k<320 ; k++) {
                     if   (srv_map.response.map.data [i*320+k]<0) printf (".");
                     else if (srv_map.response.map.data [i*320+k]>=0 && srv_map.response.map.data [i*320+k]<100) printf ("#");
-                    else if (srv_map.response.map.data [i*320+k]=100) printf ("@");
+                    else if (srv_map.response.map.data [i*320+k]==100) printf ("@");
                    }
                    printf ("\n");
                   }
-
-                 
-
-                  
-
-                  
-                   
-
-             //     for (int i=1; i<srv_map.response.map.data.size(); i++) {
-             //       if   (srv_map.response.map.data [i]>0)
-             //       printf("ocupancy grid %i is %i \n",i, srv_map.response.map.data [i]);    
-             //     }
-                                    
-
   
                 } 
                 else
@@ -508,10 +492,25 @@ void measure_distance (double dist) {
 
 
 
+      // calback for the DetectLegs service        
+        bool detectLegsCallback(srs_leg_detector::DetectLegs::Request &req, srs_leg_detector::DetectLegs::Response &res)
+        {
+        
+
+         res.leg_list.header.stamp = ros::Time::now();
+
+          
+         res.leg_list.points = detected_legs;
+
+         return true;
+        }
+
 
 
 	void laserCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	{
+                geometry_msgs::Point32 pt_temp; // used in building the detected_legs vector
+                detected_legs.clear(); //to be ready for the new detections
                 float map_value;
 		ScanProcessor processor(*scan, mask_);
 
@@ -676,7 +675,7 @@ void measure_distance (double dist) {
                 map_value =  srv_map.response.map.data [ind_y*160+ind_x];
                 printf ("map_value: %f \n",map_value); 
           
-                if (map_value = 100)  { 
+                if (map_value == 100)  { 
                   printf ("the point is on occupied cell of the map \n");
                  }
 
@@ -838,6 +837,19 @@ void measure_distance (double dist) {
                                 else
                                   filter_visualize[i].z=0.0;
 
+
+
+
+                                // fill up the detected_legs vector for later use
+                                 
+                                pt_temp.x =  est.pos_[0];
+                                pt_temp.y =  est.pos_[1];
+                                pt_temp.z = 0;
+
+                                detected_legs.push_back(pt_temp);
+                                
+
+
 				weights[i] = *(float*)&(rgb[min(998, max(1, (int)trunc( reliability*999.0 )))]);
 
 				srs_msgs::PositionMeasurement pos;
@@ -866,7 +878,7 @@ void measure_distance (double dist) {
 
 			// visualize all trackers
 			
-                        channel.name = "laser";
+                        channel.name = "rgb";
                         channel.values = weights;
 			sensor_msgs::PointCloud  people_cloud;  //from the filter
                         sensor_msgs::PointCloud  detections_cloud;  //directly from detections

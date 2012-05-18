@@ -38,6 +38,9 @@
 #include "nav_msgs/OccupancyGrid.h"
 #include "nav_msgs/GetMap.h"
 
+// services
+#include <srs_leg_detector/DetectLegs.h>
+
 typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client;
 
 using namespace std;
@@ -288,7 +291,8 @@ public:
 	boost::mutex saved_mutex_;
 
 	int feature_id_;
-
+        
+        // topics
 	ros::Publisher leg_cloud_pub_ , leg_detections_pub_ , human_distance_pub_ ;  //ROS topic publishers
 
 	ros::Publisher tracker_measurements_pub_;
@@ -297,6 +301,9 @@ public:
 	message_filters::Subscriber<sensor_msgs::LaserScan> laser_sub_;
 	tf::MessageFilter<srs_msgs::PositionMeasurement> people_notifier_;
 	tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
+
+        // services
+        ros::ServiceServer service_server_detect_legs_;
 
 
         
@@ -316,6 +323,7 @@ public:
 		people_notifier_(people_sub_,tfl_,fixed_frame,10),
 		laser_notifier_(laser_sub_,tfl_,fixed_frame,10),
                 client ("srs_decision_making_actions",true)
+                
 	{
 		
                 if (g_argc > 1) {
@@ -338,6 +346,9 @@ public:
 		people_notifier_.setTolerance(ros::Duration(0.01));
 		laser_notifier_.registerCallback(boost::bind(&LegDetector::laserCallback, this, _1));
 		laser_notifier_.setTolerance(ros::Duration(0.01));
+                 
+                //services
+                service_server_detect_legs_ = nh_.advertiseService("detect_legs", &LegDetector::detectLegsCallback, this);
 
 		feature_id_ = 0;
                 pauseSent = false;
@@ -507,6 +518,35 @@ void measure_distance (double dist) {
        }
 
 
+
+      // calback for the DetectLegs service        
+        bool detectLegsCallback(srs_leg_detector::DetectLegs::Request &req, srs_leg_detector::DetectLegs::Response &res)
+        {
+         //vector<geometry_msgs::Point32> pts(5);
+         geometry_msgs::Point32 pt1;
+         geometry_msgs::Point32 pt2;
+         geometry_msgs::Point32 pt3;
+         geometry_msgs::Point32 pt4;
+         geometry_msgs::Point32 pt5;
+
+         pt1.x=1.0; pt1.y=1.0;
+         pt2.x=-1.0; pt2.y=1.0;
+         pt3.x=0.5; pt3.y=-1.0;
+         pt4.x=-1.0; pt4.y=-1.0;
+         pt5.x=1.0; pt5.y=3.0;
+         
+
+         res.leg_list.header.stamp = ros::Time::now();
+
+         //res.leg_list.points.insert (pts);
+         res.leg_list.points.push_back(pt1);
+         res.leg_list.points.push_back(pt2);
+         res.leg_list.points.push_back(pt3);
+         res.leg_list.points.push_back(pt4);
+         res.leg_list.points.push_back(pt5);
+
+         return true;
+        }
 
 
 

@@ -128,19 +128,19 @@ public class KnowledgeEngine
 
     public boolean init(String cfgFile)
     {
+	ros = Ros.getInstance();
+	ros.init(nodeName);
+	ros.logInfo("INFO: Start RosJava_JNI service");
+	
+	nodeHandle = ros.createNodeHandle();
+	
 	try {
 	    initProperties(cfgFile);
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage());
 	    return false;
-	}
-	
-	ros = Ros.getInstance();
-	ros.init(nodeName);
-	ros.logInfo("INFO: Start RosJava_JNI service");
-	
-	nodeHandle = ros.createNodeHandle();
+	}	
 
 	try{
 	    initQuerySparQL();
@@ -217,7 +217,8 @@ public class KnowledgeEngine
 	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
 	getWorkspaceForObjectService = config.getProperty("getWorkspaceForObjectService", "get_workspace_for_object");
 
-	graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
+	graspActionMode = this.readGraspModeParam("/srs/grasping_type");
+	//graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
 
 	//mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
 	mapName = config.getProperty("map_name", "ipa-kitchen-map");
@@ -240,6 +241,18 @@ public class KnowledgeEngine
 	//OntoQueryUtil.MapName = mapNamespacePrefix;
 	OntoQueryUtil.MapName = mapName;
 	OntoQueryUtil.RobotName = robotName;
+    }
+
+    private String readGraspModeParam(String paramServer) {
+	String graspMode = "Simple";
+	try{
+	    graspMode = nodeHandle.getStringParam(paramServer);
+	    System.out.println("Read Parameter --- > " + graspMode);
+	}
+	catch(RosException e) {
+	    System.out.println("Caught RosException -- > " + e.toString());
+	}
+	return graspMode;
     }
 
     public void testOnto(String className)
@@ -397,11 +410,11 @@ public class KnowledgeEngine
 
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    GetObjectTask got = null;
-		    if(this.graspActionMode.equals("move_and_grasp")) {
+		    if(this.graspActionMode.equals("Simple")) {
 			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
-		    else if(this.graspActionMode.equals("just_grasp")) {
+		    else if(this.graspActionMode.equals("Planned")) {
 			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
@@ -436,11 +449,11 @@ public class KnowledgeEngine
 		if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    SearchObjectTask got = null;
-		    if(this.graspActionMode.equals("move_and_grasp")) {
+		    if(this.graspActionMode.equals("Simple")) {
 			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
-		    else if(this.graspActionMode.equals("just_grasp")) {
+		    else if(this.graspActionMode.equals("Planned")) {
 			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
@@ -474,11 +487,11 @@ public class KnowledgeEngine
 		if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    FetchObjectTask got = null;
-		    if(this.graspActionMode.equals("move_and_grasp")) {
+		    if(this.graspActionMode.equals("Simple")) {
 			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
-		    else if(this.graspActionMode.equals("just_grasp")) {
+		    else if(this.graspActionMode.equals("Planned")) {
 			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
@@ -1136,7 +1149,8 @@ public class KnowledgeEngine
 
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
-    private String graspActionMode = "move_and_grasp";
+    //private String graspActionMode = "move_and_grasp";
+    private String graspActionMode = "Simple";
     private String confPath;
     //private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing

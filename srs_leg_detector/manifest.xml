@@ -22,8 +22,7 @@
   <depend package="srs_people_tracking_filter"/>
   <depend package="opencv2"/>
   <depend package="rosbag"/>
-  <depend package="actionlib"/>
-  <depend package="srs_decision_making"/>
+  <depend package="nav_msgs"/>
 
 </package>
 

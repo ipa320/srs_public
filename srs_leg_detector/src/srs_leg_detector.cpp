@@ -32,8 +32,8 @@
 #include <algorithm>
 
 
-#include "actionlib/client/simple_action_client.h"
-#include "srs_decision_making/ExecutionAction.h"
+//#include "actionlib/client/simple_action_client.h" - prevously used to pause the DM no longer needed
+//#include "srs_decision_making/ExecutionAction.h"
 
 #include "nav_msgs/OccupancyGrid.h"
 #include "nav_msgs/GetMap.h"
@@ -41,7 +41,7 @@
 // services
 #include <srs_leg_detector/DetectLegs.h>
 
-typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client;
+//typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client; - pausing no longer needed
 
 using namespace std;
 using namespace laser_processor;
@@ -229,14 +229,14 @@ class LegDetector
 {
  
  
- srs_decision_making::ExecutionGoal goal;  // goal that will be sent to the actionserver
+// srs_decision_making::ExecutionGoal goal;  // goal that will be sent to the actionserver - - pausing no longer needed
  
 
  bool pauseSent;
  int counter;
  srs_msgs::HS_distance  distance_msg;
  
- Client client; // actionLib client for connection with DM action server
+// Client client; // actionLib client for connection with DM action server - - pausing no longer needed
 
 
  ros::ServiceClient client_map;  // clent for the getMap service
@@ -306,8 +306,8 @@ public:
         //	laser_sub_(nh_,"scan_front",10),
 		people_notifier_(people_sub_,tfl_,fixed_frame,10),
 		laser_notifier_(laser_sub_,tfl_,fixed_frame,10),
-                detected_legs (),
-                client ("srs_decision_making_actions",true)
+                detected_legs ()
+        //        client ("srs_decision_making_actions",true) - - pausing no longer needed
                 
 	{
 		
@@ -385,7 +385,10 @@ public:
 // actionlib Pause Call
    bool sendActionLibGoalPause()
         {
-         if (pauseSent) // Pause Action has been  sent already
+
+        return true; //- - pausing no longer needed
+
+         /* if (pauseSent) // Pause Action has been  sent already
                 return true;
 
          
@@ -394,7 +397,7 @@ public:
        //      Client client ("srs_decision_making_actions",true);
 
 
-                if (!client.waitForServer(ros::Duration(10))) // ros::Duration(5)
+               if (!client.waitForServer(ros::Duration(10))) // ros::Duration(5)
                                    
  
                    {
@@ -402,11 +405,11 @@ public:
                       return false;
                    }   
    
-
-                goal.action="pause";
-                goal.parameter="";
-                goal.priority=counter++;
-                client.sendGoal(goal);
+       
+       //         goal.action="pause"; - - pausing no longer needed
+       //         goal.parameter=""; - - pausing no longer needed
+        //        goal.priority=counter++; -- - pausing no longer needed
+        //        client.sendGoal(goal); - - pausing no longer needed
                 pauseSent = true;
            //wait for the action to return
                 bool finished_before_timeout = client.waitForResult(ros::Duration(2));
@@ -421,7 +424,7 @@ public:
                 ROS_INFO("Action call to DM did not finish before timeout");
               
             return false;
-
+*/
        }
 
 
@@ -450,6 +453,10 @@ void measure_distance (double dist) {
 // actionlib Resume Call
  bool sendActionLibGoalResume()
         {
+
+           return true; // pause no longer needed
+        /*
+
          if (!pauseSent ) // Resume Action has been  sent already
                 return true;
 
@@ -487,6 +494,7 @@ void measure_distance (double dist) {
                 ROS_INFO("Action call to DM did not finish before timeout");
               
             return false;
+       */
 
        }
 

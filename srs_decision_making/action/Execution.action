@@ -1,8 +1,9 @@
 #define the goal, srs_msgs/srs_action[] action_sequence	#Specify what action sequence to be applied
 string action
-string parameter
+string parameter      # to deprecate, replaced by json_parameters
 uint32 priority
-string[] parameters
+string json_parameters   # new added parameter in json (temp: by Ze)
+# string[] parameters   # to deprecate
 ---
 #define the result
 uint32 return_value

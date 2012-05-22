@@ -458,7 +458,7 @@ class SRS_DM_ACTION(object):
             current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
         ## added by Ze
-        current_task_info.task_parameters = current_goal.parameters
+        # current_task_info.task_parameters = current_goal.parameters
         
         if current_task_info.task_name=='stop':
             current_task_info.set_stop_acknowledged(False)            #
@@ -495,7 +495,7 @@ class SRS_DM_ACTION(object):
                 req.userPose = pars[1]
             print req.content
             print req.userPose
-            req.parameters = current_task_info.parameters
+            # req.parameters = current_task_info.parameters
             
             res = requestNewTask(req)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")

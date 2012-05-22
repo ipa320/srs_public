@@ -383,14 +383,14 @@ public class KnowledgeEngine
 	    }
 
 	    try{
-		if(request.parameters.size() == 0) {
-		    currentTask = new MoveTask(request.content, null);
-		    System.out.println("Created CurrentTask " + "move " + request.content);
-		}
-		else {	
-		    currentTask = new MoveTask((String)request.parameters.get(0), null);
-		    System.out.println("Created CurrentTask " + "move " + (String)request.parameters.get(0));	    
-		}
+		//if(request.parameters.size() == 0) {
+		currentTask = new MoveTask(request.content, null);
+		System.out.println("Created CurrentTask " + "move " + request.content);
+		//}
+		//else {	
+		//    currentTask = new MoveTask((String)request.parameters.get(0), null);
+		//   System.out.println("Created CurrentTask " + "move " + (String)request.parameters.get(0));	    
+		//}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -406,9 +406,9 @@ public class KnowledgeEngine
 	    }
 
 	    try{
-		if(request.parameters.size() == 0) {
+		//if(request.parameters.size() == 0) {
 
-		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		//  //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    GetObjectTask got = null;
 		    if(this.graspActionMode.equals("Simple")) {
 			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
@@ -424,12 +424,12 @@ public class KnowledgeEngine
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
-		}
-		else {	
-		    GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
-		    currentTask = (Task)got;
-		    System.out.println("Created CurrentTask " + "get " + request.parameters.get(0));	    
-		}
+		    //}
+		    //else {	
+		    //GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
+		    //currentTask = (Task)got;
+		    //System.out.println("Created CurrentTask " + "get " + request.parameters.get(0));	    
+		    //}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -446,7 +446,7 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    try{
-		if(request.parameters.size() == 0) {
+		//if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    SearchObjectTask got = null;
 		    if(this.graspActionMode.equals("Simple")) {
@@ -463,12 +463,12 @@ public class KnowledgeEngine
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "search " + request.content);	    
-		}
-		else {	
-		    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
-		    currentTask = (Task)got;
-		    System.out.println("Created CurrentTask " + "search " + request.content);	    
-		}
+		    //	}
+	    //else {	
+	    //	    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
+	    //	    currentTask = (Task)got;
+	    //	    System.out.println("Created CurrentTask " + "search " + request.content);	    
+	    //	}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -484,7 +484,7 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    try{
-		if(request.parameters.size() == 0) {
+		//if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    FetchObjectTask got = null;
 		    if(this.graspActionMode.equals("Simple")) {
@@ -501,17 +501,17 @@ public class KnowledgeEngine
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
-		}
-		else if (request.parameters.size() == 2) {	
-		    FetchObjectTask got = new FetchObjectTask(request.task, request.parameters.get(0), request.parameters.get(1));
-		    currentTask = (Task)got;
-		    System.out.println("Created CurrentTask " + "fetch " + request.parameters.get(0) + " to " + request.parameters.get(1));	    
-		}
-		else {
-		    currentTask = null;
-		    res.result = 1;
-		    res.description = "No action";
-		}
+		    //}
+		    //else if (request.parameters.size() == 2) {	
+		    // FetchObjectTask got = new FetchObjectTask(request.task, request.parameters.get(0), request.parameters.get(1));
+		    //currentTask = (Task)got;
+		    //System.out.println("Created CurrentTask " + "fetch " + request.parameters.get(0) + " to " + request.parameters.get(1));	    
+		    //}
+		    //else {
+		    //currentTask = null;
+		    //res.result = 1;
+		    //res.description = "No action";
+		    //}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -525,18 +525,18 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    try{
-		if(request.parameters.size() == 0) {
+		//if(request.parameters.size() == 0) {
 		    
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    GetObjectTask got = new GetObjectTask(request.task, request.content);
 		    currentTask = (Task)got;
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
-		}
-		else {	
-		    GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
-		    currentTask = (Task)got;
-		    System.out.println("Created CurrentTask " + "get " + request.content);	    
-		}
+		    //}
+		    //else {	
+		    //GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
+		    //currentTask = (Task)got;
+		    //System.out.println("Created CurrentTask " + "get " + request.content);	    
+		    //}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());

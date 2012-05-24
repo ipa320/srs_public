@@ -1,4 +1,4 @@
-geometry_msgs/Point face_det
-geometry_msgs/Point leg_det
+geometry_msgs/Pose face_det
+geometry_msgs/Pose leg_det
 ---
 bool human_detected

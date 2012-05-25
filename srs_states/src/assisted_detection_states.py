@@ -215,7 +215,7 @@ class user_intervention_on_detection(smach.State):
             return outcome_user_intervention
         if(user_intervention_service_called==2):
             print self.bb_pose
-            userdata.bb_pose=self.bb_pose
+            userdata.bb_pose=[self.bb_pose.x,self.bb_pose.y,self.bb_pose.theta]
             return outcome_user_intervention
 
         
@@ -308,7 +308,7 @@ class user_intervention_on_detection(smach.State):
 
             
 
-            outcome_user_intervention = 'succeeded'
+            outcome_user_intervention = 'bb_move'
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
             s.shutdown()

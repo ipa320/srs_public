@@ -1,5 +1,5 @@
 <launch>
-  	<param name="/use_sim_time" value="true" />
+  	<!--param name="/use_sim_time" value="true" /-->
 
   	<!-- srs interaction primitives -->
   	<node name="but_interaction_primitives" pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server">
@@ -17,9 +17,9 @@
   	<include file="$(find srs_assisted_arm_navigation)/launch/planning_scene_warehouse_viewer_cob3_3_robot.launch"/>
   
   	<!-- RVIZ with proper configuration -->
-  	<node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_assisted_arm_navigation)/config/arm_manip_but.vcg">
+  	<!--node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_assisted_arm_navigation)/config/arm_manip_but.vcg">
     		<param name="wait_for_start" type="bool" value="true" />
-  	</node>
+  	</node-->
   
   	<!-- BUT cob teleop marker -->
   	<node name="cob_interactive_teleop" pkg="cob_interactive_teleop" type="interactive_teleop"/>

@@ -84,8 +84,8 @@ robot_config_need_no_action = ['DM','NC','CALCULATION']
 #pre-config
 robot_config_pre['navigation_no_object']['torso']='home'
 robot_config_pre['navigation_no_object']['tray']='down'
-robot_config_pre['navigation_no_object']['arm']='folded'
-robot_config_pre['navigation_no_object']['sdh']='DM'
+robot_config_pre['navigation_no_object']['arm']='look_at_table-to-folded'
+robot_config_pre['navigation_no_object']['sdh']='home'
 robot_config_pre['navigation_no_object']['head']='front'
 #post-config
 robot_config_post['navigation_no_object']['torso']='DM' 
@@ -131,7 +131,7 @@ robot_config_post['navigation_object_in_sdh']['head']='front'
 #pre-config
 robot_config_pre['navigation_object_on_tray_and_sdh']['torso']='home'
 robot_config_pre['navigation_object_on_tray_and_sdh']['tray']='NC'
-robot_config_pre['navigation_object_on_tray_and_sdh']['arm']='hold'
+robot_config_pre['navigation_object_on_tray_and_sdh']['arm']='NC'
 robot_config_pre['navigation_object_on_tray_and_sdh']['sdh']='NC'  #should be closed, but the exact location is calculated early during grasp
 robot_config_pre['navigation_object_on_tray_and_sdh']['head']='front'
 #post config
@@ -175,11 +175,11 @@ robot_config_post['enviroment_update']['head']='front'
 #pre-config
 robot_config_pre['grasp']['torso']='DM'
 robot_config_pre['grasp']['tray']='down'
-robot_config_pre['grasp']['arm']='look_at_table'
+robot_config_pre['grasp']['arm']='folded-to-look_at_table'
 robot_config_pre['grasp']['sdh']='DM'
 robot_config_pre['grasp']['head']='back'
 #post-config
-robot_config_post['grasp']['torso']='home'
+robot_config_post['grasp']['torso']='DM'
 robot_config_post['grasp']['tray']='NC'
 robot_config_post['grasp']['arm']='CALCULATION' # can be used for both put object on tray and  hold object
 robot_config_post['grasp']['sdh']='CALCULATION'  #should be closed, but the exact location should have been calculated
@@ -196,7 +196,7 @@ robot_config_pre['put_on_tray']['head']='NC'
 robot_config_post['put_on_tray']['torso']="home"
 robot_config_post['put_on_tray']['tray']='NC'
 robot_config_post['put_on_tray']['arm']='folded' 
-robot_config_post['put_on_tray']['sdh']='NC'  
+robot_config_post['put_on_tray']['sdh']='home'  
 robot_config_post['put_on_tray']['head']='front'
 
 #place object on table

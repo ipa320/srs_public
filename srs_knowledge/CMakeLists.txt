@@ -31,7 +31,7 @@ include(cmake/utils.cmake)
 set(OWL_PATH_PREFIX ${srs_knowledge_PACKAGE_PATH})
 fix_ros_destination_path(OWL_PATH_PREFIX)
 
-file(GLOB inputs conf/ontologies/ipa-kitchen-map/*.in conf/ontologies/empty-map/*.in conf/ontologies/ipa-kitchen/*.in conf/ontologies/milan-site/*.in conf/ontologies/srs-milano2012/*.in conf/*.in)
+file(GLOB inputs conf/ontologies/ipa-kitchen-map/*.in conf/ontologies/empty-map/*.in conf/ontologies/ipa-kitchen/*.in conf/ontologies/milan-site/*.in conf/ontologies/srs-milano2012/*.in conf/ontologies/srs-milano2012-it/*.in conf/*.in)
 
 foreach( _in ${inputs} )
   string(REPLACE ".in" "" _out ${_in})

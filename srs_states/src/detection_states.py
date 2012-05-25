@@ -40,11 +40,14 @@ class detect_object(smach.State):
 
         self.torso_poses = []
         self.torso_poses.append("back_right")
-        self.torso_poses.append("back_right_extreme")
+        self.torso_poses.append("back_right")
+        #self.torso_poses.append("back_right_extreme")
         self.torso_poses.append("back")
-        self.torso_poses.append("back_extreme")
+        self.torso_poses.append("back")
+        #self.torso_poses.append("back_extreme")
         self.torso_poses.append("back_left")
-        self.torso_poses.append("back_left_extreme")
+        self.torso_poses.append("back_left")
+        #self.torso_poses.append("back_left_extreme")
         self.the_object = ''
         self.the_object_pose = ''
 
@@ -181,14 +184,16 @@ class detect_object(smach.State):
 
         try:
             #transform object_pose into base_link
-            object_pose_in = obj.pose
+            object_pose_in = copy.deepcopy(obj.pose)
             object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
             object_pose_map = listener.transformPose("/map", object_pose_in)
+            obj.pose = copy.deepcopy(object_pose_map)
+            userdata.object = obj
         except rospy.ROSException, e:
             print "Transformation not possible: %s"%e
             return 'failed'
 
-        print object_pose_map
+        #print object_pose_map
 
         userdata.object_pose=object_pose_map
         self.the_object_pose=object_pose_map
@@ -236,7 +241,7 @@ class VerifyObject(smach.State):
     
 """Verifies whether the object expected at target_object_pose is actually there.
 If yes, verfified_target_object_pose is returned."""
-class Verify_Object_by_Name(smach.State):
+class VerifyObjectByName(smach.State):
 
   def __init__(self):
 
@@ -287,11 +292,12 @@ class Verify_Object_by_Name(smach.State):
     #print "Searching for object at " + str(object_to_search.objectPose.position.x) + ", " + str(object_to_search.objectPose.position.y)
     """TODO: get classID for object_id or have class_id as input"""
     object_list_map = self.eo.map_list_objects(1)#object_to_search.classID)
+    print "object list map",object_list_map
     #if object_to_search.classID == 1: #table
     verified_table = self.eo.verify_table(target_object_pose, object_list_map)
     if verified_table:
-        userdata.verfified_target_object_pose = verified_table.params[4:7]
-        print "table " + str(target_object_pose.position.x) + "," + str(target_object_pose.position.y) + " found at " + str(verified_table.params[4]) + "," + str(verified_table.params[5])
+        userdata.verfified_target_object_pose = [verified_table.centroid.x, verified_table.centroid.y, verified_table.centroid.z]
+        print "table " + str(target_object_pose.position.x) + "," + str(target_object_pose.position.y) + " found at " + str(verified_table.centroid.x) + "," + str(verified_table.centroid.y)
         return 'succeeded'
     else:
         print "table " + str(target_object_pose.position.x) + "," + str(target_object_pose.position.y) + " not found"

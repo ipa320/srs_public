@@ -147,7 +147,7 @@ class ApproachScanPose(smach.State):
         sss.move("torso","home")
         sss.move("head","front")
         #sss.move("tray","down")
-        sss.move("base",scan_pose)
+        #sss.move("base",scan_pose)
 
         return 'succeeded'
 

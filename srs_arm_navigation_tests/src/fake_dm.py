@@ -62,8 +62,9 @@ class simulate_dm(smach.State):
     rospy.loginfo('Preparing all stuff for move_arm_to_a_given_position_assisted state')
     
     #client = actionlib.SimpleActionClient(self.action_name,ManualArmManipAction)
-    
-    target_object = 'MilkBox0'
+
+    #target_object = 'MilkBox0'
+    target_object = 'AntiGrippal0'
     
     userdata.name_of_the_target_object = target_object
     
@@ -74,7 +75,8 @@ class simulate_dm(smach.State):
       
     detect_objects = rospy.ServiceProxy('/object_detection/detect_object',DetectObjects)
       
-    obj_str = std_msgs.msg.String('milk')
+    #obj_str = std_msgs.msg.String('milk')
+    obj_str = std_msgs.msg.String('anti_grippal')
     roi_msg = sensor_msgs.msg.RegionOfInterest()          
       
     obj = None

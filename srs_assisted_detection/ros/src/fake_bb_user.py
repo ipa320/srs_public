@@ -23,7 +23,10 @@ def user_msg():
         add_two_ints = rospy.ServiceProxy('assisted_BBmove', BBMove)
         rospy.loginfo("client")
         pose=Pose()
-      
+        pose.position.x=0
+        pose.position.y=0
+        pose.position.z=0
+
         resp1 = add_two_ints(2,4,4,pose)
         rospy.loginfo(resp1)
     except rospy.ServiceException, e:

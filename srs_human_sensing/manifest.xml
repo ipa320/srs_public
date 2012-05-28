@@ -11,6 +11,14 @@
 
   <depend package="srs_leg_detector"/>
   <depend package="cob_people_detection_msgs"/>
+  <depend package="smach"/>
+  <depend package="cob_people_detection"/>
+  <depend package="smach_ros"/>
+  <depend package="tf"/>
+  <depend package="cob_people_detection_msgs"/>
+  <depend package="cob_people_detection"/>
+  <depend package="geometry_msgs"/>
+	
 
 </package>
 

@@ -1,0 +1,14 @@
+<package>
+  <description brief="srs_body_detector">
+
+     srs_body_detector
+
+  </description>
+  <author>Alex</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_body_detector</url>
+
+</package>
+
+

@@ -32,21 +32,18 @@ class BodyDetector {
         {
         
 
-         res.bodies_list.header.stamp = ros::Time::now();
+         geometry_msgs::Pose pt1,pt2,pt3,pt4;
 
-
-         geometry_msgs::Point32 pt1,pt2,pt3,pt4;
-
-         pt1.x=2.0; pt1.y=2.0;
-         pt2.x=-2.0; pt2.y=2.0;
-         pt3.x=2.0; pt3.y=-2.0;
-         pt4.x=-2.0; pt4.y=-2.0;
+         pt1.position.x=2.0; pt1.position.y=2.0;
+         pt2.position.x=-2.0; pt2.position.y=2.0;
+         pt3.position.x=2.0; pt3.position.y=-2.0;
+         pt4.position.x=-2.0; pt4.position.y=-2.0;
           
          //res.leg_list.points = detected_legs;
-         res.bodies_list.points.push_back(pt1);	
-         res.bodies_list.points.push_back(pt2);
-         res.bodies_list.points.push_back(pt3);
-         res.bodies_list.points.push_back(pt4);
+         res.bodies_list.push_back(pt1);	
+         res.bodies_list.push_back(pt2);
+         res.bodies_list.push_back(pt3);
+         res.bodies_list.push_back(pt4);
     
          return true;
         }

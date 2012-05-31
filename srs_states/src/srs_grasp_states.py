@@ -38,6 +38,17 @@ class select_srs_grasp(smach.State):
             print object_pose_in
             object_pose_in.header.stamp = listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
             object_pose_bl = listener.transformPose("/base_link", object_pose_in)
+
+	    #################### HACK TO TEST 	    #################### 
+	    #object_pose_bl.pose.position.x = 0
+	    #object_pose_bl.pose.position.y = 0
+	    #object_pose_bl.pose.position.x = 0
+	    #object_pose_bl.pose.orientation.x = 0
+	    #object_pose_bl.pose.orientation.y = 0
+	    #object_pose_bl.pose.orientation.z = 0
+	    #object_pose_bl.pose.orientation.w = 1
+	    #################### HACK TO TEST 	    #################### 
+
         except rospy.ROSException, e:
             print ("Transformation not possible: %s", e)
             return 'failed'

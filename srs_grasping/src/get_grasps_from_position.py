@@ -161,17 +161,18 @@ class get_grasps_from_position():
 					for k in range(0,self.ik_loop_reply):
 						(grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, g);
 						if(error_code.val == error_code.SUCCESS):
+
 							new_valid_grasp = GraspSubConfiguration();
 							new_valid_grasp.sdh_joint_values = grasp_configuration[i].sdh_joint_values;
 							new_valid_grasp.grasp = g.pose;
 							new_valid_grasp.pre_grasp = pre.pose;
 							new_valid_grasp.category = grasping_functions.get_grasp_category(pre.pose.position, g.pose.position);
+							sol = grasping_functions.valid_grasp(new_valid_grasp);
 
-							resp.feasible_grasp_available = True;
-							resp.grasp_configuration.append(new_valid_grasp);
-
-							sol = True;
-							break;
+							if sol:
+								resp.feasible_grasp_available = True;
+								resp.grasp_configuration.append(new_valid_grasp);
+								break;
 					if sol:
 						break;
 			#for

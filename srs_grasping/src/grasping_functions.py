@@ -274,6 +274,15 @@ def get_category(matrix, values):
 			return "NONE"
 
 
+def valid_grasp(grasp):
+	
+	category = grasp.category;
+	if (category == "UP") or (category == "SIDE") or (category == "-SIDE") or (category == "FRONT"):
+		return True;
+	else:
+		return False;
+	
+
 def read_grasps_from_DB(object_id):
 
 	server_result = GetGraspConfigurationsResponse();

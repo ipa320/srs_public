@@ -6,44 +6,41 @@ roslib.load_manifest('srs_assisted_detection')
 #from srs_grasping.srv import *
 from geometry_msgs.msg import *
 from srs_assisted_detection.srv import *
+
+from srs_symbolic_grounding.srv import *
+from srs_symbolic_grounding.msg import *
+
 import rospy
 
 def moveBBSrv(req):
-    rospy.loginfo("kam was an")
-    #save
-    rospy.wait_for_service('/object_detection/detect_object')
-    try:
-        string=String()
-        string.data=req.object_name.data
-        rospy.loginfo(string)
-
-        srv_get_Objects = rospy.ServiceProxy('/object_detection/detect_object', DetectObjects)
-        resp1=srv_get_Objects(req.object_name,roi)
-    except rospy.ServiceException, e:
-        print "Service call failed: %s"%e   
+    
+        try:
+            rospy.wait_for_service('scan_base_pose',10)
+        except rospy.ROSException, e:
+            print "Service not available: %s"%e
+            outcome_detectObjectSrv = 'failed'
         
-    #send action only grasp at the moment   
-    rospy.wait_for_service('/get_grasps_from_position')
-    try:
-        pose=Pose()
-        pose.position.x=req.good_object_list.detections[req.id].pose.pose.position.x
-        pose.position.y=req.good_object_list.detections[req.id].pose.pose.position.y
-        pose.position.z=req.good_object_list.detections[req.id].pose.pose.position.z
-        pose.orientation.x=req.good_object_list.detections[req.id].pose.pose.orientation.x
-        pose.orientation.y=req.good_object_list.detections[req.id].pose.pose.orientation.y
-        pose.orientation.z=req.good_object_list.detections[req.id].pose.pose.orientation.z
-        pose.orientation.w=req.good_object_list.detections[req.id].pose.pose.orientation.w
-
-
-        srv_get_Objects = rospy.ServiceProxy('/get_grasps_from_position', GetGraspsFromPosition)
-        resp1=srv_get_Objects(0,pose)
-        #rospy.loginfo(resp1.object_list.detections[0])    
-    except rospy.ServiceException, e:
-        print "Service call failed: %s"%e   
+        try:
+            base_pose_service = rospy.ServiceProxy('scan_base_pose', ScanBasePose)
+            req_scan = ScanBasePoseRequest()
+            srs_info=SRSSpatialInfo()
+            srs_info.l=req.l
+            srs_info.w=req.w
+            srs_info.h=req.h
+            srs_info.pose=req.pose 
+            req_scan.parent_obj_geometry=srs_info
+            res = base_pose_service(req_scan)
+            print res.scan_base_pose_list[0]
+            moveBB=BBMoveResponse()
+            moveBB.message.data='moving to better position'
+            return moveBB
+            outcome_user_intervention = 'succeeded'
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
         
 def asisted_BBmove_server():
     rospy.init_node('asisted_BBmove_server')
-    s = rospy.Service('asisted_BBmove', BBMove, moveBBSrv)
+    s = rospy.Service('assisted_BBmove', BBMove, moveBBSrv)
 
 
     rospy.loginfo("Assisted BBmove ready.")

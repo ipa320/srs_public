@@ -83,7 +83,7 @@ def match_detections ():
     
     pub.publish (pc)
       
-def handle_compare_hs_detections ():
+def handle_compare_hs_detections (req):
     return True
 
 def listener():

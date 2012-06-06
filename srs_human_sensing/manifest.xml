@@ -18,6 +18,7 @@
   <depend package="cob_people_detection_msgs"/>
   <depend package="cob_people_detection"/>
   <depend package="geometry_msgs"/>
+  <depend package="srs_body_detector"/>
 	
 
 </package>

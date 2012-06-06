@@ -30,7 +30,7 @@ def main():
                     remapping={'pose_list_output':'pose_list','humans_pose_out':'humans_pose',
                                'id_out':'id'})
             smach.StateMachine.add('Body detection', body_detection(),
-                    transitions={'succeeded':'succeeded','retry':'Move to better position', 'failed':'failed','preempted':'preempted'},
+                    transitions={'succeeded':'compare_detections','retry':'Move to better position', 'failed':'failed','preempted':'preempted'},
                     remapping={'pose_list_output':'pose_list','humans_pose_out':'humans_pose',
                                'id_out':'id'})
             smach.StateMachine.add('compare_detections', compare_detections(),

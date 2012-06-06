@@ -146,6 +146,9 @@ class face_detection(smach.State):
       self.bbpose=Pose()
       
   def execute(self, userdata):
+        
+        return 'next'
+
         print userdata.id
         if self.preempt_requested():
            self.service_preempt()
@@ -183,7 +186,7 @@ class body_detection(smach.State):
       smach.State.__init__(self, 
                            outcomes=['succeeded', 'retry',  'failed', 'preempted'],
                            input_keys = ['pose_list', 'id','humans_pose'],
-                           output_keys=['pose_list_output','id_out','bodies_list','humans_pose_out'])
+                           output_keys=['pose_list_output','id_out','bodies_list','humans_pose_out','face_list'])
       
       self.srv_name_face_detection='/detect_bodies'    
         
@@ -216,6 +219,8 @@ class body_detection(smach.State):
             userdata.id_out=userdata.id
             userdata.pose_list_output=userdata.pose_list
             userdata.humans_pose_out=userdata.humans_pose
+            
+            userdata.face_list=PeopleDetectionArray()
 
             return 'succeeded'
             
@@ -230,10 +235,9 @@ class compare_detections(smach.State):
   def __init__(self):
       smach.State.__init__(self, 
                            outcomes=['succeeded', 'retry',  'failed', 'preempted'],
-                           input_keys = ['pose_list','face_list', 'id','humans_pose'],
+                           input_keys = ['pose_list','face_list','bodies_list', 'id','humans_pose'],
                            output_keys=['pose_list_out','id_out','humans_pose_out'])
       
-
       self.srv_name_compare='compare_hs_detections'
       self.human=[]
   def execute(self, userdata):
@@ -242,7 +246,8 @@ class compare_detections(smach.State):
       if self.preempt_requested():
            self.service_preempt()
            return 'preempted'
-       
+             
+
       self.human=userdata.humans_pose 
     # humans_pose=userdata.humans_pose     
     
@@ -258,6 +263,7 @@ class compare_detections(smach.State):
             detector_service = rospy.ServiceProxy(self.srv_name_compare, Comp_HS_Detections)
             comp=Comp_HS_DetectionsRequest()
             for i in range(len(userdata.face_list.detections)):
+                print 'face'
                 pose=Pose()
                 pose.position.x=userdata.face_list.detections[i].pose.pose.position.x
                 pose.position.z=userdata.face_list.detections[i].pose.pose.position.z
@@ -270,7 +276,23 @@ class compare_detections(smach.State):
                 comp.face_det=pose
                 comp.leg_det=userdata.pose_list[userdata.id]
                 res = detector_service(comp)
-                print res
+                if res.human_detected==True:
+                    self.human.append(userdata.pose_list[userdata.id])
+                    
+            for i in range(len(userdata.bodies_list)):
+                print 'bodies'
+                pose=Pose()
+                pose.position.x=userdata.bodies_list[i].position.x
+                pose.position.z=userdata.bodies_list[i].position.z
+                pose.position.y=userdata.bodies_list[i].position.y
+                pose.orientation.x=userdata.bodies_list[i].orientation.x
+                pose.orientation.z=userdata.bodies_list[i].orientation.z
+                pose.orientation.y=userdata.bodies_list[i].orientation.y
+                
+                
+                comp.face_det=pose
+                comp.leg_det=userdata.pose_list[userdata.id]
+                res = detector_service(comp)
                 if res.human_detected==True:
                     self.human.append(userdata.pose_list[userdata.id])
                         
@@ -281,6 +303,7 @@ class compare_detections(smach.State):
             print "Service call failed: %s"%e
 
             return 'failed'
+        
       userdata.humans_pose_out=self.human    
       if userdata.id+1>2:
           print self.human

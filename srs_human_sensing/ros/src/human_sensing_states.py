@@ -204,10 +204,10 @@ class body_detection(smach.State):
 
         # call object detection service
         try:
-            body_detector_service = rospy.ServiceProxy(self.srv_name_face_detection, DetectPeople)
+            body_detector_service = rospy.ServiceProxy(self.srv_name_face_detection, getBodyDetections)
             req = getBodyDetectionsRequest()
             res = body_detector_service(req)
-            if len(res.bodies_list.points)==0:
+            if len(res.bodies_list)==0:
                
                userdata.id_out=userdata.id+1
                userdata.pose_list_output=userdata.pose_list

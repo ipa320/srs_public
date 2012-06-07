@@ -138,7 +138,7 @@ class face_detection(smach.State):
       smach.State.__init__(self, 
                            outcomes=['succeeded', 'next',  'failed', 'preempted'],
                            input_keys = ['pose_list', 'id','humans_pose'],
-                           output_keys=['pose_list_output','id_out','face_list','humans_pose_out'])
+                           output_keys=['pose_list_output','id_out','face_list','humans_pose_out','bodies_list'])
       
       self.srv_name_face_detection='/cob_people_detection/detect_people'    
         
@@ -147,9 +147,7 @@ class face_detection(smach.State):
       
   def execute(self, userdata):
         
-        return 'next'
 
-        print userdata.id
         if self.preempt_requested():
            self.service_preempt()
            return 'preempted'
@@ -174,6 +172,8 @@ class face_detection(smach.State):
             userdata.id_out=userdata.id
             userdata.pose_list_output=userdata.pose_list
             userdata.humans_pose_out=userdata.humans_pose
+            userdata.bodies_list=[]
+
             return 'succeeded'
             
 
@@ -263,7 +263,7 @@ class compare_detections(smach.State):
             detector_service = rospy.ServiceProxy(self.srv_name_compare, Comp_HS_Detections)
             comp=Comp_HS_DetectionsRequest()
             for i in range(len(userdata.face_list.detections)):
-                print 'face'
+                #print 'face'
                 pose=Pose()
                 pose.position.x=userdata.face_list.detections[i].pose.pose.position.x
                 pose.position.z=userdata.face_list.detections[i].pose.pose.position.z
@@ -280,7 +280,7 @@ class compare_detections(smach.State):
                     self.human.append(userdata.pose_list[userdata.id])
                     
             for i in range(len(userdata.bodies_list)):
-                print 'bodies'
+                #print 'bodies'
                 pose=Pose()
                 pose.position.x=userdata.bodies_list[i].position.x
                 pose.position.z=userdata.bodies_list[i].position.z

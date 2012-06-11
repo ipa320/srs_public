@@ -10,10 +10,10 @@
   <url>http://ros.org/wiki/srs_states</url>
   <depend package="smach"/>
   <depend package="cob_script_server"/>
-  <depend package="cob_2dnav"/>
+  <!--depend package="cob_2dnav"/-->
+  <!--depend package="cob_linear_nav"/-->
+  <depend package="cob_navigation_global"/>
   <depend package="cob_linear_nav"/>
-  <!--depend package="cob_navigation_global"/-->
-  <!--depend package="cob_navigation_linear"/-->
   <depend package="cob_mmcontroller"/>
   <depend package="cob_manipulator"/>
   <depend package="cob_tray_sensors"/>
@@ -25,6 +25,10 @@
   <depend package="srs_object_verification"/>
   <depend package="srs_assisted_detection"/>
   <depend package="srs_knowledge"/>
+  <depend package="srs_symbolic_grounding"/>
+  
+  
+  
 
   <!--Start-->
   <!--Packages removed for simplifying the testing process, they will be loaded dynamicly within the states-->

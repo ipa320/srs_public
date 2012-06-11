@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <launch>
+	<!-- Start SRS common -->
+	<include file="$(find srs_scenarios)/ros/launch/srs_scenario_common.launch"/>
         <!-- SRS enviroment parameters -->
 	<include file="$(find srs_environments)/ros/launch/simple_env_english.launch"/>
 
-	<!-- start SRS common -->
-	<include file="$(find srs_scenarios)/ros/launch/srs_scenario_common.launch"/>
 </launch>

@@ -32,13 +32,16 @@
 #include <algorithm>
 
 
-#include "actionlib/client/simple_action_client.h"
-#include "srs_decision_making/ExecutionAction.h"
+//#include "actionlib/client/simple_action_client.h" - prevously used to pause the DM no longer needed
+//#include "srs_decision_making/ExecutionAction.h"
 
 #include "nav_msgs/OccupancyGrid.h"
 #include "nav_msgs/GetMap.h"
 
-typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client;
+// services
+#include <srs_leg_detector/DetectLegs.h>
+
+//typedef actionlib::SimpleActionClient <srs_decision_making::ExecutionAction> Client; - pausing no longer needed
 
 using namespace std;
 using namespace laser_processor;
@@ -168,26 +171,7 @@ int SavedFeature::nextid = 0;
 
 
 
-/*
-class MatchedFeature
-{
-public:
-  SampleSet* candidate_;
-  SavedFeature* closest_;
-  float distance_;
 
-  MatchedFeature(SampleSet* candidate, SavedFeature* closest, float distance)
-  : candidate_(candidate)
-  , closest_(closest)
-  , distance_(distance)
-  {}
-
-  inline bool operator< (const MatchedFeature& b) const
-  {
-    return (distance_ <  b.distance_);
-  }
-};
- */
 
 class Legs
 {
@@ -245,14 +229,14 @@ class LegDetector
 {
  
  
- srs_decision_making::ExecutionGoal goal;  // goal that will be sent to the actionserver
+// srs_decision_making::ExecutionGoal goal;  // goal that will be sent to the actionserver - - pausing no longer needed
  
 
  bool pauseSent;
  int counter;
  srs_msgs::HS_distance  distance_msg;
  
- Client client; // actionLib client for connection with DM action server
+// Client client; // actionLib client for connection with DM action server - - pausing no longer needed
 
 
  ros::ServiceClient client_map;  // clent for the getMap service
@@ -288,7 +272,8 @@ public:
 	boost::mutex saved_mutex_;
 
 	int feature_id_;
-
+        
+        // topics
 	ros::Publisher leg_cloud_pub_ , leg_detections_pub_ , human_distance_pub_ ;  //ROS topic publishers
 
 	ros::Publisher tracker_measurements_pub_;
@@ -297,6 +282,12 @@ public:
 	message_filters::Subscriber<sensor_msgs::LaserScan> laser_sub_;
 	tf::MessageFilter<srs_msgs::PositionMeasurement> people_notifier_;
 	tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
+
+        // services
+        ros::ServiceServer service_server_detect_legs_;
+
+        // detections data for service_server_detect_legs_ service
+        vector<geometry_msgs::Point32> detected_legs;
 
 
         
@@ -315,7 +306,9 @@ public:
         //	laser_sub_(nh_,"scan_front",10),
 		people_notifier_(people_sub_,tfl_,fixed_frame,10),
 		laser_notifier_(laser_sub_,tfl_,fixed_frame,10),
-                client ("srs_decision_making_actions",true)
+                detected_legs ()
+        //        client ("srs_decision_making_actions",true) - - pausing no longer needed
+                
 	{
 		
                 if (g_argc > 1) {
@@ -338,6 +331,11 @@ public:
 		people_notifier_.setTolerance(ros::Duration(0.01));
 		laser_notifier_.registerCallback(boost::bind(&LegDetector::laserCallback, this, _1));
 		laser_notifier_.setTolerance(ros::Duration(0.01));
+                 
+                //services
+                service_server_detect_legs_ = nh_.advertiseService("detect_legs", &LegDetector::detectLegsCallback, this);
+
+                
 
 		feature_id_ = 0;
                 pauseSent = false;
@@ -366,24 +364,10 @@ public:
                     for (int k = 0; k<320 ; k++) {
                     if   (srv_map.response.map.data [i*320+k]<0) printf (".");
                     else if (srv_map.response.map.data [i*320+k]>=0 && srv_map.response.map.data [i*320+k]<100) printf ("#");
-                    else if (srv_map.response.map.data [i*320+k]=100) printf ("@");
+                    else if (srv_map.response.map.data [i*320+k]==100) printf ("@");
                    }
                    printf ("\n");
                   }
-
-                 
-
-                  
-
-                  
-                   
-
-             //     for (int i=1; i<srv_map.response.map.data.size(); i++) {
-             //       if   (srv_map.response.map.data [i]>0)
-             //       printf("ocupancy grid %i is %i \n",i, srv_map.response.map.data [i]);    
-             //     }
-                                    
-
   
                 } 
                 else
@@ -401,7 +385,10 @@ public:
 // actionlib Pause Call
    bool sendActionLibGoalPause()
         {
-         if (pauseSent) // Pause Action has been  sent already
+
+        return true; //- - pausing no longer needed
+
+         /* if (pauseSent) // Pause Action has been  sent already
                 return true;
 
          
@@ -410,7 +397,7 @@ public:
        //      Client client ("srs_decision_making_actions",true);
 
 
-                if (!client.waitForServer(ros::Duration(10))) // ros::Duration(5)
+               if (!client.waitForServer(ros::Duration(10))) // ros::Duration(5)
                                    
  
                    {
@@ -418,11 +405,11 @@ public:
                       return false;
                    }   
    
-
-                goal.action="pause";
-                goal.parameter="";
-                goal.priority=counter++;
-                client.sendGoal(goal);
+       
+       //         goal.action="pause"; - - pausing no longer needed
+       //         goal.parameter=""; - - pausing no longer needed
+        //        goal.priority=counter++; -- - pausing no longer needed
+        //        client.sendGoal(goal); - - pausing no longer needed
                 pauseSent = true;
            //wait for the action to return
                 bool finished_before_timeout = client.waitForResult(ros::Duration(2));
@@ -437,7 +424,7 @@ public:
                 ROS_INFO("Action call to DM did not finish before timeout");
               
             return false;
-
+*/
        }
 
 
@@ -466,6 +453,10 @@ void measure_distance (double dist) {
 // actionlib Resume Call
  bool sendActionLibGoalResume()
         {
+
+           return true; // pause no longer needed
+        /*
+
          if (!pauseSent ) // Resume Action has been  sent already
                 return true;
 
@@ -503,15 +494,42 @@ void measure_distance (double dist) {
                 ROS_INFO("Action call to DM did not finish before timeout");
               
             return false;
+       */
 
        }
 
 
 
+      // calback for the DetectLegs service        
+        bool detectLegsCallback(srs_leg_detector::DetectLegs::Request &req, srs_leg_detector::DetectLegs::Response &res)
+        {
+        
+
+         res.leg_list.header.stamp = ros::Time::now();
+
+
+         geometry_msgs::Point32 pt1,pt2,pt3,pt4;
+
+         pt1.x=2.0; pt1.y=2.0;
+         pt2.x=-2.0; pt2.y=2.0;
+         pt3.x=2.0; pt3.y=-2.0;
+         pt4.x=-2.0; pt4.y=-2.0;
+          
+         //res.leg_list.points = detected_legs;
+         res.leg_list.points.push_back(pt1);	
+         res.leg_list.points.push_back(pt2);
+         res.leg_list.points.push_back(pt3);
+         res.leg_list.points.push_back(pt4);
+
+         return true;
+        }
+
 
 
 	void laserCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	{
+                geometry_msgs::Point32 pt_temp; // used in building the detected_legs vector
+                detected_legs.clear(); //to be ready for the new detections
                 float map_value;
 		ScanProcessor processor(*scan, mask_);
 
@@ -676,7 +694,7 @@ void measure_distance (double dist) {
                 map_value =  srv_map.response.map.data [ind_y*160+ind_x];
                 printf ("map_value: %f \n",map_value); 
           
-                if (map_value = 100)  { 
+                if (map_value == 100)  { 
                   printf ("the point is on occupied cell of the map \n");
                  }
 
@@ -838,6 +856,19 @@ void measure_distance (double dist) {
                                 else
                                   filter_visualize[i].z=0.0;
 
+
+
+
+                                // fill up the detected_legs vector for later use
+                                 
+                                pt_temp.x =  est.pos_[0];
+                                pt_temp.y =  est.pos_[1];
+                                pt_temp.z = 0;
+
+                                detected_legs.push_back(pt_temp);
+                                
+
+
 				weights[i] = *(float*)&(rgb[min(998, max(1, (int)trunc( reliability*999.0 )))]);
 
 				srs_msgs::PositionMeasurement pos;
@@ -866,7 +897,7 @@ void measure_distance (double dist) {
 
 			// visualize all trackers
 			
-                        channel.name = "laser";
+                        channel.name = "rgb";
                         channel.values = weights;
 			sensor_msgs::PointCloud  people_cloud;  //from the filter
                         sensor_msgs::PointCloud  detections_cloud;  //directly from detections

@@ -18,13 +18,14 @@ This package contains scripts for testing srs_arm_manipulation.
   <depend package="srs_grasping"/>
   <depend package="srs_object_database_msgs"/>
   <!--depend package="srs_object_database"/-->
-  <depend package="srs_knowledge"/>
+  <!--depend package="srs_knowledge"/-->
   <depend package="arm_navigation_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="tf"/>
   <depend package="srs_env_model"/>
   <depend package="std_msgs"/>
   <depend package="srs_interaction_primitives"/>
+  <depend package="srs_states"/>
   
   <export>
     <rosdoc config="rosdoc.yaml" />

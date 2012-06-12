@@ -2,7 +2,11 @@
 \mainpage
 \htmlinclude manifest.html
 
-This package provided by dcgm-robotics@FIT group is derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB.
+Arm navigation package provided by dcgm-robotics@FIT group:
+- assisted arm manipulation for RViz using Interactive Markers and Warehouse Viewer
+- manual grasping plugin for RViz
+
+The package is partially derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB.
 
 <!-- 
 Provide an overview of your package.

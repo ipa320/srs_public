@@ -39,7 +39,7 @@ from cob_object_detection_msgs.srv import *
 from std_msgs.msg import *
 from geometry_msgs.msg import *
 from sensor_msgs.msg import RegionOfInterest
-from interaction_primitives.srv import AddObject, RemovePrimitive
+from srs_interaction_primitives.srv import AddObject, RemovePrimitive
 
 
 def detect_object(object_name):

@@ -26,33 +26,23 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-# BUT context server
-set( CONTEXT_SOURCE_FILES src/but_context/ContextServer.cpp)
-
-set( BUT_CONTEXT_PROJECT_NAME but_context )
-rosbuild_add_library( ${BUT_CONTEXT_PROJECT_NAME} ${CONTEXT_SOURCE_FILES} )
-
-rosbuild_add_executable( but_context_server src/but_context/but_context_server.cpp )
-target_link_libraries( but_context_server ${BUT_CONTEXT_PROJECT_NAME} )
-
 # BUT env. model server
-set( SERVER_SOURCES src/but_server/servernode.cpp
-                    src/but_server/but_server.cpp
-                    src/but_server/ServerTools.cpp
+set( SERVER_SOURCES src/but_server/but_server.cpp
+                    src/but_server/server_tools.cpp
                     src/but_server/octonode.cpp
-                    src/but_server/plugins/CMapPlugin.cpp
-                    src/but_server/plugins/OctoMapPlugin.cpp
-                    src/but_server/plugins/PointCloudPlugin.cpp
-                    src/but_server/plugins/CollisionObjectPlugin.cpp
-                    src/but_server/plugins/Map2DPlugin.cpp
-                    src/but_server/plugins/IMarkersPlugin.cpp
-                    src/but_server/plugins/MarkerArrayPlugin.cpp
-                    src/but_server/plugins/LimitedPointCloudPlugin.cpp
-                    src/but_server/plugins/ObjTreePlugin.cpp
-                    src/but_server/plugins/OldIMarkersPlugin.cpp
-                    src/but_server/plugins/OctomapPluginTools/TestingOrientedBox.cpp
-                    src/but_server/plugins/OctomapPluginTools/TestingPlanes.cpp
-                    src/but_server/plugins/OctomapPluginTools/TestingPolymesh.cpp
+                    src/but_server/plugins/cmap_plugin.cpp
+                    src/but_server/plugins/octomap_plugin.cpp
+                    src/but_server/plugins/point_cloud_plugin.cpp
+                    src/but_server/plugins/collision_object_plugin.cpp
+                    src/but_server/plugins/map2d_plugin.cpp
+                    src/but_server/plugins/imarkers_plugin.cpp
+                    src/but_server/plugins/marker_array_plugin.cpp
+                    src/but_server/plugins/limited_point_cloud_plugin.cpp
+                    src/but_server/plugins/objtree_plugin.cpp
+                    src/but_server/plugins/old_imarkers_plugin.cpp
+                    src/but_server/plugins/octomap_plugin_tools/testing_oriented_box.cpp
+                    src/but_server/plugins/octomap_plugin_tools/testing_planes.cpp
+                    src/but_server/plugins/octomap_plugin_tools/testing_polymesh.cpp
                     )
 
 set( OBJTREE_SOURCE_FILES src/but_server/objtree/bbox.cpp
@@ -61,6 +51,7 @@ set( OBJTREE_SOURCE_FILES src/but_server/objtree/bbox.cpp
                           src/but_server/objtree/object.cpp
                           src/but_server/objtree/octree.cpp
                           src/but_server/objtree/plane.cpp
+                          src/but_server/objtree/history.cpp
                           )
 
 # Objtree library
@@ -68,7 +59,7 @@ set( OBJTREE_LIB_NAME but_objtree )
 rosbuild_add_library( ${OBJTREE_LIB_NAME} ${OBJTREE_SOURCE_FILES} )
 
 # Add servernode executable
-rosbuild_add_executable( but_server_node ${SERVER_SOURCES} )
+rosbuild_add_executable( but_server_node ${SERVER_SOURCES} src/nodes/server_node.cpp )
 target_link_libraries( but_server_node ${OCTOMAP_LIBRARIES} ${OBJTREE_LIB_NAME} )
 
 include_directories( include/but_server )

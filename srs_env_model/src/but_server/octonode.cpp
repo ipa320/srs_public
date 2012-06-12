@@ -25,12 +25,12 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <but_server/octonode.h>
+#include <srs_env_model/but_server/octonode.h>
 
 /**
  * Constructor
  */
-octomap::EModelTreeNode::EModelTreeNode() :
+srs_env_model::EModelTreeNode::EModelTreeNode() :
 	OcTreeNodeStamped(), m_r(255), m_g(255), m_b(255), m_a(255) {
 
 }
@@ -38,14 +38,14 @@ octomap::EModelTreeNode::EModelTreeNode() :
 /**
  * Destructor
  */
-octomap::EModelTreeNode::~EModelTreeNode() {
+srs_env_model::EModelTreeNode::~EModelTreeNode() {
 
 }
 
 /**
  * Create child
  */
-bool octomap::EModelTreeNode::createChild(unsigned int i) {
+bool srs_env_model::EModelTreeNode::createChild(unsigned int i) {
 	if (itsChildren == NULL) {
 		allocChildren();
 	}
@@ -53,11 +53,11 @@ bool octomap::EModelTreeNode::createChild(unsigned int i) {
 	return true;
 }
 
-void octomap::EModelTreeNode::updateColorChildren() {
+void srs_env_model::EModelTreeNode::updateColorChildren() {
 	setAverageChildColor();
 }
 
-bool octomap::EModelTreeNode::pruneNode() {
+bool srs_env_model::EModelTreeNode::pruneNode() {
 	// checks for equal occupancy only, color ignored
 	if (!this->collapsible())
 		return false;
@@ -76,7 +76,7 @@ bool octomap::EModelTreeNode::pruneNode() {
 	return true;
 }
 
-void octomap::EModelTreeNode::expandNode() {
+void srs_env_model::EModelTreeNode::expandNode() {
 	assert(!hasChildren());
 
 	// expand node, set children color same as node color
@@ -87,7 +87,7 @@ void octomap::EModelTreeNode::expandNode() {
 	}
 }
 
-void octomap::EModelTreeNode::setAverageChildColor() {
+void srs_env_model::EModelTreeNode::setAverageChildColor() {
 	int mr(0), mg(0), mb(0), ma(0);
 	int c(0);
 	for (int i = 0; i < 8; i++) {
@@ -121,8 +121,8 @@ void octomap::EModelTreeNode::setAverageChildColor() {
  * Creates a new (empty) OcTree of a given resolution
  * @param _resolution
  */
-octomap::EMOcTree::EMOcTree(double _resolution) :
-	OccupancyOcTreeBase<octomap::EModelTreeNode> (_resolution) {
+srs_env_model::EMOcTree::EMOcTree(double _resolution) :
+	OccupancyOcTreeBase<srs_env_model::EModelTreeNode> (_resolution) {
 	itsRoot = new EModelTreeNode();
 	tree_size++;
 }
@@ -132,15 +132,15 @@ octomap::EMOcTree::EMOcTree(double _resolution) :
  * @param _filename
  *
  */
-octomap::EMOcTree::EMOcTree(std::string _filename) :
-	OccupancyOcTreeBase<octomap::EModelTreeNode> (0.1) { // resolution will be set according to tree file
+srs_env_model::EMOcTree::EMOcTree(std::string _filename) :
+	OccupancyOcTreeBase<srs_env_model::EModelTreeNode> (0.1) { // resolution will be set according to tree file
 	itsRoot = new EModelTreeNode();
 	tree_size++;
 
 	readBinary(_filename);
 }
 
-octomap::EModelTreeNode* octomap::EMOcTree::setNodeColor(const OcTreeKey& key,
+srs_env_model::EModelTreeNode* srs_env_model::EMOcTree::setNodeColor(const octomap::OcTreeKey& key,
 		const unsigned char& r, const unsigned char& g, const unsigned char& b,
 		const unsigned char& a) {
 	EModelTreeNode* n = search(key);
@@ -150,8 +150,8 @@ octomap::EModelTreeNode* octomap::EMOcTree::setNodeColor(const OcTreeKey& key,
 	return n;
 }
 
-octomap::EModelTreeNode* octomap::EMOcTree::averageNodeColor(
-		const OcTreeKey& key, const unsigned char& r, const unsigned char& g,
+srs_env_model::EModelTreeNode* srs_env_model::EMOcTree::averageNodeColor(
+		const octomap::OcTreeKey& key, const unsigned char& r, const unsigned char& g,
 		const unsigned char& b, const unsigned char& a) {
 	EModelTreeNode* n = search(key);
 	if (n != 0) {
@@ -173,8 +173,8 @@ octomap::EModelTreeNode* octomap::EMOcTree::averageNodeColor(
 	return n;
 }
 
-octomap::EModelTreeNode* octomap::EMOcTree::integrateNodeColor(
-		const OcTreeKey& key, const unsigned char& r, const unsigned char& g,
+srs_env_model::EModelTreeNode* srs_env_model::EMOcTree::integrateNodeColor(
+		const octomap::OcTreeKey& key, const unsigned char& r, const unsigned char& g,
 		const unsigned char& b, const unsigned char& a) {
 	EModelTreeNode* n = search(key);
 	if (n != 0) {
@@ -203,11 +203,11 @@ octomap::EModelTreeNode* octomap::EMOcTree::integrateNodeColor(
 	return n;
 }
 
-void octomap::EMOcTree::updateInnerOccupancy() {
+void srs_env_model::EMOcTree::updateInnerOccupancy() {
 	this->updateInnerOccupancyRecurs(this->itsRoot, 0);
 }
 
-void octomap::EMOcTree::updateInnerOccupancyRecurs(EModelTreeNode* node,
+void srs_env_model::EMOcTree::updateInnerOccupancyRecurs(EModelTreeNode* node,
 		unsigned int depth) {
 	// only recurse and update for inner nodes:
 	if (node->hasChildren()) {
@@ -224,13 +224,13 @@ void octomap::EMOcTree::updateInnerOccupancyRecurs(EModelTreeNode* node,
 	}
 }
 
-unsigned int octomap::EMOcTree::getLastUpdateTime() {
+unsigned int srs_env_model::EMOcTree::getLastUpdateTime() {
 	// this value is updated whenever inner nodes are
 	// updated using updateOccupancyChildren()
 	return itsRoot->getTimestamp();
 }
 
-void octomap::EMOcTree::degradeOutdatedNodes(unsigned int time_thres) {
+void srs_env_model::EMOcTree::degradeOutdatedNodes(unsigned int time_thres) {
 	unsigned int query_time = (unsigned int) time(NULL);
 
 	for (leaf_iterator it = this->begin_leafs(), end = this->end_leafs(); it
@@ -242,17 +242,17 @@ void octomap::EMOcTree::degradeOutdatedNodes(unsigned int time_thres) {
 	}
 }
 
-void octomap::EMOcTree::updateNodeLogOdds(EModelTreeNode* node,
+void srs_env_model::EMOcTree::updateNodeLogOdds(EModelTreeNode* node,
 		const float& update) const {
 	OccupancyOcTreeBase<EModelTreeNode>::updateNodeLogOdds(node, update);
 	node->updateTimestamp();
 }
 
-void octomap::EMOcTree::integrateMissNoTime(EModelTreeNode* node) const {
+void srs_env_model::EMOcTree::integrateMissNoTime(EModelTreeNode* node) const {
 	OccupancyOcTreeBase<EModelTreeNode>::updateNodeLogOdds(node, probMissLog);
 }
 
-void octomap::EMOcTree::insertColoredScan(const typePointCloud& coloredScan,
+void srs_env_model::EMOcTree::insertColoredScan(const typePointCloud& coloredScan,
 		const octomap::point3d& sensor_origin, double maxrange, bool pruning,
 		bool lazy_eval) {
 
@@ -261,14 +261,14 @@ void octomap::EMOcTree::insertColoredScan(const typePointCloud& coloredScan,
 	octomap::pointcloudPCLToOctomap(coloredScan, scan);
 
 	// insert octomap pcl to count new probabilities
-	KeySet free_cells, occupied_cells;
+	octomap::KeySet free_cells, occupied_cells;
 	computeUpdate(scan, sensor_origin, free_cells, occupied_cells, maxrange);
 
 	// insert data into tree  -----------------------
-	for (KeySet::iterator it = free_cells.begin(); it != free_cells.end(); ++it) {
+	for (octomap::KeySet::iterator it = free_cells.begin(); it != free_cells.end(); ++it) {
 		updateNode(*it, false, lazy_eval);
 	}
-	for (KeySet::iterator it = occupied_cells.begin(); it
+	for (octomap::KeySet::iterator it = occupied_cells.begin(); it
 			!= occupied_cells.end(); ++it) {
 		updateNode(*it, true, lazy_eval);
 	}

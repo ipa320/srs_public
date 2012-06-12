@@ -207,7 +207,7 @@ void CButCamDisplay::setDistance(float distance) {
 		distance_ = distance;
 
 	// set parameter, view node listens for it to recalculate position
-	ros::param::set(BUT_DEPTH_PAR, distance_);
+	ros::param::set(srs_ui_but::Depth_PARAM, distance_);
 }
 
 void CButCamDisplay::setAlpha(float alpha) {
@@ -295,7 +295,7 @@ void CButCamDisplay::setImageTopic(const std::string& topic) {
 
 	// set corresponding parameter, view node listens to for
 	// recalculating camera parameters
-	ros::param::set(BUT_CAMERA_PAR, image_topic_);
+	ros::param::set(srs_ui_but::Camera_PARAM, image_topic_);
 
 	// subscribe to new topic
 	imSubscribe();

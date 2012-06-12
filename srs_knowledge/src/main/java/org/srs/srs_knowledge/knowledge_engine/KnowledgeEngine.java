@@ -371,8 +371,46 @@ public class KnowledgeEngine
 	ServiceServer<PlanNextAction.Request, PlanNextAction.Response, PlanNextAction> srv = nodeHandle.advertiseService(planNextActionService, new PlanNextAction(), scb);
     }
 
+    private TaskRequest.Response handleTaskRequestJSON(TaskRequest.Request request)
+    {
+	TaskRequest.Response res = new TaskRequest.Response();
+	System.out.println("Received request for new task");
+	
+	currentTask = JSONParser.parseJSONToTask(request.json_parameters);
+
+	//if(currentTask.getActionSequence().size() == 0) {
+	if(currentTask == null) {
+	    // task not created for some reason
+	    res.result = 1;
+	    res.description = "No action";
+	    System.out.println("No action. Task is null");
+	}
+	else if(currentTask.isEmpty()) {
+	    // task not created for some reason
+	    res.result = 1;
+	    res.description = "No action";
+	    System.out.println("No action. Task is empty");
+	}
+	else {
+	    res.result = 0;
+	    currentSessionId++;  // TODO: generate unique id
+	    res.sessionId = currentSessionId;
+	    res.description = "No";
+	    System.out.println("SESSION ID IS--> " + res.sessionId);
+	}
+	
+	return res;
+    }
+
     private TaskRequest.Response handleTaskRequest(TaskRequest.Request request)
     {
+	///////////////////////////// short cut temporary here //////////////////////////
+
+	if(request.json_parameters != null) {
+	    return handleTaskRequestJSON(request);
+	}
+
+	////////The above to be removed and handleTaskRequestJSON will be used to replace this method//////////
 	TaskRequest.Response res = new TaskRequest.Response();
 	
 	System.out.println("Received request for new task");
@@ -384,7 +422,7 @@ public class KnowledgeEngine
 
 	    try{
 		//if(request.parameters.size() == 0) {
-		currentTask = new MoveTask(request.content, null);
+		currentTask = new MoveTask(request.content);
 		System.out.println("Created CurrentTask " + "move " + request.content);
 		//}
 		//else {	
@@ -411,16 +449,16 @@ public class KnowledgeEngine
 		//  //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    GetObjectTask got = null;
 		    if(this.graspActionMode.equals("Simple")) {
-			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new GetObjectTask(request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else if(this.graspActionMode.equals("Planned")) {
-			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
+			got = new GetObjectTask(request.content, GetObjectTask.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else {
 			/// default
-			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new GetObjectTask(request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
@@ -488,16 +526,16 @@ public class KnowledgeEngine
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    FetchObjectTask got = null;
 		    if(this.graspActionMode.equals("Simple")) {
-			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else if(this.graspActionMode.equals("Planned")) {
-			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.JUST_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else {
 			/// default
-			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
@@ -528,7 +566,7 @@ public class KnowledgeEngine
 		//if(request.parameters.size() == 0) {
 		    
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    GetObjectTask got = new GetObjectTask(request.task, request.content);
+		    GetObjectTask got = new GetObjectTask(request.content);
 		    currentTask = (Task)got;
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
 		    //}

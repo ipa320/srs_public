@@ -94,11 +94,117 @@ import java.math.BigInteger;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class JSONParser
 {
-    public Task parseJSONToTask(String encodedTask) {
+
+    /**
+     * decode a single task ... 
+     * the original task request sent from UIs should be first decoded by DM, and extract a single task request for here
+     */
+    public static Task parseJSONToTask(String encodedTask) {
 	Task t = null;
+	// {"tasks":[{"time_schedule":1263798000000,"task":"move","destination":{"pose2d_string":"[0 1 3.14]"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}
+	System.out.println("=======decode=======");
+        
+	//String s="[0,{\"1\":{\"2\":{\"3\":{\"4\":[5,{\"6\":7}]}}}}]";
+	Object obj = JSONValue.parse(encodedTask);
+
+	JSONObject task = (JSONObject)obj;
+	String taskName = (String)task.get("task");
+	if(taskName.equals("move")) {
+	    t = parseJSONToMoveTask(task);
+	}
+	else if(taskName.equals("get")) {
+	    t = parseJSONToGetTask(task);
+	}
+	else if(taskName.equals("fetch")) {
+	    t = parseJSONToFetchTask(task);
+	}
+	else if(taskName.equals("search")) {
+	    t = parseJSONToMoveTask(task);
+	}
+	else if(taskName.equals("deliver")) {
+	    t = parseJSONToMoveTask(task);
+	}
+	else if(taskName.equals("stop")) {
+	    t = parseJSONToMoveTask(task);
+	}
+	else {
+	    System.out.println("Invalid task type -- error when decoding json task format");
+	    return t;
+	}
+
 	return t;
+    }
+    
+    public static MoveTask parseJSONToMoveTask(JSONObject task) {
+	MoveTask mt = null;
+	
+	java.lang.Number time = (java.lang.Number)task.get("time_schedule");
+	String destination = (String)task.get("destination");	
+	mt = new MoveTask(destination);
+	return mt;
+    }
+
+    public static GetObjectTask parseJSONToGetTask(JSONObject task) {
+	GetObjectTask got = null;
+	// {"task":"get","object":{"object_type":"Book"}}
+	
+	JSONObject obj = (JSONObject)task.get("object");
+	String objectType = (String)(obj.get("object_type"));
+	
+	// This should be passed by dm, not read from param server... to minimize the dependence on other packages
+	String graspType = (String)(obj.get("grasping_type"));
+	GetObjectTask.GraspType graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	if(graspType.equals("Simple")) {
+	    graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	}
+	else if(graspType.equals("Planned")) {
+	    graspingType = GetObjectTask.GraspType.JUST_GRASP;
+	}
+      
+	got = new GetObjectTask(objectType, graspingType);
+	return got;
+    }
+
+    public static FetchObjectTask parseJSONToFetchTask(JSONObject task) {
+	FetchObjectTask fot = null;
+	// {"task":"get","object":{"object_type":"Book"}}
+	JSONObject obj = (JSONObject)task.get("object");
+	String objectType = (String)(obj.get("object_type"));
+	//String graspType = (String)(obj.get("grasping_type"));
+	JSONObject deliverDest = (JSONObject)task.get("deliver_destination");
+	String dest = "";
+	if(deliverDest.containsKey("predefined_pose")) {
+	    dest = (String)deliverDest.get("predefined_pose");
+	}
+	else if(deliverDest.containsKey("pose2d_string")) {
+	    dest = (String)deliverDest.get("pose2d_string");
+	}
+	else if(deliverDest.containsKey("pose2d")) {
+	    JSONObject pose = (JSONObject)deliverDest.get("pose2d");
+	    double x = ((Number)(pose.get("x"))).doubleValue();
+	    double y = ((Number)(pose.get("y"))).doubleValue();
+	    double theta = ((Number)(pose.get("theta"))).doubleValue();
+	    dest = "[" + x + " " + y + " " + theta + "]";
+	}
+	else {
+	    return null;
+	}
+
+	// This should be passed by dm, not read from param server... to minimize the dependence on other packages
+	String graspType = (String)(obj.get("grasping_type"));
+	GetObjectTask.GraspType graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	if(graspType.equals("Simple")) {
+	    graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	}
+	else if(graspType.equals("Planned")) {
+	    graspingType = GetObjectTask.GraspType.JUST_GRASP;
+	}
+
+	fot = new FetchObjectTask(objectType, dest, graspingType);
+	return fot;
     }
 }

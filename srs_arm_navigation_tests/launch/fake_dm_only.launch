@@ -2,7 +2,15 @@
 
   <!-- fake decision making for TESTing purposes ONLY (it calls two generic states) -->
   <node name="fake_dm" pkg="srs_arm_navigation_tests" type="fake_dm.py" output="screen">
+    
     <param name="fake_pregrasp_positions" type="bool" value="false"/>
+    
+    <!--param name="knowledge_db_name" type="string" value="AntiGrippal0"/-->
+    <!--param name="object_db_name" type="string" value="anti_grippal"/-->
+    
+    <param name="object_db_name" type="string" value="Milkbox"/>
+    <param name="object_detector_name" type="string" value="milk"/>
+    
   </node>
 
 </launch>

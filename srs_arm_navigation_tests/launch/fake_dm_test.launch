@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <launch>
     
   <!-- BUT assisted arm navigation -->
@@ -10,15 +9,13 @@
   <!-- object db - for grasping -->
   <include file="$(find srs_object_database)/launch/srs_db.launch"/>
 
-<!-- srs_grasping -->
-<!--<include file="$(find srs_grasping)/launch/grasping_services.launch"/>-->
-  <node pkg="srs_grasping" type="get_pregrasps.py" name="get_pregrasps" ns="get_pregrasps" cwd="node" respawn="false" output="screen">
-     <!-- <remap from="/arm_kinematics/get_ik" to="/cob_arm_kinematics/get_ik"/>-->
-  </node>
+  <!-- srs_grasping -->
+  <!--<include file="$(find srs_grasping)/launch/grasping_services.launch"/>-->
+  <node pkg="srs_grasping" type="get_pregrasps.py" name="get_pregrasps" ns="get_pregrasps" cwd="node" respawn="false" output="screen"/>
   <node pkg="srs_grasping" type="get_grasp_configurations.py" name="get_grasp_configurations" ns="get_grasp_configurations" cwd="node" respawn="false" output="screen" />
 
   <!-- knowledge server -->
-  <include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/>
+  <!--include file="$(find srs_knowledge)/ros/launch/knowledge_ros_service.launch"/-->
 
   <!-- start object detection -->
   <include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>

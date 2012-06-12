@@ -1,0 +1,7 @@
+bool undo
+bool redo
+---
+bool completed
+uint8 b_steps_left
+uint8 f_steps_left
+string msg

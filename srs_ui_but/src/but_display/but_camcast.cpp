@@ -52,7 +52,7 @@
 /*
  *  Constructor
  */
-CButCamCast::CButCamCast(const std::string & name,rviz::VisualizationManager * manager)
+srs_ui_but::CButCamCast::CButCamCast(const std::string & name,rviz::VisualizationManager * manager)
 : Display( name, manager )
 , m_bPublish(true)
 {
@@ -110,7 +110,7 @@ CButCamCast::CButCamCast(const std::string & name,rviz::VisualizationManager * m
 /*
  *  Destructor
  */
-CButCamCast::~CButCamCast()
+srs_ui_but::CButCamCast::~CButCamCast()
 {
   // Destroy all geometry
   destroyGeometry();
@@ -121,7 +121,7 @@ CButCamCast::~CButCamCast()
 /*
  *  Display enablet callback
  */
-void CButCamCast::onEnable()
+void srs_ui_but::CButCamCast::onEnable()
 {
   m_sceneNode->setVisible( true );
 }
@@ -129,7 +129,7 @@ void CButCamCast::onEnable()
 /*
  *  Display disabled callback
  */
-void CButCamCast::onDisable()
+void srs_ui_but::CButCamCast::onDisable()
 {
   m_sceneNode->setVisible( false );
 }
@@ -137,7 +137,7 @@ void CButCamCast::onDisable()
 /*
  *  Create geometry
  */
-bool CButCamCast::createGeometry(const ros::NodeHandle & nh)
+bool srs_ui_but::CButCamCast::createGeometry(const ros::NodeHandle & nh)
 {
   // Get camera.
   rviz::RenderPanel * panel = vis_manager_->getRenderPanel();
@@ -149,8 +149,9 @@ bool CButCamCast::createGeometry(const ros::NodeHandle & nh)
 
   Ogre::Camera * camera = panel->getCamera();
 
+
   // Create rtt texture
-  m_textureWithRtt = new rviz::CRosRttTexture( 512, 512, camera );
+  m_textureWithRtt = new CRosRttTexture( 512, 512, camera );
 
   /*
   Ogre::String lNameOfTheMesh = "MeshCube";
@@ -258,7 +259,7 @@ bool CButCamCast::createGeometry(const ros::NodeHandle & nh)
   return true;
 }
 
-void CButCamCast::destroyGeometry()
+void srs_ui_but::CButCamCast::destroyGeometry()
 {
   // Destroy scene
   if( m_sceneNode != 0 )
@@ -266,7 +267,7 @@ void CButCamCast::destroyGeometry()
 }
 
 //! Update display
-void CButCamCast::update (float wall_dt, float ros_dt)
+void srs_ui_but::CButCamCast::update (float wall_dt, float ros_dt)
 {
   rviz::RenderPanel * panel = vis_manager_->getRenderPanel();
   if( panel == 0 )
@@ -286,7 +287,7 @@ void CButCamCast::update (float wall_dt, float ros_dt)
  * Timer publishing callback function
  */
 
-void CButCamCast::onTimerPublish(const ros::TimerEvent&)
+void srs_ui_but::CButCamCast::onTimerPublish(const ros::TimerEvent&)
 {
 
 
@@ -300,7 +301,7 @@ void CButCamCast::onTimerPublish(const ros::TimerEvent&)
 /**
 * On publishing start/stop
 */
-void CButCamCast::onPublishStateChanged(bool state)
+void srs_ui_but::CButCamCast::onPublishStateChanged(bool state)
 {
   if( state )
     m_timer.start();
@@ -311,7 +312,7 @@ void CButCamCast::onPublishStateChanged(bool state)
 /**
 * On save screenshot
 */
-void CButCamCast::onSave( std::string filename )
+void srs_ui_but::CButCamCast::onSave( std::string filename )
 {
   m_textureWithRtt->saveImage( filename );
 }
@@ -321,7 +322,7 @@ void CButCamCast::onSave( std::string filename )
 const int ID_CHECKBOX(100);
 const int ID_SAVE_BUTTON(101);
 
-CButCamCast::CControllPane::CControllPane(wxWindow *parent, const wxString& title, rviz::WindowManagerInterface * wmi): wxPanel( parent, wxID_ANY, wxDefaultPosition, wxSize(280, 180), wxTAB_TRAVERSAL, title)
+srs_ui_but::CButCamCast::CControllPane::CControllPane(wxWindow *parent, const wxString& title, rviz::WindowManagerInterface * wmi): wxPanel( parent, wxID_ANY, wxDefaultPosition, wxSize(280, 180), wxTAB_TRAVERSAL, title)
 , m_wmi( wmi )
 {
   // Create controls
@@ -350,7 +351,7 @@ CButCamCast::CControllPane::CControllPane(wxWindow *parent, const wxString& titl
 /**
 On checkbox toggle
 */
-void CButCamCast::CControllPane::OnChckToggle(wxCommandEvent& event)
+void srs_ui_but::CButCamCast::CControllPane::OnChckToggle(wxCommandEvent& event)
 {
   // Call signal
   m_sigCheckBox( m_chkb->GetValue() );
@@ -361,7 +362,7 @@ void CButCamCast::CControllPane::OnChckToggle(wxCommandEvent& event)
 /**
 On quit command event handler
 */
-void CButCamCast::CControllPane::OnSave(wxCommandEvent& event)
+void srs_ui_but::CButCamCast::CControllPane::OnSave(wxCommandEvent& event)
 {
   wxFileDialog fileDlg(this, _("Choose file to save"), wxEmptyString, _("screenshot.png"), _("*.*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
 
@@ -389,7 +390,7 @@ void CButCamCast::CControllPane::OnSave(wxCommandEvent& event)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-BEGIN_EVENT_TABLE(CButCamCast::CControllPane, wxPanel)
-EVT_BUTTON(ID_SAVE_BUTTON,  CButCamCast::CControllPane::OnSave)
-EVT_CHECKBOX(ID_CHECKBOX, CButCamCast::CControllPane::OnChckToggle )
+BEGIN_EVENT_TABLE(srs_ui_but::CButCamCast::CControllPane, wxPanel)
+EVT_BUTTON(ID_SAVE_BUTTON,  srs_ui_but::CButCamCast::CControllPane::OnSave)
+EVT_CHECKBOX(ID_CHECKBOX, srs_ui_but::CButCamCast::CControllPane::OnChckToggle )
 END_EVENT_TABLE()

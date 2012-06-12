@@ -1,0 +1,38 @@
+/******************************************************************************
+ *	Depth buffer rendering - fragment shader.
+ */
+
+void casterFP(
+   float2 depth      : TEXCOORD0,
+   out float4 result : COLOR)
+   
+{
+   // Draw nearer parts with lighter color
+   float finalDepth = 1.0 - depth.x;
+   
+   // All done
+   result = float4(finalDepth, finalDepth, finalDepth, 1);
+}
+
+
+
+/******************************************************************************
+ * Copy color shader
+ */
+struct copyFP_Output {
+
+  float4 color : COLOR;
+
+};
+
+copyFP_Output copyFP(float4 color : COLOR)
+
+{
+
+  copyFP_Output OUT;
+
+  OUT.color = color;
+
+  return OUT;
+
+}

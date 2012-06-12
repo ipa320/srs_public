@@ -1,0 +1,11 @@
+# goal
+string grasp_type
+uint16 max_force
+---
+# result
+duration time_elapsed
+bool grasped
+uint16 force
+---
+# feedback
+uint8 progress

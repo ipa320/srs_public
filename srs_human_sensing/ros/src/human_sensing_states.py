@@ -394,16 +394,11 @@ class compare_detections(smach.State):
                 
             comp.leg_det=userdata.pose_list[userdata.id]
             
-            for i in range(len(userdata.face_list.detections)):
+            
                     #print 'face'
-                    pose=Pose()
-                    pose.position.x=userdata.face_list.detections[i].pose.pose.position.x
-                    pose.position.z=userdata.face_list.detections[i].pose.pose.position.z
-                    pose.position.y=userdata.face_list.detections[i].pose.pose.position.y
-                    pose.orientation.x=userdata.face_list.detections[i].pose.pose.orientation.x
-                    pose.orientation.z=userdata.face_list.detections[i].pose.pose.orientation.z
-                    pose.orientation.y=userdata.face_list.detections[i].pose.pose.orientation.y
-                    self.face_list.append(pose)
+            pose=Pose()
+            pose=userdata.face_list.pose.pose
+            self.face_list.append(pose)
                     
             for i in range(len(userdata.bodies_list)):
                     #print 'bodies'

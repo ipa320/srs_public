@@ -52,45 +52,25 @@ package org.srs.srs_knowledge.knowledge_engine;
 
 import java.io.*;
 import java.util.ArrayList; 
-import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Collections;
-import java.util.Comparator;
-import ros.*;
-import ros.communication.*;
-import ros.pkg.srs_knowledge.srv.QuerySparQL;
+import java.util.Map;
+
+import java.io.StringWriter;
+import java.math.BigInteger;
+
 import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
-import com.hp.hpl.jena.shared.Lock;
 import ros.pkg.srs_knowledge.srv.PlanNextAction;
 import ros.pkg.srs_knowledge.srv.TaskRequest;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;
 import ros.pkg.srs_knowledge.srv.GetWorkspaceOnMap;
-import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import ros.pkg.geometry_msgs.msg.Pose;
-import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;
-import ros.pkg.srs_knowledge.srv.GetWorkspaceOnMap;
-
-import java.util.Properties;
-
-import java.io.IOException;
-import java.io.*;
-import java.util.StringTokenizer;
-//import org.apache.commons.logging.Log;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import org.srs.srs_knowledge.utils.*;
-
-import java.io.StringWriter;
-import java.math.BigInteger;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

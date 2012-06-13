@@ -3,8 +3,9 @@
 \htmlinclude manifest.html
 
 ROS environment perception package provided by dcgm-robotics@FIT group:
-- plane fitting
+- plane detection in depth images
 - bounding box estimator
+- depth image segmentation
 
 <!-- 
 Provide an overview of your package.

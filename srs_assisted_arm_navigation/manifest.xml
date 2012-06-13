@@ -1,8 +1,11 @@
 <package>
   <description brief="srs_assisted_arm_navigation">
 
-This package is derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB.
-Moreover, this package also provides several services that simplifies usage of the COB arm navigation.
+Arm navigation package provided by dcgm-robotics@FIT group:
+- assisted arm manipulation for RViz using Interactive Markers and Warehouse Viewer
+- manual grasping plugin for RViz
+
+The package is partially derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB. Moreover, the package also provides several services that simplifies usage of the COB arm navigation.
 
   </description>
   <author>Zdenek Materna (imaterna@fit.vutbr.cz), Michal Spanel (spanel@fit.vutbr.cz)</author>
@@ -17,13 +20,17 @@ Moreover, this package also provides several services that simplifies usage of t
   <depend package="cob_arm_navigation"/>
   <depend package="cob_default_env_config"/>
   <depend package="cob_default_robot_config"/>
-  <!--depend package="cob_navigation_global"/-->
+  <depend package="cob_navigation_global"/>
   <depend package="actionlib_msgs"/>
   <depend package="actionlib"/>
   <depend package="cob_script_server"/>
-  
+  <depend package="cob_interactive_teleop"/>
+  <depend package="cob_tactiletools"/>
+  <depend package="srs_env_model_percp"/>
+  <depend package="srs_interaction_primitives"/>
+
   <export>
-    <rviz plugin="${prefix}/lib/but_cob_gui.yaml"/>
+    <rviz plugin="${prefix}/lib/but_arm_navigation.yaml"/>
     <rosdoc config="rosdoc.yaml" />
   </export>
 

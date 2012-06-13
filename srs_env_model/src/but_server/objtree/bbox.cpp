@@ -26,17 +26,26 @@
  */
 
 #include <cmath>
-#include <objtree/bbox.h>
+#include <srs_env_model/but_server/objtree/bbox.h>
 
 namespace objtree
 {
 
+/**
+ * A constructor.
+ * @param box bounding box position and size
+ */
 BBox::BBox(const Box &box) :
     m_box(box)
 {
     m_type = BOUNDING_BOX;
 }
 
+/**
+ * Returns true if BBox fits into a box.
+ * @param box box for test
+ * @return true if BBox fits into a box, false otherwise
+ */
 bool BBox::fitsIntoBox(const Box &box) const
 {
     if(m_box.x >= box.x && m_box.y >= box.y && m_box.z >= box.z && m_box.x+m_box.w <= box.x+box.w && m_box.y+m_box.h <= box.y+box.h && m_box.z+m_box.d <= box.z+box.d)
@@ -47,6 +56,11 @@ bool BBox::fitsIntoBox(const Box &box) const
     return false;
 }
 
+/**
+ * Returns true if BBox interferes with a box.
+ * @param box box for test
+ * @return true if BBox interferes with box, false otherwise
+ */
 bool BBox::interfereWithBox(const Box &box) const
 {
     if(m_box.x > box.x+box.w || m_box.x+m_box.w < box.x)
@@ -67,6 +81,11 @@ bool BBox::interfereWithBox(const Box &box) const
     return true;
 }
 
+/**
+ * Compare other object for similarity.
+ * @param object object to compare
+ * @return true if object is similar, false otherwise
+ */
 bool BBox::isSimilar(const Object *object) const
 {
     if(object->type() != BOUNDING_BOX) return false;
@@ -84,6 +103,13 @@ bool BBox::isSimilar(const Object *object) const
     return true;
 }
 
+/**
+ * Check if point is in the BBox.
+ * @param x
+ * @param y
+ * @param z
+ * @return true if point is inside the BBox, false otherwise
+ */
 bool BBox::isPointInside(float x, float y, float z) const
 {
     return x >= m_box.x && x <= m_box.x+m_box.w
@@ -91,6 +117,10 @@ bool BBox::isPointInside(float x, float y, float z) const
             && z >= m_box.z && z <= m_box.z+m_box.d;
 }
 
+/**
+ * Returns position and size of the bounding box
+ * @return position and size of the bounding box
+ */
 const Box& BBox::box() const
 {
     return m_box;

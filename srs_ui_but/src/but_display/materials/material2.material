@@ -1,0 +1,89 @@
+fragment_program Depth_FP cg
+{
+   source depthShaderFP.cg
+   entry_point casterFP
+   profiles arbfp1
+   
+   default_params
+    {
+    }
+}
+
+fragment_program Copy_FP cg
+{
+	source depthShaderFP.cg
+	entry_point copyFP
+	profiles arbfp1
+}
+
+
+vertex_program Depth_VP cg
+{
+   source depthShaderVP.cg
+   entry_point casterVP
+   profiles arbvp1
+
+   default_params
+    {
+        param_named_auto worldViewProj worldviewproj_matrix
+        param_named_auto texelOffsets texel_offsets
+        param_named_auto depthRange scene_depth_range
+    }
+}
+
+/******************************************************************************
+ *	Depth buffer to texture rendering material 
+ */
+
+material depth
+{
+   technique
+   {
+   	
+   	  scheme myscheme
+   
+      pass
+      {
+		//depth_check off
+		//depth_write off
+		
+		vertex_program_ref Depth_VP
+		{
+		}
+		
+		fragment_program_ref Depth_FP
+		{
+		}
+		 
+		 texture_unit
+		{
+		
+		}
+			
+      }
+   }
+}
+
+/******************************************************************************
+ *	Just copy color from buffer to buffer
+ */
+material copyColor
+{
+	technique
+	{
+		pass
+		{
+		
+			fragment_program_ref copy_FP
+			{
+			}
+			
+			texture_unit
+			{
+		
+			}
+		
+		}
+	
+	}
+}

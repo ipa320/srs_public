@@ -2,26 +2,9 @@
 
   <param name="/use_sim_time" value="true" />
 
-  <!-- Configuration for COB, bringup simulation -->
-  <include file="$(find cob_default_robot_config)/upload_param.launch" />
-  <include file="$(find cob_default_env_config)/upload_param.launch" />
-  <include file="$(find cob_navigation_global)/launch/2dnav_ros.launch" />
   <include file="$(find cob_bringup_sim)/launch/robot.launch" />
   
-  <!-- start COB script server -->
-  <include file="$(find cob_script_server)/launch/script_server.launch"/>
-
-  <!-- srs interaction primitives -->
-  <node name="but_im_server" pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" />
-  
-  <!-- planning environment -->
-  <!--<include file="$(find cob_arm_navigation_but)/launch/planning_env_collider.launch"/>-->
-  
-  <!-- actionlibserver -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/arm_manip_node.launch"/>
-  
-  <!-- planning and filtering -->
-  <!--<include file="$(find cob_arm_navigation_but)/launch/planning_filtering.launch"/>-->
+  <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.launch"/>
   
   <!-- perception and collision aware kinematics-->
   <include file="$(find cob_arm_navigation)/launch/cob_arm_navigation.launch"/>
@@ -33,8 +16,5 @@
   <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer_but' args="-d $(find srs_assisted_arm_navigation)/config/arm_manip_collider.vcg">
     <param name="wait_for_start" type="bool" value="true"/>
   </node>
-  
-  <!-- BUT cob teleop marker -->
-  <node name="cob_teleop_im" pkg="cob_interactive_teleop" type="but_cob_teleop" />
   
 </launch>

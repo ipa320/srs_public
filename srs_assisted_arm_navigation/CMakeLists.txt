@@ -21,21 +21,18 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-rosbuild_add_executable(but_arm_manipulation_node src/but_arm_manipulation_node.cpp src/but_arm_manip_action.cpp src/but_arm_manip_collobj_methods.cpp src/but_arm_manip_services.cpp)
-#rosbuild_link_boost(but_arm_manipulation_node thread)
-
 #uncomment if you have defined messages
 rosbuild_genmsg()
 #uncomment if you have defined services
 rosbuild_gensrv()
 
 # BUT rviz display
-set( DISPLAY_SOURCE_FILES src/but_display/but_arm_manipulation.cpp
-                          src/but_display/but_cob_display.cpp
-                          src/but_display/init.cpp )
+set( DISPLAY_SOURCE_FILES src/rviz_plugin/arm_navigation_controls.cpp
+                          src/rviz_plugin/arm_navigation_display.cpp
+                          src/rviz_plugin/init.cpp )
 
-set( BUT_DISPLAY_PROJECT_NAME but_cob_gui )
-include_directories(include/but_display)
+set( BUT_DISPLAY_PROJECT_NAME but_arm_navigation_plugin )
+include_directories(include/rviz_plugin)
 rosbuild_add_library( ${BUT_DISPLAY_PROJECT_NAME} ${DISPLAY_SOURCE_FILES} )
 
 # Add wx widgets
@@ -47,9 +44,33 @@ include_directories( ${wxWidgets_INCLUDE_DIRS} )
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 
-#
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
+# move arm utils
+set( MOVE_ARM_UTILS_SOURCE_FILES src/move_arm_utils/move_arm_utils.cpp
+                                 src/move_arm_utils/move_arm_warehouse_logger_reader.cpp )
+
+#set( MOVE_ARM_UTILS_LIB_NAME move_arm_utils )
+include_directories(include/move_arm_utils )
+
+# assisted navigation node (action server)
+set( ARM_NAV_SOURCE_FILES src/assisted_arm_navigation/arm_manip_node.cpp
+                          src/assisted_arm_navigation/arm_manip_action.cpp
+                          src/assisted_arm_navigation/arm_manip_collobj_methods.cpp
+                          src/assisted_arm_navigation/arm_manip_services.cpp )
+
+set( ARM_NAV_PROJECT_NAME assisted_arm_navigation_node )
+include_directories( include/assisted_arm_navigation )
+rosbuild_add_executable( ${ARM_NAV_PROJECT_NAME} ${ARM_NAV_SOURCE_FILES} ${MOVE_ARM_UTILS_SOURCE_FILES})
+
+# assisted grasping
+set( GRASPING_SOURCE_FILES src/assisted_grasping/manual_grasping_node.cpp )
+
+set( GRASPING_PROJECT_NAME assisted_grasping_node )
+include_directories( include/assisted_grasping )
+rosbuild_add_executable( ${GRASPING_PROJECT_NAME} ${GRASPING_SOURCE_FILES} )
+
 # some checks of launch files
 rosbuild_add_roslaunch_check(launch)
+

@@ -1,0 +1,6 @@
+void bwShader_fp(float2 uv : TEXCOORD0, out float4 color : COLOR, uniform sampler2D texture)
+{
+	float4 temp_color = tex2D(texture, uv);
+	float greyvalue = temp_color.r * 0.3 + temp_color.g * 0.59 + temp_color.b * 0.11;
+	color = float4(greyvalue,greyvalue,greyvalue,0);
+}

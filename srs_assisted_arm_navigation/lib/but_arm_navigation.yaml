@@ -1,0 +1,9 @@
+name: but_arm_navigation_plugin
+library: but_arm_navigation_plugin
+displays:
+  -
+    class_name: CButArmNavDisplay
+    display_name: CButArmNavDisplay
+    description: |
+      This display shows controls for COB arm navigation.
+

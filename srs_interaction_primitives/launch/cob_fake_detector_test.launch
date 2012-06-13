@@ -3,12 +3,10 @@
     <!-- Configuration for COB, bringup simulation -->
     <include file="$(find cob_default_robot_config)/upload_param.launch" />
     <include file="$(find cob_default_env_config)/upload_param.launch" />
-    <include file="$(find cob_navigation_global)/launch/2dnav_ros.launch" />
+    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
     <include file="$(find cob_bringup_sim)/launch/robot.launch" />
 
-	<include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
+    <include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
 
-	<node pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" name="but_interaction_primitives_service_server" />
-	<!--<node pkg="srs_ui_but" type="but_cob_teleop_marker" name="but_cob_teleop_marker" />-->
-	<!--<include file="$(find cob_gazebo_worlds)/ros/launch/populate_ipa-kitchen.launch"/>-->
+    <node pkg="srs_interaction_primitives" type="interaction_primitives_service_server" name="interaction_primitives_service_server" />
 </launch>

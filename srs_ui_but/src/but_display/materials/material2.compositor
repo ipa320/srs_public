@@ -1,0 +1,37 @@
+compositor DepthMap
+{
+technique
+	{
+		texture scene target_width target_height PF_R8G8B8
+		
+		target scene
+		{
+			input none 
+			
+			material_scheme myscheme
+			
+			pass clear
+			{
+			}
+			
+			
+			pass render_scene
+			{
+			}
+			
+		}
+		
+		target_output
+		{
+			input none
+			
+			
+			pass render_quad
+			{
+				material copyColor
+				input 0 scene
+			}
+			
+		}
+	}
+}

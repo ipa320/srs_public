@@ -25,16 +25,26 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <objtree/filter.h>
+#include <srs_env_model/but_server/objtree/filter.h>
 
 namespace objtree
 {
 
+/**
+ * A constructor.
+ * Creates a box filter. The filter returns true for nodes inside this box.
+ * @param box bounding box for object filtering
+ */
 FilterBox::FilterBox(const Box &box) :
     m_box(box)
 {
 }
 
+/**
+ * Returns true if node is inside a box.
+ * @param dim node size
+ * @return true if node interferes with box, false otherwise
+ */
 bool FilterBox::filter(const Box &dim) const
 {
     if(dim.x > m_box.x+m_box.w || dim.x+dim.w < m_box.x
@@ -47,6 +57,16 @@ bool FilterBox::filter(const Box &dim) const
     return true;
 }
 
+/**
+ * A constructor.
+ * Creates a plane filter. The filter returns true for nodes in front of this plane.
+ * @param posX
+ * @param posY
+ * @param posZ
+ * @param vecX
+ * @param vecY
+ * @param vecZ
+ */
 FilterPlane::FilterPlane(float posX, float posY, float posZ, float vecX, float vecY, float vecZ)
 {
     m_posX = posX;
@@ -58,6 +78,11 @@ FilterPlane::FilterPlane(float posX, float posY, float posZ, float vecX, float v
     m_vecZ = vecZ;
 }
 
+/**
+ * Returns true if node is in front of a plane.
+ * @param dim node size
+ * @return true if node is in front of a plane, false otherwise
+ */
 bool FilterPlane::filter(const Box &dim) const
 {
     float pointX = dim.x, pointY = dim.y, pointZ = dim.z;
@@ -76,16 +101,34 @@ bool FilterPlane::filter(const Box &dim) const
     return false;
 }
 
+/**
+ * Always returns true - no filter.
+ * @param dim node size
+ * @return true
+ */
 bool FilterZero::filter(const Box &dim) const
 {
     return true;
 }
 
+/**
+ * A constructor.
+ * Creates a sphere filter. The filter returns true for nodes inside this sphere.
+ * @param x
+ * @param y
+ * @param z
+ * @param radius
+ */
 FilterSphere::FilterSphere(float x, float y, float z, float radius) :
     m_x(x), m_y(y), m_z(z), m_radiusSquare(radius*radius)
 {
 }
 
+/**
+ * Returns true if node is inside a sphere.
+ * @param dim node size
+ * @return true if node is inside a sphere, false otherwise
+ */
 bool FilterSphere::filter(const Box &dim) const
 {
     float nearX, nearY, nearZ;

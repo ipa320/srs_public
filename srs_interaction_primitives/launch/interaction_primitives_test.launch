@@ -2,13 +2,13 @@
     <!-- Configuration for COB, bringup simulation -->
     <include file="$(find cob_default_robot_config)/upload_param.launch" />
     <include file="$(find cob_default_env_config)/upload_param.launch" />
-    <include file="$(find cob_navigation_global)/launch/2dnav_ros.launch" />
+    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
     <include file="$(find cob_bringup_sim)/launch/robot.launch" />
 
-	<!-- Run srs_interaction_primitives service server -->
-	<node name="but_interaction_primitives_service_server" pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" />
+    <!-- Run srs_interaction_primitives service server -->
+    <node name="interaction_primitives_service_server" pkg="srs_interaction_primitives" type="interaction_primitives_service_server" />
 
-	<!-- Run rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-f /world -d $(find srs_interaction_primitives)/config/interaction_primitives.vcg"/>
+    <!-- Run rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-f /world -d $(find srs_interaction_primitives)/config/interaction_primitives.vcg"/>
 </launch>
 

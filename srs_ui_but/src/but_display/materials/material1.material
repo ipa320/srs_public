@@ -1,0 +1,30 @@
+fragment_program bwShader_PS cg
+			{
+				source bwShader.cg
+				entry_point bwShader_fp
+				profiles arbfp1 
+			}
+
+
+material material1
+{	
+	technique
+	{
+		scheme myscheme
+		
+		pass
+		{
+			
+			fragment_program_ref bwShader_PS    
+            {
+            }
+					
+			texture_unit
+			{
+		
+			}
+	
+		}	
+	
+	}
+}

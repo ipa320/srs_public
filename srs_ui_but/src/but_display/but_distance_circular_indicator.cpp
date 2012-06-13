@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_distance_circular_indicator.cpp 556 2012-04-11 16:10:40Z xlokaj03 $
+ * $Id: but_distance_circular_indicator.cpp 810 2012-05-19 21:47:51Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -27,9 +27,13 @@
 
 #include "but_distance_circular_indicator.h"
 
-namespace rviz
+#include <srs_ui_but/topics_list.h>
+
+using namespace std;
+
+namespace srs_ui_but
 {
-CButDistanceCircularIndicator::CButDistanceCircularIndicator(const string & name, VisualizationManager * manager) :
+CButDistanceCircularIndicator::CButDistanceCircularIndicator(const string & name, rviz::VisualizationManager * manager) :
   Display(name, manager)
 {
   // Default properties
@@ -123,7 +127,7 @@ void CButDistanceCircularIndicator::createProperties()
 {
 
   m_property_link_
-      = property_manager_->createProperty<TFFrameProperty> ("Link", property_prefix_,
+      = property_manager_->createProperty<rviz::TFFrameProperty> ("Link", property_prefix_,
                                                             boost::bind(&CButDistanceCircularIndicator::getLinkString,
                                                                         this),
                                                             boost::bind(&CButDistanceCircularIndicator::setLinkString,
@@ -131,7 +135,7 @@ void CButDistanceCircularIndicator::createProperties()
   setPropertyHelpText(m_property_link_, "Link from which to show radar");
 
   m_property_orientation_
-      = property_manager_->createProperty<Vector3Property> ("Orientation", property_prefix_,
+      = property_manager_->createProperty<rviz::Vector3Property> ("Orientation", property_prefix_,
                                                             boost::bind(&CButDistanceCircularIndicator::getOrientation,
                                                                         this),
                                                             boost::bind(&CButDistanceCircularIndicator::setOrientation,
@@ -139,7 +143,7 @@ void CButDistanceCircularIndicator::createProperties()
   setPropertyHelpText(m_property_orientation_, "Radar orientation.");
 
   m_property_color_
-      = property_manager_->createProperty<ColorProperty> ("Color", property_prefix_,
+      = property_manager_->createProperty<rviz::ColorProperty> ("Color", property_prefix_,
                                                           boost::bind(&CButDistanceCircularIndicator::getColor, this),
                                                           boost::bind(&CButDistanceCircularIndicator::setColor, this,
                                                                       _1), parent_category_, this);
@@ -153,7 +157,7 @@ void CButDistanceCircularIndicator::createProperties()
    setPropertyHelpText(m_property_alpha_, "Alpha channel.");*/
 
   m_property_levels_
-      = property_manager_->createProperty<IntProperty> (
+      = property_manager_->createProperty<rviz::IntProperty> (
                                                         "Levels",
                                                         property_prefix_,
                                                         boost::bind(&CButDistanceCircularIndicator::getLevels, this),
@@ -162,14 +166,14 @@ void CButDistanceCircularIndicator::createProperties()
   setPropertyHelpText(m_property_levels_, "Number of levels.");
 
   m_property_radius_
-      = property_manager_->createProperty<FloatProperty> ("Radius", property_prefix_,
+      = property_manager_->createProperty<rviz::FloatProperty> ("Radius", property_prefix_,
                                                           boost::bind(&CButDistanceCircularIndicator::getRadius, this),
                                                           boost::bind(&CButDistanceCircularIndicator::setRadius, this,
                                                                       _1), parent_category_, this);
   setPropertyHelpText(m_property_radius_, "Radar radius (cm).");
 
   m_property_thickness_
-      = property_manager_->createProperty<FloatProperty> ("Thickness", property_prefix_,
+      = property_manager_->createProperty<rviz::FloatProperty> ("Thickness", property_prefix_,
                                                           boost::bind(&CButDistanceCircularIndicator::getThickness,
                                                                       this),
                                                           boost::bind(&CButDistanceCircularIndicator::setThickness,
@@ -177,7 +181,7 @@ void CButDistanceCircularIndicator::createProperties()
   setPropertyHelpText(m_property_thickness_, "Circle thickness (cm).");
 
   m_property_show_distance_
-      = property_manager_->createProperty<BoolProperty> ("Show distance", property_prefix_,
+      = property_manager_->createProperty<rviz::BoolProperty> ("Show distance", property_prefix_,
                                                          boost::bind(&CButDistanceCircularIndicator::getShowDistance,
                                                                      this),
                                                          boost::bind(&CButDistanceCircularIndicator::setShowDistance,
@@ -270,10 +274,10 @@ void CButDistanceCircularIndicator::update(float wall_dt, float ros_dt)
         m_sceneNode_flipped_->attachObject(text_flipped);
       }
     }
-    setStatus(status_levels::Ok, "Status", "OK");
+    setStatus(rviz::status_levels::Ok, "Status", "OK");
   }
   else
-    setStatus(status_levels::Error, "Status", "Transformation error.");
+    setStatus(rviz::status_levels::Error, "Status", "Transformation error.");
 
 }
 }

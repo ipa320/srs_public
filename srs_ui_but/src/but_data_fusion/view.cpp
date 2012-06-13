@@ -29,10 +29,11 @@
 
 #include <OgreVector3.h>
 
-#include "topics_list.h"
-#include <visualization_msgs/Marker.h>
+#include <srs_ui_but/topics_list.h>
+#include <srs_ui_but/services_list.h>
 #include <srs_ui_but/ButCamMsg.h>
 
+#include <visualization_msgs/Marker.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/CameraInfo.h>
@@ -83,7 +84,8 @@ message_filters::Subscriber<CameraInfo> *cam_info_sub;
 ros::Publisher frustum_marker_pub, but_display_pub;
 
 // parameters regularly updated from parameter server
-std::string camera_topic_par = "/stereo/left/camera_info";
+//std::string camera_topic_par = "/stereo/left/camera_info";
+std::string camera_topic_par = "/cam3d/rgb/camera_info";
 double depth_par = 1.0f;
 
 /*
@@ -99,12 +101,12 @@ void callback(ros::NodeHandle& nh, const CameraInfoConstPtr cam_info,
 	ROS_DEBUG("Got everything synced");
 
 	// check parameter server for change of desired camera
-	ros::param::getCached(BUT_CAMERA_PAR, camera_topic_par);
+	ros::param::getCached(srs_ui_but::Camera_PARAM, camera_topic_par);
 	if (!camera_topic_par.empty())
 		updateCameraTopic(nh);
 
 	//check parameter server for change of desired polygon depth
-	ros::param::getCached(BUT_DEPTH_PAR, depth_par);
+	ros::param::getCached(srs_ui_but::Depth_PARAM, depth_par);
 
 	// Count internal parameters of view volume
 	countCameraParams(cam_info);
@@ -126,16 +128,19 @@ void callback(ros::NodeHandle& nh, const CameraInfoConstPtr cam_info,
  */
 void updateCameraTopic(ros::NodeHandle& nh) {
 	std::string cam3d("/cam3d/");
+	std::string cam3dRGB("/cam3d/rgb/");
 	std::string camLeft("/stereo/left/");
 	std::string camRight("/stereo/right/");
 	if (!camera_topic_par.compare(0, cam3d.size(), cam3d))
-		cam_info_sub->subscribe(nh, "/cam3d/camera_info", 10);
+		cam_info_sub->subscribe(nh, cam3d.append("camera_info"), 10);
+	else if (!camera_topic_par.compare(0, cam3dRGB.size(), cam3dRGB))
+		cam_info_sub->subscribe(nh, cam3dRGB.append("camera_info"), 10);
 	else if (!camera_topic_par.compare(0, camLeft.size(), camLeft))
 		cam_info_sub->subscribe(nh, camLeft.append("camera_info"), 10);
 	else if (!camera_topic_par.compare(0, camRight.size(), camRight))
 		cam_info_sub->subscribe(nh, camRight.append("camera_info"), 10);
 	else
-		ROS_ERROR("UNKNOWN KAMERA");
+		ROS_ERROR("UNKNOWN CAMERA");
 }
 
 /**
@@ -417,9 +422,9 @@ int main(int argc, char** argv) {
 	// initialize ROS messages publishers
 	// frustum is published as simple marker
 	frustum_marker_pub = nh.advertise<visualization_msgs::Marker> (
-			BUT_VIEW_FRUSTUM_TOP, 1);
+			srs_ui_but::ViewFrustum_TOPIC, 1);
 	// but rectangle as srs_ui_but::ButCamMsg
-	but_display_pub = nh.advertise<srs_ui_but::ButCamMsg> (BUT_CAMERA_VIEW_TOP,
+	but_display_pub = nh.advertise<srs_ui_but::ButCamMsg> (srs_ui_but::CameraView_TOPIC,
 			1);
 
 	// subscribers to required topics

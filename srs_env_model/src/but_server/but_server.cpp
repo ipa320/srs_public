@@ -1,6 +1,6 @@
 /******************************************************************************
  * \file
- * $Id: but_server.cpp 660 2012-04-18 16:37:04Z stancl $
+ * $Id: but_server.cpp 809 2012-05-19 21:47:48Z stancl $
  *
  * Modified by dcgm-robotics@FIT group.
  *
@@ -49,16 +49,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <but_server/but_server.h>
-//#include <but_server/ServerTools.h>
+#include <srs_env_model/but_server/but_server.h>
+#include <srs_env_model/topics_list.h>
+//#include <srs_env_model/but_server/server_tools.h>
 
 #include <sstream>
-
-// Define publishers names
-#define SUBSCRIBER_CAMERA_POSITION std::string("rviz_camera_position")
-#define WORLD_FRAME_ID std::string("/map")
-#define BASE_FRAME_ID std::string("/base_footprint")
-#define NUM_PCFRAMES_PROCESSED int(3)
 
 //! Swap function template
 //template <typename tpType> void swap( tpType & x, tpType & y){ tpType b(x); x = y; y = b; }
@@ -67,7 +62,7 @@
 /**
  Constructor
  */
-CButServer::CButServer(const std::string& filename) :
+srs_env_model::CButServer::CButServer(const std::string& filename) :
 			m_nh(),
 			m_latchedTopics(false),
 			m_numPCFramesProcessed(1.0), m_frameCounter(0),
@@ -117,12 +112,12 @@ CButServer::CButServer(const std::string& filename) :
 
 	if( m_bUseOldIMP )
 	{
-		m_plugOldIMarkers = new srs::COldIMarkersPlugin( "IM" );
+		m_plugOldIMarkers = new COldIMarkersPlugin( "IM" );
 		m_plugins.push_back( m_plugOldIMarkers );
 	}
 	else
 	{
-		m_plugIMarkers = new srs::CIMarkersPlugin( "IM" );
+		m_plugIMarkers = new CIMarkersPlugin( "IM" );
 		m_plugins.push_back( m_plugIMarkers );
 	}
 
@@ -139,7 +134,7 @@ CButServer::CButServer(const std::string& filename) :
 	std::cerr << "BUTSERVER: All plugins initialized. Starting server. " << std::endl;
 
 	// Connect input point cloud input with octomap
-	m_plugInputPointCloudHolder.getPlugin()->getSigDataChanged().connect( boost::bind( &srs::COctoMapPlugin::insertCloud, &m_plugOctoMap, _1 ));
+	m_plugInputPointCloudHolder.getPlugin()->getSigDataChanged().connect( boost::bind( &COctoMapPlugin::insertCloud, &m_plugOctoMap, _1 ));
 
 	// Connect octomap data changed signal with server publish
 	m_plugOctoMap.getSigDataChanged().connect( boost::bind( &CButServer::onOcMapDataChanged, this, _1 ));
@@ -151,7 +146,7 @@ CButServer::CButServer(const std::string& filename) :
 /**
  Destructor
  */
-CButServer::~CButServer()
+srs_env_model::CButServer::~CButServer()
 {
 
 	if( m_plugOldIMarkers != 0 )
@@ -169,7 +164,7 @@ CButServer::~CButServer()
 /**
  Publish all data
  */
-void CButServer::publishAll(const ros::Time& rostime) {
+void srs_env_model::CButServer::publishAll(const ros::Time& rostime) {
 
 	// Store start time
 	ros::WallTime startTime = ros::WallTime::now();
@@ -262,7 +257,7 @@ void CButServer::publishAll(const ros::Time& rostime) {
 /**
  * On octomap data changed
  */
-void CButServer::onOcMapDataChanged( const srs::tButServerOcMap & mapdata )
+void srs_env_model::CButServer::onOcMapDataChanged( const tButServerOcMap & mapdata )
 {
 	// Publish all data
 	publishAll(ros::Time::now() );
@@ -271,7 +266,7 @@ void CButServer::onOcMapDataChanged( const srs::tButServerOcMap & mapdata )
 /**
  * @brief Reset server and all plugins.
  */
-void CButServer::reset()
+void srs_env_model::CButServer::reset()
 {
   ROS_DEBUG("Reseting environment server...");
 

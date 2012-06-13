@@ -1,6 +1,6 @@
 <launch>
 
   <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_assisted_arm_navigation)/config/arm_manip_but.vcg">
-    <param name="wait_for_start" type="bool" value="true" />
+    <param name="wait_for_start" type="bool" value="false" />
   </node>
 </launch>

@@ -19,7 +19,7 @@ def user_msg():
         add_two_ints = rospy.ServiceProxy('assisted_detection', UiDetector)
         rospy.loginfo("client")
         resp1 = add_two_ints(string)
-        rospy.loginfo(resp1.object_list)
+        print resp1
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
     

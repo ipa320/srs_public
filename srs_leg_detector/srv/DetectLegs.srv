@@ -1,0 +1,4 @@
+# request message
+---
+# response message
+sensor_msgs/PointCloud leg_list

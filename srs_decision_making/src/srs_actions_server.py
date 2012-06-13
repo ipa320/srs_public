@@ -69,6 +69,8 @@ from srs_knowledge.msg import *
 
 from cob_tray_sensors.srv import *
 
+import util.json_parser as json_parser
+
 """
 smach introspection server not working in electric yet, modify the executive_smach/smach_msgs/msg/SmachContainerStatus.msg below can bypass error:
 
@@ -454,9 +456,12 @@ class SRS_DM_ACTION(object):
         #initialise task information for the state machine
         global current_task_info
         current_task_info.task_name = current_goal.action
-        if current_task_info.task_name=="":
-            current_task_info.task_name="get"
+        #if current_task_info.task_name=="":
+        #    current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
+
+        current_task_info.json_parameters = current_goal.json_parameters
+        
         ## added by Ze
         # current_task_info.task_parameters = current_goal.parameters
         
@@ -496,6 +501,16 @@ class SRS_DM_ACTION(object):
             print req.content
             print req.userPose
             # req.parameters = current_task_info.parameters
+            
+
+            ### json parameters
+            if not current_task_info.json_parameters is None:
+                tt = json_parser(req.json_parameters)
+                if len(tt.tasks) > 0:
+                    task_dict = tt.tasks[0]
+                    task_json = tt.task_json[0]
+            req.json_parameters = task_json
+            ####
             
             res = requestNewTask(req)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")

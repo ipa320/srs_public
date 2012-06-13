@@ -84,7 +84,8 @@ class goal_structure():
         #task parameter
         self.task_parameter=""
         ## by Ze
-        self.parameters = list()
+        #self.parameters = list()
+        self.json_parameters = ''
         
         #Information about last step, use Last_step_info_msg 
         self.last_step_info = list()

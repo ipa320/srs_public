@@ -51,5 +51,8 @@ class Tasks:
         
         self.device_id = self.json_decoded['initializer']['device_id']
         self.device_type = self.json_decoded['initializer']['device_type']
-        self.tasks_json = str(self.json_decoded['tasks'])
-        self.tasks = self.json_decoded['tasks']
+        #self.tasks_json = str(self.json_decoded['tasks'])
+        self.tasks.append(self.json_decoded['tasks'])
+
+        for t in tasks:
+            self.tasks_json.append(str(t))

@@ -9,6 +9,7 @@ from cob_people_detection_msgs.msg import PeopleDetectionArray
 from srs_human_sensing.srv import Comp_HS_Detections
 import tf
 from std_msgs.msg import Header
+from srs_human_sensing.msg import *
 
 
 def callback_LD(data):
@@ -84,7 +85,14 @@ def match_detections ():
     pub.publish (pc)
       
 def handle_compare_hs_detections (req):
-    return True
+    dh=detect_human()
+    dha=detect_human_array()
+
+    dh.pose.x=1
+    dh.pose.y=2
+    dh.probability=80
+    dha.detect_human.append(dh)
+    return dha
 
 def listener():
     

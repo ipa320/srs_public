@@ -36,11 +36,11 @@ class Task:
         self.json_task = json_task
         #print json_raw_string
         #self.json_raw_string = json_raw_string
-        self.task_json_string = json.dumps(json_task)
+        self.task_json_string = json.dumps(self.json_task)
 
     def addItem(self, key, value):
         self.json_task[key] = value
-        self.task_json_string = json.dumps(json_task)
+        self.task_json_string = json.dumps(self.json_task)
 
 class Tasks:
 

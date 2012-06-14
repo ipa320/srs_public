@@ -149,12 +149,12 @@ public class JSONParser
     public static GetObjectTask parseJSONToGetTask(JSONObject task) {
 	GetObjectTask got = null;
 	// {"task":"get","object":{"object_type":"Book"}}
-	
+	try {
 	JSONObject obj = (JSONObject)task.get("object");
 	String objectType = (String)(obj.get("object_type"));
 	
 	// This should be passed by dm, not read from param server... to minimize the dependence on other packages
-	String graspType = (String)(obj.get("grasping_type"));
+	String graspType = (String)(task.get("grasping_type"));
 	GetObjectTask.GraspType graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
 	if(graspType.equals("Simple")) {
 	    graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
@@ -164,45 +164,60 @@ public class JSONParser
 	}
       
 	got = new GetObjectTask(objectType, graspingType);
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	}
+	
 	return got;
     }
 
     public static FetchObjectTask parseJSONToFetchTask(JSONObject task) {
 	FetchObjectTask fot = null;
 	// {"task":"get","object":{"object_type":"Book"}}
-	JSONObject obj = (JSONObject)task.get("object");
-	String objectType = (String)(obj.get("object_type"));
-	//String graspType = (String)(obj.get("grasping_type"));
-	JSONObject deliverDest = (JSONObject)task.get("deliver_destination");
-	String dest = "";
-	if(deliverDest.containsKey("predefined_pose")) {
-	    dest = (String)deliverDest.get("predefined_pose");
-	}
-	else if(deliverDest.containsKey("pose2d_string")) {
-	    dest = (String)deliverDest.get("pose2d_string");
-	}
-	else if(deliverDest.containsKey("pose2d")) {
-	    JSONObject pose = (JSONObject)deliverDest.get("pose2d");
-	    double x = ((Number)(pose.get("x"))).doubleValue();
-	    double y = ((Number)(pose.get("y"))).doubleValue();
-	    double theta = ((Number)(pose.get("theta"))).doubleValue();
-	    dest = "[" + x + " " + y + " " + theta + "]";
-	}
-	else {
-	    return null;
-	}
+	try {
+	    JSONObject obj = (JSONObject)task.get("object");
+	    String objectType = (String)(obj.get("object_type"));
+	    
+	    //String graspType = (String)(obj.get("grasping_type"));
+	    JSONObject deliverDest = (JSONObject)task.get("deliver_destination");
+	    
+	    String dest = "";
+	    if(deliverDest.containsKey("predefined_pose")) {
+		dest = (String)deliverDest.get("predefined_pose");
+	    }
+	    else if(deliverDest.containsKey("pose2d_string")) {
+		dest = (String)deliverDest.get("pose2d_string");
+	    }
+	    else if(deliverDest.containsKey("pose2d")) {
+		JSONObject pose = (JSONObject)deliverDest.get("pose2d");
+		double x = ((Number)(pose.get("x"))).doubleValue();
+		double y = ((Number)(pose.get("y"))).doubleValue();
+		double theta = ((Number)(pose.get("theta"))).doubleValue();
+		dest = "[" + x + " " + y + " " + theta + "]";
+	    }
+	    else {
+		return null;
+	    }
+	    // This should be passed by dm, not read from param server... to minimize the dependence on other packages
+	    String graspType = (String)task.get("grasping_type");
+	    System.out.println("graspType -->  " + graspType);
 
-	// This should be passed by dm, not read from param server... to minimize the dependence on other packages
-	String graspType = (String)(obj.get("grasping_type"));
-	GetObjectTask.GraspType graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
-	if(graspType.equals("Simple")) {
-	    graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
-	}
-	else if(graspType.equals("Planned")) {
-	    graspingType = GetObjectTask.GraspType.JUST_GRASP;
-	}
+	    GetObjectTask.GraspType graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	    if(graspType.equals("Simple")) {
+		graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	    }
+	    else if(graspType.equals("Planned")) {
+		graspingType = GetObjectTask.GraspType.JUST_GRASP;
+	    }
 
-	fot = new FetchObjectTask(objectType, dest, graspingType);
+	    System.out.println("graspingType " + graspingType);
+	    fot = new FetchObjectTask(objectType, dest, graspingType);
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	}
+	
 	return fot;
     }
 }

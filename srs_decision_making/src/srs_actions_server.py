@@ -506,11 +506,15 @@ class SRS_DM_ACTION(object):
             ### json parameters
             if not current_task_info.json_parameters == '':
                 print current_task_info.json_parameters
-                tt = json_parser.Tasks(current_task_info.json_parameters)
-                if len(tt.tasks) > 0:
-                    task_dict = tt.tasks[0]
-                    task_json = tt.tasks_json[0]
-                    req.json_parameters = task_json
+                tasks = json_parser.Tasks(current_task_info.json_parameters)
+                if len(tasks.tasks_list) > 0:
+                    #task_dict = tt.tasks[0]
+                    #task_json = tt.tasks_json[0]
+                    ## read parameter server
+                    grasp_type = rospy.get_param("srs/grasping_type")
+                    tasks.tasks_list[0].addItem('grasping_type', grasp_type)
+                    
+                    req.json_parameters = tasks.tasks_list[0].task_json_string
             ####
             
             res = requestNewTask(req)

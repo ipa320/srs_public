@@ -31,10 +31,12 @@ import json
 import rospy
 
 class Task:
-    def __init__(self, json_raw_string):
+    def __init__(self, json_task):
         ## may not be needed , as this will be handled by the knowledge service
-        print json_raw_string
-        this.json_raw_string = json_raw_string
+        self.json_task = json_task
+        #print json_raw_string
+        #self.json_raw_string = json_raw_string
+        self.task_json_string = json_task.dumps(json_task)
 
 class Tasks:
 
@@ -42,7 +44,9 @@ class Tasks:
         self.json_raw_string = json_raw_string
         self.json_decoded = json.loads(self.json_raw_string)
         self.tasks_json = []
-        self.tasks = []
+        self.tasks_dec = []
+        
+        self.tasks_list = []
         self.device_id = ''   # invalid default empty
         self.device_type = '' # empty
         self.decode()
@@ -52,7 +56,10 @@ class Tasks:
         self.device_id = self.json_decoded['initializer']['device_id']
         self.device_type = self.json_decoded['initializer']['device_type']
         #self.tasks_json = str(self.json_decoded['tasks'])
-        self.tasks.append(self.json_decoded['tasks'])
+        self.tasks_dec = self.json_decoded['tasks']
 
-        for t in tasks:
-            self.tasks_json.append(str(t))
+        for t in self.tasks_dec:
+            tempTask = Task(t)
+            self.tasks_list.append(tempTask)
+            #self.tasks_json.append(json.dumps(t))
+            #self.tasks_json.append(str(t))

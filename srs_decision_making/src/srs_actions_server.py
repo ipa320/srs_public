@@ -509,7 +509,7 @@ class SRS_DM_ACTION(object):
                 tt = json_parser.Tasks(current_task_info.json_parameters)
                 if len(tt.tasks) > 0:
                     task_dict = tt.tasks[0]
-                    task_json = tt.task_json[0]
+                    task_json = tt.tasks_json[0]
                     req.json_parameters = task_json
             ####
             

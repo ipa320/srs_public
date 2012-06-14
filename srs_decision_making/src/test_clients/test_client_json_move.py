@@ -25,7 +25,8 @@ def DM_client(target_pos):
     _goal.action="move"
     _goal.parameter=target_pos
     _goal.priority=0
-    _goal.json_parameters = "{\"tasks\":[{\"time_schedule\":1263798000000,\"task\":\"move\",\"destination\":{\"predefined_pose\":\"home\"}}],\"initializer\":{\"device_type\":\"ui_loc\",\"device_id\":\"ui_loc_0001\"}}"
+    _goal.json_parameters = '{"tasks":[{"time_schedule":1263798000000,"task":"fetch","deliver_destination":{"predefined_pose":"order"},"object":{"object_type":"Milkbox"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}'
+    #_goal.json_parameters = "{\"tasks\":[{\"time_schedule\":1263798000000,\"task\":\"move\",\"destination\":{\"predefined_pose\":\"home\"}}],\"initializer\":{\"device_type\":\"ui_loc\",\"device_id\":\"ui_loc_0001\"}}"
     # Sends the goal to the action server.
     client.send_goal(_goal)
 

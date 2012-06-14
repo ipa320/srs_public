@@ -86,12 +86,12 @@ public class JSONParser
     public static Task parseJSONToTask(String encodedTask) {
 	Task t = null;
 	// {"tasks":[{"time_schedule":1263798000000,"task":"move","destination":{"pose2d_string":"[0 1 3.14]"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}
-	System.out.println("=======decode=======");
+	System.out.println("=======decode======= " + encodedTask);
         
-	//String s="[0,{\"1\":{\"2\":{\"3\":{\"4\":[5,{\"6\":7}]}}}}]";
 	Object obj = JSONValue.parse(encodedTask);
 
 	JSONObject task = (JSONObject)obj;
+
 	String taskName = (String)task.get("task");
 	if(taskName.equals("move")) {
 	    t = parseJSONToMoveTask(task);
@@ -123,8 +123,26 @@ public class JSONParser
 	MoveTask mt = null;
 	
 	java.lang.Number time = (java.lang.Number)task.get("time_schedule");
-	String destination = (String)task.get("destination");	
-	mt = new MoveTask(destination);
+	JSONObject destination = (JSONObject)task.get("destination");	
+	String dest = "";
+	if(destination.containsKey("predefined_pose")) {
+	    dest = (String)destination.get("predefined_pose");
+	}
+	else if(destination.containsKey("pose2d_string")) {
+	    dest = (String)destination.get("pose2d_string");
+	}
+	else if(destination.containsKey("pose2d")) {
+	    JSONObject pose = (JSONObject)destination.get("pose2d");
+	    double x = ((Number)(pose.get("x"))).doubleValue();
+	    double y = ((Number)(pose.get("y"))).doubleValue();
+	    double theta = ((Number)(pose.get("theta"))).doubleValue();
+	    dest = "[" + x + " " + y + " " + theta + "]";
+	}
+	else {
+	    return null;
+	}
+
+	mt = new MoveTask(dest);
 	return mt;
     }
 

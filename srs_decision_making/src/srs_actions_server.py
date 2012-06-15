@@ -516,13 +516,17 @@ class SRS_DM_ACTION(object):
                     
                     req.json_parameters = tasks.tasks_list[0].task_json_string
                     
-                    current_task_info.task_feedback = json_parser.Task_Feedback (gh.comm_state_machine.action_goal.goal_id.id , tasks.device_id, tasks.device_type, req.json_parameters)
+                    #current_task_info.task_feedback = json_parser.Task_Feedback (gh.comm_state_machine.action_goal.goal_id.id , tasks.device_id, tasks.device_type, req.json_parameters)
+                    
             ####
             
             res = requestNewTask(req)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
             print 'Task created with session id of: ' + str(res.sessionId)
             current_task_info.session_id = res.sessionId
+            
+            current_task_info.task_feedback = json_parser.Task_Feedback (current_task_info.session_id , tasks.device_id, tasks.device_type, req.json_parameters)
+            
             if res.result == 1:
                 self._as.set_aborted(self._result)
                 return

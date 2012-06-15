@@ -52,7 +52,7 @@
 #################################################################
 # ROS imports
 import roslib; roslib.load_manifest('srs_decision_making')
-
+import json
 #import states within srs_decision_making
 from srs_generic_states import *
 
@@ -98,11 +98,29 @@ class SRS_StateMachine(smach.StateMachine):
 
     def start_cb(self, userdata, intial_state):
         global current_task_info
+        
+        step_id = len (current_task_info.last_step_info) + 1
         _feedback=xmsg.ExecutionFeedback()
         _feedback.current_state = userdata.current_sub_task_name + ": started"
         _feedback.solution_required = False
         _feedback.exceptional_case_id = 0
+        
+        """
+        json_feedback_current_action = '"current_action": {"name": "'+ userdata.current_sub_task_name +'", "state": "started", "step_id": '+ step_id +' }'
+        
+        if step_id > 1:
+            json_feedback_last_action = '"last_action": {"name": "sm_srs_detection","outcome": "succeeded", "step_id": 2}'
+        
+        json_feedback_feedback = '"feedback": {"lang": "en", "message": "navigation started"}'
+                     
+        json_feedback_task = '"task": {"task_id": "dm_10001_1", "task_initializer": "ui_loc_0001","task_initializer_type": "ui_loc", "task_name": "fetch","task_parameter": "milk"}'
+        
+        _feedback.json_feedback = json.dumps ('{' + json_feedback_current_action + ',' + json_feedback_feedback + ',' + json_feedback_last_action + ',' + json_feedback_task + '}')
+        """
+        
         current_task_info._srs_as._as.publish_feedback(_feedback)
+        
+        current_task_info.task_feedback
         rospy.sleep(1)
     
     def transition_cb (self, userdata, active_states):

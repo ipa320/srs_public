@@ -7,6 +7,7 @@
     <include file="$(find cob_bringup_sim)/launch/robot.launch" />
 
    <include file="$(find srs_ui_but)/launch/distance_visualizer.launch"/>
+   <node pkg="cob_interactive_teleop" type="interactive_teleop" name="interactive_teleop" />
 
    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find srs_ui_but)/config/distance_visualizer.vcg" />
 </launch>

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: octonode.h 809 2012-05-19 21:47:48Z stancl $
+ * $Id: octonode.h 909 2012-06-15 12:17:40Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -55,10 +55,10 @@ public:
 
 	// overloaded, so that the return type is correct:
 	inline EModelTreeNode* getChild(unsigned int i) {
-		return static_cast<EModelTreeNode*> (OcTreeDataNode<float>::getChild(i));
+		return static_cast<EModelTreeNode*> (octomap::OcTreeDataNode<float>::getChild(i));
 	}
 	inline const EModelTreeNode* getChild(unsigned int i) const {
-		return static_cast<const EModelTreeNode*> (OcTreeDataNode<float>::getChild(
+		return static_cast<const EModelTreeNode*> (octomap::OcTreeDataNode<float>::getChild(
 				i));
 	}
 

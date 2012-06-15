@@ -78,13 +78,21 @@ class goal_structure():
     
     def __init__(self):
         
-        #goal of the high level task
+        #goal of the high level task, replaced by self.task_feedback 
         self.task_name =""
         
-        #task parameter
+        #task parameter, replaced by self.task_feedback 
         self.task_parameter=""
+        
+        
+        # contain task_id, task_initializer, task_initializer_type, task_name, task_parameter, task_schedule
+        # defined in srs_decision_making json_parser.py
+        self.task_feedback=""
+        
+        
         ## by Ze
         #self.parameters = list()
+        #complete json parameters come from user
         self.json_parameters = ''
         
         #Information about last step, use Last_step_info_msg 

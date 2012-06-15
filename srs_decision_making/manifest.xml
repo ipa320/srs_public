@@ -8,6 +8,7 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/srs_decision_making</url>
+  <depend package="srs_decision_making_interface"/>
   <depend package="actionlib"/>
   <depend package="roscpp"/>
   <depend package="rospy"/>

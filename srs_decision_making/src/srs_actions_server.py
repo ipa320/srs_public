@@ -515,6 +515,8 @@ class SRS_DM_ACTION(object):
                     tasks.tasks_list[0].addItem('grasping_type', grasp_type)
                     
                     req.json_parameters = tasks.tasks_list[0].task_json_string
+                    
+                    current_task_info.task_feedback = json_parser.Task_Feedback (gh.comm_state_machine.action_goal.goal_id.id , tasks.device_id, tasks.device_type, req.json_parameters)
             ####
             
             res = requestNewTask(req)

@@ -103,10 +103,10 @@ public class JSONParser
 	    t = parseJSONToFetchTask(task);
 	}
 	else if(taskName.equals("search")) {
-	    t = parseJSONToMoveTask(task);
+	    t = parseJSONToSearchTask(task);
 	}
 	else if(taskName.equals("deliver")) {
-	    t = parseJSONToMoveTask(task);
+	    t = parseJSONToGetTask(task);
 	}
 	else if(taskName.equals("stop")) {
 	    t = parseJSONToMoveTask(task);
@@ -219,5 +219,20 @@ public class JSONParser
 	}
 	
 	return fot;
+    }
+
+    public static SearchObjectTask parseJSONToSearchTask(JSONObject task) {
+	SearchObjectTask sot = null;
+
+	try {
+	    JSONObject obj = (JSONObject)task.get("object");
+	    String objectType = (String)(obj.get("object_type"));
+	    
+	    sot = new SearchObjectTask(objectType);
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	}	
+	return sot;
     }
 }

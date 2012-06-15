@@ -486,7 +486,11 @@ public class KnowledgeEngine
 	    try{
 		//if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    SearchObjectTask got = null;
+		    SearchObjectTask sot = null;
+		    sot = new SearchObjectTask(request.content);
+		    currentTask = (Task)sot;
+
+		    /*
 		    if(this.graspActionMode.equals("Simple")) {
 			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
@@ -500,6 +504,7 @@ public class KnowledgeEngine
 			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
+		    */
 		    System.out.println("Created CurrentTask " + "search " + request.content);	    
 		    //	}
 	    //else {	

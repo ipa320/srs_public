@@ -43,7 +43,7 @@ class select_grasp(smach.State):
         grasp_configuration = (get_grasps_from_position(req)).grasp_configuration
        
         userdata.grasp_configuration = grasp_configuration[1]
-        
+     	sss.say(["OIGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA USTEDAAAAAAAA"], False);
         return 'succeeded'
 
 
@@ -59,7 +59,7 @@ class grasp(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state GRASP')
-	
+	sss.say("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU")
 	#Open SDH at the pre-grasp position -----------------------------------------------
 	sss.move("sdh", "cylopen")
 

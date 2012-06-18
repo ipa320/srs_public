@@ -144,7 +144,7 @@ class SRS_StateMachine(smach.StateMachine):
         
         print step_id
         
-        json_feedback_current_action = '"current_action": {"name": "'+ name_of_the_action +'", "state": "' + state_of_the_action + '", "step_id": '+ str(step_id) +' }'
+        json_feedback_current_action = '"current_action": {"name": "'+ name_of_the_action +'", "state": "' + state_of_the_action + '", "step_id": '+ str(step_id+1) +' }'
         
         json_feedback_last_action =''
         
@@ -152,8 +152,8 @@ class SRS_StateMachine(smach.StateMachine):
                      
         json_feedback_task = '"task": {"task_id": "'+ str(current_task_info.task_feedback.task_id) +'", "task_initializer": "'+ current_task_info.task_feedback.task_initializer +'","task_initializer_type": "'+ current_task_info.task_feedback.task_initializer_type +'", "task_name": "'+ current_task_info.task_feedback.task_name +'","task_parameter": "'+ current_task_info.task_feedback.task_parameter +'"}'
 
-        if step_id > 1:
-            json_feedback_last_action = '"last_action": {"name": "'+ current_task_info.last_step_info[step_id-1].step_name +'","outcome": "'+ current_task_info.last_step_info[step_id-1].outcome +'", "step_id": '+ str(step_id-1) +'}'
+        if step_id > 0:
+            json_feedback_last_action = '"last_action": {"name": "'+ current_task_info.last_step_info[step_id].step_name +'","outcome": "'+ current_task_info.last_step_info[step_id-1].outcome +'", "step_id": '+ str(step_id-1) +'}'
             return json.dumps ('{' + json_feedback_current_action + ',' + json_feedback_feedback + ',' + json_feedback_last_action + ',' + json_feedback_task + '}')
         
         else:

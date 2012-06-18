@@ -161,7 +161,8 @@ class goal_structure():
             self.feedback_messages['sm_put_object_on_tray']= "Legen Sie das Objekt auf dem Tablett"
             self.feedback_messages['sm_enviroment_update']= "Umgebung zu aktualisieren"
             self.feedback_messages['sm_srs_detection']= "Auf der Suche nach Objekt"
-            self.feedback_messages['sm_srs_navigation']= "Umzug nach Ziel"           
+            self.feedback_messages['sm_srs_navigation']= "Umzug nach Ziel"   
+            self.feedback_messages['initialise']='Initialisierung Roboter'        
             
         elif self.language_set.lower()== 'german':
             self.speaking_language['Grasp']= "Jetzt bin ich Ergreifen der "
@@ -177,6 +178,7 @@ class goal_structure():
             self.feedback_messages['sm_enviroment_update']= "Ambiente aggiornamento"
             self.feedback_messages['sm_srs_detection']= "Ricerca di oggetti"
             self.feedback_messages['sm_srs_navigation']= "Spostamento di destinazione"
+            self.feedback_messages['initialise']='inizializzazione robot' 
             
         else:
             #default language is English 
@@ -193,6 +195,7 @@ class goal_structure():
             self.feedback_messages['sm_enviroment_update']= "Environment update"
             self.feedback_messages['sm_srs_detection']= "Searching for object"
             self.feedback_messages['sm_srs_navigation']= "Moving to target"
+            self.feedback_messages['initialise']='initialising robot' 
 
         
         

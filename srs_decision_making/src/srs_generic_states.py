@@ -18,6 +18,7 @@ import time
 import tf
 import actionlib
 import gc
+import json
 
 from std_msgs.msg import String, Bool, Int32
 from cob_srvs.srv import Trigger
@@ -125,7 +126,7 @@ class intervention_base_pose(smach.State):
                 if  (s.giveup == 1):
                     return 'no_more_retry'
                 else:
-                    """
+                    """import json
                     tmppos = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
                     tmppos = tmppos.replace('[','')
                     tmppos = tmppos.replace(']','')
@@ -513,10 +514,31 @@ class initialise(smach.State):
         
         #recording the information of last step
         global current_task_info
-        current_task_info.last_step_info.append(last_step_info)
-                
-        #current_task_info.session_id = 123456
         
+        if len(current_task_info.last_step_info) > 0 :
+            del current_task_info.last_step_info[:]  #empty the list        
+        
+        current_task_info.last_step_info.append(last_step_info)               
+     
+        step_id = 1
+         
+        _feedback=xmsg.ExecutionFeedback()
+        _feedback.current_state = last_step_info.step_name + last_step_info.outcome
+        _feedback.solution_required = False
+        _feedback.exceptional_case_id = 0
+        _feedback.json_feedback = ''
+        
+        if not current_task_info.json_parameters == '':
+        
+            json_feedback_current_action = '"current_action": {"name": "'+ last_step_info.step_name +'", "state": "' + last_step_info.outcome + '", "step_id": '+ str(step_id) +' }'
+                  
+            json_feedback_feedback = '"feedback": {"lang": "'+ current_task_info.language_set +'", "message": "'+ current_task_info.feedback_messages[last_step_info.step_name] +'"}'
+                         
+            json_feedback_task = '"task": {"task_id": "'+ str(current_task_info.task_feedback.task_id) +'", "task_initializer": "'+ current_task_info.task_feedback.task_initializer +'","task_initializer_type": "'+ current_task_info.task_feedback.task_initializer_type +'", "task_name": "'+ current_task_info.task_feedback.task_name +'","task_parameter": "'+ current_task_info.task_feedback.task_parameter +'"}'
+                        
+            _feedback.json_feedback = json.dumps ('{' + json_feedback_current_action + ',' + json_feedback_feedback + ',' + json_feedback_task + '}')
+        
+        current_task_info._srs_as._as.publish_feedback(_feedback)
 
         return 'succeeded'
     

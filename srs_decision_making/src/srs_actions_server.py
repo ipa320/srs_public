@@ -553,9 +553,10 @@ class SRS_DM_ACTION(object):
         self.sis.stop()
         
         #Testing recorded task execution history
-        last_step=current_task_info.last_step_info.pop()
-        rospy.loginfo("sm last step name: %s", last_step.step_name)
-        rospy.loginfo("sm last step session ID: %s", current_task_info.session_id)
+        if len (current_task_info.last_step_info) > 1 :
+            last_step=current_task_info.last_step_info.pop()
+            rospy.loginfo("sm last step name: %s", last_step.step_name)
+            rospy.loginfo("sm last step session ID: %s", current_task_info.session_id)
         
         #set outcomes based on the execution result       
                 

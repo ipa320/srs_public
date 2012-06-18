@@ -99,28 +99,16 @@ class SRS_StateMachine(smach.StateMachine):
     def start_cb(self, userdata, intial_state):
         global current_task_info
         
-        step_id = len (current_task_info.last_step_info) + 1
         _feedback=xmsg.ExecutionFeedback()
         _feedback.current_state = userdata.current_sub_task_name + ": started"
         _feedback.solution_required = False
         _feedback.exceptional_case_id = 0
-        
-        """
-        json_feedback_current_action = '"current_action": {"name": "'+ userdata.current_sub_task_name +'", "state": "started", "step_id": '+ step_id +' }'
-        
-        if step_id > 1:
-            json_feedback_last_action = '"last_action": {"name": "sm_srs_detection","outcome": "succeeded", "step_id": 2}'
-        
-        json_feedback_feedback = '"feedback": {"lang": "en", "message": "navigation started"}'
-                     
-        json_feedback_task = '"task": {"task_id": "dm_10001_1", "task_initializer": "ui_loc_0001","task_initializer_type": "ui_loc", "task_name": "fetch","task_parameter": "milk"}'
-        
-        _feedback.json_feedback = json.dumps ('{' + json_feedback_current_action + ',' + json_feedback_feedback + ',' + json_feedback_last_action + ',' + json_feedback_task + '}')
-        """
+        _feedback.json_feedback = ''
+        if not current_task_info.json_parameters == '':
+            _feedback.json_feedback = self.get_json_feedback(userdata.current_sub_task_name, "started")         
         
         current_task_info._srs_as._as.publish_feedback(_feedback)
-        
-        current_task_info.task_feedback
+
         rospy.sleep(1)
     
     def transition_cb (self, userdata, active_states):
@@ -128,18 +116,50 @@ class SRS_StateMachine(smach.StateMachine):
                       
     def termination_cb (self, userdata, active_states, outcome ):
         #update the task execution status of the last state / state machine container
-        global current_task_info
+        global current_task_info      
+       
+        _feedback=xmsg.ExecutionFeedback()
+        _feedback.json_feedback = ''
+        if not current_task_info.json_parameters == '':
+            _feedback.json_feedback = self.get_json_feedback(userdata.current_sub_task_name, outcome)        
+        _feedback.current_state = userdata.current_sub_task_name + ":" + outcome
+        _feedback.solution_required = False
+        _feedback.exceptional_case_id = 0
+               
+        current_task_info._srs_as._as.publish_feedback(_feedback)
+        
         last_step_info = xmsg.Last_step_info()
         last_step_info.step_name = userdata.current_sub_task_name
         last_step_info.outcome = outcome
         current_task_info.last_step_info.append(last_step_info)
-        _feedback=xmsg.ExecutionFeedback()
-        _feedback.current_state = userdata.current_sub_task_name + ":" + outcome
-        _feedback.solution_required = False
-        _feedback.exceptional_case_id = 0
-        current_task_info._srs_as._as.publish_feedback(_feedback)
+        
         rospy.sleep(1)
 
+
+    def get_json_feedback (self, name_of_the_action, state_of_the_action):
+        
+        global current_task_info
+        
+        step_id = len (current_task_info.last_step_info) 
+        
+        print step_id
+        
+        json_feedback_current_action = '"current_action": {"name": "'+ name_of_the_action +'", "state": "' + state_of_the_action + '", "step_id": '+ str(step_id) +' }'
+        
+        json_feedback_last_action =''
+        
+        json_feedback_feedback = '"feedback": {"lang": "'+ current_task_info.language_set +'", "message": "'+ current_task_info.feedback_messages[name_of_the_action] +'"}'
+                     
+        json_feedback_task = '"task": {"task_id": "'+ str(current_task_info.task_feedback.task_id) +'", "task_initializer": "'+ current_task_info.task_feedback.task_initializer +'","task_initializer_type": "'+ current_task_info.task_feedback.task_initializer_type +'", "task_name": "'+ current_task_info.task_feedback.task_name +'","task_parameter": "'+ current_task_info.task_feedback.task_parameter +'"}'
+
+        if step_id > 1:
+            json_feedback_last_action = '"last_action": {"name": "'+ current_task_info.last_step_info[step_id-1].step_name +'","outcome": "'+ current_task_info.last_step_info[step_id-1].outcome +'", "step_id": '+ str(step_id-1) +'}'
+            return json.dumps ('{' + json_feedback_current_action + ',' + json_feedback_feedback + ',' + json_feedback_last_action + ',' + json_feedback_task + '}')
+        
+        else:
+            return json.dumps ('{' + json_feedback_current_action + ',' + json_feedback_feedback + ',' + json_feedback_task + '}')
+        
+        
 
 ####################################################################################
 #Navigation state machine

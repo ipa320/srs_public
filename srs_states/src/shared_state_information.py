@@ -250,7 +250,7 @@ class goal_structure():
 
     def get_stop_acknowledged(self):
         self.lock.acquire()
-        value = self.acknowledged
+        value = self.stop_acknowledged
         self.lock.release()
         return value 
     

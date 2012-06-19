@@ -468,6 +468,14 @@ class SRS_DM_ACTION(object):
         if current_task_info.task_name=='stop':
             current_task_info.set_stop_acknowledged(False)            #
             current_task_info.set_stop_required(False)
+            
+        print ("customised_preempt_acknowledged:",  current_task_info.get_customised_preempt_acknowledged())
+        print ("customised_preempt_required:",  current_task_info.get_customised_preempt_required())
+        print ("stop_acknowledged:",  current_task_info.get_stop_acknowledged())
+        print ("stop_required:",  current_task_info.get_stop_required())
+        print ("object_identification_state:",  current_task_info.get_object_identification_state())
+        
+      
         
         if not self.robot_initialised:
             self.robot_initialisation_process()
@@ -502,11 +510,7 @@ class SRS_DM_ACTION(object):
             print req.userPose
             # req.parameters = current_task_info.parameters
             
-            res = requestNewTask(req)
-            #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
-            print 'Task created with session id of: ' + str(res.sessionId)
-            current_task_info.session_id = res.sessionId
-            
+           
             ### json parameters
             if not current_task_info.json_parameters == '':
                 print current_task_info.json_parameters
@@ -520,8 +524,14 @@ class SRS_DM_ACTION(object):
                     
                     req.json_parameters = tasks.tasks_list[0].task_json_string
                     
-                    #current_task_info.task_feedback = json_parser.Task_Feedback (gh.comm_state_machine.action_goal.goal_id.id , tasks.device_id, tasks.device_type, req.json_parameters)
-                    current_task_info.task_feedback = json_parser.Task_Feedback (current_task_info.session_id , tasks.device_id, tasks.device_type, req.json_parameters)
+            res = requestNewTask(req)
+            #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
+            print 'Task created with session id of: ' + str(res.sessionId)
+            current_task_info.session_id = res.sessionId
+            
+            if not current_task_info.json_parameters == '':
+                #current_task_info.task_feedback = json_parser.Task_Feedback (gh.comm_state_machine.action_goal.goal_id.id , tasks.device_id, tasks.device_type, req.json_parameters)
+                current_task_info.task_feedback = json_parser.Task_Feedback (current_task_info.session_id , tasks.device_id, tasks.device_type, req.json_parameters)
 
             ####          
                         
@@ -538,7 +548,7 @@ class SRS_DM_ACTION(object):
 
 
         
-        #initial internal state machine far task 
+        #initial internal state machine for task 
         # As action server, the SRSActionServer is also a state machine with basic priority handling ability by itself,
         # Therefore there is no need for a 'idle'/'wait for task' state in this state machine.
         self._sm_srs = self.init_sm()
@@ -569,6 +579,9 @@ class SRS_DM_ACTION(object):
         current_task_info.set_stop_acknowledged(False)
         current_task_info.set_stop_required(False)        
         current_task_info.set_object_identification_state(False) 
+        
+        #I am not sure this is needed, to be discussed with UI developers
+        current_task_info.set_pause_required(False)
         
         if outcome == "task_succeeded": 
             self._result.return_value=3

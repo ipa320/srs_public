@@ -280,7 +280,8 @@ class grasp_base_pose_estimation(smach.State):
         rospy.wait_for_service('symbol_grounding_grasp_base_pose_experimental')
         symbol_grounding_grasp_base_pose_experimental = rospy.ServiceProxy('symbol_grounding_grasp_base_pose_experimental', SymbolGroundingGraspBasePoseExperimental)
         try:
-            userdata.base_pose = symbol_grounding_grasp_base_pose_experimental(object_pose_map.pose, parent_obj_geometry, all_workspaces_on_map.objectsInfo)
+            result = symbol_grounding_grasp_base_pose_experimental(object_pose_map.pose, parent_obj_geometry, all_workspaces_on_map.objectsInfo)
+            userdata.base_pose = [result.grasp_base_pose.x, result.grasp_base_pose.y, result.grasp_base_pose.theta]
             return 'retry'
         except rospy.ServiceException, e:
             print "Service call failed: %s" %e

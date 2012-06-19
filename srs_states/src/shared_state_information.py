@@ -78,13 +78,22 @@ class goal_structure():
     
     def __init__(self):
         
-        #goal of the high level task
+        #goal of the high level task, replaced by self.task_feedback 
         self.task_name =""
         
-        #task parameter
+        #task parameter, replaced by self.task_feedback 
         self.task_parameter=""
+        
+        
+        # contain task_id, task_initializer, task_initializer_type, task_name, task_parameter, task_schedule
+        # defined in srs_decision_making json_parser.py
+        self.task_feedback=""
+        
+        
         ## by Ze
-        self.parameters = list()
+        #self.parameters = list()
+        #complete json parameters come from user
+        self.json_parameters = ''
         
         #Information about last step, use Last_step_info_msg 
         self.last_step_info = list()
@@ -137,16 +146,23 @@ class goal_structure():
         #try reading the parameter server
         
         self.speaking_language = dict()
+        self.feedback_messages = dict()
         
         if self.language_set.lower() == 'italian':
             self.speaking_language['Grasp']= "Ora sto afferrare il "
             self.speaking_language['Search']= "Ora sto cercando il "
             self.speaking_language['Navigation']= "Ora mi sto muovendo"
             self.speaking_language['Stop']= "Ora sto fermare l attività corrente "
-            self.speaking_language['Pause']= "Ora sto pausa l attività corrente "
-            self.speaking_language['Resume']= "Ora sto riprendendo l'attività corrente "
+            self.speaking_language['Pause']= "Ora sto pausa l attività corrente"
+            self.speaking_language['Resume']= "Ora sto riprendendo l'attività corrente"
             self.speaking_language['Preempted']= "Ora vengo fermato da un altro task con priorità maggiore"
             
+            self.feedback_messages['sm_srs_grasp']= "Greifen Sie das Objekt"
+            self.feedback_messages['sm_put_object_on_tray']= "Legen Sie das Objekt auf dem Tablett"
+            self.feedback_messages['sm_enviroment_update']= "Umgebung zu aktualisieren"
+            self.feedback_messages['sm_srs_detection']= "Auf der Suche nach Objekt"
+            self.feedback_messages['sm_srs_navigation']= "Umzug nach Ziel"   
+            self.feedback_messages['initialise']='Initialisierung Roboter'        
             
         elif self.language_set.lower()== 'german':
             self.speaking_language['Grasp']= "Jetzt bin ich Ergreifen der "
@@ -155,7 +171,14 @@ class goal_structure():
             self.speaking_language['Stop']= "Jetzt bin ich Anhalten der aktuellen Aufgabe "
             self.speaking_language['Pause']= "Jetzt bin ich Anhalten der aktuellen Aufgabe"
             self.speaking_language['Resume']= "Jetzt bin ich die Wiederaufnahme der aktuellen Aufgabe"
-            self.speaking_language['Preempted']= "Jetzt bin ich von einer anderen Task mit höherer Priorität unterbrochen"           
+            self.speaking_language['Preempted']= "Jetzt bin ich von einer anderen Task mit höherer Priorität unterbrochen"      
+            
+            self.feedback_messages['sm_srs_grasp']= "Cogliere l'oggetto"
+            self.feedback_messages['sm_put_object_on_tray']= "Mettere l'oggetto sul vassoio"
+            self.feedback_messages['sm_enviroment_update']= "Ambiente aggiornamento"
+            self.feedback_messages['sm_srs_detection']= "Ricerca di oggetti"
+            self.feedback_messages['sm_srs_navigation']= "Spostamento di destinazione"
+            self.feedback_messages['initialise']='inizializzazione robot' 
             
         else:
             #default language is English 
@@ -166,6 +189,15 @@ class goal_structure():
             self.speaking_language['Pause']= "Now I am pausing the current task "
             self.speaking_language['Resume']= "Now I am resuming the current task "
             self.speaking_language['Preempt']= "Now I am stopped by another task with higher priority"
+        
+            self.feedback_messages['sm_srs_grasp']= "Grasping the object"
+            self.feedback_messages['sm_put_object_on_tray']= "Put the object on the tray"
+            self.feedback_messages['sm_enviroment_update']= "Environment update"
+            self.feedback_messages['sm_srs_detection']= "Searching for object"
+            self.feedback_messages['sm_srs_navigation']= "Moving to target"
+            self.feedback_messages['initialise']='initialising robot' 
+
+        
         
     def get_post_grasp_adjustment_state(self):
         self.lock.acquire()

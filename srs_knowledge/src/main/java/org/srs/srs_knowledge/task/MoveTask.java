@@ -66,70 +66,70 @@ import org.srs.srs_knowledge.task.Task;
 
 public class MoveTask extends org.srs.srs_knowledge.task.Task
 {
-	public MoveTask(String targetContent, Pose2D userPose) 
-	{
-	    this.initTask(targetContent, userPose);
-	    setTaskType(TaskType.MOVETO_LOCATION);
-	}
+    public MoveTask(String targetContent) 
+    {
+	this.initTask(targetContent);
+	setTaskType(TaskType.MOVETO_LOCATION);
+    }
     
-    private void initTask(String targetContent, Pose2D userPose) {
-		acts = new ArrayList<ActionTuple>();
-		
-		setTaskTarget(targetContent);
-		System.out.println("TASK.JAVA: Created CurrentTask " + "move "
-				+ targetContent);
-		constructTask();
-	}
+    private void initTask(String targetContent) {
+	acts = new ArrayList<ActionTuple>();
 	
-	protected boolean constructTask() {
-		return createSimpleMoveTaskNew();
-	}
-
-	private boolean createSimpleMoveTaskNew() {
-		// boolean addNewActionTuple(ActionTuple act)
-		ActionTuple act = new ActionTuple();
-
-		CUAction ca = new CUAction();
-		GenericAction genericAction = new GenericAction();
-
-		double x = 1;
-		double y = 1;
-		double theta = 0;
-
-		if (this.targetContent.charAt(0) == '['
-				&& this.targetContent.charAt(targetContent.length() - 1) == ']') {
-			StringTokenizer st = new StringTokenizer(targetContent, " [],");
-			if (st.countTokens() == 3) {
-				try {
-					x = Double.parseDouble(st.nextToken());
-					y = Double.parseDouble(st.nextToken());
-					theta = Double.parseDouble(st.nextToken());
-					System.out.println(x + "  " + y + " " + theta);
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-					return false;
-				}
-			}
-		} else {
-			System.out.println("======MOVE COMMAND FORMAT=======");
-			// Ontology queries
-			String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
-			String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
-					+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-					+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
-			String queryString = "SELECT ?x ?y ?theta WHERE { "
-					+ "<" + mapNameSpace + targetContent + ">"
-					+ " srs:xCoordinate ?x . " + "<" + mapNameSpace + targetContent + ">" + " srs:yCoordinate ?y . "
-					+ "<" + mapNameSpace + targetContent + ">"
-					+ " srs:orientationTheta ?theta .}";
-			//System.out.println(prefix + queryString + "\n");
-
-			if (KnowledgeEngine.ontoDB == null) {
-				System.out.println("Ontology Database is NULL");
-				return false;
-			}
-
-			try {
+	setTaskTarget(targetContent);
+	System.out.println("TASK.JAVA: Created CurrentTask " + "move "
+			   + targetContent);
+	constructTask();
+    }
+    
+    protected boolean constructTask() {
+	return createSimpleMoveTaskNew();
+    }
+    
+    private boolean createSimpleMoveTaskNew() {
+	// boolean addNewActionTuple(ActionTuple act)
+	ActionTuple act = new ActionTuple();
+	
+	CUAction ca = new CUAction();
+	GenericAction genericAction = new GenericAction();
+	
+	double x = 1;
+	double y = 1;
+	double theta = 0;
+	
+	if (this.targetContent.charAt(0) == '['
+	    && this.targetContent.charAt(targetContent.length() - 1) == ']') {
+	    StringTokenizer st = new StringTokenizer(targetContent, " [],");
+	    if (st.countTokens() == 3) {
+		try {
+		    x = Double.parseDouble(st.nextToken());
+		    y = Double.parseDouble(st.nextToken());
+		    theta = Double.parseDouble(st.nextToken());
+		    System.out.println(x + "  " + y + " " + theta);
+		} catch (Exception e) {
+		    System.out.println(e.getMessage());
+		    return false;
+		}
+	    }
+	} else {
+	    System.out.println("======MOVE COMMAND FORMAT=======");
+	    // Ontology queries
+	    String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
+	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+		+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
+	    String queryString = "SELECT ?x ?y ?theta WHERE { "
+		+ "<" + mapNameSpace + targetContent + ">"
+		+ " srs:xCoordinate ?x . " + "<" + mapNameSpace + targetContent + ">" + " srs:yCoordinate ?y . "
+		+ "<" + mapNameSpace + targetContent + ">"
+		+ " srs:orientationTheta ?theta .}";
+	    //System.out.println(prefix + queryString + "\n");
+	    
+	    if (KnowledgeEngine.ontoDB == null) {
+		System.out.println("Ontology Database is NULL");
+		return false;
+	    }
+	    
+	    try {
 			    ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix
 										   + queryString);
 			    if (rset.size() == 0) {

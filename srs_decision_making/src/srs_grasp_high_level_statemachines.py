@@ -258,7 +258,7 @@ class sm_srs_grasp_planned (smach.StateMachine):
         except Exception, e:
             rospy.INFO('can not read parameter of srs/ipa_arm_navigation, use the default value planned arm navigation disabled')
         
-        if self.ipa_arm_navigation == 'True':
+        if self.ipa_arm_navigation.lower() == 'true':
             #move arm planned before grasp
             step_after_grasp_select = 'GRASP_MOVE_ARM'
         else:
@@ -266,7 +266,7 @@ class sm_srs_grasp_planned (smach.StateMachine):
             step_after_grasp_select = 'GRASP_SRS_GRASP'
         
         
-        if self.detection_type == 'simple':
+        if self.detection_type.lower() == 'simple':
             with self:          
                 #guided grasp with simple detection        
                 smach.StateMachine.add('GRASP_SELECT', select_srs_grasp(),

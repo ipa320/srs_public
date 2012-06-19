@@ -76,8 +76,8 @@ import org.srs.srs_knowledge.utils.*;
 
 public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    private GetObjectTask.GraspType graspType = GetObjectTask.GraspType.MOVE_AND_GRASP;
-    public SearchObjectTask(String taskType, String targetContent) 
+    //private GetObjectTask.GraspType graspType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+    public SearchObjectTask(String targetContent) 
     {	
 	//this.nodeHandle = n;
 	// this.userPose = userPose;
@@ -85,7 +85,8 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	this.initTask(targetContent);
     }
 
-    public SearchObjectTask(String taskType, String targetContent, GetObjectTask.GraspType graspMode) 
+    /*
+    public SearchObjectTask(String targetContent, GetObjectTask.GraspType graspMode) 
     {	
 	this.graspType = graspMode;
 	//this.nodeHandle = n;
@@ -93,6 +94,7 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);
     }
+    */
 
     protected boolean constructTask() {
 	return createSearchObjectTask();

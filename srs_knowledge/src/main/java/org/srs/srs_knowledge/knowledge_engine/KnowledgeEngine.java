@@ -404,7 +404,6 @@ public class KnowledgeEngine
 
     private TaskRequest.Response handleTaskRequest(TaskRequest.Request request)
     {
-	///////////////////////////// short cut temporary here //////////////////////////
 	if(request.json_parameters != null) {
 	    if(!request.json_parameters.trim().equals("")) {
 		return handleTaskRequestJSON(request);

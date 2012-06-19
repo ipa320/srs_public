@@ -128,19 +128,19 @@ public class KnowledgeEngine
 
     public boolean init(String cfgFile)
     {
+	ros = Ros.getInstance();
+	ros.init(nodeName);
+	ros.logInfo("INFO: Start RosJava_JNI service");
+	
+	nodeHandle = ros.createNodeHandle();
+	
 	try {
 	    initProperties(cfgFile);
 	}
 	catch(Exception e) {
 	    System.out.println(e.getMessage());
 	    return false;
-	}
-	
-	ros = Ros.getInstance();
-	ros.init(nodeName);
-	ros.logInfo("INFO: Start RosJava_JNI service");
-	
-	nodeHandle = ros.createNodeHandle();
+	}	
 
 	try{
 	    initQuerySparQL();
@@ -217,7 +217,8 @@ public class KnowledgeEngine
 	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
 	getWorkspaceForObjectService = config.getProperty("getWorkspaceForObjectService", "get_workspace_for_object");
 
-	graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
+	graspActionMode = this.readGraspModeParam("/srs/grasping_type");
+	//graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
 
 	//mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
 	mapName = config.getProperty("map_name", "ipa-kitchen-map");
@@ -240,6 +241,18 @@ public class KnowledgeEngine
 	//OntoQueryUtil.MapName = mapNamespacePrefix;
 	OntoQueryUtil.MapName = mapName;
 	OntoQueryUtil.RobotName = robotName;
+    }
+
+    private String readGraspModeParam(String paramServer) {
+	String graspMode = "Simple";
+	try{
+	    graspMode = nodeHandle.getStringParam(paramServer);
+	    System.out.println("Read Parameter --- > " + graspMode);
+	}
+	catch(RosException e) {
+	    System.out.println("Caught RosException -- > " + e.toString());
+	}
+	return graspMode;
     }
 
     public void testOnto(String className)
@@ -358,7 +371,50 @@ public class KnowledgeEngine
 	ServiceServer<PlanNextAction.Request, PlanNextAction.Response, PlanNextAction> srv = nodeHandle.advertiseService(planNextActionService, new PlanNextAction(), scb);
     }
 
+    private TaskRequest.Response handleTaskRequestJSON(TaskRequest.Request request)
+    {
+	TaskRequest.Response res = new TaskRequest.Response();
+	System.out.println("Received request for new task -- JSON command received");
+	
+	currentTask = JSONParser.parseJSONToTask(request.json_parameters);
+
+	//if(currentTask.getActionSequence().size() == 0) {
+	if(currentTask == null) {
+	    // task not created for some reason
+	    res.result = 1;
+	    res.description = "No action";
+	    System.out.println("No action. Task is null");
+	}
+	else if(currentTask.isEmpty()) {
+	    // task not created for some reason
+	    res.result = 1;
+	    res.description = "No action";
+	    System.out.println("No action. Task is empty");
+	}
+	else {
+	    res.result = 0;
+	    currentSessionId++;  // TODO: generate unique id
+	    res.sessionId = currentSessionId;
+	    res.description = "No";
+	    System.out.println("SESSION ID IS--> " + res.sessionId);
+	}
+	
+	return res;
+    }
+
     private TaskRequest.Response handleTaskRequest(TaskRequest.Request request)
+    {
+	if(request.json_parameters != null) {
+	    if(!request.json_parameters.trim().equals("")) {
+		return handleTaskRequestJSON(request);
+	    }
+	}
+	////////The above to be removed and handleTaskRequestJSON will be used to replace this method//////////
+
+	return handleTaskRequestOld(request);
+    }
+
+    private TaskRequest.Response handleTaskRequestOld(TaskRequest.Request request)
     {
 	TaskRequest.Response res = new TaskRequest.Response();
 	
@@ -370,14 +426,14 @@ public class KnowledgeEngine
 	    }
 
 	    try{
-		if(request.parameters.size() == 0) {
-		    currentTask = new MoveTask(request.content, null);
-		    System.out.println("Created CurrentTask " + "move " + request.content);
-		}
-		else {	
-		    currentTask = new MoveTask((String)request.parameters.get(0), null);
-		    System.out.println("Created CurrentTask " + "move " + (String)request.parameters.get(0));	    
-		}
+		//if(request.parameters.size() == 0) {
+		currentTask = new MoveTask(request.content);
+		System.out.println("Created CurrentTask " + "move " + request.content);
+		//}
+		//else {	
+		//    currentTask = new MoveTask((String)request.parameters.get(0), null);
+		//   System.out.println("Created CurrentTask " + "move " + (String)request.parameters.get(0));	    
+		//}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -393,30 +449,30 @@ public class KnowledgeEngine
 	    }
 
 	    try{
-		if(request.parameters.size() == 0) {
+		//if(request.parameters.size() == 0) {
 
-		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		//  //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    GetObjectTask got = null;
-		    if(this.graspActionMode.equals("move_and_grasp")) {
-			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+		    if(this.graspActionMode.equals("Simple")) {
+			got = new GetObjectTask(request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
-		    else if(this.graspActionMode.equals("just_grasp")) {
-			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
+		    else if(this.graspActionMode.equals("Planned")) {
+			got = new GetObjectTask(request.content, GetObjectTask.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else {
 			/// default
-			got = new GetObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new GetObjectTask(request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
-		}
-		else {	
-		    GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
-		    currentTask = (Task)got;
-		    System.out.println("Created CurrentTask " + "get " + request.parameters.get(0));	    
-		}
+		    //}
+		    //else {	
+		    //GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
+		    //currentTask = (Task)got;
+		    //System.out.println("Created CurrentTask " + "get " + request.parameters.get(0));	    
+		    //}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -433,14 +489,18 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    try{
-		if(request.parameters.size() == 0) {
+		//if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    SearchObjectTask got = null;
-		    if(this.graspActionMode.equals("move_and_grasp")) {
+		    SearchObjectTask sot = null;
+		    sot = new SearchObjectTask(request.content);
+		    currentTask = (Task)sot;
+
+		    /*
+		    if(this.graspActionMode.equals("Simple")) {
 			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
-		    else if(this.graspActionMode.equals("just_grasp")) {
+		    else if(this.graspActionMode.equals("Planned")) {
 			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
@@ -449,13 +509,14 @@ public class KnowledgeEngine
 			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
+		    */
 		    System.out.println("Created CurrentTask " + "search " + request.content);	    
-		}
-		else {	
-		    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
-		    currentTask = (Task)got;
-		    System.out.println("Created CurrentTask " + "search " + request.content);	    
-		}
+		    //	}
+	    //else {	
+	    //	    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
+	    //	    currentTask = (Task)got;
+	    //	    System.out.println("Created CurrentTask " + "search " + request.content);	    
+	    //	}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -471,34 +532,34 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    try{
-		if(request.parameters.size() == 0) {
+		//if(request.parameters.size() == 0) {
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    FetchObjectTask got = null;
-		    if(this.graspActionMode.equals("move_and_grasp")) {
-			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+		    if(this.graspActionMode.equals("Simple")) {
+			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
-		    else if(this.graspActionMode.equals("just_grasp")) {
-			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.JUST_GRASP);
+		    else if(this.graspActionMode.equals("Planned")) {
+			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else {
 			/// default
-			got = new FetchObjectTask(request.task, request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
-		}
-		else if (request.parameters.size() == 2) {	
-		    FetchObjectTask got = new FetchObjectTask(request.task, request.parameters.get(0), request.parameters.get(1));
-		    currentTask = (Task)got;
-		    System.out.println("Created CurrentTask " + "fetch " + request.parameters.get(0) + " to " + request.parameters.get(1));	    
-		}
-		else {
-		    currentTask = null;
-		    res.result = 1;
-		    res.description = "No action";
-		}
+		    //}
+		    //else if (request.parameters.size() == 2) {	
+		    // FetchObjectTask got = new FetchObjectTask(request.task, request.parameters.get(0), request.parameters.get(1));
+		    //currentTask = (Task)got;
+		    //System.out.println("Created CurrentTask " + "fetch " + request.parameters.get(0) + " to " + request.parameters.get(1));	    
+		    //}
+		    //else {
+		    //currentTask = null;
+		    //res.result = 1;
+		    //res.description = "No action";
+		    //}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -512,18 +573,18 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    try{
-		if(request.parameters.size() == 0) {
+		//if(request.parameters.size() == 0) {
 		    
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    GetObjectTask got = new GetObjectTask(request.task, request.content);
+		    GetObjectTask got = new GetObjectTask(request.content);
 		    currentTask = (Task)got;
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
-		}
-		else {	
-		    GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
-		    currentTask = (Task)got;
-		    System.out.println("Created CurrentTask " + "get " + request.content);	    
-		}
+		    //}
+		    //else {	
+		    //GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
+		    //currentTask = (Task)got;
+		    //System.out.println("Created CurrentTask " + "get " + request.content);	    
+		    //}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -1136,7 +1197,8 @@ public class KnowledgeEngine
 
     private String globalNamespace = "http://www.srs-project.eu/ontologies/srs.owl#";
 
-    private String graspActionMode = "move_and_grasp";
+    //private String graspActionMode = "move_and_grasp";
+    private String graspActionMode = "Simple";
     private String confPath;
     //private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing

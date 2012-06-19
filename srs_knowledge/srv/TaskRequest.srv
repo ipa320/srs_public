@@ -7,7 +7,8 @@ string task
 #temporary use here: kitchen, milk, [x, y, theta]
 string content   ## to be deprecated and replaced with parameters
 
-string[] parameters  # not in use at the moment. 
+string json_parameters ## to replace plain string
+# string[] parameters  # not in use at the moment. 
 
 # Or other task information
 

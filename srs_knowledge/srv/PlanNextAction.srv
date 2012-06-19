@@ -14,6 +14,7 @@ int32 resultLastAction
 ### for action "detection", 
 ### feedback: array in the order of: action-type-"detect", x, y, z, qx, qy, qz, w, "object class name"-e.g. "MilkBox" (length 9)  
 string[] genericFeedBack
+string jsonFeedBack
 
 ---
 

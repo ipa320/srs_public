@@ -312,6 +312,7 @@ public class KnowledgeEngine
 
 	if(request.resultLastAction == 0) {
 	    ArrayList<String> feedback = request.genericFeedBack;
+	    String jsonFeedBack = request.jsonFeedBack;
 	    ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
 	}
 	else if (request.resultLastAction == 2) {

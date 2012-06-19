@@ -310,7 +310,7 @@ class semantic_dm(smach.State):
             print '+++++++++++ Last Step Info LEN+++++++++++++++'
             len_step_info = len(current_task_info.last_step_info)
                     
-            feedback = None
+            feedback = []
             if not current_task_info.last_step_info:
                 ## first action. does not matter this. just to keep it filled
                 resultLastStep = 0
@@ -365,7 +365,13 @@ class semantic_dm(smach.State):
             print resultLastStep
             print '########## Result ###########'
 
-            resp1 = next_action(current_task_info.session_id, resultLastStep, feedback)
+            toPlanInput = PlanNextActionRequest()
+            toPlanInput.sessionId = current_task_info.session_id
+            toPlanInput.resultLastAction = resultLastStep
+            toPlanInput.genericFeedBack = feedback
+            toPlanInput.jsonFeedBack = ''
+            resp1 = next_action(toPlanInput)
+            #resp1 = next_action(current_task_info.session_id, resultLastStep, feedback)
             if resp1.nextAction.status == 1:
                 print 'succeeded'
                 return 'succeeded'

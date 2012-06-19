@@ -374,7 +374,7 @@ public class KnowledgeEngine
     private TaskRequest.Response handleTaskRequestJSON(TaskRequest.Request request)
     {
 	TaskRequest.Response res = new TaskRequest.Response();
-	System.out.println("Received request for new task");
+	System.out.println("Received request for new task -- JSON command received");
 	
 	currentTask = JSONParser.parseJSONToTask(request.json_parameters);
 
@@ -405,12 +405,18 @@ public class KnowledgeEngine
     private TaskRequest.Response handleTaskRequest(TaskRequest.Request request)
     {
 	///////////////////////////// short cut temporary here //////////////////////////
-
 	if(request.json_parameters != null) {
-	    return handleTaskRequestJSON(request);
+	    if(!request.json_parameters.trim().equals("")) {
+		return handleTaskRequestJSON(request);
+	    }
 	}
-
 	////////The above to be removed and handleTaskRequestJSON will be used to replace this method//////////
+
+	return handleTaskRequestOld(request);
+    }
+
+    private TaskRequest.Response handleTaskRequestOld(TaskRequest.Request request)
+    {
 	TaskRequest.Response res = new TaskRequest.Response();
 	
 	System.out.println("Received request for new task");

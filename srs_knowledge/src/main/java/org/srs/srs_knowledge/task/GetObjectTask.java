@@ -262,6 +262,12 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	
 	return actionList;
     }
+
+    // TODO:   NOT COMPLETED... 
+    @Override
+    public CUAction getNextCUActionNew(boolean stateLastAction, String jsonFeedback) {
+	return null;
+    }
     
     @Override
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {

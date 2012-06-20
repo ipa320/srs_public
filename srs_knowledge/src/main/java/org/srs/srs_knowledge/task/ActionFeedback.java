@@ -60,12 +60,64 @@ import ros.pkg.geometry_msgs.msg.Pose;
 import org.srs.srs_knowledge.knowledge_engine.*;
 import org.srs.srs_knowledge.task.Task;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
+
 public class ActionFeedback extends ArrayList<String> {
+    /**
+     * deprecated
+     */
     public ActionFeedback(ArrayList<String> genericFeedback) {
 	super(genericFeedback);
 	System.out.println("Constructor: extents ArrayList of size: " + this.size());
     }
-    
+
+    public ActionFeedback(String jsonGenericFeedback) throws ParseException {
+	this.jsonFeedback = jsonGenericFeedback;
+	JSONParser parser = new JSONParser();
+	Object obj = parser.parse(this.jsonFeedback);
+	this.jsonFBObject = (JSONObject)obj;
+
+	System.out.println("Constructor: using json feedback.");
+    }
+
+    public Pose getDetectedObjectPose() {
+	Pose pos = new Pose();
+
+	try {
+	    JSONObject fb = (JSONObject)this.jsonFBObject.get("feedback");
+	    String actionName = (String)fb.get("action");
+	    if(!actionName.equals("detect")) {
+		System.out.println("Action type is not 'detect'... Format error");
+		return null;	    
+	    }
+	    JSONObject detObj = (JSONObject)fb.get("object");
+	    
+	    String objectName = (String)detObj.get("object_type");
+	    System.out.println("Detected object: " + objectName);
+	    JSONObject jsonPos = (JSONObject)fb.get("pose");
+	    pos.position.x = ((Number)(jsonPos.get("x"))).doubleValue();
+	    pos.position.y = ((Number)(jsonPos.get("y"))).doubleValue();
+	    pos.position.z = ((Number)(jsonPos.get("z"))).doubleValue();
+	    pos.orientation.x = ((Number)(jsonPos.get("rotx"))).doubleValue();
+	    pos.orientation.y = ((Number)(jsonPos.get("roty"))).doubleValue();
+	    pos.orientation.z = ((Number)(jsonPos.get("rotz"))).doubleValue();
+	    pos.orientation.w = ((Number)(jsonPos.get("rotw"))).doubleValue();	    
+	}
+	catch(Exception e) {
+	    System.out.println(e.toString());
+	    return null;
+	}
+
+	return pos;
+    }
+
+    /**
+     * deprecated, kept only for legacy code compatible
+     */
     public static Pose toPose(ActionFeedback fb) {
 	if(fb.size() < 9) {
 	    System.out.println("List array length smaller than 9.    " + fb.size());
@@ -96,5 +148,6 @@ public class ActionFeedback extends ArrayList<String> {
 
 	}
     }
-
+    private String jsonFeedback = "";
+    private JSONObject jsonFBObject = new JSONObject();
 }

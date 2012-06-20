@@ -16,7 +16,7 @@
 # ROS package name: srs_decision_making
 #
 # \author
-# Author: Ze Ji
+# Author: Ze Ji, Renxi Qiu
 #
 # \date Date of creation: June 2012
 #
@@ -27,15 +27,62 @@
 
 import roslib 
 roslib.load_manifest('srs_decision_making')
-import json
+#import json
 import rospy
+import simplejson as json
+
+def decode_move_parameters(json_param):
+"""
+return a dict containing pose2d of the destination
+"""
+    json_decoded = json.loads(json_param)
+
+    json_dest = json_decoded['destination']
+    json_pose2d = json_dest['pose2d']
+    #pose_dict = dict()
+
+    #pose_dict['x'] = json_pose2d['x']
+    #pose_dict['y'] = json_pose2d['y']
+    #pose_dict['theta'] = json_pose2d['theta']
+    return json_pose2d
+
+def decode_detect_parameters(json_param):
+"""
+return a dict containing object info (name etc)
+"""
+    json_decoded = json.loads(json_param)
+
+    json_obj = json_decoded['object']
+    json_obj_type = json_obj['object_type']
+    return json_obj_type
+
+def detect_feedback_to_json(userdata):
+    jsonPose = ''
+   
+    pose = dict()
+    pose['x'] = userdata.target_object_pose.pose.position.x
+    pose['y'] = userdata.target_object_pose.pose.position.y
+    pose['z'] = userdata.target_object_pose.pose.position.z
+    pose['rotx'] = userdata.target_object_pose.pose.orientation.x
+    pose['roty'] = userdata.target_object_pose.pose.orientation.y
+    pose['rotz'] = userdata.target_object_pose.pose.orientation.z
+    pose['rotw'] = userdata.target_object_pose.pose.orientation.w
+
+    feedback = dict()
+    feedback['action'] = 'detect'
+
+    jsonObjectType = dict()
+    jsonObjectType['object_type'] = userdata.target_object_name
+    feedback['object'] = jsonObjectType
+    feedback['pose'] = pose
+
+    jsonPose = json.dumps(feedback)
+
+    return jsonPose
 
 class Task:
     def __init__(self, json_task):
-        ## may not be needed , as this will be handled by the knowledge service
         self.json_task = json_task
-        #print json_raw_string
-        #self.json_raw_string = json_raw_string
         self.task_json_string = json.dumps(self.json_task)
 
     def addItem(self, key, value):

@@ -28,7 +28,7 @@ import srs_decision_making.msg as xmsg
 import srs_decision_making.srv as xsrv
 from srs_knowledge.srv import *
 from srs_knowledge.msg import *
-
+import util.json_parser
 
 """
 This file contains (or import) basic states for SRS high level state machines.
@@ -128,11 +128,14 @@ class intervention_base_pose(smach.State):
                 else:
                     """import json
                     tmppos = s.solution.__str__()#"home"#[1.0, 3.0, 0.0]"
-                    tmppos = tmppos.replace('[','')
-                    tmppos = tmppos.replace(']','')
-                    tmppos = tmppos.replace(',',' ')
-                    tmppos = tmppos.replace('#','')
-                    listtmp = tmppos.split()
+                    # (temp) -- commented by ze, simpler to use split(sep) directly
+                    #tmppos = tmppos.replace('[','')
+                    #tmppos = tmppos.replace(']','')
+                    #tmppos = tmppos.replace(',',' ')
+                    #tmppos = tmppos.replace('#','')
+                    #listtmp = tmppos.split()
+                    listtmp = tmppos.split('[]#, ')
+                    #end of comment#
                     list_out = list()
                     list_out.insert(0, float(listtmp[0]))
                     list_out.insert(1, float(listtmp[1]))
@@ -320,6 +323,8 @@ class semantic_dm(smach.State):
                 if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_srs_detection':
                     print userdata.target_object_pose
                     feedback = pose_to_list(userdata)
+                    feedback_in_json = json_parser.detect_feedback_to_json(userdata)
+                    
                     #rospy.loginfo ("Detected target_object is: %s", userdata.target_object)    
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
                 print 'Result return not_completed'
@@ -368,8 +373,10 @@ class semantic_dm(smach.State):
             toPlanInput = PlanNextActionRequest()
             toPlanInput.sessionId = current_task_info.session_id
             toPlanInput.resultLastAction = resultLastStep
-            toPlanInput.genericFeedBack = feedback
-            toPlanInput.jsonFeedBack = ''
+            toPlanInput.genericFeedBack = feedback   # to be deprecated, replaced by jsonFeedBack
+            
+            toPlanInput.jsonFeedBack = feedback_in_json
+            
             resp1 = next_action(toPlanInput)
             #resp1 = next_action(current_task_info.session_id, resultLastStep, feedback)
             if resp1.nextAction.status == 1:
@@ -408,7 +415,6 @@ class semantic_dm(smach.State):
                 elif resp1.nextAction.generic.actionInfo[0] == 'detect':
                     nextStep = 'detection'
                     #TODO should confirm later if name or id used !!!!!!!!
-		    ####  HARD CODED FOR TESTING ##
 
                     #userdata.target_object_name = 'milk_box'
                     userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
@@ -424,7 +430,6 @@ class semantic_dm(smach.State):
                     rospy.loginfo ("target_workspace_name: %s", userdata.target_workspace_name)        
                             
                     return nextStep
-		    ####  END OF HARD CODED FOR TESTING ##
 
                 elif resp1.nextAction.generic.actionInfo[0] == 'grasp':
                     nextStep = 'simple_grasp'
@@ -651,7 +656,6 @@ class prepare_robot(smach.State):
 
         return 'succeeded'
         """
-
 
 def pose_to_list(userdata):
     # userdata.target_object_name

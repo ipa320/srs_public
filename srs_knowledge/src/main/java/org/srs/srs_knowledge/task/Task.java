@@ -103,7 +103,9 @@ public abstract class Task {
 	this.taskType = type;
     }
 
-    //public abstract CUAction getNextCUAction(boolean stateLastAction, String jsonFeedback);
+    public CUAction getNextCUActionNew(boolean stateLastAction, String jsonFeedback) {
+	return null;
+    }
  
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
 	//CUAction ca = new CUAction();

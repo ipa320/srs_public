@@ -69,6 +69,8 @@ from srs_knowledge.msg import *
 
 from cob_tray_sensors.srv import *
 
+import util.json_parser as json_parser
+
 """
 smach introspection server not working in electric yet, modify the executive_smach/smach_msgs/msg/SmachContainerStatus.msg below can bypass error:
 
@@ -454,15 +456,26 @@ class SRS_DM_ACTION(object):
         #initialise task information for the state machine
         global current_task_info
         current_task_info.task_name = current_goal.action
-        if current_task_info.task_name=="":
-            current_task_info.task_name="get"
+        #if current_task_info.task_name=="":
+        #    current_task_info.task_name="get"
         current_task_info.task_parameter = current_goal.parameter
+
+        current_task_info.json_parameters = current_goal.json_parameters
+        
         ## added by Ze
-        current_task_info.task_parameters = current_goal.parameters
+        # current_task_info.task_parameters = current_goal.parameters
         
         if current_task_info.task_name=='stop':
             current_task_info.set_stop_acknowledged(False)            #
             current_task_info.set_stop_required(False)
+            
+        print ("customised_preempt_acknowledged:",  current_task_info.get_customised_preempt_acknowledged())
+        print ("customised_preempt_required:",  current_task_info.get_customised_preempt_required())
+        print ("stop_acknowledged:",  current_task_info.get_stop_acknowledged())
+        print ("stop_required:",  current_task_info.get_stop_required())
+        print ("object_identification_state:",  current_task_info.get_object_identification_state())
+        
+      
         
         if not self.robot_initialised:
             self.robot_initialisation_process()
@@ -495,12 +508,33 @@ class SRS_DM_ACTION(object):
                 req.userPose = pars[1]
             print req.content
             print req.userPose
-            req.parameters = current_task_info.parameters
+            # req.parameters = current_task_info.parameters
             
+           
+            ### json parameters
+            if not current_task_info.json_parameters == '':
+                print current_task_info.json_parameters
+                tasks = json_parser.Tasks(current_task_info.json_parameters)
+                if len(tasks.tasks_list) > 0:
+                    #task_dict = tt.tasks[0]
+                    #task_json = tt.tasks_json[0]
+                    ## read parameter server
+                    grasp_type = rospy.get_param("srs/grasping_type")
+                    tasks.tasks_list[0].addItem('grasping_type', grasp_type)
+                    
+                    req.json_parameters = tasks.tasks_list[0].task_json_string
+                    
             res = requestNewTask(req)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
             print 'Task created with session id of: ' + str(res.sessionId)
             current_task_info.session_id = res.sessionId
+            
+            if not current_task_info.json_parameters == '':
+                #current_task_info.task_feedback = json_parser.Task_Feedback (gh.comm_state_machine.action_goal.goal_id.id , tasks.device_id, tasks.device_type, req.json_parameters)
+                current_task_info.task_feedback = json_parser.Task_Feedback (current_task_info.session_id , tasks.device_id, tasks.device_type, req.json_parameters)
+
+            ####          
+                        
             if res.result == 1:
                 self._as.set_aborted(self._result)
                 return
@@ -514,7 +548,7 @@ class SRS_DM_ACTION(object):
 
 
         
-        #initial internal state machine far task 
+        #initial internal state machine for task 
         # As action server, the SRSActionServer is also a state machine with basic priority handling ability by itself,
         # Therefore there is no need for a 'idle'/'wait for task' state in this state machine.
         self._sm_srs = self.init_sm()
@@ -527,9 +561,10 @@ class SRS_DM_ACTION(object):
         self.sis.stop()
         
         #Testing recorded task execution history
-        last_step=current_task_info.last_step_info.pop()
-        rospy.loginfo("sm last step name: %s", last_step.step_name)
-        rospy.loginfo("sm last step session ID: %s", current_task_info.session_id)
+        if len (current_task_info.last_step_info) > 1 :
+            last_step=current_task_info.last_step_info.pop()
+            rospy.loginfo("sm last step name: %s", last_step.step_name)
+            rospy.loginfo("sm last step session ID: %s", current_task_info.session_id)
         
         #set outcomes based on the execution result       
                 
@@ -544,6 +579,9 @@ class SRS_DM_ACTION(object):
         current_task_info.set_stop_acknowledged(False)
         current_task_info.set_stop_required(False)        
         current_task_info.set_object_identification_state(False) 
+        
+        #I am not sure this is needed, to be discussed with UI developers
+        current_task_info.set_pause_required(False)
         
         if outcome == "task_succeeded": 
             self._result.return_value=3

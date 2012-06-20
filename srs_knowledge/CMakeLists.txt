@@ -21,6 +21,14 @@ MESSAGE(STATUS " --> DOWNLOAD JAVAGEOM")
 file(DOWNLOAD http://sourceforge.net/projects/geom-java/files/javaGeom/javaGeom%200.10.2/javaGeom-0.10.2.jar/download ${PROJECT_SOURCE_DIR}/lib/javaGeom-0.10.2.jar SHOW_PROGRESS)
 endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/javaGeom-0.10.2.jar)
 
+
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/json-simple-1.1.1.jar)
+MESSAGE(STATUS " --> DOWNLOAD JAVA-SIMPLE-JSON")
+#rosbuild_download_data(http://sourceforge.net/projects/geom-java/files/javaGeom/javaGeom%200.10.2/javaGeom-0.10.2.jar/download lib/javaGeom-0.10.2.jar 6c1305d6c19fad12a6a935810d2aa46f)
+file(DOWNLOAD http://json-simple.googlecode.com/files/json-simple-1.1.1.jar ${PROJECT_SOURCE_DIR}/lib/json-simple-1.1.1.jar SHOW_PROGRESS EXPECTED_MDS f1535657ebe122f89bad3f75a2dcedad)
+endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/json-simple-1.1.1.jar)
+
+
 add_jar_dir(${PROJECT_SOURCE_DIR}/lib)
 
 add_java_source_dir(${PROJECT_SOURCE_DIR}/src)

@@ -28,8 +28,8 @@
  *	 * Redistributions in binary form must reproduce the above copyright
  *	   notice, this list of conditions and the following disclaimer in the
  *	   documentation and/or other materials provided with the distribution.
- *	 * Neither the name of the school of Engineering, Cardiff University nor 
- *         the names of its contributors may be used to endorse or promote products 
+ *	 * Neither the name of the school of Engineering, Cardiff University nor
+ *         the names of its contributors may be used to endorse or promote products
  *         derived from this software without specific prior written permission.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -75,8 +75,10 @@ import org.srs.srs_knowledge.utils.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
 
-public class JSONParser
+public class SRSJSONParser
 {
 
     /**
@@ -86,12 +88,27 @@ public class JSONParser
     public static Task parseJSONToTask(String encodedTask) {
 	Task t = null;
 	// {"tasks":[{"time_schedule":1263798000000,"task":"move","destination":{"pose2d_string":"[0 1 3.14]"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}
-	System.out.println("=======decode======= " + encodedTask);
-        
+	System.out.println("=> decode json: " + encodedTask);
+
+	/*
 	Object obj = JSONValue.parse(encodedTask);
-
-	JSONObject task = (JSONObject)obj;
-
+	if (obj == null) {
+	    System.out.println("Parsing Json error");
+	    return null;
+	}
+	*/
+	JSONParser parser = new JSONParser();
+	JSONObject task = new JSONObject();
+	try {
+	    Object obj = parser.parse(encodedTask);
+	    task = (JSONObject)obj;	    
+	}
+	catch(ParseException pe) {
+	    System.out.println("Parsing Json error at position: " + pe.getPosition());
+	    System.out.println(pe);
+	    return null;
+	}
+	
 	String taskName = (String)task.get("task");
 	if(taskName.equals("move")) {
 	    t = parseJSONToMoveTask(task);
@@ -155,12 +172,12 @@ public class JSONParser
 	
 	// This should be passed by dm, not read from param server... to minimize the dependence on other packages
 	String graspType = (String)(task.get("grasping_type"));
-	GetObjectTask.GraspType graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	ConfigInfo.GraspType graspingType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 	if(graspType.equals("Simple")) {
-	    graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	    graspingType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 	}
 	else if(graspType.equals("Planned")) {
-	    graspingType = GetObjectTask.GraspType.JUST_GRASP;
+	    graspingType = ConfigInfo.GraspType.JUST_GRASP;
 	}
       
 	got = new GetObjectTask(objectType, graspingType);
@@ -203,12 +220,12 @@ public class JSONParser
 	    String graspType = (String)task.get("grasping_type");
 	    System.out.println("graspType -->  " + graspType);
 
-	    GetObjectTask.GraspType graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	    ConfigInfo.GraspType graspingType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 	    if(graspType.equals("Simple")) {
-		graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+		graspingType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 	    }
 	    else if(graspType.equals("Planned")) {
-		graspingType = GetObjectTask.GraspType.JUST_GRASP;
+		graspingType = ConfigInfo.GraspType.JUST_GRASP;
 	    }
 
 	    System.out.println("graspingType " + graspingType);
@@ -234,5 +251,10 @@ public class JSONParser
 	    System.out.println(e.toString());
 	}	
 	return sot;
+    }
+
+    public static StopTask parseJSONToStopTask(JSONObject task) {
+	StopTask st = new StopTask();
+	return st;
     }
 }

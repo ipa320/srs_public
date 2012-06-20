@@ -76,8 +76,8 @@ import org.srs.srs_knowledge.utils.*;
 
 public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 {
-    private GetObjectTask.GraspType graspType = GetObjectTask.GraspType.MOVE_AND_GRASP;
-
+    //private GetObjectTask.GraspType graspType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+    private ConfigInfo.GraspType graspType = ConfigInfo.GraspType.MOVE_AND_GRASP;
     public FetchObjectTask(String targetContent, String userPose) 
     {	
 	//	this.nodeHandle = n;
@@ -85,7 +85,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent, this.userPose);
     }
-    public FetchObjectTask(String targetContent, String userPose, GetObjectTask.GraspType graspMode) 
+    public FetchObjectTask(String targetContent, String userPose, ConfigInfo.GraspType graspMode) 
     {	
 	this.graspType = graspMode;
 	//	this.nodeHandle = n;
@@ -199,10 +199,10 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	// create MoveAndGraspActionUnit
 	HighLevelActionUnit mgAction = null;
 	//new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
-	if(this.graspType == GetObjectTask.GraspType.MOVE_AND_GRASP) {
+	if(this.graspType == ConfigInfo.GraspType.MOVE_AND_GRASP) {
 	    mgAction = new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
 	}
-	else if(this.graspType == GetObjectTask.GraspType.JUST_GRASP) {
+	else if(this.graspType == ConfigInfo.GraspType.JUST_GRASP) {
 	    mgAction = new JustGraspActionUnit(targetContent, hhid, "side", workspace.asResource().getLocalName());
 	}
 	else {
@@ -244,7 +244,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
     
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
      
-	System.out.println("===> Get Next CUACTION -- from GetObjectTask.java");
+	System.out.println("===> Get Next CUACTION -- from FetchObjectTask.java");
 	CUAction ca = new CUAction();
 	if(allSubSeqs.size() == 0 ) {
 	    System.out.println("Sequence size is zero");

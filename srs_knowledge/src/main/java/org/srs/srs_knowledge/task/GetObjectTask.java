@@ -77,11 +77,13 @@ import org.srs.srs_knowledge.utils.*;
 
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
+    /*
     public static enum GraspType {
 	JUST_GRASP, MOVE_AND_GRASP
     }
+    */
     
-    private GraspType graspType = GraspType.MOVE_AND_GRASP;
+    private ConfigInfo.GraspType graspType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 
     public GetObjectTask(String targetContent) 
     {	
@@ -90,12 +92,12 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	System.out.println("MOVE_AND_GRASP");
     }
 
-    public GetObjectTask(String targetContent, GraspType graspMode) 
+    public GetObjectTask(String targetContent, ConfigInfo.GraspType graspMode) 
     {	
 	this.graspType = graspMode;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);
-	if(graspMode == GraspType.MOVE_AND_GRASP)  {
+	if(graspMode == ConfigInfo.GraspType.MOVE_AND_GRASP)  {
 	    System.out.println("MOVE_AND_GRASP  " + targetContent);
 	}
 	else {
@@ -103,9 +105,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
     }
 
-    public void setGraspMode(GraspType graspMode) {
+    public void setGraspMode(ConfigInfo.GraspType graspMode) {
 	this.graspType = graspMode;
-	if(graspMode == GraspType.MOVE_AND_GRASP)  {
+	if(graspMode == ConfigInfo.GraspType.MOVE_AND_GRASP)  {
 	    System.out.println("MOVE_AND_GRASP  ");
 	}
 	else {
@@ -218,10 +220,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	
 	// create MoveAndGraspActionUnit
 	HighLevelActionUnit mgAction = null;
-	if(this.graspType == GraspType.MOVE_AND_GRASP) {
+	if(this.graspType == ConfigInfo.GraspType.MOVE_AND_GRASP) {
 	    mgAction = new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
 	}
-	else if(this.graspType == GraspType.JUST_GRASP) {
+	else if(this.graspType == ConfigInfo.GraspType.JUST_GRASP) {
 	    mgAction = new JustGraspActionUnit(targetContent, hhid, "side", workspace.asResource().getLocalName());
 	}
 	else {

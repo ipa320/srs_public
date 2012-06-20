@@ -235,7 +235,7 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
     
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
      
-	System.out.println("===> Get Next CUACTION -- from GetObjectTask.java");
+	System.out.println("===> Get Next CUACTION -- from SearchObjectTask.java");
 	CUAction ca = new CUAction();
 	if(allSubSeqs.size() == 0 ) {
 	    System.out.println("Sequence size is zero");

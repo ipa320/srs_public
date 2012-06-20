@@ -377,7 +377,7 @@ public class KnowledgeEngine
 	TaskRequest.Response res = new TaskRequest.Response();
 	System.out.println("Received request for new task -- JSON command received");
 	
-	currentTask = JSONParser.parseJSONToTask(request.json_parameters);
+	currentTask = SRSJSONParser.parseJSONToTask(request.json_parameters);
 
 	//if(currentTask.getActionSequence().size() == 0) {
 	if(currentTask == null) {
@@ -455,16 +455,16 @@ public class KnowledgeEngine
 		//  //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    GetObjectTask got = null;
 		    if(this.graspActionMode.equals("Simple")) {
-			got = new GetObjectTask(request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new GetObjectTask(request.content, ConfigInfo.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else if(this.graspActionMode.equals("Planned")) {
-			got = new GetObjectTask(request.content, GetObjectTask.GraspType.JUST_GRASP);
+			got = new GetObjectTask(request.content, ConfigInfo.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else {
 			/// default
-			got = new GetObjectTask(request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new GetObjectTask(request.content, ConfigInfo.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
@@ -537,16 +537,16 @@ public class KnowledgeEngine
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    FetchObjectTask got = null;
 		    if(this.graspActionMode.equals("Simple")) {
-			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else if(this.graspActionMode.equals("Planned")) {
-			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.JUST_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else {
 			/// default
-			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    

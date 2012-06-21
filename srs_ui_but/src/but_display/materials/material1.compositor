@@ -1,0 +1,27 @@
+// First testing compositor
+
+compositor B&W
+{
+	
+	technique
+	{
+		texture scene target_width target_height PF_R8G8B8
+		
+		target scene
+		{
+			input previous
+		}
+		
+		target_output
+		{
+			input none
+			
+			pass render_quad
+			{
+				material material1
+				input 0 scene
+			}
+			
+		}
+	}
+}

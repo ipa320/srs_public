@@ -27,11 +27,16 @@
 
 #include <cstdio>
 #include <cmath>
-#include <objtree/plane.h>
+#include <srs_env_model/but_server/objtree/plane.h>
 
 namespace objtree
 {
 
+/**
+ * A constructor.
+ * Creates plane from a polygon.
+ * @param points polygon
+ */
 Plane::Plane(const Polygon &points) :
     m_points(points)
 {
@@ -67,6 +72,13 @@ Plane::Plane(const Polygon &points) :
     }
 }
 
+/**
+ * A constructor.
+ * Creates plane from center point, normal and scale.
+ * @param center center point
+ * @param normal plane normal
+ * @param scale size of plane bounding box
+ */
 Plane::Plane(const Point &center, const Vector &normal, const Point &scale)
 {
     m_type = PLANE;
@@ -87,11 +99,22 @@ Plane::Plane(const Point &center, const Vector &normal, const Point &scale)
     //TODO: points
 }
 
+/**
+ * Returns true if plane fits into a box.
+ * TODO: Not implemented.
+ * @param box box for test
+ * @return true if plane fits into a box, false otherwise
+ */
 bool Plane::fitsIntoBox(const Box &box) const
 {
     return false;
 }
 
+/**
+ * Returns true if plane interferes with a box.
+ * @param box box for test
+ * @return true if plane interferes with box, false otherwise
+ */
 bool Plane::interfereWithBox(const Box &box) const
 {
     Point min(box.x, box.y, box.z);
@@ -119,24 +142,36 @@ bool Plane::interfereWithBox(const Box &box) const
     return true;
 }
 
+/**
+ * Compare other object for similarity.
+ * @param object object to compare
+ * @return true if object is similar, false otherwise
+ */
 bool Plane::isSimilar(const Object *object) const
 {
     if(object->type() != PLANE) return false;
 
     Plane *plane = (Plane*)object;
 
-    //Normaly jsou normalizovane - vyuzito v obou vypoctech
+    //Normals must be normalized!
 
-    //Uhel je vetsi nez 0.5 = false
-    if(fabs(m_normal.x*plane->m_normal.x+m_normal.y*plane->m_normal.y+m_normal.z*plane->m_normal.z) > 0.5f) return false;
+    //Dot product is lesser than 0.3 => angle is too big => false
+    if(fabs(m_normal.x*plane->m_normal.x+m_normal.y*plane->m_normal.y+m_normal.z*plane->m_normal.z) < 0.3f) return false;
 
-    //Vzdalenost bodu od roviny
+    //Distance between point and plane
     const Point &p = plane->m_pos;
     if(fabs(p.x*m_normal.x+p.y*m_normal.y+p.z*m_normal.z+m_d) > 0.5f) return false;
 
     return true;
 }
 
+/**
+ * Check if point is on a plane.
+ * @param x
+ * @param y
+ * @param z
+ * @return true if point is on a plane, false otherwise
+ */
 bool Plane::isPointInside(float x, float y, float z) const
 {
     return fabs(x*m_normal.x+y*m_normal.y+z*m_normal.z+m_d) < 0.1f;

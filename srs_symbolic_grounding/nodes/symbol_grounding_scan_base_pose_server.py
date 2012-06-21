@@ -141,13 +141,13 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 			while n < int(360.0 / step_angle):
 				wall_check_point_x = obstacle_checked_scan_base_pose_list[index_3].x + dist_to_walls * math.cos(n * step_angle / 180.0 * math.pi)
 				wall_check_point_y = obstacle_checked_scan_base_pose_list[index_3].y + dist_to_walls * math.sin(n * step_angle / 180.0 * math.pi)
-
+				
 				#rospy.loginfo([wall_check_point_x, wall_check_point_y])
 
 				map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution)
 				map_index_list.append(map_index)
 				n += 1
-
+				
 			map_index = int((obstacle_checked_scan_base_pose_list[index_3].y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((obstacle_checked_scan_base_pose_list[index_3].x - data.map.info.origin.position.x) / data.map.info.resolution)
 			map_index_list.append(map_index)
 			#rospy.loginfo(map_index_list)
@@ -162,15 +162,15 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 			if index_4 == len(map_index_list):
 				wall_checked_scan_base_pose_list.append(obstacle_checked_scan_base_pose_list[index_3])
 			index_3 += 1
-	
+	'''
 	if wall_checked_scan_base_pose_list:
 		step_dist = 0.05
 		map_index_list = list()
 		threshold = 20
 		index_5 = 0
 		while index_5 < len(wall_checked_scan_base_pose_list):
-			n = 0
 			dist = math.sqrt((parent_obj_y - wall_checked_scan_base_pose_list[index_5].y) ** 2 + (parent_obj_x - wall_checked_scan_base_pose_list[index_5].x) ** 2)
+			n = 0
 			while n < int((dist - 0.5) / step_dist):
 				wall_check_point_x = wall_checked_scan_base_pose_list[index_5].x - (0.5 + n * step_dist) * math.cos(wall_checked_scan_base_pose_list[index_5].theta)
 				wall_check_point_y = wall_checked_scan_base_pose_list[index_5].y - (0.5 + n * step_dist) * math.sin(wall_checked_scan_base_pose_list[index_5].theta)
@@ -188,8 +188,8 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 			if index_6 == len(map_index_list):
 				all_checked_scan_base_pose_list.append(wall_checked_scan_base_pose_list[index_5])
 			index_5 += 1
-
-	return 	all_checked_scan_base_pose_list			
+	'''
+	return 	wall_checked_scan_base_pose_list			
 	#rospy.loginfo(wall_checked_scan_base_pose_list)
 
 
@@ -224,7 +224,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 	rospy.loginfo([data.map.info.width, data.map.info.height])
 	'''
 
-
+	
 
 	'''	
 	#get furniture information from knowledge base
@@ -281,8 +281,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 		furniture_geometry.h = req.furniture_geometry_list[index].h
 		furniture_geometry_list.append(furniture_geometry)
 		index += 1
-
-
+	
+	
 
 	#calculate the detection width
 	rb_distance = 0.7 #distance between the robot base and the edge of the parent obj
@@ -335,8 +335,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_list_1.append(scan_base_pose_1)
 
 		#rospy.loginfo(scan_base_pose_list_1)
-
-
+		
+				
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 			scan_base_pose_2 = Pose2D()
 			scan_base_pose_2.x = parent_obj_x + (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
@@ -363,7 +363,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 				scan_base_pose_3.theta += 2.0 * math.pi
 			scan_base_pose_list_3.append(scan_base_pose_3)
 
-
+		
 
 
 		for num in range(int((parent_obj_w / detection_w) + 0.99)):
@@ -394,8 +394,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_list_1.append(scan_base_pose_1)
 
 
-
-
+		
+				
 		for num in range(int((parent_obj_w / detection_w) + 0.99)):
 			scan_base_pose_2 = Pose2D()
 			scan_base_pose_2.x = parent_obj_x + (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
@@ -408,7 +408,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 			scan_base_pose_list_2.append(scan_base_pose_2)
 
 
-
+		
 
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 
@@ -422,9 +422,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 				scan_base_pose_1.theta += 2.0 * math.pi
 			scan_base_pose_list_3.append(scan_base_pose_3)
 
+		
 
-
-
+				
 		for num in range(int((parent_obj_l / detection_w) + 0.99)):
 			scan_base_pose_4 = Pose2D()
 			scan_base_pose_4.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
@@ -461,7 +461,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_3]
 	else:
 		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_4]
-
+	
 
 	if not scan_base_pose_list:
 		print "no valid scan pose."
@@ -492,6 +492,5 @@ def symbol_grounding_scan_base_pose_server():
 
 if __name__ == "__main__":
     symbol_grounding_scan_base_pose_server()
-
 
 

@@ -1,0 +1,26 @@
+<package>
+  <description brief="srs_human_sensing">
+
+     srs_human_sensing
+
+  </description>
+  <author>Alex</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_human_sensing</url>
+
+  <depend package="srs_leg_detector"/>
+  <depend package="cob_people_detection_msgs"/>
+  <depend package="smach"/>
+  <depend package="cob_people_detection"/>
+  <depend package="smach_ros"/>
+  <depend package="tf"/>
+  <depend package="cob_people_detection_msgs"/>
+  <depend package="cob_people_detection"/>
+  <depend package="geometry_msgs"/>
+  <depend package="srs_body_detector"/>
+	
+
+</package>
+
+

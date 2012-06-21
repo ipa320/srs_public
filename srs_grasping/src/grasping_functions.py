@@ -274,6 +274,15 @@ def get_category(matrix, values):
 			return "NONE"
 
 
+def valid_grasp(grasp):
+	
+	category = grasp.category;
+	if (category == "UP") or (category == "SIDE") or (category == "-SIDE") or (category == "FRONT"):
+		return True;
+	else:
+		return False;
+	
+
 def read_grasps_from_DB(object_id):
 
 	server_result = GetGraspConfigurationsResponse();
@@ -398,10 +407,9 @@ def get_grasp_category(pre, g):
 
 def callIKSolver(current_pose, goal_pose):
 
-	iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
+	iks = rospy.ServiceProxy('/arm_kinematics/get_constraint_aware_ik', GetConstraintAwarePositionIK)
 
-
-	req = GetPositionIKRequest();
+	req = GetConstraintAwarePositionIKRequest();
 	req.ik_request.ik_link_name = "sdh_palm_link";
 	req.ik_request.ik_seed_state.joint_state.position = current_pose;
 	req.ik_request.pose_stamped = goal_pose;
@@ -587,30 +595,15 @@ def SetRobot(env):
 def sdh_tactil_sensor_result():
 	rospy.loginfo("Reading SDH tactil sensors...");
 	is_grasped = rospy.ServiceProxy('/sdh_controller/is_grasped', Trigger)
+	is_cylindric_grasped = rospy.ServiceProxy('/sdh_controller/is_cylindric_grasped', Trigger)
+
 	try:
 		resp = is_grasped()
+		resp2 = is_cylindric_grasped()
+		sol = resp.success.data or resp2.success.data
 	except rospy.ServiceException, e:
 		rospy.logerr("Service did not process request: %s", str(e))
 		return False
-	return resp.success.data;
 
+	return sol
 
-def sdh_tactil_sensor_result_callback(msg):
-	global object_grasped;
-	tactile_matrix = msg.tactile_matrix
-	
-	count = 0;
-	count_fingers = 0;
-	for i in range(0, len(tactile_matrix)):
-		tactile_array = tactile_matrix[i].tactile_array;
-		for j in range(0, len(tactile_array)):
-			if tactile_array[j] > 0:
-				count+=1;
-			if count > 10:
-				count_fingers+=1;	#The finger touch the object
-				break;		
-
-	if count_fingers <4:
-		object_grasped = False;
-	else:
-		object_grasped = True;

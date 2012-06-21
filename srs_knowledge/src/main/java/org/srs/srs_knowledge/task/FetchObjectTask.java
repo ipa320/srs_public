@@ -78,14 +78,14 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 {
     private GetObjectTask.GraspType graspType = GetObjectTask.GraspType.MOVE_AND_GRASP;
 
-    public FetchObjectTask(String taskType, String targetContent, String userPose) 
+    public FetchObjectTask(String targetContent, String userPose) 
     {	
 	//	this.nodeHandle = n;
 	this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent, this.userPose);
     }
-    public FetchObjectTask(String taskType, String targetContent, String userPose, GetObjectTask.GraspType graspMode) 
+    public FetchObjectTask(String targetContent, String userPose, GetObjectTask.GraspType graspMode) 
     {	
 	this.graspType = graspMode;
 	//	this.nodeHandle = n;

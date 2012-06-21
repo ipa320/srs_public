@@ -26,11 +26,17 @@
  */
 
 #include <cstdio>
-#include <objtree/node.h>
+#include <srs_env_model/but_server/objtree/node.h>
 
 namespace objtree
 {
 
+/**
+ * A constructor.
+ * Creates a new node.
+ * @param place position inside the parent
+ * @param parent pointer to the parent
+ */
 Node::Node(unsigned char place, Node *parent)
 {
     m_place = place;
@@ -38,6 +44,7 @@ Node::Node(unsigned char place, Node *parent)
 
     if(m_parent != NULL)
     {
+        //Update neighbor pointers in neighbors
         for(unsigned char neighbor = 0; neighbor < NEIGHBORS; neighbor++)
         {
             m_neighbors[neighbor] = computeNeighbor(neighbor);
@@ -63,6 +70,9 @@ Node::Node(unsigned char place, Node *parent)
     }
 }
 
+/**
+ * A destructor.
+ */
 Node::~Node()
 {
     //Nullify all neighbor pointers to this node
@@ -88,11 +98,21 @@ Node::~Node()
     }
 }
 
+/**
+ * Returns node parent.
+ * @return node parent
+ */
 Node* Node::parent()
 {
     return m_parent;
 }
 
+/**
+ * Returns pointer to the child.
+ * @param place child position
+ * @param createNew if true non-existing childs are created
+ * @return pointer to child
+ */
 Node* Node::child(unsigned char place, bool createNew)
 {
     if(!m_children[place] && createNew)
@@ -103,36 +123,42 @@ Node* Node::child(unsigned char place, bool createNew)
     return m_children[place];
 }
 
+/**
+ * Returns pointer to the neighbor.
+ * @param dir neighbor direction (0-25)
+ * @return pointer to the neighbor
+ */
 Node* Node::neighbor(unsigned char dir)
 {
     return m_neighbors[dir];
 }
 
+/**
+ * Returns objects in node.
+ * @return std::list of objects
+ */
 const std::list<Object*>& Node::objects() const
 {
     return m_objects;
 }
 
+/**
+ * Adds object to the node.
+ * @param object object to add
+ */
 void Node::add(Object* object)
 {
     m_objects.push_back(object);
     object->newNode(this);
 }
 
-/*Box Node::box() const
-{
-    if(m_parent == NULL)
-    {
-        return ROOT_NODE;
-    }
-    else
-    {
-        Box myBox;
-        getChildBox(m_place, myBox, m_parent->box());
-        return myBox;
-    }
-}*/
-
+/**
+ * Computes position and size of selected child node.
+ * @param place child position
+ * @param childBox output computed position and size
+ * @param parentBox parent bounding box
+ * @return computed position and size
+ */
 Box& Node::getChildBox(unsigned char place, Box &childBox, const Box &parentBox)
 {
     childBox = parentBox;
@@ -176,6 +202,12 @@ Box& Node::getChildBox(unsigned char place, Box &childBox, const Box &parentBox)
     return childBox;
 }
 
+/**
+ * Returns pointer to the child from parent neighbor.
+ * @param parentNeighbor parent neighbor direction
+ * @param child child position
+ * @return pointer to the selected node
+ */
 Node* Node::parentNeighborChild(unsigned char parentNeighbor, unsigned char child)
 {
     if(m_parent->m_neighbors[parentNeighbor] != NULL)
@@ -204,110 +236,61 @@ Node* Node::parentNeighborChild(unsigned char parentNeighbor, unsigned char chil
  *  4  5  6  7  20 21 22 23  36 37 38 39  52 53 54 55
  *  0  1  2  3  16 17 18 19  32 33 34 35  48 49 50 51
  */
+
+/**
+ * Computes neighbor from node position and neighbor direction.
+ * Returns pointer to the computed node.
+ * @param dir neighbor direction
+ * @return pointer to the neighbor or NULL if neighbor doesn't exists
+ */
 Node* Node::computeNeighbor(unsigned char dir)
 {
-    unsigned char id = 0;
+   if(dir >= 13) dir++;
 
-    switch(m_place)
-    {
-    case 0: id = 21; break;
-    case 1: id = 22; break;
-    case 2: id = 25; break;
-    case 3: id = 26; break;
-    case 4: id = 37; break;
-    case 5: id = 38; break;
-    case 6: id = 41; break;
-    case 7: id = 42; break;
-    }
+   unsigned char x = m_place%2+1;
+   unsigned char y = (m_place%4)/2+1;
+   unsigned char z = m_place/4+1;
 
-    if(dir <=  8) id -= 16;
-    if(dir >= 17) id += 16;
+   x -= dir%3 == 0;
+   x += (dir+1)%3 == 0;
 
-    if(dir == 0 || dir == 3 || dir == 6 || dir ==  9 || dir == 12 || dir == 14 || dir == 17 || dir == 20 || dir == 23) id--;
-    if(dir == 2 || dir == 5 || dir == 8 || dir == 11 || dir == 13 || dir == 16 || dir == 19 || dir == 22 || dir == 25) id++;
+   y -= dir%9 <= 2;
+   y += dir%9 >= 6;
 
-    if(dir == 0 || dir == 1 || dir == 2 || dir ==  9 || dir == 10 || dir == 11 || dir == 17 || dir == 18 || dir == 19) id-=4;
-    if(dir == 6 || dir == 7 || dir == 8 || dir == 14 || dir == 15 || dir == 16 || dir == 23 || dir == 24 || dir == 25) id+=4;
+   z -= dir <= 8;
+   z += dir >= 18;
 
-    switch(id)
-    {
-    case  0: return parentNeighborChild(0, 7);
-    case  1: return parentNeighborChild(1, 6);
-    case  2: return parentNeighborChild(1, 7);
-    case  3: return parentNeighborChild(2, 6);
-    case  4: return parentNeighborChild(3, 5);
-    case  5: return parentNeighborChild(4, 4);
-    case  6: return parentNeighborChild(4, 5);
-    case  7: return parentNeighborChild(5, 4);
-    case  8: return parentNeighborChild(3, 7);
-    case  9: return parentNeighborChild(4, 6);
-    case 10: return parentNeighborChild(4, 7);
-    case 11: return parentNeighborChild(5, 6);
-    case 12: return parentNeighborChild(6, 5);
-    case 13: return parentNeighborChild(7, 4);
-    case 14: return parentNeighborChild(7, 5);
-    case 15: return parentNeighborChild(8, 4);
+   unsigned char child = 1-x%2;
+   if(y%2 == 0) child += 2;
+   if(z%2 == 0) child += 4;
 
-    case 16: return parentNeighborChild(9, 3);
-    case 17: return parentNeighborChild(10, 2);
-    case 18: return parentNeighborChild(10, 3);
-    case 19: return parentNeighborChild(11, 2);
-    case 20: return parentNeighborChild(12, 1);
-    case 21: return m_parent->m_children[0];
-    case 22: return m_parent->m_children[1];
-    case 23: return parentNeighborChild(13, 0);
-    case 24: return parentNeighborChild(12, 3);
-    case 25: return m_parent->m_children[2];
-    case 26: return m_parent->m_children[3];
-    case 27: return parentNeighborChild(13, 2);
-    case 28: return parentNeighborChild(14, 1);
-    case 29: return parentNeighborChild(15, 0);
-    case 30: return parentNeighborChild(15, 1);
-    case 31: return parentNeighborChild(16, 0);
+   x -= x >= 2;
+   y -= y >= 2;
+   z -= z >= 2;
 
-    case 32: return parentNeighborChild(9, 7);
-    case 33: return parentNeighborChild(10, 6);
-    case 34: return parentNeighborChild(10, 7);
-    case 35: return parentNeighborChild(11, 6);
-    case 36: return parentNeighborChild(12, 5);
-    case 37: return m_parent->m_children[4];
-    case 38: return m_parent->m_children[5];
-    case 39: return parentNeighborChild(13, 4);
-    case 40: return parentNeighborChild(12, 7);
-    case 41: return m_parent->m_children[6];
-    case 42: return m_parent->m_children[7];
-    case 43: return parentNeighborChild(13, 6);
-    case 44: return parentNeighborChild(14, 5);
-    case 45: return parentNeighborChild(15, 4);
-    case 46: return parentNeighborChild(15, 5);
-    case 47: return parentNeighborChild(16, 4);
+   unsigned char parent = z*9+y*3+x;
 
-    case 48: return parentNeighborChild(17, 3);
-    case 49: return parentNeighborChild(18, 2);
-    case 50: return parentNeighborChild(18, 3);
-    case 51: return parentNeighborChild(19, 2);
-    case 52: return parentNeighborChild(20, 1);
-    case 53: return parentNeighborChild(21, 0);
-    case 54: return parentNeighborChild(21, 1);
-    case 55: return parentNeighborChild(22, 0);
-    case 56: return parentNeighborChild(20, 3);
-    case 57: return parentNeighborChild(21, 2);
-    case 58: return parentNeighborChild(21, 3);
-    case 59: return parentNeighborChild(22, 2);
-    case 60: return parentNeighborChild(23, 1);
-    case 61: return parentNeighborChild(24, 0);
-    case 62: return parentNeighborChild(24, 1);
-    case 63: return parentNeighborChild(25, 0);
-    }
+   if(parent == 13) return m_parent->m_children[child];
+   if(parent > 13) parent--;
 
-    return NULL;
+   return parentNeighborChild(parent, child);
 }
 
+/**
+ * Returns opposite neighbor direction.
+ * @param dir neighbor direction
+ * @return opposite neighbor direction
+ */
 unsigned char Node::reverseNeighborId(unsigned char dir)
 {
     return 25-dir;
 }
 
+/**
+ * Removes object from node.
+ * Also removes node if there is no one remaining.
+ * @param object pointer to the object
+ */
 void Node::removeObject(Object *object)
 {
     m_objects.remove(object);
@@ -320,6 +303,9 @@ void Node::removeObject(Object *object)
     }
 }
 
+/**
+ * Removes node if it doesn't contain any children and objects.
+ */
 void Node::deleteIfEmpty()
 {
     //We don't want to delete root node

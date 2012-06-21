@@ -3,8 +3,8 @@ Background\ ColorG=0,878431
 Background\ ColorB=0,878431
 Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
-CButCobDisplay.Enabled=1
-CButCobDisplay.Position\:\ =-5.01476, 4.173, 0.773798
+CButArmNavDisplay.Enabled=1
+CButArmNavDisplay.Position\:\ =-5.01476, 4.173, 0.773798
 CollisionMap.Alpha=1
 CollisionMap.ColorR=0,1
 CollisionMap.ColorG=1
@@ -12,7 +12,7 @@ CollisionMap.ColorB=0
 CollisionMap.Enabled=0
 CollisionMap.Override\ Color=0
 CollisionMap.Render\ Operation=0
-CollisionMap.Topic=/but_server_node/butsrv_collision_map
+CollisionMap.Topic=/but_env_model/collision_map
 Grid.Alpha=0,5
 Grid.Cell\ Size=1
 Grid.ColorR=0,5
@@ -173,7 +173,7 @@ Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
 Camera\ Config=1.146 3.67691 5.73053 -0.515368 1.1871 2.044
-Property\ Grid\ State=selection=;expanded=PSV Markers.Enabled.PSV Markers.Namespaces,Plannning Scene.Enabled.Plannning Scene.Namespaces,CollisionMap.Enabled.CollisionMap.StatusTopStatus,CButCobDisplay.Enabled.CButCobDisplay.StatusTopStatus,CButCobDisplay.Enabled.CButCobDisplay.Camera position;scrollpos=0,0;splitterpos=135,271;ispageselected=1
+Property\ Grid\ State=selection=;expanded=PSV Markers.Enabled.PSV Markers.Namespaces,Plannning Scene.Enabled.Plannning Scene.Namespaces,CollisionMap.Enabled.CollisionMap.StatusTopStatus,CButArmNavDisplay.Enabled.CButArmNavDisplay.StatusTopStatus,CButArmNavDisplay.Enabled.CButArmNavDisplay.Camera position;scrollpos=0,0;splitterpos=135,271;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -203,9 +203,9 @@ Name=CollisionMap
 Package=mapping_rviz_plugin
 ClassName=mapping_rviz_plugin::CollisionMapDisplay
 [Display7]
-Name=CButCobDisplay
+Name=CButArmNavDisplay
 Package=srs_assisted_arm_navigation
-ClassName=CButCobDisplay
+ClassName=CButArmNavDisplay
 [Display8]
 Name=teleop marker
 Package=rviz

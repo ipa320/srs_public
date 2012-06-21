@@ -70,18 +70,18 @@ from kinematics_msgs.srv import *
 
 class get_grasps_from_position():
 
-	
-
 	def __init__(self):
 		self.ik_loop_reply = 1
 
-		rospy.loginfo("Waiting /arm_kinematics/get_ik service...");
-		rospy.wait_for_service('/arm_kinematics/get_ik')
-		rospy.loginfo("/arm_kinematics/get_ik is ready.");
+		rospy.loginfo("Waiting /arm_kinematics/get_constraint_aware_ik service...");
+		rospy.wait_for_service('/arm_kinematics/get_constraint_aware_ik')
+		rospy.loginfo("/arm_kinematics/get_constraint_aware_ik is ready.");
 
 		rospy.loginfo("Waiting /get_grasp_configurations service...");
 		rospy.wait_for_service('/get_grasp_configurations')
 		self.client = rospy.ServiceProxy('/get_grasp_configurations', GetGraspConfigurations)
+
+		self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state);
 		rospy.loginfo("/get_grasps_from_position service is ready.");
 		print "---------------------------------------------------------------------------";
 
@@ -97,12 +97,10 @@ class get_grasps_from_position():
 		grasp_configuration = (self.client(req)).grasp_configuration;
 
 		#current_joint_configuration
-		rospy.loginfo("Waiting /arm_controller/state...");
-		sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state);
-		while sub.get_num_connections() == 0:
+		while self.arm_state.get_num_connections() == 0:
 			time.sleep(0.3);
 			continue;
-		rospy.loginfo("/arm_controller/state has finished.");
+
 
 		rotacion = grasping_functions.rotation_matrix(obj_pose);
 
@@ -141,18 +139,6 @@ class get_grasps_from_position():
 			g.pose.orientation.z = qg[2];
 			g.pose.orientation.w = qg[3];
 
-			offset_x = 0#(g.pose.position.x - pre.pose.position.x)/3
-			offset_y = 0#(g.pose.position.y - pre.pose.position.y)/3
-			offset_z = 0#(g.pose.position.z - pre.pose.position.z)/3
-
-			pre.pose.position.x += offset_x
-			pre.pose.position.y += offset_y
-			pre.pose.position.z -= offset_z
-			g.pose.position.x += offset_x
-			g.pose.position.y += offset_y
-			g.pose.position.z -= offset_z
-			
-
 		
 			sol = False;
 			for w in range(0,self.ik_loop_reply):
@@ -161,17 +147,18 @@ class get_grasps_from_position():
 					for k in range(0,self.ik_loop_reply):
 						(grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, g);
 						if(error_code.val == error_code.SUCCESS):
+
 							new_valid_grasp = GraspSubConfiguration();
 							new_valid_grasp.sdh_joint_values = grasp_configuration[i].sdh_joint_values;
 							new_valid_grasp.grasp = g.pose;
 							new_valid_grasp.pre_grasp = pre.pose;
 							new_valid_grasp.category = grasping_functions.get_grasp_category(pre.pose.position, g.pose.position);
+							sol = grasping_functions.valid_grasp(new_valid_grasp);
 
-							resp.feasible_grasp_available = True;
-							resp.grasp_configuration.append(new_valid_grasp);
-
-							sol = True;
-							break;
+							if sol:
+								resp.feasible_grasp_available = True;
+								resp.grasp_configuration.append(new_valid_grasp);
+								break;
 					if sol:
 						break;
 			#for

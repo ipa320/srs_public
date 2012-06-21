@@ -1,0 +1,5 @@
+geometry_msgs/Point relative_shift
+geometry_msgs/Point relative_rotation # x=R, y=P, z=Y
+---
+bool completed
+string msg

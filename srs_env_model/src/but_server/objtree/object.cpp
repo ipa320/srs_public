@@ -25,53 +25,103 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <objtree/node.h>
-#include <objtree/object.h>
+#include <srs_env_model/but_server/objtree/node.h>
+#include <srs_env_model/but_server/objtree/object.h>
 
 namespace objtree
 {
 
+/**
+ * A constructor.
+ */
 Object::Object()
 {
     m_id = -1;
+#if HISTORY_ENABLED
+    m_history = NULL;
+#endif
 }
 
+/**
+ * A destructor.
+ * Removes object from octree.
+ */
 Object::~Object()
 {
     for(std::list<Node*>::iterator i = m_inNodes.begin(); i != m_inNodes.end(); i++)
     {
         (*i)->removeObject(this);
     }
+
+#if HISTORY_ENABLED
+    if(m_history)
+    {
+        delete m_history;
+    }
+#endif
 }
 
+/**
+ * Returns object type.
+ * @return object type
+ */
 Object::Type Object::type() const
 {
     return m_type;
 }
 
+/**
+ * Sets a new object id.
+ * @param id new object id
+ */
 void Object::setId(unsigned int id)
 {
     m_id = id;
 }
 
+/**
+ * Returns true if object has an id.
+ * @return true if object has an id, false otherwise
+ */
 bool Object::hasId() const
 {
     return m_id != (unsigned int)-1;
 }
 
+/**
+ * Returns object id.
+ * @return object id
+ */
 unsigned int Object::id() const
 {
     return m_id;
 }
 
+/**
+ * Informs object it is include in a new node.
+ * @param pointer to node
+ */
 void Object::newNode(Node *node)
 {
     m_inNodes.push_back(node);
 }
 
+/**
+ * Informs object it is removed from node.
+ * @param pointer to node
+ */
 void Object::removeNode(Node *node)
 {
     m_inNodes.remove(node);
+}
+
+/**
+ * Returns number of occupied nodes.
+ * @return number of occupied nodes
+ */
+unsigned int Object::inNodesCount() const
+{
+    return m_inNodes.size();
 }
 
 }

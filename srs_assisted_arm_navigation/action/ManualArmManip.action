@@ -2,8 +2,8 @@
 bool pregrasp
 bool away
 string object_name
-geometry_msgs/Pose[] target_positions
-int32[] positions_ids
+#geometry_msgs/Pose[] target_positions
+#int32[] positions_ids
 ---
 # result
 bool success
@@ -12,8 +12,9 @@ bool repeat
 bool timeout
 bool collision
 duration time_elapsed
-int32 reached_position
-bool pregrasps_not_suitable
+#int32 reached_position
+#geometry_msgs/Pose reached_position
+#bool pregrasps_not_suitable
 ---
 # feedback
 bool starting

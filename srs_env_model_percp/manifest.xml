@@ -1,7 +1,10 @@
 <package>
   <description brief="srs_env_model_percp">
 
-ROS environment perception package provided by dcgm-robotics@FIT group.
+ROS environment perception package provided by dcgm-robotics@FIT group:
+- plane detection in depth images
+- bounding box estimator
+- depth image segmentation
 
   </description>
   <author>Rostislav Hulik (ihulik@fit.vutbr.cz), Tomas Hodan, Michal Spanel (spanel@fit.vutbr.cz)</author>
@@ -20,6 +23,7 @@ ROS environment perception package provided by dcgm-robotics@FIT group.
   <depend package="visualization_msgs"/>
   <depend package="pcl_ros"/>
   <depend package="srs_env_model"/>
-  <depend package="octomap_ros"/>
+  <!--depend package="octomap_ros"/-->
+  <depend package="srs_interaction_primitives"/>
 </package>
 

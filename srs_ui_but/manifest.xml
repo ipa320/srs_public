@@ -29,9 +29,8 @@ ROS visualization tools provided by dcgm-robotics@FIT group.
   <!-- depend package="cob_arm_navigation_but"/>-->
 
   <export>
-    <rviz plugin="${prefix}/lib/but_gui.yaml"/>
+    <rviz plugin="${prefix}/lib/but_gui.yaml"/> 
     <rosdoc config="rosdoc.yaml" />
   </export>
-
 </package>
 

@@ -32,29 +32,73 @@ import rospy
 import simplejson as json
 
 def decode_move_parameters(json_param):
-"""
-return a dict containing pose2d of the destination
-"""
-    json_decoded = json.loads(json_param)
+    """
+    return a dict containing pose2d of the destination
+    """
+    try:
+        json_decoded = json.loads(json_param)
+    
+        json_dest = json_decoded['destination']
+        json_pose2d = json_dest['pose2d']
 
-    json_dest = json_decoded['destination']
-    json_pose2d = json_dest['pose2d']
-    #pose_dict = dict()
+        #pose_dict = dict()
+    
+        #pose_dict['x'] = json_pose2d['x']
+        #pose_dict['y'] = json_pose2d['y']
+        #pose_dict['theta'] = json_pose2d['theta']
+    except json.JSONDecodeError:
+        print "Oops, error when decoding json_param", json_param
+        return None
 
-    #pose_dict['x'] = json_pose2d['x']
-    #pose_dict['y'] = json_pose2d['y']
-    #pose_dict['theta'] = json_pose2d['theta']
     return json_pose2d
 
 def decode_detect_parameters(json_param):
-"""
-return a dict containing object info (name etc)
-"""
-    json_decoded = json.loads(json_param)
+    """
+    return a dict containing object info (name etc)
+    """
+    try:
+        json_decoded = json.loads(json_param)
+    
+        json_obj = json_decoded['object']
+        #json_obj_type = json_obj['object_type']
+    except json.JSONDecodeError:
+        print "Oops, error when decoding json_param", json_param
+        return None
 
-    json_obj = json_decoded['object']
-    json_obj_type = json_obj['object_type']
-    return json_obj_type
+    return json_obj
+
+def decode_grasp_parameters(json_param):
+    """
+    return a dict containing object info (name etc)
+    """
+    try:
+        json_decoded = json.loads(json_param)
+    
+        json_obj = json_decoded['object']
+        #json_obj_type = json_obj['object_type']
+    except json.JSONDecodeError:
+        print "Oops, error when decoding json_param", json_param
+        return None
+
+    return json_obj
+
+def decode_check_ws_parameters(json_param):
+    """
+    return a dict containing workspace info (name etc) -- check workspace
+    """
+    try:
+        json_decoded = json.loads(json_param)
+    
+        json_obj = json_decoded['workspace']
+        #json_obj_type = json_obj['object_type']
+        json_dest = json_decoded['destination']
+        json_pose2d = json_dest['pose2d']
+
+    except json.JSONDecodeError:
+        print "Oops, error when decoding json_param", json_param
+        return None
+
+    return json_obj, json_pose2d
 
 def detect_feedback_to_json(userdata):
     jsonPose = ''

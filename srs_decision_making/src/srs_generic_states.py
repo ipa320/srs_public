@@ -393,10 +393,20 @@ class semantic_dm(smach.State):
                 if resp1.nextAction.generic.actionInfo[0] == 'charging':
                     nextStep = 'charging'
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
+
+                    destPos = json_parser.decode_move_parameters(resp1.nextAction.generic.jsonActionInfo)
+                    if not destPos is None:
+                        userdata.target_base_pose = [destPos['x'], destPos['y'], destPos['theta']]
+                    
                     return nextStep
                 elif resp1.nextAction.generic.actionInfo[0] == 'move':
                     nextStep = 'navigation'
-                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
+                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]
+
+                    destPos = json_parser.decode_move_parameters(resp1.nextAction.generic.jsonActionInfo)
+                    if not destPos is None:
+                        userdata.target_base_pose = [destPos['x'], destPos['y'], destPos['theta']]
+
                     return nextStep
                 elif resp1.nextAction.generic.actionInfo[0] == 'put_on_tray':
                     nextStep = 'put_on_tray'
@@ -405,6 +415,11 @@ class semantic_dm(smach.State):
                 elif resp1.nextAction.generic.actionInfo[0] == 'deliver_object':
                     nextStep = 'deliver_object'
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
+                    
+                    destPos = json_parser.decode_move_parameters(resp1.nextAction.generic.jsonActionInfo)
+                    if not destPos is None:
+                        userdata.target_base_pose = [destPos['x'], destPos['y'], destPos['theta']]
+                    
                     return nextStep
                 elif resp1.nextAction.generic.actionInfo[0] == 'finish_success':
                     nextStep = 'succeeded'
@@ -424,6 +439,15 @@ class semantic_dm(smach.State):
                     userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[3]
                     #testing purpose, this value should come from knowledge service
                     #userdata.target_workspace_name='Table0'
+
+                    obj_to_det = json_parser.decode_detect_parameters(resp1.nextAction.generic.jsonActionInfo)
+                    if not obj_to_det is None:
+                        userdata.target_object_name = obj_to_det['object_type']
+                        userdata.target_object_id = obj_to_det['object_id']
+                        
+                        # name of the workspace
+                        userdata.target_workspace_name = obj_to_det['workspace']
+
                     
                     rospy.loginfo ("target_object_name: %s", userdata.target_object_name)
                     rospy.loginfo ("target_object_id: %s", userdata.target_object_id)
@@ -441,6 +465,13 @@ class semantic_dm(smach.State):
                     #userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[???]
                     #testing purpose, this value should come from knowledge service
                     #userdata.target_workspace_name='Table0'
+                    obj_to_det = json_parser.decode_grasp_parameters(resp1.nextAction.generic.jsonActionInfo)
+                    if not obj_to_det is None:
+                        userdata.target_object_name = obj_to_det['object_type']
+                        userdata.target_object_id = obj_to_det['object_id']
+                        # name of the workspace
+                        # userdata.target_workspace_name = obj_to_det['workspace']
+                    
                     return nextStep
                 
                 elif resp1.nextAction.generic.actionInfo[0] == 'just_grasp':
@@ -451,10 +482,13 @@ class semantic_dm(smach.State):
                     userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
                     # name of the workspace
                     userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[4]
-                    
-                    rospy.loginfo ("target_object is: %s", userdata.target_object)
-                    
-                    userdata.target_object = userdata.target_object
+
+                    obj_to_det = json_parser.decode_grasp_parameters(resp1.nextAction.generic.jsonActionInfo)
+                    if not obj_to_det is None:
+                        userdata.target_object_name = obj_to_det['object_type']
+                        userdata.target_object_id = obj_to_det['object_id']
+                        # name of the workspace
+                        userdata.target_workspace_name = obj_to_det['workspace']
                     
                     return nextStep
                 
@@ -464,6 +498,14 @@ class semantic_dm(smach.State):
                     scan_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
 
                     userdata.scane_pose_list[0] = scan_base_pose                
+
+                    par = json_parser.decode_check_ws_parameters(resp1.nextAction.generic.jsonActionInfo)
+                    if not par is None:
+                        json_pose = par[1]
+                        scan_base_pose = [json_pose['x'], json_pose['y'], json_pose['theta']]
+                        userdata.scane_pose_list[0] = scan_base_pose                
+                        # userdata.target_workspace_name = par[0]
+                    
 
                     """
                     userdata.target_object_hh_id = 1

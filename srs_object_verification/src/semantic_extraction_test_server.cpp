@@ -16,7 +16,7 @@ bool serviceCb(cob_3d_mapping_msgs::GetObjectsOfClass::Request  &req,
 		return false;
 	}
 	cob_3d_mapping_msgs::Shape table1;
-	table1.type = cob_3d_mapping_msgs::Shape::PLANE;
+	table1.type = cob_3d_mapping_msgs::Shape::POLYGON;
 	table1.params.push_back(0);
 	table1.params.push_back(0);
 	table1.params.push_back(1);
@@ -41,7 +41,7 @@ bool serviceCb(cob_3d_mapping_msgs::GetObjectsOfClass::Request  &req,
 	table1.points.push_back(cloud_msg);
 
 	cob_3d_mapping_msgs::Shape table2;
-	table2.type = cob_3d_mapping_msgs::Shape::PLANE;
+	table2.type = cob_3d_mapping_msgs::Shape::POLYGON;
 	table2.params.push_back(0);
 	table2.params.push_back(0);
 	table2.params.push_back(1);

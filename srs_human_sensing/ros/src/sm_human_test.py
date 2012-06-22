@@ -16,7 +16,7 @@ def main():
                                 output_keys=['humans_pose'])
 
     test=human_sensing_sm_input()
-    test.label=''
+    test.label='alex'
     p=Pose2D()
     p.x=5
     p.y=5

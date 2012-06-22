@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
 <launch>
-   <node pkg="srs_ui_but" type="but_service_server" name="but_service_server" />
+   <node pkg="srs_ui_but" type="but_gui_service_server" name="but_gui_service_server" />
 </launch>

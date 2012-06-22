@@ -2,7 +2,7 @@
 \mainpage
 \htmlinclude manifest.html
 
-GUI primitives for HRI based on Interactive Markers provided by dcgm-robotics@FIT group
+GUI primitives for HRI based on Interactive Markers provided by dcgm-robotics@FIT group.
 
 <!--
 \section xyz ...

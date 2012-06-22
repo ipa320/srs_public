@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: init.cpp 555 2012-04-11 14:32:26Z xlokaj03 $
+ * $Id: init.cpp 825 2012-05-23 14:29:07Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -28,19 +28,22 @@
 #include "rviz/plugin/type_registry.h"
 
 #include "but_display.h"
-#include "but_pointcloud.h"
+#include "but_point_cloud.h"
 #include "but_distance_linear_visualizer.h"
 #include "but_distance_circular_indicator.h"
-#include "but_data_fusion/but_cam_display.h"
 #include "but_camcast.h"
+#include "but_projection.h"
+
+#include "srs_ui_but/but_data_fusion/but_cam_display.h"
 
 extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
 {
-  reg->registerDisplay<CButDisplay> ("CButDisplay");
-  reg->registerDisplay<rviz::CButPointCloud> ("CButPointCloud");
-  reg->registerDisplay<rviz::CButDistanceLinearVisualizer> ("CButDistanceLinearVisualizer");
-  reg->registerDisplay<rviz::CButDistanceCircularIndicator> ("CButDistanceCircularIndicator");
+  reg->registerDisplay<srs_ui_but::CButDisplay> ("CButDisplay");
+  reg->registerDisplay<srs_ui_but::CButPointCloud> ("CButPointCloud");
+  reg->registerDisplay<srs_ui_but::CButDistanceLinearVisualizer> ("CButDistanceLinearVisualizer");
+  reg->registerDisplay<srs_ui_but::CButDistanceCircularIndicator> ("CButDistanceCircularIndicator");
   reg->registerDisplay<rviz::CButCamDisplay> ("CButCamDisplay");
-  reg->registerDisplay<CButCamCast> ("CButCamCast");
+  reg->registerDisplay<srs_ui_but::CButCamCast> ("CButCamCast");
+  reg->registerDisplay<srs_ui_but::CButProjection> ("CButProjection");
 }
 

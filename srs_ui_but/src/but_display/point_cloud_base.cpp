@@ -1,6 +1,6 @@
 /******************************************************************************
  * \file
- * $Id: point_cloud_base.cpp 396 2012-03-29 12:24:03Z spanel $
+ * $Id: point_cloud_base.cpp 810 2012-05-19 21:47:51Z stancl $
  *
  * Modified by dcgm-robotics@FIT group.
  *

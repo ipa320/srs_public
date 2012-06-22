@@ -35,33 +35,34 @@ rosbuild_add_boost_directories()
 
 
 # BUT services
-set( BUT_SERVICES_SOURCE_FILES src/but_services/PointCloudTools.cpp
-                               src/but_services/but_service_server.cpp )
+set( BUT_SERVICES_SOURCE_FILES src/but_services/point_cloud_tools.cpp
+                               src/but_services/service_server.cpp )
                       
-set( BUT_SERVICES_PROJECT_NAME but_services )
+set( BUT_SERVICES_PROJECT_NAME but_gui_services )
 rosbuild_add_library( ${BUT_SERVICES_PROJECT_NAME} ${BUT_SERVICES_SOURCE_FILES} )
 
-rosbuild_add_executable(but_service_server src/but_services/but_service_server.cpp)  
-target_link_libraries(but_service_server ${BUT_SERVICES_PROJECT_NAME})      
+rosbuild_add_executable(but_gui_service_server src/but_services/service_server.cpp)  
+target_link_libraries(but_gui_service_server ${BUT_SERVICES_PROJECT_NAME})      
 
 
 # BUT rviz display
 set( DISPLAY_SOURCE_FILES src/but_display/but_display.cpp
-                          src/but_display/but_pointcloud.cpp
+                          src/but_display/but_point_cloud.cpp
                           src/but_display/point_cloud_base.cpp
-                          src/but_display/but_examplepane.cpp
-                          src/but_display/but_octomap_control_pane.cpp
+                          src/but_display/example_pane.cpp
+                          src/but_display/octomap_control_pane.cpp
                           src/but_display/but_distance_linear_visualizer.cpp
                           src/but_display/but_distance_circular_indicator.cpp
-			  			  src/but_data_fusion/but_cam_display.cpp
-			  			  src/but_display/but_camcast.cpp
-			  			  src/but_display/CRosRttTexture.cpp
+                          src/but_data_fusion/but_cam_display.cpp
+                          src/but_display/but_camcast.cpp
+                          src/but_display/ros_rtt_texture.cpp
+                          src/but_display/but_projection.cpp
+						  src/but_display/but_rostexture.cpp
                           src/but_display/init.cpp )
-                          
-set( BUT_DISPLAY_PROJECT_NAME but_gui )
-include_directories(include/but_display include/but_data_fusion srv_gen/cpp/include/srs_ui_but/)
-rosbuild_add_library( ${BUT_DISPLAY_PROJECT_NAME} ${DISPLAY_SOURCE_FILES} )
 
+set( BUT_DISPLAY_PROJECT_NAME but_gui )
+include_directories(include/srs_ui_but/but_display include/srs_ui_but/but_data_fusion srv_gen/cpp/include/srs_ui_but/)
+rosbuild_add_library( ${BUT_DISPLAY_PROJECT_NAME} ${DISPLAY_SOURCE_FILES} )
 
 # Add wx widgets
 find_package(wxWidgets REQUIRED)
@@ -73,5 +74,4 @@ rosbuild_link_boost(${BUT_DISPLAY_PROJECT_NAME} thread)
 
 
 # BUT data fusion
-rosbuild_add_executable(view src/but_data_fusion/view.cpp)
-
+rosbuild_add_executable(data_fusion_view src/but_data_fusion/view.cpp)

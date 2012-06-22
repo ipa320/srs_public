@@ -22,7 +22,7 @@ GUI primitives for HRI based on Interactive Markers provided by dcgm-robotics@FI
 	<depend package="pcl" />
 	<depend package="pcl_ros" />
 	<depend package="ogre" />
-	<depend package="interactive_markers" /> 
+	<depend package="interactive_markers" />
 
 	<export>
 		<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lbut_interaction_primitives" />
@@ -30,4 +30,3 @@ GUI primitives for HRI based on Interactive Markers provided by dcgm-robotics@FI
 	</export>
 
 </package>
-

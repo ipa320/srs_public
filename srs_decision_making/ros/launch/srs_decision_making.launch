@@ -7,7 +7,7 @@
         <include file="$(find srs_environments)/ros/launch/common.launch"/>
 	
 	<!-- start manipulation -->
-	<!--include file="$(find cob_manipulator)/ros/launch/kdl_solver.launch"/-->  
+	<include file="$(find cob_manipulator)/ros/launch/kdl_solver.launch"/>  
 	
 	<!-- decision making action server-->
 	<include file="$(find srs_decision_making)/ros/launch/dm_server.launch"/>

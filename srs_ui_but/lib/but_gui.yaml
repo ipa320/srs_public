@@ -36,3 +36,9 @@ displays:
     display_name: CButCamCast
     description: |
       This display allows to screencast rviz camera to the ros topic as a image message.
+  -
+    class_name: CButProjection
+    display_name: ButProjectionTest
+    description: |
+      This display tests Ogre compositor capabilities.  
+

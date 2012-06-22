@@ -38,6 +38,17 @@ class select_srs_grasp(smach.State):
             print object_pose_in
             object_pose_in.header.stamp = listener.getLatestCommonTime("/base_link",object_pose_in.header.frame_id)
             object_pose_bl = listener.transformPose("/base_link", object_pose_in)
+
+	    #################### HACK TO TEST 	    #################### 
+	    #object_pose_bl.pose.position.x = 0
+	    #object_pose_bl.pose.position.y = 0
+	    #object_pose_bl.pose.position.x = 0
+	    #object_pose_bl.pose.orientation.x = 0
+	    #object_pose_bl.pose.orientation.y = 0
+	    #object_pose_bl.pose.orientation.z = 0
+	    #object_pose_bl.pose.orientation.w = 1
+	    #################### HACK TO TEST 	    #################### 
+
         except rospy.ROSException, e:
             print ("Transformation not possible: %s", e)
             return 'failed'
@@ -92,41 +103,39 @@ class srs_grasp(smach.State):
         smach.State.__init__(self, outcomes=['succeeded','not_completed','failed', 'preempted'], 
                              input_keys=['grasp_configuration','grasp_configuration_id'], 
                              output_keys=['grasp_categorisation'])
-        rospy.loginfo("Waiting /arm_kinematics/get_ik service...")
-        rospy.wait_for_service('/arm_kinematics/get_ik')
-        rospy.loginfo("/arm_kinematics/get_ik has been found!")
-        self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
-        self.sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
-        self.current_joint_configuration = [];
+
+        self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
+        self.current_arm_state = [];
 
     def get_joint_state(self, msg):
-        #global current_joint_configuration
-        self.current_joint_configuration = list(msg.desired.positions)
+        self.current_arm_state = list(msg.desired.positions)
 
 
-    def execute(self, userdata):
-        rospy.loginfo('Executing state GRASP')
+    def execute(self, userdata): 
 
-    	#Open SDH at the pre-grasp position -----------------------------------------------
-    	#sss.move("sdh", "cylopen")
-        
-        
-        pre_p = userdata.grasp_configuration[userdata.grasp_configuration_id].pre_grasp.position
-        g_p = userdata.grasp_configuration[userdata.grasp_configuration_id].grasp.position
-        
-        category = grasping_functions.get_grasp_category(pre_p , g_p);
-        
-        if category == "TOP" or category == "DOWN":
+	#TODO: THIS PART SHOULD BE IN THE PREVIOUS STATE #####################################################
+	grasp_configuration_id = len(userdata.grasp_configuration)-1;	#TODO: userdata.grasp_configuration_id
+
+	for i in range(0, len(userdata.grasp_configuration)):
+		print userdata.grasp_configuration[i].category
+		if userdata.grasp_configuration[i].category == "TOP":
+			grasp_configuration_id = i;			#TODO: userdata.grasp_configuration_id
+			break;
+	#######################################################################################################
+
+        category = userdata.grasp_configuration[grasp_configuration_id].category	#TODO: userdata.grasp_configuration_id
+   
+        if category == "TOP":
             userdata.grasp_categorisation = 'top'
-            arm_handle=sss.move("sdh", "spheropen")
+            sdh_handle=sss.move("sdh", "spheropen")
         else:
             userdata.grasp_categorisation = 'side'
-            arm_handle=sss.move("sdh", "cylopen")
-        arm_handle.wait()
+            sdh_handle=sss.move("sdh", "cylopen")
+        sdh_handle.wait()
         rospy.sleep(2)
         
         #Get the current arm joint states.
-        while self.sub.get_num_connections() == 0:
+        while self.arm_state.get_num_connections() == 0:
     		time.sleep(0.3)
     		continue
 
@@ -135,36 +144,21 @@ class srs_grasp(smach.State):
     	#pregrasp
         pre_grasp_stamped = PoseStamped();
         pre_grasp_stamped.header.frame_id = "/base_link";
-        pre_grasp_stamped.pose = userdata.grasp_configuration[userdata.grasp_configuration_id].pre_grasp;
+        pre_grasp_stamped.pose = userdata.grasp_configuration[grasp_configuration_id].pre_grasp;	#TODO: userdata.grasp_configuration_id
     
     	#grasp
         grasp_stamped = PoseStamped();
         grasp_stamped.header.frame_id = "/base_link";
-        grasp_stamped.pose = userdata.grasp_configuration[userdata.grasp_configuration_id].grasp;
+        grasp_stamped.pose = userdata.grasp_configuration[grasp_configuration_id].grasp;		#TODO: userdata.grasp_configuration_id
     
     	#postgrasp
         post_grasp_stamped = copy.deepcopy(grasp_stamped);
         post_grasp_stamped.pose.position.z += 0.1;
 
-    	#offset
-        """
-        offset_x = 0#(userdata.grasp_configuration.grasp.position.x - userdata.grasp_configuration.pre_grasp.position.x)/3
-        offset_y = 0#(userdata.grasp_configuration.grasp.position.y - userdata.grasp_configuration.pre_grasp.position.y)/3
-        offset_z = 0#(userdata.grasp_configuration.grasp.position.z - userdata.grasp_configuration.pre_grasp.position.z)/3
-    
-    	pre_grasp_stamped.pose.position.x += offset_x
-    	pre_grasp_stamped.pose.position.y += offset_y
-    	pre_grasp_stamped.pose.position.z -= offset_z
-    	grasp_stamped.pose.position.x += offset_x
-    	grasp_stamped.pose.position.y += offset_y
-    	grasp_stamped.pose.position.z -= offset_z
-    	"""
-
-	#global current_joint_configuration
 
         sol = False
         for w in range(0,10):
-            (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(self.current_joint_configuration, pre_grasp_stamped)		
+            (pre_grasp_conf, error_code) = grasping_functions.callIKSolver(self.current_arm_state, pre_grasp_stamped)		
             if(error_code.val == error_code.SUCCESS):
                 for k in range(0,10):
                     (grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, grasp_stamped)
@@ -177,37 +171,47 @@ class srs_grasp(smach.State):
                     break
 
         if not sol:
+	    sss.say(["I can not catch the object!"], False)
             return 'not_completed';
         else:
-            #sss.move("torso","home")
-            arm_handle = sss.move("arm", [pre_grasp_conf, grasp_conf], False)
-            arm_handle.wait();
+	    sss.say(["I am grasping the object now!"], False)
 
             #Close SDH based on the grasp configuration to grasp.
-            arm_handle = sss.move("sdh", [list(userdata.grasp_configuration[userdata.grasp_configuration_id].sdh_joint_values)], False)
-            arm_handle.wait();
+            arm_handle = sss.move("arm", [pre_grasp_conf, grasp_conf])
+	    arm_handle.wait()
+	    rospy.sleep(4)
+
+            #Close SDH based on the grasp configuration to grasp.
+            ssh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)])	#TODO: userdata.grasp_configuration_id
+	    ssh_handle.wait()
             rospy.sleep(2);
 
-            #TODO: Confirm the grasp based on force feedback
-            successful_grasp = False#grasping_functions.sdh_tactil_sensor_result();
+            #Confirm the grasp based on force feedback
+            successful_grasp = grasping_functions.sdh_tactil_sensor_result();#False
 
             if not successful_grasp:
-                #TODO: Regrasp (close MORE the fingers)
-                regrasp = list(userdata.grasp_configuration[userdata.grasp_configuration_id].sdh_joint_values)
+                #Regrasp (close MORE the fingers)
+                regrasp = list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)			#TODO: userdata.grasp_configuration_id
                 print "Current config, trying regrasp", regrasp
-                #regrasp[2] -= 0.1
-                #regrasp[4] -= 0.1
-                #regrasp[6] -= 0.1
                 regrasp[1] += 0.07
                 regrasp[3] += 0.07
                 regrasp[5] += 0.07
                 print "to", regrasp
-                arm_handle = sss.move("sdh", [regrasp], False)
-                arm_handle.wait();
-                successful_grasp = True#grasping_functions.sdh_tactil_sensor_result();
+
+                sdh_handle = sss.move("sdh", [regrasp])
+		sdh_handle.wait()
+		rospy.sleep(2)
+
+                successful_grasp = grasping_functions.sdh_tactil_sensor_result();#True
                 if not successful_grasp:
+		    sss.say(["I can not catch the object.!"], False)
                     return 'not_completed'
-            sss.move("arm",[post_grasp_conf,"look_at_table","hold"])
+		
+            arm_handle = sss.move("arm",[post_grasp_conf,"look_at_table","hold"])
+	    arm_handle.wait()
+	    rospy.sleep(2)
+
+	    sss.say(["I have grasped the object with success!"], False)
             return 'succeeded'
         
 
@@ -276,7 +280,8 @@ class grasp_base_pose_estimation(smach.State):
         rospy.wait_for_service('symbol_grounding_grasp_base_pose_experimental')
         symbol_grounding_grasp_base_pose_experimental = rospy.ServiceProxy('symbol_grounding_grasp_base_pose_experimental', SymbolGroundingGraspBasePoseExperimental)
         try:
-            userdata.base_pose = symbol_grounding_grasp_base_pose_experimental(object_pose_map.pose, parent_obj_geometry, all_workspaces_on_map.objectsInfo)
+            result = symbol_grounding_grasp_base_pose_experimental(object_pose_map.pose, parent_obj_geometry, all_workspaces_on_map.objectsInfo)
+            userdata.base_pose = [result.grasp_base_pose.x, result.grasp_base_pose.y, result.grasp_base_pose.theta]
             return 'retry'
         except rospy.ServiceException, e:
             print "Service call failed: %s" %e

@@ -33,7 +33,7 @@
       <param name="use_monitor" type="bool" value="true"/>
       <param name="use_collision_map" type="bool" value="true"/>
       <param name="global_frame" type="string" value="/map"/>
-      <remap from="collision_map_occ" to="/but_server_node/butsrv_collision_map"/>
+      <remap from="collision_map_occ" to="/but_env_model/collision_map"/>
     </node>
     
     <node pkg="planning_environment" type="planning_scene_validity_server" output="screen" name="planning_scene_validity_server"/>      
@@ -42,14 +42,15 @@
   <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
     <param name="pointcloud_subscriber" value="/cam3d/depth/points_filtered2"/>
     <param name="input_has_rgb" type="bool" value="false"/>
-    <param name="max_range" type="double" value="4"/>
+    <!--param name="pointcloud_subscriber" value="/cam3d/rgb/points_filtered2"/-->
+    <param name="max_range" type="double" value="2.5"/>
     <param name="pointcloud_min_z" value="0.2" type="double"/>
-    <param name="pointcloud_max_z" value="2" type="double"/>
-    <param name="resolution" value="0.05" type="double"/>
+    <param name="resolution" value="0.025" type="double"/>
   </node>
 	
 	</group>
-  
+	
+  <include file="$(find srs_assisted_arm_navigation)/launch/planning_scene_warehouse_viewer_cob3_3_robot.launch" />
   
 </launch>
 

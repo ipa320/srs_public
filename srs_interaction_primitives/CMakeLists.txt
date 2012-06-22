@@ -28,23 +28,22 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # BUT gui primitives
 set( INTERACTION_PRIMITIVES_SOURCE_FILES 
-     src/but_interaction_primitives/BoundingBox.cpp
-     src/but_interaction_primitives/Primitive.cpp
-     src/but_interaction_primitives/Billboard.cpp
-     src/but_interaction_primitives/Plane.cpp
-     src/but_interaction_primitives/PlanePolygon.cpp
-     src/but_interaction_primitives/Object.cpp
-     src/but_interaction_primitives/UnknownObject.cpp
-     src/but_interaction_primitives/UpdatePublisher.cpp )
+     src/interaction_primitives/bounding_box.cpp
+     src/interaction_primitives/primitive.cpp
+     src/interaction_primitives/billboard.cpp
+     src/interaction_primitives/plane.cpp
+     src/interaction_primitives/plane_polygon.cpp
+     src/interaction_primitives/object.cpp
+     src/interaction_primitives/unknown_object.cpp
+     src/interaction_primitives/update_publisher.cpp )
 
 set( INTERACTION_PRIMITIVES_LIB_NAME but_interaction_primitives )
 rosbuild_add_library( ${INTERACTION_PRIMITIVES_LIB_NAME} ${INTERACTION_PRIMITIVES_SOURCE_FILES} )
 
-rosbuild_add_executable( but_interaction_primitives_service_server src/but_interaction_primitives/service_server.cpp )
-rosbuild_add_executable( but_interaction_primitives_test_primitives src/test_primitives.cpp )
-rosbuild_add_executable( but_interaction_primitives_test_observers src/test_observers.cpp )
+rosbuild_add_executable( interaction_primitives_service_server src/nodes/service_server.cpp )
+rosbuild_add_executable( test_primitives src/test/test_primitives.cpp )
+rosbuild_add_executable( test_observers src/test/test_observers.cpp )
 
-target_link_libraries( but_interaction_primitives_service_server ${INTERACTION_PRIMITIVES_LIB_NAME} )
-target_link_libraries( but_interaction_primitives_test_primitives ${INTERACTION_PRIMITIVES_LIB_NAME} )
-target_link_libraries( but_interaction_primitives_test_observers ${INTERACTION_PRIMITIVES_LIB_NAME} )
-
+target_link_libraries( interaction_primitives_service_server ${INTERACTION_PRIMITIVES_LIB_NAME} )
+target_link_libraries( test_primitives ${INTERACTION_PRIMITIVES_LIB_NAME} )
+target_link_libraries( test_observers ${INTERACTION_PRIMITIVES_LIB_NAME} )

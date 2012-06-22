@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_display.cpp 743 2012-04-25 19:07:28Z stancl $
+ * $Id: but_display.cpp 810 2012-05-19 21:47:51Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -37,7 +37,7 @@
 /*
  *  Constructor
  */
-CButDisplay::CButDisplay(const std::string & name,rviz::VisualizationManager * manager)
+srs_ui_but::CButDisplay::CButDisplay(const std::string & name,rviz::VisualizationManager * manager)
     : Display( name, manager )
     , m_manualObject( 0 )
     , m_listener( this )
@@ -91,7 +91,7 @@ CButDisplay::CButDisplay(const std::string & name,rviz::VisualizationManager * m
 /*
  *  Destructor
  */
-CButDisplay::~CButDisplay()
+srs_ui_but::CButDisplay::~CButDisplay()
 {
     // Destroy all geometry
     destroyGeometry();
@@ -103,7 +103,7 @@ CButDisplay::~CButDisplay()
 /**
 
   */
-void CButDisplay::createProperties()
+void srs_ui_but::CButDisplay::createProperties()
 {
 
     // Create some properties
@@ -132,7 +132,7 @@ void CButDisplay::createProperties()
 /*
  *  Display enabled callback
  */
-void CButDisplay::onEnable()
+void srs_ui_but::CButDisplay::onEnable()
 {
     m_sceneNode->setVisible( true );
 
@@ -142,7 +142,7 @@ void CButDisplay::onEnable()
 /*
  *  Display disabled callback
  */
-void CButDisplay::onDisable()
+void srs_ui_but::CButDisplay::onDisable()
 {
     m_sceneNode->setVisible( false );
 //    m_ocmap_window->Show(false);
@@ -151,7 +151,7 @@ void CButDisplay::onDisable()
 /*
  *  Create geometry
  */
-bool CButDisplay::createGeometry()
+bool srs_ui_but::CButDisplay::createGeometry()
 {
 
 
@@ -212,7 +212,7 @@ bool CButDisplay::createGeometry()
     return true;
 }
 
-void CButDisplay::destroyGeometry()
+void srs_ui_but::CButDisplay::destroyGeometry()
 {
     // Destroy manual object
     if( m_manualObject != 0 )
@@ -224,7 +224,7 @@ void CButDisplay::destroyGeometry()
 }
 
 //! Update display
-void CButDisplay::update (float wall_dt, float ros_dt)
+void srs_ui_but::CButDisplay::update (float wall_dt, float ros_dt)
 {
     rviz::RenderPanel * panel = vis_manager_->getRenderPanel();
     if( panel == 0 )
@@ -243,7 +243,7 @@ void CButDisplay::update (float wall_dt, float ros_dt)
 /**
     View controller has changed signal slot
   */
-void CButDisplay::onViewControllerChange( rviz::ViewController * c )
+void srs_ui_but::CButDisplay::onViewControllerChange( rviz::ViewController * c )
 {
     connectListener();
 }
@@ -251,7 +251,7 @@ void CButDisplay::onViewControllerChange( rviz::ViewController * c )
 /**
 Connect listener
 */
-void CButDisplay::connectListener()
+void srs_ui_but::CButDisplay::connectListener()
 {
     // Try to get camera and add listener
     rviz::RenderPanel * panel = vis_manager_->getRenderPanel();
@@ -266,7 +266,7 @@ void CButDisplay::connectListener()
 }
 
 //! Property has changed
-void CButDisplay::propertyPositionChanged()
+void srs_ui_but::CButDisplay::propertyPositionChanged()
 {
     if( ! m_property_position.expired() )
     {
@@ -313,7 +313,7 @@ void CButDisplay::propertyPositionChanged()
 /**
   Camera listener - constructor
   */
-CButDisplay::CNotifyCameraListener::CNotifyCameraListener( CButDisplay * display )
+srs_ui_but::CButDisplay::CNotifyCameraListener::CNotifyCameraListener( CButDisplay * display )
     : m_position( 0.0f, 0.0f, 0.0f )
     , m_orientation( 0.0, 0.0, 0.0, 0.0 )
     , m_camera( 0 )
@@ -325,7 +325,7 @@ CButDisplay::CNotifyCameraListener::CNotifyCameraListener( CButDisplay * display
 /**
   Camera listener - destructor
   */
-CButDisplay::CNotifyCameraListener::~CNotifyCameraListener()
+srs_ui_but::CButDisplay::CNotifyCameraListener::~CNotifyCameraListener()
 {
     disconnect();
 }
@@ -333,7 +333,7 @@ CButDisplay::CNotifyCameraListener::~CNotifyCameraListener()
 /**
   Camera Listener - callback
   */
-void CButDisplay::CNotifyCameraListener::cameraPreRenderScene(Ogre::Camera *cam)
+void srs_ui_but::CButDisplay::CNotifyCameraListener::cameraPreRenderScene(Ogre::Camera *cam)
 {
 
     Ogre::Vector3 position( cam->getPosition() );
@@ -355,7 +355,7 @@ void CButDisplay::CNotifyCameraListener::cameraPreRenderScene(Ogre::Camera *cam)
 /**
     Camera listener - Connect to the camera
   */
-void CButDisplay::CNotifyCameraListener::connect( Ogre::Camera * camera )
+void srs_ui_but::CButDisplay::CNotifyCameraListener::connect( Ogre::Camera * camera )
 {
     // Old connection
     disconnect();
@@ -373,7 +373,7 @@ void CButDisplay::CNotifyCameraListener::connect( Ogre::Camera * camera )
 /**
     Camera Listener - Test if camera position and orientation has changed
   */
-bool CButDisplay::CNotifyCameraListener::hasMoved( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation )
+bool srs_ui_but::CButDisplay::CNotifyCameraListener::hasMoved( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation )
 {
 #define far( x ) ( abs(x) > 0.001f )
 
@@ -396,7 +396,7 @@ bool CButDisplay::CNotifyCameraListener::hasMoved( const Ogre::Vector3 & positio
 /**
   Camera Listener - camera has moved
   */
-void CButDisplay::CNotifyCameraListener::changedCB( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation )
+void srs_ui_but::CButDisplay::CNotifyCameraListener::changedCB( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation )
 {
     m_display->propertyPositionChanged();
 }
@@ -404,7 +404,7 @@ void CButDisplay::CNotifyCameraListener::changedCB( const Ogre::Vector3 & positi
 /**
   Camera Listener - disconnect
   */
-void CButDisplay::CNotifyCameraListener::disconnect()
+void srs_ui_but::CButDisplay::CNotifyCameraListener::disconnect()
 {
     if( m_camera != 0 )
     {
@@ -417,7 +417,7 @@ void CButDisplay::CNotifyCameraListener::disconnect()
 /**
   Camera Listener - get camera position string
   */
-const std::string CButDisplay::getCameraPositionString()
+const std::string srs_ui_but::CButDisplay::getCameraPositionString()
 {
     std::stringstream ss;
     Ogre::Vector3 position( m_listener.getCameraPosition() );
@@ -429,7 +429,7 @@ const std::string CButDisplay::getCameraPositionString()
 /**
   Camera Listener - Set property string - camera position
   */
-void CButDisplay::setCameraPositionString( const std::string & str )
+void srs_ui_but::CButDisplay::setCameraPositionString( const std::string & str )
 {
     std::cerr << "Set str called" << std::endl;
 }

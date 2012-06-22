@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_distance_linear_visualizer.cpp 556 2012-04-11 16:10:40Z xlokaj03 $
+ * $Id: but_distance_linear_visualizer.cpp 810 2012-05-19 21:47:51Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -27,9 +27,14 @@
 
 #include "but_distance_linear_visualizer.h"
 
-namespace rviz
+#include <srs_ui_but/topics_list.h>
+#include <srs_ui_but/services_list.h>
+
+using namespace std;
+
+namespace srs_ui_but
 {
-CButDistanceLinearVisualizer::CButDistanceLinearVisualizer(const string & name, VisualizationManager * manager) :
+CButDistanceLinearVisualizer::CButDistanceLinearVisualizer(const string & name, rviz::VisualizationManager * manager) :
   Display(name, manager)
 {
   // Default properties
@@ -43,7 +48,7 @@ CButDistanceLinearVisualizer::CButDistanceLinearVisualizer(const string & name, 
   show_distance_ = true;
 
   // Create a client for the get_closest_point service
-  closestPointClient_ = update_nh_.serviceClient<srs_ui_but::GetClosestPoint> (GET_CLOSEST_POINT_SERVICE);
+  closestPointClient_ = update_nh_.serviceClient<srs_ui_but::GetClosestPoint> (GetClosestPoint_SRV);
 
   // Create basic geometry
   createGeometry();
@@ -125,18 +130,18 @@ void CButDistanceLinearVisualizer::onDisable()
 void CButDistanceLinearVisualizer::createProperties()
 {
   m_property_distance_
-      = property_manager_->createProperty<StringProperty> (
+      = property_manager_->createProperty<rviz::StringProperty> (
                                                            "Distance: ",
                                                            property_prefix_,
                                                            boost::bind(&CButDistanceLinearVisualizer::getDistance, this),
-                                                           StringProperty::Setter(), parent_category_);
+                                                           rviz::StringProperty::Setter(), parent_category_);
   setPropertyHelpText(m_property_distance_, "Distance between link and closest surface.");
 
   rviz::CategoryPropertyWPtr category =
       property_manager_->createCategory("Options", property_prefix_, parent_category_);
 
   m_property_link_
-      = property_manager_->createProperty<TFFrameProperty> ("Link", property_prefix_,
+      = property_manager_->createProperty<rviz::TFFrameProperty> ("Link", property_prefix_,
                                                             boost::bind(&CButDistanceLinearVisualizer::getLinkString,
                                                                         this),
                                                             boost::bind(&CButDistanceLinearVisualizer::setLinkString,
@@ -144,7 +149,7 @@ void CButDistanceLinearVisualizer::createProperties()
   setPropertyHelpText(m_property_link_, "Link from which to measure distance");
 
   m_property_color_
-      = property_manager_->createProperty<ColorProperty> (
+      = property_manager_->createProperty<rviz::ColorProperty> (
                                                           "Color",
                                                           property_prefix_,
                                                           boost::bind(&CButDistanceLinearVisualizer::getColor, this),
@@ -153,7 +158,7 @@ void CButDistanceLinearVisualizer::createProperties()
   setPropertyHelpText(m_property_color_, "Line and text color.");
 
   m_property_alpha_
-      = property_manager_->createProperty<FloatProperty> (
+      = property_manager_->createProperty<rviz::FloatProperty> (
                                                           "Alpha",
                                                           property_prefix_,
                                                           boost::bind(&CButDistanceLinearVisualizer::getAlpha, this),
@@ -162,7 +167,7 @@ void CButDistanceLinearVisualizer::createProperties()
   setPropertyHelpText(m_property_alpha_, "Alpha channel.");
 
   m_property_thickness_
-      = property_manager_->createProperty<FloatProperty> (
+      = property_manager_->createProperty<rviz::FloatProperty> (
                                                           "Line Thickness",
                                                           property_prefix_,
                                                           boost::bind(&CButDistanceLinearVisualizer::getThickness, this),
@@ -171,7 +176,7 @@ void CButDistanceLinearVisualizer::createProperties()
   setPropertyHelpText(m_property_thickness_, "Line thickness (maximum value is 0,5).");
 
   m_show_distance_property_
-      = property_manager_->createProperty<BoolProperty> ("Show distance", property_prefix_,
+      = property_manager_->createProperty<rviz::BoolProperty> ("Show distance", property_prefix_,
                                                          boost::bind(&CButDistanceLinearVisualizer::getShowDistance,
                                                                      this),
                                                          boost::bind(&CButDistanceLinearVisualizer::setShowDistance,
@@ -184,14 +189,14 @@ void CButDistanceLinearVisualizer::update(float wall_dt, float ros_dt)
 {
   if (!closestPointClient_.exists())
   {
-    setStatus(status_levels::Error, "Service", "get_closest_point service is not available");
-    setStatus(status_levels::Error, "Closest point data", "get_closest_point service is not available");
+    setStatus(rviz::status_levels::Error, "Service", "get_closest_point service is not available");
+    setStatus(rviz::status_levels::Error, "Closest point data", "get_closest_point service is not available");
     m_sceneNode_->setVisible(false);
     return;
   }
   else
   {
-    setStatus(status_levels::Ok, "Service", "get_closest_point service ready");
+    setStatus(rviz::status_levels::Ok, "Service", "get_closest_point service ready");
     m_sceneNode_->setVisible(true);
   }
 
@@ -206,7 +211,7 @@ void CButDistanceLinearVisualizer::update(float wall_dt, float ros_dt)
 
   if (!pointData_.status)
   {
-    setStatus(status_levels::Error, "Closest point data", "Cannot get closest point from link " + robot_link_);
+    setStatus(rviz::status_levels::Error, "Closest point data", "Cannot get closest point from link " + robot_link_);
     m_sceneNode_->setVisible(false);
     return;
   }
@@ -253,6 +258,6 @@ void CButDistanceLinearVisualizer::update(float wall_dt, float ros_dt)
       m_sceneNode_->attachObject(text);
     }
   }
-  setStatus(status_levels::Ok, "Closest point data", "OK");
+  setStatus(rviz::status_levels::Ok, "Closest point data", "OK");
 }
 }

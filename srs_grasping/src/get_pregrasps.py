@@ -97,9 +97,7 @@ class get_pregrasps():
 		resp.side = []
 		resp.mside = []
 		resp.top = []
-		resp.down = []
 		resp.front = []
-		resp.back = []
 
 		for i in range(0,len(grasp_configuration)):
 			pre_trans = rotacion * grasping_functions.matrix_from_pose(grasp_configuration[i].pre_grasp.pose);
@@ -142,15 +140,9 @@ class get_pregrasps():
 			if aux.category == "TOP":
 				if len(resp.top) < num_configurations:
 					resp.top.append(aux);
-			elif aux.category == "DOWN":
-				if len(resp.down) < num_configurations:
-					resp.down.append(aux);
 			elif aux.category == "FRONT":
 				if len(resp.front) < num_configurations:
 					resp.front.append(aux);
-			elif aux.category == "BACK":
-				if len(resp.back) < num_configurations:
-					resp.back.append(aux);
 			elif aux.category == "SIDE":
 				if len(resp.side) < num_configurations:
 					resp.side.append(aux);
@@ -160,7 +152,7 @@ class get_pregrasps():
 			else:
 				continue
 
-			if len(resp.top)==num_configurations and len(resp.down)==num_configurations and len(resp.side)==num_configurations and len(resp.mside)==num_configurations and len(resp.back)==num_configurations and len(resp.front)==num_configurations:
+			if len(resp.top)==num_configurations and len(resp.side)==num_configurations and len(resp.mside)==num_configurations and len(resp.front)==num_configurations:
 				break;
 
 		rospy.loginfo("/get_pregrasps call has finished.");

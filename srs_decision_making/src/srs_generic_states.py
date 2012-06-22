@@ -28,7 +28,7 @@ import srs_decision_making.msg as xmsg
 import srs_decision_making.srv as xsrv
 from srs_knowledge.srv import *
 from srs_knowledge.msg import *
-import util.json_parser
+import util.json_parser as json_parser
 
 """
 This file contains (or import) basic states for SRS high level state machines.
@@ -314,6 +314,7 @@ class semantic_dm(smach.State):
             len_step_info = len(current_task_info.last_step_info)
                     
             feedback = []
+            feedback_in_json = ''
             if not current_task_info.last_step_info:
                 ## first action. does not matter this. just to keep it filled
                 resultLastStep = 0
@@ -375,7 +376,7 @@ class semantic_dm(smach.State):
             toPlanInput.resultLastAction = resultLastStep
             toPlanInput.genericFeedBack = feedback   # to be deprecated, replaced by jsonFeedBack
             
-            toPlanInput.jsonFeedBack = feedback_in_json
+            toPlanInput.jsonFeedback = feedback_in_json
             
             resp1 = next_action(toPlanInput)
             #resp1 = next_action(current_task_info.session_id, resultLastStep, feedback)

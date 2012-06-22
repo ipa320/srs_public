@@ -120,7 +120,10 @@ def detect_feedback_to_json(userdata):
     feedback['object'] = jsonObjectType
     feedback['pose'] = pose
 
-    jsonPose = json.dumps(feedback)
+    wrapAll = dict()
+    wrapAll['feedback'] = feedback
+
+    jsonPose = json.dumps(wrapAll)
 
     return jsonPose
 

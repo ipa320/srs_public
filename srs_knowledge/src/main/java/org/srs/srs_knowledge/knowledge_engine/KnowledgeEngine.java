@@ -311,13 +311,13 @@ public class KnowledgeEngine
 	}
 
 	if(request.resultLastAction == 0) {
-	    ArrayList<String> feedback = request.genericFeedBack;
+	    //ArrayList<String> feedback = request.genericFeedBack;
 	    String jsonFeedback = request.jsonFeedback;
 	    if(!jsonFeedback.trim().equals("")) {
 		ca = currentTask.getNextCUActionNew(true, jsonFeedback); // no error. generate new action
 	    }
 	    else {
-		ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
+		//	ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
 	    }
 	}
 	else if (request.resultLastAction == 2) {
@@ -928,7 +928,7 @@ public class KnowledgeEngine
 
 	ServiceServer<GetObjectsOnTray.Request,GetObjectsOnTray.Response,GetObjectsOnTray> srv = nodeHandle.advertiseService(getObjectsOnTrayService, new GetObjectsOnTray(), scb);
     }
-
+    /*
     private boolean loadPredefinedTasksForTest()
     {
 	try{
@@ -955,7 +955,7 @@ public class KnowledgeEngine
 
 	return true;
     }
-
+    */
     private void initGetRoomsOnMap() throws RosException 
     {
 	ServiceServer.Callback<GetRoomsOnMap.Request, GetRoomsOnMap.Response> scb = new ServiceServer.Callback<GetRoomsOnMap.Request, GetRoomsOnMap.Response>() {

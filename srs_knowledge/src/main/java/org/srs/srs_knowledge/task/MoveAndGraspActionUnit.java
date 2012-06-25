@@ -67,6 +67,12 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.ontology.Individual;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
+
 /**
  * An ActionUnit is a container of GenericAction. 
  * Unit does not have to be containing only one action. e.g. an action of detection an object on a table can contain a few steps, move to pos1, detect, move to pos2, detect, move to pos3, detect, etc. 
@@ -83,26 +89,34 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 
     private void init(Pose2D position, String objectClassName, int houseHoldId, String graspConfig, String workspace) {
 	    GenericAction ga = new GenericAction();
-	    ga.actionInfo.add("move");
+	    //ga.actionInfo.add("move");
 	    if(position != null) {
+		/*
 		ga.actionInfo.add(Double.toString(position.x));
 		ga.actionInfo.add(Double.toString(position.y));
 		ga.actionInfo.add(Double.toString(position.theta));
+		*/
+		ga.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", position.x, position.y, position.theta);
 		ifBasePoseSet = true;
 	    }
 	    else {
+		/*
 		ga.actionInfo.add("");
 		ga.actionInfo.add("");
 		ga.actionInfo.add("");
+		*/
+		ga.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", -1000, -1000, -1000);
 		ifBasePoseSet = false;
 	    }
 
 	    actionUnits.add(ga);
 
 	    GenericAction graspAct = new GenericAction();
-	    graspAct.actionInfo.add("grasp");
-
-	    if (objectClassName != null || !objectClassName.equals("")) {
+	    //graspAct.actionInfo.add("grasp");
+	    objectClassName = (objectClassName == null) ? "" : objectClassName;
+	    ifObjectInfoSet = (objectClassName.trim().equals("")) ? false : true;
+	    /*
+	    if (objectClassName != null) {
 		graspAct.actionInfo.add(Integer.toString(houseHoldId));
 		graspAct.actionInfo.add(objectClassName);
 		ifObjectInfoSet = true;
@@ -112,7 +126,10 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 		graspAct.actionInfo.add("");
 		ifObjectInfoSet = false;   
 	    }
-
+	    */
+	    graspConfig = (graspConfig == null) ? "" : graspConfig;
+	    ifObjectInfoSet = true && ((graspConfig.trim().equals("")) ? false : true);
+	    /*
 	    if (graspConfig != null || !graspConfig.equals("")) {
 		// side, top etc
 		graspAct.actionInfo.add(graspConfig);
@@ -122,8 +139,9 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 		graspAct.actionInfo.add("");
 		ifObjectInfoSet = false;
 	    }
-
-	    graspAct.actionInfo.add(workspace);
+	    */
+	    //graspAct.actionInfo.add(workspace);
+	    graspAct.jsonActionInfo = SRSJSONParser.encodeGraspAction("grasp", houseHoldId, objectClassName, workspace); 
 
 	    actionUnits.add(graspAct);
 
@@ -137,11 +155,12 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    nextActionMapIfSuccess = new int[size];
 	    
 	    for(int i = 0; i < size; i++) {
-		if(actionUnits.get(i).actionInfo.get(0).equals("move")) {
+		JSONObject tempAct = SRSJSONParser.decodeJsonActionInfo(actionUnits.get(i).jsonActionInfo);
+		if(tempAct.get("action").equals("move")) {
 		    nextActionMapIfSuccess[i] = i + 1;
 		    nextActionMapIfFail[i] = i + 2;
 		}
-		else if(actionUnits.get(i).actionInfo.get(0).equals("grasp")) {
+		else if(tempAct.get("action").equals("grasp")) {
 		    nextActionMapIfSuccess[i] = COMPLETED_SUCCESS;    // 
 		    nextActionMapIfFail[i] = i + 1;
 		}
@@ -178,7 +197,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    return INVALID_INDEX;
 	}
     }
-
+    /*
     public CUAction getCUActionAt(int ind) {
 	currentActionInd = ind;
 	CUAction ca = new CUAction(); 
@@ -217,15 +236,17 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	ca.actionType = "generic";
 	return ca;
     }
-    
+    */
     // a not very safe, but flexible way to assign parameters, using arraylist<string> 
     // set robot move target and object pose etc.
+    /*
+    @Override
     public boolean setParameters(ArrayList<String> para) {
 	//boolean res = ifParametersSet;
 	try {
-	    setBasePose(para);
+	    //setBasePose(para);
 	    //setGraspInfo(para);
-	    ifParametersSet = true;
+	    //ifParametersSet = true;
 	}
 	catch(IllegalArgumentException e) {
 	    System.out.println(e.getMessage());
@@ -233,7 +254,40 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	}
 	return ifParametersSet;
     }
+    */
 
+    @Override
+    public boolean setParameters(String action, String para, String reservedParam) {
+	if(action.equals("move")) {
+	    setBasePose(para);
+	}
+	else if(action.equals("grasp")) {
+	    setGraspInfo(para);
+	}
+	return ifParametersSet;
+    }
+
+    private void setBasePose(String jsonPose) {
+
+	GenericAction nga = new GenericAction();
+	nga.jsonActionInfo = jsonPose;
+	actionUnits.set(0, nga);
+	ifBasePoseSet = true;
+	ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
+	
+    }
+
+    private void setGraspInfo(String jsonInfo) {
+
+	GenericAction nga = new GenericAction();
+	nga.jsonActionInfo = jsonInfo;
+	actionUnits.set(1, nga);
+	ifObjectInfoSet = true;
+	ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
+
+    }
+
+    /*
     private void setBasePose(ArrayList<String> pose) throws IllegalArgumentException {
 
 	GenericAction ga = actionUnits.get(0);
@@ -255,8 +309,9 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    throw new IllegalArgumentException("Wrong format exception -- when setting Base Pose with arrayList");
 	}
     }
-
+    */
     // objInfo should be in format as defined in constructor
+    /*
     private void setGraspInfo(ArrayList<String> objInfo) {
 	GenericAction ga = actionUnits.get(1);
 
@@ -265,13 +320,14 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    GenericAction nga = new GenericAction();
 	    nga.actionInfo = objInfo;
 	    //actionUnits.set(1, objInfo);
+	    */
 	    /*
 	    GenericAction graspAct = new GenericAction();
 	    graspAct.actionInfo.add("grasp");
 	    graspAct.actionInfo.add(Integer.toString(houseHoldId));
 	    graspAct.actionInfo.add(objectClassName);
 	    */
-	    
+	    /*
 	    actionUnits.set(1, nga);
 	    ifObjectInfoSet = true;
 	    ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
@@ -280,7 +336,7 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    throw new IllegalArgumentException("Wrong format exception -- when setting Object Info with arrayList");
 	}
     }
-
+	    */
     private boolean setObjectPose(ArrayList<String> objPose) {
 	return false;
     }

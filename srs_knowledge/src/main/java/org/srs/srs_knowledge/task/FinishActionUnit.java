@@ -71,10 +71,12 @@ public class FinishActionUnit extends HighLevelActionUnit {
 	
 	GenericAction ga = new GenericAction();
 	if(successOrFail) {
-	    ga.actionInfo.add("finish_success");
+	    //ga.actionInfo.add("finish_success");
+	    ga.jsonActionInfo = SRSJSONParser.encodeCustomAction("finish_success", null);
 	}
 	else {
-	   ga.actionInfo.add("finish_fail");
+	    //ga.actionInfo.add("finish_fail");
+	    ga.jsonActionInfo = SRSJSONParser.encodeCustomAction("finish_fail", null);
 	}
 
 	actionUnits.add(ga);

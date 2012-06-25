@@ -158,12 +158,14 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 			    return false;
 			}
 		}
-
+	/*
 		genericAction.actionInfo.add("move");
 		genericAction.actionInfo.add(Double.toString(x));
 		genericAction.actionInfo.add(Double.toString(y));
 		genericAction.actionInfo.add(Double.toString(theta));
+		*/
 
+		genericAction.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", x, y, theta);
 		ca.generic = genericAction;
 		ca.actionType = "generic";
 
@@ -177,8 +179,9 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 
 		ca = new CUAction();
 		genericAction = new GenericAction();
-		genericAction.actionInfo.add("finish_success");
-		
+		//genericAction.actionInfo.add("finish_success");
+		genericAction.jsonActionInfo = SRSJSONParser.encodeCustomAction("finish_success", null);
+
 		ca.generic = genericAction;
 		ca.actionType = "generic";
 
@@ -197,8 +200,8 @@ public class MoveTask extends org.srs.srs_knowledge.task.Task
 
 		ca = new CUAction();
 		genericAction = new GenericAction();
-		genericAction.actionInfo.add("finish_fail");
-		
+		//genericAction.actionInfo.add("finish_fail");
+		genericAction.jsonActionInfo = SRSJSONParser.encodeCustomAction("finish_fail", null);
 		ca.generic = genericAction;
 		ca.actionType = "generic";
 

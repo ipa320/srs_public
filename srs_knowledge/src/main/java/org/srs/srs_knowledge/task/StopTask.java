@@ -91,8 +91,9 @@ public class StopTask extends Task {
 	GenericAction genericAction = new GenericAction();
 
 	// add finish action __ success
-	genericAction.actionInfo.add("finish_success");
-	
+	//genericAction.actionInfo.add("finish_success");
+	genericAction.jsonActionInfo = SRSJSONParser.encodeCustomAction("finish_success", null);
+
 	ca.generic = genericAction;
 	ca.actionType = "generic";
 	

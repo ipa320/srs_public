@@ -329,8 +329,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    ca = highAct.getCUActionAt(ni);
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
-		    lastActionType = ca.generic.actionInfo.get(0);
-		    
+		    //lastActionType = ca.generic.actionInfo.get(0);
+		    lastActionType = (String)(SRSJSONParser.decodeJsonActionInfo(ca.generic.jsonActionInfo).get("action"));
 		    return ca;
 		} 
 	    }
@@ -402,8 +402,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    ca = highAct.getCUActionAt(ni);
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
-		    lastActionType = ca.generic.actionInfo.get(0);
-		    
+		    //lastActionType = ca.generic.actionInfo.get(0);
+		    lastActionType = (String)(SRSJSONParser.decodeJsonActionInfo(ca.generic.jsonActionInfo).get("action"));
+
 		    return ca;
 		} 
 	    }
@@ -885,11 +886,19 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    return handleFailedMessage();
 		}
 
-		ArrayList<String> basePos = constructArrayFromPose2D(posBase);
+		String jsonMove = SRSJSONParser.encodeMoveAction("move", posBase.x, posBase.y, posBase.theta);
+		if(!nextHighActUnit.setParameters("move", jsonMove, "")) {
+		    //currentSubAction++;
+		    return handleFailedMessage();		
+		}
+
+		/*
+		  ArrayList<String> basePos = constructArrayFromPose2D(posBase);
 		if(!nextHighActUnit.setParameters(basePos)) {
 		    //currentSubAction++;
 		    return handleFailedMessage();		
 		}
+		*/
 	    }
 
 	    if(nextHighActUnit != null) {
@@ -931,12 +940,18 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		if(posBase == null) {
 		    return handleFailedMessage();
 		}
-
+		String jsonMove = SRSJSONParser.encodeMoveAction("move", posBase.x, posBase.y, posBase.theta);
+		if(!nextHighActUnit.setParameters("move", jsonMove, "")) {
+		    //currentSubAction++;
+		    return handleFailedMessage();		
+		}
+		/*
 		ArrayList<String> basePos = constructArrayFromPose2D(posBase);
 		if(!nextHighActUnit.setParameters(basePos)) {
 		    //currentSubAction++;
 		    return handleFailedMessage();		
 		}
+		*/
 	    }
 
 	    if(nextHighActUnit != null) {

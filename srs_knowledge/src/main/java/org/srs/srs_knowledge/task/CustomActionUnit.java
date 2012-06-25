@@ -69,7 +69,8 @@ public class CustomActionUnit extends HighLevelActionUnit {
    
     public CustomActionUnit(String customCommand) {
 	GenericAction ga = new GenericAction();
-	ga.actionInfo.add(customCommand);
+	//ga.actionInfo.add(customCommand);
+	ga.jsonActionInfo = SRSJSONParser.encodeCustomAction(customCommand, null);
 	actionUnits.add(ga);
 	
 	ifParametersSet = true;

@@ -69,11 +69,13 @@ public class MoveActionUnit extends HighLevelActionUnit {
 
     public MoveActionUnit(Pose2D position) {
 	GenericAction ga = new GenericAction();
-	ga.actionInfo.add("move");
+	/*
+	  ga.actionInfo.add("move");
 	ga.actionInfo.add(Double.toString(position.x));
 	ga.actionInfo.add(Double.toString(position.y));
 	ga.actionInfo.add(Double.toString(position.theta));
-
+	*/
+	ga.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", position.x, position.y, position.theta);
 	actionUnits.add(ga);
 
 	// this actionunit is always set with sufficient parameters

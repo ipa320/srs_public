@@ -100,6 +100,7 @@ public class JustGraspActionUnit extends HighLevelActionUnit {
 
 	    actionUnits.add(ga);
 	*/
+	/*
 	    GenericAction graspAct = new GenericAction();
 	    graspAct.actionInfo.add("just_grasp");
 
@@ -125,6 +126,18 @@ public class JustGraspActionUnit extends HighLevelActionUnit {
 	    }
 
 	    graspAct.actionInfo.add(workspace);
+
+	    actionUnits.add(graspAct);
+	*/
+
+	    GenericAction graspAct = new GenericAction();
+	    objectClassName = (objectClassName == null) ? "" : objectClassName;
+	    ifObjectInfoSet = (objectClassName.trim().equals("")) ? false : true;
+
+	    graspConfig = (graspConfig == null) ? "" : graspConfig;
+	    ifObjectInfoSet = true && ((graspConfig.trim().equals("")) ? false : true);
+
+	    graspAct.jsonActionInfo = SRSJSONParser.encodeGraspAction("grasp", houseHoldId, objectClassName, workspace); 
 
 	    actionUnits.add(graspAct);
 
@@ -173,6 +186,7 @@ public class JustGraspActionUnit extends HighLevelActionUnit {
 	}
     }
 
+    /*
     public CUAction getCUActionAt(int ind) {
 	currentActionInd = ind;
 	CUAction ca = new CUAction(); 
@@ -211,7 +225,7 @@ public class JustGraspActionUnit extends HighLevelActionUnit {
 	ca.actionType = "generic";
 	return ca;
     }
-    
+    */
     // a not very safe, but flexible way to assign parameters, using arraylist<string> 
     // set robot move target and object pose etc.
     public boolean setParameters(ArrayList<String> para) {

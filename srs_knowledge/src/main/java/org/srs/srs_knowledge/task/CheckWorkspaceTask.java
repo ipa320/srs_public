@@ -236,8 +236,8 @@ public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
 		    ca = highAct.getCUActionAt(ni);
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
-		    lastActionType = ca.generic.actionInfo.get(0);
-		    
+		    //lastActionType = ca.generic.actionInfo.get(0);
+		    lastActionType = (String)(SRSJSONParser.decodeJsonActionInfo(ca.generic.jsonActionInfo).get("action"));
 		    return ca;
 		} 
 	    }

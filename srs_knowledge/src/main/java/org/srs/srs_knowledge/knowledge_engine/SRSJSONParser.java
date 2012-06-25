@@ -257,4 +257,174 @@ public class SRSJSONParser
 	StopTask st = new StopTask();
 	return st;
     }
+
+    public static String encodeMoveAction(String action, double x, double y, double theta) {
+	JSONObject moveAct = new JSONObject();
+	moveAct.put("action", "move");
+
+	JSONObject dest = new JSONObject();
+	dest.put("x", x);
+	dest.put("y", y);
+	dest.put("theta", theta);
+
+	JSONObject pos = new JSONObject();
+	pos.put("pose2d", dest);
+
+	moveAct.put("destination", pos);
+	try {
+	    StringWriter out = new StringWriter();
+	    moveAct.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static String encodeCustomAction(String action, Map<String, Object> content) {
+	JSONObject act = new JSONObject();
+	act.put("action", action);
+	try {
+	    StringWriter out = new StringWriter();
+	    act.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static String encodePutOnTrayAction(String action, String moveConfig) {
+	JSONObject act = new JSONObject();
+	act.put("action", action);
+	act.put("move_config", moveConfig);
+	try {
+	    StringWriter out = new StringWriter();
+	    act.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static String encodeDetectAction(String action, int hhId, String objectType, String workspace) {
+	JSONObject obj = new JSONObject();
+	obj.put("object_type", objectType);
+	obj.put("object_id", hhId);
+	obj.put("workspace", workspace);
+
+	JSONObject detAct = new JSONObject();
+	detAct.put("object", obj);
+	detAct.put("action", "detect");
+
+	try {
+	    StringWriter out = new StringWriter();
+	    detAct.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+    
+    public static String encodeGraspAction(String action, int hhId, String objectType, String workspace) {
+	JSONObject obj = new JSONObject();
+	obj.put("object_type", objectType);
+	obj.put("object_id", hhId);
+	if(workspace != null) {
+	    obj.put("workspace", workspace);
+	}
+	else { 
+	    obj.put("workspace", "");
+	}
+
+	JSONObject detAct = new JSONObject();
+	detAct.put("object", obj);
+	detAct.put("action", "grasp");
+
+	try {
+	    StringWriter out = new StringWriter();
+	    detAct.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static String encodeCheckObjectAction(String action, String objectType, double x, double y, double z, double orix, double oriy, double oriz, double oriw, double l, double w, double h) {
+	JSONObject obj = new JSONObject();
+	obj.put("object_type", objectType);
+
+	JSONObject pose = new JSONObject();
+	JSONObject position = new JSONObject();
+	position.put("x", x);
+	position.put("y", y);
+	position.put("x", z);
+	pose.put("position", position);
+       
+	JSONObject orientation = new JSONObject();
+	orientation.put("x", orix);
+	orientation.put("y", oriy);
+	orientation.put("z", oriz);
+	orientation.put("w", oriw);
+	pose.put("orientation", orientation);
+	
+	JSONObject dim = new JSONObject();
+	dim.put("l", l);
+	dim.put("w", w);
+	dim.put("h", h);
+	
+	obj.put("pose", pose);
+	obj.put("dimension", dim);
+
+	JSONObject checkAct = new JSONObject();
+	checkAct.put("object", obj);
+	checkAct.put("action", "check");
+
+	try {
+	    StringWriter out = new StringWriter();
+	    checkAct.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static JSONObject decodeJsonActionInfo(String jsonActionInfo) {
+	JSONParser parser = new JSONParser();
+	JSONObject actionInfo = new JSONObject();
+	try {
+	    Object obj = parser.parse(jsonActionInfo);
+	    actionInfo = (JSONObject)obj;	    
+	}
+	catch(ParseException pe) {
+	    System.out.println("Parsing Json error at position: " + pe.getPosition());
+	    System.out.println(pe);
+	    return null;
+	}
+	
+	return actionInfo;
+    }
+
 }

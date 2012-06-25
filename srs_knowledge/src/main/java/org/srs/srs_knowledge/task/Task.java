@@ -150,7 +150,7 @@ public abstract class Task {
     public boolean addNewActionTuple(ActionTuple act) {
 	return acts.add(act);
     }
-    
+    /*
     public boolean loadPredefinedSequence(String filename) throws IOException,
 								  Exception {
 	System.out.println("LOAD " + filename);
@@ -253,15 +253,19 @@ public abstract class Task {
 
 	String[] parameters = moveAction.split(" ");
 	
-	geAct.actionInfo.add("move");
-	geAct.actionInfo.add(parameters[0]);
-	geAct.actionInfo.add(parameters[1]);
-	geAct.actionInfo.add(parameters[2]);
-	geAct.actionInfo.add(parameters[3]);   //ifWaitForObjectTaken.equals("true") or "false"
+	
+	// geAct.actionInfo.add("move");
+	// geAct.actionInfo.add(parameters[0]);
+	// geAct.actionInfo.add(parameters[1]);
+	// geAct.actionInfo.add(parameters[2]);
+	// geAct.actionInfo.add(parameters[3]);   //ifWaitForObjectTaken.equals("true") or "false"
+	
 
+	geAct.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]));
 	return geAct;
     }
-    
+    */
+    /*
     protected static int[] parseActionFlags(String actionFlags) throws Exception {
 	int[] _actionFlags = new int[3];
 	
@@ -273,13 +277,17 @@ public abstract class Task {
 	// System.out.println(actionFlags);
 	return _actionFlags;
     }
-    
+    */
+    /*
     private static GenericAction newParsePerceptionAction(String perceptionAction) throws Exception {
 	String[] parameters = perceptionAction.split(" ");
 	GenericAction geAct = new GenericAction(); 
-	geAct.actionInfo.add("detect");
-	geAct.actionInfo.add(parameters[1]);     // id
-	geAct.actionInfo.add(parameters[0]);     // name (not available in this case... )
+	
+	//geAct.actionInfo.add("detect");
+	//geAct.actionInfo.add(parameters[1]);     // id
+	//geAct.actionInfo.add(parameters[0]);     // name (not available in this case... )
+	
+	geAct.jsonActionInfo = SRSJSONParser.encodeDetectAction("detect", Integer.parseInt(parameters[1].trim()), parameters[0], "");
 	return geAct;
     }
 
@@ -292,14 +300,16 @@ public abstract class Task {
 	
 	parameters = perceptionAction.split(" ");
 	GenericAction geAct = new GenericAction(); 
-	geAct.actionInfo.add("grasp");
-	geAct.actionInfo.add(parameters[1]);     // id
-	geAct.actionInfo.add(parameters[0]);     // name (not available in this case... )
-	geAct.actionInfo.add("side");
 	
+	//geAct.actionInfo.add("grasp");
+	//geAct.actionInfo.add(parameters[1]);     // id
+	//geAct.actionInfo.add(parameters[0]);     // name (not available in this case... )
+	//geAct.actionInfo.add("side");
+	
+	geAct.jsonActionInfo = SRSJSONParser.encodeGraspAction("grasp", Integer.parseInt(parameters[1]), parameters[0], "");
 	return geAct;
     }
-
+    */
     public boolean isEmpty() {
 	try {
 	    if(allSubSeqs.size() == 0 && acts.size() == 0) {

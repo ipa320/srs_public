@@ -238,7 +238,7 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	return actionList;
     }
     
-    
+    /*
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
      
 	System.out.println("===> Get Next CUACTION -- from SearchObjectTask.java");
@@ -310,7 +310,7 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	return ca;
     }
-
+    */
     private CUAction handleFailedMessage() {
 	// 
 	updateTargetOfFailedAct();

@@ -104,9 +104,46 @@ public abstract class Task {
     }
 
     public CUAction getNextCUActionNew(boolean stateLastAction, String jsonFeedback) {
+	
+	if (currentAction == null) {
+	    for (int i = 0; i < acts.size(); i++) {
+		if (acts.get(i).getActionId() == 1) {
+		    currentAction = acts.get(i);
+		    currentActionLoc = i;
+		    System.out.println(currentAction.getActionName());
+		    
+		    if (currentAction != null) 
+			return currentAction.getCUAction();
+		    else 
+			return null;
+		}
+	    }
+	} else {
+	    // ActionTuple at;
+	    // int parentId = at.getParentId();
+	    for (int i = 0; i < acts.size(); i++) {
+		// if(acts.get(currentActionLoc).getId() ==
+		// acts.get(i).getParentId() && stateLastAction ==
+		// acts.get(i).getCondition()){
+		if (currentAction.getActionId() == acts.get(i).getParentId()
+		    && stateLastAction == acts.get(i).getCondition()) {
+		    currentAction = acts.get(i);
+		    currentActionLoc = i;
+		    System.out.println(i);
+		    System.out.println(currentAction.getActionName());
+		    if (currentAction != null) 
+			return currentAction.getCUAction();
+		    else 
+			return null;
+		}
+	    }
+	    System.out.println("no action found");
+	}	
+	
 	return null;
     }
- 
+
+    /*
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
 	//CUAction ca = new CUAction();
 	if (currentAction == null) {
@@ -146,7 +183,7 @@ public abstract class Task {
 	
 	return null;
     }
-    
+    */
     public boolean addNewActionTuple(ActionTuple act) {
 	return acts.add(act);
     }

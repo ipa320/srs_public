@@ -344,7 +344,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 
 	return ca;
     }
-    
+    /*
     @Override
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
      
@@ -417,7 +417,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	return ca;
     }
-
+    */
     private CUAction handleFailedMessage() {
 
 	// 

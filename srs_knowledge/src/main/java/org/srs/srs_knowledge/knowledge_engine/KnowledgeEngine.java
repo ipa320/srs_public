@@ -313,12 +313,12 @@ public class KnowledgeEngine
 	if(request.resultLastAction == 0) {
 	    //ArrayList<String> feedback = request.genericFeedBack;
 	    String jsonFeedback = request.jsonFeedback;
-	    if(!jsonFeedback.trim().equals("")) {
-		ca = currentTask.getNextCUActionNew(true, jsonFeedback); // no error. generate new action
-	    }
-	    else {
-		//	ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
-	    }
+	    //if(!jsonFeedback.trim().equals("")) {
+	    ca = currentTask.getNextCUActionNew(true, jsonFeedback); // no error. generate new action
+	    //}
+	    //else {
+	    //ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
+	    //}
 	}
 	else if (request.resultLastAction == 2) {
 	    ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
@@ -332,7 +332,9 @@ public class KnowledgeEngine
 	    return res;
 	}
 	else{
-	    ca = currentTask.getNextCUAction(false, null);
+	    String jsonFeedback = request.jsonFeedback;
+	    //ca = currentTask.getNextCUAction(false, null);
+	    ca = currentTask.getNextCUActionNew(false, jsonFeedback);
 	}
 	
 	if(ca == null) {

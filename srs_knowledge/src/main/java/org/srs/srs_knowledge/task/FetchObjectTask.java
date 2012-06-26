@@ -247,7 +247,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	return actionList;
     }
     
-    
+    /*
     public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
      
 	System.out.println("===> Get Next CUACTION -- from FetchObjectTask.java");
@@ -319,7 +319,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	return ca;
     }
-
+    */
     private CUAction handleFailedMessage() {
 
 	// 

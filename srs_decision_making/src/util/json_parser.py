@@ -31,6 +31,20 @@ roslib.load_manifest('srs_decision_making')
 import rospy
 import simplejson as json
 
+def decode_action(json_param):
+    """
+    return the action name
+    """
+    try:
+        json_decoded = json.loads(json_param)
+    
+        act = json_decoded['action']
+    except json.JSONDecodeError:
+        print "Oops, error when decoding json_param", json_param
+        return None
+
+    return act 
+
 def decode_move_parameters(json_param):
     """
     return a dict containing pose2d of the destination

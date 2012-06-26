@@ -313,7 +313,7 @@ class semantic_dm(smach.State):
             print '+++++++++++ Last Step Info LEN+++++++++++++++'
             len_step_info = len(current_task_info.last_step_info)
                     
-            feedback = []
+            #feedback = []
             feedback_in_json = ''
             if not current_task_info.last_step_info:
                 ## first action. does not matter this. just to keep it filled
@@ -323,7 +323,7 @@ class semantic_dm(smach.State):
                 resultLastStep = 0
                 if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_srs_detection':
                     print userdata.target_object_pose
-                    feedback = pose_to_list(userdata)
+                    #feedback = pose_to_list(userdata)
                     feedback_in_json = json_parser.detect_feedback_to_json(userdata)
                     
                     #rospy.loginfo ("Detected target_object is: %s", userdata.target_object)    
@@ -374,7 +374,7 @@ class semantic_dm(smach.State):
             toPlanInput = PlanNextActionRequest()
             toPlanInput.sessionId = current_task_info.session_id
             toPlanInput.resultLastAction = resultLastStep
-            toPlanInput.genericFeedBack = feedback   # to be deprecated, replaced by jsonFeedBack
+            #toPlanInput.genericFeedBack = feedback   # to be deprecated, replaced by jsonFeedBack
             
             toPlanInput.jsonFeedback = feedback_in_json
             
@@ -391,55 +391,57 @@ class semantic_dm(smach.State):
             # else should be 0: then continue executing the following
 
             if resp1.nextAction.actionType == 'generic':
-                if resp1.nextAction.generic.actionInfo[0] == 'charging':
+                actName = json_parser.decode_action(resp1.nextAction.generic.jsonActionInfo)
+                #actName = resp1.nextAction.generic.actionInfo[0]
+                if actName == 'charging':
                     nextStep = 'charging'
-                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
+                    #userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
 
                     destPos = json_parser.decode_move_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not destPos is None:
                         userdata.target_base_pose = [destPos['x'], destPos['y'], destPos['theta']]
                     
                     return nextStep
-                elif resp1.nextAction.generic.actionInfo[0] == 'move':
+                elif actName == 'move':
                     nextStep = 'navigation'
-                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]
+                    #userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]
 
                     destPos = json_parser.decode_move_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not destPos is None:
                         userdata.target_base_pose = [destPos['x'], destPos['y'], destPos['theta']]
 
                     return nextStep
-                elif resp1.nextAction.generic.actionInfo[0] == 'put_on_tray':
+                elif actName == 'put_on_tray':
                     nextStep = 'put_on_tray'
                     #userdata.grasp_conf = resp1.nextAction.generic.actionInfo[1]
                     return nextStep
-                elif resp1.nextAction.generic.actionInfo[0] == 'deliver_object':
+                elif actName == 'deliver_object':
                     nextStep = 'deliver_object'
-                    userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
+                    #userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[1]), float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3])]                    
                     
                     destPos = json_parser.decode_move_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not destPos is None:
                         userdata.target_base_pose = [destPos['x'], destPos['y'], destPos['theta']]
                     
                     return nextStep
-                elif resp1.nextAction.generic.actionInfo[0] == 'finish_success':
+                elif actName == 'finish_success':
                     nextStep = 'succeeded'
                     return nextStep
-                elif resp1.nextAction.generic.actionInfo[0] == 'finish_fail':
+                elif actName == 'finish_fail':
                     nextStep = 'failed'
                     return nextStep
-                elif resp1.nextAction.generic.actionInfo[0] == 'detect':
+                elif actName == 'detect':
                     nextStep = 'detection'
                     #TODO should confirm later if name or id used !!!!!!!!
 
-                    #userdata.target_object_name = 'milk_box'
-                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
-                    userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
+                    ##userdata.target_object_name = 'milk_box'
+                    #userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
+                    #userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
                     
-                    # name of the workspace
-                    userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[3]
+                    ## name of the workspace
+                    #userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[3]
                     #testing purpose, this value should come from knowledge service
-                    #userdata.target_workspace_name='Table0'
+                    ##userdata.target_workspace_name='Table0'
 
                     obj_to_det = json_parser.decode_detect_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not obj_to_det is None:
@@ -456,33 +458,33 @@ class semantic_dm(smach.State):
                             
                     return nextStep
 
-                elif resp1.nextAction.generic.actionInfo[0] == 'grasp':
+                elif actName == 'grasp':
                     nextStep = 'simple_grasp'
                     
-                    #userdata.target_object_name = 'milk_box'
-                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
-                    userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
+                    ##userdata.target_object_name = 'milk_box'
+                    #userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
+                    #userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
                     # name of the workspace
-                    #userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[???]
-                    #testing purpose, this value should come from knowledge service
-                    #userdata.target_workspace_name='Table0'
+                    ##userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[???]
+                    ##testing purpose, this value should come from knowledge service
+                    ##userdata.target_workspace_name='Table0'
                     obj_to_det = json_parser.decode_grasp_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not obj_to_det is None:
                         userdata.target_object_name = obj_to_det['object_type']
                         userdata.target_object_id = obj_to_det['object_id']
                         # name of the workspace
-                        # userdata.target_workspace_name = obj_to_det['workspace']
+                        userdata.target_workspace_name = obj_to_det['workspace']
                     
                     return nextStep
                 
-                elif resp1.nextAction.generic.actionInfo[0] == 'just_grasp':
+                elif actName == 'just_grasp':
                     nextStep = 'full_grasp'
                     
-                    #userdata.target_object_name = 'milk_box'
-                    userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
-                    userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
-                    # name of the workspace
-                    userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[4]
+                    ##userdata.target_object_name = 'milk_box'
+                    #userdata.target_object_name = resp1.nextAction.generic.actionInfo[2]
+                    #userdata.target_object_id = float(resp1.nextAction.generic.actionInfo[1])
+                    ## name of the workspace
+                    #userdata.target_workspace_name = resp1.nextAction.generic.actionInfo[4]
 
                     obj_to_det = json_parser.decode_grasp_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not obj_to_det is None:
@@ -493,12 +495,12 @@ class semantic_dm(smach.State):
                     
                     return nextStep
                 
-                elif resp1.nextAction.generic.actionInfo[0] == 'check':
+                elif actName == 'check':
                     nextStep = 'env_update'
                     
-                    scan_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
+                    #scan_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
 
-                    userdata.scane_pose_list[0] = scan_base_pose                
+                    #userdata.scane_pose_list[0] = scan_base_pose                
 
                     par = json_parser.decode_check_ws_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not par is None:
@@ -511,7 +513,7 @@ class semantic_dm(smach.State):
                     """
                     userdata.target_object_hh_id = 1
                     
-                   # userdata.target_object_name = resp1.nextAction.generic.actionInfo[1]
+                    # userdata.target_object_name = resp1.nextAction.generic.actionInfo[1]
             
                     userdata.target_base_pose = [float(resp1.nextAction.generic.actionInfo[2]), float(resp1.nextAction.generic.actionInfo[3]), float(resp1.nextAction.generic.actionInfo[4])]                    
 

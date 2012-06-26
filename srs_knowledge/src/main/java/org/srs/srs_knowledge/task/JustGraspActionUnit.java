@@ -137,7 +137,7 @@ public class JustGraspActionUnit extends HighLevelActionUnit {
 	    graspConfig = (graspConfig == null) ? "" : graspConfig;
 	    ifObjectInfoSet = true && ((graspConfig.trim().equals("")) ? false : true);
 
-	    graspAct.jsonActionInfo = SRSJSONParser.encodeGraspAction("grasp", houseHoldId, objectClassName, workspace); 
+	    graspAct.jsonActionInfo = SRSJSONParser.encodeGraspAction("just_grasp", houseHoldId, objectClassName, workspace); 
 
 	    actionUnits.add(graspAct);
 

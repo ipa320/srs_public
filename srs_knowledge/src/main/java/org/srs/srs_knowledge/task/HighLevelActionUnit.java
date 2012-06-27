@@ -172,7 +172,7 @@ public abstract class HighLevelActionUnit {
     public abstract boolean ifParametersSet();
 
     public boolean setParameters(String action, String para, String reservedParam) {
-	return true;
+	return this.ifParametersSet;
     }
 
     protected String actionType = "";

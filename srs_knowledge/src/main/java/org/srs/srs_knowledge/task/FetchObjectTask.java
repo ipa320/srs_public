@@ -100,6 +100,7 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	this.initTask(targetContent, this.userPose);
     }
 
+    @Override
     protected boolean constructTask() {
 	return createGetObjectTask();
     }
@@ -247,79 +248,6 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	return actionList;
     }
     
-    /*
-    public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
-     
-	System.out.println("===> Get Next CUACTION -- from FetchObjectTask.java");
-	CUAction ca = new CUAction();
-	if(allSubSeqs.size() == 0 ) {
-	    System.out.println("Sequence size is zero");
-	    return null;   // ??? 
-	}
-	if(currentSubAction >= 0 && currentSubAction < allSubSeqs.size()) {
-	    // get the current SubActionSequence item
-	    //System.out.println("Sequence size is " + allSubSeqs.size());
-	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
-	    
-	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
-	    // decide if the current SubActionSequence is finished or stuck somewhere? 
-	    // if successfully finished, then finished
-	    // if stuck (fail), move to the next subActionSequence
-	    if(highAct != null) {
-
-		// TODO:
-		updateDBObjectPose();
-				
-		int ni = highAct.getNextCUActionIndex(stateLastAction); 
-		//System.out.println("=========>>>>  " + ni);
-		switch(ni) {
-		case HighLevelActionUnit.COMPLETED_SUCCESS:
-		    System.out.println("COMPLETED_SUCCESS");
-		    lastStepActUnit = highAct;
-		    	    
-		    //HighLevelActionUnit curActUnit = subActSeq.getCurrentHighLevelActionUnit();
-		    // Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
-		    // private HighLevelActionUnit setParametersGraspPos(Pose2D pos, HighLevelActionUnit mgActUnit)
-		    //curActUnit.setParameters(basePos);
-		    CUAction retact = handleSuccessMessage(new ActionFeedback(feedback)); 
-		    return retact; 
-		case HighLevelActionUnit.COMPLETED_FAIL:
-		    // The whole task finished (failure). 
-		    lastStepActUnit = null;
-		    System.out.println("COMPLETED_FAIL");
-		    return handleFailedMessage();
-		case HighLevelActionUnit.INVALID_INDEX:
-		    // The whole task finished failure. Should move to a HighLevelActionUnit in subActSeq of finsihing
-		    lastStepActUnit = null;
-		    System.out.println("INVALID_INDEX");
-		    //currentSubAction++;
-		    return handleFailedMessage();
-		default: 
-		    System.out.println(highAct.getActionType());
-		    if(!highAct.ifParametersSet()) {
-			System.out.println("Parameters not set");
-			lastStepActUnit = null;
-			return handleFailedMessage();
-		    }
-		    ca = highAct.getCUActionAt(ni);
-		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
-		    // WARNING: No error checking here
-		    
-		    //lastActionType = ca.generic.actionInfo.get(0);
-		    lastActionType = (String)(SRSJSONParser.decodeJsonActionInfo(ca.generic.jsonActionInfo).get("action"));
-		    return ca;
-		} 
-	    }
-	    else {
-		return null;
-	    }	    
-	    // or if still pending CUAction is available, return CUAction
-	}
-	else if (currentSubAction == -1) {
-	}
-	return ca;
-    }
-    */
     private CUAction handleFailedMessage() {
 
 	// 
@@ -359,122 +287,10 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	return null;
     }
     
-    private CUAction handleSuccessMessage(ActionFeedback fb) {
-	// TODO: 
-    	updateTargetOfSucceededAct(fb);
-
-	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
-	
-	if(currentHLActSeq.hasNextHighLevelActionUnit()) {
-	    HighLevelActionUnit nextHighActUnit = currentHLActSeq.getNextHighLevelActionUnit();
-	    // set feedback? 
-	    if(nextHighActUnit.getActionType().equals("MoveAndGrasp") && !nextHighActUnit.ifParametersSet()) {
-
-		Pose2D posBase = calculateGraspPosFromFB(fb);
-		if(posBase == null) {
-		    return handleFailedMessage();		
-		}
-
-		String jsonMove = SRSJSONParser.encodeMoveAction("move", posBase.x, posBase.y, posBase.theta);
-		if(!nextHighActUnit.setParameters("move", jsonMove, "")) {
-		    //currentSubAction++;
-		    return handleFailedMessage();		
-		}
-		/*
-		ArrayList<String> basePos = constructArrayFromPose2D(posBase);
-		if(!nextHighActUnit.setParameters(basePos)) {
-		    //currentSubAction++;
-		    return handleFailedMessage();		
-	       }
-		*/
-	    }
-
-	    if(nextHighActUnit != null) {
-		int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
-		// TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
-		// SO STUPID CODE HERE
-		
-		if(tempI == HighLevelActionUnit.COMPLETED_SUCCESS) {
-		    CUAction ca = new CUAction();
-		    ca.status = 1;
-		    return ca;
-		}
-		else if(tempI == HighLevelActionUnit.COMPLETED_FAIL || tempI == HighLevelActionUnit.INVALID_INDEX) {
-		    CUAction ca = new CUAction();
-		    ca.status = -1;
-		    return ca;
-		}		
-		else {
-		    return nextHighActUnit.getCUActionAt(tempI);
-		}
-	    }
-	}
-	return null;
-    }
-    
     private boolean updateDBObjectPose() {
 	
 	return true;
     }
-    
-    private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
-	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
-	// call symbol grounding to get parameters for the MoveAndGrasp action
-	try {
-	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
-	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
-	    recentDetectedObject = ActionFeedback.toPose(fb);
-	    if(recentDetectedObject == null) {
-		return null;
-	    }
-
-	    Pose2D pos = calculateGraspPosition(furGeo, recentDetectedObject);
-	    return pos;
-	}
-	catch (Exception e) {
-	    System.out.println(e.getMessage() + " ++ " + e.toString());
-	    return null;
-	}
-	
-    }
-    
-    private ArrayList<String> constructArrayFromPose2D(Pose2D pos) {
-	try {
-	    ArrayList<String> l = new ArrayList<String>();
-	    l.add("move");
-	    l.add(Double.toString(pos.x));
-	    l.add(Double.toString(pos.y));
-	    l.add(Double.toString(pos.theta));
-	    return l;
-	}
-	catch(Exception e) {
-	    System.out.println(e.toString());
-	    return null;
-	}
-    }
-     
-    /**
-     * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
-     */
-    /*
-    private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
-	Pose pos = new Pose();
-	// check if feedback is for the last action issued
-	
-	if(!feedback.get(0).equals(lastActionType)) {
-	    throw new IllegalArgumentException("Incompatible type");
-	}
-	
-	pos.position.x = Integer.valueOf(feedback.get(2));
-	pos.position.y = Integer.valueOf(feedback.get(3));
-	pos.position.z = Integer.valueOf(feedback.get(4));
-	pos.orientation.x = Integer.valueOf(feedback.get(5));	    
-	pos.orientation.y = Integer.valueOf(feedback.get(6));	    
-	pos.orientation.z = Integer.valueOf(feedback.get(7));	    
-	pos.orientation.w = Integer.valueOf(feedback.get(8));
-	return pos;
-    }
-    */
     
     private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
@@ -547,10 +363,11 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	constructTask();
     }   
 
+    @Override
     public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {
 	return false;
     }
-
+    @Override
     public boolean isEmpty() {
 	try {
 	    if(allSubSeqs.size() == 0) {
@@ -562,180 +379,6 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	    return true;
 	}
 	return false;
-    }
-
-    /**
-     * TODO: TOO LONG... SHOULD CUT DOWN LATER
-     */
-    private void updateTargetOfSucceededAct(ActionFeedback fb) {
-	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
-	HighLevelActionUnit currentActUnit = currentHLActSeq.getCurrentHighLevelActionUnit();
-	if(currentActUnit.getActionType().equals("MoveAndDetection")) {
-	    this.recentDetectedObject = ActionFeedback.toPose(fb);
-	    BoundingBoxDim bbDim = InformationRetrieval.retrieveBoundingBoxInfo(OntoQueryUtil.GlobalNameSpace + this.targetContent);
-	    ros.pkg.srs_knowledge.msg.SRSSpatialInfo spaObj = new ros.pkg.srs_knowledge.msg.SRSSpatialInfo();
-	    spaObj.l = bbDim.l;
-	    spaObj.h = bbDim.h;
-	    spaObj.w = bbDim.w;
-
-	    spaObj.pose = this.recentDetectedObject;
-
-	    // update the knowledge (post-processing)
-	    
-	    // if there exists one same object on the same workspace, update it --- simple solution
-	    //String ws = SpatialCalculator.workspaceHolding(spaObj);
-	    
-	    String neighbour = SpatialCalculator.nearestObject(spaObj.pose, OntoQueryUtil.GlobalNameSpace + this.targetContent);
-	    if(!neighbour.trim().equals("")) {
-		//System.out.println("Found neighbour of " + neighbour);
-		// update its pose
-		try{
-		    OntoQueryUtil.updatePoseOfObject(spaObj.pose, OntoQueryUtil.GlobalNameSpace, neighbour.trim());
-		    OntoQueryUtil.computeOnSpatialRelation();
-		}
-		catch(Exception e) {
-		    System.out.println(e.getMessage());
-		}
-	    }
-	    
-	    // if there does not exist such an object, then insert a new one
-	    // bounding box can be obtained from HHDB
-	    // TODO
-	    
-	}
-	else if(currentActUnit.getActionType().equals("MoveAndGrasp")) {
-	    // look for the object at the pose 
-	    // update its relationship with the Robot, and remove its pose information
-	    //	    Individual rob = KnowledgeEngine.ontoDB.getIndividual(OntoQueryUtil.ObjectNameSpace + OntoQueryUtil.RobotName);
-	    String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
-	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
-		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-		+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
-	    String queryString = "SELECT DISTINCT ?gripper WHERE { "
-		+ "<" + mapNameSpace + OntoQueryUtil.RobotName + ">"
-		+ " srs:hasPart ?gripper . " 
-		+ " ?gripper a srs:RobotGripper . " 
-		+ "}";
-
-	    try {
-		String targetObj = SpatialCalculator.nearestObject(this.recentDetectedObject, OntoQueryUtil.GlobalNameSpace + this.targetContent);
-		//System.out.println("TARGET OBJECT IS ::: " + targetObj);
-		if(!targetObj.trim().equals("")) {
-		   
-		    Pose tmpPose = new Pose();
-		    tmpPose.position.x = -1000;
-		    tmpPose.position.y = -1000;
-		    tmpPose.position.z = -1000;
-		    tmpPose.orientation.x = -1000;
-		    tmpPose.orientation.y = -1000;
-		    tmpPose.orientation.z = -1000;
-		    tmpPose.orientation.w = -1000;
-		    
-		    // update its pose
-		    try{
-			OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, targetObj.trim());
-			OntoQueryUtil.computeOnSpatialRelation();
-		    }
-		    catch(Exception e) {
-			System.out.println(e.getMessage());
-		    }
-		}
-	       
-		
-		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
-		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
-		if(rset.size() == 0) {
-		    //System.out.println("<<<< NO GRIPPER INSTANCE FOUND >>>");   
-		}
-		else {
-		    //System.out.println("<<<< FOUND GRIPPER INSTANCE >>>");
-		    Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(targetObj);
-		    
-		    OntoQueryUtil.removeAllSubPropertiesOf(targetObj, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
-		    QuerySolution qs = rset.get(0);
-
-		    String gripper = qs.get("gripper").toString();
-		    //System.out.println("<<<<<  " + gripper + "  >>>>>");
-
-		    Individual gripInd = KnowledgeEngine.ontoDB.getIndividual(gripper);
-		    Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
-		    
-		    Property pro = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "grippedBy");
-
-		    targetInd.setPropertyValue(pro, gripInd);
-		}
-	    }
-	    catch (Exception e) {
-		//System.out.println(" ==================   " + e.getMessage() + "   " + e.toString());
-	    }
-	}
-	else if(currentActUnit.getActionType().equals("PutOnTray")) {
-	    // look for the object at the pose 
-	    
-	    // update its relationship with the Robot, and remove its pose information
-	    String mapNameSpace = OntoQueryUtil.ObjectNameSpace;
-	    String prefix = "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
-		+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-		+ "PREFIX mapNamespacePrefix: <" + mapNameSpace + ">\n";
-	    String queryString = "SELECT DISTINCT ?tray WHERE { "
-		+ "<" + mapNameSpace + OntoQueryUtil.RobotName + ">"
-		+ " srs:hasPart ?tray . " 
-		+ " ?tray a srs:COBTray . " 
-		+ "}";
-
-	    try {
-		String targetObj = SpatialCalculator.nearestObject(this.recentDetectedObject, OntoQueryUtil.GlobalNameSpace + this.targetContent);
-		//System.out.println("TARGET OBJECT IS ::: " + targetObj);
-		if(!targetObj.trim().equals("")) {
-		   
-		    Pose tmpPose = new Pose();
-		    tmpPose.position.x = -1000;
-		    tmpPose.position.y = -1000;
-		    tmpPose.position.z = -1000;
-		    tmpPose.orientation.x = -1000;
-		    tmpPose.orientation.y = -1000;
-		    tmpPose.orientation.z = -1000;
-		    tmpPose.orientation.w = -1000;
-		    
-		    // update its pose
-		    try{
-			OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, targetObj.trim());
-			OntoQueryUtil.computeOnSpatialRelation();
-		    }
-		    catch(Exception e) {
-			System.out.println(e.getMessage());
-		    }
-		}
-	       
-		
-		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
-		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
-		if(rset.size() == 0) {
-		    //System.out.println("<<<< NO TRAY INSTANCE FOUND >>>");   
-		}
-		else {
-		    //System.out.println("<<<< FOUND TRAY INSTANCE >>>");
-		    Individual targetInd = KnowledgeEngine.ontoDB.getIndividual(targetObj);
-		    
-		    OntoQueryUtil.removeAllSubPropertiesOf(targetObj, OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
-		    QuerySolution qs = rset.get(0);
-
-		    String gripper = qs.get("tray").toString();
-		    //System.out.println("<<<<<  " + gripper + "  >>>>>");
-
-		    Individual gripInd = KnowledgeEngine.ontoDB.getIndividual(gripper);
-		    Property proExist = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "spatiallyRelated");
-		    
-		    Property pro = KnowledgeEngine.ontoDB.getProperty(OntoQueryUtil.GlobalNameSpace + "aboveOf");
-
-		    targetInd.setPropertyValue(pro, gripInd);
-		}
-	    }
-	    catch (Exception e) {
-		System.out.println(" ==================   " + e.getMessage() + " ----  " + e.toString());
-	    }
-	    
-	}
     }
 
     private void updateTargetOfFailedAct() {
@@ -956,7 +599,6 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 			System.out.println(e.getMessage());
 		    }
 		}
-	       
 		
 		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
 		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
@@ -1022,7 +664,6 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 			//System.out.println(e.getMessage());
 		    }
 		}
-	       
 		
 		// OntoQueryUtil.updatePoseOfObject(tmpPose, OntoQueryUtil.GlobalNameSpace, OntoQueryUtil.ObjectNameSpace, this.targetContent);
 		ArrayList<QuerySolution> rset = KnowledgeEngine.ontoDB.executeQueryRaw(prefix + queryString);
@@ -1075,13 +716,6 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 		    //currentSubAction++;
 		    return handleFailedMessage();		
 		}
-		/*
-		ArrayList<String> basePos = constructArrayFromPose2D(posBase);
-		if(!nextHighActUnit.setParameters(basePos)) {
-		    //currentSubAction++;
-		    return handleFailedMessage();		
-		}
-		*/
 	    }
 
 	    if(nextHighActUnit != null) {
@@ -1130,7 +764,6 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	
     }
-
 
     private ArrayList<Individual> workspaces = new ArrayList<Individual>();
     private int currentSubAction;

@@ -84,23 +84,11 @@ public class MoveAndDetectionActionUnit extends HighLevelActionUnit {
     private void init(ArrayList<Pose2D> positions, String objectClassName, int houseHoldId, String workspace) {
 	for(Pose2D position:positions) {
 	    GenericAction ga = new GenericAction();
-	    /*
-	    ga.actionInfo.add("move");
-	    ga.actionInfo.add(Double.toString(position.x));
-	    ga.actionInfo.add(Double.toString(position.y));
-	    ga.actionInfo.add(Double.toString(position.theta));
-	    */
 	    // new json stuff
 	    ga.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", position.x, position.y, position.theta);
 	    actionUnits.add(ga);
 
 	    GenericAction detAct = new GenericAction();
-	    /*
-	    detAct.actionInfo.add("detect");
-	    detAct.actionInfo.add(Integer.toString(houseHoldId));
-	    detAct.actionInfo.add(objectClassName);
-	    detAct.actionInfo.add(workspace);
-	    */
 	    detAct.jsonActionInfo = SRSJSONParser.encodeDetectAction("detect", houseHoldId, objectClassName, workspace);
 	    actionUnits.add(detAct);
 	}

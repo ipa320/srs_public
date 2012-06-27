@@ -314,7 +314,7 @@ class semantic_dm(smach.State):
             len_step_info = len(current_task_info.last_step_info)
                     
             #feedback = []
-            feedback_in_json = ''
+            feedback_in_json = '{}'
             if not current_task_info.last_step_info:
                 ## first action. does not matter this. just to keep it filled
                 resultLastStep = 0

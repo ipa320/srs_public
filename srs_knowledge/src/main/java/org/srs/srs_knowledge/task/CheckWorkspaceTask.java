@@ -70,14 +70,16 @@ import ros.pkg.srs_symbolic_grounding.msg.*;
 
 import ros.*;
 import ros.communication.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
 
 public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
 {
     public CheckWorkspaceTask(String targetContent)
     {	
-	//this.nodeHandle = n;
-	//this.userPose = userPose;
-	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);
     }
     private void initTask(String targetContent) {
@@ -94,8 +96,6 @@ public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
     }
     
     private boolean createCheckWorkspaceTask() {
-
-	//    public static ArrayList<Individual> getWorkspaceByName(String objectClassName, String objectNameSpace, String globalNameSpace)
 	System.out.println("Create New GET OBJECT Task --- ");
 
 	try {
@@ -186,8 +186,8 @@ public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
 	return actionList;
     }
     
-    
-    public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
+    @Override
+    public CUAction getNextCUActionNew(boolean stateLastAction, String jsonFeedback) {
      
 	System.out.println("===> Get Next CUACTION -- from CheckWorkspaceTask.java");
 	CUAction ca = new CUAction();
@@ -215,8 +215,16 @@ public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
 		case HighLevelActionUnit.COMPLETED_SUCCESS:
 		    System.out.println(".COMPLETED_SUCCESS");
 		    lastStepActUnit = highAct;
-		    	    
-		    CUAction retact = handleSuccessMessage(new ActionFeedback(feedback)); 
+
+		    CUAction retact = null;		    	    
+		    try {
+			retact = handleSuccessMessage(new ActionFeedback(jsonFeedback));
+		    }
+		    catch(ParseException pe) {
+			System.out.println(pe.toString());
+			return null;
+		    }
+ 
 		    return retact; 
 		case HighLevelActionUnit.COMPLETED_FAIL: 
 		    lastStepActUnit = null;
@@ -323,43 +331,6 @@ public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
 	return true;
     }
     
-    private ArrayList<String> constructArrayFromPose2D(Pose2D pos) {
-	try {
-	    ArrayList<String> l = new ArrayList<String>();
-	    l.add("move");
-	    l.add(Double.toString(pos.x));
-	    l.add(Double.toString(pos.y));
-	    l.add(Double.toString(pos.theta));
-	    return l;
-	}
-	catch(Exception e) {
-	    System.out.println(e.toString());
-	    return null;
-	}
-    }
-     
-    /**
-     * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
-     */
-    private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
-	Pose pos = new Pose();
-	// check if feedback is for the last action issued
-	
-	if(!feedback.get(0).equals(lastActionType)) {
-	    throw new IllegalArgumentException("Incompatible type");
-	}
-	
-	pos.position.x = Integer.valueOf(feedback.get(2));
-	pos.position.y = Integer.valueOf(feedback.get(3));
-	pos.position.z = Integer.valueOf(feedback.get(4));
-	pos.orientation.x = Integer.valueOf(feedback.get(5));	    
-	pos.orientation.y = Integer.valueOf(feedback.get(6));	    
-	pos.orientation.z = Integer.valueOf(feedback.get(7));	    
-	pos.orientation.w = Integer.valueOf(feedback.get(8));
-	return pos;
-    }
-
-    
     private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
 	ServiceClient<SymbolGroundingExploreBasePose.Request, SymbolGroundingExploreBasePose.Response, SymbolGroundingExploreBasePose> sc =
@@ -401,11 +372,12 @@ public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
 	return spatialInfo;
     }
 
-
+    @Override
     public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {
 	return false;
     }
 
+    @Override
     public boolean isEmpty() {
 	try {
 	    if(allSubSeqs.size() == 0) {

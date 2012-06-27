@@ -69,16 +69,11 @@ public class MoveActionUnit extends HighLevelActionUnit {
 
     public MoveActionUnit(Pose2D position) {
 	GenericAction ga = new GenericAction();
-	/*
-	  ga.actionInfo.add("move");
-	ga.actionInfo.add(Double.toString(position.x));
-	ga.actionInfo.add(Double.toString(position.y));
-	ga.actionInfo.add(Double.toString(position.theta));
-	*/
 	ga.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", position.x, position.y, position.theta);
 	actionUnits.add(ga);
 
 	// this actionunit is always set with sufficient parameters
+	ifBasePoseSet = true;
 	ifParametersSet = true;
 
 	int size = actionUnits.size(); 
@@ -97,15 +92,26 @@ public class MoveActionUnit extends HighLevelActionUnit {
 	return actionType;
     }
 
-    // a not very safe, but flexible way to assign parameters, using arraylist<string> 
-    // set robot move target and object pose etc.
-    public boolean setParameters(ArrayList<String> para) {
-	boolean res = ifParametersSet;
-	return res;
+    @Override
+    public boolean setParameters(String action, String para, String reservedParam) {
+	if(action.equals("move")) {
+	    setBasePose(para);
+	}
+	return ifParametersSet;
+    }
+
+    private void setBasePose(String jsonPose) {
+
+	GenericAction nga = new GenericAction();
+	nga.jsonActionInfo = jsonPose;
+	actionUnits.set(0, nga);
+	ifBasePoseSet = true;
+	ifParametersSet = ifBasePoseSet;
     }
 
     public boolean ifParametersSet() {
 	return ifParametersSet;
     }
 
+    private boolean ifBasePoseSet = false;
 }

@@ -58,13 +58,13 @@ from std_msgs.msg import *
 import rospy
 import actionlib
 
-def srs_decision_making_ui_interface_client(action, parameter, priority):
+def srs_decision_making_ui_interface_client(action, parameter, priority, json_parameters):
 
     rospy.wait_for_service('srs_decision_making_ui_interface')
     
     srs_decision_making_action = rospy.ServiceProxy('srs_decision_making_ui_interface', srs_dm_ui_interface)
 
-    resp = srs_decision_making_action(action, parameter, priority)
+    resp = srs_decision_making_action(action, parameter, priority, json_parameters)
         
     return resp
     
@@ -76,9 +76,10 @@ if __name__ == '__main__':
         action = 'get'
         parameter = 'Milkbox'
         priority = '1'
+        json_parameters = '{"tasks":[{"time_schedule":1263798000000,"task":"get","deliver_destination":{"predefined_pose":"order"},"object":{"object_type":"Milkbox"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}'
         
-        print (action, parameter, priority)
-        result = srs_decision_making_ui_interface_client(action, parameter, priority)
+        print (action, parameter, priority, json_parameters )
+        result = srs_decision_making_ui_interface_client(action, parameter, priority, json_parameters)
         rospy.loginfo('The task has been passed to DM, the allocated task id is: %s',result)
         # print ("Result:" result)
     except rospy.ROSInterruptException:

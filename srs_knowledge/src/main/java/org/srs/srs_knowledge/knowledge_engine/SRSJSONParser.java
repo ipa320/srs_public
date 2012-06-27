@@ -179,6 +179,7 @@ public class SRSJSONParser
 	else if(graspType.equals("Planned")) {
 	    graspingType = ConfigInfo.GraspType.JUST_GRASP;
 	}
+	System.out.println("---->>> " + graspType);
       
 	got = new GetObjectTask(objectType, graspingType);
 	}
@@ -260,7 +261,7 @@ public class SRSJSONParser
 
     public static String encodeMoveAction(String action, double x, double y, double theta) {
 	JSONObject moveAct = new JSONObject();
-	moveAct.put("action", "move");
+	moveAct.put("action", action);
 
 	JSONObject dest = new JSONObject();
 	dest.put("x", x);
@@ -325,7 +326,7 @@ public class SRSJSONParser
 
 	JSONObject detAct = new JSONObject();
 	detAct.put("object", obj);
-	detAct.put("action", "detect");
+	detAct.put("action", action);
 
 	try {
 	    StringWriter out = new StringWriter();
@@ -353,7 +354,7 @@ public class SRSJSONParser
 
 	JSONObject detAct = new JSONObject();
 	detAct.put("object", obj);
-	detAct.put("action", "grasp");
+	detAct.put("action", action);
 
 	try {
 	    StringWriter out = new StringWriter();
@@ -396,7 +397,7 @@ public class SRSJSONParser
 
 	JSONObject checkAct = new JSONObject();
 	checkAct.put("object", obj);
-	checkAct.put("action", "check");
+	checkAct.put("action", action);
 
 	try {
 	    StringWriter out = new StringWriter();

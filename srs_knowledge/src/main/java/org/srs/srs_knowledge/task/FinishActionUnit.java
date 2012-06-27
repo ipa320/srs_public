@@ -97,15 +97,7 @@ public class FinishActionUnit extends HighLevelActionUnit {
 	return actionType;
     }
 
-    // a not very safe, but flexible way to assign parameters, using arraylist<string> 
-    // set robot move target and object pose etc.
-    public boolean setParameters(ArrayList<String> para) {
-	boolean res = ifParametersSet;
-	return res;
-    }
-
     public boolean ifParametersSet() {
 	return ifParametersSet;
     }
-
 }

@@ -91,20 +91,10 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    GenericAction ga = new GenericAction();
 	    //ga.actionInfo.add("move");
 	    if(position != null) {
-		/*
-		ga.actionInfo.add(Double.toString(position.x));
-		ga.actionInfo.add(Double.toString(position.y));
-		ga.actionInfo.add(Double.toString(position.theta));
-		*/
 		ga.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", position.x, position.y, position.theta);
 		ifBasePoseSet = true;
 	    }
 	    else {
-		/*
-		ga.actionInfo.add("");
-		ga.actionInfo.add("");
-		ga.actionInfo.add("");
-		*/
 		ga.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", -1000, -1000, -1000);
 		ifBasePoseSet = false;
 	    }
@@ -115,32 +105,9 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    //graspAct.actionInfo.add("grasp");
 	    objectClassName = (objectClassName == null) ? "" : objectClassName;
 	    ifObjectInfoSet = (objectClassName.trim().equals("")) ? false : true;
-	    /*
-	    if (objectClassName != null) {
-		graspAct.actionInfo.add(Integer.toString(houseHoldId));
-		graspAct.actionInfo.add(objectClassName);
-		ifObjectInfoSet = true;
-	    }
-	    else {
-		graspAct.actionInfo.add(Integer.toString(houseHoldId));
-		graspAct.actionInfo.add("");
-		ifObjectInfoSet = false;   
-	    }
-	    */
+
 	    graspConfig = (graspConfig == null) ? "" : graspConfig;
 	    ifObjectInfoSet = true && ((graspConfig.trim().equals("")) ? false : true);
-	    /*
-	    if (graspConfig != null || !graspConfig.equals("")) {
-		// side, top etc
-		graspAct.actionInfo.add(graspConfig);
-		ifObjectInfoSet = true && ifObjectInfoSet;
-	    }
-	    else {
-		graspAct.actionInfo.add("");
-		ifObjectInfoSet = false;
-	    }
-	    */
-	    //graspAct.actionInfo.add(workspace);
 	    graspAct.jsonActionInfo = SRSJSONParser.encodeGraspAction("grasp", houseHoldId, objectClassName, workspace); 
 
 	    actionUnits.add(graspAct);
@@ -171,11 +138,13 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	}
     }
     
+    @Override
     public String getActionType() {
 	actionType = "MoveAndGrasp";
 	return actionType;
     }
 
+    @Override
     public int getNextCUActionIndex(boolean statusLastStep) {
 	if(currentActionInd == -1) {
 	    return 0;
@@ -197,64 +166,6 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 	    return INVALID_INDEX;
 	}
     }
-    /*
-    public CUAction getCUActionAt(int ind) {
-	currentActionInd = ind;
-	CUAction ca = new CUAction(); 
-
-	if(ind == COMPLETED_FAIL) {
-	    GenericAction genericAction = new GenericAction();
-	    genericAction.actionInfo.add("finish_fail");
-	    
-	    ca.generic = genericAction;
-	    ca.actionType = "generic";	    
-	    ca.status = -1;
-	    
-	    return ca;
-	}
-	else if (ind == COMPLETED_SUCCESS){
-	    GenericAction genericAction = new GenericAction();
-	    genericAction.actionInfo.add("finish_success");
-	    
-	    ca.generic = genericAction;
-	    ca.actionType = "generic";
-	    ca.status = 1;
-	    return ca;
-	}
-	else if (ind == INVALID_INDEX) {
-	    GenericAction genericAction = new GenericAction();
-	    genericAction.actionInfo.add("no_action");
-	    
-	    ca.generic = genericAction;
-	    ca.actionType = "generic";
-	    ca.status = -1;
-	    return ca;
-	}
-
-	GenericAction genericAction = actionUnits.get(ind);
-	ca.generic = genericAction;
-	ca.actionType = "generic";
-	return ca;
-    }
-    */
-    // a not very safe, but flexible way to assign parameters, using arraylist<string> 
-    // set robot move target and object pose etc.
-    /*
-    @Override
-    public boolean setParameters(ArrayList<String> para) {
-	//boolean res = ifParametersSet;
-	try {
-	    //setBasePose(para);
-	    //setGraspInfo(para);
-	    //ifParametersSet = true;
-	}
-	catch(IllegalArgumentException e) {
-	    System.out.println(e.getMessage());
-	    return false;
-	}
-	return ifParametersSet;
-    }
-    */
 
     @Override
     public boolean setParameters(String action, String para, String reservedParam) {
@@ -287,60 +198,11 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 
     }
 
-    /*
-    private void setBasePose(ArrayList<String> pose) throws IllegalArgumentException {
-
-	GenericAction ga = actionUnits.get(0);
-
-	if( ga.actionInfo.get(0).equals("move") && pose.get(0).equals("move") && pose.size() == ga.actionInfo.size()) {
-	    //actionUnits.get(0).clear();
-	    
-	    GenericAction nga = new GenericAction();
-	    nga.actionInfo = pose;
-	    actionUnits.set(0, nga);
-	    ifBasePoseSet = true;
-	    ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
-	}
-	else {
-	    System.out.println(ga.actionInfo.get(0));
-	    System.out.println(pose.get(0).equals("move"));
-	    System.out.println(pose.size());
-	    System.out.println(ga.actionInfo.size());
-	    throw new IllegalArgumentException("Wrong format exception -- when setting Base Pose with arrayList");
-	}
-    }
-    */
-    // objInfo should be in format as defined in constructor
-    /*
-    private void setGraspInfo(ArrayList<String> objInfo) {
-	GenericAction ga = actionUnits.get(1);
-
-	if( ga.actionInfo.get(0).equals("grasp") && objInfo.get(0).equals("grasp") && objInfo.size() == ga.actionInfo.size()) {
-	    //actionUnits.get(0).clear();
-	    GenericAction nga = new GenericAction();
-	    nga.actionInfo = objInfo;
-	    //actionUnits.set(1, objInfo);
-	    */
-	    /*
-	    GenericAction graspAct = new GenericAction();
-	    graspAct.actionInfo.add("grasp");
-	    graspAct.actionInfo.add(Integer.toString(houseHoldId));
-	    graspAct.actionInfo.add(objectClassName);
-	    */
-	    /*
-	    actionUnits.set(1, nga);
-	    ifObjectInfoSet = true;
-	    ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
-	}
-	else {
-	    throw new IllegalArgumentException("Wrong format exception -- when setting Object Info with arrayList");
-	}
-    }
-	    */
     private boolean setObjectPose(ArrayList<String> objPose) {
 	return false;
     }
 
+    @Override
     public boolean ifParametersSet() {
 	ifParametersSet = ifBasePoseSet && ifObjectInfoSet;
 	return ifParametersSet;
@@ -348,6 +210,4 @@ public class MoveAndGraspActionUnit extends HighLevelActionUnit {
 
     private boolean ifBasePoseSet = false;
     private boolean ifObjectInfoSet = false;
-    //private boolean ifObjectIDSet = false;
-    //private boolean ifObjectNameSet = false;
 }

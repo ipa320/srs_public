@@ -73,15 +73,23 @@ import ros.pkg.srs_symbolic_grounding.msg.*;
 import ros.*;
 import ros.communication.*;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
+
 import org.srs.srs_knowledge.utils.*;
 
 public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 {
+    /*
     public static enum GraspType {
 	JUST_GRASP, MOVE_AND_GRASP
     }
+    */
     
-    private GraspType graspType = GraspType.MOVE_AND_GRASP;
+    private ConfigInfo.GraspType graspType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 
     public GetObjectTask(String targetContent) 
     {	
@@ -90,12 +98,12 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	System.out.println("MOVE_AND_GRASP");
     }
 
-    public GetObjectTask(String targetContent, GraspType graspMode) 
+    public GetObjectTask(String targetContent, ConfigInfo.GraspType graspMode) 
     {	
 	this.graspType = graspMode;
 	// this.init(taskType, targetContent, userPose);
 	this.initTask(targetContent);
-	if(graspMode == GraspType.MOVE_AND_GRASP)  {
+	if(graspMode == ConfigInfo.GraspType.MOVE_AND_GRASP)  {
 	    System.out.println("MOVE_AND_GRASP  " + targetContent);
 	}
 	else {
@@ -103,9 +111,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
     }
 
-    public void setGraspMode(GraspType graspMode) {
+    public void setGraspMode(ConfigInfo.GraspType graspMode) {
 	this.graspType = graspMode;
-	if(graspMode == GraspType.MOVE_AND_GRASP)  {
+	if(graspMode == ConfigInfo.GraspType.MOVE_AND_GRASP)  {
 	    System.out.println("MOVE_AND_GRASP  ");
 	}
 	else {
@@ -218,10 +226,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	
 	// create MoveAndGraspActionUnit
 	HighLevelActionUnit mgAction = null;
-	if(this.graspType == GraspType.MOVE_AND_GRASP) {
+	if(this.graspType == ConfigInfo.GraspType.MOVE_AND_GRASP) {
 	    mgAction = new MoveAndGraspActionUnit(null, targetContent, hhid, "side", workspace.asResource().getLocalName());
 	}
-	else if(this.graspType == GraspType.JUST_GRASP) {
+	else if(this.graspType == ConfigInfo.GraspType.JUST_GRASP) {
 	    mgAction = new JustGraspActionUnit(targetContent, hhid, "side", workspace.asResource().getLocalName());
 	}
 	else {
@@ -260,10 +268,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	
 	return actionList;
     }
-    
+
+    // TODO:   NOT COMPLETED... 
     @Override
-    public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
-     
+    public CUAction getNextCUActionNew(boolean stateLastAction, String jsonFeedback) {
 	System.out.println("===> Get Next CUACTION -- from GetObjectTask.java");
 	CUAction ca = new CUAction();
 	if(allSubSeqs.size() == 0 ) {
@@ -285,17 +293,20 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		updateDBObjectPose();
 				
 		int ni = highAct.getNextCUActionIndex(stateLastAction); 
-		//System.out.println("=========>>>>  " + ni);
 		switch(ni) {
 		case HighLevelActionUnit.COMPLETED_SUCCESS:
 		    System.out.println("COMPLETED_SUCCESS");
 		    lastStepActUnit = highAct;
-		    	    
-		    //HighLevelActionUnit curActUnit = subActSeq.getCurrentHighLevelActionUnit();
-		    // Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
-		    // private HighLevelActionUnit setParametersGraspPos(Pose2D pos, HighLevelActionUnit mgActUnit)
-		    //curActUnit.setParameters(basePos);
-		    CUAction retact = handleSuccessMessage(new ActionFeedback(feedback)); 
+
+		    CUAction retact = null;
+		    try {
+			retact = handleSuccessMessageNew(new ActionFeedback(jsonFeedback));
+		    }
+		    catch(ParseException pe) {
+			System.out.println(pe.toString());
+			return null;
+		    }
+
 		    return retact; 
 		case HighLevelActionUnit.COMPLETED_FAIL:
 		    // The whole task finished (failure). 
@@ -318,8 +329,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    ca = highAct.getCUActionAt(ni);
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
-		    lastActionType = ca.generic.actionInfo.get(0);
-		    
+		    //lastActionType = ca.generic.actionInfo.get(0);
+		    lastActionType = (String)(SRSJSONParser.decodeJsonActionInfo(ca.generic.jsonActionInfo).get("action"));
 		    return ca;
 		} 
 	    }
@@ -330,6 +341,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	else if (currentSubAction == -1) {
 	}
+
 	return ca;
     }
 
@@ -375,11 +387,12 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     /**
      * TODO: TOO LONG... SHOULD CUT DOWN LATER
      */
-    private void updateTargetOfSucceededAct(ActionFeedback fb) {
+    private void updateTargetOfSucceededActNew(ActionFeedback fb) {
 	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
 	HighLevelActionUnit currentActUnit = currentHLActSeq.getCurrentHighLevelActionUnit();
 	if(currentActUnit.getActionType().equals("MoveAndDetection")) {
-	    this.recentDetectedObject = ActionFeedback.toPose(fb);
+	    //this.recentDetectedObject = ActionFeedback.toPose(fb);
+	    this.recentDetectedObject = fb.getDetectedObjectPose();
 	    BoundingBoxDim bbDim = InformationRetrieval.retrieveBoundingBoxInfo(OntoQueryUtil.GlobalNameSpace + this.targetContent);
 	    ros.pkg.srs_knowledge.msg.SRSSpatialInfo spaObj = new ros.pkg.srs_knowledge.msg.SRSSpatialInfo();
 	    spaObj.l = bbDim.l;
@@ -609,10 +622,10 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 
     }
-    
-    private CUAction handleSuccessMessage(ActionFeedback fb) {
+
+    private CUAction handleSuccessMessageNew(ActionFeedback fb) {
 	// TODO: 
-	updateTargetOfSucceededAct(fb);
+	updateTargetOfSucceededActNew(fb);
     
 	HighLevelActionSequence currentHLActSeq = allSubSeqs.get(currentSubAction);
 
@@ -621,16 +634,17 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    // set feedback? 
 	    if(nextHighActUnit.getActionType().equals("MoveAndGrasp") && !nextHighActUnit.ifParametersSet()) {
 
-		Pose2D posBase = calculateGraspPosFromFB(fb);
+		Pose2D posBase = calculateGraspPosFromFBNew(fb);
 		if(posBase == null) {
 		    return handleFailedMessage();
 		}
 
-		ArrayList<String> basePos = constructArrayFromPose2D(posBase);
-		if(!nextHighActUnit.setParameters(basePos)) {
+		String jsonMove = SRSJSONParser.encodeMoveAction("move", posBase.x, posBase.y, posBase.theta);
+		if(!nextHighActUnit.setParameters("move", jsonMove, "")) {
 		    //currentSubAction++;
 		    return handleFailedMessage();		
 		}
+
 	    }
 
 	    if(nextHighActUnit != null) {
@@ -655,21 +669,21 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	return null;
     }
-    
+
     private boolean updateDBObjectPose() {
 	
 	return true;
     }
-    
-    private Pose2D calculateGraspPosFromFB(ActionFeedback fb) {
+
+    private Pose2D calculateGraspPosFromFBNew(ActionFeedback fb) {
 	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
 	// call symbol grounding to get parameters for the MoveAndGrasp action
 	try {
-	    
 	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
 	    //ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo furGeo = newGetFurnitureGeometryOf(workspaces.get(currentSubAction));
 	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
-	    recentDetectedObject = ActionFeedback.toPose(fb);
+	    //recentDetectedObject = ActionFeedback.toPose(fb);
+	    recentDetectedObject = fb.getDetectedObjectPose();
 	    if(recentDetectedObject == null) {
 		return null;
 	    }
@@ -684,43 +698,6 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	}
 	
     }
-    
-    private ArrayList<String> constructArrayFromPose2D(Pose2D pos) {
-	try {
-	    ArrayList<String> l = new ArrayList<String>();
-	    l.add("move");
-	    l.add(Double.toString(pos.x));
-	    l.add(Double.toString(pos.y));
-	    l.add(Double.toString(pos.theta));
-	    return l;
-	}
-	catch(Exception e) {
-	    System.out.println(e.toString());
-	    return null;
-	}
-    }
-     
-    /**
-     * @param feedback: array in the order of: action-type-"detect", x, y, z, x, y, z, w, "object class name"-e.g. "MilkBox" (length 9) 
-     */
-    private Pose convertGenericFeedbackToPose(ArrayList<String> feedback) {
-	Pose pos = new Pose();
-	// check if feedback is for the last action issued
-	
-	if(!feedback.get(0).equals(lastActionType)) {
-	    throw new IllegalArgumentException("Incompatible type");
-	}
-	
-	pos.position.x = Integer.valueOf(feedback.get(2));
-	pos.position.y = Integer.valueOf(feedback.get(3));
-	pos.position.z = Integer.valueOf(feedback.get(4));
-	pos.orientation.x = Integer.valueOf(feedback.get(5));	    
-	pos.orientation.y = Integer.valueOf(feedback.get(6));	    
-	pos.orientation.z = Integer.valueOf(feedback.get(7));	    
-	pos.orientation.w = Integer.valueOf(feedback.get(8));
-	return pos;
-    }
-
     
     private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();

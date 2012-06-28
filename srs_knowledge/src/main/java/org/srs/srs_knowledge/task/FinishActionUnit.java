@@ -71,10 +71,12 @@ public class FinishActionUnit extends HighLevelActionUnit {
 	
 	GenericAction ga = new GenericAction();
 	if(successOrFail) {
-	    ga.actionInfo.add("finish_success");
+	    //ga.actionInfo.add("finish_success");
+	    ga.jsonActionInfo = SRSJSONParser.encodeCustomAction("finish_success", null);
 	}
 	else {
-	   ga.actionInfo.add("finish_fail");
+	    //ga.actionInfo.add("finish_fail");
+	    ga.jsonActionInfo = SRSJSONParser.encodeCustomAction("finish_fail", null);
 	}
 
 	actionUnits.add(ga);
@@ -95,15 +97,7 @@ public class FinishActionUnit extends HighLevelActionUnit {
 	return actionType;
     }
 
-    // a not very safe, but flexible way to assign parameters, using arraylist<string> 
-    // set robot move target and object pose etc.
-    public boolean setParameters(ArrayList<String> para) {
-	boolean res = ifParametersSet;
-	return res;
-    }
-
     public boolean ifParametersSet() {
 	return ifParametersSet;
     }
-
 }

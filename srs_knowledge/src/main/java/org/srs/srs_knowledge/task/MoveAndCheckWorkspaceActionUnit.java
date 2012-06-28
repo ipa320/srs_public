@@ -62,6 +62,12 @@ import org.srs.srs_knowledge.knowledge_engine.*;
 import ros.pkg.srs_symbolic_grounding.srv.*;
 import ros.pkg.srs_symbolic_grounding.msg.*;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
+
 /**
  * An ActionUnit is a container of GenericAction. 
  * Unit does not have to be containing only one action. e.g. an action of detection an object on a table can contain a few steps, move to pos1, detect, move to pos2, detect, move to pos3, detect, etc. 
@@ -71,30 +77,13 @@ public class MoveAndCheckWorkspaceActionUnit extends HighLevelActionUnit {
     public MoveAndCheckWorkspaceActionUnit(ArrayList<Pose2D> positions, String objectClassName, SRSFurnitureGeometry targetSurface) {
 	for(Pose2D position:positions) {
 	    GenericAction ga = new GenericAction();
-	    ga.actionInfo.add("move");
-	    ga.actionInfo.add(Double.toString(position.x));
-	    ga.actionInfo.add(Double.toString(position.y));
-	    ga.actionInfo.add(Double.toString(position.theta));
 
+	    ga.jsonActionInfo = SRSJSONParser.encodeMoveAction("move", position.x, position.y, position.theta);
 	    actionUnits.add(ga);
 
 	    GenericAction detAct = new GenericAction();
-	    detAct.actionInfo.add("check");
-	    detAct.actionInfo.add(objectClassName);
-	    detAct.actionInfo.add(Double.toString(position.x));
-	    detAct.actionInfo.add(Double.toString(position.y));
-	    detAct.actionInfo.add(Double.toString(position.theta));
 
-	    detAct.actionInfo.add(Double.toString(targetSurface.pose.position.x));
-	    detAct.actionInfo.add(Double.toString(targetSurface.pose.position.y));
-	    detAct.actionInfo.add(Double.toString(targetSurface.pose.position.z));
-	    detAct.actionInfo.add(Double.toString(targetSurface.pose.orientation.x));
-	    detAct.actionInfo.add(Double.toString(targetSurface.pose.orientation.y));
-	    detAct.actionInfo.add(Double.toString(targetSurface.pose.orientation.z));
-	    detAct.actionInfo.add(Double.toString(targetSurface.pose.orientation.w));
-	    detAct.actionInfo.add(Double.toString(targetSurface.l));
-	    detAct.actionInfo.add(Double.toString(targetSurface.w));
-	    detAct.actionInfo.add(Double.toString(targetSurface.h));
+	    detAct.jsonActionInfo = SRSJSONParser.encodeCheckObjectAction("check", objectClassName, targetSurface.pose.position.x, targetSurface.pose.position.y, targetSurface.pose.position.z, targetSurface.pose.orientation.x, targetSurface.pose.orientation.y, targetSurface.pose.orientation.z, targetSurface.pose.orientation.w, targetSurface.l, targetSurface.w, targetSurface.h);
 
 	    actionUnits.add(detAct);
 	}
@@ -107,12 +96,14 @@ public class MoveAndCheckWorkspaceActionUnit extends HighLevelActionUnit {
 	nextActionMapIfSuccess = new int[size];
 
 	for(int i = 0; i < size; i++) {
-	    if(actionUnits.get(i).actionInfo.get(0).equals("move")) {
+	    //if(actionUnits.get(i).actionInfo.get(0).equals("move")) {
+	    JSONObject tempAct = SRSJSONParser.decodeJsonActionInfo(actionUnits.get(i).jsonActionInfo);
+	    if(tempAct.get("action").equals("move")) {
 		nextActionMapIfSuccess[i] = i + 1;
 		nextActionMapIfFail[i] = i + 2;
 		System.out.println("move ----   " + i);
 	    }
-	    else if(actionUnits.get(i).actionInfo.get(0).equals("check")) {
+	    else if(tempAct.get("action").equals("check")) {
 		nextActionMapIfSuccess[i] = COMPLETED_SUCCESS;    // 
 		nextActionMapIfFail[i] = i + 1;
 		System.out.println("check ----   " + i);
@@ -125,19 +116,19 @@ public class MoveAndCheckWorkspaceActionUnit extends HighLevelActionUnit {
 	}
     }
 
+    @Override
     public String getActionType() {
 	actionType = "MoveAndCheckWorkspace";
 	return actionType;
     }
-    // a not very safe, but flexible way to assign parameters, using arraylist<string> 
-    // set robot move target and object pose etc.
-    public boolean setParameters(ArrayList<String> para) {
-	boolean res = ifParametersSet;
-	return res;
-    }
 
+    @Override
     public boolean ifParametersSet() {
 	return ifParametersSet;
     }
 
+    @Override
+    public boolean setParameters(String action, String para, String reservedParam) {
+	return ifParametersSet;
+    }
 }

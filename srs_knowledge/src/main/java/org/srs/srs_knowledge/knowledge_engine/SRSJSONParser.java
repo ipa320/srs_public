@@ -28,8 +28,8 @@
  *	 * Redistributions in binary form must reproduce the above copyright
  *	   notice, this list of conditions and the following disclaimer in the
  *	   documentation and/or other materials provided with the distribution.
- *	 * Neither the name of the school of Engineering, Cardiff University nor 
- *         the names of its contributors may be used to endorse or promote products 
+ *	 * Neither the name of the school of Engineering, Cardiff University nor
+ *         the names of its contributors may be used to endorse or promote products
  *         derived from this software without specific prior written permission.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -75,8 +75,10 @@ import org.srs.srs_knowledge.utils.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
 
-public class JSONParser
+public class SRSJSONParser
 {
 
     /**
@@ -86,12 +88,27 @@ public class JSONParser
     public static Task parseJSONToTask(String encodedTask) {
 	Task t = null;
 	// {"tasks":[{"time_schedule":1263798000000,"task":"move","destination":{"pose2d_string":"[0 1 3.14]"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}
-	System.out.println("=======decode======= " + encodedTask);
-        
+	System.out.println("=> decode json: " + encodedTask);
+
+	/*
 	Object obj = JSONValue.parse(encodedTask);
-
-	JSONObject task = (JSONObject)obj;
-
+	if (obj == null) {
+	    System.out.println("Parsing Json error");
+	    return null;
+	}
+	*/
+	JSONParser parser = new JSONParser();
+	JSONObject task = new JSONObject();
+	try {
+	    Object obj = parser.parse(encodedTask);
+	    task = (JSONObject)obj;	    
+	}
+	catch(ParseException pe) {
+	    System.out.println("Parsing Json error at position: " + pe.getPosition());
+	    System.out.println(pe);
+	    return null;
+	}
+	
 	String taskName = (String)task.get("task");
 	if(taskName.equals("move")) {
 	    t = parseJSONToMoveTask(task);
@@ -155,13 +172,14 @@ public class JSONParser
 	
 	// This should be passed by dm, not read from param server... to minimize the dependence on other packages
 	String graspType = (String)(task.get("grasping_type"));
-	GetObjectTask.GraspType graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	ConfigInfo.GraspType graspingType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 	if(graspType.equals("Simple")) {
-	    graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	    graspingType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 	}
 	else if(graspType.equals("Planned")) {
-	    graspingType = GetObjectTask.GraspType.JUST_GRASP;
+	    graspingType = ConfigInfo.GraspType.JUST_GRASP;
 	}
+	System.out.println("---->>> " + graspType);
       
 	got = new GetObjectTask(objectType, graspingType);
 	}
@@ -203,12 +221,12 @@ public class JSONParser
 	    String graspType = (String)task.get("grasping_type");
 	    System.out.println("graspType -->  " + graspType);
 
-	    GetObjectTask.GraspType graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+	    ConfigInfo.GraspType graspingType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 	    if(graspType.equals("Simple")) {
-		graspingType = GetObjectTask.GraspType.MOVE_AND_GRASP;
+		graspingType = ConfigInfo.GraspType.MOVE_AND_GRASP;
 	    }
 	    else if(graspType.equals("Planned")) {
-		graspingType = GetObjectTask.GraspType.JUST_GRASP;
+		graspingType = ConfigInfo.GraspType.JUST_GRASP;
 	    }
 
 	    System.out.println("graspingType " + graspingType);
@@ -235,4 +253,179 @@ public class JSONParser
 	}	
 	return sot;
     }
+
+    public static StopTask parseJSONToStopTask(JSONObject task) {
+	StopTask st = new StopTask();
+	return st;
+    }
+
+    public static String encodeMoveAction(String action, double x, double y, double theta) {
+	JSONObject moveAct = new JSONObject();
+	moveAct.put("action", action);
+
+	JSONObject dest = new JSONObject();
+	dest.put("x", x);
+	dest.put("y", y);
+	dest.put("theta", theta);
+
+	JSONObject pos = new JSONObject();
+	pos.put("pose2d", dest);
+
+	moveAct.put("destination", pos);
+	try {
+	    StringWriter out = new StringWriter();
+	    moveAct.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static String encodeCustomAction(String action, Map<String, Object> content) {
+	JSONObject act = new JSONObject();
+	act.put("action", action);
+	try {
+	    StringWriter out = new StringWriter();
+	    act.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static String encodePutOnTrayAction(String action, String moveConfig) {
+	JSONObject act = new JSONObject();
+	act.put("action", action);
+	act.put("move_config", moveConfig);
+	try {
+	    StringWriter out = new StringWriter();
+	    act.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static String encodeDetectAction(String action, int hhId, String objectType, String workspace) {
+	JSONObject obj = new JSONObject();
+	obj.put("object_type", objectType);
+	obj.put("object_id", hhId);
+	obj.put("workspace", workspace);
+
+	JSONObject detAct = new JSONObject();
+	detAct.put("object", obj);
+	detAct.put("action", action);
+
+	try {
+	    StringWriter out = new StringWriter();
+	    detAct.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+    
+    public static String encodeGraspAction(String action, int hhId, String objectType, String workspace) {
+	JSONObject obj = new JSONObject();
+	obj.put("object_type", objectType);
+	obj.put("object_id", hhId);
+	if(workspace != null) {
+	    obj.put("workspace", workspace);
+	}
+	else { 
+	    obj.put("workspace", "");
+	}
+
+	JSONObject detAct = new JSONObject();
+	detAct.put("object", obj);
+	detAct.put("action", action);
+
+	try {
+	    StringWriter out = new StringWriter();
+	    detAct.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static String encodeCheckObjectAction(String action, String objectType, double x, double y, double z, double orix, double oriy, double oriz, double oriw, double l, double w, double h) {
+	JSONObject obj = new JSONObject();
+	obj.put("object_type", objectType);
+
+	JSONObject pose = new JSONObject();
+	JSONObject position = new JSONObject();
+	position.put("x", x);
+	position.put("y", y);
+	position.put("x", z);
+	pose.put("position", position);
+       
+	JSONObject orientation = new JSONObject();
+	orientation.put("x", orix);
+	orientation.put("y", oriy);
+	orientation.put("z", oriz);
+	orientation.put("w", oriw);
+	pose.put("orientation", orientation);
+	
+	JSONObject dim = new JSONObject();
+	dim.put("l", l);
+	dim.put("w", w);
+	dim.put("h", h);
+	
+	obj.put("pose", pose);
+	obj.put("dimension", dim);
+
+	JSONObject checkAct = new JSONObject();
+	checkAct.put("object", obj);
+	checkAct.put("action", action);
+
+	try {
+	    StringWriter out = new StringWriter();
+	    checkAct.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+    public static JSONObject decodeJsonActionInfo(String jsonActionInfo) {
+	JSONParser parser = new JSONParser();
+	JSONObject actionInfo = new JSONObject();
+	try {
+	    Object obj = parser.parse(jsonActionInfo);
+	    actionInfo = (JSONObject)obj;	    
+	}
+	catch(ParseException pe) {
+	    System.out.println("Parsing Json error at position: " + pe.getPosition());
+	    System.out.println(pe);
+	    return null;
+	}
+	
+	return actionInfo;
+    }
+
 }

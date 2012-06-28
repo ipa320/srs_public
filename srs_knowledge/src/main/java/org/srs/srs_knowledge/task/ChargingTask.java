@@ -150,12 +150,13 @@ public class ChargingTask extends org.srs.srs_knowledge.task.Task
 	    System.out.println("Exception -->  " + e.getMessage());
 	    return false;
 	}
-		
+	/*	
 	genericAction.actionInfo.add("charging");
 	genericAction.actionInfo.add(Double.toString(x));
 	genericAction.actionInfo.add(Double.toString(y));
 	genericAction.actionInfo.add(Double.toString(theta));
-	
+	*/
+	genericAction.jsonActionInfo = SRSJSONParser.encodeMoveAction("charging", x, y, theta);
 	ca.generic = genericAction;
 	
 	act.setCUAction(ca);

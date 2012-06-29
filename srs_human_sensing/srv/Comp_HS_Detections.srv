@@ -1,4 +1,6 @@
-geometry_msgs/Pose face_det
-geometry_msgs/Pose leg_det
+geometry_msgs/Pose[] face_det
+geometry_msgs/Pose[] body_det
+geometry_msgs/Pose2D leg_det
+string label  						
 ---
-bool human_detected
+detect_human_array detect_human_array

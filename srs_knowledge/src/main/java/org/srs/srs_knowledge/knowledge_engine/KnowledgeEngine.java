@@ -311,8 +311,14 @@ public class KnowledgeEngine
 	}
 
 	if(request.resultLastAction == 0) {
-	    ArrayList<String> feedback = request.genericFeedBack;
-	    ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
+	    //ArrayList<String> feedback = request.genericFeedBack;
+	    String jsonFeedback = request.jsonFeedback;
+	    //if(!jsonFeedback.trim().equals("")) {
+	    ca = currentTask.getNextCUActionNew(true, jsonFeedback); // no error. generate new action
+	    //}
+	    //else {
+	    //ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
+	    //}
 	}
 	else if (request.resultLastAction == 2) {
 	    ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
@@ -326,7 +332,9 @@ public class KnowledgeEngine
 	    return res;
 	}
 	else{
-	    ca = currentTask.getNextCUAction(false, null);
+	    String jsonFeedback = request.jsonFeedback;
+	    //ca = currentTask.getNextCUAction(false, null);
+	    ca = currentTask.getNextCUActionNew(false, jsonFeedback);
 	}
 	
 	if(ca == null) {
@@ -376,7 +384,7 @@ public class KnowledgeEngine
 	TaskRequest.Response res = new TaskRequest.Response();
 	System.out.println("Received request for new task -- JSON command received");
 	
-	currentTask = JSONParser.parseJSONToTask(request.json_parameters);
+	currentTask = SRSJSONParser.parseJSONToTask(request.json_parameters);
 
 	//if(currentTask.getActionSequence().size() == 0) {
 	if(currentTask == null) {
@@ -454,16 +462,16 @@ public class KnowledgeEngine
 		//  //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    GetObjectTask got = null;
 		    if(this.graspActionMode.equals("Simple")) {
-			got = new GetObjectTask(request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new GetObjectTask(request.content, ConfigInfo.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else if(this.graspActionMode.equals("Planned")) {
-			got = new GetObjectTask(request.content, GetObjectTask.GraspType.JUST_GRASP);
+			got = new GetObjectTask(request.content, ConfigInfo.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else {
 			/// default
-			got = new GetObjectTask(request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new GetObjectTask(request.content, ConfigInfo.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "get " + request.content);	    
@@ -536,16 +544,16 @@ public class KnowledgeEngine
 		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
 		    FetchObjectTask got = null;
 		    if(this.graspActionMode.equals("Simple")) {
-			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else if(this.graspActionMode.equals("Planned")) {
-			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.JUST_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.JUST_GRASP);
 			currentTask = (Task)got;
 		    }
 		    else {
 			/// default
-			got = new FetchObjectTask(request.content, request.userPose, GetObjectTask.GraspType.MOVE_AND_GRASP);
+			got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.MOVE_AND_GRASP);
 			currentTask = (Task)got;
 		    }
 		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
@@ -922,7 +930,7 @@ public class KnowledgeEngine
 
 	ServiceServer<GetObjectsOnTray.Request,GetObjectsOnTray.Response,GetObjectsOnTray> srv = nodeHandle.advertiseService(getObjectsOnTrayService, new GetObjectsOnTray(), scb);
     }
-
+    /*
     private boolean loadPredefinedTasksForTest()
     {
 	try{
@@ -949,7 +957,7 @@ public class KnowledgeEngine
 
 	return true;
     }
-
+    */
     private void initGetRoomsOnMap() throws RosException 
     {
 	ServiceServer.Callback<GetRoomsOnMap.Request, GetRoomsOnMap.Response> scb = new ServiceServer.Callback<GetRoomsOnMap.Request, GetRoomsOnMap.Response>() {

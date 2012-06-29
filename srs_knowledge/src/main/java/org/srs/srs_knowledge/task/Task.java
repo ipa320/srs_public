@@ -102,9 +102,9 @@ public abstract class Task {
     public void setTaskType(TaskType type) {
 	this.taskType = type;
     }
- 
-    public CUAction getNextCUAction(boolean stateLastAction, ArrayList<String> feedback) {
-	//CUAction ca = new CUAction();
+
+    public CUAction getNextCUActionNew(boolean stateLastAction, String jsonFeedback) {
+	
 	if (currentAction == null) {
 	    for (int i = 0; i < acts.size(); i++) {
 		if (acts.get(i).getActionId() == 1) {
@@ -142,158 +142,9 @@ public abstract class Task {
 	
 	return null;
     }
-    
+
     public boolean addNewActionTuple(ActionTuple act) {
 	return acts.add(act);
-    }
-    
-    public boolean loadPredefinedSequence(String filename) throws IOException,
-								  Exception {
-	System.out.println("LOAD " + filename);
-	File file = null;
-	FileReader freader = null;
-	LineNumberReader in = null;
-	
-	try {
-	    file = new File(filename);
-	    freader = new FileReader(file);
-	    in = new LineNumberReader(freader);
-	    String line = "";
-	    
-	    while ((line = in.readLine().trim()) != null) {
-		System.out.println("Line: " + in.getLineNumber() + ": " +
-				   line);
-		if (line.equals("")) {
-		    continue;
-		} else if (line.substring(0, 1).equals("#")) {
-		    continue;
-		}
-		ActionTuple act = newParseAction(line);
-		if (act != null)
-		    this.acts.add(act);
-	    }
-	} finally {
-	    freader.close();
-	    in.close();
-	}
-	System.out.println("Number of actions is: " + acts.size());
-	return true;
-    }
-    
-    private static ActionTuple newParseAction(String actionDesc) throws Exception {
-	ActionTuple act;
-	act = new ActionTuple();
-	String[] actions;
-	CUAction ca = new CUAction();
-	actions = actionDesc.split(";");
-	if (actions.length != 9) {
-	    throw new Exception("Wrong format");
-	}
-	String actionName = actions[0];
-	int actionLevel = Integer.parseInt(actions[1]);
-	int actionId = Integer.parseInt(actions[2]);
-	
-	int parentId = Integer.parseInt(actions[3]);
-	String cond = actions[4];
-	boolean condition = true;
-	if (cond.equals("fail"))
-	    condition = false;
-	else if (cond.equals("success"))
-			condition = true;
-	else {
-	    // condition = true;
-	    System.out.println("Wrong format.");
-	    throw new Exception("Wrong format");
-	}
-	
-	String moveAction = actions[5];
-	String perceptionAction = actions[6];
-	String graspAction = actions[7];
-	
-	GenericAction ma = newParseMoveAction(moveAction);
-	GenericAction pa = newParsePerceptionAction(perceptionAction);
-	GenericAction ga = newParseGraspAction(perceptionAction, graspAction);
-	
-	String actionFlags = actions[8];
-	int[] actFlags = parseActionFlags(actionFlags);
-	if(actFlags[0] == 0 && actFlags[1] == 1 && actFlags[2] == 1) {
-	    ca.generic = ma;
-	}
-	else if(actFlags[0] == 1 && actFlags[1] == 0 && actFlags[2] == 0) {
-	    ca.generic = ga;
-	}
-	
-	ca.actionType = "generic";
-	ca.status = 0;
-	
-	act.setCUAction(ca);
-	act.setActionName(actionName);
-	act.setActionLevel(actionLevel);
-	act.setActionId(actionId);
-	act.setParentId(parentId);
-	act.setCondition(condition);
-	
-	if (act.getActionName().indexOf("finish") != -1 && act.getCondition()) {
-	    ca.status = 1;
-	}
-	if (act.getActionName().indexOf("finish") != -1 && !act.getCondition()) {
-	    ca.status = -1;
-	}
-	
-	return act;
-    }
-    
-    private static GenericAction newParseMoveAction(String moveAction)
-	throws Exception {
-	GenericAction geAct = new GenericAction(); 
-
-	String[] parameters = moveAction.split(" ");
-	
-	geAct.actionInfo.add("move");
-	geAct.actionInfo.add(parameters[0]);
-	geAct.actionInfo.add(parameters[1]);
-	geAct.actionInfo.add(parameters[2]);
-	geAct.actionInfo.add(parameters[3]);   //ifWaitForObjectTaken.equals("true") or "false"
-
-	return geAct;
-    }
-    
-    protected static int[] parseActionFlags(String actionFlags) throws Exception {
-	int[] _actionFlags = new int[3];
-	
-	String[] parameters = actionFlags.split(" ");
-	_actionFlags[0] = Integer.parseInt(parameters[0].trim());
-	_actionFlags[1] = Integer.parseInt(parameters[1].trim());
-	_actionFlags[2] = Integer.parseInt(parameters[2].trim());
-	
-	// System.out.println(actionFlags);
-	return _actionFlags;
-    }
-    
-    private static GenericAction newParsePerceptionAction(String perceptionAction) throws Exception {
-	String[] parameters = perceptionAction.split(" ");
-	GenericAction geAct = new GenericAction(); 
-	geAct.actionInfo.add("detect");
-	geAct.actionInfo.add(parameters[1]);     // id
-	geAct.actionInfo.add(parameters[0]);     // name (not available in this case... )
-	return geAct;
-    }
-
-    private static GenericAction newParseGraspAction(String perceptionAction, String graspAction) throws Exception {
-	
-	String[] parameters = graspAction.split(" ");
-	if(!parameters[0].equals("true")) {
-	    return null;
-	}
-	
-	parameters = perceptionAction.split(" ");
-	GenericAction geAct = new GenericAction(); 
-	geAct.actionInfo.add("grasp");
-	geAct.actionInfo.add(parameters[1]);     // id
-	geAct.actionInfo.add(parameters[0]);     // name (not available in this case... )
-	geAct.actionInfo.add("side");
-	
-	return geAct;
     }
 
     public boolean isEmpty() {

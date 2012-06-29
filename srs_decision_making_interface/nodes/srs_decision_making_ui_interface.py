@@ -66,6 +66,7 @@ def srs_decision_making_ui_interface_handle(req):
     _goal.action=req.action
     _goal.parameter=req.parameter
     _goal.priority=int(req.priority)
+    _goal.json_parameters = req.json_parameters
     client.send_goal(_goal)    
     return client.gh.comm_state_machine.action_goal.goal_id.id
 

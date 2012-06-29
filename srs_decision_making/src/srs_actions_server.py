@@ -521,7 +521,7 @@ class SRS_DM_ACTION(object):
                     ## read parameter server
                     grasp_type = rospy.get_param("srs/grasping_type")
                     tasks.tasks_list[0].addItem('grasping_type', grasp_type)
-                    
+
                     req.json_parameters = tasks.tasks_list[0].task_json_string
                     
             res = requestNewTask(req)

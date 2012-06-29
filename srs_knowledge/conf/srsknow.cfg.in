@@ -19,4 +19,4 @@ env_namespace http://www.srs-project.eu/ontologies/ipa-kitchen-map.owl#
 ont_namespace http://www.srs-project.eu/ontologies/srs.owl#
 map_name ipa-kitchen-map
 #grasp_mode move_and_grasp
-grasp_mode just_grasp
+#grasp_mode just_grasp

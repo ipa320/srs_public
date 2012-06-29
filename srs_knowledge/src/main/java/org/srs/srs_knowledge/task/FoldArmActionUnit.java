@@ -72,8 +72,8 @@ public class FoldArmActionUnit extends HighLevelActionUnit {
      */
     public FoldArmActionUnit() {
 	    GenericAction ga = new GenericAction();
-	    ga.actionInfo.add("fold_arm");
-	    
+	    //ga.actionInfo.add("fold_arm");
+	    ga.jsonActionInfo = SRSJSONParser.encodeCustomAction("fold_arm", null);
 	    actionUnits.add(ga);
 
 	    ifParametersSet = true;

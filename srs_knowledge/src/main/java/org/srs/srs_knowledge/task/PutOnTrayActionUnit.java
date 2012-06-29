@@ -72,8 +72,9 @@ public class PutOnTrayActionUnit extends HighLevelActionUnit {
      */
     public PutOnTrayActionUnit(String moveConfig) {
 	GenericAction ga = new GenericAction();
-	ga.actionInfo.add("put_on_tray");
-	ga.actionInfo.add(moveConfig);   // top, side
+	//ga.actionInfo.add("put_on_tray");
+	//ga.actionInfo.add(moveConfig);   // top, side
+	ga.jsonActionInfo = SRSJSONParser.encodePutOnTrayAction("put_on_tray", moveConfig);
 	actionUnits.add(ga);
 	
 	ifParametersSet = true;

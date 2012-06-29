@@ -51,50 +51,61 @@
 package org.srs.srs_knowledge.task;
 
 import java.io.*;
-import java.util.StringTokenizer;
-//import org.apache.commons.logging.Log;
 import java.util.ArrayList;
-import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import ros.pkg.geometry_msgs.msg.Pose;
 import org.srs.srs_knowledge.knowledge_engine.*;
 import org.srs.srs_knowledge.task.Task;
 
-public class ActionFeedback extends ArrayList<String> {
-    public ActionFeedback(ArrayList<String> genericFeedback) {
-	super(genericFeedback);
-	System.out.println("Constructor: extents ArrayList of size: " + this.size());
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
+
+public class ActionFeedback {
+    public ActionFeedback(String jsonGenericFeedback) throws ParseException {
+	this.jsonFeedback = jsonGenericFeedback;
+	JSONParser parser = new JSONParser();
+	Object obj = parser.parse(this.jsonFeedback);
+	this.jsonFBObject = (JSONObject)obj;
+
+	System.out.println("Constructor: using json feedback.");
     }
-    
-    public static Pose toPose(ActionFeedback fb) {
-	if(fb.size() < 9) {
-	    System.out.println("List array length smaller than 9.    " + fb.size());
-	    System.out.println(fb);
-	    return null;
-	}
-	if(!fb.get(0).equals("detect")) {
-	    System.out.println("First item is not detect... Format error");
-	    return null;
-	}
+
+    public Pose getDetectedObjectPose() {
+	Pose pos = new Pose();
+
 	try {
-	    Pose pos = new Pose(); 
+	    JSONObject fb = (JSONObject)this.jsonFBObject.get("feedback");
+	    String actionName = (String)fb.get("action");
+	    if(!actionName.equals("detect")) {
+		System.out.println("Action type is not 'detect'... Format error");
+		return null;	    
+	    }
+	    JSONObject detObj = (JSONObject)fb.get("object");
 	    
-	    System.out.println("detect: Object " + fb.get(1));
-	    pos.position.x = Double.valueOf(fb.get(2));
-	    pos.position.y = Double.valueOf(fb.get(3));
-	    pos.position.z = Double.valueOf(fb.get(4));
-	    pos.orientation.x = Double.valueOf(fb.get(5));
-	    pos.orientation.y = Double.valueOf(fb.get(6));
-	    pos.orientation.z = Double.valueOf(fb.get(7));
-	    pos.orientation.w = Double.valueOf(fb.get(8));
-	    return pos;
+	    String objectName = (String)detObj.get("object_type");
+	    System.out.println("Detected object: " + objectName);
+	    JSONObject jsonPos = (JSONObject)fb.get("pose");
+	    pos.position.x = ((Number)(jsonPos.get("x"))).doubleValue();
+	    pos.position.y = ((Number)(jsonPos.get("y"))).doubleValue();
+	    pos.position.z = ((Number)(jsonPos.get("z"))).doubleValue();
+	    pos.orientation.x = ((Number)(jsonPos.get("rotx"))).doubleValue();
+	    pos.orientation.y = ((Number)(jsonPos.get("roty"))).doubleValue();
+	    pos.orientation.z = ((Number)(jsonPos.get("rotz"))).doubleValue();
+	    pos.orientation.w = ((Number)(jsonPos.get("rotw"))).doubleValue();	  
+	    System.out.println(this.jsonFeedback);
+	    System.out.println("json decode pose as: " + pos);
 	}
 	catch(Exception e) {
-	    
 	    System.out.println(e.toString());
 	    return null;
-
 	}
+
+	return pos;
     }
 
+    private String jsonFeedback = "";
+    private JSONObject jsonFBObject = new JSONObject();
 }

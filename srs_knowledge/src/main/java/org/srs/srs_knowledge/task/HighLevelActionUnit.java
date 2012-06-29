@@ -113,8 +113,9 @@ public abstract class HighLevelActionUnit {
 
 	if(ind == COMPLETED_FAIL) {
 	    GenericAction genericAction = new GenericAction();
-	    genericAction.actionInfo.add("finish_fail");
+	    //genericAction.actionInfo.add("finish_fail");
 	    
+	    genericAction.jsonActionInfo = SRSJSONParser.encodeCustomAction("finish_fail", null);
 	    ca.generic = genericAction;
 	    ca.actionType = "generic";
 	    
@@ -124,7 +125,8 @@ public abstract class HighLevelActionUnit {
 	}
 	else if (ind == COMPLETED_SUCCESS){
 	    GenericAction genericAction = new GenericAction();
-	    genericAction.actionInfo.add("finish_success");
+	    //genericAction.actionInfo.add("finish_success");
+	    genericAction.jsonActionInfo = SRSJSONParser.encodeCustomAction("finish_success", null);
 	    
 	    ca.generic = genericAction;
 	    ca.actionType = "generic";
@@ -135,8 +137,9 @@ public abstract class HighLevelActionUnit {
 	}
 	else if (ind == INVALID_INDEX) {
 	    GenericAction genericAction = new GenericAction();
-	    genericAction.actionInfo.add("no_action");
-	    
+	    //genericAction.actionInfo.add("no_action");
+	    genericAction.jsonActionInfo = SRSJSONParser.encodeCustomAction("no_action", null);
+		    
 	    ca.generic = genericAction;
 	    ca.actionType = "generic";
 	    
@@ -165,8 +168,12 @@ public abstract class HighLevelActionUnit {
     }
 
     // a not very safe, but flexible way to assign parameters, using arraylist<string> 
-    public abstract boolean setParameters(ArrayList<String> para);
+    //public abstract boolean setParameters(ArrayList<String> para);
     public abstract boolean ifParametersSet();
+
+    public boolean setParameters(String action, String para, String reservedParam) {
+	return this.ifParametersSet;
+    }
 
     protected String actionType = "";
     protected ArrayList<GenericAction> actionUnits = new ArrayList<GenericAction>();

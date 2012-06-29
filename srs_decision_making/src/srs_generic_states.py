@@ -392,6 +392,10 @@ class semantic_dm(smach.State):
 
             if resp1.nextAction.actionType == 'generic':
                 actName = json_parser.decode_action(resp1.nextAction.generic.jsonActionInfo)
+                
+                print "##############"
+                print actName
+                print "##############"
                 #actName = resp1.nextAction.generic.actionInfo[0]
                 if actName == 'charging':
                     nextStep = 'charging'

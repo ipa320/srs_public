@@ -1,5 +1,6 @@
 string action
 string parameter
 string priority
+string json_parameters
 ---
 string id

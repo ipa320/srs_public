@@ -736,7 +736,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return pos;
     }
         
-    private Pose2D newCalculateGraspPosition(ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo furnitureInfo, Pose targetPose) throws RosException {
+    private Pose2D newCalculateGraspPosition(ros.pkg.srs_msgs.msg.SRSSpatialInfo furnitureInfo, Pose targetPose) throws RosException {
 	//Pose2D pos = new Pose2D();
 	//ArrayList<Pose2D> poses = new ArrayList<Pose2D>();
 	Pose2D pose = new Pose2D();
@@ -786,8 +786,8 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	return spatialInfo;
     }
 
-    private ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo newGetFurnitureGeometryOf(Individual workspace) {
-	ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo spatialInfo = new ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo();
+    private ros.pkg.srs_msgs.msg.SRSSpatialInfo newGetFurnitureGeometryOf(Individual workspace) {
+	ros.pkg.srs_msgs.msg.SRSSpatialInfo spatialInfo = new ros.pkg.srs_msgs.msg.SRSSpatialInfo();
 	//SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
 	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
 	spatialInfo.pose.position.x = stm.getFloat();

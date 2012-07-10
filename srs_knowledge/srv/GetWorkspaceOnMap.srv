@@ -21,3 +21,4 @@ string[] objects
 string[] classesOfObjects
 srs_msgs/SRSSpatialInfo[] objectsInfo
 string[] houseHoldId
+string[] readableNames

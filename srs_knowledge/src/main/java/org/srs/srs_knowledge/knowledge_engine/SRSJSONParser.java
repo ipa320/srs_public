@@ -61,7 +61,7 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 
 import ros.pkg.srs_knowledge.msg.*;
-import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
+import ros.pkg.srs_msgs.msg.SRSSpatialInfo;
 import ros.pkg.srs_knowledge.srv.PlanNextAction;
 import ros.pkg.srs_knowledge.srv.TaskRequest;
 import ros.pkg.srs_knowledge.srv.GetObjectsOnMap;

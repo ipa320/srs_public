@@ -1,4 +1,4 @@
 # request message
 ---
 # response message
-sensor_msgs/PointCloud bodies_list
+geometry_msgs/Pose[] bodies_list

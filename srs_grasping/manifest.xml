@@ -20,7 +20,7 @@
   <depend package="kinematics_msgs"/>
   <depend package="srs_msgs"/>
   <depend package="srs_object_database"/>
-  <depend package="openrave"/>
+  <!--depend package="openrave"/-->
   <depend package="schunk_sdh"/> 
   <depend package="cob_srvs"/> 
 

@@ -93,7 +93,8 @@ import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList; 
 import java.util.Iterator;
-
+import java.util.Map;
+import java.util.HashMap;
 import org.srs.srs_knowledge.utils.*;
 
 import tfjava.*;
@@ -1016,15 +1017,48 @@ public class KnowledgeEngine
 		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		if(temp.getNameSpace().equals(mapNamespace)) {
 		    Pose2D pos2d = new Pose2D();
-		    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoordinate", temp);
-		    pos2d.x = getFloatOfStatement(stm);
-		    stm = ontoDB.getPropertyOf(globalNamespace, "yCoordinate", temp);
-		    pos2d.y = getFloatOfStatement(stm);
-		    stm = ontoDB.getPropertyOf(globalNamespace, "orientationTheta", temp);
-		    pos2d.theta = getFloatOfStatement(stm);
+		    try {
+			com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoordinate", temp);
+			pos2d.x = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "yCoordinate", temp);
+			pos2d.y = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "orientationTheta", temp);
+			pos2d.theta = getFloatOfStatement(stm);
+			
+			// readable name: default is the same as local_name
+			String readableName = temp.getLocalName();			
+			com.hp.hpl.jena.rdf.model.NodeIterator nit = KnowledgeEngine.ontoDB.listPropertiesOf(OntoQueryUtil.GlobalNameSpace, "objectReadableName", temp);
 
-		    re.locations.add(temp.getLocalName());		    
-		    re.poses.add(pos2d);
+			while(nit.hasNext()) {
+			    RDFNode n = nit.next();
+			    Literal l = n.asLiteral();
+			    //System.out.println(l.getLanguage() + "   " + l.getString());
+			    if(l.getLanguage().equalsIgnoreCase(OntoQueryUtil.Language)) {
+				readableName = l.getString();
+				break;
+			    }
+			}
+			
+			// encode other properties in json for json_properties
+			Map<String, String> pros = new HashMap<String, String>();
+			try{
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "insideOf", temp);
+			    String r = stm.getObject().asResource().getLocalName();
+			    pros.put("insideOf", r);
+			}
+			catch(Exception e) {
+			    System.out.println("CAUGHT exception: " + e.toString());
+			}
+			String json_pro = SRSJSONParser.encodeObjectProperties(pros);
+
+			re.locations.add(temp.getLocalName());		    
+			re.poses.add(pos2d);
+			re.readableNames.add(readableName);
+			re.json_properties.add(json_pro);
+		    }
+		    catch(Exception e) {
+			System.out.println("invalid instance. ignored.");
+		    }
 		}
 	    }
 	}	
@@ -1153,5 +1187,5 @@ public class KnowledgeEngine
     private String confPath;
     //private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing
-    int flag = 1;
+    //int flag = 1;
 }

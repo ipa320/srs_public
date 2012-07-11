@@ -428,4 +428,9 @@ public class SRSJSONParser
 	return actionInfo;
     }
 
+    public static String encodeObjectProperties(Map<String, String> pro)
+    {
+	return JSONObject.toJSONString(pro);
+    }
+
 }

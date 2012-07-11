@@ -96,7 +96,6 @@ import java.util.Properties;
 import java.io.IOException;
 import java.io.*;
 import java.util.StringTokenizer;
-//import org.apache.commons.logging.Log;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -145,11 +144,10 @@ public class OntoQueryUtil
 	}
 	
 	// list possible workspace(s), e.g. tables
-	//ArrayList<String> otherWorkspaces = tempGetFurnituresLinkedToObject(objectClassName);
 	ArrayList<String> otherWorkspaces = getFurnituresLinkedToObject(objectClassName);
 	
 	Iterator<Individual> otherInstances;
-	//ArrayList<String> otherWSInd = new ArrayList<String>();
+	
 	for(int i = 0; i < otherWorkspaces.size(); i++) {
 	    otherInstances = KnowledgeEngine.ontoDB.getInstancesOfClass(globalNameSpace + otherWorkspaces.get(i));
 	    workspaceList = OntoQueryUtil.addUniqueInstances(workspaceList, otherInstances);
@@ -629,7 +627,7 @@ public class OntoQueryUtil
 		    re.objects.add(temp.getLocalName());
 		    re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
 		    try{
-			stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID", temp);			
+			stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID", temp);
 			re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
 		    }
 		    catch(Exception e) {
@@ -644,7 +642,7 @@ public class OntoQueryUtil
 			while(nit.hasNext()) {
 			    RDFNode n = nit.next();
 			    Literal l = n.asLiteral();
-			    System.out.println(l.getLanguage() + "   " + l.getString());
+			    //System.out.println(l.getLanguage() + "   " + l.getString());
 			    if(l.getLanguage().equalsIgnoreCase(OntoQueryUtil.Language)) {
 				readableName = l.getString();
 				break;
@@ -658,7 +656,20 @@ public class OntoQueryUtil
 		    finally {
 			re.readableNames.add(readableName);
 		    }
-		    
+
+		    // encode other properties in json for json_properties
+		    Map<String, String> pros = new HashMap<String, String>();
+
+		    try{
+			stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "insideOf", temp);
+			String r = stm.getObject().asResource().getLocalName();
+			pros.put("insideOf", r);
+		    }
+		    catch(Exception e) {
+			System.out.println("CAUGHT exception: " + e.toString());
+		    }
+		    re.json_properties.add(SRSJSONParser.encodeObjectProperties(pros));
+
 		    if(ifGeometryInfo == true) { 
 			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
 			
@@ -758,7 +769,7 @@ public class OntoQueryUtil
 			while(nit.hasNext()) {
 			    RDFNode n = nit.next();
 			    Literal l = n.asLiteral();
-			    System.out.println(l.getLanguage() + "   " + l.getString());
+			    //System.out.println(l.getLanguage() + "   " + l.getString());
 			    if(l.getLanguage().equalsIgnoreCase(OntoQueryUtil.Language)) {
 				readableName = l.getString();
 				break;
@@ -955,32 +966,11 @@ public class OntoQueryUtil
 	    ret = stm.getString();
 	}
 	catch(Exception e) {
-	    System.out.println(e.getMessage());
+	    System.out.println(" + " + e.toString() + "  " + e.getMessage());
 	}
 	return ret;
     }
 
-
-    /*
-    public OntoQueryUtil(String objectNameSpace, String globalNameSpace) {
-	this.objectNameSpace = objectNameSpace;
-	this.globalNameSpace = globalNameSpace;
-	System.out.println("Create OntoQueryUtil: this.objectNameSpace is : " + this.objectNameSpace + "  this.globalNameSpace is  : " + this.globalNameSpace );
-    }
-
-
-    // return ipa-kitchen in the srs project. 
-    public String getObjectNameSpace() {
-	return this.objectNameSpace;
-    }
-    // return srs namespace
-    public String getGlobalNameSpace() {
-	return this.globalNameSpace;
-    }
-
-    private String objectNameSpace;
-    private String globalNameSpace; 
-    */
     public static String ObjectNameSpace = "";
     public static String GlobalNameSpace = "";
     public static String MapName = "";

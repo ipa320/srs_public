@@ -1,4 +1,5 @@
 srs/language: 'English'
+srs/language_short: 'en'
 srs/grasping_type: 'Planned'
 srs/ipa_arm_navigation: 'False'
 srs/detection_type: 'Simple' 

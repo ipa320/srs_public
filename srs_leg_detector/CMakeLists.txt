@@ -29,12 +29,12 @@ rosbuild_gensrv()
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-rosbuild_add_executable(srs_leg_detector
+rosbuild_add_executable(srs_leg_detector 
                        src/laser_processor.cpp
                        src/srs_leg_detector.cpp
                        src/calc_leg_features.cpp)
 
-rosbuild_add_executable(train_leg_detector
+rosbuild_add_executable(train_leg_detector 
                        src/laser_processor.cpp
                        src/train_leg_detector.cpp
                        src/calc_leg_features.cpp)

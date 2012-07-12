@@ -61,7 +61,8 @@ import rospy
 import openravepy
 import os
 import time
-import tf
+import sys
+import multiprocessing
 
 from srs_grasping.srv import *
 from srs_object_database_msgs.srv import *
@@ -77,12 +78,16 @@ from geometry_msgs.msg import *
 from kinematics_msgs.srv import *
 from schunk_sdh.msg import *
 
+global robotName
+robotName = roslib.packages.get_pkg_dir("srs_grasping")+"/robots/care-o-bot3.zae"
+
+
 #---------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------
 def init_env(object_id):
 
-	robotName = roslib.packages.get_pkg_dir("srs_grasping")+"/robots/care-o-bot3.zae"
+	#robotName = roslib.packages.get_pkg_dir("srs_grasping")+"/robots/care-o-bot3.zae"
 	env = openravepy.Environment()
 
 	try:
@@ -136,17 +141,18 @@ def generate_grasp_file(object_id, gmodel, env):
 	f.write("<grasp_reference_link>sdh_palm_link</grasp_reference_link>\n")
 
 	cont = 0
-	print "Adding grasps to the new XML file..."
 	for i in range(0, len(gmodel.grasps)):
+		print '\r[%s%%] Adding grasps to the new XML file...' % int((float(float((i+1))/float(len(gmodel.grasps))))*100),
+		sys.stdout.flush()	
 		try:
  			contacts,finalconfig,mindist,volume = gmodel.testGrasp(grasp=gmodel.grasps[i],translate=True,forceclosure=True)
 			OR = (finalconfig[0])[7:14]	#care-o-bot3.zae
 			values = [OR[2], OR[3], OR[4], OR[0], OR[1], OR[5], OR[6]]	 #values to script_server
-			j = values
-
-			if not (j[1]>=-1.15 and j[3]>=-1.15 and j[5]>=-1.25 and j[1]<=1 and j[3]<=1 and j[5]<=1 and j[2]>-0.5 and j[4]>-0.5 and j[6]>-0.5):
+			
+			if not (values[1]>=-1.15 and values[3]>=-1.15 and values[5]>=-1.25 and values[1]<=1 and values[3]<=1 and values[5]<=1 and values[2]>-0.5 and values[4]>-0.5 and values[6]>-0.5):
 				continue
-
+	
+			
 		   	f.write("<Grasp Index=\""+str(cont)+"\">\n")
 			value = [values[0], values[5], values[6], values[1], values[2], values[3], values[4]]
 			f.write("<joint_values>"+str(value)+"</joint_values>\n")
@@ -168,7 +174,7 @@ def generate_grasp_file(object_id, gmodel, env):
 		   	f.write("</GraspPose>\n")
 
 			category = get_category(matrix, finalconfig[0])
-			offset = 0.1
+			offset = 0.2
 
 			if category == "X":
 				t[0] = t[0] - offset
@@ -200,7 +206,7 @@ def generate_grasp_file(object_id, gmodel, env):
 	f.write("<NumberOfGrasps>"+str(cont)+"</NumberOfGrasps>\n")
 	f.write("</GraspList>")
 	f.close()
-
+	
 	f = open(f_name, 'r')
 	res = f.read()
 	f.close()
@@ -211,11 +217,12 @@ def generate_grasp_file(object_id, gmodel, env):
 
 
 def generate_grasps(gmodel):
-
 	if not gmodel.load():
+		x = time.time();
 		rospy.loginfo("GENERATING GRASPS...")
+		gmodel.numthreads = 1 #multiprocessing.cpu_count()
 		gmodel.autogenerate()
-		rospy.loginfo("GENERATING GRASPS HAS FINISHED.")
+		rospy.loginfo("GENERATING GRASPS HAS FINISHED. Time employed: %s", str(time.time() - x))
 
 
 def insert_grasps_in_DB(object_id, grasp_file):
@@ -277,7 +284,7 @@ def get_category(matrix, values):
 def valid_grasp(grasp):
 	
 	category = grasp.category;
-	if (category == "UP") or (category == "SIDE") or (category == "-SIDE") or (category == "FRONT"):
+	if (category == "TOP") or (category == "SIDE") or (category == "-SIDE") or (category == "FRONT"):
 		return True;
 	else:
 		return False;
@@ -443,12 +450,12 @@ def array_from_pose(gp):
 def rotation_matrix(obj):
 
 	#real robot
-	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
-	rotacion =  euler_matrix(e[0],e[1],e[2], axes='sxyz');
+	#e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
+	#rotacion =  euler_matrix(e[0],e[1],e[2], axes='sxyz');
 
 	#hack for gazebo
-	#e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxzy');
-	#rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz');
+	e = euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxzy');
+	rotacion =  euler_matrix(e[0],e[1],-e[2], axes='sxyz');
 
 	rotacion[0,3] = obj.position.x;
 	rotacion[1,3] = obj.position.y;
@@ -551,8 +558,9 @@ def grasp_view(object_id, grasp, object_pose):	#Individual grasp (grasp of Grasp
 
 
 def init_simulator():
-	robotName = roslib.packages.get_pkg_dir("srs_grasping")+"/robots/care-o-bot3.zae"
+	#robotName = roslib.packages.get_pkg_dir("srs_grasping")+"/robots/care-o-bot3.zae"
 	env = openravepy.Environment()
+
 	env.SetViewer('qtcoin');
 	time.sleep(1.0)
 	return env
@@ -581,7 +589,7 @@ def SetTarget(env, object_id):
 
 
 def SetRobot(env):
-	robotName = roslib.packages.get_pkg_dir("srs_grasping")+"/robots/care-o-bot3.zae"
+	#robotName = roslib.packages.get_pkg_dir("srs_grasping")+"/robots/care-o-bot3.zae"
 	try:
     		robot = env.ReadRobotXMLFile(robotName)
 		robot.SetActiveManipulator("arm")		#care-o-bot3.zae

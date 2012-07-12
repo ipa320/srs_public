@@ -323,7 +323,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 		
 		#calculate 4 lists of scan poses, each list is for scanning from one side of the table.
-		for num in range(int((parent_obj_l / detection_w) + 0.99)):
+		step = int((parent_obj_l / detection_w) + 0.99)
+		detection_w = parent_obj_l / step
+		for num in range(step):
 			scan_base_pose_1 = Pose2D()
 			scan_base_pose_1.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_1.y = parent_obj_y - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 *  detection_w - num * detection_w) * math.cos(parent_obj_th)
@@ -350,9 +352,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 
 
-
-		for num in range(int((parent_obj_w / detection_w) + 0.99)):
-
+		step = int((parent_obj_w / detection_w) + 0.99)
+		detection_w = parent_obj_w / step		
+		for num in range(step):
 			scan_base_pose_3 = Pose2D()
 			scan_base_pose_3.x = parent_obj_x + (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_3.y = parent_obj_y - (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_w - 0.5 *  detection_w - num * detection_w) * math.sin(parent_obj_th)
@@ -366,7 +368,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 		
 
 
-		for num in range(int((parent_obj_w / detection_w) + 0.99)):
+		for num in range(step):
 			scan_base_pose_4 = Pose2D()
 			scan_base_pose_4.x = parent_obj_x - (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_4.y = parent_obj_y + (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
@@ -380,9 +382,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 	#the short side is facing the robot	
 	else:
 		parent_obj_th -= 0.5 * math.pi
-
-		for num in range(int((parent_obj_w / detection_w) + 0.99)):
-
+		step = int((parent_obj_w / detection_w) + 0.99)
+		detection_w = parent_obj_w / step
+		for num in range(step):
 			scan_base_pose_1 = Pose2D()
 			scan_base_pose_1.x = parent_obj_x - (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_1.y = parent_obj_y - (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_w - 0.5 *  detection_w - num * detection_w) * math.cos(parent_obj_th)
@@ -392,11 +394,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 			elif scan_base_pose_1.theta < -math.pi:
 				scan_base_pose_1.theta += 2.0 * math.pi
 			scan_base_pose_list_1.append(scan_base_pose_1)
-
-
-		
+	
 				
-		for num in range(int((parent_obj_w / detection_w) + 0.99)):
+		for num in range(step):
 			scan_base_pose_2 = Pose2D()
 			scan_base_pose_2.x = parent_obj_x + (parent_obj_l * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
 			scan_base_pose_2.y = parent_obj_y + (parent_obj_l * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_w - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
@@ -409,9 +409,9 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 
 		
-
-		for num in range(int((parent_obj_l / detection_w) + 0.99)):
-
+		step = int((parent_obj_l / detection_w) + 0.99)
+		detection_w = parent_obj_l / step
+		for num in range(step):
 			scan_base_pose_3 = Pose2D()
 			scan_base_pose_3.x = parent_obj_x + (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_3.y = parent_obj_y - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 *  detection_w - num * detection_w) * math.sin(parent_obj_th)
@@ -425,7 +425,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 		
 
 				
-		for num in range(int((parent_obj_l / detection_w) + 0.99)):
+		for num in range(step):
 			scan_base_pose_4 = Pose2D()
 			scan_base_pose_4.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.sin(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.cos(parent_obj_th)
 			scan_base_pose_4.y = parent_obj_y + (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) + (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)
@@ -465,19 +465,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 
 	if not scan_base_pose_list:
 		print "no valid scan pose."
-	if max_len == 1:
-		th = math.atan((scan_base_pose_list[0][0].y - parent_obj_y) / (scan_base_pose_list[0][0].x - parent_obj_x))
-		if scan_base_pose_list[0][0].x < parent_obj_x and scan_base_pose_list[0][0].y > parent_obj_y:
-			th = math.pi + th
-		if scan_base_pose_list[0][0].x < parent_obj_x and scan_base_pose_list[0][0].y < parent_obj_y:
-			th = -math.pi + th
-		if th > math.pi:
-			th -= 2.0 * math.pi
-		elif th < -math.pi:
-			th += 2.0 * math.pi
-		scan_base_pose_list[0][0].theta = th
-	
 
+	
 	return scan_base_pose_list
 
 

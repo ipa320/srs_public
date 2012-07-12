@@ -283,6 +283,9 @@
 
     <owl:NamedIndividual rdf:about="&ipa-kitchen;LivingRoom0">
         <rdf:type rdf:resource="&srs;LivingRoom"/>
+        <srs:objectReadableName xml:lang="de">das Wohnzimmer</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Living Room</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">soggiorno</srs:objectReadableName>
     </owl:NamedIndividual>
     
 
@@ -540,6 +543,9 @@
 
     <owl:NamedIndividual rdf:about="&ipa-kitchen;ipa-kitchen">
         <rdf:type rdf:resource="&srs;Kitchen"/>
+        <srs:objectReadableName xml:lang="de">IPA Kuche</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">IPA Kitchen</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">IPA cucina</srs:objectReadableName>
     </owl:NamedIndividual>
     
 

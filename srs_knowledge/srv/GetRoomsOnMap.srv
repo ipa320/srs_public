@@ -13,3 +13,6 @@ bool ifGeometryInfo
 
 string[] rooms
 srs_msgs/SRSSpatialInfo[] roomsInfo
+string[] readableNames
+
+string[] json_properties   # other properties in Json (not in use at the moment)

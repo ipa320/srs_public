@@ -941,6 +941,26 @@ public class KnowledgeEngine
 		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		if(temp.getNameSpace().equals(mapNamespace)) {
 		    re.rooms.add(temp.getLocalName());
+
+		    // retrieve readable names
+		    String readableName = temp.getLocalName();
+		    try{
+			com.hp.hpl.jena.rdf.model.NodeIterator nit = KnowledgeEngine.ontoDB.listPropertiesOf(OntoQueryUtil.GlobalNameSpace, "objectReadableName", temp);
+			while(nit.hasNext()) {
+			    RDFNode n = nit.next();
+			    Literal l = n.asLiteral();
+			    if(l.getLanguage().equalsIgnoreCase(OntoQueryUtil.Language)) {
+				readableName = l.getString();
+				break;
+			    }
+			}
+		    }
+		    catch(Exception e) {
+			System.out.println("CAUGHT exception: " + e.toString() + " Cannot retrieve readable name for object. Use Empty instead");
+		    }
+		    finally {
+			re.readableNames.add(readableName);
+		    }
 		    		    
 		    if(req.ifGeometryInfo == true) { 
 			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();

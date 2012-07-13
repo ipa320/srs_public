@@ -33,4 +33,8 @@
 
 	<!-- decision making action server-->
 	<include file="$(find srs_decision_making)/ros/launch/srs_decision_making.launch"/>
+        
+        <!-- SRS arm kinematics for sdh_palm_link -->
+        <include file="$(find srs_scenarios)/ros/launch/srs_arm_kinematics.launch"/>
+
 </launch>

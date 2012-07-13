@@ -231,7 +231,7 @@ class sm_srs_grasp_planned (smach.StateMachine):
         self.userdata.poses = ""                 #list of pre grasp pose of the above configuration
         self.userdata.base_pose = ""             #best base pose for grasp
         self.userdata.index_of_the_selected_pose = 0   #the id of the pre grasp which has been reached, the default value is the first one
-        
+        self.userdata.grasp_categorisation = ""
         self.max_retries = 5  # default value for max retries 
         self.detection_type = 'simple'
                    
@@ -273,7 +273,7 @@ class sm_srs_grasp_planned (smach.StateMachine):
                     transitions={'succeeded':step_after_grasp_select, 'not_possible':'GRASP_BEST_BASE_POSE_ESTIMATION', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'grasp_configuration':'grasp_configuration', 'poses':'poses', 'object':'target_object', 'target_object_id':'target_object_id'})
             
-                smach.StateMachine.add('GRASP_MOVE_ARM', move_arm_planned(),
+                smach.StateMachine.add('GRASP_MOVE_ARM', move_arm_unplanned(),
                     transitions={'succeeded':'GRASP_SRS_GRASP', 'not_completed':'GRASP_BEST_BASE_POSE_ESTIMATION', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'poses':'poses', 'index_of_the_selected_pose':'pose_id'})
             

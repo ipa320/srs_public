@@ -16,7 +16,7 @@
   <depend package="cob_linear_nav"/>
   <depend package="cob_mmcontroller"/>
   <depend package="cob_manipulator"/>
-  <depend package="cob_tray_sensors"/>
+  <!--depend package="cob_tray_sensors"/-->
   <depend package="cob_object_detection_msgs"/>
   <depend package="cob_object_detection_fake"/>
   <depend package="gazebo"/>

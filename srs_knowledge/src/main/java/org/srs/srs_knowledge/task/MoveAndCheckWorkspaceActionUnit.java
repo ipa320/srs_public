@@ -68,13 +68,15 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
 
+import ros.pkg.srs_msgs.msg.SRSSpatialInfo;
+
 /**
  * An ActionUnit is a container of GenericAction. 
  * Unit does not have to be containing only one action. e.g. an action of detection an object on a table can contain a few steps, move to pos1, detect, move to pos2, detect, move to pos3, detect, etc. 
  */
 public class MoveAndCheckWorkspaceActionUnit extends HighLevelActionUnit {
 
-    public MoveAndCheckWorkspaceActionUnit(ArrayList<Pose2D> positions, String objectClassName, SRSFurnitureGeometry targetSurface) {
+    public MoveAndCheckWorkspaceActionUnit(ArrayList<Pose2D> positions, String objectClassName, SRSSpatialInfo targetSurface) {
 	for(Pose2D position:positions) {
 	    GenericAction ga = new GenericAction();
 

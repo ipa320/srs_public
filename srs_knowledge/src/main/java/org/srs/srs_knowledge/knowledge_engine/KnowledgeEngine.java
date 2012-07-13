@@ -69,7 +69,7 @@ import ros.communication.*;
 //import ros.pkg.srs_knowledge.srv.GenerateSequence;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
 import ros.pkg.srs_knowledge.msg.*;
-import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
+import ros.pkg.srs_msgs.msg.SRSSpatialInfo;
 
 import ros.pkg.srs_knowledge.srv.PlanNextAction;
 import ros.pkg.srs_knowledge.srv.TaskRequest;
@@ -93,7 +93,8 @@ import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList; 
 import java.util.Iterator;
-
+import java.util.Map;
+import java.util.HashMap;
 import org.srs.srs_knowledge.utils.*;
 
 import tfjava.*;
@@ -217,8 +218,10 @@ public class KnowledgeEngine
 	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
 	getWorkspaceForObjectService = config.getProperty("getWorkspaceForObjectService", "get_workspace_for_object");
 
-	graspActionMode = this.readGraspModeParam("/srs/grasping_type");
+	//graspActionMode = this.readGraspModeParam("/srs/grasping_type");
 	//graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
+	
+	String langEnv = this.readLanguageEnvParam("/srs/language_short", "en");
 
 	//mapNamespacePrefix = config.getProperty("map_namespace", "ipa-kitchen-map");
 	mapName = config.getProperty("map_name", "ipa-kitchen-map");
@@ -241,6 +244,7 @@ public class KnowledgeEngine
 	//OntoQueryUtil.MapName = mapNamespacePrefix;
 	OntoQueryUtil.MapName = mapName;
 	OntoQueryUtil.RobotName = robotName;
+	OntoQueryUtil.Language = langEnv;
     }
 
     private String readGraspModeParam(String paramServer) {
@@ -253,6 +257,18 @@ public class KnowledgeEngine
 	    System.out.println("Caught RosException -- > " + e.toString());
 	}
 	return graspMode;
+    }
+
+    private String readLanguageEnvParam(String paramServer, String defaultLang) {
+	String lang = defaultLang;
+	try{
+	    lang = nodeHandle.getStringParam(paramServer);
+	    System.out.println("Read Parameter --- > " + lang);
+	}
+	catch(RosException e) {
+	    System.out.println("Caught RosException -- > " + e.toString() + "  \nUse English as default");
+	}
+	return lang;
     }
 
     public void testOnto(String className)
@@ -307,18 +323,11 @@ public class KnowledgeEngine
 	    System.out.println("Current Task is NULL. Send task request first");
 	    res.nextAction = new CUAction(); // empty task
 	    return res;
-	    //throw new NullPointerException("Current Task is NULL. Send task request first");
 	}
 
 	if(request.resultLastAction == 0) {
-	    //ArrayList<String> feedback = request.genericFeedBack;
 	    String jsonFeedback = request.jsonFeedback;
-	    //if(!jsonFeedback.trim().equals("")) {
 	    ca = currentTask.getNextCUActionNew(true, jsonFeedback); // no error. generate new action
-	    //}
-	    //else {
-	    //ca = currentTask.getNextCUAction(true, feedback); // no error. generate new action
-	    //}
 	}
 	else if (request.resultLastAction == 2) {
 	    ros.logInfo("INFO: possible hardware failure with robot. cancel current task");
@@ -333,7 +342,6 @@ public class KnowledgeEngine
 	}
 	else{
 	    String jsonFeedback = request.jsonFeedback;
-	    //ca = currentTask.getNextCUAction(false, null);
 	    ca = currentTask.getNextCUActionNew(false, jsonFeedback);
 	}
 	
@@ -342,13 +350,10 @@ public class KnowledgeEngine
 	    System.out.println("No further action can be planned. Terminate the task. ");
 
 	    res.nextAction = new CUAction(); // empty task
-	    //res.nextAction.status = 0;
 	    return res;	    
 	}
-	//if(at.getActionName().equals("finish_success")) {
 	if(ca.status == 1) {
 	    currentTask = null;
-	    //currentSessionId = 1;
 	    System.out.println("Reached the end of the task. No further action to be executed. ");
 	    res.nextAction = ca;
 	    return res;	    
@@ -362,10 +367,7 @@ public class KnowledgeEngine
 	}
 
 	res.nextAction = ca;
-
-	//ros.logInfo("INFO: Generate sequence of length: ");
 	return res;
-
     }
 
     private void initPlanNextAction() throws RosException
@@ -434,14 +436,8 @@ public class KnowledgeEngine
 	    }
 
 	    try{
-		//if(request.parameters.size() == 0) {
 		currentTask = new MoveTask(request.content);
 		System.out.println("Created CurrentTask " + "move " + request.content);
-		//}
-		//else {	
-		//    currentTask = new MoveTask((String)request.parameters.get(0), null);
-		//   System.out.println("Created CurrentTask " + "move " + (String)request.parameters.get(0));	    
-		//}
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -457,30 +453,21 @@ public class KnowledgeEngine
 	    }
 
 	    try{
-		//if(request.parameters.size() == 0) {
-
-		//  //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    GetObjectTask got = null;
-		    if(this.graspActionMode.equals("Simple")) {
-			got = new GetObjectTask(request.content, ConfigInfo.GraspType.MOVE_AND_GRASP);
-			currentTask = (Task)got;
-		    }
-		    else if(this.graspActionMode.equals("Planned")) {
-			got = new GetObjectTask(request.content, ConfigInfo.GraspType.JUST_GRASP);
-			currentTask = (Task)got;
-		    }
-		    else {
-			/// default
-			got = new GetObjectTask(request.content, ConfigInfo.GraspType.MOVE_AND_GRASP);
-			currentTask = (Task)got;
-		    }
-		    System.out.println("Created CurrentTask " + "get " + request.content);	    
-		    //}
-		    //else {	
-		    //GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
-		    //currentTask = (Task)got;
-		    //System.out.println("Created CurrentTask " + "get " + request.parameters.get(0));	    
-		    //}
+		GetObjectTask got = null;
+		if(this.graspActionMode.equals("Simple")) {
+		    got = new GetObjectTask(request.content, ConfigInfo.GraspType.MOVE_AND_GRASP);
+		    currentTask = (Task)got;
+		}
+		else if(this.graspActionMode.equals("Planned")) {
+		    got = new GetObjectTask(request.content, ConfigInfo.GraspType.JUST_GRASP);
+		    currentTask = (Task)got;
+		}
+		else {
+		    /// default
+		    got = new GetObjectTask(request.content, ConfigInfo.GraspType.MOVE_AND_GRASP);
+		    currentTask = (Task)got;
+		}
+		System.out.println("Created CurrentTask " + "get " + request.content);	    
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -498,33 +485,12 @@ public class KnowledgeEngine
 	    }
 	    try{
 		//if(request.parameters.size() == 0) {
-		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    SearchObjectTask sot = null;
-		    sot = new SearchObjectTask(request.content);
-		    currentTask = (Task)sot;
-
-		    /*
-		    if(this.graspActionMode.equals("Simple")) {
-			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
-			currentTask = (Task)got;
-		    }
-		    else if(this.graspActionMode.equals("Planned")) {
-			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.JUST_GRASP);
-			currentTask = (Task)got;
-		    }
-		    else {
-			/// default
-			got = new SearchObjectTask(request.task, request.content, GetObjectTask.GraspType.MOVE_AND_GRASP);
-			currentTask = (Task)got;
-		    }
-		    */
-		    System.out.println("Created CurrentTask " + "search " + request.content);	    
-		    //	}
-	    //else {	
-	    //	    SearchObjectTask got = new SearchObjectTask(request.task, request.content);
-	    //	    currentTask = (Task)got;
-	    //	    System.out.println("Created CurrentTask " + "search " + request.content);	    
-	    //	}
+		//GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
+		SearchObjectTask sot = null;
+		sot = new SearchObjectTask(request.content);
+		currentTask = (Task)sot;
+		
+		System.out.println("Created CurrentTask " + "search " + request.content);	    
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -540,34 +506,21 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    try{
-		//if(request.parameters.size() == 0) {
-		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    FetchObjectTask got = null;
-		    if(this.graspActionMode.equals("Simple")) {
-			got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.MOVE_AND_GRASP);
-			currentTask = (Task)got;
-		    }
-		    else if(this.graspActionMode.equals("Planned")) {
-			got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.JUST_GRASP);
-			currentTask = (Task)got;
-		    }
-		    else {
-			/// default
-			got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.MOVE_AND_GRASP);
-			currentTask = (Task)got;
-		    }
-		    System.out.println("Created CurrentTask " + "fetch " + request.content);	    
-		    //}
-		    //else if (request.parameters.size() == 2) {	
-		    // FetchObjectTask got = new FetchObjectTask(request.task, request.parameters.get(0), request.parameters.get(1));
-		    //currentTask = (Task)got;
-		    //System.out.println("Created CurrentTask " + "fetch " + request.parameters.get(0) + " to " + request.parameters.get(1));	    
-		    //}
-		    //else {
-		    //currentTask = null;
-		    //res.result = 1;
-		    //res.description = "No action";
-		    //}
+		FetchObjectTask got = null;
+		if(this.graspActionMode.equals("Simple")) {
+		    got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.MOVE_AND_GRASP);
+		    currentTask = (Task)got;
+		}
+		else if(this.graspActionMode.equals("Planned")) {
+		    got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.JUST_GRASP);
+		    currentTask = (Task)got;
+		}
+		else {
+		    /// default
+		    got = new FetchObjectTask(request.content, request.userPose, ConfigInfo.GraspType.MOVE_AND_GRASP);
+		    currentTask = (Task)got;
+		}
+		System.out.println("Created CurrentTask " + "fetch " + request.content);	    
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -581,18 +534,9 @@ public class KnowledgeEngine
 		System.out.println(" ONTOLOGY FILE IS NULL ");
 	    }
 	    try{
-		//if(request.parameters.size() == 0) {
-		    
-		    //GetObjectTask got = new GetObjectTask(request.task, request.content, request.userPose, nodeHandle);
-		    GetObjectTask got = new GetObjectTask(request.content);
-		    currentTask = (Task)got;
-		    System.out.println("Created CurrentTask " + "get " + request.content);	    
-		    //}
-		    //else {	
-		    //GetObjectTask got = new GetObjectTask(request.task, request.parameters.get(0));
-		    //currentTask = (Task)got;
-		    //System.out.println("Created CurrentTask " + "get " + request.content);	    
-		    //}
+		GetObjectTask got = new GetObjectTask(request.content);
+		currentTask = (Task)got;
+		System.out.println("Created CurrentTask " + "get " + request.content);	    
 	    }
 	    catch(Exception e) {
 		System.out.println(">>>  " + e.getMessage());
@@ -997,6 +941,26 @@ public class KnowledgeEngine
 		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		if(temp.getNameSpace().equals(mapNamespace)) {
 		    re.rooms.add(temp.getLocalName());
+
+		    // retrieve readable names
+		    String readableName = temp.getLocalName();
+		    try{
+			com.hp.hpl.jena.rdf.model.NodeIterator nit = KnowledgeEngine.ontoDB.listPropertiesOf(OntoQueryUtil.GlobalNameSpace, "objectReadableName", temp);
+			while(nit.hasNext()) {
+			    RDFNode n = nit.next();
+			    Literal l = n.asLiteral();
+			    if(l.getLanguage().equalsIgnoreCase(OntoQueryUtil.Language)) {
+				readableName = l.getString();
+				break;
+			    }
+			}
+		    }
+		    catch(Exception e) {
+			System.out.println("CAUGHT exception: " + e.toString() + " Cannot retrieve readable name for object. Use Empty instead");
+		    }
+		    finally {
+			re.readableNames.add(readableName);
+		    }
 		    		    
 		    if(req.ifGeometryInfo == true) { 
 			SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
@@ -1073,15 +1037,48 @@ public class KnowledgeEngine
 		//System.out.println( temp.getNameSpace() + "   " + temp.getLocalName());
 		if(temp.getNameSpace().equals(mapNamespace)) {
 		    Pose2D pos2d = new Pose2D();
-		    com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoordinate", temp);
-		    pos2d.x = getFloatOfStatement(stm);
-		    stm = ontoDB.getPropertyOf(globalNamespace, "yCoordinate", temp);
-		    pos2d.y = getFloatOfStatement(stm);
-		    stm = ontoDB.getPropertyOf(globalNamespace, "orientationTheta", temp);
-		    pos2d.theta = getFloatOfStatement(stm);
+		    try {
+			com.hp.hpl.jena.rdf.model.Statement stm = ontoDB.getPropertyOf(globalNamespace, "xCoordinate", temp);
+			pos2d.x = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "yCoordinate", temp);
+			pos2d.y = getFloatOfStatement(stm);
+			stm = ontoDB.getPropertyOf(globalNamespace, "orientationTheta", temp);
+			pos2d.theta = getFloatOfStatement(stm);
+			
+			// readable name: default is the same as local_name
+			String readableName = temp.getLocalName();			
+			com.hp.hpl.jena.rdf.model.NodeIterator nit = KnowledgeEngine.ontoDB.listPropertiesOf(OntoQueryUtil.GlobalNameSpace, "objectReadableName", temp);
 
-		    re.locations.add(temp.getLocalName());		    
-		    re.poses.add(pos2d);
+			while(nit.hasNext()) {
+			    RDFNode n = nit.next();
+			    Literal l = n.asLiteral();
+			    //System.out.println(l.getLanguage() + "   " + l.getString());
+			    if(l.getLanguage().equalsIgnoreCase(OntoQueryUtil.Language)) {
+				readableName = l.getString();
+				break;
+			    }
+			}
+			
+			// encode other properties in json for json_properties
+			Map<String, String> pros = new HashMap<String, String>();
+			try{
+			    stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "insideOf", temp);
+			    String r = stm.getObject().asResource().getLocalName();
+			    pros.put("insideOf", r);
+			}
+			catch(Exception e) {
+			    System.out.println("CAUGHT exception: " + e.toString());
+			}
+			String json_pro = SRSJSONParser.encodeObjectProperties(pros);
+
+			re.locations.add(temp.getLocalName());		    
+			re.poses.add(pos2d);
+			re.readableNames.add(readableName);
+			re.json_properties.add(json_pro);
+		    }
+		    catch(Exception e) {
+			System.out.println("invalid instance. ignored.");
+		    }
 		}
 	    }
 	}	
@@ -1210,5 +1207,5 @@ public class KnowledgeEngine
     private String confPath;
     //private OntoQueryUtil ontoQueryUtil;
     // 0: normal mode; 1: test mode (no inference, use predefined script instead)  ---- will remove this flag eventually. only kept for testing
-    int flag = 1;
+    //int flag = 1;
 }

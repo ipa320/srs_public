@@ -50,24 +50,12 @@
 
 package org.srs.srs_knowledge.knowledge_engine;
 
-import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.vocabulary.*;
-import com.hp.hpl.jena.util.FileManager;
-
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.ResultSetFormatter;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.ontology.Individual;
 import ros.*;
 import ros.communication.*;
 import ros.pkg.srs_knowledge.srv.GenerateSequence;
 import ros.pkg.srs_knowledge.srv.QuerySparQL;
 import ros.pkg.srs_knowledge.msg.*;
-import ros.pkg.srs_knowledge.msg.SRSSpatialInfo;
+import ros.pkg.srs_msgs.msg.SRSSpatialInfo;
 
 import ros.pkg.srs_knowledge.srv.PlanNextAction;
 import ros.pkg.srs_knowledge.srv.TaskRequest;
@@ -77,14 +65,8 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import org.srs.srs_knowledge.task.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import ros.pkg.geometry_msgs.msg.Pose;
-import ros.pkg.std_msgs.msg.String;
-import java.util.Properties;
 
 import java.io.*;
-import java.util.StringTokenizer;
-import java.util.ArrayList; 
-import java.util.Iterator;
-
 
 public class RosUtil {
     public static Pose getRobotCurrentPose() {

@@ -218,7 +218,7 @@ public class KnowledgeEngine
 	getPredefinedPosesService = config.getProperty("getPredefinedPosesService", "get_predefined_poses");
 	getWorkspaceForObjectService = config.getProperty("getWorkspaceForObjectService", "get_workspace_for_object");
 
-	//graspActionMode = this.readGraspModeParam("/srs/grasping_type");
+	graspActionMode = this.readGraspModeParam("/srs/grasping_type");
 	//graspActionMode = config.getProperty("grasp_mode", "move_and_grasp");
 	
 	String langEnv = this.readLanguageEnvParam("/srs/language_short", "en");

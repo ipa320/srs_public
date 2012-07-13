@@ -36,7 +36,6 @@ class _move_arm_base(smach.State):
             outcomes=['succeeded', 'not_completed','failed', 'preempted'],
             output_keys=['pose_id'],
             input_keys=['poses'] + additional_input_keys)
-        sss.init('arm')
         
     def moveArm(self,userdata,poses,planned):
         ret  = 'not_completed'
@@ -53,7 +52,6 @@ class _move_arm_base(smach.State):
                 handle_arm= sss.move_cartesian_planned('arm',[poses[pose_id],rospy.get_param("/srs_arm_kinematics/arm/tip_name")],False)
             else:        
                 ik_pose, error_pose = callIKSolver(poses[pose_id])
-                print ik_pose, error_pose
                 
                 if error_pose.val is error_pose.NO_IK_SOLUTION:
                     continue # if no solution was found, check next pose
@@ -68,14 +66,12 @@ class _move_arm_base(smach.State):
                 while True:
                         preempted = self.preempt_requested()
                         arm_state = handle_arm.get_state()
-                        print "arm_state", arm_state
                         if preempted or ( arm_state == 3) or (arm_state == 4):
                             break # stop waiting  
                         r.sleep()
                         
                 # stop arm in any case
                 sss.stop("arm")
-                print "Action State: ", arm_state, handle_arm.get_error_code()
                 if preempted:
                     handle_arm.cancel()
                     ret = 'preempted'

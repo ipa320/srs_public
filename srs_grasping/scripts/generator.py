@@ -80,4 +80,4 @@ class GENERATOR():
 if __name__ == "__main__":
 	rospy.init_node('grasp_generator')
 	s = GENERATOR()
-    	s.run(31)
+    	s.run(9)

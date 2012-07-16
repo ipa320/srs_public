@@ -16,14 +16,15 @@ class TestStates:
   def __init__(self, *args):
     rospy.init_node('test_states')
 
-  def test_object_verification(self):
+  def test_move_arm(self,z=0.0):
     # create a SMACH state machine
     SM = smach.StateMachine(outcomes=['overall_succeeded','overall_failed'])
     pose1 = PoseStamped()
-    pose1.header.frame_id="sdh_palm_link"
+    pose1.header.frame_id = rospy.get_param("/srs_arm_kinematics/arm/tip_name");
+    pose1.header.stamp= rospy.Time.now()
     pose1.pose.position.x = 0
     pose1.pose.position.y = 0
-    pose1.pose.position.z = 0.1
+    pose1.pose.position.z = z
     pose1.pose.orientation.w = 1
     pose1.pose.orientation.x = 0
     pose1.pose.orientation.y = 0
@@ -32,8 +33,9 @@ class TestStates:
 
     # open the container
     with SM:
-      smach.StateMachine.add('MOVE_ARM_PLANNED', move_arm_planned(),
+      smach.StateMachine.add('MOVE_ARM_UNPLANNED', move_arm_unplanned(),
         transitions={'succeeded':'overall_succeeded', 'failed':'overall_failed', 'not_completed':'overall_failed', 'preempted':'overall_failed'})
+    rospy.sleep(1.0) # let script server start
     try:
       SM.execute()
     except:
@@ -43,4 +45,5 @@ class TestStates:
 # main
 if __name__ == '__main__':
     test = TestStates()
-    test.test_object_verification()
+    test.test_move_arm(-0.1)
+    test.test_move_arm(0.1)

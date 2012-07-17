@@ -1,6 +1,6 @@
 <launch>
 
-   <node pkg="srs_grasping" type="get_DB_grasps.py" name="get_DB_grasps" ns="get_DB_grasps" cwd="node" respawn="false" output="screen" />
+   <node pkg="srs_grasping" type="get_db_grasps.py" name="get_db_grasps" ns="get_db_grasps" cwd="node" respawn="false" output="screen" />
 
    <node pkg="srs_grasping" type="get_feasible_grasps.py" name="get_feasible_grasps" ns="get_feasible_grasps" cwd="node" respawn="false" output="screen" />
 

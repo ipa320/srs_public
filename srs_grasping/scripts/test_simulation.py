@@ -69,7 +69,7 @@ class grasp_simulation():
 
 	def __init__(self):
 
-		self.get_grasp_configurations_service = rospy.ServiceProxy('get_DB_grasps', GetDB_Grasps)
+		self.get_grasp_configurations_service = rospy.ServiceProxy('get_db_grasps', GetDB_Grasps)
 
 
 	def run(self, object_id):	

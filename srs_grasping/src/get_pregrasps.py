@@ -72,9 +72,9 @@ class get_pregrasps():
 	def __init__(self):
 		self.ik_loop_reply = 1
 
-		rospy.loginfo("Waiting /get_DB_grasps service...");
-		rospy.wait_for_service('/get_DB_grasps')
-		self.client = rospy.ServiceProxy('/get_DB_grasps', GetDB_Grasps)
+		rospy.loginfo("Waiting /get_db_grasps service...");
+		rospy.wait_for_service('/get_db_grasps')
+		self.client = rospy.ServiceProxy('/get_db_grasps', GetDB_Grasps)
 		rospy.loginfo("/get_pregrasps service is ready.");
 		print "---------------------------------------------------------------------------";
 

@@ -33,8 +33,9 @@ def peopledetect(req):
         
     
         p.pose=pose 
+        p.label='alex'
         p2.pose=pose2
-
+        
         rospy.loginfo("kam was an")
 
       #  pa.detections.append(p)

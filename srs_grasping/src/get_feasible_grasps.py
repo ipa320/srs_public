@@ -69,7 +69,7 @@ from geometry_msgs.msg import *
 from kinematics_msgs.srv import *
 
 
-class get_grasps_from_position():
+class get_feasible_grasps():
 
 	def __init__(self):
 
@@ -77,30 +77,31 @@ class get_grasps_from_position():
 		rospy.wait_for_service('/arm_kinematics/get_constraint_aware_ik')
 		rospy.loginfo("/arm_kinematics/get_constraint_aware_ik is ready.");
 
-		rospy.loginfo("Waiting /get_grasp_configurations service...");
-		rospy.wait_for_service('/get_grasp_configurations')
-		self.client = rospy.ServiceProxy('/get_grasp_configurations', GetGraspConfigurations)
+		rospy.loginfo("Waiting /get_DB_grasps service...");
+		rospy.wait_for_service('/get_DB_grasps')
+		self.client = rospy.ServiceProxy('/get_DB_grasps', GetDB_Grasps)
 
 		self.ik_loop_reply = 1;
 		self.finger_correction = -1;
 		self.current_joint_configuration = []
 		self.finger_positions = []
 		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
-		self.tf = rospy.Subscriber("/tf", tf.msg.tfMessage, self.__get_finger_positions);
-		self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.__get_joint_state);
+		self.tf = rospy.Subscriber("/tf", tf.msg.tfMessage, self.get_finger_positions);
+		self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state);
 
-		rospy.loginfo("/get_grasps_from_position service is ready.");
-		print "---------------------------------------------------------------------------";
+		rospy.loginfo("/get_feasible_grasps service is ready.");
 
 
-	def __get_grasps_from_position(self, req):
+
+	def get_feasible_grasps(self, req):
 		x = time.time();
-		rospy.loginfo("/get_grasps_from_position service has been called...");
+		rospy.loginfo("/get_feasible_grasps service has been called...");
 
 		obj_id = req.object_id;
 		obj_pose = req.object_pose;
+		pregrasp_offsets = req.pregrasp_offsets;
 
-		req = GetGraspConfigurationsRequest();
+		req = GetDB_GraspsRequest();
 		req.object_id = obj_id;
 		grasp_configuration = (self.client(req)).grasp_configuration;
 
@@ -110,20 +111,21 @@ class get_grasps_from_position():
 			continue;
 
 
-		rotacion = grasping_functions.rotation_matrix(obj_pose);
+		rotacion = grasping_functions.graspingutils.rotation_matrix(obj_pose);
 
-		resp = GetGraspsFromPositionResponse();
+		resp = GetFeasibleGraspsResponse();
 		resp.feasible_grasp_available = False;
 		resp.grasp_configuration = [];
 
 		for i in range(0,len(grasp_configuration)):
-			pre_trans = rotacion * grasping_functions.matrix_from_pose(grasp_configuration[i].pre_grasp.pose);
-			grasp_trans = rotacion *  grasping_functions.matrix_from_pose(grasp_configuration[i].grasp.pose);
+			pre_trans = rotacion * grasping_functions.graspingutils.matrix_from_pose(grasp_configuration[i].pre_grasp.pose);
+			grasp_trans = rotacion *  grasping_functions.graspingutils.matrix_from_pose(grasp_configuration[i].grasp.pose);
 
 			t = tf.transformations.translation_from_matrix(pre_trans);
 			q = tf.transformations.quaternion_from_matrix(pre_trans);
 			tg = tf.transformations.translation_from_matrix(grasp_trans);
 			qg = tf.transformations.quaternion_from_matrix(grasp_trans);
+
 
 			pre = PoseStamped();
 			pre.header.stamp = rospy.Time.now();
@@ -146,30 +148,30 @@ class get_grasps_from_position():
 			g.pose.orientation.y = qg[1];
 			g.pose.orientation.z = qg[2];
 			g.pose.orientation.w = qg[3];
+			
+			category = grasping_functions.graspingutils.get_grasp_category(pre.pose.position, g.pose.position);
+			pre.pose = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre.pose, pregrasp_offsets);
 
-		
 			sol = False;
 			for w in range(0,self.ik_loop_reply):
-				(pre_grasp_conf, error_code) = grasping_functions.callIKSolver(self.current_joint_configuration, pre);		
+				(pre_grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(self.current_joint_configuration, pre);				
 				if(error_code.val == error_code.SUCCESS):
 					for k in range(0,self.ik_loop_reply):
-						(grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, g);
+						(grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(pre_grasp_conf, g);
 						if(error_code.val == error_code.SUCCESS):
-
-							new_valid_grasp = GraspSubConfiguration();
+							new_valid_grasp = FeasibleGrasp();
 							new_valid_grasp.sdh_joint_values = grasp_configuration[i].sdh_joint_values;
-							new_valid_grasp.grasp = g.pose;
-							new_valid_grasp.pre_grasp = pre.pose;
-							new_valid_grasp.category = grasping_functions.get_grasp_category(pre.pose.position, g.pose.position);	
-							sol = grasping_functions.valid_grasp(new_valid_grasp);
+							new_valid_grasp.target_link = "/sdh_palm_link"
+							new_valid_grasp.grasp = g;
+							new_valid_grasp.pre_grasp = pre;
+							new_valid_grasp.category = category;
+	
+							sol = grasping_functions.graspingutils.valid_grasp(category);
 							while len(self.finger_positions) != 3:
 								time.sleep(0.3);
 								continue;
 
-							self.finger_correction = (0, -0.0685)[new_valid_grasp.category == "TOP"];
-
-							if sol and (not self.__checkCollisions(self.finger_positions, new_valid_grasp, obj_pose)):
-								print new_valid_grasp.category
+							if sol and (not  self.checkCollisions(self.finger_positions, new_valid_grasp, obj_pose)):
 								resp.feasible_grasp_available = True;
 								resp.grasp_configuration.append(new_valid_grasp);
 								break;
@@ -185,7 +187,7 @@ class get_grasps_from_position():
 			(resp.grasp_configuration).sort();
 
 		rospy.loginfo(str(len(resp.grasp_configuration))+" valid grasps for this pose.");	
-		rospy.loginfo("/get_grasps_from_position call has finished.");
+		rospy.loginfo("/get_feasible_grasps call has finished.");
 		print "Time employed: " + str(time.time() - x);
 		print "---------------------------------------";
 		return resp;
@@ -204,12 +206,12 @@ class get_grasps_from_position():
 
 
 
-	def __get_joint_state(self, msg):
+	def get_joint_state(self, msg):
 		self.current_joint_configuration = list(msg.desired.positions);
 
 
 
-	def __get_finger_positions(self, msg):
+	def get_finger_positions(self, msg):
 		fing_pos = [];
 
 		for link in msg.transforms:
@@ -231,7 +233,7 @@ class get_grasps_from_position():
 
 
 
-	def __transform_finger_positions(self, fpositions, g):
+	def transform_finger_positions(self, fpositions, g):
 		response = [];
 		for i in range(0, len(fpositions)):
 			ps = PoseStamped();
@@ -239,7 +241,7 @@ class get_grasps_from_position():
 			ps = self.listener.transformPose("/sdh_palm_link", fpositions[i]);
 
 			#transform to object position
-			aux_matrix = grasping_functions.matrix_from_pose(g) * grasping_functions.matrix_from_pose(ps.pose);
+			aux_matrix = grasping_functions.graspingutils.matrix_from_pose(g) * grasping_functions.graspingutils.matrix_from_pose(ps.pose);
 			t = tf.transformations.translation_from_matrix(aux_matrix);
 			q = tf.transformations.quaternion_from_matrix(aux_matrix);
 
@@ -259,24 +261,25 @@ class get_grasps_from_position():
 
 
 
-	def __checkCollisions(self, fpositions, new_valid_grasp, obj_pose):	
-		finger_pos = self.__transform_finger_positions(fpositions, new_valid_grasp.grasp);
-			
+	def checkCollisions(self, fpositions, new_valid_grasp, obj_pose):	
+		self.finger_correction = (0, -0.0685)[new_valid_grasp.category == "TOP"];
+		finger_pos = self.transform_finger_positions(fpositions, new_valid_grasp.grasp.pose);
+		
 		for fp in finger_pos:
-			if obj_pose.position.z > fp.pose.position.z + self.finger_correction:
+			if obj_pose.position.z > (fp.pose.position.z + self.finger_correction):
 				return True;
 
 		return False;
 
 
 
-	def get_grasps_from_position_server(self):
-		s = rospy.Service('/get_grasps_from_position', GetGraspsFromPosition, self.__get_grasps_from_position);
+	def get_feasible_grasps_server(self):
+		s = rospy.Service('/get_feasible_grasps', GetFeasibleGrasps, self.get_feasible_grasps);
 
 
 ## Main routine for running the grasp server
 if __name__ == '__main__':
-	rospy.init_node('get_grasps_from_position');
-	SCRIPT = get_grasps_from_position();
-	SCRIPT.get_grasps_from_position_server();
+	rospy.init_node('get_feasible_grasps');
+	SCRIPT = get_feasible_grasps();
+	SCRIPT.get_feasible_grasps_server();
 	rospy.spin();

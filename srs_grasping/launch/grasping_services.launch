@@ -1,8 +1,10 @@
 <launch>
 
-   <node pkg="srs_grasping" type="get_grasp_configurations.py" name="get_grasp_configurations" ns="get_grasp_configurations" cwd="node" respawn="false" output="screen" />
+   <node pkg="srs_grasping" type="get_DB_grasps.py" name="get_DB_grasps" ns="get_DB_grasps" cwd="node" respawn="false" output="screen" />
 
-   <node pkg="srs_grasping" type="get_grasps_from_position.py" name="get_grasps_from_position" ns="get_grasps_from_position" cwd="node" respawn="false" output="screen" />
+   <node pkg="srs_grasping" type="get_feasible_grasps.py" name="get_feasible_grasps" ns="get_feasible_grasps" cwd="node" respawn="false" output="screen" />
+
+   <node pkg="srs_grasping" type="get_pregrasps.py" name="get_pregrasps" ns="get_pregrasps" cwd="node" respawn="false" output="screen" />
 
 <!--shifted to DM, as the service is required by other componenets as well -->
 <!--include file="$(find cob_manipulator)/ros/launch/kdl_solver.launch"/-->

@@ -64,28 +64,27 @@ import grasping_functions
 from srs_grasping.srv import *
 
 
-class get_grasp_configurations():
+class get_DB_grasps():
 
 	def __init__(self):
 		print "-------------------------------------------------------------------------";
 		rospy.loginfo("Waiting /get_model_grasp service...");
 		rospy.wait_for_service('/get_model_grasp');
-		rospy.loginfo("/get_model_grasp is ready.");
-		rospy.loginfo("/get_grasp_configurations service is ready.");
+		rospy.loginfo("/get_DB_grasps service is ready.");
 
 
-	def get_grasp_configurations(self, server_goal):
+	def get_DB_grasps(self, server_goal):
 		x = time.time();
-		rospy.loginfo("/get_grasp_configurations service has been called...");
+		rospy.loginfo("/get_DB_grasps service has been called...");
 
 
-		server_result = GetGraspConfigurationsResponse();
+		server_result = GetDB_GraspsResponse();
 
-		resp = grasping_functions.read_grasps_from_DB(server_goal.object_id);
-		if resp == -1:
-			resp = grasping_functions.generator(server_goal.object_id);
-			if resp != -1:
-				resp = grasping_functions.read_grasps_from_DB(server_goal.object_id);
+		resp = grasping_functions.databaseutils.get_grasps(server_goal.object_id);
+		if resp is grasping_functions.FAILED:
+			resp = grasping_functions.openraveutils.generator(server_goal.object_id);
+			if resp is grasping_functions.SUCCEDED:
+				resp = grasping_functions.databaseutils.get_grasps(server_goal.object_id);
 				server_result.grasp_configuration = resp.grasp_configuration;
 		else:
 			server_result.grasp_configuration = resp.grasp_configuration;
@@ -96,12 +95,12 @@ class get_grasp_configurations():
 		return server_result;
 
 
-	def get_grasp_configurations_server(self):
-		s = rospy.Service('/get_grasp_configurations', GetGraspConfigurations, self.get_grasp_configurations);
+	def get_DB_grasps_server(self):
+		s = rospy.Service('/get_DB_grasps', GetDB_Grasps, self.get_DB_grasps);
 
 
 if __name__ == '__main__':
-	rospy.init_node('get_grasp_configurations')
-	SCRIPT = get_grasp_configurations()
-	SCRIPT.get_grasp_configurations_server();
+	rospy.init_node('get_DB_grasps')
+	SCRIPT = get_DB_grasps()
+	SCRIPT.get_DB_grasps_server();
 	rospy.spin()

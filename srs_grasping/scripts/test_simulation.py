@@ -11,7 +11,7 @@
 # \note
 #   Project name: srs
 # \note
-#   ROS stack name: srs
+#   ROS stack name: srs_public
 # \note
 #   ROS package name: srs_grasping
 #
@@ -23,7 +23,7 @@
 # \date Date of creation: March 2012
 #
 # \brief
-#   Implements a grasp generator script.
+#   Implements the simulation for the precomputed grasps. 
 #
 #################################################################
 #
@@ -58,26 +58,38 @@
 import roslib; 
 roslib.load_manifest('srs_grasping')
 import rospy
+import sys
 import grasping_functions
 
-class GENERATOR():
+from srs_grasping.srv import *
+
+
+
+class grasp_simulation():
 
 	def __init__(self):
 
-		rospy.loginfo("Waiting for /get_model_mesh service...")
-		rospy.wait_for_service('/get_model_mesh')
-		rospy.loginfo("/get_model_mesh service found!")
-
-		rospy.loginfo("Waiting for /insert_object_service...")
-		rospy.wait_for_service('/insert_object_service')
-		rospy.loginfo("/insert_object_service found!")
+		self.get_grasp_configurations_service = rospy.ServiceProxy('get_DB_grasps', GetDB_Grasps)
 
 
-	def run(self, object_id):
-		return grasping_functions.generator(object_id);
+	def run(self, object_id):	
+
+		req = GetDB_GraspsRequest(object_id=object_id)
+		res = self.get_grasp_configurations_service(req)
+		grasps = res.grasp_configuration
+		grasping_functions.openraveutils.show_all_grasps(object_id, grasps);
+
 
 
 if __name__ == "__main__":
-	rospy.init_node('grasp_generator')
-	s = GENERATOR()
-    	s.run(9)
+
+    	rospy.init_node('grasp_simulation')
+	s = grasp_simulation()
+
+    	if len(sys.argv) == 1:
+		print "---------------------------------------------------------------------------------------"
+		print "usage:\t\trosrun srs_grasping test_simulation [object_id]\ndefault:\tobject_id: 9 (Milkbox)"
+		print "---------------------------------------------------------------------------------------"
+		s.run(9)
+	else:
+    		s.run(int(sys.argv[1]))

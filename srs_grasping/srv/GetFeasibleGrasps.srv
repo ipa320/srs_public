@@ -1,6 +1,6 @@
 int32 object_id
 geometry_msgs/Pose object_pose
+float32[] pregrasp_offsets
 ---
 bool feasible_grasp_available
-srs_msgs/GraspSubConfiguration[] grasp_configuration
----
+srs_msgs/FeasibleGrasp[] grasp_configuration

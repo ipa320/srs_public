@@ -72,9 +72,9 @@ class get_pregrasps():
 	def __init__(self):
 		self.ik_loop_reply = 1
 
-		rospy.loginfo("Waiting /get_grasp_configurations service...");
-		rospy.wait_for_service('/get_grasp_configurations')
-		self.client = rospy.ServiceProxy('/get_grasp_configurations', GetGraspConfigurations)
+		rospy.loginfo("Waiting /get_DB_grasps service...");
+		rospy.wait_for_service('/get_DB_grasps')
+		self.client = rospy.ServiceProxy('/get_DB_grasps', GetDB_Grasps)
 		rospy.loginfo("/get_pregrasps service is ready.");
 		print "---------------------------------------------------------------------------";
 
@@ -84,14 +84,16 @@ class get_pregrasps():
 
 		obj_id = req.object_id;
 		obj_pose = req.object_pose;
-		num_configurations = req.num_configurations;
+		pregrasp_offsets = req.pregrasp_offsets;
+		num_configurations = (1, req.num_configurations)[req.num_configurations>0];
+		
 
-		req = GetGraspConfigurationsRequest();
+		req = GetDB_GraspsRequest();
 		req.object_id = obj_id;
 		grasp_configuration = (self.client(req)).grasp_configuration;
 
 
-		rotacion = grasping_functions.rotation_matrix(obj_pose);
+		rotacion = grasping_functions.graspingutils.rotation_matrix(obj_pose);
 
 		resp = GetPreGraspResponse();
 		resp.side = []
@@ -100,8 +102,8 @@ class get_pregrasps():
 		resp.front = []
 
 		for i in range(0,len(grasp_configuration)):
-			pre_trans = rotacion * grasping_functions.matrix_from_pose(grasp_configuration[i].pre_grasp.pose);
-			grasp_trans = rotacion *  grasping_functions.matrix_from_pose(grasp_configuration[i].grasp.pose);
+			pre_trans = rotacion * grasping_functions.graspingutils.matrix_from_pose(grasp_configuration[i].pre_grasp.pose);
+			grasp_trans = rotacion *  grasping_functions.graspingutils.matrix_from_pose(grasp_configuration[i].grasp.pose);
 
 			t = translation_from_matrix(pre_trans);
 			q = quaternion_from_matrix(pre_trans);
@@ -127,15 +129,17 @@ class get_pregrasps():
 			g.orientation.w = qg[3];
 
 
+			category = grasping_functions.graspingutils.get_grasp_category(pre.position, g.position);
+			pre = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre, pregrasp_offsets);
 
-			aux = GraspConfiguration();
+
+			aux = DB_Grasp();
 			aux.object_id = obj_id;
 			aux.hand_type = "SDH";
 			aux.sdh_joint_values = grasp_configuration[i].sdh_joint_values;
-			aux.target_link = "/sdh_palm_link";
 			aux.pre_grasp.pose = pre;
 			aux.grasp.pose = g;
-			aux.category = grasping_functions.get_grasp_category(pre.position, g.position);
+			aux.category = grasping_functions.graspingutils.get_grasp_category(pre.position, g.position);
 
 			if aux.category == "TOP":
 				if len(resp.top) < num_configurations:

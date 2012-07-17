@@ -79,7 +79,7 @@ class _move_arm_base(smach.State):
                     ret = 'succeeded'
                     userdata.pose_id = pose_id # keep pose_id for subsequent state
                 else:
-                    ret = 'failed'
+                    ret = 'not_completed'
                 
                 break
             else:

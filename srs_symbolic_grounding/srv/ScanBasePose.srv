@@ -1,4 +1,4 @@
-SRSSpatialInfo parent_obj_geometry
+srs_msgs/SRSSpatialInfo parent_obj_geometry
 ---
 geometry_msgs/Pose2D[] scan_base_pose_list
 

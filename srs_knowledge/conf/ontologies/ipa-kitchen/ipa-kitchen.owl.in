@@ -204,6 +204,9 @@
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">12</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Flasche</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Bottle</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">bottiglia</srs:objectReadableName>
     </owl:NamedIndividual>
     
 
@@ -216,6 +219,10 @@
         <srs:xCoordinate rdf:datatype="&xsd;float">1</srs:xCoordinate>
         <srs:orientationTheta rdf:datatype="&xsd;float">1.57</srs:orientationTheta>
         <ipa-kitchen:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[1 -1.6 1.57]</ipa-kitchen:inSRSCoordinateFormat>
+        <srs:objectReadableName xml:lang="de">Ladestation</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Charging Station</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">stazione di ricarica</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -238,6 +245,10 @@
         <srs:heightOfObject rdf:datatype="&xsd;float">0.85</srs:heightOfObject>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">6</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Spulmaschine</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Dishwasher</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">lavastoviglie</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -260,6 +271,10 @@
         <srs:yCoord rdf:datatype="&xsd;float">1.36</srs:yCoord>
         <srs:heightOfObject rdf:datatype="&xsd;float">1.4</srs:heightOfObject>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">4</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Kuhlschrank</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Fridge</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Frigorifero</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -268,6 +283,9 @@
 
     <owl:NamedIndividual rdf:about="&ipa-kitchen;LivingRoom0">
         <rdf:type rdf:resource="&srs;LivingRoom"/>
+        <srs:objectReadableName xml:lang="de">das Wohnzimmer</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Living Room</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">soggiorno</srs:objectReadableName>
     </owl:NamedIndividual>
     
 
@@ -287,6 +305,9 @@
         <srs:zCoord rdf:datatype="&xsd;float">0.90</srs:zCoord>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">9</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Milch</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Milkbox</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Latte</srs:objectReadableName>
         <srs:aboveOf rdf:resource="&ipa-kitchen;Dishwasher0"/>
     </owl:NamedIndividual>
     
@@ -310,6 +331,10 @@
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">1</srs:houseHoldObjectID>
         <srs:heightOfObject rdf:datatype="&xsd;float">1.4</srs:heightOfObject>
+        <srs:objectReadableName xml:lang="de">Backofen</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Oven</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Forno</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -329,6 +354,9 @@
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:yCoord rdf:datatype="&xsd;float">1.26</srs:yCoord>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">10</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Crisps (Pringles)</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Crisps (Brand: Pringles)</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">patatine (Pringles)</srs:objectReadableName>
     </owl:NamedIndividual>
     
 
@@ -372,6 +400,9 @@
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">11</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Salz</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Salt</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Sale</srs:objectReadableName>
     </owl:NamedIndividual>
     
 
@@ -394,6 +425,10 @@
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:heightOfObject rdf:datatype="&xsd;float">1.4</srs:heightOfObject>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">2</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Sinken</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Sink</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Affondare</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -416,6 +451,10 @@
         <srs:widthOfObject rdf:datatype="&xsd;float">1.75</srs:widthOfObject>
         <srs:xCoord rdf:datatype="&xsd;float">2.625</srs:xCoord>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">5</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Sofa</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Sofa in Living room</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Divano</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -438,6 +477,10 @@
         <srs:heightOfObject rdf:datatype="&xsd;float">0.85</srs:heightOfObject>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">3</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Herd</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Stove</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Stufa</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -460,7 +503,11 @@
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:yCoord rdf:datatype="&xsd;float">1.26</srs:yCoord>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">7</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Kuche Tabelle</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Kitchen Table</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Cucina Tavolo</srs:objectReadableName>
         <srs:inFrontOf-Generally rdf:resource="&ipa-kitchen;Sofa0"/>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -484,6 +531,10 @@
         <srs:yCoordinate rdf:datatype="&xsd;float">0</srs:yCoordinate>
         <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
         <ipa-kitchen:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[0 0 0]</ipa-kitchen:inSRSCoordinateFormat>
+        <srs:objectReadableName xml:lang="de">Roboter Ausgangsposition</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Robot Home Position</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">robot posizione iniziale</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -492,6 +543,9 @@
 
     <owl:NamedIndividual rdf:about="&ipa-kitchen;ipa-kitchen">
         <rdf:type rdf:resource="&srs;Kitchen"/>
+        <srs:objectReadableName xml:lang="de">IPA Kuche</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">IPA Kitchen</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">IPA cucina</srs:objectReadableName>
     </owl:NamedIndividual>
     
 
@@ -504,6 +558,10 @@
         <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
         <srs:yCoordinate rdf:datatype="&xsd;float">0.3</srs:yCoordinate>
         <ipa-kitchen:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-2.04 0.3 0]</ipa-kitchen:inSRSCoordinateFormat>
+        <srs:objectReadableName xml:lang="de">Kuche</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">IPA Kitchen</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">cucina</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -516,6 +574,10 @@
         <srs:xCoordinate rdf:datatype="&xsd;float">-2.04</srs:xCoordinate>
         <srs:orientationTheta rdf:datatype="&xsd;float">3.14</srs:orientationTheta>
         <ipa-kitchen:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-2.04 -0.3 3.14]</ipa-kitchen:inSRSCoordinateFormat>
+        <srs:objectReadableName xml:lang="de">Kuche (ruckwarts)</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Kitchen (Backward)</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Cucina (indietro)</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -528,6 +590,10 @@
         <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
         <srs:yCoordinate rdf:datatype="&xsd;float">0</srs:yCoordinate>
         <ipa-kitchen:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-2.14 0.0 0]</ipa-kitchen:inSRSCoordinateFormat>
+        <srs:objectReadableName xml:lang="de">Kuche</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Kitchen </srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">cucina</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
     
 
@@ -540,6 +606,10 @@
         <srs:orientationTheta rdf:datatype="&xsd;float">0.75</srs:orientationTheta>
         <srs:xCoordinate rdf:datatype="&xsd;float">1.47</srs:xCoordinate>
         <ipa-kitchen:inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[1.47 -0.7 0.75]</ipa-kitchen:inSRSCoordinateFormat>
+        <srs:objectReadableName xml:lang="de">Benutzer (Bestellen Position)</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">User (Order Position)</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">utente (ordine di posizione)</srs:objectReadableName>
+        <srs:insideOf rdf:resource="&ipa-kitchen;ipa-kitchen"/>
     </owl:NamedIndividual>
 </rdf:RDF>
 

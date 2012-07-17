@@ -5,7 +5,7 @@ string objectName
 # object ID
 uint32 hhObjectID
 # object pose
-SRSSpatialInfo spatialInfo
+srs_msgs/SRSSpatialInfo spatialInfo
 # geometry_msgs/Pose newPose
 # Time stamp for the object
 # time lastseenTime

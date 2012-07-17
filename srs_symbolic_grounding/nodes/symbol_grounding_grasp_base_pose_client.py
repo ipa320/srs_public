@@ -62,6 +62,7 @@ from srs_symbolic_grounding.msg import *
 from geometry_msgs.msg import *
 import rospy
 import tf
+from srs_msgs.msg import SRSSpatialInfo
 
 def symbol_grounding_grasp_base_pose_client(target_obj_pose, parent_obj_geometry, furniture_geometry_list):
 

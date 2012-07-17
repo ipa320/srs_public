@@ -3,6 +3,9 @@ string map
 
 ---
 #list 
-
+# TODO: Better to wrap all parameters in one msg
 string[] locations
 geometry_msgs/Pose2D[] poses
+string[] readableNames
+
+string[] json_properties   # other properties in Json, such as Fridge inRoom Kitchen etc. 

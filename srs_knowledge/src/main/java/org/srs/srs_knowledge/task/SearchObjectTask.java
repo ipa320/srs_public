@@ -67,7 +67,7 @@ import com.hp.hpl.jena.ontology.Individual;
 import org.srs.srs_knowledge.task.*;
 
 import ros.pkg.srs_symbolic_grounding.srv.*;
-import ros.pkg.srs_symbolic_grounding.msg.*;
+//import ros.pkg.srs_symbolic_grounding.msg.*;
 
 import ros.*;
 import ros.communication.*;
@@ -79,6 +79,7 @@ import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
 
 import org.srs.srs_knowledge.utils.*;
+import ros.pkg.srs_msgs.msg.SRSSpatialInfo;
 
 public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 {
@@ -156,7 +157,8 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	HighLevelActionSequence actionList = new HighLevelActionSequence();
 	
 	// create MoveAndDetectionActionUnit
-	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+	//SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+	ros.pkg.srs_msgs.msg.SRSSpatialInfo spatialInfo = new ros.pkg.srs_msgs.msg.SRSSpatialInfo();
 	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
 	
 	spatialInfo.pose.position.x = stm.getFloat();
@@ -282,7 +284,7 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	return true;
     }
     
-    private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
+    private ArrayList<Pose2D> calculateScanPositions(ros.pkg.srs_msgs.msg.SRSSpatialInfo furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
 	ServiceClient<SymbolGroundingScanBasePose.Request, SymbolGroundingScanBasePose.Response, SymbolGroundingScanBasePose> sc =
 	    KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_scan_base_pose" , new SymbolGroundingScanBasePose(), false);
@@ -296,7 +298,7 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	return posList;
     }
 
-    private Pose2D calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose) throws RosException {
+    private Pose2D calculateGraspPosition(ros.pkg.srs_msgs.msg.SRSSpatialInfo furnitureInfo, Pose targetPose) throws RosException {
 	Pose2D pos = new Pose2D();
 	
 	ServiceClient<SymbolGroundingGraspBasePoseExperimental.Request, SymbolGroundingGraspBasePoseExperimental.Response, SymbolGroundingGraspBasePoseExperimental> sc = KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_grasp_base_pose_experimental" , new SymbolGroundingGraspBasePoseExperimental(), false);
@@ -317,8 +319,9 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	return pos;
     }
 
-    private SRSFurnitureGeometry getFurnitureGeometryOf(Individual workspace) {
-	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+    private ros.pkg.srs_msgs.msg.SRSSpatialInfo getFurnitureGeometryOf(Individual workspace) {
+	//SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+	ros.pkg.srs_msgs.msg.SRSSpatialInfo spatialInfo = new ros.pkg.srs_msgs.msg.SRSSpatialInfo();
 	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
 	spatialInfo.pose.position.x = stm.getFloat();
 	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord",  workspace);
@@ -523,7 +526,7 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	    //this.recentDetectedObject = ActionFeedback.toPose(fb);
 	    this.recentDetectedObject = fb.getDetectedObjectPose();
 	    BoundingBoxDim bbDim = InformationRetrieval.retrieveBoundingBoxInfo(OntoQueryUtil.GlobalNameSpace + this.targetContent);
-	    ros.pkg.srs_knowledge.msg.SRSSpatialInfo spaObj = new ros.pkg.srs_knowledge.msg.SRSSpatialInfo();
+	    ros.pkg.srs_msgs.msg.SRSSpatialInfo spaObj = new ros.pkg.srs_msgs.msg.SRSSpatialInfo();
 	    spaObj.l = bbDim.l;
 	    spaObj.h = bbDim.h;
 	    spaObj.w = bbDim.w;
@@ -745,7 +748,8 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	//calculateGraspPosition(SRSFurnitureGeometry furnitureInfo, Pose targetPose)
 	// call symbol grounding to get parameters for the MoveAndGrasp action
 	try {
-	    SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
+	    //SRSFurnitureGeometry furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
+	    ros.pkg.srs_msgs.msg.SRSSpatialInfo furGeo = getFurnitureGeometryOf(workspaces.get(currentSubAction));
 	    //ros.pkg.srs_symbolic_grounding.msg.SRSSpatialInfo furGeo = newGetFurnitureGeometryOf(workspaces.get(currentSubAction));
 	    // TODO: recentDetectedObject should be updated accordingly when the MoveAndDetection action finished successfully
 	    //recentDetectedObject = ActionFeedback.toPose(fb);

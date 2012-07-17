@@ -58,6 +58,7 @@ import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.srs_knowledge.srv.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import org.srs.srs_knowledge.knowledge_engine.*;
+import ros.pkg.srs_msgs.msg.SRSSpatialInfo;
 
 import tfjava.*;
 

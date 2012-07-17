@@ -12,4 +12,7 @@ bool ifGeometryInfo
 #list of object ID for possible workspace in current map
 
 string[] rooms
-SRSSpatialInfo[] roomsInfo
+srs_msgs/SRSSpatialInfo[] roomsInfo
+string[] readableNames
+
+string[] json_properties   # other properties in Json (not in use at the moment)

@@ -38,6 +38,7 @@ rosbuild_add_executable(train_leg_detector
                        src/laser_processor.cpp
                        src/train_leg_detector.cpp 
                        src/calc_leg_features.cpp)
-rosbuild_add_compile_flags(train_leg_detector -fpermissive) 
+
 rosbuild_add_executable(legListener
                          src/legListener.cpp)
+

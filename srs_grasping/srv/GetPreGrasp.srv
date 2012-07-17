@@ -3,7 +3,7 @@ geometry_msgs/Pose object_pose
 float32[] pregrasp_offsets
 int32 num_configurations
 ---
-srs_msgs/DB_Grasp[] side
-srs_msgs/DB_Grasp[] mside
-srs_msgs/DB_Grasp[] front
-srs_msgs/DB_Grasp[] top
+srs_msgs/DBGrasp[] side
+srs_msgs/DBGrasp[] mside
+srs_msgs/DBGrasp[] front
+srs_msgs/DBGrasp[] top

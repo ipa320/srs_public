@@ -135,29 +135,6 @@ public class OntologyDB
 
     public String executeQuery(String queryString)
     {
-	/*
-	//System.out.println(queryString);
-	Query query = QueryFactory.create(queryString);
-
-	QueryExecution qe = QueryExecutionFactory.create(query, model);
-	ResultSet results = qe.execSelect();
-
-	ByteArrayOutputStream ostream = new ByteArrayOutputStream();
-
-	ResultSetFormatter.out(ostream, results, query);
-	//ResultSetFormatter.out(System.out, results, query);
-	String r = "";
-	try{
-	    r = new String(ostream.toByteArray(), "UTF-8");
-	    //System.out.println(r);
-	}
-	catch(Exception e){
-	    System.out.println(e.getMessage());
-	}
-	qe.close();
-	return r;
-	*/
-
 	//// new added for test JSON output
 	try {
 	Query query = QueryFactory.create(queryString);
@@ -300,6 +277,22 @@ public class OntologyDB
      * @param proNameSpace property namespace
      * @param proLocalName property name
      * @param ind individual object
+     * @return NodeIterator containing the properties info 
+     */
+    public com.hp.hpl.jena.rdf.model.NodeIterator listPropertiesOf(String proNameSpace, String proLocalName, Individual ind ) 
+    {
+	model.enterCriticalSection(Lock.READ);
+	com.hp.hpl.jena.rdf.model.Property property = model.getProperty(proNameSpace, proLocalName);
+	com.hp.hpl.jena.rdf.model.NodeIterator nodeIt = ind.listPropertyValues(property);
+	//com.hp.hpl.jena.rdf.model.Statement stm = ind.getProperty(property);
+	model.leaveCriticalSection();
+	return nodeIt;
+    }
+
+    /**
+     * @param proNameSpace property namespace
+     * @param proLocalName property name
+     * @param ind individual object
      * @return statement containing the property info 
      */
     public com.hp.hpl.jena.rdf.model.Statement getPropertyOf(String proNameSpace, String proLocalName, Individual ind ) 
@@ -310,6 +303,7 @@ public class OntologyDB
 	model.leaveCriticalSection();
 	return stm;
     }
+
 
     public OntModel getModel() {
 	return model;
@@ -393,7 +387,6 @@ public class OntologyDB
 	model.leaveCriticalSection();
 	return pro;
     }
-
 
     //private String modelFileName;    
     //private Model model;

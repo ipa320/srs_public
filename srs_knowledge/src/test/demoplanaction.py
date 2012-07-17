@@ -151,17 +151,20 @@ def test_fetch_1():
     res = requestNewTaskJSONFetch()
     sessionId = res.sessionId
     acts = list()
-    act = planNextActionServiceJSON(sessionId, 0, '')
+    act = planNextActionServiceJSON(sessionId, 0, '{}')
     acts.append(act)
 
-    act = planNextActionServiceJSON(sessionId, 0, '')
+    act = planNextActionServiceJSON(sessionId, 0, '{}')
     acts.append(act)
 
     jsonFeedback = '{"feedback":{"action":"detect", "object":{"object_type":"Milkbox"}, "pose":{"x":-3.0, "y":-0.2, "z":1.02, "rotx":0, "roty":0, "rotz":0, "rotw":1}}}'
     act = planNextActionServiceJSON(sessionId, 0, jsonFeedback)
     acts.append(act)
 
-    act = planNextActionServiceJSON(sessionId, 0, '')
+    act = planNextActionServiceJSON(sessionId, 0, '{}')
+    acts.append(act)
+
+    act = planNextActionServiceJSON(sessionId, 0, '{}')
     acts.append(act)
 
     return acts
@@ -170,10 +173,10 @@ def test_move():
     res = requestNewTaskJSONMove()
     sessionId = res.sessionId
     acts = list()
-    act = planNextActionServiceJSON(sessionId, 0, '')
+    act = planNextActionServiceJSON(sessionId, 0, '{}')
     acts.append(act)
 
-    act = planNextActionServiceJSON(sessionId, 0, '')
+    act = planNextActionServiceJSON(sessionId, 1, '{}')
     acts.append(act)
 
     return acts
@@ -182,23 +185,23 @@ def test_fetch_2():
     res = requestNewTaskJSONFetch()
     sessionId = res.sessionId
     acts = list()
-    act = planNextActionServiceJSON(sessionId, 0, '')
+    act = planNextActionServiceJSON(sessionId, 0, '{}')
     acts.append(act)
 
-    act = planNextActionServiceJSON(sessionId, 1, '')
+    act = planNextActionServiceJSON(sessionId, 1, '{}')
     acts.append(act)
 
-    act = planNextActionServiceJSON(sessionId, 0, '')
+    act = planNextActionServiceJSON(sessionId, 0, '{}')
     acts.append(act)
 
     jsonFeedback = '{"feedback":{"action":"detect", "object":{"object_type":"Milkbox"}, "pose":{"x":-3.0, "y":-0.2, "z":1.02, "rotx":0, "roty":0, "rotz":0, "rotw":1}}}'
     act = planNextActionServiceJSON(sessionId, 0, jsonFeedback)
     acts.append(act)
 
-    act = planNextActionServiceJSON(sessionId, 0, '')
+    act = planNextActionServiceJSON(sessionId, 0, '{}')
     acts.append(act)
 
-    act = planNextActionServiceJSON(sessionId, 1, '')
+    act = planNextActionServiceJSON(sessionId, 1, '{}')
     acts.append(act)
 
     return acts
@@ -225,12 +228,13 @@ if __name__ == "__main__":
     #print getObjectsOnMap()
     #print getWorkspaceOnMap()
 
-    print 'Test FETCH task'
-    test_fetch_1()
+    #print 'Test FETCH task'
+    #test_fetch_1()
 
-    print 'Test MOVE task'
-    test_move()
+    #print 'Test MOVE task'
+    #r = test_move()
+    #print r
 
     print 'Test FETCH task'
-    r = test_fetch_2()
+    r = test_fetch_1()
     print r

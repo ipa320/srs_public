@@ -60,7 +60,7 @@ from srs_symbolic_grounding.srv import *
 from srs_symbolic_grounding.msg import *
 from geometry_msgs.msg import *
 import rospy
-
+from srs_msgs.msg import SRSSpatialInfo
 
 
 def symbol_grounding_scan_base_pose_client(parent_obj_geometry, furniture_geometry_list):

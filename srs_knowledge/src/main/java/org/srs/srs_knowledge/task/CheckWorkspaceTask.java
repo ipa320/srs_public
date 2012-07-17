@@ -66,7 +66,8 @@ import com.hp.hpl.jena.ontology.Individual;
 import org.srs.srs_knowledge.task.*;
 
 import ros.pkg.srs_symbolic_grounding.srv.*;
-import ros.pkg.srs_symbolic_grounding.msg.*;
+//import ros.pkg.srs_symbolic_grounding.msg.*;
+import ros.pkg.srs_msgs.msg.SRSSpatialInfo;
 
 import ros.*;
 import ros.communication.*;
@@ -136,7 +137,8 @@ public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
 	HighLevelActionSequence actionList = new HighLevelActionSequence();
 	
 	// create MoveAndDetectionActionUnit
-	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+	//SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+	SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
 	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
 	
 	spatialInfo.pose.position.x = stm.getFloat();
@@ -331,7 +333,7 @@ public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
 	return true;
     }
     
-    private ArrayList<Pose2D> calculateScanPositions(SRSFurnitureGeometry furnitureInfo) throws RosException {
+    private ArrayList<Pose2D> calculateScanPositions(SRSSpatialInfo furnitureInfo) throws RosException {
 	ArrayList<Pose2D> posList = new ArrayList<Pose2D>();
 	ServiceClient<SymbolGroundingExploreBasePose.Request, SymbolGroundingExploreBasePose.Response, SymbolGroundingExploreBasePose> sc =
 	    KnowledgeEngine.nodeHandle.serviceClient("symbol_grounding_explore_base_pose" , new SymbolGroundingExploreBasePose(), false);
@@ -345,8 +347,8 @@ public class CheckWorkspaceTask extends org.srs.srs_knowledge.task.Task
 	return posList;
     }
 
-    private SRSFurnitureGeometry getFurnitureGeometryOf(Individual workspace) {
-	SRSFurnitureGeometry spatialInfo = new SRSFurnitureGeometry();
+    private SRSSpatialInfo getFurnitureGeometryOf(Individual workspace) {
+	SRSSpatialInfo spatialInfo = new SRSSpatialInfo();
 	com.hp.hpl.jena.rdf.model.Statement stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "xCoord",  workspace);
 	spatialInfo.pose.position.x = stm.getFloat();
 	stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "yCoord",  workspace);

@@ -14,7 +14,7 @@
 	<depend package="geometry_msgs"/>
 	<depend package="nav_msgs"/>
 	<depend package="map_server"/>
-
+	<depend package="srs_msgs"/>
 	
 	
 	

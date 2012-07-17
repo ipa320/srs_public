@@ -1,6 +1,6 @@
 geometry_msgs/Pose target_obj_pose
-SRSSpatialInfo parent_obj_geometry
-SRSSpatialInfo[] furniture_geometry_list
+srs_msgs/SRSSpatialInfo parent_obj_geometry
+srs_msgs/SRSSpatialInfo[] furniture_geometry_list
 ---
 bool obstacle_check
 float32 reach

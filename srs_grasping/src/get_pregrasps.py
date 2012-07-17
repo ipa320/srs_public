@@ -72,9 +72,9 @@ class get_pregrasps():
 	def __init__(self):
 		self.ik_loop_reply = 1
 
-		rospy.loginfo("Waiting /get_db_grasps service...");
-		rospy.wait_for_service('/get_db_grasps')
-		self.client = rospy.ServiceProxy('/get_db_grasps', GetDB_Grasps)
+		rospy.loginfo("Waiting /get_DBGrasps service...");
+		rospy.wait_for_service('/get_DBGrasps')
+		self.client = rospy.ServiceProxy('/get_DBGrasps', GetDBGrasps)
 		rospy.loginfo("/get_pregrasps service is ready.");
 		print "---------------------------------------------------------------------------";
 
@@ -88,7 +88,7 @@ class get_pregrasps():
 		num_configurations = (1, req.num_configurations)[req.num_configurations>0];
 		
 
-		req = GetDB_GraspsRequest();
+		req = GetDBGraspsRequest();
 		req.object_id = obj_id;
 		grasp_configuration = (self.client(req)).grasp_configuration;
 
@@ -133,7 +133,7 @@ class get_pregrasps():
 			pre = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre, pregrasp_offsets);
 
 
-			aux = DB_Grasp();
+			aux = DBGrasp();
 			aux.object_id = obj_id;
 			aux.hand_type = "SDH";
 			aux.sdh_joint_values = grasp_configuration[i].sdh_joint_values;

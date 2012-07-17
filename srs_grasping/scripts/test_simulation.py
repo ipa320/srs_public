@@ -69,12 +69,12 @@ class grasp_simulation():
 
 	def __init__(self):
 
-		self.get_grasp_configurations_service = rospy.ServiceProxy('get_db_grasps', GetDB_Grasps)
+		self.get_grasp_configurations_service = rospy.ServiceProxy('get_DBGrasps', GetDBGrasps)
 
 
 	def run(self, object_id):	
 
-		req = GetDB_GraspsRequest(object_id=object_id)
+		req = GetDBGraspsRequest(object_id=object_id)
 		res = self.get_grasp_configurations_service(req)
 		grasps = res.grasp_configuration
 		grasping_functions.openraveutils.show_all_grasps(object_id, grasps);

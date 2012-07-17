@@ -1,3 +1,0 @@
-int32 object_id
----
-srs_msgs/DB_Grasp[] grasp_configuration

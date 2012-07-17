@@ -103,7 +103,7 @@ class graspingutils():
 				pre_grasp.pose.orientation.w = float(Rotation[3])
 				category = ((hijo.getElementsByTagName('category'))[0]).firstChild.nodeValue
 
-				GC = DB_Grasp()
+				GC = DBGrasp()
 				GC.object_id = object_id
 				GC.hand_type = "SDH"
 				GC.sdh_joint_values = eval(sdh_joint_values)

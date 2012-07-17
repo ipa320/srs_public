@@ -77,9 +77,9 @@ class get_feasible_grasps():
 		rospy.wait_for_service('/arm_kinematics/get_constraint_aware_ik')
 		rospy.loginfo("/arm_kinematics/get_constraint_aware_ik is ready.");
 
-		rospy.loginfo("Waiting /get_db_grasps service...");
-		rospy.wait_for_service('/get_db_grasps')
-		self.client = rospy.ServiceProxy('/get_db_grasps', GetDB_Grasps)
+		rospy.loginfo("Waiting /get_DBGrasps service...");
+		rospy.wait_for_service('/get_DBGrasps')
+		self.client = rospy.ServiceProxy('/get_DBGrasps', GetDBGrasps)
 
 		self.ik_loop_reply = 1;
 		self.finger_correction = -1;
@@ -101,7 +101,7 @@ class get_feasible_grasps():
 		obj_pose = req.object_pose;
 		pregrasp_offsets = req.pregrasp_offsets;
 
-		req = GetDB_GraspsRequest();
+		req = GetDBGraspsRequest();
 		req.object_id = obj_id;
 		grasp_configuration = (self.client(req)).grasp_configuration;
 

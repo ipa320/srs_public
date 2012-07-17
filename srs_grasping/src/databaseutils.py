@@ -51,7 +51,7 @@ class databaseutils():
 
 	def get_grasps(self, object_id):
 
-		server_result = GetDB_GraspsResponse();
+		server_result = GetDBGraspsResponse();
 		
 		try:
 			resp = self.get_grasps_service(model_ids=[object_id]);

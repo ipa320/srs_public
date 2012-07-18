@@ -67,7 +67,7 @@ import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
-import csv
+
 '''
 def getWorkspaceOnMap():
 	print 'test get all workspace (furnitures basically here) from map'
@@ -107,7 +107,7 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 	while index_1 < len(scan_base_pose_list):
 		index_2 = 0
 		while index_2 < len(furniture_geometry_list):
-			th = math.atan((scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x))
+			th = math.atan((scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x + 0.0001))
 			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y > furniture_geometry_list[index_2].pose.y:
 				th = math.pi + th
 			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y < furniture_geometry_list[index_2].pose.y:
@@ -477,7 +477,7 @@ def handle_symbol_grounding_scan_base_region(req):
 		index_2 = 0
 		dist_list = list()
 		while index_2 < len(furniture_geometry_list):
-			th = math.atan((scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x))
+			th = math.atan((scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x + 0.0001))
 			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y > furniture_geometry_list[index_2].pose.y:
 				th = math.pi + th
 			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y < furniture_geometry_list[index_2].pose.y:
@@ -489,7 +489,7 @@ def handle_symbol_grounding_scan_base_region(req):
 			dist = max((delta_x - furniture_geometry_list[index_2].w / 2.0), (delta_y - furniture_geometry_list[index_2].l / 2.0))
 			dist_list.append(dist)
 			index_2 += 1
-		print dist_list
+		#print dist_list
 		R = min(dist_list) - min_dist
 		#print R
 		R_list.append(R)

@@ -219,7 +219,7 @@ def obstacleCheck(gbpl, po_x, po_y, po_th, po_w, po_l, fgl):
 
 def handle_symbol_grounding_grasp_base_region(req):
 	
-
+	'''
 	#get the robot's current pose from tf
 	rb_pose = Pose2D()
 	listener = tf.TransformListener()
@@ -231,7 +231,12 @@ def handle_symbol_grounding_grasp_base_region(req):
 	rb_pose.theta = rb_pose_rpy[2]
 	rospy.sleep(0.5)
 	#rospy.loginfo(rb_pose)
-
+	'''
+	rb_pose = Pose2D()
+	rb_pose.x = -1.06
+	rb_pose.y = -1.08
+	rb_pose.theta = 0.0
+		
 	#predefined membership function
 	mf1_x = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.75, 0.5, 0.25, 0]
 	mf1_y = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125, 0]

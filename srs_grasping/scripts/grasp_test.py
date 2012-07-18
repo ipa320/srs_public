@@ -88,17 +88,12 @@ class GraspScript(script):
 		
 		rospy.loginfo("Waiting /arm_kinematics/get_ik service...")
 		rospy.wait_for_service('/arm_kinematics/get_ik')
-		rospy.loginfo("/arm_kinematics/get_ik has been found!")
-	
-
 
 		rospy.loginfo("Waiting /get_grasp_configurations service...")
 		rospy.wait_for_service('/get_grasp_configurations')
-		rospy.loginfo("/get_grasp_configurations has been found!")
 
 		rospy.loginfo("Waiting /get_grasps_from_position service...")
 		rospy.wait_for_service('/get_grasps_from_position')
-		rospy.loginfo("/get_grasps_from_position has been found!")
 
 
 		self.sss = simple_script_server()
@@ -106,12 +101,13 @@ class GraspScript(script):
 
 		
 		# initialize components (not needed for simulation)
+		"""
 		self.sss.init("tray")
 		self.sss.init("torso")
 		self.sss.init("arm")
 		self.sss.init("sdh")
 		self.sss.init("base")
-		
+		"""
 
 		# move to initial positions
 		#handle_arm = self.sss.move("arm","folded",False)
@@ -124,9 +120,9 @@ class GraspScript(script):
 
 		if not self.sss.parse:
 			print "Please localize the robot with rviz"
-		self.sss.wait_for_input()
+		#self.sss.wait_for_input()
 		
-
+		self.sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
 		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
 		rospy.sleep(2)
 
@@ -137,39 +133,37 @@ class GraspScript(script):
 		self.sss.move("arm","look_at_table")
 		self.sss.move("sdh","cylopen")
 
-		rospy.sleep(2);
+		#rospy.sleep(2);
 
 		#current_joint_configuration
-		sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
-		while sub.get_num_connections() == 0:
+		while self.sub.get_num_connections() == 0:
 			time.sleep(0.3)
 			continue
 
 		#Detection
+		
 		self.srv_name_object_detection = '/object_detection/detect_object'
 		detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
 		req = DetectObjectsRequest()
-		req.object_name.data = "anti_grippal"
+		req.object_name.data = "Milkbox"
 		res = detector_service(req)
-
+		
 		for i in range(0,len(res.object_list.detections)):
 			print str(i)+": "+res.object_list.detections[i].label
 		
-		index = -1;
+		index = 0#-1;
 		while (index < 0):
 			index = int(raw_input("Select object to grasp: "))
 		
 		obj = res.object_list.detections[index].pose
 		obj.header.stamp = self.listener.getLatestCommonTime("/base_link", obj.header.frame_id)
 		obj = self.listener.transformPose("/base_link", obj)
-                print "Object pose in base_link:",obj
-
-
-		object_id = 28#self.getObjectID(req.object_name.data);
+		object_id = 9#Milkbox
+		print "obj:",obj.pose.position
 
 		print "Calling get_grasps_from_position service..."
 		get_grasps_from_position = rospy.ServiceProxy('get_grasps_from_position', GetGraspsFromPosition)
-		req = srs_grasping.srv.GetGraspsFromPositionRequest(object_id, obj.pose)	
+		req = GetGraspsFromPositionRequest(object_id, obj.pose)	
 		grasp_configuration = (get_grasps_from_position(req)).grasp_configuration
 		print "get_grasps_from_position service has finished."
 
@@ -227,9 +221,8 @@ class GraspScript(script):
 
 
 			if sol:
-				print "PREGRASP: #####################################"
-				print grasp_configuration[i]
-				print "###############################################"
+				print "mode:",grasp_configuration[i].category
+				print "palm:",g.pose.position
 				res = raw_input("Execute this grasp? (y/n): ")
 
 				if res != "y":	

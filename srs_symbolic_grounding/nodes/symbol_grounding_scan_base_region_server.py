@@ -67,7 +67,7 @@ import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
-import csv
+
 '''
 def getWorkspaceOnMap():
 	print 'test get all workspace (furnitures basically here) from map'
@@ -100,14 +100,14 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 	parent_obj_y = po_y
 
 	#obstacle check
-	dist_to_obstacles = 0.5  #set the minimum distance to the household furnitures
+	dist_to_obstacles = 0.4  #set the minimum distance to the household furnitures
 	#rospy.loginfo(math.atan(-0.5))
 	#check all of the poses from the scan pose list with all the household furnitures to find a obstacle free scan pose list. the poses will be stored in obstacle_checked_scan_base_pose_list.
 	index_1 = 0
 	while index_1 < len(scan_base_pose_list):
 		index_2 = 0
 		while index_2 < len(furniture_geometry_list):
-			th = math.atan((scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x))
+			th = math.atan((scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x + 0.0001))
 			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y > furniture_geometry_list[index_2].pose.y:
 				th = math.pi + th
 			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y < furniture_geometry_list[index_2].pose.y:
@@ -195,7 +195,7 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 
 
 #calculate scan base poses
-def handle_symbol_grounding_scan_base_pose(req):
+def handle_symbol_grounding_scan_base_region(req):
 
 	'''
 	#record the map for checking
@@ -285,11 +285,12 @@ def handle_symbol_grounding_scan_base_pose(req):
 	
 
 	#calculate the detection width
+	max_scan_redundancy = 0.1
 	rb_distance = 0.7 #distance between the robot base and the edge of the parent obj
 	robot_h = 1.4 #set the height of the detector
-	detection_angle = (30.0 / 180.0) * math.pi #set the detection angle (wide) of the detector 
+	detection_angle = (40.0 / 180.0) * math.pi #set the detection angle (wide) of the detector 
 	camera_distance = math.sqrt((robot_h - parent_obj_h) ** 2 + (rb_distance - 0.2) ** 2) #distance between the detector and the surface of the parent obj
-	detection_w = 2 * (camera_distance * math.tan(0.5 * detection_angle)) #detection wide
+	detection_w = 2 * (camera_distance * math.tan(0.5 * detection_angle)) - 2.0 * max_scan_redundancy #detection wide
 	#rospy.loginfo(detection_w)
 
 
@@ -453,33 +454,61 @@ def handle_symbol_grounding_scan_base_pose(req):
 	max_len = max(len(obstacle_checked_scan_base_pose_list_1), len(obstacle_checked_scan_base_pose_list_2), len(obstacle_checked_scan_base_pose_list_3), len(obstacle_checked_scan_base_pose_list_4))
 
 	#choose the longest scan pose list 
+	scan_base_pose_list = list()
 	if len(obstacle_checked_scan_base_pose_list_1) == max_len:
-		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_1]
+		scan_base_pose_list = obstacle_checked_scan_base_pose_list_1
 	elif len(obstacle_checked_scan_base_pose_list_2) == max_len:
-		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_2]
+		scan_base_pose_list = obstacle_checked_scan_base_pose_list_2
 	elif len(obstacle_checked_scan_base_pose_list_3) == max_len:
-		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_3]
+		scan_base_pose_list = obstacle_checked_scan_base_pose_list_3
 	else:
-		scan_base_pose_list = [obstacle_checked_scan_base_pose_list_4]
+		scan_base_pose_list = obstacle_checked_scan_base_pose_list_4
 	
 
 	if not scan_base_pose_list:
 		print "no valid scan pose."
 
-	
-	return scan_base_pose_list
+	#rospy.loginfo(scan_base_pose_list[0].x)
+	#calculate R list
+	min_dist = 0.40 #set the minimum distance to obstacles
+	R_list = list()
+	index_1 = 0
+	while index_1 < len(scan_base_pose_list):
+		index_2 = 0
+		dist_list = list()
+		while index_2 < len(furniture_geometry_list):
+			th = math.atan((scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) / (scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x + 0.0001))
+			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y > furniture_geometry_list[index_2].pose.y:
+				th = math.pi + th
+			if scan_base_pose_list[index_1].x < furniture_geometry_list[index_2].pose.x and scan_base_pose_list[index_1].y < furniture_geometry_list[index_2].pose.y:
+				th = -math.pi + th
+			delta_x = math.sqrt((scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.cos(th - furniture_geometry_list[index_2].pose.theta)
+			delta_y = math.sqrt((scan_base_pose_list[index_1].x - furniture_geometry_list[index_2].pose.x) ** 2 + (scan_base_pose_list[index_1].y - furniture_geometry_list[index_2].pose.y) ** 2) * math.sin(th - furniture_geometry_list[index_2].pose.theta)
+			delta_x = abs(delta_x)
+			delta_y = abs(delta_y)
+			dist = max((delta_x - furniture_geometry_list[index_2].w / 2.0), (delta_y - furniture_geometry_list[index_2].l / 2.0))
+			dist_list.append(dist)
+			index_2 += 1
+		#print dist_list
+		R = min(dist_list) - min_dist
+		#print R
+		R_list.append(R)
+		index_1 += 1
+	R = min(min(R_list), max_scan_redundancy)
+
+	return scan_base_pose_list, R
 
 
 
-def symbol_grounding_scan_base_pose_server():
-	rospy.init_node('symbol_grounding_scan_base_pose_server')
-	s = rospy.Service('symbol_grounding_scan_base_pose', SymbolGroundingScanBasePose, handle_symbol_grounding_scan_base_pose)
+def symbol_grounding_scan_base_region_server():
+	rospy.init_node('symbol_grounding_scan_base_region_server')
+	s = rospy.Service('symbol_grounding_scan_base_region', SymbolGroundingScanBaseRegion, handle_symbol_grounding_scan_base_region)
 	print "Ready to receive requests."
 	rospy.spin()
 
 
 
 if __name__ == "__main__":
-    symbol_grounding_scan_base_pose_server()
+    symbol_grounding_scan_base_region_server()
 
 

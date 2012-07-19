@@ -229,8 +229,8 @@ class VerifyObject(smach.State):
     #if object_to_search.classID == 1: #table
     verified_table = self.eo.verify_table(userdata.target_object_pose, object_list_map)
     if verified_table:
-        userdata.verfified_target_object_pose = verified_table.params[4:7]
-        print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " found at " + str(verified_table.params[4]) + "," + str(verified_table.params[5])
+        userdata.verfified_target_object_pose = verified_table.pose.pose
+        print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " found at " + str(verified_table.pose.pose.position.x) + "," + str(verified_table.pose.pose.position.y)
         return 'succeeded'
     else:
         print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " not found"
@@ -296,8 +296,8 @@ class VerifyObjectByName(smach.State):
     #if object_to_search.classID == 1: #table
     verified_table = self.eo.verify_table(target_object_pose, object_list_map)
     if verified_table:
-        userdata.verfified_target_object_pose = [verified_table.centroid.x, verified_table.centroid.y, verified_table.centroid.z]
-        print "table " + str(target_object_pose.position.x) + "," + str(target_object_pose.position.y) + " found at " + str(verified_table.centroid.x) + "," + str(verified_table.centroid.y)
+        userdata.verfified_target_object_pose = verified_table.pose.pose
+        print "table " + str(userdata.target_object_pose.position.x) + "," + str(userdata.target_object_pose.position.y) + " found at " + str(verified_table.pose.pose.position.x) + "," + str(verified_table.pose.pose.position.y)
         return 'succeeded'
     else:
         print "table " + str(target_object_pose.position.x) + "," + str(target_object_pose.position.y) + " not found"

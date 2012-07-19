@@ -67,7 +67,7 @@ from smach_ros import ConditionState, IntrospectionServer
 from srs_knowledge.srv import *
 from srs_knowledge.msg import *
 
-from cob_tray_sensors.srv import *
+#from cob_tray_sensors.srv import *
 
 import util.json_parser as json_parser
 

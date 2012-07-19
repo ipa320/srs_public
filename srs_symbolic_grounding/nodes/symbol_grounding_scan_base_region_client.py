@@ -127,6 +127,8 @@ if __name__ == "__main__":
 	result = symbol_grounding_scan_base_region_client(parent_obj_geometry, furniture_geometry_list)
 	
 	print result
+
+	
 		
 
 

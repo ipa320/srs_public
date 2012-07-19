@@ -40,12 +40,10 @@ class EvalObjects:
       print "Service call failed: %s"%e
 
   def map_list_objects(self, class_id):
-    rospy.wait_for_service('get_objects_of_class')
+    rospy.wait_for_service('table_extraction/get_tables')
     try:
-      get_objects = rospy.ServiceProxy('get_objects_of_class', GetObjectsOfClass)
-      req = UInt32()
-      req.data = class_id
-      res = get_objects(req)
+      get_objects = rospy.ServiceProxy('table_extraction/get_tables', GetTables)
+      res = get_objects()
       return res
     except rospy.ServiceException, e:
       print "Service call failed: %s"%e
@@ -53,12 +51,12 @@ class EvalObjects:
   def verify_table(self, object_pose, table_list_map):
     d_min = 10000
     d_th = 0.5
-    for t in table_list_map.objects.shapes:
+    for t in table_list_map.tables:
       #pose_map = t.params[4:]
-      d = sqrt((t.centroid.x-object_pose.position.x)**2+(t.centroid.y-object_pose.position.y)**2)
+      d = sqrt((t.table.pose.pose.position.x-object_pose.position.x)**2+(t.table.pose.pose.position.y-object_pose.position.y)**2)
       if d < d_min and d < d_th:
         d_min = d
-        closest_table = t
+        closest_table = t.table
     if d_min < 10000:
       return closest_table
     else:

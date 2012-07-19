@@ -11,22 +11,31 @@ import tf
 from tf.transformations import *
 from kinematics_msgs.srv import *
 
-from shared_state_information import *
+def callIKSolver(goal_pose):
+    while(len(sss.arm_joint_positions) == 0): # dirty hack
+        rospy.sleep(0.1)
+    for i in range(5):
+        iks = rospy.ServiceProxy('/srs_arm_kinematics/get_ik', GetPositionIK)
+
+        req = GetPositionIKRequest();
+        req.ik_request.ik_link_name = rospy.get_param("/srs_arm_kinematics/arm/tip_name");
+        req.ik_request.ik_seed_state.joint_state.position = sss.arm_joint_positions
+        req.ik_request.pose_stamped = goal_pose;
+        req.timeout = rospy.Duration(5.0)
+        resp = iks(req);
+        if resp.error_code.val is resp.error_code.SUCCESS:
+            break
+    return (list(resp.solution.joint_state.position), resp.error_code);
+
 
 # base class for all move arm states
 class _move_arm_base(smach.State):
     def __init__(self, additional_input_keys = []):
-       smach.State.__init__(
+        smach.State.__init__(
             self,
             outcomes=['succeeded', 'not_completed','failed', 'preempted'],
             output_keys=['pose_id'],
             input_keys=['poses'] + additional_input_keys)
-       
-    def poseStampedtoSSS(self,pose_stamped):
-        pose = pose_stamped.pose
-        euler = euler_from_quaternion(pose.orientation.x,pose.orientation.y,pose.orientation.z,pose.orientation.w)
-        return [[pose_stamped.frame_id, [pose.position.x,pose.position.y,pose.position.z],list(euler)]]
-
         
     def moveArm(self,userdata,poses,planned):
         ret  = 'not_completed'
@@ -37,17 +46,19 @@ class _move_arm_base(smach.State):
             if self.preempt_requested(): # return if preempt requested
                 return 'preempted'
 
-            ik_pose, error_pose = sss.calculate_ik(self.poseStampedtoSSS(poses[pose_id]))
-            
-            if error_pose is error_pose.NO_IK_SOLUTION:
-                continue # if no solution was found, check next pose
-            elif error_pose is error_pose.SUCCESS: # got solution
-                # start movement
-                if planned:
-                    handle_arm= sss.move_planned('arm',[ik_pose],False)
-                else:        
-                    handle_arm= sss.move('arm',[ik_pose],False)
+            # start movement
+            handle_arm = None
+            if planned:
+                handle_arm= sss.move_cartesian_planned('arm',[poses[pose_id],rospy.get_param("/srs_arm_kinematics/arm/tip_name")],False)
+            else:        
+                ik_pose, error_pose = callIKSolver(poses[pose_id])
                 
+                if error_pose.val is error_pose.NO_IK_SOLUTION:
+                    continue # if no solution was found, check next pose
+                elif error_pose.val is error_pose.SUCCESS: # got solution
+                    print "move to",[ik_pose]
+                    handle_arm= sss.move('arm',[ik_pose])#,False)
+            if handle_arm is not None:
                 # wait while movement
                 r = rospy.Rate(10)
                 preempted = False
@@ -61,14 +72,14 @@ class _move_arm_base(smach.State):
                         
                 # stop arm in any case
                 sss.stop("arm")
-                   
                 if preempted:
+                    handle_arm.cancel()
                     ret = 'preempted'
                 elif arm_state == 3:
-                    ret = 'success'
+                    ret = 'succeeded'
                     userdata.pose_id = pose_id # keep pose_id for subsequent state
                 else:
-                    ret = 'failed'
+                    ret = 'not_completed'
                 
                 break
             else:

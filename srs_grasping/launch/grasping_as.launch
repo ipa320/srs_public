@@ -1,7 +1,0 @@
-<launch>
-
-   <node pkg="srs_grasping" type="get_grasp_configurations_as.py" name="get_grasp_configurations_as" ns="get_grasp_configurations_as" cwd="node" respawn="false" output="screen" />
-
-   <node pkg="srs_grasping" type="get_grasps_from_position_as.py" name="get_grasps_from_position_as" ns="get_grasps_from_position_as" cwd="node" respawn="false" output="screen" />
-
-</launch>

@@ -60,7 +60,7 @@
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 
 from srs_symbolic_grounding.srv import *
-from srs_symbolic_grounding.msg import *
+#from srs_symbolic_grounding.msg import *
 from std_msgs.msg import *
 from geometry_msgs.msg import *
 from nav_msgs.msg import *
@@ -70,6 +70,7 @@ import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
+from srs_msgs.msg import *
 #import csv
 
 
@@ -141,7 +142,7 @@ def obstacleCheck(gbpl, po_x, po_y, po_th, po_w, po_l, fgl, to_h):
 	dist_to_table = 0.6 #minimum distance to the edge of the parent obj
 	print target_obj_h
 	if target_obj_h > 1.2 or target_obj_h < 0.85:
-		dist_to_table -= 0.05	
+		dist_to_table -= 0.07	
 	index_1 = 0
 	while index_1 < len(grasp_base_pose_list):
 		th = math.atan((grasp_base_pose_list[index_1].y - parent_obj_y) / (grasp_base_pose_list[index_1].x - parent_obj_x))
@@ -163,7 +164,7 @@ def obstacleCheck(gbpl, po_x, po_y, po_th, po_w, po_l, fgl, to_h):
 		#to check if a pose is too close to or blocked by the furnitures in the room 
 		dist_to_obstacles = 0.6 #minimum disatnce to the furnitures in the room
 		if target_obj_h > 1.2 or target_obj_h < 0.85:
-			dist_to_obstacles -= 0.05
+			dist_to_obstacles -= 0.07
 		index_2 = 0
 		while index_2 < len(parent_obj_checked_grasp_base_pose_list):
 			index_3 = 0
@@ -224,7 +225,7 @@ def obstacleCheck(gbpl, po_x, po_y, po_th, po_w, po_l, fgl, to_h):
 
 def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	
-	'''
+	
 	#get the robot's current pose from tf
 	rb_pose = Pose2D()
 	listener = tf.TransformListener()
@@ -236,13 +237,14 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	rb_pose.theta = rb_pose_rpy[2]
 	rospy.sleep(0.5)
 	#rospy.loginfo(rb_pose)
+	
 	'''
-
 	#test value near table
 	rb_pose = Pose2D()
 	rb_pose.x = -1.06
 	rb_pose.y = 1.08
 	rb_pose.theta = 0.0
+	'''
 
 	#predefined membership function
 	mf1_x = [0, 0.16, 0.33, 0.49, 0.67, 0.84, 1, 0.75, 0.5, 0.25, 0]
@@ -369,9 +371,9 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	#calculate two lists of candidate base poses for grasping 	
 	#the first candidate pose list
 	step_angle_1 = 1.0 #360 / step_angle of candidate poses will be put around the target obj
-	dist_1 = 0.75 #distance to the target obj
+	dist_1 = 0.7 #distance to the target obj
 	step_angle_2 = 1.0
-	dist_2 = 0.8
+	dist_2 = 0.75
 	#print target_obj_h
 	if target_obj_h > 1.2 or target_obj_h < 0.85:
 		dist_1 -= 0.05

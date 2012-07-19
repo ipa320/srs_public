@@ -57,7 +57,7 @@
 
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 from srs_symbolic_grounding.srv import *
-from srs_symbolic_grounding.msg import *
+from srs_msgs.msg import *
 from std_msgs.msg import *
 from geometry_msgs.msg import *
 from nav_msgs.msg import *
@@ -67,7 +67,6 @@ import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
-import csv
 '''
 def getWorkspaceOnMap():
 	print 'test get all workspace (furnitures basically here) from map'
@@ -145,11 +144,11 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 				#rospy.loginfo([wall_check_point_x, wall_check_point_y])
 
 				map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution)
-				map_index_list.append(map_index)
+				map_index_list.append(map_index - 1)
 				n += 1
 				
 			map_index = int((obstacle_checked_scan_base_pose_list[index_3].y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((obstacle_checked_scan_base_pose_list[index_3].x - data.map.info.origin.position.x) / data.map.info.resolution)
-			map_index_list.append(map_index)
+			map_index_list.append(map_index - 1)
 			#rospy.loginfo(map_index_list)
 
 			index_4 = 0
@@ -285,7 +284,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 	
 
 	#calculate the detection width
-	rb_distance = 0.7 #distance between the robot base and the edge of the parent obj
+	rb_distance = 0.75 #distance between the robot base and the edge of the parent obj
 	robot_h = 1.4 #set the height of the detector
 	detection_angle = (30.0 / 180.0) * math.pi #set the detection angle (wide) of the detector 
 	camera_distance = math.sqrt((robot_h - parent_obj_h) ** 2 + (rb_distance - 0.2) ** 2) #distance between the detector and the surface of the parent obj
@@ -323,8 +322,11 @@ def handle_symbol_grounding_scan_base_pose(req):
 	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 		
 		#calculate 4 lists of scan poses, each list is for scanning from one side of the table.
+		print detection_w
 		step = int((parent_obj_l / detection_w) + 0.99)
+		print step
 		detection_w = parent_obj_l / step
+		print detection_w
 		for num in range(step):
 			scan_base_pose_1 = Pose2D()
 			scan_base_pose_1.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)

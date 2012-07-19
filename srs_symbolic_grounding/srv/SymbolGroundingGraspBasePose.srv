@@ -1,8 +1,0 @@
-geometry_msgs/Pose target_obj_pose
-srs_msgs/SRSSpatialInfo parent_obj_geometry
-srs_msgs/SRSSpatialInfo[] furniture_geometry_list
----
-bool obstacle_check
-float32 reach
-geometry_msgs/Pose2D grasp_base_pose
-

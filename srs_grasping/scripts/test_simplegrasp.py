@@ -11,7 +11,7 @@
 # \note
 #   Project name: srs
 # \note
-#   ROS stack name: srs
+#   ROS stack name: srs_public
 # \note
 #   ROS package name: srs_grasping
 #
@@ -57,100 +57,77 @@
 
 import roslib
 roslib.load_manifest('srs_grasping')
-
-import time
 import rospy
+import time
 import tf
-import math
-import random
-import scipy
-
-from geometry_msgs.msg import *
-from srs_grasping.msg import *
-from srs_grasping.srv import *
-from kinematics_msgs.srv import *
+import sys
+import grasping_functions
 
 from simple_script_server import *
-
-from numpy import matrix
-
-from cob_object_detection_msgs.msg import *
-from cob_object_detection_msgs.srv import *
-from srs_object_database_msgs.msg import *
-from srs_object_database_msgs.srv import *
-
-import grasping_functions
+from pr2_controllers_msgs.msg import *
+from geometry_msgs.msg import *
 from srs_grasping.srv import *
+from cob_object_detection_msgs.srv import *
+
+#from numpy import matrix
+
 
 class GraspScript(script):
 		
 	def __init__(self):
 		
-		rospy.loginfo("Waiting /arm_kinematics/get_ik service...")
-		rospy.wait_for_service('/arm_kinematics/get_ik')
-
-		rospy.loginfo("Waiting /get_grasp_configurations service...")
-		rospy.wait_for_service('/get_grasp_configurations')
-
-		rospy.loginfo("Waiting /get_grasps_from_position service...")
-		rospy.wait_for_service('/get_grasps_from_position')
-
-
 		self.sss = simple_script_server()
-		self.iks = rospy.ServiceProxy('/arm_kinematics/get_ik', GetPositionIK)
+		self.detection_service = rospy.ServiceProxy('/object_detection/detect_object', DetectObjects)
+		self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
+		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
 
-		
+
 		# initialize components (not needed for simulation)
-		"""
 		self.sss.init("tray")
 		self.sss.init("torso")
 		self.sss.init("arm")
 		self.sss.init("sdh")
 		self.sss.init("base")
-		"""
+		
 
 		# move to initial positions
-		#handle_arm = self.sss.move("arm","folded",False)
-		#handle_torso = self.sss.move("torso","home",False)
-		#handle_sdh = self.sss.move("sdh","home",False)
-		#self.sss.move("tray","down")
-		#handle_arm.wait()
-		#handle_torso.wait()
-		#handle_sdh.wait()
-
+		"""
+		handle_arm = self.sss.move("arm","folded",False)
+		handle_torso = self.sss.move("torso","home",False)
+		handle_sdh = self.sss.move("sdh","home",False)
+		self.sss.move("tray","down")
+		handle_arm.wait()
+		handle_torso.wait()
+		handle_sdh.wait()
+		"""
 		if not self.sss.parse:
 			print "Please localize the robot with rviz"
 		#self.sss.wait_for_input()
 		
-		self.sub = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
-		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
-		rospy.sleep(2)
 
-	def execute(self):
+	def run(self, object_id):
 
 		# prepare for grasping
 		#self.sss.move("base","kitchen")
 		self.sss.move("arm","look_at_table")
 		self.sss.move("sdh","cylopen")
-
-		#rospy.sleep(2);
+		rospy.sleep(2);
 
 		#current_joint_configuration
-		while self.sub.get_num_connections() == 0:
+		while self.arm_state.get_num_connections() == 0:
 			time.sleep(0.3)
 			continue
 
 		#Detection
-		
-		self.srv_name_object_detection = '/object_detection/detect_object'
-		detector_service = rospy.ServiceProxy(self.srv_name_object_detection, DetectObjects)
 		req = DetectObjectsRequest()
-		req.object_name.data = "Milkbox"
-		res = detector_service(req)
+		req.object_name.data = grasping_functions.databaseutils.get_object_name(object_id);
+		res = self.detection_service(req)
 		
+		print "---------------------------------------------------------"
 		for i in range(0,len(res.object_list.detections)):
 			print str(i)+": "+res.object_list.detections[i].label
-		
+		print "---------------------------------------------------------"
+
 		index = 0#-1;
 		while (index < 0):
 			index = int(raw_input("Select object to grasp: "))
@@ -158,14 +135,13 @@ class GraspScript(script):
 		obj = res.object_list.detections[index].pose
 		obj.header.stamp = self.listener.getLatestCommonTime("/base_link", obj.header.frame_id)
 		obj = self.listener.transformPose("/base_link", obj)
-		object_id = 9#Milkbox
-		print "obj:",obj.pose.position
+		print "obj_pose:\n",obj.pose.position
 
-		print "Calling get_grasps_from_position service..."
-		get_grasps_from_position = rospy.ServiceProxy('get_grasps_from_position', GetGraspsFromPosition)
-		req = GetGraspsFromPositionRequest(object_id, obj.pose)	
+		print "Calling get_feasible_grasps service..."
+		get_grasps_from_position = rospy.ServiceProxy('get_feasible_grasps', GetFeasibleGrasps)
+		req = GetFeasibleGraspsRequest(object_id, obj.pose, [0.0, 0.0])	
 		grasp_configuration = (get_grasps_from_position(req)).grasp_configuration
-		print "get_grasps_from_position service has finished."
+		print "get_feasible_grasps service has finished."
 
 
 		for i in range(0,len(grasp_configuration)):
@@ -173,45 +149,31 @@ class GraspScript(script):
 			pre = PoseStamped()
 			pre.header.stamp = rospy.Time.now()
 			pre.header.frame_id = "/base_link"
-			pre.pose.position.x = grasp_configuration[i].pre_grasp.position.x
-			pre.pose.position.y = grasp_configuration[i].pre_grasp.position.y
-			pre.pose.position.z = grasp_configuration[i].pre_grasp.position.z
-			pre.pose.orientation.x = grasp_configuration[i].pre_grasp.orientation.x
-			pre.pose.orientation.y = grasp_configuration[i].pre_grasp.orientation.y
-			pre.pose.orientation.z = grasp_configuration[i].pre_grasp.orientation.z
-			pre.pose.orientation.w = grasp_configuration[i].pre_grasp.orientation.w
+			pre.pose.position.x = grasp_configuration[i].pre_grasp.pose.position.x
+			pre.pose.position.y = grasp_configuration[i].pre_grasp.pose.position.y
+			pre.pose.position.z = grasp_configuration[i].pre_grasp.pose.position.z
+			pre.pose.orientation.x = grasp_configuration[i].pre_grasp.pose.orientation.x
+			pre.pose.orientation.y = grasp_configuration[i].pre_grasp.pose.orientation.y
+			pre.pose.orientation.z = grasp_configuration[i].pre_grasp.pose.orientation.z
+			pre.pose.orientation.w = grasp_configuration[i].pre_grasp.pose.orientation.w
 
 			g = PoseStamped()
 			g.header.stamp = rospy.Time.now()
 			g.header.frame_id = "/base_link"
-			g.pose.position.x = grasp_configuration[i].grasp.position.x
-			g.pose.position.y = grasp_configuration[i].grasp.position.y
-			g.pose.position.z = grasp_configuration[i].grasp.position.z
-			g.pose.orientation.x = grasp_configuration[i].grasp.orientation.x
-			g.pose.orientation.y = grasp_configuration[i].grasp.orientation.y
-			g.pose.orientation.z = grasp_configuration[i].grasp.orientation.z
-			g.pose.orientation.w = grasp_configuration[i].grasp.orientation.w
+			g.pose.position.x = grasp_configuration[i].grasp.pose.position.x
+			g.pose.position.y = grasp_configuration[i].grasp.pose.position.y
+			g.pose.position.z = grasp_configuration[i].grasp.pose.position.z
+			g.pose.orientation.x = grasp_configuration[i].grasp.pose.orientation.x
+			g.pose.orientation.y = grasp_configuration[i].grasp.pose.orientation.y
+			g.pose.orientation.z = grasp_configuration[i].grasp.pose.orientation.z
+			g.pose.orientation.w = grasp_configuration[i].grasp.pose.orientation.w
 	
-
-			offset_x = 0#(g.pose.position.x - pre.pose.position.x)/3
-			offset_y = 0#(g.pose.position.y - pre.pose.position.y)/3
-			offset_z = 0#(g.pose.position.z - pre.pose.position.z)/3
-
-			pre.pose.position.x += offset_x
-			pre.pose.position.y += offset_y
-			pre.pose.position.z -= offset_z
-			g.pose.position.x += offset_x
-			g.pose.position.y += offset_y
-			g.pose.position.z -= offset_z
-
-
 			sol = False
-			
-			for w in range(0,10):
-				(pre_grasp_conf, error_code) = grasping_functions.callIKSolver(current_joint_configuration, pre)		
+			for w in range(0,5):
+				(pre_grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(current_joint_configuration, pre);
 				if(error_code.val == error_code.SUCCESS):
-					for k in range(0,10):
-						(grasp_conf, error_code) = grasping_functions.callIKSolver(pre_grasp_conf, g)
+					for k in range(0,5):
+						(grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(pre_grasp_conf, g);
 						if(error_code.val == error_code.SUCCESS):		
 							print str(i)+": IK solution found"
 							sol = True
@@ -221,14 +183,14 @@ class GraspScript(script):
 
 
 			if sol:
-				print "mode:",grasp_configuration[i].category
-				print "palm:",g.pose.position
+				print "category:",grasp_configuration[i].category
+				print "grasp position:\n",g.pose.position
 				res = raw_input("Execute this grasp? (y/n): ")
 
 				if res != "y":	
 					continue
 				else:
-					#grasping_functions.grasp_view(object_id, grasp_configuration[i], obj.pose)
+					#grasping_functions.openraveutils.grasp_view(object_id, grasp_configuration[i], obj.pose)
 					# execute grasp
 					handle_say = self.sss.say(["I am grasping the object now."], False)
 					handle_arm = self.sss.move("arm", [pre_grasp_conf], False)
@@ -245,12 +207,11 @@ class GraspScript(script):
 					handle_sdh.wait()
 					rospy.sleep(4);
 
-					"""
+		
 					# place obj on tray
 					handle01 = self.sss.move("arm","grasp-to-tray",False)
 					self.sss.move("tray","up")
 					handle01.wait()
-
 
 					self.sss.move("arm","tray")
 					self.sss.move("sdh","cylopen")
@@ -261,20 +222,20 @@ class GraspScript(script):
 
 					# deliver cup to order position
 					#self.sss.move("base","order")
-					self.sss.say("Here's your drink.")
-					self.sss.move("torso","nod")
+					#self.sss.say("Here's your drink.")
+					#self.sss.move("torso","nod")
 
-					res = grasping_functions.sdh_tactil_sensor_result()
+					res = grasping_functions.graspingutils.sdh_tactil_sensor_result()
 					if not res:
 						val = list(grasp_configuration[i].sdh_joint_values)
-						val[2] -= 0.1
-						val[4] -= 0.1
-						val[6] -= 0.1
+						val[1] += 0.07
+						val[3] += 0.07
+						val[5] += 0.07
 						handle_sdh = self.sss.move("sdh", [val], False)
 						handle_sdh.wait()
 						rospy.sleep(4);
 						return 0;
-					"""
+					
 					return 0;
 		return -1
 
@@ -285,31 +246,16 @@ class GraspScript(script):
 		rospy.spin()
 
 
-	#Fake function
-	def getObjectID(self, obj_name):
-
-		if (obj_name=="milk"): 
-			obj_name = "Milkbox";
-
-		s_get_object_id = '/get_models';
-		rospy.loginfo("Waiting for %s service",s_get_object_id)
-		rospy.wait_for_service(s_get_object_id)
-		get_object_id = rospy.ServiceProxy(s_get_object_id, GetObjectId)
-		rospy.loginfo('Calling service %s',s_get_object_id)
-
-		obj_db_id = -1
-		try:
-			res = get_object_id(type=obj_name)
-			obj_db_id = int(res.model_ids[0])
-			rospy.loginfo('Object name (%s) successfully converted to ID (%d)', obj_name, obj_db_id);
-		except:
-			rospy.logerr('Error on converting name (%s) to ID...',obj_name);
-
-		return obj_db_id
-
-
-
 if __name__ == "__main__":
+
     	rospy.init_node('grasp_test')
-	SCRIPT = GraspScript()
-	SCRIPT.execute()
+	print "---------------------------------------------------------------------------------------"
+	print "usage:\t\trosrun srs_grasping test_graspMilk.py [object_id]\ndefault:\tobject_id: 9 (Milkbox)"
+	print "---------------------------------------------------------------------------------------"
+	s = GraspScript()
+
+	if len(sys.argv) == 1:
+		s.run(9)
+	else:
+    		s.run(int(sys.argv[1]))
+

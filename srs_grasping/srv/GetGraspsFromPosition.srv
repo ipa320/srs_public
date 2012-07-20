@@ -1,5 +1,0 @@
-int32 object_id
-geometry_msgs/Pose object_pose
----
-bool feasible_grasp_available
-srs_msgs/GraspSubConfiguration[] grasp_configuration

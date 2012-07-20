@@ -188,6 +188,10 @@ class Task_Feedback:
         self.json_decoded = json.loads(task_json_string)
         #print self.json_decoded
         
+        self.action_object = ''    #target of individual action, to be updated every action steps at the semantic DM state
+        
+        self.action_object_parent = ''  #parent object of the above action, to be updated in semantic DM state 
+        
         self.decode()
     
     def decode(self):

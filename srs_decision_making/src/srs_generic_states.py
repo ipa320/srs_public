@@ -295,6 +295,12 @@ class semantic_dm(smach.State):
         
         #dummy code for testing
         userdata.semi_autonomous_mode=True
+        
+        
+        #clean action information from last step
+        current_task_info.task_feedback.action_object = ''
+        current_task_info.task_feedback.action_object_parent = '' 
+                    
 
         ##############################################
         # get Next Action From Knowledge_ros_service
@@ -404,6 +410,8 @@ class semantic_dm(smach.State):
                     destPos = json_parser.decode_move_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not destPos is None:
                         userdata.target_base_pose = [destPos['x'], destPos['y'], destPos['theta']]
+                        current_task_info.task_feedback.action_object = str([destPos['x'], destPos['y'], destPos['theta']])
+                        current_task_info.task_feedback.action_object_parent = ''
                     
                     return nextStep
                 elif actName == 'move':
@@ -413,11 +421,15 @@ class semantic_dm(smach.State):
                     destPos = json_parser.decode_move_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not destPos is None:
                         userdata.target_base_pose = [destPos['x'], destPos['y'], destPos['theta']]
+                        current_task_info.task_feedback.action_object = str([destPos['x'], destPos['y'], destPos['theta']])
+                        current_task_info.task_feedback.action_object_parent = ''
 
                     return nextStep
                 elif actName == 'put_on_tray':
                     nextStep = 'put_on_tray'
                     #userdata.grasp_conf = resp1.nextAction.generic.actionInfo[1]
+                    current_task_info.task_feedback.action_object = 'tray'
+                    current_task_info.task_feedback.action_object_parent = ''
                     return nextStep
                 elif actName == 'deliver_object':
                     nextStep = 'deliver_object'
@@ -426,7 +438,8 @@ class semantic_dm(smach.State):
                     destPos = json_parser.decode_move_parameters(resp1.nextAction.generic.jsonActionInfo)
                     if not destPos is None:
                         userdata.target_base_pose = [destPos['x'], destPos['y'], destPos['theta']]
-                    
+                    current_task_info.task_feedback.action_object = str([destPos['x'], destPos['y'], destPos['theta']])
+                    current_task_info.task_feedback.action_object_parent = ''
                     return nextStep
                 elif actName == 'finish_success':
                     nextStep = 'succeeded'
@@ -454,12 +467,13 @@ class semantic_dm(smach.State):
                         
                         # name of the workspace
                         userdata.target_workspace_name = obj_to_det['workspace']
-
+                        current_task_info.task_feedback.action_object = obj_to_det['object_type']
+                        current_task_info.task_feedback.action_object_parent = obj_to_det['workspace']   
                     
                     rospy.loginfo ("target_object_name: %s", userdata.target_object_name)
                     rospy.loginfo ("target_object_id: %s", userdata.target_object_id)
                     rospy.loginfo ("target_workspace_name: %s", userdata.target_workspace_name)        
-                            
+    
                     return nextStep
 
                 elif actName == 'grasp':
@@ -478,6 +492,8 @@ class semantic_dm(smach.State):
                         userdata.target_object_id = obj_to_det['object_id']
                         # name of the workspace
                         userdata.target_workspace_name = obj_to_det['workspace']
+                        current_task_info.task_feedback.action_object = obj_to_det['object_type']
+                        current_task_info.task_feedback.action_object_parent = obj_to_det['workspace']   
                     
                     return nextStep
                 
@@ -496,7 +512,9 @@ class semantic_dm(smach.State):
                         userdata.target_object_id = obj_to_det['object_id']
                         # name of the workspace
                         userdata.target_workspace_name = obj_to_det['workspace']
-                    
+                        current_task_info.task_feedback.action_object = obj_to_det['object_type']
+                        current_task_info.task_feedback.action_object_parent = obj_to_det['workspace']   
+                                        
                     return nextStep
                 
                 elif actName == 'check':
@@ -512,7 +530,9 @@ class semantic_dm(smach.State):
                         scan_base_pose = [json_pose['x'], json_pose['y'], json_pose['theta']]
                         userdata.scane_pose_list[0] = scan_base_pose                
                         # userdata.target_workspace_name = par[0]
-                    
+                        current_task_info.task_feedback.action_object = ''
+                        current_task_info.task_feedback.action_object_parent = ''
+                                       
 
                     """
                     userdata.target_object_hh_id = 1

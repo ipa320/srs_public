@@ -113,6 +113,8 @@ class simple_grasp(smach.State):
             
             global listener
             # check if maximum retries reached
+            print self.retries
+            print self.max_retries
             if self.retries > self.max_retries:
                 self.retries = 0
                 return 'no_more_retries'

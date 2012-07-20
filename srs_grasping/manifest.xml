@@ -20,12 +20,15 @@
   <depend package="kinematics_msgs"/>
   <depend package="srs_msgs"/>
   <depend package="srs_object_database"/>
-  <!--depend package="openrave"/-->
   <depend package="schunk_sdh"/> 
   <depend package="cob_srvs"/> 
 
   <!-- Uncomment this lines to run the grasp_test.py script -->
   <depend package="cob_script_server"/> 
   <depend package="cob_object_detection_msgs"/> 
+  <!-- #################################################### -->
+
+  <!--depend package="openrave"/-->  <!-- Uncomment this line if you use the openrave_planning package -->
+  <rosdep name="openrave"/> <!-- Comment this line if you use the openrave_planning package -->
 
 </package>

@@ -11,7 +11,7 @@
 # \note
 #   Project name: srs
 # \note
-#   ROS stack name: srs
+#   ROS stack name: srs_public
 # \note
 #   ROS package name: srs_grasping
 #
@@ -23,7 +23,7 @@
 # \date Date of creation: March 2012
 #
 # \brief
-#   Implements a service that returns all the grasping configurations for a given object_id.
+#   Implements the simulation for the precomputed grasps. 
 #
 #################################################################
 #
@@ -55,53 +55,41 @@
 #
 #################################################################
 
-import roslib
+import roslib; 
 roslib.load_manifest('srs_grasping')
-import time
 import rospy
-
+import sys
 import grasping_functions
+
 from srs_grasping.srv import *
 
 
-class get_grasp_configurations():
+
+class grasp_simulation():
 
 	def __init__(self):
-		print "-------------------------------------------------------------------------";
-		rospy.loginfo("Waiting /get_model_grasp service...");
-		rospy.wait_for_service('/get_model_grasp');
-		rospy.loginfo("/get_model_grasp is ready.");
-		rospy.loginfo("/get_grasp_configurations service is ready.");
+
+		self.get_grasp_configurations_service = rospy.ServiceProxy('get_db_grasps', GetDBGrasps)
 
 
-	def get_grasp_configurations(self, server_goal):
-		x = time.time();
-		rospy.loginfo("/get_grasp_configurations service has been called...");
+	def run(self, object_id):	
+
+		req = GetDBGraspsRequest(object_id=object_id)
+		res = self.get_grasp_configurations_service(req)
+		grasps = res.grasp_configuration
+		grasping_functions.openraveutils.show_all_grasps(object_id, grasps);
 
 
-		server_result = GetGraspConfigurationsResponse();
 
-		resp = grasping_functions.read_grasps_from_DB(server_goal.object_id);
-		if resp == -1:
-			resp = grasping_functions.generator(server_goal.object_id);
-			if resp != -1:
-				resp = grasping_functions.read_grasps_from_DB(server_goal.object_id);
-				server_result.grasp_configuration = resp.grasp_configuration;
-		else:
-			server_result.grasp_configuration = resp.grasp_configuration;
+if __name__ == "__main__":
 
+    	rospy.init_node('grasp_simulation')
+	s = grasp_simulation()
 
-		print "Time employed: " + str(time.time() - x);
-		print "---------------------------------------";
-		return server_result;
-
-
-	def get_grasp_configurations_server(self):
-		s = rospy.Service('/get_grasp_configurations', GetGraspConfigurations, self.get_grasp_configurations);
-
-
-if __name__ == '__main__':
-	rospy.init_node('get_grasp_configurations')
-	SCRIPT = get_grasp_configurations()
-	SCRIPT.get_grasp_configurations_server();
-	rospy.spin()
+    	if len(sys.argv) == 1:
+		print "---------------------------------------------------------------------------------------"
+		print "usage:\t\trosrun srs_grasping test_simulation [object_id]\ndefault:\tobject_id: 9 (Milkbox)"
+		print "---------------------------------------------------------------------------------------"
+		s.run(9)
+	else:
+    		s.run(int(sys.argv[1]))

@@ -128,7 +128,7 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 		data = getMapClient() #get occupancy grid map from the navigation serves 
 
 		
-		dist_to_walls = 0.5 #set the minimum distance to the walls
+		dist_to_walls = 0.55 #set the minimum distance to the walls
 		threshold = 10.0 #set the threshold to decide if a pose is occupaied. >threshold:occupied.
 		step_angle = 5.0 #set the step angle for putting points around the robot for the wall check (360 / step_angle points will be used)
 
@@ -144,11 +144,11 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 				#rospy.loginfo([wall_check_point_x, wall_check_point_y])
 
 				map_index = int((wall_check_point_y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((wall_check_point_x - data.map.info.origin.position.x) / data.map.info.resolution)
-				map_index_list.append(map_index - 1)
+				map_index_list.append(map_index)
 				n += 1
 				
 			map_index = int((obstacle_checked_scan_base_pose_list[index_3].y - data.map.info.origin.position.y) / data.map.info.resolution) * data.map.info.width + int((obstacle_checked_scan_base_pose_list[index_3].x - data.map.info.origin.position.x) / data.map.info.resolution)
-			map_index_list.append(map_index - 1)
+			map_index_list.append(map_index)
 			#rospy.loginfo(map_index_list)
 
 			index_4 = 0

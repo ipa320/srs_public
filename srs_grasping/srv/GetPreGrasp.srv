@@ -1,8 +1,9 @@
 int32 object_id
 geometry_msgs/Pose object_pose
+float32[] pregrasp_offsets
 int32 num_configurations
 ---
-srs_msgs/GraspConfiguration[] side
-srs_msgs/GraspConfiguration[] mside
-srs_msgs/GraspConfiguration[] front
-srs_msgs/GraspConfiguration[] top
+srs_msgs/DBGrasp[] side
+srs_msgs/DBGrasp[] mside
+srs_msgs/DBGrasp[] front
+srs_msgs/DBGrasp[] top

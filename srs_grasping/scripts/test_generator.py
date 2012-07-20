@@ -11,7 +11,7 @@
 # \note
 #   Project name: srs
 # \note
-#   ROS stack name: srs
+#   ROS stack name: srs_public
 # \note
 #   ROS package name: srs_grasping
 #
@@ -23,7 +23,7 @@
 # \date Date of creation: March 2012
 #
 # \brief
-#   Implements the simulation for the precomputed grasps. 
+#   Implements a grasp test generator script.
 #
 #################################################################
 #
@@ -58,38 +58,28 @@
 import roslib; 
 roslib.load_manifest('srs_grasping')
 import rospy
-
+import sys
 import grasping_functions
-from srs_grasping.srv import *
+
+class GENERATOR():
+
+	def run(self, object_id):
+
+		return grasping_functions.openraveutils.generator(object_id);
+
+
+if __name__ == "__main__":
+
+	rospy.init_node('grasp_generator')
+	s = GENERATOR()
+
+	if len(sys.argv) == 1:
+		print "---------------------------------------------------------------------------------------"
+		print "usage:\t\trosrun srs_grasping test_generator [object_id]\ndefault:\tobject_id: 9 (Milkbox)"
+		print "---------------------------------------------------------------------------------------"
+		s.run(9)
+	else:
+    		s.run(int(sys.argv[1]))
 
 
 
-class grasp_simulation():
-	def __init__(self):
-
-		rospy.loginfo("Waiting /get_model_mesh service...")
-		rospy.wait_for_service('/get_model_mesh')
-		rospy.loginfo("/get_model_mesh has been found!")
-
-		rospy.loginfo("Waiting /get_grasp_configurations service...")
-		rospy.wait_for_service('/get_grasp_configurations')
-		rospy.loginfo("/get_grasp_configurations has been found!")
-
-	# ------------------------------------------------------------------------------------
-	# ------------------------------------------------------------------------------------
-	def run(self, object_id):	
-
-		get_grasp_configurations = rospy.ServiceProxy('get_grasp_configurations', GetGraspConfigurations)
-		req = GetGraspConfigurationsRequest(object_id=object_id)
-		grasps = (get_grasp_configurations(req)).grasp_configuration
-
-		grasping_functions.show_all_grasps(object_id, grasps);
-
-		return 0
-
-##########################################################################
-if __name__ == "__main__":################################################
-##########################################################################
-    	rospy.init_node('grasp_simulation')
-	s = grasp_simulation()
-    	s.run(9)	#milk

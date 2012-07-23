@@ -264,11 +264,14 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 
 
 	#transfrom the parent obj data from database 
-	target_obj_x = req.target_obj_pose.position.x
-	target_obj_y = req.target_obj_pose.position.y
+	target_obj_x = req.target_obj_pose.position.x 
+	target_obj_y = req.target_obj_pose.position.y  
 	target_obj_h = req.target_obj_pose.position.z
 	target_obj_rpy = tf.transformations.euler_from_quaternion([req.target_obj_pose.orientation.x, req.target_obj_pose.orientation.y, req.target_obj_pose.orientation.z, req.target_obj_pose.orientation.w])
 	target_obj_th = target_obj_rpy[2]
+	#adjust postion
+	target_obj_x = target_obj_x + 0.027 * math.cos(target_obj_th) - 0.039 * math.sin(target_obj_th)
+	target_obj_y = target_obj_y + 0.027 * math.sin(target_obj_th) - 0.039 * math.cos(target_obj_th)
 	
 
 

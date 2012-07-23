@@ -15,7 +15,7 @@ include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
 #genaction()
 
 rosbuild_init()
-rosbuild_genmsg()
+#rosbuild_genmsg()
 rosbuild_gensrv()
 
 

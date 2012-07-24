@@ -23,7 +23,7 @@
 # \date Date of creation: Mar 2012
 #
 # \brief
-# test client for symbol_grounding_scan_base_pose_server
+# test client for symbol_grounding_deliver_base_region_server
 #
 #################################################################
 #
@@ -57,21 +57,21 @@
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 
 from srs_symbolic_grounding.srv import *
-#from srs_symbolic_grounding.msg import *
+from srs_symbolic_grounding.msg import *
 from geometry_msgs.msg import *
 import rospy
 from srs_msgs.msg import SRSSpatialInfo
 
 
-def symbol_grounding_scan_base_pose_client(parent_obj_geometry, furniture_geometry_list):
+def symbol_grounding_deliver_base_region_client(parent_obj_geometry, furniture_geometry_list):
 
-	rospy.wait_for_service('symbol_grounding_scan_base_pose')
+	rospy.wait_for_service('symbol_grounding_deliver_base_region')
 	
-	symbol_grounding_scan_base_pose = rospy.ServiceProxy('symbol_grounding_scan_base_pose', SymbolGroundingScanBasePose)
+	symbol_grounding_deliver_base_region = rospy.ServiceProxy('symbol_grounding_deliver_base_region', SymbolGroundingDeliverBaseRegion)
 	
 	try:
 		resp = list()
-		resp.append(symbol_grounding_scan_base_pose(parent_obj_geometry, furniture_geometry_list))
+		resp.append(symbol_grounding_deliver_base_region(parent_obj_geometry, furniture_geometry_list))
 		return resp
 	
 	except rospy.ServiceException, e:
@@ -122,9 +122,9 @@ if __name__ == "__main__":
 	furniture_geometry_list = workspace_info.objectsInfo
 
 
-	print "Requesting scan base pose."
+	print "Requesting deliver base region."
 	
-	result = symbol_grounding_scan_base_pose_client(parent_obj_geometry, furniture_geometry_list)
+	result = symbol_grounding_deliver_base_region_client(parent_obj_geometry, furniture_geometry_list)
 	
 	print result
 		

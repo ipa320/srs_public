@@ -85,7 +85,7 @@ class goal_structure():
         self.task_parameter=""
         
         
-        # contain task_id, task_initializer, task_initializer_type, task_name, task_parameter, task_schedule
+        # contain task_id, task_initializer, task_initializer_type, task_name, task_parameter, task_schedule, action_object, action_object_parent
         # defined in srs_decision_making json_parser.py
         self.task_feedback=""
         

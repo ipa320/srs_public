@@ -60,7 +60,6 @@ import ros.pkg.geometry_msgs.msg.Pose2D;
 import org.srs.srs_knowledge.task.*;
 import org.srs.srs_knowledge.knowledge_engine.*;
 import ros.pkg.srs_symbolic_grounding.srv.*;
-import ros.pkg.srs_symbolic_grounding.msg.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

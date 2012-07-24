@@ -63,6 +63,7 @@ from geometry_msgs.msg import *
 import rospy
 import tf
 from srs_msgs.msg import SRSSpatialInfo
+import math
 
 def symbol_grounding_grasp_base_pose_experimental_client(target_obj_pose, parent_obj_geometry, furniture_geometry_list):
 
@@ -98,9 +99,9 @@ if __name__ == "__main__":
 
 	target_obj_pose = Pose()
 
-	target_obj_pose.position.x = 2.3
-	target_obj_pose.position.y = 2.9
-	target_obj_pose.position.z = 1.1
+	target_obj_pose.position.x = 0.64
+	target_obj_pose.position.y = 0.9
+	target_obj_pose.position.z = 0.8
 	target_obj_pose.orientation.x = 0
 	target_obj_pose.orientation.y = 0
 	target_obj_pose.orientation.z = 0
@@ -111,16 +112,16 @@ if __name__ == "__main__":
 	
 	parent_obj_geometry = SRSSpatialInfo()
 	
-	parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[6].pose.position.x
-	parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[6].pose.position.y
-	parent_obj_geometry.pose.position.z = workspace_info.objectsInfo[6].pose.position.z
-	parent_obj_geometry.pose.orientation.x = workspace_info.objectsInfo[6].pose.orientation.x
-	parent_obj_geometry.pose.orientation.y = workspace_info.objectsInfo[6].pose.orientation.y
-	parent_obj_geometry.pose.orientation.z = workspace_info.objectsInfo[6].pose.orientation.z
-	parent_obj_geometry.pose.orientation.w = workspace_info.objectsInfo[6].pose.orientation.w
-	parent_obj_geometry.l = workspace_info.objectsInfo[6].l
-	parent_obj_geometry.w = workspace_info.objectsInfo[6].w
-	parent_obj_geometry.h = workspace_info.objectsInfo[6].h
+	parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[0].pose.position.x
+	parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[0].pose.position.y
+	parent_obj_geometry.pose.position.z = workspace_info.objectsInfo[0].pose.position.z
+	parent_obj_geometry.pose.orientation.x = workspace_info.objectsInfo[0].pose.orientation.x
+	parent_obj_geometry.pose.orientation.y = workspace_info.objectsInfo[0].pose.orientation.y
+	parent_obj_geometry.pose.orientation.z = workspace_info.objectsInfo[0].pose.orientation.z
+	parent_obj_geometry.pose.orientation.w = workspace_info.objectsInfo[0].pose.orientation.w
+	parent_obj_geometry.l = workspace_info.objectsInfo[0].l
+	parent_obj_geometry.w = workspace_info.objectsInfo[0].w
+	parent_obj_geometry.h = workspace_info.objectsInfo[0].h
 
 	#parent_obj_geometry.pose.position.x = -3.3
 	#parent_obj_geometry.pose.position.y = 0.5
@@ -128,13 +129,13 @@ if __name__ == "__main__":
 
 	furniture_geometry_list = list()
 	furniture_geometry_list = workspace_info.objectsInfo
-	rospy.loginfo(workspace_info.objectsInfo[6])
+	#rospy.loginfo(workspace_info.objectsInfo[6])
 
 
 	print "Requesting reachability and grasp base pose."
 	result = symbol_grounding_grasp_base_pose_experimental_client(target_obj_pose, parent_obj_geometry, furniture_geometry_list)
 	print result
-
+	#print math.atan(0.26 / 0.7)
 		
 
 	

@@ -249,19 +249,19 @@ class graspingutils():
 			offset = (o, 0)[o<=0];
 			pre.position.x += offset;
 			if pregrasps_offsets[1] > 0.0:
-				pre.position.z = pregrasps_offsets[1];
+				pre.position.z += pregrasps_offsets[1];
 		elif category=="SIDE":
 			o = pregrasps_offsets[0] - 0.2;
 			offset = (o, 0)[o<=0];
 			pre.position.y += offset;
 			if pregrasps_offsets[1] > 0.0:
-				pre.position.z = pregrasps_offsets[1];
+				pre.position.z += pregrasps_offsets[1];
 		elif category=="-SIDE":
 			o = pregrasps_offsets[0] - 0.2;
 			offset = (o, 0)[o<=0];
 			pre.position.y -= offset;
 			if pregrasps_offsets[1] > 0.0:
-				pre.position.z = pregrasps_offsets[1];
+				pre.position.z += pregrasps_offsets[1];
 		else: #category=="TOP":
 			o = pregrasps_offsets[1] - 0.2;
 			offset = (o, 0)[o<=0];

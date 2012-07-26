@@ -128,7 +128,7 @@ class GraspScript(script):
 			print str(i)+": "+res.object_list.detections[i].label
 		print "---------------------------------------------------------"
 
-		index = 0#-1;
+		index = -1;
 		while (index < 0):
 			index = int(raw_input("Select object to grasp: "))
 		

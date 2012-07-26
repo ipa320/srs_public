@@ -80,16 +80,16 @@ class get_feasible_grasps():
 		rospy.loginfo("Waiting /get_db_grasps service...");
 		rospy.wait_for_service('/get_db_grasps')
 		self.client = rospy.ServiceProxy('/get_db_grasps', GetDBGrasps)
+		rospy.loginfo("/get_feasible_grasps service is ready.");
 
 		self.ik_loop_reply = 1;
 		self.finger_correction = -1;
 		self.current_joint_configuration = []
 		self.finger_positions = []
+
 		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
 		self.tf = rospy.Subscriber("/tf", tf.msg.tfMessage, self.get_finger_positions);
 		self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state);
-
-		rospy.loginfo("/get_feasible_grasps service is ready.");
 
 
 

@@ -19,7 +19,7 @@
   <depend package="geometry_msgs"/>
   <depend package="kinematics_msgs"/>
   <depend package="srs_msgs"/>
-  <depend package="srs_object_database"/>
+  <depend package="srs_object_database_msgs"/>
   <depend package="schunk_sdh"/> 
   <depend package="cob_srvs"/> 
   <depend package="cob_script_server"/>

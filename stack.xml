@@ -19,6 +19,7 @@
   <depend stack="cob_manipulation" /> <!-- cob_mmcontroller, cob_manipulator, cob_tactiletools, cob_arm_navigation -->
   <depend stack="cob_navigation" /> <!-- cob_linear_nav, cob_navigation_global -->
   <depend stack="cob_object_perception" /> <!-- cob_object_detection_msgs, cob_object_detection_fake -->
+  <depend stack="cob_people_perception" /> <!-- cob_people_detection_msgs, cob_people_detection -->
   <depend stack="cob_robots" /> <!-- cob_default_robot_config -->
   <depend stack="cob_simulation" /> <!-- cob_bringup_sim -->
   <depend stack="common" /> <!-- actionlib, bfl -->

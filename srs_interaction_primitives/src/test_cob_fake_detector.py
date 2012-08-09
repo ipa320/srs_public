@@ -30,7 +30,7 @@
 THIS IS ONLY A TESTING FILE!
 """
 
-import roslib; roslib.load_manifest('interaction_primitives');
+import roslib; roslib.load_manifest('srs_interaction_primitives');
 import rospy
 from math import fabs
 import sys
@@ -51,13 +51,12 @@ def detect_object(object_name):
     
     print "Detecting milk...",
     sys.stdout.flush() 
-    detect_object = rospy.ServiceProxy('object_detection/detect_object', DetectObjects)
+    detected_object = rospy.ServiceProxy('object_detection/detect_object', DetectObjects)
     try:
         object_name = String()
         object_name.data = 'milk'
         roi = RegionOfInterest()
-        
-        objects = detect_object(object_name, roi)
+        objects = detected_object(object_name, roi)
     except:
         print "ERROR!\nexiting..."
         exit()
@@ -83,8 +82,9 @@ def add_object_to_scene(object):
         color.g = 1
         color.a = 1
         pose = object.pose.pose
-        
-        add_object(object.pose.header.frame_id, object.label, "Detected milk", pose, object.bounding_box_lwh, color, None, 'package://cob_gazebo_worlds/Media/models/milk_box.dae', True)
+        print pose
+        #object.bounding_box_lwh.x=0.6
+        add_object("/sdh_palm_link", object.label, "Detected milk", 0, pose, object.bounding_box_lwh, color, None, 'package://cob_gazebo_objects/Media/models/milk.dae', True)
     except:
         print "ERROR!\nexiting..."
         exit()
@@ -103,7 +103,6 @@ if __name__ == '__main__':
         pass
     
     objects = detect_object("milk")
-    
     add_object_to_scene(objects.object_list.detections[0])
     
     

@@ -1,6 +1,7 @@
 string frame_id                     # Fixed Frame
 string name                         # Unknown Object name
 string description                  # Unknown Object name description
+uint8 pose_type                     # way to set the pose
 geometry_msgs/Pose pose             # position and orientation of the Unknown Object name 
 geometry_msgs/Vector3 scale         # scale of the Unknown Object name
 --- 

@@ -33,12 +33,11 @@ using namespace visualization_msgs;
 using namespace geometry_msgs;
 using namespace std_msgs;
 
-
 namespace srs_interaction_primitives
 {
 
 BoundingBox::BoundingBox(InteractiveMarkerServerPtr server, string frame_id, string name) :
-  Primitive(server, frame_id, name, srs_interaction_primitives::PrimitiveType::BOUNDING_BOX)
+    Primitive(server, frame_id, name, srs_interaction_primitives::PrimitiveType::BOUNDING_BOX)
 {
   description_ = "";
 }
@@ -88,12 +87,12 @@ void BoundingBox::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback
 
   updatePublisher_->publishMenuClicked(title, state);
 
-  InteractiveMarker o;
+ /* InteractiveMarker o;
   if (server_->get(name_, o))
   {
     pose_ = o.pose;
     object_.pose = pose_;
-  }
+  }*/
 
   switch (feedback->menu_entry_id)
   {
@@ -196,21 +195,22 @@ void BoundingBox::createMenu()
   if (!menu_created_)
   {
     menu_created_ = true;
-    menu_handler_.setCheckState(menu_handler_.insert("Show Bounding Box", boost::bind(&BoundingBox::menuCallback, this,
-                                                                                      _1)), MenuHandler::CHECKED);
-    menu_handler_.setCheckState(menu_handler_.insert("Show description", boost::bind(&BoundingBox::menuCallback, this,
-                                                                                     _1)), MenuHandler::UNCHECKED);
     menu_handler_.setCheckState(
-                                menu_handler_.insert("Show measure", boost::bind(&BoundingBox::menuCallback, this, _1)),
+        menu_handler_.insert("Show Bounding Box", boost::bind(&BoundingBox::menuCallback, this, _1)),
+        MenuHandler::CHECKED);
+    menu_handler_.setCheckState(
+        menu_handler_.insert("Show description", boost::bind(&BoundingBox::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_.insert("Show measure", boost::bind(&BoundingBox::menuCallback, this, _1)),
                                 MenuHandler::UNCHECKED);
 
     MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert("Interaction");
-    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Movement",
-                                                     boost::bind(&BoundingBox::menuCallback, this, _1)),
-                                MenuHandler::UNCHECKED);
-    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Rotation",
-                                                     boost::bind(&BoundingBox::menuCallback, this, _1)),
-                                MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(
+        menu_handler_.insert(sub_menu_handle, "Movement", boost::bind(&BoundingBox::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(
+        menu_handler_.insert(sub_menu_handle, "Rotation", boost::bind(&BoundingBox::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
 
     sub_menu_handle = menu_handler_.insert("Actions");
     menu_handler_.insert(sub_menu_handle, "Take object", boost::bind(&BoundingBox::menuCallback, this, _1));
@@ -220,12 +220,20 @@ void BoundingBox::createMenu()
 
 void BoundingBox::createBoundingBoxControl()
 {
+  createBoundingBoxControl(0.0f, 0.0f, 0.0f);
+}
+
+void BoundingBox::createBoundingBoxControl(float trans_x, float trans_y, float trans_z)
+{
   Point p1, p2;
   double sx = scale_.x / 2;
   double sy = scale_.y / 2;
   double sz = scale_.z / 2;
 
   bounding_box_.type = Marker::CUBE;
+  bounding_box_.pose.position.x = trans_x;
+  bounding_box_.pose.position.y = trans_y;
+  bounding_box_.pose.position.z = trans_z;
   bounding_box_.scale = scale_;
   bounding_box_.color = color_;
   bounding_box_.color.a = BBOX_MAX_ALPHA;
@@ -240,93 +248,93 @@ void BoundingBox::createBoundingBoxControl()
   wire_.color.a = BBOX_MAX_ALPHA;
   wire_.scale.x = 0.002;
 
-  p1.x = -sx;
-  p1.y = -sy;
-  p1.z = -sz;
-  p2.x = -sx;
-  p2.y = sy;
-  p2.z = -sz;
+  p1.x = -sx + trans_x;
+  p1.y = -sy + trans_y;
+  p1.z = -sz + trans_z;
+  p2.x = -sx + trans_x;
+  p2.y = sy + trans_y;
+  p2.z = -sz + trans_z;
   wire_.points.push_back(p1);
   wire_.points.push_back(p2);
-  p2.x = -sx;
-  p2.y = -sy;
-  p2.z = sz;
+  p2.x = -sx + trans_x;
+  p2.y = -sy + trans_y;
+  p2.z = sz + trans_z;
   wire_.points.push_back(p1);
   wire_.points.push_back(p2);
-  p1.x = -sx;
-  p1.y = sy;
-  p1.z = sz;
-  p2.x = -sx;
-  p2.y = sy;
-  p2.z = -sz;
+  p1.x = -sx + trans_x;
+  p1.y = sy + trans_y;
+  p1.z = sz + trans_z;
+  p2.x = -sx + trans_x;
+  p2.y = sy + trans_y;
+  p2.z = -sz + trans_z;
   wire_.points.push_back(p1);
   wire_.points.push_back(p2);
-  p2.x = -sx;
-  p2.y = -sy;
-  p2.z = sz;
-  wire_.points.push_back(p1);
-  wire_.points.push_back(p2);
-
-  p1.x = sx;
-  p1.y = -sy;
-  p1.z = -sz;
-  p2.x = sx;
-  p2.y = sy;
-  p2.z = -sz;
-  wire_.points.push_back(p1);
-  wire_.points.push_back(p2);
-  p2.x = sx;
-  p2.y = -sy;
-  p2.z = sz;
-  wire_.points.push_back(p1);
-  wire_.points.push_back(p2);
-  p1.x = sx;
-  p1.y = sy;
-  p1.z = sz;
-  p2.x = sx;
-  p2.y = sy;
-  p2.z = -sz;
-  wire_.points.push_back(p1);
-  wire_.points.push_back(p2);
-  p2.x = sx;
-  p2.y = -sy;
-  p2.z = sz;
+  p2.x = -sx + trans_x;
+  p2.y = -sy + trans_y;
+  p2.z = sz + trans_z;
   wire_.points.push_back(p1);
   wire_.points.push_back(p2);
 
-  p1.x = sx;
-  p1.y = sy;
-  p1.z = sz;
-  p2.x = -sx;
-  p2.y = sy;
-  p2.z = sz;
+  p1.x = sx + trans_x;
+  p1.y = -sy + trans_y;
+  p1.z = -sz + trans_z;
+  p2.x = sx + trans_x;
+  p2.y = sy + trans_y;
+  p2.z = -sz + trans_z;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+  p2.x = sx + trans_x;
+  p2.y = -sy + trans_y;
+  p2.z = sz + trans_z;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+  p1.x = sx + trans_x;
+  p1.y = sy + trans_y;
+  p1.z = sz + trans_z;
+  p2.x = sx + trans_x;
+  p2.y = sy + trans_y;
+  p2.z = -sz + trans_z;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+  p2.x = sx + trans_x;
+  p2.y = -sy + trans_y;
+  p2.z = sz + trans_z;
   wire_.points.push_back(p1);
   wire_.points.push_back(p2);
 
-  p1.x = sx;
-  p1.y = -sy;
-  p1.z = sz;
-  p2.x = -sx;
-  p2.y = -sy;
-  p2.z = sz;
+  p1.x = sx + trans_x;
+  p1.y = sy + trans_y;
+  p1.z = sz + trans_z;
+  p2.x = -sx + trans_x;
+  p2.y = sy + trans_y;
+  p2.z = sz + trans_z;
   wire_.points.push_back(p1);
   wire_.points.push_back(p2);
 
-  p1.x = sx;
-  p1.y = sy;
-  p1.z = -sz;
-  p2.x = -sx;
-  p2.y = sy;
-  p2.z = -sz;
+  p1.x = sx + trans_x;
+  p1.y = -sy + trans_y;
+  p1.z = sz + trans_z;
+  p2.x = -sx + trans_x;
+  p2.y = -sy + trans_y;
+  p2.z = sz + trans_z;
   wire_.points.push_back(p1);
   wire_.points.push_back(p2);
 
-  p1.x = sx;
-  p1.y = -sy;
-  p1.z = -sz;
-  p2.x = -sx;
-  p2.y = -sy;
-  p2.z = -sz;
+  p1.x = sx + trans_x;
+  p1.y = sy + trans_y;
+  p1.z = -sz + trans_z;
+  p2.x = -sx + trans_x;
+  p2.y = sy + trans_y;
+  p2.z = -sz + trans_z;
+  wire_.points.push_back(p1);
+  wire_.points.push_back(p2);
+
+  p1.x = sx + trans_x;
+  p1.y = -sy + trans_y;
+  p1.z = -sz + trans_z;
+  p2.x = -sx + trans_x;
+  p2.y = -sy + trans_y;
+  p2.z = -sz + trans_z;
   wire_.points.push_back(p1);
   wire_.points.push_back(p2);
 
@@ -353,7 +361,6 @@ void BoundingBox::create()
   clearObject();
 
   object_.header.frame_id = frame_id_;
-  object_.header.stamp = ros::Time::now();
   object_.name = name_;
   object_.description = description_;
   object_.pose = pose_;

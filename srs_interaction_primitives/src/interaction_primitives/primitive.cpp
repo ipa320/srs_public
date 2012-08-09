@@ -33,7 +33,6 @@ using namespace visualization_msgs;
 using namespace geometry_msgs;
 using namespace std_msgs;
 
-
 namespace srs_interaction_primitives
 {
 
@@ -44,45 +43,108 @@ Primitive::Primitive(InteractiveMarkerServerPtr server, string frame_id, string 
   name_ = name;
   primitive_type_ = type;
   menu_created_ = false;
+  pose_type_ = PoseType::POSE_CENTER;
 
-  show_movement_control_ = show_scale_control_ = show_rotation_control_ = show_measure_control_
-      = show_description_control_ = show_pregrasp_control_ = show_trajectory_control_ = false;
+  show_movement_control_ = show_scale_control_ = show_rotation_control_ = show_measure_control_ =
+      show_description_control_ = show_pregrasp_control_ = show_trajectory_control_ = false;
 
   updatePublisher_ = new UpdatePublisher(name_, primitive_type_);
-
   color_green_a01_.r = 0.0;
   color_green_a01_.g = 1.0;
   color_green_a01_.b = 0.0;
   color_green_a01_.a = 0.1;
+
+  //tfListener = new tf::TransformListener();
 }
 
 void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  InteractiveMarker object;
-  if (server_->get(name_, object))
+  ROS_INFO("CALLBACK");
+  if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP)
   {
-    if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP)
+    pose_change.position.x -= feedback->pose.position.x;
+    pose_change.position.y -= feedback->pose.position.y;
+    pose_change.position.z -= feedback->pose.position.z;
+    pose_change.orientation.x -= feedback->pose.orientation.x;
+    pose_change.orientation.y -= feedback->pose.orientation.y;
+    pose_change.orientation.z -= feedback->pose.orientation.z;
+    pose_change.orientation.w -= feedback->pose.orientation.w;
+    /*
+     pose_change.position.x = pose_.position.x - object.pose.position.x;
+     pose_change.position.y = pose_.position.y - object.pose.position.y;
+     pose_change.position.z = pose_.position.z - object.pose.position.z;
+     pose_change.orientation.x = pose_.orientation.x - object.pose.orientation.x;
+     pose_change.orientation.y = pose_.orientation.y - object.pose.orientation.y;
+     pose_change.orientation.z = pose_.orientation.z - object.pose.orientation.z;
+     pose_change.orientation.w = pose_.orientation.w - object.pose.orientation.w;
+     */
+
+  /*  std::cout << std::endl << std::endl;
+    std::cout << pose_change << std::endl << std::endl;
+    std::cout << frame_id_ << std::endl;
+    std::cout << pose_ << std::endl;
+    std::cout << feedback->header.frame_id << std::endl;
+    std::cout << feedback->pose << std::endl;*/
+    //std::cout << object.header.frame_id << std::endl;
+    //std::cout << object.pose << std::endl;
+
+    if (frame_id_ != feedback->header.frame_id)
     {
-      Pose pose_change;
-      pose_change.position.x = pose_.position.x - object.pose.position.x;
-      pose_change.position.y = pose_.position.y - object.pose.position.y;
-      pose_change.position.z = pose_.position.z - object.pose.position.z;
-      pose_change.orientation.x = pose_.orientation.x - object.pose.orientation.x;
-      pose_change.orientation.y = pose_.orientation.y - object.pose.orientation.y;
-      pose_change.orientation.z = pose_.orientation.z - object.pose.orientation.z;
-      pose_change.orientation.w = pose_.orientation.w - object.pose.orientation.w;
+      try
+      {
+        tfListener = new tf::TransformListener();
+        tfListener->waitForTransform(feedback->header.frame_id, frame_id_, feedback->header.stamp, ros::Duration(0.2));
+        tfListener->lookupTransform(feedback->header.frame_id, frame_id_, feedback->header.stamp,
+                                    feedbackToDefaultTransform);
+        delete tfListener;
+        transformer.setTransform(feedbackToDefaultTransform);
 
-      pose_ = feedback->pose;
-      frame_id_ = feedback->header.frame_id;
+        btVector3 position;
+        position.setX(feedback->pose.position.x);
+        position.setY(feedback->pose.position.y);
+        position.setZ(feedback->pose.position.z);
+        btQuaternion orientation;
+        orientation.setX(feedback->pose.orientation.x);
+        orientation.setY(feedback->pose.orientation.y);
+        orientation.setZ(feedback->pose.orientation.z);
+        orientation.setW(feedback->pose.orientation.w);
 
-      insert();
-      server_->applyChanges();
+        tf::Stamped<btTransform> pose;
+        pose.setOrigin(position);
+        pose.setRotation(orientation);
+        pose.frame_id_ = feedback->header.frame_id;
+        transformer.transformPose(frame_id_, pose, pose);
 
-      updatePublisher_->publishPoseChanged(object.pose, pose_change);
+        pose_.position.x = pose.getOrigin().getX();
+        pose_.position.y = pose.getOrigin().getY();
+        pose_.position.z = pose.getOrigin().getZ();
+        pose_.orientation.x = pose.getRotation().getX();
+        pose_.orientation.y = pose.getRotation().getY();
+        pose_.orientation.z = pose.getRotation().getZ();
+        pose_.orientation.w = pose.getRotation().getW();
+
+      }
+      catch (tf::TransformException& ex)
+      {
+        ROS_WARN("Transform error!");
+        delete tfListener;
+        return;
+      }
     }
+    else
+    {
+      pose_ = feedback->pose;
+    }
+
+    //   frame_id_ = feedback->header.frame_id;
+
+    //  frame_id_ = feedback->header.frame_id;
+
+    insert();
+    server_->applyChanges();
+
+    updatePublisher_->publishPoseChanged(feedback->pose, pose_change);
   }
-  else
-    ROS_WARN("Cannot find object in IM Server!");
 
   // Transfer object into IMS frame
   /* if (feedback->header.frame_id != frame_id_)
@@ -96,13 +158,6 @@ void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedbac
 void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
   static Vector3 scale_change;
-
-  InteractiveMarker o;
-  if (server_->get(name_, o))
-  {
-    pose_ = o.pose;
-    object_.pose = pose_;
-  }
 
   int modificator = 0;
   if (feedback->marker_name == name_ + "_min_x")
@@ -158,7 +213,8 @@ void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbac
     pose_.position.z += 0.5 * ds.z * modificator;
 
   object_.pose = pose_;
-  object_.controls[0].markers[0].scale = scale_;
+  if ((object_.controls.size() > 0) && (object_.controls[0].markers.size() > 0))
+    object_.controls[0].markers[0].scale = scale_;
   object_.scale = srs_interaction_primitives::maxScale(scale_);
 
   updateControls();
@@ -520,6 +576,7 @@ void Primitive::addScaleControls()
         case 0:
           int_marker.name = sign > 0 ? name_ + "_max_x" : name_ + "_min_x";
           int_marker.pose.position.x = sign > 0 ? max_size_.x : min_size_.x;
+          int_marker.pose.position.z = sign > 0 ? max_size_.z : min_size_.z;
           control.orientation.x = 1;
           control.orientation.y = 0;
           control.orientation.z = 0;
@@ -527,6 +584,7 @@ void Primitive::addScaleControls()
         case 1:
           int_marker.name = sign > 0 ? name_ + "_max_y" : name_ + "_min_y";
           int_marker.pose.position.y = sign > 0 ? max_size_.y : min_size_.y;
+          int_marker.pose.position.x = sign > 0 ? max_size_.x : min_size_.x;
           control.orientation.x = 0;
           control.orientation.y = 0;
           control.orientation.z = 1;
@@ -534,6 +592,7 @@ void Primitive::addScaleControls()
         default:
           int_marker.name = sign > 0 ? name_ + "_max_z" : name_ + "_min_z";
           int_marker.pose.position.z = sign > 0 ? max_size_.z : min_size_.z;
+          int_marker.pose.position.y = sign > 0 ? max_size_.y : min_size_.y;
           control.orientation.x = 0;
           control.orientation.y = -1;
           control.orientation.z = 0;
@@ -569,14 +628,17 @@ void Primitive::updateScaleControls()
         case 0:
           n = sign > 0 ? name_ + "_max_x" : name_ + "_min_x";
           p.position.x = sign > 0 ? max_size_.x : min_size_.x;
+          p.position.z = sign > 0 ? max_size_.z : min_size_.z;
           break;
         case 1:
           n = sign > 0 ? name_ + "_max_y" : name_ + "_min_y";
           p.position.y = sign > 0 ? max_size_.y : min_size_.y;
+          p.position.x = sign > 0 ? max_size_.x : min_size_.x;
           break;
         default:
           n = sign > 0 ? name_ + "_max_z" : name_ + "_min_z";
           p.position.z = sign > 0 ? max_size_.z : min_size_.z;
+          p.position.y = sign > 0 ? max_size_.y : min_size_.y;
           break;
       }
       server_->setPose(n, p);
@@ -610,7 +672,6 @@ void Primitive::addPregraspPositions()
   point.color.g = 1;
   point.color.b = 0;
   point.color.a = arrow.color.a = GRASP_TRANSPARENCY;
-  ;
 
   pregrasp1Control_.markers.clear();
   pregrasp2Control_.markers.clear();

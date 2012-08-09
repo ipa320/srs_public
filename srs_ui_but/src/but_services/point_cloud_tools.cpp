@@ -39,7 +39,7 @@ PointCloudTools::PointCloudTools()
 
   transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2>(point_cloud, *tfListener, "/map", 1);
 
-  point_cloud.subscribe(threaded_nh_, CAMERA_TOPIC, 1);
+  //point_cloud.subscribe(threaded_nh_, CAMERA_TOPIC, 1);
 
   transform_filter->registerCallback(boost::bind(&PointCloudTools::incomingCloudCallback, this, _1));
 }
@@ -85,31 +85,32 @@ srs_ui_but::ClosestPoint PointCloudTools::getClosestPoint(std::string link)
 
   // Get closest point and distance
   BOOST_FOREACH (const pcl::PointXYZ& pt, pcl_pointCloud.points)
-{  d = pow((pt.x - p.getX()), 2) + pow((pt.y - p.getY()), 2) + pow((pt.z - p.getZ()), 2);
-
-  if (d < closestPoint.distance)
   {
-    closestPoint.distance = d;
-    closestPoint.position.x = pt.x;
-    closestPoint.position.y = pt.y;
-    closestPoint.position.z = pt.z;
+    d = pow((pt.x - p.getX()), 2) + pow((pt.y - p.getY()), 2) + pow((pt.z - p.getZ()), 2);
+
+    if (d < closestPoint.distance)
+    {
+      closestPoint.distance = d;
+      closestPoint.position.x = pt.x;
+      closestPoint.position.y = pt.y;
+      closestPoint.position.z = pt.z;
+    }
   }
-}
 
 // Transform closest point back to link
-transformer.setTransform(sensorToLinkTf);
-p.setX(closestPoint.position.x);
-p.setY(closestPoint.position.y);
-p.setZ(closestPoint.position.z);
-p.frame_id_ = CAMERA_LINK;
-transformer.transformPoint(link, p, p);
+  transformer.setTransform(sensorToLinkTf);
+  p.setX(closestPoint.position.x);
+  p.setY(closestPoint.position.y);
+  p.setZ(closestPoint.position.z);
+  p.frame_id_ = CAMERA_LINK;
+  transformer.transformPoint(link, p, p);
 
-closestPoint.position.x = p.getX();
-closestPoint.position.y = p.getY();
-closestPoint.position.z = p.getZ();
-closestPoint.distance = sqrt(closestPoint.distance);
-closestPoint.status = true;
+  closestPoint.position.x = p.getX();
+  closestPoint.position.y = p.getY();
+  closestPoint.position.z = p.getZ();
+  closestPoint.distance = sqrt(closestPoint.distance);
+  closestPoint.status = true;
 
-return closestPoint;
+  return closestPoint;
 }
 }

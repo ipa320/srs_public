@@ -7,17 +7,17 @@
 	<include file="$(find cob_default_env_config)/upload_param.launch" />
 	<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
 	<include file="$(find cob_bringup_sim)/launch/robot.launch" />
-       
-	<!-- Run interaction primitives server -->
-	<node pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" name="but_interaction_primitives_service_server"/>
 
+    <!-- Run interaction primitives server -->
+    <node pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" name="but_interaction_primitives_service_server"/>
+
+	<!-- Run depth image publishing node -->
+	<node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node"/>
+       
 	<!-- Run our dynamic scene model server node -->
-	<param name="but_server_node/pointcloud_min_z" value="0.0" type="double"/>
-	<param name="but_server_node/use_old_im" value="true" type="bool"/>	
-	<param name="but_server_node/resolution" value="0.025" type="double"/>	
 	<include file="$(find srs_env_model)/launch/only_butserver.launch"/>
 
 	<!-- Run rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model)/config/test1.vcg"/>
+	<node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_env_model)/config/test1.vcg"/>
 </launch>
 

@@ -28,7 +28,7 @@
 
 import roslib; roslib.load_manifest('srs_env_model');
 from srs_env_model.msg import Context, ContextChanged
-from srs_env_model.srv import GetAllPrimitivesNames, ChangeColor
+from srs_interaction_primitives.srv import GetAllPrimitivesNames, ChangeColor
 from std_msgs.msg import ColorRGBA
 import rospy
 import srs_env_model.srv
@@ -37,13 +37,14 @@ import srs_env_model.srv
 #-------------------------------------------------------------------------------
 # Definitions
 #-------------------------------------------------------------------------------
-SetContext_SRV = 'srs_env_model/context/set_context'
-GetContext_SRV = 'srs_env_model/context/but_context/get_context'
+SetContext_SRV = '/but_env_model/context/set'
+GetContext_SRV = '/but_env_model/context/get'
 
-GetAllPrimitivesNames_SRV = 'but_gui/get_all_primitives_names'
-ChangeColor_SRV = 'but_gui/change_color'
+GetAllPrimitivesNames_SRV = '/interaction_primitives/get_all_primitives_names'
+ChangeColor_SRV = '/interaction_primitives/change_color'
 
-ContextChanged_TOPIC = 'srs_env_model/context/context_changed'
+ContextChanged_TOPIC = '/but_env_model/context/changed'
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 

@@ -5,8 +5,8 @@
   
     <include file="$(find cob_arm_navigation)/launch/cob_planning_environment.launch" />
 
-	  <include file="$(find cob_arm_navigation)/launch/constraint_aware_kinematics.launch" />
-	  <include file="$(find cob_arm_navigation)/launch/ompl_planning.launch" />
+	  <include file="$(find srs_assisted_arm_navigation)/launch/constraint_aware_kinematics.launch" />
+	  <include file="$(find srs_assisted_arm_navigation)/launch/ompl_planning.launch" />
 	  <include file="$(find cob_arm_navigation)/launch/trajectory_filter_server.launch" />
 	  <include file="$(find cob_arm_navigation)/launch/move_groups.launch" />
 
@@ -18,14 +18,20 @@
 	<!-- customized copy of cob_arm_navigation.launch and kinect_perception.launch from cob_arm_navigation -->
 	<group>
 	
+	  <!--node pkg="kinect_utils" type="add_noise_pcl" name="add_noise_PCL">
+	    <remap from="/camera/depth/points" to="/cam3d/depth/points"/>
+	    <remap from="/camera/depth/points_noised" to="/cam3d/depth/points_noised"/>
+	  </node-->
+	
 	  <!-- self filter Kinect points -->
     <node pkg="robot_self_filter" type="self_filter" respawn="true" name="stereo_self_filter" output="screen">
+      <!--remap from="cloud_in" to="/cam3d/depth/points_noised"/-->
       <remap from="cloud_in" to="/cam3d/depth/points" />
       <remap from="cloud_out" to="/cam3d/depth/points_filtered2" />
 <!--      <remap from="cloud_in" to="/cam3d/rgb/points" />
       <remap from="cloud_out" to="/cam3d/rgb/points_filtered2" />-->
       <param name="sensor_frame" type="string" value="head_cam3d_link" />
-      <param name="subsample_value" type="double" value=".02"/>
+      <param name="subsample_value" type="double" value=".03"/>
       <rosparam command="load" file="$(find cob_arm_navigation)/config/$(env ROBOT)/self_filter.yaml" />
     </node>
       
@@ -39,13 +45,14 @@
     <node pkg="planning_environment" type="planning_scene_validity_server" output="screen" name="planning_scene_validity_server"/>      
   
   <!-- Run BUT dynamic scene model server node -->
-  <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
+  <node name="but_server_node" pkg="srs_env_model" type="but_server_node" respawn="true">
     <param name="pointcloud_subscriber" value="/cam3d/depth/points_filtered2"/>
     <param name="input_has_rgb" type="bool" value="false"/>
     <!--param name="pointcloud_subscriber" value="/cam3d/rgb/points_filtered2"/-->
-    <param name="max_range" type="double" value="2.5"/>
+    <param name="max_range" type="double" value="4"/>
     <param name="pointcloud_min_z" value="0.2" type="double"/>
-    <param name="resolution" value="0.025" type="double"/>
+    <param name="pointcloud_max_z" value="2.0" type="double" />
+    <param name="resolution" value="0.05" type="double"/>
   </node>
 	
 	</group>

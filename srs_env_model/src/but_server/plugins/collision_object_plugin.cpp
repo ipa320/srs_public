@@ -71,7 +71,8 @@ void srs_env_model::CCollisionObjectPlugin::init(ros::NodeHandle & node_handle)
 
 void srs_env_model::CCollisionObjectPlugin::onPublish(const ros::Time & timestamp)
 {
-	m_coPublisher.publish(*m_data);
+	if( m_coPublisher.getNumSubscribers() > 0 )
+		m_coPublisher.publish(*m_data);
 }
 
 
@@ -96,7 +97,7 @@ void srs_env_model::CCollisionObjectPlugin::onFrameStart(const SMapParameters & 
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_coFrameId, m_ocFrameId,
-				par.currentTime, ros::Duration(0.2));
+				par.currentTime, ros::Duration(5));
 
 		m_tfListener.lookupTransform(m_coFrameId, m_ocFrameId,
 				par.currentTime, ocToCoTf);
@@ -150,4 +151,13 @@ void srs_env_model::CCollisionObjectPlugin::handleOccupiedNode(srs_env_model::tB
 void srs_env_model::CCollisionObjectPlugin::handlePostNodeTraversal(const SMapParameters & mp)
 {
 	invalidate();
+}
+
+//! Connect/disconnect plugin to/from all topics
+void srs_env_model::CCollisionObjectPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
+{
+	if( bPause )
+		m_coPublisher.shutdown();
+	else
+		m_coPublisher = node_handle.advertise<arm_navigation_msgs::CollisionObject> (m_coPublisherName, 100, m_latchedTopics);
 }

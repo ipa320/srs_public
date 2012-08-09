@@ -58,6 +58,7 @@
 
 namespace srs_assisted_arm_navigation {
 
+
 class ManualGrasping {
 
 public:
@@ -77,6 +78,22 @@ public:
       tact_sub_  = nh_.subscribe("/sdh_controller/mean_values", 10, &ManualGrasping::TactileDataCallback,this);
       state_sub_ = nh_.subscribe("/sdh_controller/state", 10, &ManualGrasping::SdhStateCallback,this);
       server_->start();
+
+      /*positions_.push_back(0.0);
+      positions_.push_back(-0.9854);
+      positions_.push_back(0.7472);
+      positions_.push_back(-0.9854);
+      positions_.push_back(0.7472);
+      positions_.push_back(-0.9854);
+      positions_.push_back(0.7472);
+
+      velocities_.push_back(0.003);
+      velocities_.push_back(0.003);
+      velocities_.push_back(0.003);
+      velocities_.push_back(0.003);
+      velocities_.push_back(0.003);
+      velocities_.push_back(0.003);
+      velocities_.push_back(0.003);*/
 
     }
 
@@ -103,7 +120,18 @@ protected:
 
     boost::mutex data_mutex_;
 
+    bool initialized_;
+
+    float max_force_;
+    float inc_;
+
     void execute(const ManualGraspingGoalConstPtr &goal);
+
+    bool CloseRound(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f);
+    bool CloseSquare(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f);
+    bool InitializeFinger(std::vector<double>& pos,uint8_t pos_t, uint8_t pos_f);
+
+    bool SetPhalanxPosition(std::vector<double>& pos,uint8_t idx, double value, double inc);
 
     ros::Publisher jt_publisher_;
 
@@ -111,6 +139,9 @@ protected:
     pr2_controllers_msgs::JointTrajectoryControllerState sdh_data_;
 
     ros::Time tactile_data_stamp_;
+
+    std::vector<double> positions_;
+    std::vector<double> velocities_;
 
 private:
 

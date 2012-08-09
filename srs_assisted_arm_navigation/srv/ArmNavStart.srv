@@ -1,5 +1,5 @@
-bool pregrasp
-bool away
+string action
 string object_name
+bool allow_repeat
 ---
 bool completed

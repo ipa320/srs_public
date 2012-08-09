@@ -41,8 +41,8 @@ def main():
   rospy.loginfo("Waiting for server...")
   client.wait_for_server()
   goal = ManualGraspingGoal()
-  goal.grasp_type = "open"
-  goal.max_force = 200
+  #goal.grasp_type = "open"
+  goal.max_force = 100
   client.send_goal(goal)
 
   #timeout = 240.0
@@ -52,7 +52,9 @@ def main():
   result = client.get_result()
   
   print result.grasped
-  print result.force
+  print result.tip1_force
+  print result.tip2_force
+  print result.tip3_force
   
   rospy.loginfo("Time elapsed: %ss",result.time_elapsed.to_sec())
   

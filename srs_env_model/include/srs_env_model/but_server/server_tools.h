@@ -66,6 +66,9 @@ namespace srs_env_model
 	struct SMapParameters
 	{
 	public:
+		/// Frame skipping
+		int frameSkip;
+
 		/// Octomap resolution
 		double resolution;
 
@@ -116,6 +119,9 @@ namespace srs_env_model
 		//! Constructor
 		CServerPluginBase( const std::string & name ) : m_frame_number( 0 ), m_use_every_nth( 1 ), m_name(name){ }
 
+		//! Virtual destructor.
+		virtual ~CServerPluginBase() {}
+
 		//! Initialize plugin - called in server constructor
 		virtual void init(ros::NodeHandle & node_handle){}
 
@@ -131,6 +137,12 @@ namespace srs_env_model
 		/// Set frame skip
 		void setFrameSkip(unsigned long skip){ m_use_every_nth = skip; }
 
+		//! Pause/resume plugin. All publishers and subscribers are disconnected on pause
+		virtual void pause( bool bPause, ros::NodeHandle & node_handle ){}
+
+		//! Get plugin name
+		std::string getName( ) { return m_name; }
+
 	protected:
 		//! Counts frames and checks if node should publish in this frame
 		virtual bool useFrame() { return ++m_frame_number % m_use_every_nth == 0; }
@@ -145,6 +157,9 @@ namespace srs_env_model
 		//! Plugin name
 		std::string m_name;
 
+		//! Locking mutex
+		boost::mutex m_lockMutex;
+
 	};
 
 	//! Octomap node crawler policy interface -
@@ -152,6 +167,9 @@ namespace srs_env_model
 	class COctomapCrawlerBase
 	{
 	public:
+		//! Virtual destructor
+		virtual ~COctomapCrawlerBase() {}
+
 		//! Set used octomap frame id and timestamp
 		virtual void onFrameStart( const SMapParameters & par )
 			{ m_frame_id = par.frameId; m_time_stamp = par.currentTime; }
@@ -317,6 +335,9 @@ namespace srs_env_model
 		typedef boost::signal< void (const tData & ) > tSigDataHasChanged;
 
 	public:
+		//! Virtual destructor
+		virtual ~CDataHolderBase() {}
+
 		//! Get data reference
 		tData & getData(){ return *m_data; }
 

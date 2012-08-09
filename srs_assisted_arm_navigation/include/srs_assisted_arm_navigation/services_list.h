@@ -54,6 +54,8 @@ namespace srs_assisted_arm_navigation
     static const std::string SRV_REPEAT = PACKAGE_NAME_PREFIX + std::string("/arm_nav_repeat");
     static const std::string SRV_STEP = PACKAGE_NAME_PREFIX + std::string("/arm_nav_step");
     static const std::string SRV_STOP = PACKAGE_NAME_PREFIX + std::string("/arm_nav_stop");
+
+    static const std::string SRV_ALLOW = PACKAGE_NAME_PREFIX + std::string("/grasping_allow");
 }
 
 #endif // BUT_ARM_NAVIGATION_SERVICES_H

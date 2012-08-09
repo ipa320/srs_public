@@ -56,7 +56,7 @@ void ManualArmManipActionServer::executeCB(const srs_assisted_arm_navigation::Ma
   };
 
   // move arm to pre-grasp position or away
-  if (((goal->pregrasp == true) ^ (goal->away == true)) == 1) {
+  /*if (((goal->pregrasp == true) ^ (goal->away == true)) == 1) {
 
     if (goal->pregrasp) {
 
@@ -67,7 +67,10 @@ void ManualArmManipActionServer::executeCB(const srs_assisted_arm_navigation::Ma
 
       srv_start.request.away = true;
 
-    }
+    }*/
+
+  srv_start.request.action = goal->action;
+  srv_start.request.object_name = goal->object_name;
 
     /// There should appear messagebox in RVIZ and user should start solving task.
     ros::service::call(SRV_START,srv_start);
@@ -174,13 +177,13 @@ void ManualArmManipActionServer::executeCB(const srs_assisted_arm_navigation::Ma
     inited_ = false;
     new_state_ = S_NONE;
 
-  // undefined
+ /* // undefined
   } else {
 
     ROS_INFO("Can't move both to pregrasp pos. and away!");
      server_.setAborted(result_.result,"Can't move both to pregrasp pos. and away!");
 
-  }
+  }*/
 
 }
 

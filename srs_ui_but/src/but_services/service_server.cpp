@@ -38,12 +38,23 @@ bool getClosestPoint(GetClosestPoint::Request &req, GetClosestPoint::Response &r
   ROS_INFO("Getting closest point");
 
   res.closest_point_data = pcTools->getClosestPoint(req.link);
+  res.topic = pcTools->getPointCloudTopic();
 
   if (!res.closest_point_data.status)
   {
     ROS_WARN("Cannot get closest point!");
     return false;
   }
+
+  ROS_INFO("..... DONE");
+  return true;
+}
+
+bool setPointCloudTopic(SetPointCloudTopic::Request &req, SetPointCloudTopic::Response &res)
+{
+  ROS_INFO("Setting point cloud topic to: %s", req.topic.c_str());
+
+  pcTools->setPointCloudTopic(req.topic);
 
   ROS_INFO("..... DONE");
   return true;
@@ -68,6 +79,7 @@ int main(int argc, char **argv)
 
   // Create and advertise this service over ROS
   ros::ServiceServer getClosestPointService = n.advertiseService(srs_ui_but::GetClosestPoint_SRV, srs_ui_but::getClosestPoint);
+  ros::ServiceServer setPointCloudTopicService = n.advertiseService(srs_ui_but::SetPointCloudTopic_SRV, srs_ui_but::setPointCloudTopic);
 
   ROS_INFO("BUT Service Server ready!");
 

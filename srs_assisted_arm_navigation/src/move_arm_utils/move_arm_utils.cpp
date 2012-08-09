@@ -3152,9 +3152,14 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   InteractiveMarkerControl control;
   control.always_visible = false;
   control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
-  control.orientation.w = 1;
+  /*control.orientation.w = 1;
   control.orientation.x = 0;
   control.orientation.y = 0;
+  control.orientation.z = 0;*/
+  // changed (Materna)
+  control.orientation.w = 0.707;
+  control.orientation.x = 0;
+  control.orientation.y = -0.707;
   control.orientation.z = 0;
 
   marker.controls.push_back( control );
@@ -3163,16 +3168,27 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   control2.always_visible = false;
   control2.interaction_mode = InteractiveMarkerControl::MOVE_ROTATE;
   control2.orientation.w = 1;
-  control2.orientation.x = 0;
-  control2.orientation.y = 1;
+  control2.orientation.x = 1;
+  control2.orientation.y = 0; // it was 1 here (Materna)
   control2.orientation.z = 0;
+
+
 
   Marker marker2;
   marker2.type = Marker::CUBE;
   marker2.scale.x = .2;
   marker2.scale.y = .15;
   marker2.scale.z = .002;
-  marker2.pose.position.x = .1;
+  //marker2.pose.position.x = .1;
+  marker2.pose.position.z = 0.1; // added
+
+  // added (Materna)
+  marker2.pose.orientation.w = 0.707;
+  marker2.pose.orientation.x = 0;
+  marker2.pose.orientation.y = -0.707;
+  marker2.pose.orientation.z = 0;
+
+
   marker2.color.r = 0;
   marker2.color.g = 0;
   marker2.color.b = 0.5;
@@ -3180,7 +3196,9 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   control2.markers.push_back( marker2 );
   marker2.scale.x = .1;
   marker2.scale.y = .35;
-  marker2.pose.position.x = 0;
+  marker2.pose.position.z = 0; // added
+  //marker2.pose.position.x = 0;
+  //marker2.pose.position.y = 0.1; // added (Materna)
   control2.markers.push_back( marker2 );
 
   marker.controls.push_back( control2 );
@@ -3193,12 +3211,21 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   control3.orientation.y = 0;
   control3.orientation.z = 1;
 
+
   Marker marker3;
   marker3.type = Marker::CUBE;
   marker3.scale.x = .2;
   marker3.scale.y = .002;
   marker3.scale.z = .15;
-  marker3.pose.position.x = .1;
+  //marker3.pose.position.x = .1;
+  marker3.pose.position.z = 0.1; // added
+
+  // added (Materna)
+  marker3.pose.orientation.w = 0.707;
+  marker3.pose.orientation.x = 0;
+  marker3.pose.orientation.y = -0.707;
+  marker3.pose.orientation.z = 0;
+
   marker3.color.r = 0;
   marker3.color.g = .5;
   marker3.color.b = 0;
@@ -3206,7 +3233,9 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   control3.markers.push_back( marker3 );
   marker3.scale.x = .1;
   marker3.scale.z = .35;
-  marker3.pose.position.x = 0;
+  marker3.pose.position.z = 0; // added (Materna)
+  //marker3.pose.position.x = 0;
+  //marker3.pose.position.y = .1; // added (Materna)
   control3.markers.push_back( marker3 );
 
   marker.controls.push_back( control3 );

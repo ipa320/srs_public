@@ -63,6 +63,7 @@
  Constructor
  */
 srs_env_model::CButServer::CButServer(const std::string& filename) :
+			m_bIsPaused(false),
 			m_nh(),
 			m_latchedTopics(false),
 			m_numPCFramesProcessed(1.0), m_frameCounter(0),
@@ -88,7 +89,8 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	ros::NodeHandle private_nh("~");
 
 	// Advertise services
-	m_serviceReset = private_nh.advertiseService("ButServerReset", &CButServer::onReset, this);
+	m_serviceReset = private_nh.advertiseService(ServerReset_SRV, &CButServer::onReset, this);
+	m_servicePause = private_nh.advertiseService(ServerPause_SRV, &CButServer::onPause, this);
 
 	// Is map static (loaded from file)?
 	bool staticMap(filename != "");
@@ -99,7 +101,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 
 	std::cerr << "BUTSERVER: Initializing plugins " << std::endl;
 
-	// Store all plugins pointer for easier access
+	// Store all plugins pointers for easier access
 	m_plugins.push_back( m_plugCMapHolder.getPlugin() );
 	m_plugins.push_back( m_plugInputPointCloudHolder.getPlugin() );
 	m_plugins.push_back( m_plugOcMapPointCloudHolder.getPlugin() );
@@ -276,4 +278,40 @@ void srs_env_model::CButServer::reset()
 
 }
 
+/**
+ * On pause service call
+ */
+bool srs_env_model::CButServer::onPause( ButServerPause::Request & request, ButServerPause::Response & response )
+{
+	if( request.pause == 0 )
+		pause( false );
+	else
+		pause( true );
+}
+
+/**
+ * Pause-resume server
+ */
+void srs_env_model::CButServer::pause( bool bPause )
+{
+	if( m_bIsPaused == bPause )
+		return;
+
+	// Get node handle
+	ros::NodeHandle private_nh("~");
+
+	tVecPlugins::iterator p, end( m_plugins.end() );
+
+	for( p = m_plugins.begin(); p != end; ++p )
+	{
+		(*p)->pause( bPause, private_nh );
+	}
+
+	if( bPause )
+		std::cerr << "BUT server paused..." << std::endl;
+	else
+		std::cerr << "BUT server resumed..." << std::endl;
+
+	m_bIsPaused = bPause;
+}
 

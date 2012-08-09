@@ -197,7 +197,7 @@ void srs_env_model::CPointCloudPlugin::handlePostNodeTraversal(const SMapParamet
 		try {
 			// Transformation - to, from, time, waiting time
 			m_tfListener.waitForTransform(m_pcFrameId, m_ocFrameId,
-					mp.currentTime, ros::Duration(0.2));
+					mp.currentTime, ros::Duration(5));
 
 			m_tfListener.lookupTransform(m_pcFrameId, m_ocFrameId,
 			        mp.currentTime, ocToPcTf);
@@ -235,6 +235,11 @@ void srs_env_model::CPointCloudPlugin::handlePostNodeTraversal(const SMapParamet
  */
 void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::ConstPtr& cloud)
 {
+	boost::mutex::scoped_lock lock(m_lockData);
+
+	if( ! useFrame() )
+		return;
+
 	ros::WallTime startTime = ros::WallTime::now();
 
 	m_bAsInput = true;
@@ -271,7 +276,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		try {
 			// Transformation - from, to, time, waiting time
 			m_tfListener.waitForTransform(m_pcFrameId, cloud->header.frame_id,
-					cloud->header.stamp, ros::Duration(0.2));
+					cloud->header.stamp, ros::Duration(5));
 
 			m_tfListener.lookupTransform(m_pcFrameId, cloud->header.frame_id,
 					cloud->header.stamp, sensorToPcTf);
@@ -300,7 +305,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		try {
 			// Transformation - to, from, time, waiting time
 			m_tfListener.waitForTransform(BASE_FRAME_ID, m_pcFrameId,
-					cloud->header.stamp, ros::Duration(0.2));
+					cloud->header.stamp, ros::Duration(5));
 
 			m_tfListener.lookupTransform(BASE_FRAME_ID, m_pcFrameId,
 					cloud->header.stamp, pcToBaseTf);
@@ -375,3 +380,39 @@ bool srs_env_model::CPointCloudPlugin::isRGBCloud( const tIncommingPointCloud::C
 	return false;
 }
 
+/**
+ * Pause/resume plugin. All publishers and subscribers are disconnected on pause
+ */
+void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+{
+	boost::mutex::scoped_lock lock(m_lockData);
+	if( bPause )
+	{
+		m_pcPublisher.shutdown();
+
+		if( m_bSubscribe )
+		{
+
+			m_pcSubscriber->unsubscribe();
+
+			m_tfPointCloudSub->clear();
+
+			delete m_tfPointCloudSub;
+			delete m_pcSubscriber;
+		}
+	}
+	else
+	{
+		// Create publisher
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+
+		if( m_bSubscribe )
+		{
+			m_pcSubscriber  = new message_filters::Subscriber<tIncommingPointCloud>(node_handle, m_pcSubscriberName, 5);
+
+			// Create message filter
+			m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_pcFrameId, 5);
+			m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1));
+		}
+	}
+}

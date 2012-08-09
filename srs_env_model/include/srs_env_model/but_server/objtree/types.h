@@ -55,6 +55,15 @@ struct Point
 typedef Point Vector;
 typedef std::vector<Point> Polygon;
 
+struct Vector4f
+{
+    float x, y, z, w;
+
+    Vector4f(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+    Vector4f(const Vector4f &v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
+    Vector4f() {}
+};
+
 }
 
 #endif // OBJTREE_TYPES_H

@@ -22,10 +22,11 @@ ROS visualization tools provided by dcgm-robotics@FIT group.
   <depend package="geometry_msgs"/>
   <depend package="sensor_msgs"/>
   <depend package="message_filters"/>
-  <depend package="cob_script_server"/>
+  <!-- depend package="cob_script_server"/-->
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>
   <depend package="srs_interaction_primitives" />
+  <depend package="cv_bridge"/>
   <!-- depend package="cob_arm_navigation_but"/>-->
 
   <export>

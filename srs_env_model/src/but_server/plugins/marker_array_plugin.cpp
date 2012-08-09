@@ -86,7 +86,8 @@ void srs_env_model::CMarkerArrayPlugin::init(ros::NodeHandle & node_handle)
 
 void srs_env_model::CMarkerArrayPlugin::onPublish(const ros::Time & timestamp)
 {
-    m_markerArrayPublisher.publish(*m_data);
+	if( m_markerArrayPublisher.getNumSubscribers() > 0 )
+		m_markerArrayPublisher.publish(*m_data);
 }
 
 
@@ -116,7 +117,7 @@ void srs_env_model::CMarkerArrayPlugin::onFrameStart(const SMapParameters & par)
     try {
         // Transformation - to, from, time, waiting time
         m_tfListener.waitForTransform(m_markerArrayFrameId, m_ocFrameId,
-                timestamp, ros::Duration(0.2));
+                timestamp, ros::Duration(5));
 
         m_tfListener.lookupTransform(m_markerArrayFrameId, m_ocFrameId,
                 timestamp, ocToMarkerArrayTf);
@@ -249,4 +250,15 @@ std_msgs::ColorRGBA srs_env_model::CMarkerArrayPlugin::heightMapColor(double h) 
         }
 
         return color;
+}
+
+/**
+ * Pause/resume plugin. All publishers and subscribers are disconnected on pause
+ */
+void srs_env_model::CMarkerArrayPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+{
+	if( bPause )
+		m_markerArrayPublisher.shutdown();
+	else
+		m_markerArrayPublisher = node_handle.advertise<visualization_msgs::MarkerArray> (m_markerArrayPublisherName, 100, m_latchedTopics);
 }

@@ -36,3 +36,22 @@ copyFP_Output copyFP(float4 color : COLOR)
   return OUT;
 
 }
+
+/*******************************************************************************
+ *	Combine two inputs
+ */
+
+void combineColorFS(
+					float2	texCoord : TEXCOORD0,
+					uniform sampler input1 : register(s0),
+					uniform sampler input2 : register(s1),
+					out float4  color : COLOR
+					)
+{
+	color = tex2D( input1, texCoord );
+	
+	float sum = color[0]+color[1]+color[2];
+	if( sum <= 0.01  )
+		color = tex2D( input2, texCoord );
+
+}

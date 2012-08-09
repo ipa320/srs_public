@@ -36,6 +36,8 @@
 #include <wx/dialog.h>
 #include <wx/msgdlg.h>
 #include <wx/sizer.h>
+#include <wx/tglbtn.h>
+
 #include <ros/ros.h>
 #include <string.h>
 
@@ -54,6 +56,8 @@
 #include "srs_assisted_arm_navigation/ArmNavStop.h"
 #include "srs_assisted_arm_navigation/ArmNavMovePalmLinkRel.h"
 
+#include "srs_env_model/LockCollisionMap.h"
+
 #include "cob_script_server/ScriptAction.h"
 #include <actionlib/client/simple_action_client.h>
 #include <boost/thread.hpp>
@@ -61,6 +65,7 @@
 #include <map>
 
 #include "srs_assisted_arm_navigation/services_list.h"
+#include "srs_env_model/services_list.h"
 
 namespace rviz
 {
@@ -106,6 +111,7 @@ public:
 
     virtual void OnSwitch(wxCommandEvent& event);
 
+    virtual void OnLockCmap(wxCommandEvent& event);
 
     void OnStepBack(wxCommandEvent& event);
 
@@ -128,7 +134,7 @@ public:
     void OnSetText(wxCommandEvent & event);
 
     /// Callback for arm_nav_start service. This service can be used to inform user that his/her activity is required.
-    bool nav_start(srs_assisted_arm_navigation::ArmNavStart::Request &req, srs_assisted_arm_navigation::ArmNavStart::Response &res);
+    bool nav_start(ArmNavStart::Request &req, ArmNavStart::Response &res);
 
 protected:
     //! stored window manager interface pointer
@@ -146,21 +152,28 @@ protected:
     wxButton * m_button_switch;
 
     wxStaticText *m_text_status;
+    wxStaticText *m_text_action_;
     wxStaticText *m_text_object;
     wxStaticText *m_text_timeout;
-    wxStaticText *m_text_dist; // distance to closest pregrasp position
+    //wxStaticText *m_text_dist; // distance to closest pregrasp position
+
+    wxToggleButton *m_lock_cmap_;
 
     ros::ServiceServer service_start_;
     ros::ServiceServer service_timeout_;
 
     wxWindow *parent_;
 
-    bool goal_away;
-    bool goal_pregrasp;
+    /*bool goal_away;
+    bool goal_pregrasp;*/
 
     bool wait_for_start_;
 
-    std::string object_name;
+    bool allow_repeat_;
+    bool cmap_locked_;
+
+    std::string object_name_;
+    std::string action_;
 
     cob_client * cob_script;
 

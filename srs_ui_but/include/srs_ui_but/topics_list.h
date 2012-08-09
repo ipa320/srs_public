@@ -33,37 +33,42 @@
 
 namespace srs_ui_but
 {
-	/**
-     * but_data_fusion
-     */
-	static const std::string BUT_DATA_FUSION_PREFIX = "/but_gui/data_fusion";
+/**
+ * but_data_fusion
+ */
+static const std::string BUT_DATA_FUSION_PREFIX = "/but_gui/data_fusion";
+static const std::string BUT_SERVICES_PREFIX = "/but_gui/but_services";
 
-    /**
-     * but_data_fusion - published topics
-     */
-    static const std::string ViewFrustum_TOPIC = BUT_DATA_FUSION_PREFIX + std::string("/view_frustum");
-    static const std::string CameraView_TOPIC = BUT_DATA_FUSION_PREFIX + std::string("/cam_view");
+/**
+ * but_data_fusion - published topics
+ */
+static const std::string ViewFrustum_TOPIC = BUT_DATA_FUSION_PREFIX + std::string("/view_frustum");
+static const std::string CameraView_TOPIC = BUT_DATA_FUSION_PREFIX + std::string("/cam_view");
 
-    /**
-     * but_data_fusion - global parameters
-     */
-    static const std::string Camera_PARAM = BUT_DATA_FUSION_PREFIX + std::string("/camera");
-    static const std::string Depth_PARAM = BUT_DATA_FUSION_PREFIX + std::string("/depth");
+/**
+ * but_data_fusion - global parameters
+ */
+static const std::string Camera_PARAM = BUT_DATA_FUSION_PREFIX + std::string("/camera");
+static const std::string Depth_PARAM = BUT_DATA_FUSION_PREFIX + std::string("/depth");
 
+/**
+ * but-display - parameters
+ */
+static const std::string DEFAULT_GRIPPER_LINK = "/sdh_palm_link";
+static const std::string DEFAULT_ROBOT_LINK = "/sdh_palm_link";
+static const std::string DEFAULT_COB_BASE_LINK = "/base_link";
 
-	/**
-	 * but-display - parameters
-	 */
-	static const std::string  DEFAULT_GRIPPER_LINK = "/sdh_palm_link";
-	static const std::string  DEFAULT_ROBOT_LINK = "/sdh_palm_link";
+/**
+ * but-servcies - published topics
+ */
+static const std::string COBStretch_TOPIC = BUT_SERVICES_PREFIX + std::string("/cob_stretch");
 
-
-	/**
-	 * but-services - parameters
-	 */
-	static const std::string CAMERA_TOPIC = "/cam3d/depth/points";
-	static const std::string CAMERA_LINK = "/head_cam3d_link";
+/**
+ * but-services - parameters
+ */
+//static const std::string CAMERA_TOPIC = "/cam3d/depth/points";
+static const std::string CAMERA_TOPIC = "/but_env_model/pointcloud_centers";
+static const std::string CAMERA_LINK = "/head_cam3d_link";
 }
 
 #endif // BUT_GUI_TOPICS_LIST_H
-

@@ -55,6 +55,8 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
 
     step_used_ = false;
 
+    planning_scene_id = "";
+    mpr_id = 0;
 
 }
 
@@ -126,35 +128,23 @@ void CArmManipulationEditor::reset() {
 
     }
 
-  //coll_obj_det.clear();
-
 
   GripperPosesClean();
 
-  /// this deletes planning scene from warehouse and also all associated data...
-  if (planning_scene_id!="") {
 
-    std::vector<unsigned int> erased_trajectories;
-    deleteMotionPlanRequest(mpr_id,erased_trajectories);
+  if (mpr_id!=9999) {
 
-    /// this is not working for some reason
-    //PlanningSceneData& data = planning_scene_map_[planning_scene_id];
-    //if (move_arm_warehouse_logger_reader_->removePlanningSceneAndAssociatedDataFromWarehouse(data.getHostName(), data.getId())) {
+	  std::vector<unsigned int> erased_trajectories;
+	  deleteMotionPlanRequest(mpr_id,erased_trajectories);
 
-      ROS_INFO("Planning scene was removed from warehouse.");
+	  ROS_INFO("Motion plan request was removed from warehouse.");
 
-      planning_scene_map_.erase(planning_scene_id);
-      planning_scene_id = "";
-      mpr_id = 0;
-      inited = false;
+	  mpr_id = 9999; // special value
 
-  /*  } else {
+  }
 
-      ROS_ERROR("Error on removing planning scene from warehouse.");
 
-    }*/
-
-  } else ROS_WARN("Cannot remove planning scene: it has been already removed");
+  inited = false;
 
   if (!refresh()) ROS_WARN("Error on refreshing planning scene during reset");
 
@@ -166,10 +156,7 @@ bool CArmManipulationEditor::refresh() {
 
   ROS_INFO("Sending planning scene id=%u",planningSceneData.getId());
 
-  //planningScene& ps
-
   return sendPlanningScene(planningSceneData);
-
 
 }
 
@@ -263,7 +250,7 @@ void CArmManipulationEditor::GripperPoses()
 
   while(ros::ok()) {
 
-    if (inited==true) {
+    if (inited==true && disable_gripper_poses_==false) {
 
       boost::mutex::scoped_lock(im_server_mutex_);
 

@@ -126,7 +126,7 @@ std::string CArmManipulationEditor::add_coll_obj_attached(double x, double y, do
   std::string ret = "";
   ros::Time now = ros::Time::now();
 
-  std::string target = "/base_footprint";
+  std::string target = "/base_link";
 
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = "/arm_7_link";

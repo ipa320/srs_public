@@ -1,0 +1,63 @@
+compositor zTestedProjection
+{
+	technique
+	{
+		texture original_scene_texture target_width target_height PF_R8G8B8
+		
+		target original_scene_texture
+		{
+			// Render output from previous compositor (or original scene)
+            input previous
+		}
+/*		
+		texture depth_scene_texture target_width target_height PF_R8G8B8
+		
+		target depth_scene_texture
+		{
+			input none
+			
+			pass clear
+			{
+			}
+			
+			pass render_scene
+			{
+				material depth
+			}
+			
+		}
+*/		
+		texture modified_scene_texture target_width target_height PF_R8G8B8
+		
+		target modified_scene_texture
+		{
+			input none 
+			
+			material_scheme myscheme
+			
+			pass clear
+			{
+			}
+			
+			
+			pass render_scene
+			{
+			}
+			
+		}
+		
+		target_output
+		{
+			// Start with cleared input
+			input none
+			
+			pass render_quad
+			{
+				material combineColorFS
+				input 0 modified_scene_texture
+				input 1 original_scene_texture
+			}
+			
+		}
+	}
+}

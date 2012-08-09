@@ -59,7 +59,6 @@ Primitive::Primitive(InteractiveMarkerServerPtr server, string frame_id, string 
 
 void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  ROS_INFO("CALLBACK");
   if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP)
   {
     pose_change.position.x -= feedback->pose.position.x;

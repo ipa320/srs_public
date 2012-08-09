@@ -55,6 +55,11 @@ Object::Object(InteractiveMarkerServerPtr server, string frame_id, string name) 
   pregrasp6_.name = "control_grasp_zm";
 
   allow_object_interaction_ = true;
+
+  if (pose_type_ == PoseType::POSE_BASE)
+  {
+    pose_.position.z += scale_.z * 0.5;
+  }
 }
 
 void Object::objectCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
@@ -283,9 +288,10 @@ void Object::createMenu()
 
 void Object::createMesh()
 {
-  /*mesh_.pose = pose_;
-  mesh_.header.frame_id = frame_id_;
-  mesh_.pose.position.z -= 0.5 * bounding_box_lwh_.z;*/
+  /*
+   mesh_.header.frame_id = frame_id_;*/
+
+  mesh_.pose.position.z = -0.5 * scale_.z;
 
   mesh_.color = color_;
   mesh_.scale = Vector3();
@@ -307,6 +313,10 @@ void Object::createMesh()
 void Object::setPoseLWH(Pose pose, Point bounding_box_lwh)
 {
   bounding_box_lwh_ = bounding_box_lwh;
+  scale_.x = bounding_box_lwh_.x;
+  scale_.y = bounding_box_lwh_.y;
+  scale_.z = bounding_box_lwh_.z;
+
   setPose(pose);
 
   //pose_.position.z += 0.5 * bounding_box_lwh.z;

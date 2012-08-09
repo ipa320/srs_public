@@ -172,7 +172,6 @@ bool addObject(AddObject::Request &req, AddObject::Response &res)
   //  object->setPose(req.pose);
   object->setPoseType(req.pose_type);
   object->setPoseLWH(req.pose, req.bounding_box_lwh);
-  object->setBoundingBoxLWH(req.bounding_box_lwh);
   object->setColor(req.color);
   object->setDescription(req.description);
   object->insert();

@@ -15,7 +15,8 @@ from srs_grasping.srv import GetPreGrasp
 from numpy import *
 import sys
 from srs_object_database_msgs.srv import GetObjectId
-from srs_msgs.msg import GraspConfiguration
+#from srs_msgs.msg import GraspConfiguration
+from srs_msgs.msg import DBGrasp
 #from srs_object_database_msgs.srv import GetObjectId
 from shared_state_information import *
 
@@ -134,7 +135,7 @@ class simulate_dm(smach.State):
         
     userdata.list_of_id_for_target_positions = [5,8,13,72]
         
-    fake_grasp_positions = [GraspConfiguration(), GraspConfiguration(), GraspConfiguration(), GraspConfiguration()]
+    fake_grasp_positions = [DBGrasp(), DBGrasp(), DBGrasp(), DBGrasp()]
   
     # TRANSFORM POSES FROM OBJECT COORDS INTO BASE_LINK ??
     
@@ -193,6 +194,7 @@ class simulate_dm(smach.State):
       
         grasps_res = get_grasps(object_id=self.odb_id,
                                 object_pose=self.detected_object_pose.pose,
+                                pregrasp_offsets=[0.0, 0.0],
                                 num_configurations=1)
           
         print "Real pregrasp positions from srs_grasping:"

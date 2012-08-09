@@ -1,24 +1,55 @@
 <launch>
-
-  <!-- Configuration for COB, bringup simulation -->
-  <include file="$(find cob_default_robot_config)/upload_param.launch" />
-  <include file="$(find cob_default_env_config)/upload_param.launch" />
-  <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
-  <include file="$(find cob_tactiletools)/launch/filters.launch"/>
   
+   
   <!-- start COB script server -->
   <include file="$(find cob_script_server)/launch/script_server.launch"/>
   
   <!-- srs interaction primitives -->
-  <node name="but_interaction_primitives" pkg="srs_interaction_primitives" type="interaction_primitives_service_server">
+  <node name="interaction_primitives" pkg="srs_interaction_primitives" type="interaction_primitives_service_server">
     <param name="allow_object_interaction" type="bool" value="false"/>
     <param name="show_object_pregrasp" type="bool" value="true"/>
+    <param name="move_arm_to_pregrasp_on_click" type="bool" value="true" />
   </node>
   
-  <!-- actionlibserver -->
+  <!-- BB estimator server -->
+  <node pkg="srs_env_model_percp" type="bb_estimator_server" name="bb_estimator">
+        <rosparam file="$(find srs_env_model_percp)/config/bb_estimator_params.yaml" command="load" />
+        <remap from="camera_info_in" to="/cam3d/rgb/camera_info" />
+        <!-- remap from="depth_image_in" to="/cam3d/depth/image_raw" /-->
+        <remap from="points_in" to="/cam3d/depth/points" />
+  </node>
+  
+  <!--node pkg="srs_env_model_percp" type="bb_estimator_client" name="bb_estimator_client">
+    <remap from="/cam3d/camera_info" to="/cam3d/rgb/camera_info" />
+  </node-->
+  
+  <!-- arm manip action server -->
   <include file="$(find srs_assisted_arm_navigation)/launch/arm_manip_node.launch"/>
   
+  <!-- grasping action server -->
+  <include file="$(find srs_assisted_arm_navigation)/launch/grasping_node.launch"/>
+  
   <!-- BUT cob teleop marker -->
-  <node name="cob_interactive_teleop" pkg="cob_interactive_teleop" type="interactive_teleop" />
+  <node name="cob_interactive_teleop" pkg="cob_interactive_teleop" type="interactive_teleop">
+    <remap from="/base_controller/command" to="/base_controller/command_safe"/>
+  </node>
+  
+  <!-- node which is flipping video stream from camera (kinect) -->
+  <!--node name="video_flip_node" pkg="srs_assisted_arm_navigation" type="video_flip_node">
+    <remap from="video_in"  to="/cam3d/rgb/image_raw"/>
+    <remap from="video_out" to="/cam3d/rgb/image_raw_flipped"/>
+  </node-->
+  
+  <node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/>
+  
+  <!-- kinect image flip nodelet - flips kinect images if robot is looking backwards -->
+  <node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
+    <remap from="pointcloud" to="/cam3d/depth/points"/>
+    <remap from="colorimage" to="/cam3d/rgb/image_raw"/>
+  </node>
+  
+
+  <!--node pkg="tf" type="static_transform_publisher" name="sdh_link_2_tf_publisher"
+        args="0 0 0 0 1.57 0  /sdh_palm_link /sdh_palm_link_2 100" /-->
 
 </launch>

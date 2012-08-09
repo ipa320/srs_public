@@ -12,6 +12,7 @@ GUI primitives for HRI based on Interactive Markers provided by dcgm-robotics@FI
 	<depend package="opencv2" />
 	<depend package="eigen"/>
 	<depend package="roscpp" />
+	<depend package="cob_object_detection_msgs"/>
 	<depend package="image_transport" />
 	<depend package="camera_calibration_parsers" />
 	<depend package="visualization_msgs" />

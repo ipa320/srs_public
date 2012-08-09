@@ -43,6 +43,7 @@ namespace srs_assisted_arm_navigation
      */
     static const std::string ACT_ARM_MANIP = PACKAGE_NAME_PREFIX + std::string("/manual_arm_manip_action");
     static const std::string ACT_GRASP = PACKAGE_NAME_PREFIX + std::string("/manual_grasping_action");
+    static const std::string ACT_BB_SELECT = PACKAGE_NAME_PREFIX + std::string("/manual_bb_estimation_action");
 }
 
 #endif // BUT_ARM_NAVIGATION_TOPICS_H

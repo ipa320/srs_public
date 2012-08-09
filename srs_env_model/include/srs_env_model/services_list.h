@@ -35,14 +35,21 @@ namespace srs_env_model
 {
     static const std::string PACKAGE_NAME_PREFIX  = "/but_env_model";
 
-	/**
-	 * objtree - services
-	 */
+    /**
+     * env. model - services
+     */
+    static const std::string ServerReset_SRV = PACKAGE_NAME_PREFIX + std::string("/server_reset");
+    static const std::string ServerPause_SRV = PACKAGE_NAME_PREFIX + std::string("/server_pause");
+
+    /**
+     * objtree - services
+     */
     static const std::string GetObjectsInBox_SRV = PACKAGE_NAME_PREFIX + std::string("/get_objects_in_box");
     static const std::string GetObjectsInHalfspace_SRV = PACKAGE_NAME_PREFIX + std::string("/get_objects_in_halfspace");
     static const std::string GetObjectsInSphere_SRV = PACKAGE_NAME_PREFIX + std::string("/get_objects_in_sphere");
     static const std::string GetPlane_SRV = PACKAGE_NAME_PREFIX + std::string("/get_plane");
     static const std::string GetAlignedBox_SRV = PACKAGE_NAME_PREFIX + std::string("/get_aligned_box");
+    static const std::string GetBoundingBox_SRV = PACKAGE_NAME_PREFIX + std::string("/get_bounding_box");
     static const std::string InsertPlane_SRV = PACKAGE_NAME_PREFIX + std::string("/insert_plane");
     static const std::string InsertPlaneByPosition_SRV = PACKAGE_NAME_PREFIX + std::string("/insert_plane_by_position");
     static const std::string GetSimilarPlane_SRV = PACKAGE_NAME_PREFIX + std::string("/get_similar_plane");
@@ -50,21 +57,31 @@ namespace srs_env_model
     static const std::string InsertAlignedBox_SRV = PACKAGE_NAME_PREFIX + std::string("/insert_aligned_box");
     static const std::string InsertAlignedBoxByPosition_SRV = PACKAGE_NAME_PREFIX + std::string("/insert_aligned_box_by_position");
     static const std::string GetSimilarAlignedBox_SRV = PACKAGE_NAME_PREFIX + std::string("/get_similar_aligned_box");
+    static const std::string InsertBoundingBox_SRV = PACKAGE_NAME_PREFIX + std::string("/insert_bounding_box");
+    static const std::string InsertBoundingBoxByPosition_SRV = PACKAGE_NAME_PREFIX + std::string("/insert_bounding_box_by_position");
+    static const std::string GetSimilarBoundingBox_SRV = PACKAGE_NAME_PREFIX + std::string("/get_similar_bounding_box");
     static const std::string RemoveObject_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_object");
     static const std::string ShowObject_SRV = PACKAGE_NAME_PREFIX + std::string("/show_object");
     static const std::string ShowObjtree_SRV = PACKAGE_NAME_PREFIX + std::string("/show_objtree");
 
-	/**
+    /**
      * cmap_plugin - services
      */
-	static const std::string GetCollisionMap_SRV = PACKAGE_NAME_PREFIX + std::string("/get_collision_map");
-	static const std::string IsNewCMap_SRV = PACKAGE_NAME_PREFIX + std::string("/is_new_collision_map");
+    static const std::string GetCollisionMap_SRV = PACKAGE_NAME_PREFIX + std::string("/get_collision_map");
+    static const std::string IsNewCMap_SRV = PACKAGE_NAME_PREFIX + std::string("/is_new_collision_map");
+    static const std::string LockCMap_SRV = PACKAGE_NAME_PREFIX + std::string("/lock_collision_map");
 
-	/**
+    /**
      * octomap_plugin - services
      */
-	static const std::string RemoveCube_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_cube");
-	static const std::string ResetOctomap_SRV = PACKAGE_NAME_PREFIX + std::string("/reset_octomap");
+    static const std::string RemoveCube_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_cube");
+    static const std::string ResetOctomap_SRV = PACKAGE_NAME_PREFIX + std::string("/reset_octomap");
+
+    /**
+     * Context server - services
+     */
+    static const std::string GetContext_SRV = PACKAGE_NAME_PREFIX + std::string("/context/get");
+    static const std::string SetContext_SRV = PACKAGE_NAME_PREFIX + std::string("/context/set");
 }
 
 #endif //SRS_ENV_MODEL_SERVICES_LIST_H

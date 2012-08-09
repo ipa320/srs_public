@@ -31,37 +31,31 @@
 
 #include "services_list.h"
 
+
 namespace srs_env_model_percp
 {
-    /**
+    /**************************************************************************
       * but_plane_detector - published topics
       */
-	static const std::string DET_NODE_NAME = "but_plane_detector";
-	static const std::string DET_OUTPUT_POINT_CLOUD_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/but_env_model/point_cloud");
-	static const std::string DET_OUTPUT_PLANES_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/but_env_model/plane_array");
+	static const std::string DET_OUTPUT_POINT_CLOUD_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/point_cloud");
+	static const std::string DET_OUTPUT_PLANES_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/plane_array");
+	static const std::string DET_OUTPUT_MARKER_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/poly");
 
     /**
-      * but_plane_detector - parameters
+      * but_plane_detector - input topics
       */
-	static const std::string DET_INPUT_POINT_CLOUD_TOPIC = "/cam3d/depth/points";
-	static const std::string DET_INPUT_IMAGE_TOPIC = "/cam3d/depth/image_raw";
-	static const std::string DET_INPUT_CAM_INFO_TOPIC = "/cam3d/depth/camera_info";
+	static const std::string DET_INPUT_POINT_CLOUD_TOPIC = "points_in";
+	static const std::string DET_INPUT_IMAGE_TOPIC = "depth_image_in";
+	static const std::string DET_INPUT_CAM_INFO_TOPIC = "camera_info_in";
 
     /**
-      * but_plane_detector - env. model
+      * but_plane_detector - required env. model services
       */
 	static const std::string DET_SERVICE_INSERT_PLANES = "/but_env_model/insert_planes";
 	static const std::string DET_SERVICE_INSERT_PLANE = "/but_env_model/insert_plane";
 
-    /**
-      * but_plane_detector - target frames
-      * TODO: make this automatic
-      */
-	static const std::string DET_OUTPUT_PLANE_FRAMEID = "/map";
-	static const std::string DET_OUTPUT_PLANE_ORIGINAL_FRAMEID = "/head_cam3d_link";
 
-
-    /**
+    /**************************************************************************
       * but_seg_utils - kinect to pcl converter topics
       */
 	static const std::string KIN2PCL_NODE_NAME 					= "but_kin2pcl_node";
@@ -89,25 +83,13 @@ namespace srs_env_model_percp
 	static const std::string SEG_OUTPUT_DEVIATION_IMAGE_TOPIC = PACKAGE_NAME_PREFIX + std::string("/but_env_model/seg_deviation_image");
 
 
-    /**
-      * bb_estimator - default topics to subscribe from: variant #1
+    /**************************************************************************
+      * bb_estimator - default topics to subscribe
       */
-	const std::string sv1_depthTopicDefault("/cam3d/depth/image_raw");
-	const std::string sv1_camInfoTopicDefault("/cam3d/depth/camera_info");
-	const std::string sv1_rgbTopicDefault("/cam3d/rgb/image_raw");
-
-    /**
-      * bb_estimator - default topics to subscribe from: variant #2
-      */
-	const std::string sv2_pointCloudTopicDefault("/cam3d/depth/points");
-	const std::string sv2_camInfoTopicDefault("/cam3d/camera_info");
-	const std::string sv2_rgbTopicDefault("/cam3d/rgb/image_raw");
-
-    /**
-      * bb_estimator - default scene (world) frame id
-      */
-	const std::string sceneFrameIdDefault("/map");
+	const std::string DEPTH_IMAGE_TOPIC_IN    = "depth_image_in";
+    const std::string POINT_CLOUD_TOPIC_IN    = "points_in";
+	const std::string CAMERA_INFO_TOPIC_IN    = "camera_info_in";
+	const std::string RGB_IMAGE_TOPIC_IN      = "rgb_image_in";
 }
 
 #endif //BUT_PLANE_DETECTOR_TOPICS_LIST_H
-

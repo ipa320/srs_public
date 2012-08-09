@@ -30,17 +30,19 @@
 #define BUT_SERVICES_SERVICES_LIST_H_
 
 #include <srs_ui_but/GetClosestPoint.h>
+#include <srs_ui_but/SetPointCloudTopic.h>
 
 #include <string>
 
 namespace srs_ui_but
 {
-	static const std::string PACKAGE_NAME_PREFIX  = "/but_gui";
+static const std::string PACKAGE_NAME_PREFIX = "/but_gui";
 
-	/**
-	 * Get closest point service topic
-	 */
-	static const std::string GetClosestPoint_SRV = PACKAGE_NAME_PREFIX + std::string("/get_closest_point");
+/**
+ * Service server services
+ */
+static const std::string GetClosestPoint_SRV = PACKAGE_NAME_PREFIX + std::string("/get_closest_point");
+static const std::string SetPointCloudTopic_SRV = PACKAGE_NAME_PREFIX + std::string("/set_point_cloud_topic");
 }
 
 #endif /* BUT_SERVICES_SERVICES_LIST_H_ */

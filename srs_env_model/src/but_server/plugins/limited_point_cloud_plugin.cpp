@@ -82,10 +82,7 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
 	}
 
     // Read parameters
-
-    // Camera position topic name
-    std::string cameraPositionTopic;
-    node_handle.param("rviz_camera_position_topic_name", cameraPositionTopic, SUBSCRIBER_CAMERA_POSITION_NAME );
+    node_handle.param("rviz_camera_position_topic_name", m_cameraPositionTopic, SUBSCRIBER_CAMERA_POSITION_NAME );
 
     // Point cloud publishing topic name
     node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME );
@@ -95,7 +92,7 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
 
     // Subscribe to position topic
     // Create subscriber
-    m_camPosSubscriber = node_handle.subscribe<srs_env_model_msgs::RVIZCameraPosition>( cameraPositionTopic, 10, &srs_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
+    m_camPosSubscriber = node_handle.subscribe<srs_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &srs_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
     // = new message_filters::Subscriber<srs_env_model_msgs::RVIZCameraPosition>(node_handle, cameraPositionTopic, 1);
 
     if (!m_camPosSubscriber)
@@ -149,7 +146,7 @@ void srs_env_model::CLimitedPointCloudPlugin::onFrameStart( const SMapParameters
         try {
             // Transformation - from, to, time, waiting time
             m_tfListener.waitForTransform(m_ocFrameId, m_cameraFrameId,
-                    par.currentTime, ros::Duration(0.2));
+                    par.currentTime, ros::Duration(5));
 
             m_tfListener.lookupTransform(m_ocFrameId, m_cameraFrameId,
                     par.currentTime, camToOcTf);
@@ -257,5 +254,28 @@ void srs_env_model::CLimitedPointCloudPlugin::onPublish(const ros::Time & timest
 //    PERROR( "Visible: " << m_countVisible << ", hidden: " << m_countHidden << ", min: " << min << ", max: " << max );
 //    PERROR( "Num of points: " << m_data->size() );
     srs_env_model::CPointCloudPlugin::onPublish( timestamp );
+}
+
+/**
+ *  Connect/disconnect plugin to/from all topics
+ */
+void srs_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
+{
+	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
+
+	if( bPause )
+	{
+		m_pcPublisher.shutdown();
+		m_camPosSubscriber.shutdown();
+	}
+	else
+	{
+		// Create publisher
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+
+		// Subscribe to position topic
+		// Create subscriber
+		m_camPosSubscriber = node_handle.subscribe<srs_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &srs_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
+	}
 }
 

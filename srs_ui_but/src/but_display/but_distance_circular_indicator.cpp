@@ -34,7 +34,7 @@ using namespace std;
 namespace srs_ui_but
 {
 CButDistanceCircularIndicator::CButDistanceCircularIndicator(const string & name, rviz::VisualizationManager * manager) :
-  Display(name, manager)
+    Display(name, manager)
 {
   // Default properties
   color_.r_ = 0.0;
@@ -78,6 +78,8 @@ bool CButDistanceCircularIndicator::createGeometry()
   material_->setCullingMode(Ogre::CULL_NONE);
   material_->getTechnique(0)->setLightingEnabled(true);
   material_->getTechnique(0)->setAmbient(color_.r_, color_.g_, color_.b_);
+  material_->getTechnique(0)->setDiffuse(color_.r_, color_.g_, color_.b_, alpha_);
+  material_->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 
   circle_manual_object_ = scene_manager_->createManualObject(ss.str());
 
@@ -126,66 +128,44 @@ void CButDistanceCircularIndicator::onDisable()
 void CButDistanceCircularIndicator::createProperties()
 {
 
-  m_property_link_
-      = property_manager_->createProperty<rviz::TFFrameProperty> ("Link", property_prefix_,
-                                                            boost::bind(&CButDistanceCircularIndicator::getLinkString,
-                                                                        this),
-                                                            boost::bind(&CButDistanceCircularIndicator::setLinkString,
-                                                                        this, _1), parent_category_, this);
+  m_property_link_ = property_manager_->createProperty<rviz::TFFrameProperty>(
+      "Link", property_prefix_, boost::bind(&CButDistanceCircularIndicator::getLinkString, this),
+      boost::bind(&CButDistanceCircularIndicator::setLinkString, this, _1), parent_category_, this);
   setPropertyHelpText(m_property_link_, "Link from which to show radar");
 
-  m_property_orientation_
-      = property_manager_->createProperty<rviz::Vector3Property> ("Orientation", property_prefix_,
-                                                            boost::bind(&CButDistanceCircularIndicator::getOrientation,
-                                                                        this),
-                                                            boost::bind(&CButDistanceCircularIndicator::setOrientation,
-                                                                        this, _1), parent_category_, this);
+  m_property_orientation_ = property_manager_->createProperty<rviz::Vector3Property>(
+      "Orientation", property_prefix_, boost::bind(&CButDistanceCircularIndicator::getOrientation, this),
+      boost::bind(&CButDistanceCircularIndicator::setOrientation, this, _1), parent_category_, this);
   setPropertyHelpText(m_property_orientation_, "Radar orientation.");
 
-  m_property_color_
-      = property_manager_->createProperty<rviz::ColorProperty> ("Color", property_prefix_,
-                                                          boost::bind(&CButDistanceCircularIndicator::getColor, this),
-                                                          boost::bind(&CButDistanceCircularIndicator::setColor, this,
-                                                                      _1), parent_category_, this);
+  m_property_color_ = property_manager_->createProperty<rviz::ColorProperty>(
+      "Color", property_prefix_, boost::bind(&CButDistanceCircularIndicator::getColor, this),
+      boost::bind(&CButDistanceCircularIndicator::setColor, this, _1), parent_category_, this);
   setPropertyHelpText(m_property_color_, "Radar color.");
 
-  /*m_property_alpha_
-   = property_manager_->createProperty<FloatProperty> ("Alpha", property_prefix_,
-   boost::bind(&CButRobotRadar::getAlpha, this),
-   boost::bind(&CButRobotRadar::setAlpha, this, _1),
-   parent_category_, this);
-   setPropertyHelpText(m_property_alpha_, "Alpha channel.");*/
+  m_property_alpha_ = property_manager_->createProperty<rviz::FloatProperty>(
+      "Alpha", property_prefix_, boost::bind(&CButDistanceCircularIndicator::getAlpha, this),
+      boost::bind(&CButDistanceCircularIndicator::setAlpha, this, _1), parent_category_, this);
+  setPropertyHelpText(m_property_alpha_, "Alpha channel.");
 
-  m_property_levels_
-      = property_manager_->createProperty<rviz::IntProperty> (
-                                                        "Levels",
-                                                        property_prefix_,
-                                                        boost::bind(&CButDistanceCircularIndicator::getLevels, this),
-                                                        boost::bind(&CButDistanceCircularIndicator::setLevels, this, _1),
-                                                        parent_category_, this);
+  m_property_levels_ = property_manager_->createProperty<rviz::IntProperty>(
+      "Levels", property_prefix_, boost::bind(&CButDistanceCircularIndicator::getLevels, this),
+      boost::bind(&CButDistanceCircularIndicator::setLevels, this, _1), parent_category_, this);
   setPropertyHelpText(m_property_levels_, "Number of levels.");
 
-  m_property_radius_
-      = property_manager_->createProperty<rviz::FloatProperty> ("Radius", property_prefix_,
-                                                          boost::bind(&CButDistanceCircularIndicator::getRadius, this),
-                                                          boost::bind(&CButDistanceCircularIndicator::setRadius, this,
-                                                                      _1), parent_category_, this);
+  m_property_radius_ = property_manager_->createProperty<rviz::FloatProperty>(
+      "Radius", property_prefix_, boost::bind(&CButDistanceCircularIndicator::getRadius, this),
+      boost::bind(&CButDistanceCircularIndicator::setRadius, this, _1), parent_category_, this);
   setPropertyHelpText(m_property_radius_, "Radar radius (cm).");
 
-  m_property_thickness_
-      = property_manager_->createProperty<rviz::FloatProperty> ("Thickness", property_prefix_,
-                                                          boost::bind(&CButDistanceCircularIndicator::getThickness,
-                                                                      this),
-                                                          boost::bind(&CButDistanceCircularIndicator::setThickness,
-                                                                      this, _1), parent_category_, this);
+  m_property_thickness_ = property_manager_->createProperty<rviz::FloatProperty>(
+      "Thickness", property_prefix_, boost::bind(&CButDistanceCircularIndicator::getThickness, this),
+      boost::bind(&CButDistanceCircularIndicator::setThickness, this, _1), parent_category_, this);
   setPropertyHelpText(m_property_thickness_, "Circle thickness (cm).");
 
-  m_property_show_distance_
-      = property_manager_->createProperty<rviz::BoolProperty> ("Show distance", property_prefix_,
-                                                         boost::bind(&CButDistanceCircularIndicator::getShowDistance,
-                                                                     this),
-                                                         boost::bind(&CButDistanceCircularIndicator::setShowDistance,
-                                                                     this, _1), parent_category_, this);
+  m_property_show_distance_ = property_manager_->createProperty<rviz::BoolProperty>(
+      "Show distance", property_prefix_, boost::bind(&CButDistanceCircularIndicator::getShowDistance, this),
+      boost::bind(&CButDistanceCircularIndicator::setShowDistance, this, _1), parent_category_, this);
   setPropertyHelpText(m_property_show_distance_, "Draw text with distance into the scene.");
 
 }
@@ -234,8 +214,8 @@ void CButDistanceCircularIndicator::update(float wall_dt, float ros_dt)
         circle_manual_object_->position(radius * cos(theta), radius * sin(theta), 0);
         circle_manual_object_->position(radius * cos(theta - M_PI / accuracy_), radius * sin(theta - M_PI / accuracy_),
                                         0);
-        circle_manual_object_->position((radius - thickness) * cos(theta - M_PI / accuracy_), (radius - thickness)
-            * sin(theta - M_PI / accuracy_), 0);
+        circle_manual_object_->position((radius - thickness) * cos(theta - M_PI / accuracy_),
+                                        (radius - thickness) * sin(theta - M_PI / accuracy_), 0);
         circle_manual_object_->position((radius - thickness) * cos(theta), (radius - thickness) * sin(theta), 0);
         circle_manual_object_->quad(point_index, point_index + 1, point_index + 2, point_index + 3);
         point_index += 4;

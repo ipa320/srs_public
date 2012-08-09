@@ -43,7 +43,9 @@
 #include <srs_interaction_primitives/AddUnknownObject.h>
 
 void srs_env_model::COctoMapPlugin::setDefaults() {
+
 	// Set octomap parameters
+	m_mapParameters.frameSkip = 2;
 	m_mapParameters.resolution = 0.1;
 	m_mapParameters.treeDepth = 0;
 	m_mapParameters.probHit = 0.7; // Probability of node, if node is occupied: 0.7
@@ -76,7 +78,6 @@ void srs_env_model::COctoMapPlugin::setDefaults() {
 	m_removeTester = 0; //new CTestingPolymesh(CTestingPolymesh::tPoint( 1.0, 1.0, 0.5 ), quat, CTestingPolymesh::tPoint( 1.0, 1.5, 2.0 ));
 
 	m_testerLife = 10;
-
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name) :
@@ -96,6 +97,9 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name) :
 	m_data->octree.setOccupancyThres(m_mapParameters.thresOccupancy);
 	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
 	m_mapParameters.map = m_data;
+
+	// Set frame skipping
+	setFrameSkip(m_mapParameters.frameSkip);
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
@@ -113,6 +117,9 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
 	m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
 	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
 	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+
+	// Set frame skipping
+	setFrameSkip(m_mapParameters.frameSkip);
 
 	// is filename valid?
 	if (filename.length() > 0) {
@@ -155,6 +162,8 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	reset();
 
 	// Load parameters from the parameter server
+	node_handle.param("frame_skip", m_mapParameters.frameSkip,
+			m_mapParameters.frameSkip);
 	node_handle.param("resolution", m_mapParameters.resolution,
 			m_mapParameters.resolution);
 	node_handle.param("sensor_model/hit", m_mapParameters.probHit,
@@ -192,6 +201,9 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 		m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
 	}
 
+	// Set frame skipping
+	setFrameSkip(m_mapParameters.frameSkip);
+
 	// Should ground plane be filtered?
 	node_handle.param("filter_ground", m_filterGroundPlane, m_filterGroundPlane);
 
@@ -221,8 +233,7 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 			m_ocPublisherName, 100, m_latchedTopics);
 
 	// Add camera info subscriber
-	m_ciSubscriber = new ros::Subscriber;
-	*m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10,
+	m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10,
 			&srs_env_model::COctoMapPlugin::cameraInfoCB, this);
 
 	// If should publish, create markers publisher
@@ -237,7 +248,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 		return;
 
 	// Lock data
-	boost::mutex::scoped_lock lock(m_lockData);
+//	boost::mutex::scoped_lock lock(m_lockData);
 
 	ros::WallTime startTime = ros::WallTime::now();
 
@@ -260,7 +271,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_mapParameters.frameId,
-				cloud.header.frame_id, cloud.header.stamp, ros::Duration(0.2));
+				cloud.header.frame_id, cloud.header.stamp, ros::Duration(5));
 
 		m_tfListener.lookupTransform(m_mapParameters.frameId,
 				cloud.header.frame_id, cloud.header.stamp, cloudToMapTf);
@@ -286,6 +297,9 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 
 	pc_nonground.header = cloud.header;
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
+
+	// Lock data
+	boost::mutex::scoped_lock lock(m_lockData);
 
 	insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
 	if (m_removeSpecles) {
@@ -322,6 +336,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 
 	// Release lock
 	lock.unlock();
+
 	// Publish new data
 	invalidate();
 }
@@ -539,7 +554,11 @@ bool srs_env_model::COctoMapPlugin::shouldPublish() {
 	return (m_bPublishOctomap && m_ocPublisher.getNumSubscribers() > 0);
 }
 
-void srs_env_model::COctoMapPlugin::onPublish(const ros::Time & timestamp) {
+void srs_env_model::COctoMapPlugin::onPublish(const ros::Time & timestamp)
+{
+	if( !shouldPublish() )
+		return;
+
 	// Lock data
 	boost::mutex::scoped_lock lock(m_lockData);
 	octomap_ros::OctomapBinary map;
@@ -578,7 +597,7 @@ bool srs_env_model::COctoMapPlugin::resetOctomapCB(
 
 void srs_env_model::COctoMapPlugin::cameraInfoCB(
 		const sensor_msgs::CameraInfo::ConstPtr &cam_info) {
-	PERROR( std::endl << std::endl << "CAMERA INFO CALLBACK" << std::endl << std::endl)
+//	PERROR( std::endl << std::endl << "CAMERA INFO CALLBACK" << std::endl << std::endl)
 	// Get camera info
 	ROS_DEBUG("OctMapPlugin: Set camera info: %d x %d\n", cam_info->height, cam_info->width);
 	m_camera_model.fromCameraInfo(*cam_info);
@@ -587,8 +606,6 @@ void srs_env_model::COctoMapPlugin::cameraInfoCB(
 	// Set flag
 	m_bCamModelInitialized = true;
 
-	// Disconnect subscriber
-	delete m_ciSubscriber;
 }
 
 /**
@@ -974,4 +991,29 @@ void srs_env_model::COctoMapPlugin::addCubeGizmo(
 	gizmo.request.name = "OctomapGizmo";
 
 	ros::service::call("but_interaction_primitives/add_unknown_object", gizmo);
+}
+
+/**
+ * Pause/resume plugin. All publishers and subscribers are disconnected on pause
+ */
+void srs_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+{
+	boost::mutex::scoped_lock lock(m_lockData);
+
+	if( bPause )
+	{
+		m_ocPublisher.shutdown();
+		m_ciSubscriber.shutdown();
+		m_markerPublisher.shutdown();
+	}
+	else
+	{
+		m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (	m_ocPublisherName, 100, m_latchedTopics);
+
+		// Add camera info subscriber
+		m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10, &srs_env_model::COctoMapPlugin::cameraInfoCB, this);
+
+		// If should publish, create markers publisher
+		m_markerPublisher = node_handle.advertise<visualization_msgs::Marker> (	m_markers_topic_name, 10);
+	}
 }

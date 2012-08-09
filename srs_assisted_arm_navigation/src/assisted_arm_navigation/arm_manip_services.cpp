@@ -34,11 +34,15 @@ using namespace srs_assisted_arm_navigation;
 bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Response &res) {
 
 
-    planning_scene_id = createNewPlanningScene();
+	if (planning_scene_id == "") {
 
-    setCurrentPlanningScene(planning_scene_id,true,true);
+		planning_scene_id = createNewPlanningScene();
 
-    ROS_DEBUG("Created a new planning scene: %s", planning_scene_id.c_str());
+		setCurrentPlanningScene(planning_scene_id,true,true);
+
+		ROS_INFO("Created a new planning scene: %s", planning_scene_id.c_str());
+
+	}
 
     createMotionPlanRequest(*getRobotState(), // start state
                            *getRobotState(), // end state
@@ -49,7 +53,7 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
                            mpr_id); // motion plan id out
 
 
-   ROS_DEBUG("Created a new MPR: %d", mpr_id);
+   ROS_INFO("Created a new MPR: %d", mpr_id);
 
    MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
 
@@ -90,11 +94,14 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
    GripperPosesClean();
 
    inited = true;
+   disable_gripper_poses_ = false;
 
   return true;
 }
 
 bool CArmManipulationEditor::ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Response &res) {
+
+  planned_ = false;
 
   ROS_DEBUG("Planning trajectory...");
 
@@ -119,6 +126,20 @@ bool CArmManipulationEditor::ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Re
       playTrajectory(data,f_trajectory);
 
       res.completed = true;
+
+      boost::mutex::scoped_lock(im_server_mutex_);
+
+      planned_ = true;
+      disable_gripper_poses_ = true;
+
+      //data.setGoalEditable(false);
+      //data.hideGoal();
+
+      if (!interactive_marker_server_->erase("MPR 0_end_control")) {
+
+        ROS_WARN("Cannot remove IM.");
+
+      } else interactive_marker_server_->applyChanges();
 
 
     } else {
@@ -147,6 +168,14 @@ bool CArmManipulationEditor::ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Re
 
 bool CArmManipulationEditor::ArmNavPlay(ArmNavPlay::Request &req, ArmNavPlay::Response &res) {
 
+  if (!planned_) {
+
+    ROS_ERROR("Nothing to play!");
+    res.completed = false;
+    return false;
+
+  }
+
   ROS_INFO("Playing trajectory...");
 
   MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
@@ -160,6 +189,14 @@ bool CArmManipulationEditor::ArmNavPlay(ArmNavPlay::Request &req, ArmNavPlay::Re
 }
 
 bool CArmManipulationEditor::ArmNavExecute(ArmNavExecute::Request &req, ArmNavExecute::Response &res) {
+
+  if (!planned_) {
+
+    ROS_ERROR("Nothing to execute!");
+    res.completed = false;
+    return false;
+
+  }
 
   ROS_INFO("Executing trajectory...");
 

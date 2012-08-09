@@ -1,0 +1,92 @@
+fragment_program projectionFP_PS cg
+			{
+				source projectionFP.cg
+				entry_point generalPurposeProjection_fp
+				// sorry, ps_1_1 can't do this, fp20 can though
+				profiles ps_2_0 arbfp1 fp20
+			}
+
+vertex_program projectionVP_PS cg
+			{
+				source projectionVP.cg
+				entry_point generalPurposeProjection_vp
+				profiles vs_1_1 arbvp1
+			}
+
+fragment_program tested_projectionFP_PS cg
+			{
+				source projectionFP.cg
+				entry_point testedProjection_fp
+				// sorry, ps_1_1 can't do this, fp20 can though
+				profiles ps_2_0 arbfp1 fp20
+			}
+
+vertex_program tested_projectionVP_PS cg
+			{
+				source projectionVP.cg
+				entry_point testedProjection_vp
+				profiles vs_1_1 arbvp1
+			}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////			
+
+material projection
+{	
+	technique
+	{
+		scheme myscheme
+		
+		pass
+		{
+			
+			
+			vertex_program_ref projectionVP_PS
+			{
+				param_named_auto worldViewProjMatrix worldviewproj_matrix
+				param_named_auto worldMatrix world_matrix
+				// You'll need to update the tex projection, I suggest using
+				// the Frustum class
+				// param_named modelViewProj worldviewproj_matrix
+			}
+			fragment_program_ref projectionFP_PS
+			{
+				// no params
+			}		
+				
+		}	
+	
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+material tested_projection
+{	
+	technique
+	{
+		scheme myscheme
+		
+		pass
+		{
+			vertex_program_ref tested_projectionVP_PS
+			{
+				param_named_auto worldViewProjMatrix worldviewproj_matrix
+				param_named_auto worldMatrix world_matrix
+				param_named_auto texelOffsets texel_offsets
+        		param_named_auto depthRange scene_depth_range
+        		
+				// You'll need to update the tex projection, I suggest using
+				// the Frustum class
+				// param_named modelViewProj worldviewproj_matrix
+			}
+			
+			fragment_program_ref tested_projectionFP_PS
+			{
+				// no params
+				
+			}		
+				
+		}	
+	
+	}
+}

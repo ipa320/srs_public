@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+   <node pkg="srs_ui_but" type="data_fusion_view" name="data_fusion_view" />
+</launch>

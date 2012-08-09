@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 843 2012-05-24 14:30:27Z spanel $
+ * $Id: but_server.h 1048 2012-07-25 19:10:51Z stancl $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -74,6 +74,8 @@
 #include <srs_env_model/but_server/plugins/limited_point_cloud_plugin.h>
 #include <srs_env_model/but_server/plugins/objtree_plugin.h>
 
+#include <srs_env_model/ButServerPause.h>
+
 // Old interactive markers plugin used for testing
 #include <srs_env_model/but_server/plugins/old_imarkers_plugin.h>
 
@@ -106,6 +108,10 @@ public:
     /// Reset server and all plugins
     void reset();
 
+    /// Pause-resume server
+    void pause( bool bPause );
+
+
 protected:
     //! Publish all
     void publishAll(const ros::Time& rostime = ros::Time::now());
@@ -123,7 +129,13 @@ protected:
     /// On reset service call
     bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response){ reset(); return true; }
 
+    /// On pause service call
+    bool onPause( ButServerPause::Request & request, ButServerPause::Response & response );
+
 protected:
+
+    //! Is server running now
+    bool m_bIsPaused;
 
     /// Node handle
     ros::NodeHandle m_nh;
@@ -142,6 +154,8 @@ protected:
     /// Reset service
     ros::ServiceServer m_serviceReset;
 
+    /// Pause service
+    ros::ServiceServer m_servicePause;
 
     //======================================================================================================
     // Plugins

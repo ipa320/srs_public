@@ -31,6 +31,7 @@
 #include <srs_env_model/but_server/server_tools.h>
 #include <srs_env_model/GetCollisionMap.h>
 #include <srs_env_model/IsNewCollisionMap.h>
+#include <srs_env_model/LockCollisionMap.h>
 
 #include <arm_navigation_msgs/CollisionMap.h>
 #include <tf/transform_listener.h>
@@ -66,6 +67,12 @@ namespace srs_env_model
         /// Is something to publish and some subscriber to publish to?
         virtual bool shouldPublish(  );
 
+        //! Enable/disable collision map changes
+        bool lockChanges( bool bLock );
+
+        //! Connect/disconnect plugin to/from all topics
+		virtual void pause( bool bPause, ros::NodeHandle & node_handle);
+
 
     protected:
         //! Compare two collision maps and test if they are the same
@@ -88,6 +95,13 @@ namespace srs_env_model
          * @param res response - true, if new map and current timestamp
          */
         bool isNewCmapSrvCallback( srs_env_model::IsNewCollisionMap::Request & req, srs_env_model::IsNewCollisionMap::Response & res );
+
+        /**
+         * @brief Lock collision map - disable its updates from new point cloud data
+         * @param req request - bool - lock/unlock
+         * @param res response -
+         */
+        bool lockCmapSrvCallback( srs_env_model::LockCollisionMap::Request & req, srs_env_model::LockCollisionMap::Response & res );
 
     protected:
         //! Collision map publisher name
@@ -123,6 +137,9 @@ namespace srs_env_model
         //! Is new cmap service
         ros::ServiceServer m_serviceIsNewCMap;
 
+        //! Lock collision map service
+        ros::ServiceServer m_serviceLockCMap;
+
         //! Transform listener
         tf::TransformListener m_tfListener;
 
@@ -138,6 +155,9 @@ namespace srs_env_model
 
         /// Does need input point to be converted?
         bool m_bConvertPoint;
+
+        //! Are cmap changes enabled now
+        bool m_bLocked;
 
         /// Current cmap timestamp
         ros::Time m_mapTime;

@@ -89,8 +89,8 @@ srs_ui_but::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxS
 
     // Connect to services
     ros::NodeHandle node_handle;
-    m_srvAddGizmo = node_handle.serviceClient<srs_interaction_primitives::AddUnknownObject>("but_interaction_primitives/add_unknown_object");
-    m_srvRemoveGizmo = node_handle.serviceClient<srs_interaction_primitives::RemovePrimitive>("but_interaction_primitives/remove_primitive");
+    m_srvAddGizmo = node_handle.serviceClient<srs_interaction_primitives::AddUnknownObject>("/interaction_primitives/add_unknown_object");
+    m_srvRemoveGizmo = node_handle.serviceClient<srs_interaction_primitives::RemovePrimitive>("/interaction_primitives/remove_primitive");
     m_srvRemoveCubeFromOCmap = node_handle.serviceClient<srs_env_model::RemoveCube>(CLEAR_OCTOMAP_BOX_SERVICE_NAME);
 
     // Set gizmo name and defaults
@@ -139,7 +139,7 @@ void srs_ui_but::COctomapControlPane::OnReset(wxCommandEvent& event)
  */
 void srs_ui_but::COctomapControlPane::OnClearingBox(wxCommandEvent &event)
 {
-	std::cerr << "Add clearing box to the scene." << std::endl;
+	std::cerr << "Adding clearing box to the scene." << std::endl;
 
 	addGizmo();
 
@@ -188,11 +188,15 @@ void srs_ui_but::COctomapControlPane::OnCancelClear( wxCommandEvent &event )
  */
 void srs_ui_but::COctomapControlPane::addGizmo()
 {
+	std::cerr << "remove old gizmo..." << std::endl;
 	// Remove old gizmo
 	removeGizmo();
 
 
-	m_srvAddGizmo.call( m_uoGizmo );
+	if( ! m_srvAddGizmo.call( m_uoGizmo ) )
+	{
+		std::cerr << "Service call failed: " << m_srvAddGizmo.getService() << std::endl;
+	}
 	m_bGizmoAdded = true;
 }
 /**

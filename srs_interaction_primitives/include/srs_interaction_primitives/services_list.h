@@ -47,53 +47,55 @@
 #include <srs_interaction_primitives/SetPreGraspPosition.h>
 #include <srs_interaction_primitives/RemovePreGraspPosition.h>
 #include <srs_interaction_primitives/GetAllPrimitivesNames.h>
+#include <srs_interaction_primitives/SetAllowObjectInteraction.h>
 
 #include <string>
 
 namespace srs_interaction_primitives
 {
-    static const std::string PACKAGE_NAME_PREFIX  = "/interaction_primitives";
+static const std::string PACKAGE_NAME_PREFIX = "/interaction_primitives";
 
-	/*
-	 * Services for adding of primitives
-	 */
-    static const std::string AddBillboard_SRV = PACKAGE_NAME_PREFIX + std::string("/add_billboard");
-    static const std::string AddBoundingBox_SRV = PACKAGE_NAME_PREFIX + std::string("/add_bounding_box");
-    static const std::string AddPlane_SRV = PACKAGE_NAME_PREFIX + std::string("/add_plane");
-    static const std::string AddPlanePolygon_SRV = PACKAGE_NAME_PREFIX + std::string("/add_plane_polygon");
-    static const std::string AddObject_SRV = PACKAGE_NAME_PREFIX + std::string("/add_object");
-    static const std::string AddUnknownObject_SRV = PACKAGE_NAME_PREFIX + std::string("/add_unknown_object");
+/*
+ * Services for adding of primitives
+ */
+static const std::string AddBillboard_SRV = PACKAGE_NAME_PREFIX + std::string("/add_billboard");
+static const std::string AddBoundingBox_SRV = PACKAGE_NAME_PREFIX + std::string("/add_bounding_box");
+static const std::string AddPlane_SRV = PACKAGE_NAME_PREFIX + std::string("/add_plane");
+static const std::string AddPlanePolygon_SRV = PACKAGE_NAME_PREFIX + std::string("/add_plane_polygon");
+static const std::string AddObject_SRV = PACKAGE_NAME_PREFIX + std::string("/add_object");
+static const std::string AddUnknownObject_SRV = PACKAGE_NAME_PREFIX + std::string("/add_unknown_object");
 
-	/*
-	 * Services for removing of primitives
-	 */
-    static const std::string RemovePrimitive_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_primitive");
+/*
+ * Services for removing of primitives
+ */
+static const std::string RemovePrimitive_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_primitive");
 
-	/*
-	 * Services for updating primitive's properties
-	 */
-    static const std::string ChangeDescription_SRV = PACKAGE_NAME_PREFIX + std::string("/change_description");
-    static const std::string ChangePose_SRV = PACKAGE_NAME_PREFIX + std::string("/change_pose");
-    static const std::string ChangeScale_SRV = PACKAGE_NAME_PREFIX + std::string("/change_scale");
-    static const std::string ChangeColor_SRV = PACKAGE_NAME_PREFIX + std::string("/change_color");
-    static const std::string ChangeDirection_SRV = PACKAGE_NAME_PREFIX + std::string("/change_direction");
-    static const std::string ChangeVelocity_SRV = PACKAGE_NAME_PREFIX + std::string("/change_velocity");
+/*
+ * Services for updating primitive's properties
+ */
+static const std::string ChangeDescription_SRV = PACKAGE_NAME_PREFIX + std::string("/change_description");
+static const std::string ChangePose_SRV = PACKAGE_NAME_PREFIX + std::string("/change_pose");
+static const std::string ChangeScale_SRV = PACKAGE_NAME_PREFIX + std::string("/change_scale");
+static const std::string ChangeColor_SRV = PACKAGE_NAME_PREFIX + std::string("/change_color");
+static const std::string ChangeDirection_SRV = PACKAGE_NAME_PREFIX + std::string("/change_direction");
+static const std::string ChangeVelocity_SRV = PACKAGE_NAME_PREFIX + std::string("/change_velocity");
+static const std::string SetAllowObjectInteraction_SRV = PACKAGE_NAME_PREFIX + std::string("/set_allow_object_interaction");
 
-	/*
-	 * Services for setting and removing primitive's grasping positions
-	 */
-    static const std::string SetGraspingPosition_SRV = PACKAGE_NAME_PREFIX + std::string("/set_pregrasp_position");
-    static const std::string RemoveGraspingPosition_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_pregrasp_position");
+/*
+ * Services for setting and removing primitive's grasping positions
+ */
+static const std::string SetGraspingPosition_SRV = PACKAGE_NAME_PREFIX + std::string("/set_pregrasp_position");
+static const std::string RemoveGraspingPosition_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_pregrasp_position");
 
-	/*
-	 * Services for update topics
-	 */
-    static const std::string GetUpdateTopic_SRV = PACKAGE_NAME_PREFIX + std::string("/get_update_topic");
+/*
+ * Services for update topics
+ */
+static const std::string GetUpdateTopic_SRV = PACKAGE_NAME_PREFIX + std::string("/get_update_topic");
 
-	/*
-	 * Other services
-	 */
-    static const std::string GetAllPrimitivesNames_SRV = PACKAGE_NAME_PREFIX + std::string("/get_all_primitives_names");
+/*
+ * Other services
+ */
+static const std::string GetAllPrimitivesNames_SRV = PACKAGE_NAME_PREFIX + std::string("/get_all_primitives_names");
 }
 
 #endif /* SERVICES_LIST_H_ */

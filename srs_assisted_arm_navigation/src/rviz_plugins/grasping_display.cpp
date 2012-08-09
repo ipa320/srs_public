@@ -7,7 +7,7 @@
  *
  * This file is part of software developed by dcgm-robotics@FIT group.
  *
- * Author: Vit Stancl (stancl@fit.vutbr.cz)
+ * Author: Zdenek Materna (imaterna@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: 5/4/2012
  * 
@@ -25,7 +25,7 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_assisted_arm_navigation/rviz_plugin/arm_navigation_display.h>
+#include <srs_assisted_arm_navigation/rviz_plugins/grasping_display.h>
 
 #include <OGRE/OgreSceneManager.h>
 
@@ -41,7 +41,7 @@ using namespace srs_assisted_arm_navigation;
 /**
  * Constructor
  */
-CButArmNavDisplay::CButArmNavDisplay(const std::string & name,rviz::VisualizationManager * manager)
+CButGraspingDisplay::CButGraspingDisplay(const std::string & name,rviz::VisualizationManager * manager)
     : Display( name, manager )
 {
     // Get node handle
@@ -62,13 +62,13 @@ CButArmNavDisplay::CButArmNavDisplay(const std::string & name,rviz::Visualizatio
     if( wi != 0 )
     {
         // Arm manipulation controls
-        m_armmanipulation_window = new CArmManipulationControls( wi->getParentWindow(), wxT("Manual arm navigation"), wi);
+        m_grasping_window = new CButGraspingControls( wi->getParentWindow(), wxT("Manual grasping"), wi);
 
-        if( m_armmanipulation_window != 0 )
+        if( m_grasping_window != 0 )
         {
             std::cerr << "Adding to the window manager..." << std::endl;
-            wi->addPane( "Manual arm manipulation", m_armmanipulation_window );
-            wi->showPane( m_armmanipulation_window );
+            wi->addPane( "Manual grasping", m_grasping_window );
+            wi->showPane( m_grasping_window );
             std::cerr << "Added..." << std::endl;
         }
     }else{
@@ -80,7 +80,7 @@ CButArmNavDisplay::CButArmNavDisplay(const std::string & name,rviz::Visualizatio
 /*
  *  Destructor
  */
-CButArmNavDisplay::~CButArmNavDisplay()
+CButGraspingDisplay::~CButGraspingDisplay()
 {
 }
 

@@ -1,11 +1,18 @@
 # goal
-string grasp_type
-uint16 max_force
+uint8 grasp_type
+float32 max_force
+bool accept_two_fingers_contact
+bool do_not_open_fingers
 ---
 # result
 duration time_elapsed
 bool grasped
-uint16 force
+float32 tip1_force
+float32 tip2_force
+float32 tip3_force
 ---
 # feedback
-uint8 progress
+#uint8 progress
+float32 tip1_force
+float32 tip2_force
+float32 tip3_force

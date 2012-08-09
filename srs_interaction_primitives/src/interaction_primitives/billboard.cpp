@@ -148,7 +148,6 @@ void Billboard::create()
   clearObject();
 
   object_.header.frame_id = frame_id_;
-  object_.header.stamp = ros::Time::now();
   object_.name = name_;
   object_.description = name_ + " billboard";
   object_.pose.position.x = pose_.position.x;

@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- grasping action server node -->
+  <node pkg="srs_assisted_arm_navigation" name="assisted_grasping_node" type="assisted_grasping_node" respawn="false" output="screen">
+    <param name="abs_max_force" type="double" value="500.0"/>
+    <param name="wait_for_allow" type="bool" value="false" />
+  </node>
+  
+</launch>

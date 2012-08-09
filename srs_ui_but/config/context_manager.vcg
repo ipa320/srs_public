@@ -1,0 +1,46 @@
+Background\ ColorR=0
+Background\ ColorG=0
+Background\ ColorB=0
+Fixed\ Frame=/world
+Target\ Frame=<Fixed Frame>
+Context\ Manager.Action=0
+Context\ Manager.Connection=0
+Context\ Manager.Context\ status=0
+Context\ Manager.Enabled=1
+Grid.Alpha=0,5
+Grid.Cell\ Size=1
+Grid.ColorR=0,5
+Grid.ColorG=0,5
+Grid.ColorB=0,5
+Grid.Enabled=1
+Grid.Line\ Style=0
+Grid.Line\ Width=0,03
+Grid.Normal\ Cell\ Count=0
+Grid.OffsetX=0
+Grid.OffsetY=0
+Grid.OffsetZ=0
+Grid.Plane=0
+Grid.Plane\ Cell\ Count=10
+Grid.Reference\ Frame=<Fixed Frame>
+Interactive\ Markers.Enabled=1
+Interactive\ Markers.Show\ Axes=0
+Interactive\ Markers.Show\ Descriptions=1
+Interactive\ Markers.Show\ Tool\ Tips=1
+Interactive\ Markers.Update\ Topic=/but_interaction_primitives/update
+Tool\ 2D\ Nav\ GoalTopic=goal
+Tool\ 2D\ Pose\ EstimateTopic=initialpose
+Camera\ Type=rviz::OrbitViewController
+Camera\ Config=0.651004 5.19183 4.58246 -0.313943 0.54619 -0.00116578
+Property\ Grid\ State=selection=Fixed Frame;expanded=.Global Options,Interactive Markers.Enabled,Context Manager.Enabled,Context Manager.Enabled.Context Manager.Context;scrollpos=0,0;splitterpos=229,458;ispageselected=1
+[Display0]
+Name=Grid
+Package=rviz
+ClassName=rviz::GridDisplay
+[Display1]
+Name=Interactive Markers
+Package=rviz
+ClassName=rviz::InteractiveMarkerDisplay
+[Display2]
+Name=Context Manager
+Package=srs_ui_but
+ClassName=CButContextManager

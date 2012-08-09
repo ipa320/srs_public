@@ -1,0 +1,29 @@
+<launch>
+    <!-- Set to use simulation time -->
+    <param name="/use_sim_time" value="true"/>
+
+    <!-- Configuration for COB, bringup simulation -->
+    <include file="$(find cob_default_robot_config)/upload_param.launch" />
+    <include file="$(find cob_default_env_config)/upload_param.launch" />
+    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
+    <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+
+    <!-- Run our GUI nodes -->
+    <node pkg="cob_interactive_teleop" type="interactive_teleop" name="cob_interactive_teleop" />
+    <node pkg="srs_interaction_primitives" type="interaction_primitives_service_server" name="interaction_primitives_service_server" />
+
+    <!-- Run BB estimator server -->
+    <include file="$(find srs_env_model_percp)/launch/bb_estimator_common.launch" />
+
+    <!-- Run BB estimator client -->
+    <node pkg="srs_env_model_percp" type="bb_estimator_client" name="bb_estimator_client">
+        <rosparam file="$(find srs_env_model_percp)/config/bb_estimator_params.yaml" command="load" />
+        <remap from="camera_info_in" to="/cam3d/rgb/camera_info" />
+        <!-- remap from="depth_image_in" to="/cam3d/depth/image_raw" /-->
+        <remap from="rgb_image_in" to="/cam3d/rgb/image_raw" />
+        <remap from="points_in" to="/cam3d/depth/points" />
+    </node>
+
+    <!-- Run rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model_percp)/config/bb_estimator.vcg" />
+</launch>

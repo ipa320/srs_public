@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+   <!-- Run context server -->
+   <node pkg="srs_env_model" type="context_server.py" name="context_server" />
+   
+   <!-- Run srs_interaction_primitives service server -->
+    <node name="interaction_primitives_service_server" pkg="srs_interaction_primitives" type="interaction_primitives_service_server" />
+
+    <!-- Run rviz -->
+   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find srs_ui_but)/config/context_manager.vcg" />
+   
+   
+</launch>
+
+

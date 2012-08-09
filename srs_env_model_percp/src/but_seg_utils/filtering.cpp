@@ -30,9 +30,7 @@
  *	 Contains necessary classes for depth map filtering
  */
 
-#include <srs_env_model_percp/but_seg_utils/filtering.h>
-
-// Open CV
+// OpenCV
 #include <cv.h>
 
 // ROS
@@ -41,11 +39,15 @@
 // Eigen
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
+#include <Eigen/StdVector>
+
+#include <srs_env_model_percp/but_seg_utils/filtering.h>
 
 using namespace sensor_msgs;
 using namespace cv;
 
 namespace srs_env_model_percp {
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // A class providing an interface to depth image segmenter

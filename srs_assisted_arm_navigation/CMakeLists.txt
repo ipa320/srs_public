@@ -27,13 +27,19 @@ rosbuild_genmsg()
 rosbuild_gensrv()
 
 # BUT rviz display
-set( DISPLAY_SOURCE_FILES src/rviz_plugin/arm_navigation_controls.cpp
-                          src/rviz_plugin/arm_navigation_display.cpp
-                          src/rviz_plugin/init.cpp )
+set( DISPLAY_SOURCE_FILES src/rviz_plugins/arm_navigation_controls.cpp
+                          src/rviz_plugins/arm_navigation_display.cpp
+                          src/rviz_plugins/init.cpp
+                          src/rviz_plugins/grasping_controls.cpp
+                          src/rviz_plugins/grasping_display.cpp
+                          src/rviz_plugins/bb_estimation_controls.cpp
+                          src/rviz_plugins/bb_estimation_display.cpp )
 
-set( BUT_DISPLAY_PROJECT_NAME but_arm_navigation_plugin )
-include_directories(include/rviz_plugin)
+set( BUT_DISPLAY_PROJECT_NAME but_assisted_plugins )
+include_directories(include/rviz_plugins)
+#include_directories(include/assisted_grasping_plugin)
 rosbuild_add_library( ${BUT_DISPLAY_PROJECT_NAME} ${DISPLAY_SOURCE_FILES} )
+
 
 # Add wx widgets
 find_package(wxWidgets REQUIRED)
@@ -70,6 +76,8 @@ set( GRASPING_SOURCE_FILES src/assisted_grasping/manual_grasping_node.cpp )
 set( GRASPING_PROJECT_NAME assisted_grasping_node )
 include_directories( include/assisted_grasping )
 rosbuild_add_executable( ${GRASPING_PROJECT_NAME} ${GRASPING_SOURCE_FILES} )
+
+rosbuild_add_executable( video_flip_node src/assisted_grasping/video_flip.cpp )
 
 # some checks of launch files
 rosbuild_add_roslaunch_check(launch)

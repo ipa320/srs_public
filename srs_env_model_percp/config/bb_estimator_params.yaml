@@ -1,0 +1,10 @@
+# 
+#outliers_percent: 10
+outliers_percent: 30
+
+# 
+global_frame: /map
+
+#
+sides_ratio: 5.0
+

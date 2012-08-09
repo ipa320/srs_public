@@ -7,7 +7,7 @@
  *
  * This file is part of software developed by dcgm-robotics@FIT group.
  *
- * Author: Rostislav hulik (ihulik@fit.vutbr.cz)
+ * Author: Michal Spanel (spanel@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
  * 
@@ -26,43 +26,46 @@
  */
 
 #pragma once
-#ifndef BUT_PLANE_DETECTOR_SERVICES_LIST_H
-#define BUT_PLANE_DETECTOR_SERVICES_LIST_H
+#ifndef ENV_MODEL_PERCP_PARAMETERS_LIST_H
+#define ENV_MODEL_PERCP_PARAMETERS_LIST_H
 
 #include <string>
 
 namespace srs_env_model_percp
 {
-    static const std::string PACKAGE_NAME_PREFIX = "/but_env_model_percp";
+    /**************************************************************************
+      * bb_estimator - Percentage of farthest points from mean considered
+      * as outliers when calculating statistics of ROI
+      */
+	const std::string OUTLIERS_PERCENT_PARAM    = "outliers_percent";
+
+	/**
+	 * bb_estimator - scene (world) frame id
+	 */
+	const std::string GLOBAL_FRAME_PARAM        = "global_frame";
+
+    /**
+     * bb_estimator - The required maximum ratio of sides length (the longer
+     * side is at maximum sidesRatio times longer than the shorter one)
+     */
+    const std::string SIDES_RATIO_PARAM         = "sides_ratio";
+
 
     /**************************************************************************
-     * but_plane_detector
-     */
-    static const std::string PLANE_DETECTOR_PREFIX = "/but_plane_detector";
+      * bb_estimator - default percentage of outliers
+      */
+    const int OUTLIERS_PERCENT_DEFAULT          = 10;
 
     /**
-     * but_plane_detector - services
-     */
-	static const std::string DET_SERVICE_CLEAR_PLANES = PLANE_DETECTOR_PREFIX + std::string("/clear_planes");
-
-
-    /**************************************************************************
-     * bb_estimator
-     */
-    static const std::string BB_ESTIMATOR_PREFIX = "/bb_estimator";
+      * bb_estimator - default scene (world) frame id
+      */
+    const std::string GLOBAL_FRAME_DEFAULT      = "/map";
 
     /**
-     * bb_estimator - services performing bounding box estimation
+     * bb_estimator - The required maximum ratio of sides length (the longer
+     * side is at maximum sidesRatio times longer than the shorter one)
      */
-    const std::string EstimateBB_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_bb");
-    const std::string EstimateBBAlt_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_bb_alt");
-
-    /**
-     * bb_estimator - services performing 2D ractangle estimation
-     */
-    const std::string EstimateRect_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_rect");
-    const std::string EstimateRectAlt_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_rect_alt");
+    const double SIDES_RATIO_DEFAULT            = 5.0;
 }
 
-#endif //BUT_PLANE_DETECTOR_SERVICES_LIST_H
-
+#endif // ENV_MODEL_PERCP_PARAMETERS_LIST_H

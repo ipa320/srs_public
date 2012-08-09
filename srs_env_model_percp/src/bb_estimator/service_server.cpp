@@ -31,29 +31,29 @@
  * box estimation. The input/output is defined in Estimate.srv file.
  *
  * There are two variants of subscription - to be the service able to work also
- * with a simulation of Care-o-Bot (subscription variant #2 is meant to be used
+ * with a simulation of Care-O-bot (subscription variant #2 is meant to be used
  * with simulation, which does not produce a depth map so it must be created from
  * a point cloud).
  *
+ * Required topics:
+ *  Subscription variant #1:
+ *   depth_image_in - topic with Image messages containing depth information
+ *   camera_info_in - topic with CameraInfo messages
+ *  Subscription variant #2:
+ *   points_in - topic with PointCloud2 messages containing Point Cloud
+ *   camera_info_in - topic with CameraInfo messages
+ *
  * Node parameters:
- *  Parameters for subscription variant #1:
- *  bb_sv1_depth_topic - topic with Image messages containing depth information
- *  bb_sv1_camInfo_topic - topic with CameraInfo messages
- *
- *  Parameters for subscription variant #2:
- *  bb_sv2_pointCloud_topic - topic with PointCloud2 messages containing Point Cloud
- *  bb_sv2_camInfo_topic - topic with CameraInfo messages
- *
- *  Other parameters:
  *  bb_outliers_percent - Percentage of furthest points from mean considered
  *                        as outliers when calculating statistics of ROI
- *  bb_scene_frame_id - Frame Id in which the BB coordinates are returned
+ *  global_frame - Frame Id in which the BB coordinates are returned
  *------------------------------------------------------------------------------
  */
 
 #include <srs_env_model_percp/bb_estimator/funcs.h>
 #include <srs_env_model_percp/services_list.h>
 #include <srs_env_model_percp/topics_list.h>
+#include <srs_env_model_percp/parameters_list.h>
 
 // Definition of the service for BB estimation
 #include "srs_env_model_percp/EstimateBB.h"
@@ -104,33 +104,19 @@ int subVariant = SV_NONE;
 // TF listener
 tf::TransformListener *tfListener;
 
-// Percentage of furthest points from mean considered as outliers when
+// Percentage of farthest points from mean considered as outliers when
 // calculating statistics of ROI
-int outliersPercent = outliersPercentDefault;
+int outliersPercent = OUTLIERS_PERCENT_DEFAULT;
 
 // The required maximum ratio of sides length (the longer side is at maximum
 // sidesRatio times longer than the shorter one)
-double sidesRatio = sidesRatioDefault;
+double sidesRatio = SIDES_RATIO_DEFAULT;
 
 // Modes of bounding box estimation
-//----------
-// They differ in interpretation of the specified 2D region of interest (ROI).
-
-// MODE1 = The ROI corresponds to projection of BB front face and the BB is
-//         rotated to fit the viewing frustum (representing the back-projection
-//         of the ROI) in such way, that the BB front face is perpendicular
-//         to the frustum's center axis.
-//         (BB can be non-parallel with all axis.)
-
-// MODE2 = In the ROI is contained the whole projection of BB.
-//         (BB is parallel with all axis.)
-
-// MODE3 = The ROI corresponds to projection of BB front face.
-//         (BB is parallel with all axis.)
 int estimationMode = 1;
 
 
-/*==============================================================================
+/******************************************************************************
  * Bounding box estimation service.
  *
  * @param req  Request of type EstimateBB.
@@ -210,7 +196,7 @@ bool estimateBB_callback(srs_env_model_percp::EstimateBB::Request  &req,
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Bounding box estimation alternative service.
  *
  * @param req  Request of type EstimateBBAlt.
@@ -271,7 +257,7 @@ bool estimateBBAlt_callback(srs_env_model_percp::EstimateBBAlt::Request  &req,
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Rectangle estimation service.
  *
  * @param req  Request of type EstimateRect.
@@ -370,7 +356,7 @@ bool estimateRect_callback(srs_env_model_percp::EstimateRect::Request  &req,
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Rectangle estimation service.
  *
  * @param req  Request of type EstimateRectAlt.
@@ -469,7 +455,7 @@ bool estimateRectAlt_callback(srs_env_model_percp::EstimateRectAlt::Request  &re
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Adds messages to cache (for synchronized subscription variant #1) and obtains
  * the corresponding transformation.
  *
@@ -501,7 +487,7 @@ void sv1_callback(const sensor_msgs::ImageConstPtr &depth,
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Adds messages to cache (for synchronized subscription variant #2) and obtains
  * the corresponding transformation.
  *
@@ -551,40 +537,36 @@ int main(int argc, char **argv)
     // Create a TF listener
     tfListener = new tf::TransformListener();
     
-    // Get parameters from the parameter server
+    // Get private parameters from the parameter server
     // (the third parameter of function param is the default value)
     //--------------------------------------------------------------------------
-    std::string sv1_depthTopic, sv1_camInfoTopic;
-    n.param("bb_sv1_depth_topic", sv1_depthTopic, sv1_depthTopicDefault);
-    n.param("bb_sv1_camInfo_topic", sv1_camInfoTopic, sv1_camInfoTopicDefault);
-    
-    std::string sv2_pointCloudTopic, sv2_camInfoTopic;
-    n.param("bb_sv2_pointCloud_topic", sv2_pointCloudTopic, sv2_pointCloudTopicDefault);
-    n.param("bb_sv2_camInfo_topic", sv2_camInfoTopic, sv2_camInfoTopicDefault);
-    
-    n.param("bb_outliers_percent", outliersPercent, outliersPercentDefault);
-    n.param("bb_scene_frame_id", sceneFrameId, sceneFrameIdDefault);
+    ros::NodeHandle private_nh("~");
+    private_nh.param(OUTLIERS_PERCENT_PARAM, outliersPercent, OUTLIERS_PERCENT_DEFAULT);
+    private_nh.param(GLOBAL_FRAME_PARAM, sceneFrameId, GLOBAL_FRAME_DEFAULT);
+    private_nh.param(SIDES_RATIO_PARAM, sidesRatio, SIDES_RATIO_DEFAULT);
+
+    ROS_INFO_STREAM(OUTLIERS_PERCENT_PARAM << " = " << outliersPercent);
+    ROS_INFO_STREAM(GLOBAL_FRAME_PARAM << " = " << sceneFrameId);
+    ROS_INFO_STREAM(SIDES_RATIO_PARAM << " = " << sidesRatio);
     
     // Subscription and synchronization of messages
     // TODO: Create the subscribers dynamically and unsubscribe the unused
     // subscription variant.
     //--------------------------------------------------------------------------
     // Subscription variant #1
-    message_filters::Subscriber<Image> sv1_depth_sub(n, sv1_depthTopic, 1);
-    message_filters::Subscriber<CameraInfo> sv1_camInfo_sub(n, sv1_camInfoTopic, 1);
+    message_filters::Subscriber<Image> sv1_depth_sub(n, DEPTH_IMAGE_TOPIC_IN, 1);
+    message_filters::Subscriber<CameraInfo> sv1_camInfo_sub(n, CAMERA_INFO_TOPIC_IN, 1);
     
     typedef sync_policies::ApproximateTime<Image, CameraInfo> sv1_MySyncPolicy;
-	Synchronizer<sv1_MySyncPolicy> sv1_sync(sv1_MySyncPolicy(QUEUE_SIZE),
-	    sv1_depth_sub, sv1_camInfo_sub);
+	Synchronizer<sv1_MySyncPolicy> sv1_sync(sv1_MySyncPolicy(QUEUE_SIZE), sv1_depth_sub, sv1_camInfo_sub);
 	sv1_sync.registerCallback(boost::bind(&sv1_callback, _1, _2));
 	
 	// Subscription variant #2
-    message_filters::Subscriber<PointCloud2> sv2_pointCloud_sub(n, sv2_pointCloudTopic, 1);
-    message_filters::Subscriber<CameraInfo> sv2_camInfo_sub(n, sv2_camInfoTopic, 1);
+    message_filters::Subscriber<PointCloud2> sv2_pointCloud_sub(n, POINT_CLOUD_TOPIC_IN, 1);
+    message_filters::Subscriber<CameraInfo> sv2_camInfo_sub(n, CAMERA_INFO_TOPIC_IN, 1);
     
     typedef sync_policies::ApproximateTime<PointCloud2, CameraInfo> sv2_MySyncPolicy;
-	Synchronizer<sv2_MySyncPolicy> sv2_sync(sv2_MySyncPolicy(QUEUE_SIZE),
-	    sv2_pointCloud_sub, sv2_camInfo_sub);
+	Synchronizer<sv2_MySyncPolicy> sv2_sync(sv2_MySyncPolicy(QUEUE_SIZE), sv2_pointCloud_sub, sv2_camInfo_sub);
 	sv2_sync.registerCallback(boost::bind(&sv2_callback, _1, _2));
     
     // Create and advertise this service over ROS

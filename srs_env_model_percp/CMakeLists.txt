@@ -37,11 +37,21 @@ set( BUT_PLANE_DETECTOR_SOURCES src/but_plane_detector/plane_detector_node.cpp
                                 src/but_plane_detector/dyn_model_exporter.cpp )
 rosbuild_add_executable( but_plane_detector ${BUT_PLANE_DETECTOR_SOURCES} )
 
+# Plane detection node using pcl plane fitting
+set( BUT_PLANE_DETECTOR_RANSAC_SOURCES src/but_plane_detector/plane_detector_ransac_node.cpp
+                                src/but_seg_utils/normals.cpp
+                                src/but_seg_utils/filtering.cpp 
+                                src/but_plane_detector/parameter_space.cpp 
+                                src/but_plane_detector/parameter_space_hierarchy.cpp 
+                                src/but_plane_detector/scene_model.cpp 
+                                src/but_plane_detector/dyn_model_exporter.cpp )
+rosbuild_add_executable( but_plane_detector_ransac ${BUT_PLANE_DETECTOR_RANSAC_SOURCES} )
+
 # Kinect depth map to pcl converter node
 rosbuild_add_executable(but_kin2pcl src/but_seg_utils/kin2pcl_node.cpp)
 rosbuild_add_executable(but_kin2pcl src/but_seg_utils/normals.cpp)
 
-# Kinect depth map to pcd exporter# Kinect depth map to pcl converter node node
+# Kinect depth map to pcd exporter
 rosbuild_add_executable(but_pcd_exporter src/but_seg_utils/pcd_exporter_node.cpp)
 rosbuild_add_executable(but_pcd_exporter src/but_seg_utils/normals.cpp)
 
@@ -56,4 +66,3 @@ rosbuild_add_executable(bb_estimator_client src/bb_estimator/sample_client.cpp)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
-

@@ -94,14 +94,25 @@ namespace srs_env_model_percp
 		 * @param normals Computed normals of depth image
 		 */
 		void AddNext(cv::Mat &depth, const sensor_msgs::CameraInfoConstPtr& cam_info, Normals &normals);
+
+		/**
+		 * Function adds a depth map with computed normals into existing Hough space
+		 * @param normals Normals object (point cloud with precomputed normals)
+		 */
 		void AddNext(Normals &normals);
-		void AddNext(cv::Mat &depth, const sensor_msgs::CameraInfoConstPtr& cam_info, Normals &normals, tf::StampedTransform &sensorToWorldTf, tf::StampedTransform &worldToSensorTf);
+
+		/**
+		 * Clears all nodes with value lesser than parameter
+		 * @param minValue All nodes with value lesser than this parameter will be removed
+		 */
 		void clearNoise(double minValue);
 
 		/**
 		 * Function recomputes a list of planes saved in this class (scene model)
+		 * @param min_current Minimal value for detected plane in current frame Hough space
+		 * @param min_global Minimal value for detected plane in global frame Hough space
 		 */
-		void recomputePlanes();
+		void recomputePlanes(double min_current, double min_global, int blur, int search_neighborhood);
 
 		/**
 		 * Point cloud representation of Hough space for visualisation purposes

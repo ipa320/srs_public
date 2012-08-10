@@ -14,5 +14,5 @@ uint8 MOVING=2
 
 # connection tags
 uint8 UNKNOWN=0
-uint8 SLOW=1
-uint8 FAST=2
+uint8 LAN=1
+uint8 WIFI=2

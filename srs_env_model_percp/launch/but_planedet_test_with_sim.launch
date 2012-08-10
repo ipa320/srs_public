@@ -1,0 +1,7 @@
+<launch>
+    <!-- Run our dynamic scene model server node + simulation -->
+	<include file="$(find srs_env_model)/launch/but_envmodel_test_with_sim.launch" />
+    
+    <!-- Run the plane detection -->
+    <include file="$(find srs_env_model_percp)/launch/but_planedet_common.launch" />
+</launch>

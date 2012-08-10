@@ -58,7 +58,6 @@ void PlanePolygon::create()
   min.x = min.y = min.z = 9999999.0;
 
   object_.header.frame_id = frame_id_;
-  object_.header.stamp = ros::Time::now();
   object_.name = name_;
   object_.description = name_ + " plane";
 

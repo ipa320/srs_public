@@ -27,6 +27,11 @@ displays:
     description: |
       Visualization of distances around robot's links.
   -
+    class_name: CButCOBStretchIndicator
+    display_name: COB Stretch Indicator
+    description: |
+      Visualization of the COB's stretch.
+  -
     class_name: CButCamDisplay
     display_name: CButCamDisplay
     description: |
@@ -41,4 +46,8 @@ displays:
     display_name: ButProjectionTest
     description: |
       This display tests Ogre compositor capabilities.  
-
+  -
+    class_name: CButContextManager
+    display_name: Context Manager
+    description: |
+      This display allows to change context.  

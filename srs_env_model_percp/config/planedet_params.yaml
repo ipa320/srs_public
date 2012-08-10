@@ -1,0 +1,32 @@
+# 
+planedet_input: pcl
+
+# 
+global_frame: /map
+
+# 
+original_frame: /head_cam3d_link
+
+#
+planedet_ht_maxdepth: 100.0
+planedet_ht_minshift: -40.0
+planedet_ht_maxshift: 40.0
+planedet_ht_angle_res: 512
+planedet_ht_shift_res: 4096
+planedet_ht_gauss_angle_res: 11
+planedet_ht_gauss_shift_res: 11
+planedet_ht_gauss_angle_sigma: 0.04
+planedet_ht_gauss_shift_sigma: 0.15
+
+#
+planedet_search_minimum_current_space: 1500.0
+planedet_search_minimum_global_space: 1.5
+planedet_search_maxima_search_neighborhood: 1
+planedet_search_maxima_search_blur: 0
+
+#
+planedet_visualisation_distance: 0.05
+planedet_visualisation_plane_normal_dev: 0.15
+planedet_visualisation_plane_shift_dev: 0.45
+planedet_visualisation_min_count: 2000
+

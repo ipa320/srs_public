@@ -36,8 +36,10 @@
 #include <srs_env_model/but_server/objtree/octree.h>
 #include <srs_env_model/GetPlane.h>
 #include <srs_env_model/GetAlignedBox.h>
+#include <srs_env_model/GetBoundingBox.h>
 #include <srs_env_model/InsertPlane.h>
 #include <srs_env_model/InsertAlignedBox.h>
+#include <srs_env_model/InsertBoundingBox.h>
 #include <srs_env_model/InsertPlanes.h>
 #include <srs_env_model/ShowObject.h>
 #include <srs_env_model/RemoveObject.h>
@@ -75,6 +77,9 @@ public:
         GET_SIMILAR
     };
 
+    //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
+    virtual void pause( bool bPause, ros::NodeHandle & node_handle );
+
 protected:
     /// Insert new plane, update if plane with same id exists
     bool srvInsertPlane(srs_env_model::InsertPlane::Request &req, srs_env_model::InsertPlane::Response &res);
@@ -84,12 +89,18 @@ protected:
     bool srvGetSimilarPlane(srs_env_model::InsertPlane::Request &req, srs_env_model::InsertPlane::Response &res);
     /// Insert planes array
     bool srvInsertPlanes(srs_env_model::InsertPlanes::Request &req, srs_env_model::InsertPlanes::Response &res);
-    /// Insert new axis aligned box, update if plane with same id exists
+    /// Insert new axis aligned box, update if aligned box with same id exists
     bool srvInsertABox(srs_env_model::InsertAlignedBox::Request &req, srs_env_model::InsertAlignedBox::Response &res);
-    /// Insert new axis aligned box, update if similar plane exists
+    /// Insert new axis aligned box, update if similar aligned box exists
     bool srvInsertABoxByPosition(srs_env_model::InsertAlignedBox::Request &req, srs_env_model::InsertAlignedBox::Response &res);
     /// Get similar axis aligned box id
     bool srvGetSimilarABox(srs_env_model::InsertAlignedBox::Request &req, srs_env_model::InsertAlignedBox::Response &res);
+    /// Insert new bounding box, update if bounding box with same id exists
+    bool srvInsertBBox(srs_env_model::InsertBoundingBox::Request &req, srs_env_model::InsertBoundingBox::Response &res);
+    /// Insert new bounding box, update if similar bounding box exists
+    bool srvInsertBBoxByPosition(srs_env_model::InsertBoundingBox::Request &req, srs_env_model::InsertBoundingBox::Response &res);
+    /// Get similar bounding box id
+    bool srvGetSimilarBBox(srs_env_model::InsertBoundingBox::Request &req, srs_env_model::InsertBoundingBox::Response &res);
     /// Show object as interaction primitive
     bool srvShowObject(srs_env_model::ShowObject::Request &req, srs_env_model::ShowObject::Response &res);
     /// Remove object by id
@@ -100,6 +111,8 @@ protected:
     bool srvGetPlane(srs_env_model::GetPlane::Request &req, srs_env_model::GetPlane::Response &res);
     /// Get information about axis aligned box
     bool srvGetABox(srs_env_model::GetAlignedBox::Request &req, srs_env_model::GetAlignedBox::Response &res);
+    /// Get information about bounding box
+    bool srvGetBBox(srs_env_model::GetBoundingBox::Request &req, srs_env_model::GetBoundingBox::Response &res);
     /// Get objects ids from box
     bool srvGetObjectsInBox(srs_env_model::GetObjectsInBox::Request &req, srs_env_model::GetObjectsInBox::Response &res);
     /// Get objects ids from halfspace
@@ -110,6 +123,7 @@ protected:
     //Helper methods
     unsigned int insertPlane(const srs_env_model_msgs::PlaneDesc &plane, Operation op);
     unsigned int insertABox(unsigned int id, const geometry_msgs::Point32 &position, const geometry_msgs::Vector3 &scale, Operation op);
+    unsigned int insertBBox(unsigned int id, const geometry_msgs::Pose &pose, const geometry_msgs::Vector3 &scale, Operation op);
     void showObject(unsigned int id);
     void removeObject(unsigned int id);
     void showObjtree();
@@ -121,12 +135,16 @@ protected:
     ros::ServiceServer m_serviceGetObjectsInSphere;
     ros::ServiceServer m_serviceGetPlane;
     ros::ServiceServer m_serviceGetABox;
+    ros::ServiceServer m_serviceGetBBox;
     ros::ServiceServer m_serviceInsertPlane;
     ros::ServiceServer m_serviceInsertABox;
+    ros::ServiceServer m_serviceInsertBBox;
     ros::ServiceServer m_serviceInsertPlaneByPosition;
     ros::ServiceServer m_serviceInsertABoxByPosition;
+    ros::ServiceServer m_serviceInsertBBoxByPosition;
     ros::ServiceServer m_serviceGetSimilarPlane;
     ros::ServiceServer m_serviceGetSimilarABox;
+    ros::ServiceServer m_serviceGetSimilarBBox;
     ros::ServiceServer m_serviceInsertPlanes;
     ros::ServiceServer m_serviceShowObject;
     ros::ServiceServer m_serviceShowObjtree;

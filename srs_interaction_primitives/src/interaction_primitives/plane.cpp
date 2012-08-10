@@ -33,12 +33,11 @@ using namespace visualization_msgs;
 using namespace geometry_msgs;
 using namespace std_msgs;
 
-
 namespace srs_interaction_primitives
 {
 
 Plane::Plane(InteractiveMarkerServerPtr server, string frame_id, string name) :
-  Primitive(server, frame_id, name, srs_interaction_primitives::PrimitiveType::PLANE)
+    Primitive(server, frame_id, name, srs_interaction_primitives::PrimitiveType::PLANE)
 {
 }
 
@@ -163,19 +162,20 @@ void Plane::createMenu()
   {
     menu_created_ = true;
     menu_handler_.setCheckState(menu_handler_.insert("Show description", boost::bind(&Plane::menuCallback, this, _1)),
-                               MenuHandler::UNCHECKED);
+                                MenuHandler::UNCHECKED);
     MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert("Tag");
-    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Unknown", boost::bind(&Plane::menuCallback, this,
-                                                                                           _1)), MenuHandler::UNCHECKED);
     menu_handler_.setCheckState(
-                               menu_handler_.insert(sub_menu_handle, "Wall", boost::bind(&Plane::menuCallback, this, _1)),
-                               MenuHandler::UNCHECKED);
+        menu_handler_.insert(sub_menu_handle, "Unknown", boost::bind(&Plane::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
     menu_handler_.setCheckState(
-                               menu_handler_.insert(sub_menu_handle, "Door", boost::bind(&Plane::menuCallback, this, _1)),
-                               MenuHandler::UNCHECKED);
-    menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Table desk", boost::bind(&Plane::menuCallback,
-                                                                                              this, _1)),
-                               MenuHandler::UNCHECKED);
+        menu_handler_.insert(sub_menu_handle, "Wall", boost::bind(&Plane::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(
+        menu_handler_.insert(sub_menu_handle, "Door", boost::bind(&Plane::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(
+        menu_handler_.insert(sub_menu_handle, "Table desk", boost::bind(&Plane::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
   }
 }
 
@@ -184,7 +184,6 @@ void Plane::create()
   clearObject();
 
   object_.header.frame_id = frame_id_;
-  object_.header.stamp = ros::Time::now();
   object_.name = name_;
   object_.description = name_ + " plane";
   object_.pose = pose_;

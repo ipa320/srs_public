@@ -67,6 +67,9 @@ namespace srs_env_model
         /// Called when all nodes was visited.
         virtual void handlePostNodeTraversal(const SMapParameters & mp);
 
+        //! Connect/disconnect plugin to/from all topics
+        virtual void pause( bool bPause, ros::NodeHandle & node_handle);
+
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

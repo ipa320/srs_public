@@ -34,21 +34,48 @@
  *
  */
 
-#include <srs_env_model_percp/but_plane_detector/plane_detector_node.h>
-#include <srs_env_model_percp/topics_list.h>
-#include <srs_env_model_percp/services_list.h>
-
-#include <srs_env_model_percp/but_seg_utils/filtering.h>
-#include <srs_env_model_percp/but_seg_utils/normals.h>
-
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 
-//PCL
+// OpenCV 2
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc_c.h>
+
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/CameraInfo.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <boost/math/quaternion.hpp>
+
+#include <tf/transform_listener.h>
+#include <tf/message_filter.h>
+#include <tf/tfMessage.h>
+
+#include <message_filters/subscriber.h>
+#include <message_filters/time_synchronizer.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+
+#include <srs_env_model_percp/ClearPlanes.h>
+
+#include <srs_env_model_percp/but_seg_utils/filtering.h>
+#include <srs_env_model_percp/but_seg_utils/normals.h>
+
+#include <srs_env_model_percp/but_plane_detector/scene_model.h>
+#include <srs_env_model_percp/but_plane_detector/dyn_model_exporter.h>
+#include <srs_env_model_percp/but_plane_detector/plane_detector_params.h>
+
+#include <srs_env_model_percp/topics_list.h>
+#include <srs_env_model_percp/services_list.h>
+
+// PCL
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
+
+#include <srs_env_model_percp/but_seg_utils/filtering.h>
+#include <srs_env_model_percp/but_seg_utils/normals.h>
 
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/features/normal_3d.h>
@@ -57,19 +84,12 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
+#include <pcl/ModelCoefficients.h>
 
-// OpenCV 2
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc_c.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cfloat>
 
-#include <float.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/CameraInfo.h>
-#include <visualization_msgs/Marker.h>
-#include <boost/math/quaternion.hpp>
-
-#include <stdlib.h>
-#include <stdio.h>
 using namespace std;
 using namespace cv;
 using namespace pcl;
@@ -78,7 +98,29 @@ using namespace message_filters;
 
 namespace srs_env_model_percp
 {
-	/**
+    int counter = 0;
+    sensor_msgs::PointCloud2 cloud_msg;
+    tf::MessageFilter<sensor_msgs::PointCloud2> *transform_filter;
+    tf::TransformListener *tfListener;
+    ros::Publisher pub1;
+    ros::Publisher pub2;
+    DynModelExporter *exporter = NULL;
+
+    sensor_msgs::CameraInfo cam_info_legacy;
+    sensor_msgs::CameraInfoConstPtr cam_info_aux (&cam_info_legacy);
+    SceneModel *model;
+
+    PlaneDetectorSettings settings;
+
+    /**
+     * Callback functions manage sync of messages
+     */
+    void callbackpcl(const sensor_msgs::PointCloud2ConstPtr& cloud);
+    void callbackkinect( const sensor_msgs::ImageConstPtr& dep, const sensor_msgs::CameraInfoConstPtr& cam_info);
+    bool clear(srs_env_model_percp::ClearPlanes::Request &req,srs_env_model_percp::ClearPlanes::Response &res);
+    bool getParams(ros::NodeHandle nh);
+
+    /**
 	 * Callback function manages sync of messages
 	 */
 	void callbackpcl(const PointCloud2ConstPtr& cloud)
@@ -86,10 +128,9 @@ namespace srs_env_model_percp
 		++counter;
 		ros::Time begin = ros::Time::now();
 
-		// generate depth map (legacy, due to old dataset)
+		// make the pointcloud
 		pcl::PointCloud<pcl::PointXYZ> pointcloud;
 		pcl::fromROSMsg (*cloud, pointcloud);
-
 
 		// Control out
 		std::cerr << "Recieved frame..." << std::endl;
@@ -99,79 +140,121 @@ namespace srs_env_model_percp
 
 		// transform to world
 		tf::StampedTransform sensorToWorldTf;
-		tf::StampedTransform worldToSensorTf;
 		try {
-			tfListener->waitForTransform(target_topic, cloud->header.frame_id, cloud->header.stamp, ros::Duration(0.2));
-			tfListener->lookupTransform(target_topic, cloud->header.frame_id, cloud->header.stamp, sensorToWorldTf);
-
-			tfListener->waitForTransform(cloud->header.frame_id, target_topic, cloud->header.stamp, ros::Duration(0.2));
-			tfListener->lookupTransform(cloud->header.frame_id, target_topic, cloud->header.stamp, worldToSensorTf);
+			tfListener->waitForTransform(settings.param_output_frame, cloud->header.frame_id, cloud->header.stamp, ros::Duration(2.0));
+			tfListener->lookupTransform(settings.param_output_frame, cloud->header.frame_id, cloud->header.stamp, sensorToWorldTf);
 		}
 		catch(tf::TransformException& ex){
 			std::cerr << "Transform error: " << ex.what() << ", quitting callback" << std::endl;
 			return;
 		}
 
+		// transform pointcloud from sensor frame to fixed robot frame
 		Eigen::Matrix4f sensorToWorld;
 		pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
-		// transform pointcloud from sensor frame to fixed robot frame
-
 		pcl::transformPointCloud(pointcloud, pointcloud, sensorToWorld);
 
-		// Compute normals and HT
-		// fill aux Kinect cam_info (legacy - need to solve multiple callbacks sync with tf)
-
-
-		//Normals normal(depth, cam_info_aux, NormalType::LSQAROUND);
+		// Compute normals on point cloud
 		Normals normal(pointcloud);
 
+		// Add point cloud to current Hough space and recompute planes
 		model->AddNext(normal);
-//
-//	//	if (counter % 5 == 0)
-//	//	{
-//	//		std::cerr << "Clearing noise...";
-//	//		model->clearNoise(20.0);
-//	//		std::cerr << "done..." << std::endl;
-//	//	}
-		model->recomputePlanes();
+		model->recomputePlanes( settings.param_search_minimum_current_space,
+								settings.param_search_minimum_global_space,
+								settings.param_search_maxima_search_blur,
+								settings.param_search_maxima_search_neighborhood);
 
-		model->scene_cloud->header.frame_id = target_topic;
+				// TODO debug point cloud output
+				////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				pcl::PointCloud<pcl::PointXYZRGB> outcloud;
+				outcloud.header.frame_id = settings.param_output_frame;
 
+				// Majkl's note: The following line has been commented out and modified because
+				// it's necessary to use aligned allocator when creating STL containers and
+				// classes containing Eigen types.
+//				std::vector<pcl::PointCloud<pcl::PointXYZ> > planecloud(model->planes.size());
 
-		pcl::PointCloud<pcl::PointXYZRGB> outcloud;
-		outcloud.header.frame_id = target_topic;
-		int colorr = 0;
-		int colorg = 0;
-		int colorb = 0;
-		for (unsigned int a = 0; a < model->planes.size(); ++a)
-		{
-			colorr = std::rand() % 255;
-			colorg = std::rand() % 255;
-			colorb = std::rand() % 255;
+				typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
+				typedef std::vector<PointCloud, Eigen::aligned_allocator<PointCloud> > PlaneCloud;
+				PlaneCloud planecloud(model->planes.size());
 
-			for (unsigned int i = 0; i < normal.m_points.rows; ++i)
-				for (unsigned int j = 0; j < normal.m_points.cols; ++j)
+				for (int i = 0; i < normal.m_points.rows; ++i)
+				for (int j = 0; j < normal.m_points.cols; ++j)
 				{
 					Vec3f point = normal.m_points.at<Vec3f>(i, j);
 					cv::Vec4f localPlane = normal.m_planes.at<cv::Vec4f>(i, j);
 					Plane<float> aaa(localPlane[0], localPlane[1], localPlane[2], localPlane[3]);
-					if (model->planes[a].distance(point) < 0.05 && model->planes[a].isSimilar(aaa, 0.01, 0.01))
+					double dist = DBL_MAX;
+					int chosen = -1;
+					// find the best plane
+					for (unsigned int a = 0; a < model->planes.size(); ++a)
+					{
+						if (model->planes[a].distance(point) < dist && model->planes[a].distance(point) < settings.param_visualisation_distance &&
+							model->planes[a].isSimilar(aaa, settings.param_visualisation_plane_normal_dev, settings.param_visualisation_plane_shift_dev))
+						{
+							dist = model->planes[a].distance(point);
+							chosen = a;
+						}
+					}
+					// if there is good plane, insert point into point cloud
+					if (chosen > -1)
 					{
 						pcl::PointXYZRGB current;
 						current.x = point[0];
 						current.y = point[1];
 						current.z = point[2];
-						current.r = colorr;
-						current.g = colorg;
-						current.b = colorb;
+						// some not good debug info about planes
+						current.r = abs(model->planes[chosen].a)*255;
+						current.g = abs(model->planes[chosen].b)*255;
+						current.b = abs(model->planes[chosen].d)*255;
 						outcloud.push_back(current);
+
+						pcl::PointXYZ current2;
+						current2.x = point[0];
+						current2.y = point[1];
+						current2.z = point[2];
+						planecloud[chosen].points.push_back(current2);
 					}
 				}
-		}
+				pub1.publish(outcloud);
+				////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+			visualization_msgs::MarkerArray marker_array;
+			for (unsigned int i = 0; i < planecloud.size(); ++i)
+			{
+				if (planecloud[i].points.size() > 20)
+				{
+				pcl::ModelCoefficients coefs;
+				coefs.values.push_back(model->planes[i].a);
+				coefs.values.push_back(model->planes[i].b);
+				coefs.values.push_back(model->planes[i].c);
+				coefs.values.push_back(model->planes[i].d);
 
-		pub1.publish(outcloud);//model->scene_cloud);
-		//pub2.publish(model->current_hough_cloud);
+				visualization_msgs::Marker marker;
+				DynModelExporter::createMarkerForConvexHull(planecloud[i], coefs, marker);
+				marker.header.frame_id = settings.param_output_frame;
+				marker.header.stamp = pointcloud.header.stamp;
+				marker.id = i;
+				marker.ns = "Normals";
+				marker.pose.position.x = 0.0;
+				marker.pose.position.y = 0.0;
+				marker.pose.position.z = 0.0;
+				marker.pose.orientation.x = 0.0;
+				marker.pose.orientation.y = 0.0;
+				marker.pose.orientation.z = 0.0;
+				marker.pose.orientation.w = 1.0;
+				marker.scale.x = 1;
+				marker.scale.y = 1;
+				marker.scale.z = 1;
+				marker.color.r = 0.5;
+				marker.color.g = 0.0;
+				marker.color.b = 0.0;
+				marker.color.a = 0.8;
+				marker_array.markers.push_back(marker);
+				}
+			}
+			pub2.publish(marker_array);
+		// update planes on server
 		exporter->update(model->planes, normal, sensorToWorldTf);
 
 		// Control out
@@ -184,29 +267,30 @@ namespace srs_env_model_percp
 	{
 		++counter;
 		ros::Time begin = ros::Time::now();
-		//  Debug info
-		std::cerr << "Recieved frame..." << std::endl;
-		std::cerr << "Cam info: fx:" << cam_info->K[0] << " fy:" << cam_info->K[4] << " cx:" << cam_info->K[2] <<" cy:" << cam_info->K[5] << std::endl;
-		std::cerr << "Depth image h:" << dep->height << " w:" << dep->width << " e:" << dep->encoding << " " << dep->step << endl;
-		std::cerr << "=========================================================" << endl;
-
-		//get image from message
-		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(dep);
-		cv::Mat depth = cv_image->image;
-
-
-		Normals normal(depth, cam_info, NormalType::LSQAROUND);
-
-		model->AddNext(depth, cam_info_aux, normal);
-		model->recomputePlanes();
-
-		model->scene_cloud->header.frame_id = "/head_cam3d_link";
-
-		pub1.publish(model->scene_cloud);
-		//	pub2.publish(model->current_hough_cloud);
-		//exporter->update(model->planes, normal);
+//		//  Debug info
+//		std::cerr << "Recieved frame..." << std::endl;
+//		std::cerr << "Cam info: fx:" << cam_info->K[0] << " fy:" << cam_info->K[4] << " cx:" << cam_info->K[2] <<" cy:" << cam_info->K[5] << std::endl;
+//		std::cerr << "Depth image h:" << dep->height << " w:" << dep->width << " e:" << dep->encoding << " " << dep->step << endl;
+//		std::cerr << "=========================================================" << endl;
+//
+//		//get image from message
+//		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(dep);
+//		cv::Mat depth = cv_image->image;
+//
+//
+//		Normals normal(depth, cam_info, NormalType::LSQAROUND);
+//
+//		model->AddNext(depth, cam_info_aux, normal);
+//		model->recomputePlanes();
+//
+//		model->scene_cloud->header.frame_id = "/head_cam3d_link";
+//
+//		pub1.publish(model->scene_cloud);
+//		//	pub2.publish(model->current_hough_cloud);
+//		//exporter->update(model->planes, normal);
 
 		// Control out
+		std::cerr << "Kinect input not ready yet.... doing nothing." << std::endl;
 		ros::Time end = ros::Time::now();
 		std::cerr << "DONE.... Computation time: " << (end-begin).nsec/1000000.0 << " ms." << std::endl;
 		std::cerr << "=========================================================" << endl<< endl;
@@ -222,6 +306,36 @@ namespace srs_env_model_percp
 		std::cout << "Hough space successfully reset." << std::endl;
 		return true;
 	}
+
+	bool getParams(ros::NodeHandle nh)
+	{
+		nh.param(PARAM_NODE_INPUT, settings.param_node_input, PARAM_NODE_INPUT_DEFAULT);
+
+        nh.param(PARAM_NODE_OUTPUT_FRAME, settings.param_output_frame, PARAM_NODE_OUTPUT_FRAME_DEFAULT);
+        nh.param(PARAM_NODE_ORIGINAL_FRAME, settings.param_original_frame, PARAM_NODE_ORIGINAL_FRAME_DEFAULT);
+
+		nh.param(PARAM_HT_MAXDEPTH, settings.param_ht_maxdepth, PARAM_HT_MAXDEPTH_DEFAULT);
+		nh.param(PARAM_HT_MINSHIFT, settings.param_ht_minshift, PARAM_HT_MINSHIFT_DEFAULT);
+		nh.param(PARAM_HT_MAXSHIFT, settings.param_ht_maxshift, PARAM_HT_MAXSHIFT_DEFAULT);
+		nh.param(PARAM_HT_ANGLE_RES, settings.param_ht_angle_res, PARAM_HT_ANGLE_RES_DEFAULT);
+		nh.param(PARAM_HT_SHIFT_RES, settings.param_ht_shift_res, PARAM_HT_SHIFT_RES_DEFAULT);
+		nh.param(PARAM_HT_GAUSS_ANGLE_RES, settings.param_ht_gauss_angle_res, PARAM_HT_GAUSS_ANGLE_RES_DEFAULT);
+		nh.param(PARAM_HT_GAUSS_SHIFT_RES, settings.param_ht_gauss_shift_res, PARAM_HT_GAUSS_SHIFT_RES_DEFAULT);
+		nh.param(PARAM_HT_GAUSS_ANGLE_SIGMA, settings.param_ht_gauss_angle_sigma, PARAM_HT_GAUSS_ANGLE_SIGMA_DEFAULT);
+		nh.param(PARAM_HT_GAUSS_SHIFT_SIGMA, settings.param_ht_gauss_shift_sigma, PARAM_HT_GAUSS_SHIFT_SIGMA_DEFAULT);
+
+		nh.param(PARAM_VISUALISATION_DISTANCE, settings.param_visualisation_distance, PARAM_VISUALISATION_DISTANCE_DEFAULT);
+		nh.param(PARAM_VISUALISATION_PLANE_NORMAL_DEV, settings.param_visualisation_plane_normal_dev, PARAM_VISUALISATION_PLANE_NORMAL_DEV_DEFAULT);
+		nh.param(PARAM_VISUALISATION_PLANE_SHIFT_DEV, settings.param_visualisation_plane_shift_dev, PARAM_VISUALISATION_PLANE_SHIFT_DEV_DEFAULT);
+        nh.param(PARAM_VISUALISATION_MIN_COUNT, settings.param_visualisation_min_count, PARAM_VISUALISATION_MIN_COUNT_DEFAULT);
+
+		nh.param(PARAM_SEARCH_MINIMUM_CURRENT_SPACE, settings.param_search_minimum_current_space, PARAM_SEARCH_MINIMUM_CURRENT_SPACE_DEFAULT);
+		nh.param(PARAM_SEARCH_MINIMUM_GLOBAL_SPACE, settings.param_search_minimum_global_space, PARAM_SEARCH_MINIMUM_GLOBAL_SPACE_DEFAULT);
+		nh.param(PARAM_SEARCH_MAXIMA_SEARCH_NEIGHBORHOOD, settings.param_search_maxima_search_neighborhood, PARAM_SEARCH_MAXIMA_SEARCH_NEIGHBORHOOD_DEFAULT);
+		nh.param(PARAM_SEARCH_MAXIMA_SEARCH_BLUR, settings.param_search_maxima_search_blur, PARAM_SEARCH_MAXIMA_SEARCH_BLUR_DEFAULT);
+
+		return true;
+	}
 }
 
 
@@ -232,58 +346,98 @@ int main( int argc, char** argv )
 {
 	using namespace srs_env_model_percp;
 
-	ros::init(argc, argv, NODE_NAME);
+	ros::init(argc, argv, "but_plane_detector");
 	ros::NodeHandle n;
 
-	string input = "";
-	if (argc == 3 || argc == 5)
-	{
-		if (strcmp(argv[1], "-input")==0)
-		{
-			if (strcmp(argv[2], "pcl")==0)
-				input = "pcl";
-			else if (strcmp(argv[2], "kinect")==0)
-				input = "kinect";
-		}
-		if (argc==5)
-		{
-			if (strcmp(argv[3], "-target")==0)
-			target_topic = argv[4];
-		}
-	}
-	model = new SceneModel(3.0, -20.0, 20.0, 512, 4096, 11, 11, 0.02, 0.05);
-	ros::ServiceServer service = n.advertiseService(SERVICE_CLEAR_PLANES, clear);
+	// Private node handle to read private node parameters
+	ros::NodeHandle private_nh("~");
+	getParams(private_nh);
 
-	if (input == "pcl")
+	// Init scene model
+	model = new SceneModel(	settings.param_ht_maxdepth,
+							settings.param_ht_minshift,
+							settings.param_ht_maxshift,
+							settings.param_ht_angle_res,
+							settings.param_ht_shift_res,
+							settings.param_ht_gauss_angle_res,
+							settings.param_ht_gauss_shift_res,
+							settings.param_ht_gauss_angle_sigma,
+							settings.param_ht_gauss_shift_sigma);
+	ros::ServiceServer service = n.advertiseService(DET_SERVICE_CLEAR_PLANES, clear);
+
+	// Print out parameters
+	std::cerr << std::endl;
+	std::cerr << "Given HS parameters:" << std::endl;
+	std::cerr << "====================" << std::endl;
+	std::cerr << "Max point cloud z value:               " << settings.param_ht_maxdepth << std::endl;
+	std::cerr << "Minimal plane shift (d param) value:   " << settings.param_ht_minshift << std::endl;
+	std::cerr << "Maximal plane shift (d param) value:   " << settings.param_ht_maxshift << std::endl;
+	std::cerr << "Hough space angle resolution:          " << settings.param_ht_angle_res << std::endl;
+	std::cerr << "Hough space shift resolution:          " << settings.param_ht_shift_res << std::endl;
+	std::cerr << "Plane Gauss function angle resolution: " << settings.param_ht_gauss_angle_res << std::endl;
+	std::cerr << "Plane Gauss function shift resolution: " << settings.param_ht_gauss_shift_res << std::endl;
+	std::cerr << "Plane Gauss function angle sigma:      " << settings.param_ht_gauss_angle_sigma << std::endl;
+	std::cerr << "Plane Gauss function shift sigma:      " << settings.param_ht_gauss_shift_sigma << std::endl;
+	std::cerr << std::endl;
+	std::cerr << "Given plane search parameters:" << std::endl;
+	std::cerr << "==============================" << std::endl;
+	std::cerr << "Minimum plane value in HS for current frame:   " << settings.param_search_minimum_current_space << std::endl;
+	std::cerr << "Minimum plane value in HS for global space:    " << settings.param_search_minimum_global_space << std::endl;
+	std::cerr << "Hough space local maximum neighborhood search: " << settings.param_search_maxima_search_neighborhood << std::endl;
+	std::cerr << "Hough space local maximum search blur:         " << settings.param_search_maxima_search_blur << std::endl;
+	std::cerr << std::endl;
+	std::cerr << "Given visualisation parameters:" << std::endl;
+	std::cerr << "==============================" << std::endl;
+	std::cerr << "Maximum point distance from plane:                               " << settings.param_visualisation_distance << std::endl;
+	std::cerr << "Maximum point normal deviation from plane:                       " << settings.param_visualisation_plane_normal_dev << std::endl;
+	std::cerr << "Maximum point plane shift (d param) from plane:                  " << settings.param_visualisation_plane_shift_dev << std::endl;
+	std::cerr << "Minimum point count for visualised plane in current point cloud: " << settings.param_visualisation_min_count << std::endl;
+	std::cerr << std::endl;
+
+	// if PCL input
+	if (settings.param_node_input == PARAM_NODE_INPUT_PCL)
 	{
-		exporter = new DynModelExporter(&n);
+		exporter = new DynModelExporter(&n,
+		                                settings.param_original_frame,
+                                        settings.param_output_frame,
+										settings.param_visualisation_min_count,
+										settings.param_visualisation_distance,
+										settings.param_visualisation_plane_normal_dev,
+										settings.param_visualisation_plane_shift_dev);
 
 		// MESSAGES
-		// message_filters::Subscriber<Image> depth_sub(n, "/cam3d/depth/image_raw", 1);
-		message_filters::Subscriber<PointCloud2 > point_cloud(n, INPUT_POINT_CLOUD_TOPIC, 1);
+		message_filters::Subscriber<PointCloud2 > point_cloud(n, DET_INPUT_POINT_CLOUD_TOPIC, 1);
 
-		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZI> > (OUTPUT_POINT_CLOUD_TOPIC, 1);
+		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZRGB> > (DET_OUTPUT_POINT_CLOUD_TOPIC, 1);
+		pub2 = n.advertise<visualization_msgs::MarkerArray > (DET_OUTPUT_MARKER_TOPIC, 1);
 
 		// sync images
 		tfListener = new tf::TransformListener();
-		transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2> (point_cloud, *tfListener, target_topic, 1);
+		transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2> (point_cloud, *tfListener, settings.param_output_frame, 1);
 		transform_filter->registerCallback(boost::bind(&callbackpcl, _1));
+
 		std::cerr << "Plane detector initialized and listening point clouds..." << std::endl;
 		ros::spin();
 
 		return 1;
 	}
-	else if (input == "kinect")
+
+	// if kinect input
+	else if (settings.param_node_input == PARAM_NODE_INPUT_KINECT)
 	{
-		exporter = new DynModelExporter(&n);
+		exporter = new DynModelExporter(&n,
+                                        settings.param_original_frame,
+                                        settings.param_output_frame,
+                                        settings.param_visualisation_min_count,
+                                        settings.param_visualisation_distance,
+                                        settings.param_visualisation_plane_normal_dev,
+                                        settings.param_visualisation_plane_shift_dev);
+
 		// MESSAGES
-		// message_filters::Subscriber<Image> depth_sub(n, "/cam3d/depth/image_raw", 1);
-		message_filters::Subscriber<Image> depth_sub(n, INPUT_IMAGE_TOPIC, 1);
-		message_filters::Subscriber<CameraInfo> info_sub_depth(n, INPUT_CAM_INFO_TOPIC, 1);
+		message_filters::Subscriber<Image> depth_sub(n, DET_INPUT_IMAGE_TOPIC, 1);
+		message_filters::Subscriber<CameraInfo> info_sub_depth(n, DET_INPUT_CAM_INFO_TOPIC, 1);
 
-
-		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZI> > (OUTPUT_POINT_CLOUD_TOPIC, 1);
-		//pub2 = n.advertise<visualization_msgs::Marker> ("/polygons", 1);
+		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZRGB> > (DET_OUTPUT_POINT_CLOUD_TOPIC, 1);
 
 		typedef sync_policies::ApproximateTime<Image, CameraInfo> MySyncPolicy;
 		Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), depth_sub, info_sub_depth);
@@ -292,10 +446,5 @@ int main( int argc, char** argv )
 		ros::spin();
 
 		return 1;
-	}
-	else
-	{
-		std::cerr << "Please specify input type (-input pcl or -input kinect)" << std::endl;
-		return 0;
 	}
 }

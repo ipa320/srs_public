@@ -95,41 +95,47 @@ namespace srs_env_model_percp
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Function recomputes a list of planes saved in this class (scene model)
+	// @param min_current Minimal value for detected plane in current frame Hough space
+	// @param min_global Minimal value for detected plane in global frame Hough space
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void SceneModel::recomputePlanes()
+	void SceneModel::recomputePlanes(double min_current, double min_global, int blur, int search_neighborhood)
 	{
 		planes.clear();
 		std::vector<int> counts;
 		std::vector<Plane<float> > aux;
-		current_space.findMaxima(aux, 500);
+		current_space.findMaxima(planes, min_current, blur, search_neighborhood);
 		int total_count = 0;
 
 		std::vector<bool> used(aux.size(), false);
-		for (unsigned int i = 0; i < aux.size(); ++i)
-		if (not used[i])
-		{
-			used[i] = true;
-			Plane<float> final(aux[i].a, aux[i].b, aux[i].c, aux[i].d);
-			int count = 1;
-			for (unsigned int j = i+1; j < aux.size(); ++j)
-			if (not used[j] && aux[i].isSimilar(aux[j], 0.01, 0.01))
-			{
-				used[j] = true;
-				final.a += aux[j].a;
-				final.b += aux[j].b;
-				final.c += aux[j].c;
-				final.d += aux[j].d;
-				++count;
-			}
 
-			final.a /= count;
-			final.b /= count;
-			final.c /= count;
-			final.d /= count;
-			planes.push_back(final);
-			counts.push_back(count);
-			total_count += count;
-		}
+// possible merging close planes
+///////////////////////////////////////////////////////////////////////////////
+//		for (unsigned int i = 0; i < aux.size(); ++i)
+//		if (not used[i])
+//		{
+//			used[i] = true;
+//			Plane<float> final(aux[i].a, aux[i].b, aux[i].c, aux[i].d);
+//			int count = 1;
+//			for (unsigned int j = i+1; j < aux.size(); ++j)
+//			if (not used[j] && aux[i].isSimilar(aux[j], 0.01, 0.01))
+//			{
+//				used[j] = true;
+//				final.a += aux[j].a;
+//				final.b += aux[j].b;
+//				final.c += aux[j].c;
+//				final.d += aux[j].d;
+//				++count;
+//			}
+//
+//			final.a /= count;
+//			final.b /= count;
+//			final.c /= count;
+//			final.d /= count;
+//			planes.push_back(final);
+//			counts.push_back(count);
+//			total_count += count;
+//		}
+///////////////////////////////////////////////////////////////////////////////
 
 		float a1, a2;
 		int ai1, ai2, zi;
@@ -142,94 +148,17 @@ namespace srs_env_model_percp
 			space.addVolume(gauss, ai1, ai2, zi);
 		}
 		std::cout << "Adding into global" << std::endl;
-		/////////////////////////////////////////////////////////////////////////////////////////////////
-//					//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//					// Control visualisaation - uncoment to see HT space
-//					//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//							double min = 99999999999.0;
-//							double max = -99999999999.0;
-//
-//							ParameterSpaceHierarchyFullIterator it(&space);
-//							while (not it.end)
-//							{
-//								float value = it.getVal();
-//								if (value < min) min = value;
-//								if (value > max) max = value;
-//								++it;
-//							}
-//
-//							ParameterSpaceHierarchyFullIterator it2(&space);
-//							while (not it2.end)
-//							{
-//								if (it2.getVal() != 0)
-//									it2.setVal(1.0*((it2.getVal() - min) / (max - min)));
-//								++it2;
-//							}
-//
-//							cv::Mat image = cv::Mat::zeros(cvSize(space.m_angleSize, space.m_angleSize), CV_32FC1);
-//							int shiftview = space.m_shiftSize/2;
-//							for (int angle1 = 0; angle1 < space.m_angleSize; angle1 += 1)
-//							for (int angle2 = 0; angle2 < space.m_angleSize; angle2 += 1)
-//							{
-//								image.at<float>(angle1, angle2) = space.get(angle1, angle2, shiftview);
-//							}
-//
-//
-//
-//							//create a new window & display the image
-//							cvNamedWindow("Smile", 1);
-//							cvShowImage("Smile", &IplImage(image));
-//							std::cout << "Viewing shift = " << shiftview << std::endl;
-//							//wait for key to close the window
-//							int key = 0;
-//							while(1)
-//							{
-//							    key = cvWaitKey();
-//							    key &= 0x0000ffff;
-//							    std::cout << key << std::endl;
-//							    if(key==27 || key == 0xffff) break;
-//
-//							    switch(key)
-//							    {
-//							        case 'a':
-//							        	if (shiftview < space.m_shiftSize-1)
-//							        	{
-//							        		++shiftview;
-//							        		for (int angle1 = 0; angle1 < space.m_angleSize; angle1 += 1)
-//							        		for (int angle2 = 0; angle2 < space.m_angleSize; angle2 += 1)
-//							        		{
-//							        			image.at<float>(angle1, angle2) = space.get(angle1, angle2, shiftview);
-//							        		}
-//							        	}
-//							        	cvShowImage("Smile", &IplImage(image));
-//							        	std::cout << "Viewing shift = " << shiftview << "/" << space.m_shiftSize-1 << std::endl;
-//							            break;
-//							        case 'z':
-//							        	if (shiftview > 0)
-//							        	{
-//							        		--shiftview;
-//							        		for (int angle1 = 0; angle1 < space.m_angleSize; angle1 += 1)
-//							        		for (int angle2 = 0; angle2 < space.m_angleSize; angle2 += 1)
-//							        		{
-//							        			image.at<float>(angle1, angle2) = space.get(angle1, angle2, shiftview);
-//							        		}
-//							        	}
-//							        	cvShowImage("Smile", &IplImage(image));
-//							        	std::cout << "Viewing shift = " << shiftview << "/" << space.m_shiftSize-1 << std::endl;
-//							            break;
-//							    }
-//							}
-//
-//
-//							cvDestroyWindow( "Smile" );
-		/////////////////////////////////////////////////////////////////////////////////////////////////
-		used.resize(planes.size(), false);
-		planes.clear();
-		used.clear();
 
-		aux.clear();
-		counts.clear();
-		space.findMaxima(planes, 0.7);
+//		used.resize(planes.size(), false);
+		planes.clear();
+//		used.clear();
+//
+//		aux.clear();
+//		counts.clear();
+		space.findMaxima(planes, min_global, blur, search_neighborhood);
+
+// possible merging close planes
+///////////////////////////////////////////////////////////////////////////////
 //		for (unsigned int i = 0; i < aux.size(); ++i)
 //
 //		if (not used[i])
@@ -256,10 +185,15 @@ namespace srs_env_model_percp
 //			counts.push_back(count);
 //			total_count += count;
 //		}
+///////////////////////////////////////////////////////////////////////////////
 
 		std::cout << "Found : " << planes.size() << " planes." << std::endl;
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Clears all nodes with value lesser than parameter
+	// @param minValue All nodes with value lesser than this parameter will be removed
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	void SceneModel::clearNoise(double minValue)
 	{
 		ParameterSpaceHierarchyFullIterator it(&space);
@@ -277,6 +211,10 @@ namespace srs_env_model_percp
 		}
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Function adds a depth map with computed normals into existing Hough space
+	// @param normals Normals object (point cloud with precomputed normals)
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	void SceneModel::AddNext(Normals &normals)
 	{
 		ParameterSpaceHierarchy cache_space(m_angle_min, m_angle_max, m_shift_min, m_shift_max, m_angle_res, m_shift_res);
@@ -297,8 +235,6 @@ namespace srs_env_model_percp
 			point = normals.m_points.at<Vec3f>(i, j);
 			plane = normals.m_planes.at<Vec4f>(i, j);
 
-//			// skip all which is farer than 3m
-//			if (point[2] < m_depth)
 			if (plane[0] != 0.0 || plane[1] != 0.0 || plane[2] != 0.0)
 			{
 				// signed angle atan2(b.y,b.x) - atan2(a.y,a.x)
@@ -342,6 +278,7 @@ namespace srs_env_model_percp
 
 		std::cout << "New parameter space size: " << (double)current_space.getSize()*sizeof(double) / 1000000.0 << " MB" << std::endl;
 	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Function adds a depth map with computed normals into existing Hough space
 	// @param depth Depth image
@@ -505,100 +442,5 @@ namespace srs_env_model_percp
 //
 //
 //					cvDestroyWindow( "Smile" );
-	}
-
-	void SceneModel::AddNext(Mat &depth, const sensor_msgs::CameraInfoConstPtr& cam_info, Normals &normals, tf::StampedTransform &sensorToWorldTf, tf::StampedTransform &worldToSensorTf)
-	{
-//		ParameterSpaceHierarchy cache_space(m_angle_min, m_angle_max, m_shift_min, m_shift_max, m_angle_res, m_shift_res);
-//		current_space.clear();
-//
-//		int maxi = normals.m_points.rows;
-//		int maxj = normals.m_points.cols;
-//
-//		Vec3f point;
-//		Vec4f plane;
-//		Regions reg(&normals);
-//		reg.watershedRegions(depth, cam_info, WatershedType::DepthDiff, 1, 2, 20);
-//		double min, max;
-//		minMaxLoc(reg.m_regionMatrix, &min, &max);
-//		indexFactor = 1.0;
-//
-//		if (max !=0)
-//			indexFactor /= (double)max;
-//
-//		scene_cloud->clear();
-//		// pass all points and write them into init space
-//		for (int i = 0; i < maxi; ++i)
-//			for (int j = 0; j < maxj; ++j)
-//			{
-//				point = normals.m_points.at<Vec3f>(i, j);
-//				plane = normals.m_planes.at<Vec4f>(i, j);
-//
-//				///////////////////////////////////////////////////////////////////
-////				tf::Transformer t;
-////				t.setTransform(sensorToWorldTf);
-////				tf::Stamped<btVector3> originalPoint, transformedPoint;
-////				originalPoint.setX(point[0]);
-////				originalPoint.setY(point[1]);
-////				originalPoint.setZ(point[2]);
-////				originalPoint.frame_id_ = "/head_cam3d_link";
-////				t.transformPoint("/map", originalPoint, transformedPoint);
-////
-//////				//t.setTransform(sensorToWorldTf);
-////				tf::Stamped<btVector3> originalNormal, transformedNormal;
-//////				transformedNormal.setX(plane[0]);
-//////				transformedNormal.setY(plane[1]);
-//////				transformedNormal.setZ(plane[2]);
-//////				transformedNormal.frame_id_ = "/head_cam3d_link";
-//////				t.transformVector("/map", originalNormal, transformedNormal);
-//				///////////////////////////////////////////////////////////////////
-//				if (i%100 == 0 && j % 100 == 0)
-//				{
-//					std::cout << point[0]*plane[0] + point[1]*plane[1] + point[2]*plane[2] << "   " << plane[3] << std::endl;
-//					std::cout << transformedNormal.getX()*transformedPoint.getX() +
-//								 transformedNormal.getY()*transformedPoint.getY() +
-//								 transformedNormal.getZ()*transformedPoint.getZ() << std::endl << std::endl;
-//				}
-//				// skip all which is farer than 3m
-//				if (point[2] < m_depth)
-//				{
-//					// signed angle atan2(b.y,b.x) - atan2(a.y,a.x)
-//					// angle on XZ plane with X
-//					float a1, a2;
-//					ParameterSpace::toAngles(plane[0], plane[1], plane[2], a1, a2);
-//
-//
-//					PointXYZRGB rgbpoint(255, 255, 255);
-//					if (reg.m_regionMatrix.at<int>(i, j) > 0)
-//						rgbpoint.rgb = indexFactor *reg.m_regionMatrix.at<int>(i, j);
-//
-//					rgbpoint.x = point[0];
-//					rgbpoint.y = point[1];
-//					rgbpoint.z = point[2];
-//					scene_cloud->push_back(rgbpoint);
-//
-//					int i, j, k;
-//					cache_space.getIndex(a1, a2, plane[3], i, j, k);
-//					cache_space.set(i, j, k, cache_space.get(i, j, k) + 1);
-//				}
-//			}
-//
-//			// fire up the iterator on cache space
-//			ParameterSpaceHierarchyFullIterator it(&cache_space);
-//			int i, j, k;
-//			double val;
-//			// for each point in cache space which is not zero, write a multiplied gauss into the HT
-//			while (not it.end)
-//			{
-//				val = it.getVal();
-//				if (val > 0.0)
-//				{
-//					current_space.fromIndex(it.currentI, i, j, k);
-//					current_space.addVolume(gauss, i, j, k, val);
-//				}
-//				++it;
-//			}
-//
-//			std::cout << "New parameter space size: " << (double)current_space.getSize()*sizeof(double) / 1000000.0 << " MB" << std::endl;
 	}
 } // but_plane_detector

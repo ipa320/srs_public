@@ -1,0 +1,46 @@
+void generalPurposeProjection_vp(
+		float4 pos			: POSITION,
+		
+		out float4 oPos		: POSITION,
+		out float4 texCoord : TEXCOORD0,
+		
+		uniform float4x4 worldViewProjMatrix,
+		uniform float4x4 worldMatrix,
+		uniform float4x4 texViewProjMatrix
+		)
+{
+	oPos = mul(worldViewProjMatrix, pos);
+
+	// multiply position by world matrix, then by projective view/proj
+	float4 newpos = mul(worldMatrix, pos);
+	
+	
+	texCoord = mul(texViewProjMatrix, newpos);
+	
+}
+
+void testedProjection_vp(
+		float4 pos			: POSITION,
+		
+		out float4 oPos		: POSITION,
+		out float4 texCoord : TEXCOORD0,
+		out float4 depthPos : TEXCOORD1,
+		
+		uniform float4x4 worldViewProjMatrix,
+		uniform float4x4 worldMatrix,
+		uniform float4x4 texViewProjMatrix,
+		uniform float4x4 cameraProjMatrix,
+		uniform float3 cameraPosition
+		)
+{
+	oPos = mul(worldViewProjMatrix, pos);
+
+	// multiply position by world matrix, then by projective view/proj
+	float4 newpos = mul(worldMatrix, pos);
+	
+	texCoord = mul(texViewProjMatrix, newpos);
+	
+	float3 vertexPosition = pos.xyz;
+	float d = distance( vertexPosition, cameraPosition );
+	depthPos[0] = d;
+}

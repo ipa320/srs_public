@@ -74,7 +74,8 @@ void srs_env_model::CMap2DPlugin::init(ros::NodeHandle & node_handle)
 
 void srs_env_model::CMap2DPlugin::onPublish(const ros::Time & timestamp)
 {
-	m_map2DPublisher.publish(*m_data);
+	if( m_map2DPublisher.getNumSubscribers() > 0 )
+		m_map2DPublisher.publish(*m_data);
 }
 
 
@@ -96,7 +97,7 @@ void srs_env_model::CMap2DPlugin::onFrameStart(const SMapParameters & par)
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_map2DFrameId, m_ocFrameId,
-				timestamp, ros::Duration(0.2));
+				timestamp, ros::Duration(5));
 
 		m_tfListener.lookupTransform(m_map2DFrameId, m_ocFrameId,
 				timestamp, ocToMap2DTf);
@@ -245,4 +246,20 @@ void srs_env_model::CMap2DPlugin::handleFreeNode(srs_env_model::tButServerOcTree
 void srs_env_model::CMap2DPlugin::handlePostNodeTraversal(const SMapParameters & mp)
 {
 	invalidate();
+}
+
+/**
+ * Pause/resume plugin. All publishers and subscribers are disconnected on pause
+ */
+void srs_env_model::CMap2DPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+{
+	if( bPause )
+	{
+		m_map2DPublisher.shutdown();
+	}
+	else
+	{
+		// Create publisher
+		m_map2DPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 100, m_latchedTopics);
+	}
 }

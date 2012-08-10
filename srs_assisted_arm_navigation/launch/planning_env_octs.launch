@@ -1,0 +1,22 @@
+<launch> 
+  
+  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env.launch" />
+  
+  <!-- octomap_server -->
+  <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node">
+    <remap from="cloud_in" to="/cam3d/depth/points_filtered2" />
+    <remap from="map" to="/map_projected" />
+    <remap from="collision_map_out" to="collision_map_occ"/>
+    
+    <param name="sensor_model/max_range" type="double" value="2.5"/>
+    <param name="resolution" value="0.025" type="double"/>
+    <param name="frame_id" type="string" value="map" />
+    <param name="height_map" type="bool" value="true" />
+    <param name="filter_ground" type="bool" value="false" />
+    <param name="latch" type="bool" value="false" />
+    <param name="pointcloud_min_z" value="0.2" type="double"/>
+    
+    
+  </node>
+	
+</launch>

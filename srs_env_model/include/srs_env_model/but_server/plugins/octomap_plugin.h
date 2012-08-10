@@ -113,6 +113,9 @@ public:
 	/// Publishing callback
 	virtual void onPublish(const ros::Time & timestamp);
 
+	//! Pause/resume plugin. All publishers and subscribers are disconnected on pause
+	virtual void pause( bool bPause, ros::NodeHandle & node_handle );
+
 protected:
 
 	/// Set octomap default parameters
@@ -182,9 +185,6 @@ protected:
 
 
 protected:
-	///
-
-
 
     /// Should ground plane be filtered?
     bool m_filterGroundPlane;
@@ -257,7 +257,7 @@ protected:
     std::string m_camera_info_topic;
 
     /// Camera info subscriber
-    ros::Subscriber*  m_ciSubscriber;
+    ros::Subscriber m_ciSubscriber;
 
     /// Should be markers visualized
     bool m_bVisualizeMarkers;

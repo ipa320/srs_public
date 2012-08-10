@@ -58,6 +58,7 @@
 // Local includes
 #include "ros_rtt_texture.h"
 #include "but_rostexture.h"
+#include "but_depthtexture.h"
 
 namespace rviz
 {
@@ -99,6 +100,12 @@ namespace srs_ui_but
      */
     class CProjectionData
     {
+    	//typedef rviz::CRosTexture tRosTexture;
+    	typedef CRosTopicTexture tRosTextureRGB;
+
+    	//! Depth texture type
+    	typedef CRosDepthTexture tRosTextureDepth;
+
     protected:
         enum ETextureMode
         {
@@ -107,9 +114,6 @@ namespace srs_ui_but
         };
 
     public:
-        //! Constructor
-        CProjectionData( Ogre::SceneManager * manager, const std::string & materialName, const std::string & groupName = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-
         //! Constructor - with given texture
         CProjectionData( Ogre::SceneManager * manager, const ros::NodeHandle &nh, const std::string & materialName, const std::string & groupName = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
 
@@ -125,39 +129,46 @@ namespace srs_ui_but
         //! Set texture size
         void setTextureSize( int width, int height );
 
-        //! Draw on texture - fill with solid color
-        void fillTexture( unsigned char r, unsigned char g, unsigned char b );
-
         //! Set ros texture topic
-        void setTextureTopic( const std::string & topic );
+        void setRGBTextureTopic( const std::string & topic );
+
+        //! Set input depth texture topic
+        void setDepthTextureTopic( const std::string & topic );
+
+        //! Get texture width
+        int getTextureWidth() { return m_texW; }
+
+        //! Get texture height
+		int getTextureHeight() { return m_texH; }
 
         //! Clear texture
         void clear();
 
         //! Updata ros texture
-        void update() { if( m_textureRos != 0 ) m_textureRos->update(); }
+        void update() { if( m_textureRosRGB != 0 ) m_textureRosRGB->update(); }
 
-        //! Get frustum
-        Ogre::Frustum & getFrustum() { return *m_frustum; }
-
-        //! Set projecting direction
+         //! Set projector position
         void setProjectorPosition( const Ogre::Vector3 & v ){ m_projectorNode->setPosition(v); }
 
         //! Set projecting direction
         void setProjectorOrientation( const Ogre::Quaternion & q ) { m_projectorNode->setOrientation( q ); }
 
+        //! Update material projection matrix parameter
+        void updateMatrices();
+
+        //! Set FOVy
+        void setFOVy( Ogre::Radian fovy ) { m_frustum->setFOVy( fovy );  }
+
+        //! Set aspect ratio
+        void setAspectRatio( Ogre::Real ar ) { m_frustum->setAspectRatio( ar ); }
+
+    	//! Get camera model reference
+    	void setCameraModel(const sensor_msgs::CameraInfo& msg) { m_textureRosDepth->setCameraModel(msg); }
+
+
     protected:
-        //! Projection frustrum
-        Ogre::Frustum * m_frustum;
-
-        //! Projector node
-        Ogre::SceneNode * m_projectorNode;
-
         //! Used material
         Ogre::MaterialPtr m_material;
-
-        //! Texture pointer
-        Ogre::TexturePtr m_textureInternal;
 
         //! Old frustrum size
         Ogre::Vector2 m_frustrumSize;
@@ -168,8 +179,18 @@ namespace srs_ui_but
         //! Current mode
         ETextureMode m_mode;
 
-        //! Ros texture
-        rviz::CRosTexture * m_textureRos;
+        //! Ros textures
+        tRosTextureRGB * m_textureRosRGB;
+        tRosTextureDepth* m_textureRosDepth;
+
+        //! Projector node
+        Ogre::SceneNode * m_projectorNode;
+
+        //! Frustum node
+        Ogre::Frustum * m_frustum;
+
+        //! Transform listener
+        tf::TransformListener m_tfListener;
 
     }; // class CProjectionData
 
@@ -243,10 +264,16 @@ namespace srs_ui_but
         virtual void createProperties();
 
         //! Get rgb image input topic
-        const std::string& getRgbTopic() { return m_imageInputTopicName; }
+        const std::string& getRgbTopic() { return m_imageRGBInputTopicName; }
 
         //! Set rgb image input topic
         void setRgbTopic(const std::string& topic);
+
+        //! Get depth image input topic
+		const std::string& getDepthTopic() { return m_imageDepthInputTopicName; }
+
+		//! Set depth image input topic
+		void setDepthTopic(const std::string& topic);
 
         //! Update display
         virtual void update (float wall_dt, float ros_dt);
@@ -294,13 +321,16 @@ namespace srs_ui_but
         Ogre::SceneNode * m_sceneNode;
 
         //! Image input topic name
-        std::string m_imageInputTopicName;
+        std::string m_imageRGBInputTopicName, m_imageDepthInputTopicName;
 
         //! Publishing timer
         ros::Timer m_timer;
 
         //! Rgb topic property
         rviz::ROSTopicStringPropertyWPtr m_rgb_topic_property;
+
+        //! Depth image topic property
+        rviz::ROSTopicStringPropertyWPtr m_depth_topic_property;
 
         //! Timer period
         double m_timerPeriod;
@@ -328,6 +358,7 @@ namespace srs_ui_but
 
         /// Camera size
         cv::Size m_camera_size;
+
 
     };//class CButCamCast
 

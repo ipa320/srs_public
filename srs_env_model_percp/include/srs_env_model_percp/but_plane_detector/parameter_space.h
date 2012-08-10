@@ -1,6 +1,3 @@
-#pragma once
-#ifndef BUT_PLANE_DET_PARAMSPACE_H
-#define BUT_PLANE_DET_PARAMSPACE_H
 /******************************************************************************
  * \file
  *
@@ -34,6 +31,10 @@
  *
  *	 Contains methods for construction / maxima search / adding of volumes etc.
  */
+
+#pragma once
+#ifndef BUT_PLANE_DET_PARAMSPACE_H
+#define BUT_PLANE_DET_PARAMSPACE_H
 
 // Opencv 2
 #include <opencv2/highgui/highgui.hpp>

@@ -40,6 +40,12 @@ namespace srs_ui_but
  * @param res is response of type GetClosestPoint
  */
 bool getClosestPoint(GetClosestPoint::Request &req, GetClosestPoint::Response &res);
+/**
+ * @brief Sets point cloud topic for getting closest point.
+ * @param req is request of type SetPointCloudTopic
+ * @param res is response of type SetPointCloudTopic
+ */
+bool setPointCloudTopic(SetPointCloudTopic::Request &req, SetPointCloudTopic::Response &res);
 }
 
 #endif /* BUT_SERVICE_SERVER_H_ */

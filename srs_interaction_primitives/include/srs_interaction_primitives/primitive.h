@@ -39,7 +39,12 @@
 #include <OGRE/OgreVector3.h>
 #include <arm_navigation_msgs/Shape.h>
 
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
+
+#include <srs_interaction_primitives/parameters_list.h>
 #include <srs_interaction_primitives/PrimitiveType.h>
+#include <srs_interaction_primitives/PoseType.h>
 #include "update_publisher.h"
 
 #define MEASURE_TEXT_SCALE 0.2
@@ -52,7 +57,6 @@
 #define GRASP_TEXT_SIZE 0.1
 #define GRASP_POINT_SCALE 0.05
 #define GRASP_TRANSPARENCY 0.3
-
 
 namespace srs_interaction_primitives
 {
@@ -152,6 +156,18 @@ public:
   void changeColor(std_msgs::ColorRGBA color);
 
   /**
+   * @brief Sets the way to set the pose
+   * @param type of the pose
+   */
+  void setPoseType(int type)
+  {
+    if (type == PoseType::POSE_CENTER|| type == PoseType::POSE_BASE)
+    {
+      pose_type_ = type;
+    }
+  }
+
+  /**
    * @brief Sets type of this primitive.
    * @param type is primitive's type
    */
@@ -213,7 +229,12 @@ public:
    */
   void setPose(geometry_msgs::Pose pose)
   {
-	geometry_msgs::Pose pose_change;
+    if (pose_type_ == PoseType::POSE_BASE)
+    {
+      pose.position.z += scale_.z * 0.5;
+    }
+
+    geometry_msgs::Pose pose_change;
     pose_change.position.x = pose.position.x - pose_.position.x;
     pose_change.position.y = pose.position.y - pose_.position.y;
     pose_change.position.z = pose.position.z - pose_.position.z;
@@ -241,7 +262,13 @@ public:
    */
   void setScale(geometry_msgs::Vector3 scale)
   {
-	geometry_msgs::Vector3 scale_change;
+    if (pose_type_ == PoseType::POSE_BASE)
+    {
+      pose_.position.z -= scale_.z * 0.5;
+      pose_.position.z += scale.z * 0.5;
+    }
+
+    geometry_msgs::Vector3 scale_change;
     scale_change.x = scale.x - scale_.x;
     scale_change.y = scale.y - scale_.y;
     scale_change.z = scale.z - scale_.z;
@@ -421,6 +448,33 @@ public:
   }
 
   /**
+   * @brief Allows or denies interaction with Object
+   * @param allow is true or false
+   */
+  void setAllowObjectInteraction(bool allow)
+  {
+    allow_object_interaction_ = allow;
+    if (allow_object_interaction_)
+    {
+      menu_handler_.setVisible(menu_handler_interaction_, true);
+      menu_handler_.setVisible(menu_handler_interaction_movement_, true);
+      menu_handler_.setVisible(menu_handler_interaction_rotation_, true);
+    }
+    else
+    {
+      menu_handler_.setVisible(menu_handler_interaction_, false);
+      menu_handler_.setVisible(menu_handler_interaction_movement_, false);
+      menu_handler_.setVisible(menu_handler_interaction_rotation_, false);
+      removeMovementControls();
+      removeRotationControls();
+      server_->insert(object_);
+    }
+
+    menu_handler_.reApply(*server_);
+    server_->applyChanges();
+  }
+
+  /**
    * @brief Sets specified pre-grasp position
    * @param pos_num is specified position number (1-6)
    * @param pose is pre-grasp position and orientation
@@ -559,12 +613,22 @@ protected:
   geometry_msgs::Vector3 min_size_, max_size_;
   int primitive_type_;
   visualization_msgs::InteractiveMarker object_;
-  visualization_msgs::InteractiveMarkerControl control_, descriptionControl_, measureControl_, scaleControl_, trajectoryControl_;
-  visualization_msgs::InteractiveMarkerControl moveXControl_, moveYControl_, moveZControl_, rotateXControl_, rotateYControl,
-                           rotateZControl_;
-  visualization_msgs::InteractiveMarkerControl pregrasp1Control_, pregrasp2Control_, pregrasp3Control_, pregrasp4Control_,
-                           pregrasp5Control_, pregrasp6Control_;
+  visualization_msgs::InteractiveMarkerControl control_, descriptionControl_, measureControl_, scaleControl_,
+                                               trajectoryControl_;
+  visualization_msgs::InteractiveMarkerControl moveXControl_, moveYControl_, moveZControl_, rotateXControl_,
+                                               rotateYControl, rotateZControl_;
+  visualization_msgs::InteractiveMarkerControl pregrasp1Control_, pregrasp2Control_, pregrasp3Control_,
+                                               pregrasp4Control_, pregrasp5Control_, pregrasp6Control_;
   interactive_markers::MenuHandler menu_handler_;
+
+  // Transform listener
+  tf::TransformListener *tfListener;
+
+  // Transformer
+  tf::Transformer transformer;
+
+  // Transformations
+  tf::StampedTransform feedbackToDefaultTransform;
 
   // Common attributes
   std::string name_, description_, frame_id_;
@@ -572,6 +636,12 @@ protected:
   geometry_msgs::Pose pose_;
   geometry_msgs::Vector3 scale_;
   std_msgs::ColorRGBA color_, color_green_a01_;
+  int pose_type_;
+  geometry_msgs::Pose pose_change;
+
+  // Menu handelrs
+  interactive_markers::MenuHandler::EntryHandle menu_handler_interaction_, menu_handler_interaction_movement_,
+                                                menu_handler_interaction_rotation_;
 
   // Billboard's attributes
   double velocity_;
@@ -584,6 +654,7 @@ protected:
   std::string resource_;
   bool use_material_;
   bool move_arm_to_pregrasp_onclick_;
+  bool allow_object_interaction_;
 
   // PlanePolygon's attributes
   Ogre::Vector3 normal_;

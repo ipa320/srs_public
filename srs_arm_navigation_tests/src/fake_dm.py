@@ -40,8 +40,7 @@ def main():
   
   # sm_to = move_arm_to_given_positions_assisted()
   
-  sm = smach.StateMachine(outcomes=['fdm_completed','fdm_not_completed','fdm_failed','fdm_pre-empted'],
-                             output_keys=['id_of_the_reached_position'])
+  sm = smach.StateMachine(outcomes=['fdm_completed','fdm_not_completed','fdm_failed','fdm_pre-empted'])
 
   
   with sm:
@@ -66,6 +65,12 @@ def main():
                                          'bb_of_the_target_object':'bb_of_the_target_object'}) # is remapping neccessary?
   
     smach.StateMachine.add('from',move_arm_from_a_given_position_assisted(),
+                           transitions={'completed':'grasp',
+                                        'not_completed':'fdm_not_completed',
+                                        'pre-empted':'fdm_pre-empted',
+                                        'failed':'fdm_failed'})
+    
+    smach.StateMachine.add('grasp',grasp_unknown_object_assisted(),
                            transitions={'completed':'fdm_completed',
                                         'not_completed':'fdm_not_completed',
                                         'pre-empted':'fdm_pre-empted',
@@ -74,7 +79,7 @@ def main():
   rospy.loginfo('Executing state machine...') 
   output = sm.execute()
   
-  rospy.loginfo("ID of the reached position: %d",sm.userdata.id_of_the_reached_position)
+  #rospy.loginfo("ID of the reached position: %d",sm.userdata.id_of_the_reached_position)
 
 
 if __name__ == '__main__':

@@ -30,19 +30,24 @@
  *	 Contains necessary classes for normal estimation from point clouds and height maps
  */
 
+// OpenCV
+#include <cv.h>
+#include <opencv2/imgproc/imgproc.hpp>
+
+// ROS
+#include <ros/ros.h>
+
+// Eigen
+#include <Eigen/Core>
+#include <Eigen/Eigenvalues>
+#include <Eigen/StdVector>
+
 #include <srs_env_model_percp/but_seg_utils/normals.h>
 
 // std
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-
-// Eigen
-#include <Eigen/Core>
-#include <Eigen/Eigenvalues>
-
-// Open CV
-#include <opencv2/imgproc/imgproc.hpp>
 
 // pcl
 #include <pcl/point_cloud.h>
@@ -310,7 +315,7 @@ Normals::Normals(pcl::PointCloud<pcl::PointXYZ> &pointcloud, float threshold, in
 //			}
 	}
 	///////////////////////////////////////////////////////////////
-	// estimate normals using LSQ
+//	// estimate normals using LSQ
 //	for (int i = 0; i < m_points.rows; ++i)
 //		for (int j = 0; j < m_points.cols; ++j)
 //		{

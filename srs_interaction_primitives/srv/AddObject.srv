@@ -1,6 +1,7 @@
 string frame_id                     # Fixed Frame
 string name                         # object name
 string description                  # object description
+uint8 pose_type                     # way to set the pose
 geometry_msgs/Pose pose             # position and orientation of the object 
 geometry_msgs/Point bounding_box_lwh
 std_msgs/ColorRGBA color            # color of the object and bounding box 

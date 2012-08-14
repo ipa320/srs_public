@@ -495,13 +495,13 @@
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
         <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
-        <srs:zCoord rdf:datatype="&xsd;float">0.37</srs:zCoord>
-        <srs:xCoord rdf:datatype="&xsd;float">0.67</srs:xCoord>
+        <srs:zCoord rdf:datatype="&xsd;float">0.1</srs:zCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">0.65</srs:xCoord>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.74</srs:heightOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.9</srs:lengthOfObject>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.9</srs:widthOfObject>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
-        <srs:yCoord rdf:datatype="&xsd;float">1.26</srs:yCoord>
+        <srs:yCoord rdf:datatype="&xsd;float">1.21</srs:yCoord>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">7</srs:houseHoldObjectID>
         <srs:objectReadableName xml:lang="de">Kuche Tabelle</srs:objectReadableName>
         <srs:objectReadableName xml:lang="en">Kitchen Table</srs:objectReadableName>

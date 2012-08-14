@@ -57,7 +57,7 @@
 
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 from srs_symbolic_grounding.srv import *
-from srs_msgs.msg import *
+#from srs_symbolic_grounding.msg import *
 from std_msgs.msg import *
 from geometry_msgs.msg import *
 from nav_msgs.msg import *
@@ -67,6 +67,7 @@ import rospy
 import math
 import tf
 from tf.transformations import euler_from_quaternion
+import csv
 '''
 def getWorkspaceOnMap():
 	print 'test get all workspace (furnitures basically here) from map'
@@ -128,7 +129,7 @@ def obstacleCheck(sbpl, fgl, po_x, po_y):
 		data = getMapClient() #get occupancy grid map from the navigation serves 
 
 		
-		dist_to_walls = 0.55 #set the minimum distance to the walls
+		dist_to_walls = 0.5 #set the minimum distance to the walls
 		threshold = 10.0 #set the threshold to decide if a pose is occupaied. >threshold:occupied.
 		step_angle = 5.0 #set the step angle for putting points around the robot for the wall check (360 / step_angle points will be used)
 
@@ -284,7 +285,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 	
 
 	#calculate the detection width
-	rb_distance = 0.75 #distance between the robot base and the edge of the parent obj
+	rb_distance = 0.7 #distance between the robot base and the edge of the parent obj
 	robot_h = 1.4 #set the height of the detector
 	detection_angle = (30.0 / 180.0) * math.pi #set the detection angle (wide) of the detector 
 	camera_distance = math.sqrt((robot_h - parent_obj_h) ** 2 + (rb_distance - 0.2) ** 2) #distance between the detector and the surface of the parent obj
@@ -322,11 +323,8 @@ def handle_symbol_grounding_scan_base_pose(req):
 	if ((parent_obj_th >= 0) & (parent_obj_th <= (45.0 / 180.0 * math.pi))) | ((parent_obj_th >= (135.0 / 180.0 * math.pi)) & (parent_obj_th <= (225.0 / 180.0 * math.pi))) | ((parent_obj_th >= (315.0 / 180.0 * math.pi)) & (parent_obj_th < 360)):
 		
 		#calculate 4 lists of scan poses, each list is for scanning from one side of the table.
-		print detection_w
 		step = int((parent_obj_l / detection_w) + 0.99)
-		print step
 		detection_w = parent_obj_l / step
-		print detection_w
 		for num in range(step):
 			scan_base_pose_1 = Pose2D()
 			scan_base_pose_1.x = parent_obj_x - (parent_obj_w * 0.5 + rb_distance) * math.cos(parent_obj_th) - (0.5 * parent_obj_l - 0.5 * detection_w - num * detection_w) * math.sin(parent_obj_th)

@@ -1,7 +1,7 @@
 <launch>
 
   <!-- arm manipulation actionlib server -->
-  <node pkg="srs_assisted_arm_navigation" name="assisted_arm_navigation" type="assisted_arm_navigation_node" respawn="false" output="screen">
+  <node pkg="srs_assisted_arm_navigation" name="assisted_arm_navigation" type="assisted_arm_navigation_node" respawn="true" output="screen">
     <param name="start_timeout" type="double" value="60.0"/>
     <param name="solve_timeout" type="double" value="300.0"/>
     <param name="inflate_bb" type="double" value="1.1"/>

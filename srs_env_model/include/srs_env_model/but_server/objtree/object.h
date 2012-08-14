@@ -47,8 +47,9 @@ class Object
 public:
     enum Type
     {
-        BOUNDING_BOX = 1,
-        PLANE = 2
+        PLANE = 1,
+        ALIGNED_BOUNDING_BOX = 2,
+        GENERAL_BOUNDING_BOX = 3
     };
 
 private:

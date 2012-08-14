@@ -39,6 +39,9 @@
 #include <ogre_tools/initialization.h>
 #include "OgreHardwarePixelBuffer.h"
 
+#include <pcl/ros/conversions.h>
+#include <pcl_ros/transforms.h>
+
 // Rviz includes
 #include <rviz/render_panel.h>
 #include <rviz/visualization_manager.h>
@@ -54,7 +57,8 @@
 #include <sstream>
 
 #define DEFAULT_IMAGE_INPUT_TOPIC_NAME std::string("/cam3d/rgb/image_raw")
-#define CAMERA_INFO_TOPIC_NAME std::string("/cam3d/camera_info")
+#define DEFAULT_DEPTH_IMAGE_TOPIC_NAME std::string("/srs_ui_but/depth/image")
+#define CAMERA_INFO_TOPIC_NAME std::string("/cam3d/rgb/camera_info")
 #define DEFAULT_PUBLISHING_PERIOD double(0.1)
 
 /**
@@ -128,60 +132,6 @@ Ogre::Technique *srs_ui_but::CMaterialListener::handleSchemeNotFound(unsigned sh
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Constructor
- */
-srs_ui_but::CProjectionData::CProjectionData( Ogre::SceneManager * manager, const std::string & materialName, const std::string & groupName )
-: m_texW( 512 )
-, m_texH( 512 )
-, m_mode( TM_INTERNAL )
-, m_textureRos( 0 )
-{
-    std::cerr << "CProjectionData constructor" << std::endl;
-
-
-    // Create and init frustrum
-    m_frustum = new Ogre::Frustum();
-    m_projectorNode = manager->getRootSceneNode()->createChildSceneNode("DecalProjectorNode");
-    m_projectorNode->attachObject(m_frustum);
-    m_projectorNode->setPosition(0,0,0);
-
-    //	m_frustrum->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
-    //	m_frustrum->setOrthoWindowHeight(100);
-
-
-    // Create and init texture
-    m_textureInternal = Ogre::TextureManager::getSingleton().createManual("ProjectionTexture",
-            groupName,
-            Ogre::TEX_TYPE_2D, // Type
-            m_texW,	// Width
-            m_texH,	// Height
-            1, 		// Depth
-            0,		// Number of mipmaps
-            Ogre::PF_R8G8B8A8,	// Pixel format
-            Ogre::TU_DYNAMIC_WRITE_ONLY); // Usage
-
-    // Fill our texture with some color...
-    fillTexture( 255, 128, 128 );
-
-    // Create and init material
-    m_material = (Ogre::MaterialPtr)Ogre::MaterialManager::getSingleton().getByName(materialName, groupName);
-    Ogre::Pass *pass = m_material->getTechnique(0)->createPass();
-
-    pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-    pass->setDepthBias(1);
-    pass->setLightingEnabled(false);
-
-    Ogre::TextureUnitState *texState = pass->createTextureUnitState("ProjectionTexture");
-    texState->setProjectiveTexturing(true, m_frustum);
-    texState->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
-    texState->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
-
-    Ogre::LayerBlendOperationEx op = Ogre::LBX_MODULATE;
-    texState->setColourOperationEx(op, Ogre::LBS_TEXTURE, Ogre::LBS_TEXTURE);
-
-    std::cerr << "CProjectionData constructor done" << std::endl;
-}
 
 /**
  * Constructor with given external ros texture
@@ -193,39 +143,51 @@ srs_ui_but::CProjectionData::CProjectionData( Ogre::SceneManager * manager, cons
 {
     std::cerr << "CProjectionData constructor" << std::endl;
 
-
-    // Create and init frustrum
+    // Create frustum and projector node
     m_frustum = new Ogre::Frustum();
+    m_frustum->setNearClipDistance( 0.8 );
+
     m_projectorNode = manager->getRootSceneNode()->createChildSceneNode("DecalProjectorNode");
     m_projectorNode->attachObject(m_frustum);
-    m_projectorNode->setPosition(0,3,0);
+    m_projectorNode->setPosition(0,5,0);
 
 
-    // Create ros texture
-    m_textureRos = new rviz::CRosTexture( nh );
-    assert( m_textureRos != 0 );
-
-    // Fill our texture with some color...
-    fillTexture( 255, 128, 128 );
+    // Create ros textures
+    m_textureRosRGB = new tRosTextureRGB( nh, "rgb_texture", "rgb8" );
+    assert( m_textureRosRGB != 0 );
+    m_textureRosDepth = new tRosTextureDepth( nh, "depth_texture", DEFAULT_DEPTH_IMAGE_TOPIC_NAME, "32FC4" );
+    assert( m_textureRosDepth != 0 );
 
     // Create and init material
     m_material = (Ogre::MaterialPtr)Ogre::MaterialManager::getSingleton().getByName(materialName, groupName);
     m_material->getTechnique(0)->setLightingEnabled(false);
-    Ogre::Pass *pass = m_material->getTechnique(0)->createPass();
+
+
+    Ogre::Pass *pass = m_material->getTechnique(0)->getPass(0);
 
     pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
     pass->setDepthBias(1);
     pass->setLightingEnabled(false);
 
-    Ogre::TextureUnitState *texState = pass->createTextureUnitState(m_textureRos->getTexture()->getName());
-    texState->setProjectiveTexturing(true, m_frustum);
+    // Connect rgb texture and material
+    Ogre::TextureUnitState *texState = pass->createTextureUnitState(m_textureRosRGB->getTexture()->getName());
     texState->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
     texState->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
 
     Ogre::LayerBlendOperationEx op = Ogre::LBX_MODULATE;
     texState->setColourOperationEx(op, Ogre::LBS_TEXTURE, Ogre::LBS_TEXTURE);
 
+    // Connect Depth texture and material
+	texState = pass->createTextureUnitState(m_textureRosDepth->getTexture()->getName());
+	texState->setDesiredFormat( Ogre::PF_FLOAT32_RGB );
+	texState->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+	texState->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
+
+	texState->setColourOperationEx(op, Ogre::LBS_TEXTURE, Ogre::LBS_TEXTURE);
+
     std::cerr << "CProjectionData constructor done" << std::endl;
+
+    updateMatrices();
 }
 
 /**
@@ -254,70 +216,32 @@ void srs_ui_but::CProjectionData::setFrustrumSize( Ogre::Vector2 size )
 
         m_frustum->setOrthoWindowHeight( size.y );
         }
+
+    // Update projection matrix
+    updateMatrices();
 }
 
 /**
- * Fill internal texture with color
+ * Set ros rgb texture topic
  */
-void srs_ui_but::CProjectionData::fillTexture( unsigned char r, unsigned char g, unsigned char b )
+void srs_ui_but::CProjectionData::setRGBTextureTopic( const std::string & topic )
 {
-    if( m_mode != TM_INTERNAL )
-        return;
-
-    // Get the pixel buffer
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = m_textureInternal->getBuffer();
-
-    // Lock the pixel buffer and get a pixel box
-    pixelBuffer->lock(Ogre::HardwareBuffer::HBL_NORMAL); // for best performance use HBL_DISCARD!
-    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-
-    Ogre::uint8* pDest = static_cast<Ogre::uint8*>(pixelBox.data);
-
-    // Fill in some pixel data. This will give a semi-transparent blue,
-    // but this is of course dependent on the chosen pixel format.
-    for (size_t j = 0; j < m_texH; j++)
-        for(size_t i = 0; i < m_texW; i++)
-            {
-            // transparent rectangle around texture
-            if( i == 0 || j == 0 || i == m_texW - 1 || j == m_texH -1 )
-                {
-                *pDest++ = 0; // B
-                *pDest++ = 0; // G
-                *pDest++ = 0; // R
-                *pDest++ = 0;
-
-                continue;
-                }
-
-            if( i != j)
-                {
-                *pDest++ = b; // B
-                *pDest++ = g; // G
-                *pDest++ = r; // R
-                *pDest++ = 255;
-                }
-            else
-                {
-                *pDest++ = 0; // B
-                *pDest++ = 0; // G
-                *pDest++ = 0; // R
-                *pDest++ = 255;
-
-                }
-            }
-
-    // Unlock the pixel buffer
-    pixelBuffer->unlock();
-}
-
-/**
- * Set ros texture topic
- */
-void srs_ui_but::CProjectionData::setTextureTopic( const std::string & topic )
-{
-    if( m_mode == TM_ROS && m_textureRos != 0 )
+    if( m_mode == TM_ROS && m_textureRosRGB != 0 )
         {
-        m_textureRos->setTopic( topic );
+        m_textureRosRGB->setTopic( topic );
+        }
+}
+
+/**
+ * Set ros depth texture topic
+ */
+void srs_ui_but::CProjectionData::setDepthTextureTopic( const std::string & topic )
+{
+    if( m_mode == TM_ROS && m_textureRosDepth != 0 )
+        {
+    	m_textureRosDepth->setTopic( topic );
+
+        std::cerr << std::endl << "Depth texture topic set: " << m_textureRosDepth->getTopic() << std::endl;
         }
 }
 
@@ -326,8 +250,59 @@ void srs_ui_but::CProjectionData::setTextureTopic( const std::string & topic )
  */
 void srs_ui_but::CProjectionData::clear()
 {
-    if( m_textureRos != 0 )
-        m_textureRos->clear();
+    if( m_textureRosRGB != 0 )
+        m_textureRosRGB->clear();
+
+    if( m_textureRosDepth != 0 )
+    	m_textureRosDepth->clear();
+}
+
+
+//! Update material projection matrix parameter
+void srs_ui_but::CProjectionData::updateMatrices()
+{
+
+	if( m_material.get() == 0 )
+		return;
+
+
+	Ogre::Matrix4 pm( Ogre::Matrix4::CLIPSPACE2DTOIMAGESPACE * m_frustum->getProjectionMatrixWithRSDepth() );
+
+	// Compute projection matrix. CLIPSPACE2DTOIMAGESPACE: Useful little matrix which takes 2D clipspace {-1, 1} to {0,1} and inverts the Y.
+	Ogre::Matrix4 fm( pm * m_frustum->getViewMatrix() );
+
+	// Set vertex program parameters
+	Ogre::GpuProgramParametersSharedPtr paramsVP( m_material->getTechnique(0)->getPass(0)->getVertexProgramParameters() );
+
+	if( paramsVP->_findNamedConstantDefinition("texViewProjMatrix"))
+	{
+		paramsVP->setNamedConstant( "texViewProjMatrix", fm );
+	}
+	else
+	{
+		std::cerr << "Named constant - texViewProjMatrix - not found..." << std::endl;
+	}
+
+	if( paramsVP->_findNamedConstantDefinition( "cameraPosition") )
+	{
+		paramsVP->setNamedConstant( "cameraPosition", m_projectorNode->getPosition() );
+	}
+	else
+	{
+		std::cerr << "Named constant -cameraPosition - not found..." << std::endl;
+	}
+
+	// Set fragment program parameters
+	Ogre::GpuProgramParametersSharedPtr paramsFP( m_material->getTechnique(0)->getPass(0)->getFragmentProgramParameters() );
+
+	if( paramsFP->_findNamedConstantDefinition("testedDistance"))
+	{
+		paramsFP->setNamedConstant( "testedDistance", float(0.1) );
+	}
+	else
+	{
+		std::cerr << "Named constant not found: testedDistance " << std::endl;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -367,8 +342,9 @@ srs_ui_but::CButProjection::CButProjection(const std::string & name,rviz::Visual
 
     // Set parameters
 
-    // Get image input topic name
-    private_nh.param("image_input_topic", m_imageInputTopicName, DEFAULT_IMAGE_INPUT_TOPIC_NAME );
+    // Get image input topic names
+    private_nh.param("rgb_image_input_topic", m_imageRGBInputTopicName, DEFAULT_IMAGE_INPUT_TOPIC_NAME );
+    private_nh.param("depth_image_input_topic", m_imageDepthInputTopicName, DEFAULT_DEPTH_IMAGE_TOPIC_NAME );
 
     // Get timer period
     private_nh.param("publishig_period", m_timerPeriod, DEFAULT_PUBLISHING_PERIOD );
@@ -431,14 +407,19 @@ void srs_ui_but::CButProjection::onDisable()
  */
 void srs_ui_but::CButProjection::createProperties()
 {
-    m_rgb_topic_property = property_manager_->createProperty<rviz::ROSTopicStringProperty>( "Image Topic", property_prefix_, boost::bind( &CButProjection::getRgbTopic, this ),
+    m_rgb_topic_property = property_manager_->createProperty<rviz::ROSTopicStringProperty>( "RGB image Topic", property_prefix_, boost::bind( &CButProjection::getRgbTopic, this ),
             boost::bind( &CButProjection::setRgbTopic, this, _1 ), parent_category_, this );
+
+    m_depth_topic_property = property_manager_->createProperty<rviz::ROSTopicStringProperty>( "Depth image Topic", property_prefix_, boost::bind( &CButProjection::getDepthTopic, this ),
+               boost::bind( &CButProjection::setDepthTopic, this, _1 ), parent_category_, this );
 
     setPropertyHelpText(m_rgb_topic_property, "sensor_msgs::Image topic to subscribe to.");
     rviz::ROSTopicStringPropertyPtr topic_prop = m_rgb_topic_property.lock();
     topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::Image>());
 
-    setRgbTopic( m_imageInputTopicName );
+    // Set topics
+    setRgbTopic( m_imageRGBInputTopicName );
+    setDepthTopic( m_imageDepthInputTopicName );
 
 }
 
@@ -447,7 +428,8 @@ void srs_ui_but::CButProjection::createProperties()
  */
 void srs_ui_but::CButProjection::subscribe()
 {
-    m_projectionData->setTextureTopic(m_imageInputTopicName);
+	m_projectionData->setRGBTextureTopic(m_imageRGBInputTopicName);
+	m_projectionData->setDepthTextureTopic(m_imageDepthInputTopicName);
 
     if ( !isEnabled() )
         {
@@ -462,7 +444,8 @@ void srs_ui_but::CButProjection::subscribe()
  */
 void srs_ui_but::CButProjection::unsubscribe()
 {
-    m_projectionData->setTextureTopic("");
+	m_projectionData->setRGBTextureTopic("");
+	m_projectionData->setDepthTextureTopic("");
 }
 
 /**
@@ -472,12 +455,27 @@ void srs_ui_but::CButProjection::setRgbTopic( const std::string& topic )
 {
     unsubscribe();
 
-    m_imageInputTopicName = topic;
+    m_imageRGBInputTopicName = topic;
     clear();
 
     subscribe();
 
     propertyChanged(m_rgb_topic_property);
+}
+
+/**
+ *
+ */
+void srs_ui_but::CButProjection::setDepthTopic( const std::string& topic )
+{
+    unsubscribe();
+
+    m_imageDepthInputTopicName = topic;
+    clear();
+
+    subscribe();
+
+    propertyChanged(m_depth_topic_property);
 }
 
 /**
@@ -539,22 +537,22 @@ void srs_ui_but::CButProjection::createMaterials(Ogre::Camera * camera)
 
     // Load compositor
     {
-        if( Ogre::CompositorManager::getSingleton().addCompositor(camera->getViewport(), "DepthMap") == 0 )
+        if( Ogre::CompositorManager::getSingleton().addCompositor(camera->getViewport(), "zTestedProjection") == 0 )
             {
             std::cout << "COMPOSITOR FAILED TO LOAD." << std::endl;
             }
         else
             {
-            Ogre::CompositorManager::getSingleton().setCompositorEnabled(camera->getViewport(), "DepthMap", true);
+            Ogre::CompositorManager::getSingleton().setCompositorEnabled(camera->getViewport(), "zTestedProjection", true);
 
             //! Create material
-            m_projectionData = new CProjectionData( scene_manager_, update_nh_, "material1", "srs_ui_but" );
-            m_projectionData->setFrustrumSize( Ogre::Vector2( 100, 200 ) );
+            m_projectionData = new CProjectionData( scene_manager_, update_nh_, "tested_projection", "srs_ui_but" );
 
             // Create material listener
             CMaterialListener *ml = new CMaterialListener( m_projectionData->getMaterialPtr(), "myscheme" );
             //CMaterialListener *ml = new CMaterialListener( "depth", "srs_ui_but", "myscheme" );
             Ogre::MaterialManager::getSingleton().addListener(ml);
+
             }
     }
 }
@@ -679,7 +677,7 @@ bool srs_ui_but::CButProjection::createGeometry(const ros::NodeHandle & nh)
     Ogre::SceneNode* lVisibleOnlyByFirstCam = scene_manager_->getRootSceneNode()->createChildSceneNode();
     lVisibleOnlyByFirstCam->attachObject( lAdditionalEntity );
     lVisibleOnlyByFirstCam->setPosition( 1.5,-0.5,-5);
-    /*/
+    //*/
 
     // Create and initialize materials
     createMaterials( camera );
@@ -764,93 +762,24 @@ void srs_ui_but::CButProjection::onSave( std::string filename )
 
 void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info)
 {
+	//   std::cerr << "Camera callback. Frame id: " << cam_info->header.frame_id << std::endl;
 
     // Get camera info
     ROS_DEBUG("OctMapPlugin: Set camera info: %d x %d\n", cam_info->height, cam_info->width);
     if( !m_camera_model.fromCameraInfo(*cam_info) )
         return;
 
- //   std::cerr << "Camera callback. Frame id: " << cam_info->header.frame_id << std::endl;
     m_camera_size = m_camera_model.fullResolution();
 
-    // Compute projection matrix
-/*
-    // Get pinhole projection matrix reference
-    const cv::Mat_<double> & pmcv( m_camera_model.intrinsicMatrix() );
-
-
-    // Convert matrix to ogre
-    Ogre::Matrix4 pm;
-    for( int j = 0; j < 3; ++j )
-        {
-        for( int i = 0; i < 3; ++i )
-            {
-            double v = pmcv( i, j );
-            std::cerr << v << ", ";
-                pm[i][j] = pmcv(i, j);
-            }
-        std::cerr << std::endl;
-        }
-/*
-    if( pm.isAffine() )
-        {
-        std::cerr << "Affine matrix..." << std::endl;
-        // Set custom matrix to frustum
-        m_projectionData->getFrustum().setCustomViewMatrix(true, pm );
-        }
-
-    Ogre::Frustum & f( m_projectionData->getFrustum() );
-*/
-    m_projectionData->setFrustrumSize( Ogre::Vector2( m_camera_size.width, m_camera_size.height ));
-
- //   std::cerr << "Size: " << m_camera_size.width << ", " << m_camera_size.height << std::endl;
-
-
-    // 5 vertices of view frustum and corresponding points
-    // transformed to /map frame
-    geometry_msgs::PointStamped tl, tr, bl, br, camera;
-    geometry_msgs::PointStamped tl_map, tr_map, bl_map, br_map, camera_map;
-
-    // retrieve transform for display rotation
-    tf::StampedTransform cameraToWorldTf;
-    try {
-            m_tf_cam_info_Listener->waitForTransform("/map",
-                            cam_info->header.frame_id, cam_info->header.stamp,
-                            ros::Duration(0.2));
-            m_tf_cam_info_Listener->lookupTransform("/map",
-                            cam_info->header.frame_id, cam_info->header.stamp,
-                            cameraToWorldTf);
-    }
-    // In case of absence of transformation path
-    catch (tf::TransformException& ex) {
-            ROS_ERROR_STREAM("Camera info transform error: " << ex.what()
-                            << ", quitting callback");
-            return;
-    }
 
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
-    vis_manager_->getFrameManager()->getTransform(cam_info->header, position, orientation, false);
+    vis_manager_->getFrameManager()->getTransform(cam_info->header, position, orientation);
+    const cv::Mat_<double> pm( m_camera_model.projectionMatrix() );
 
     // convert vision (Z-forward) frame to ogre frame (Z-out)
     orientation = orientation * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X);
 
-   // Ogre::Quaternion orientation( cameraToWorldTf.getRotation().x(), cameraToWorldTf.getRotation().y(), cameraToWorldTf.getRotation().z(), cameraToWorldTf.getRotation().w() );
-//    Ogre::Vector3 position( cameraToWorldTf.getOrigin().x(), cameraToWorldTf.getOrigin().y(), cameraToWorldTf.getOrigin().z());
-
-
-
-//    std::cerr << "Position: " << position << std::endl;
-//    std::cerr << "Orientation: " << orientation << std::endl;
-
-
-
-    Ogre::Frustum & f( m_projectionData->getFrustum() );
-
-    //  f.setFOVy( atan( m_camera_size / (2.0 * camera_info)) );
-
-    Ogre::Radian fovX( 57.0 * 3.14159 / 180.0 );
-    Ogre::Radian fovY( 43.0 * 3.14159 / 180.0 );
 
     float width = cam_info->width;
     float height = cam_info->height;
@@ -861,12 +790,19 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
 
     double fx = cam_info->P[0];
     double fy = cam_info->P[5];
-    Ogre::Radian fovy( 2*atan(height / (2 * fy)) );
+    Ogre::Radian fovy( 2.0*atan(height / (2.0 * fy)) );
+
+    if( fovy != fovy)
+    	return; // NAN
+
     double aspect_ratio = width / height;
+
+    if( aspect_ratio != aspect_ratio )
+    	return; //NaN
 
     // Add the camera's translation relative to the left camera (from P[3]);
     // Tx = -1*(P[3] / P[0])
-    double tx = -1 * (cam_info->P[3] / fx);
+    double tx = -1.0 * (cam_info->P[3] / fx);
     Ogre::Vector3 right = orientation * Ogre::Vector3::UNIT_X;
     position = position + (right * tx);
 
@@ -874,8 +810,12 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
     m_projectionData->setProjectorOrientation( orientation );
 
     // f.setFOVy( fovX );
-    f.setFOVy( fovy );
-    f.setAspectRatio( aspect_ratio );
+    m_projectionData->setFOVy( fovy );
+    m_projectionData->setAspectRatio( aspect_ratio );
+
+    m_projectionData->setCameraModel( *cam_info );
+    m_projectionData->updateMatrices();
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

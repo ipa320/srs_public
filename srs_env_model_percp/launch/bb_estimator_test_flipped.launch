@@ -1,0 +1,36 @@
+<launch>
+    <!-- Set to use simulation time -->
+    <param name="/use_sim_time" value="true"/>
+
+    <!-- Configuration for COB, bringup simulation -->
+    <include file="$(find cob_default_robot_config)/upload_param.launch" />
+    <include file="$(find cob_default_env_config)/upload_param.launch" />
+    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
+    <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/>
+
+    <!-- kinect image flip nodelet - flips kinect images if robot is looking backwards -->
+    <node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
+	<remap from="pointcloud" to="/cam3d/depth/points"/>
+	<remap from="colorimage" to="/cam3d/rgb/image_raw"/>
+    </node>
+
+    <!-- Run our GUI nodes -->
+    <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch" />
+    <node pkg="srs_interaction_primitives" type="interaction_primitives_service_server" name="interaction_primitives_service_server" />
+
+    <!-- Run BB estimator server -->
+    <include file="$(find srs_env_model_percp)/launch/bb_estimator_cob_image_flip.launch" />
+
+    <!-- Run BB estimator client -->
+    <node pkg="srs_env_model_percp" type="bb_estimator_client" name="bb_estimator_client">
+        <rosparam file="$(find srs_env_model_percp)/config/bb_estimator_params.yaml" command="load" />
+        <remap from="camera_info_in" to="/cam3d/rgb/camera_info" />
+        <remap from="rgb_image_in" to="/cam3d/rgb/upright/image_color" />
+        <remap from="points_in" to="/cam3d/depth/upright/points" />
+    </node>
+
+    <!-- Run rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model_percp)/config/bb_estimator.vcg" />
+</launch>

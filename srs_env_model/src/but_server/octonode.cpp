@@ -27,11 +27,13 @@
 
 #include <srs_env_model/but_server/octonode.h>
 
+using namespace octomap;
+
 /**
  * Constructor
  */
 srs_env_model::EModelTreeNode::EModelTreeNode() :
-	OcTreeNodeStamped(), m_r(255), m_g(255), m_b(255), m_a(255) {
+	octomap::OcTreeNodeStamped(), m_r(255), m_g(255), m_b(255), m_a(255) {
 
 }
 
@@ -122,7 +124,7 @@ void srs_env_model::EModelTreeNode::setAverageChildColor() {
  * @param _resolution
  */
 srs_env_model::EMOcTree::EMOcTree(double _resolution) :
-	OccupancyOcTreeBase<srs_env_model::EModelTreeNode> (_resolution) {
+	octomap::OccupancyOcTreeBase<srs_env_model::EModelTreeNode> (_resolution) {
 	itsRoot = new EModelTreeNode();
 	tree_size++;
 }

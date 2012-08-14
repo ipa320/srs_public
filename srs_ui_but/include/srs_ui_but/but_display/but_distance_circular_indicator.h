@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_distance_circular_indicator.h 839 2012-05-24 11:44:20Z spanel $
+ * $Id: but_distance_circular_indicator.h 1002 2012-07-18 14:45:22Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -50,7 +50,6 @@
 #include <math.h>
 
 #include <srs_ui_but/but_ogre_tools/static_text.h>
-
 
 namespace srs_ui_but
 {
@@ -230,7 +229,8 @@ protected:
   void setAlpha(float alpha)
   {
     alpha_ = alpha;
-    material_->getTechnique(0)->setAmbient(color_.r_, color_.g_, color_.b_);
+    //material_->getTechnique(0)->setAmbient(color_.r_, color_.g_, color_.b_);
+    material_->getTechnique(0)->setDiffuse(color_.r_, color_.g_, color_.b_, alpha_);
     propertyChanged(m_property_alpha_);
   }
 

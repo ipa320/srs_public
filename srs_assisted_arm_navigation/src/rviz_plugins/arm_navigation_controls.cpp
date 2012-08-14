@@ -33,13 +33,11 @@
  * @todo Add ID of reached trajectory to the ArmNavFinish
  */
 
-#include <srs_assisted_arm_navigation/rviz_plugin/arm_navigation_controls.h>
+#include <srs_assisted_arm_navigation/rviz_plugins/arm_navigation_controls.h>
 
 #include <rviz/window_manager_interface.h>
 
 using namespace std;
-//using namespace CArmManipulationControls;
-
 using namespace srs_assisted_arm_navigation;
 
 const int ID_BUTTON_NEW(101);
@@ -49,7 +47,7 @@ const int ID_BUTTON_EXECUTE(104);
 const int ID_BUTTON_RESET(105);
 const int ID_BUTTON_SUCCESS(106);
 const int ID_BUTTON_FAILED(107);
-const int ID_BUTTON_AUTOADJ(108);
+
 const int ID_BUTTON_GRIPPER_O(109);
 const int ID_BUTTON_GRIPPER_C(110);
 const int ID_BUTTON_LOOK(111);
@@ -66,15 +64,10 @@ const int ID_BUTTON_MDOWN(120);
 const int ID_BUTTON_MFORW(121);
 const int ID_BUTTON_MBACK(122);
 
-const int ID_SLIDER_ROLL(123);
-const int ID_SLIDER_PITCH(124);
-const int ID_SLIDER_YAW(125);
 
-const int ID_BUTTON_GRASP(126);
-const int ID_BUTTON_STOP_GRASP(127);
-const int ID_BUTTON_STOP_TRAJ(128);
+const int ID_BUTTON_STOP_TRAJ(123);
+const int ID_BUTTON_LOCK_CMAP(124);
 
-//DEFINE_EVENT_TYPE( C_UPDATE_GUI )
 
 /**
  Constructor
@@ -83,19 +76,15 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     : wxPanel( parent, wxID_ANY, wxDefaultPosition, wxSize(280, 180), wxTAB_TRAVERSAL, title)
     , m_wmi( wmi )
 {
-    // Create controls
-    //m_button = new wxButton(this, ID_RESET_BUTTON, wxT("Reset map"));
+
 
     parent_ = parent;
     
     ros::param::param<bool>("~wait_for_start", wait_for_start_ , WAIT_FOR_START);
 
-    //buttons_["play"] = new wxButton(this, ID_BUTTON_PLAY, wxT("Play"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    //buttons_["execute"] = new wxButton(this, ID_BUTTON_EXECUTE, wxT("Execute"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["stop"] = new wxButton(this, ID_BUTTON_STOP_TRAJ, wxT("Stop"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["reset"] = new wxButton(this, ID_BUTTON_RESET, wxT("Reset"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
-    buttons_["autoadj"] = new wxButton(this, ID_BUTTON_AUTOADJ, wxT("Adjust"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["gripper_o"] = new wxButton(this, ID_BUTTON_GRIPPER_O, wxT("Open gripper"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["gripper_c"] = new wxButton(this, ID_BUTTON_GRIPPER_C, wxT("Close gripper"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["look_around"] = new wxButton(this, ID_BUTTON_LOOK, wxT("Look around"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
@@ -118,18 +107,20 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     buttons_["move_forw"] = new wxButton(this, ID_BUTTON_MFORW, wxT("F"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["move_back"] = new wxButton(this, ID_BUTTON_MBACK, wxT("B"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
-    buttons_["grasp"] = new wxButton(this, ID_BUTTON_GRASP, wxT("Grasp"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["stop_grasp"] = new wxButton(this, ID_BUTTON_STOP_GRASP, wxT("Stop"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-
-    m_slider_roll = new wxSlider(this,ID_SLIDER_ROLL,0,-90,90);
-    m_slider_pitch = new wxSlider(this,ID_SLIDER_PITCH,0,-90,90);
-    m_slider_yaw = new wxSlider(this,ID_SLIDER_YAW,0,-90,90);
-
     buttons_["new"] = new wxButton(this, ID_BUTTON_NEW, wxT("New"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["plan"] = new wxButton(this, ID_BUTTON_PLAN, wxT("Plan"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["play"] = new wxButton(this, ID_BUTTON_PLAY, wxT("Play"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["execute"] = new wxButton(this, ID_BUTTON_EXECUTE, wxT("Execute"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
+
+    m_lock_cmap_ = new wxToggleButton(this, ID_BUTTON_LOCK_CMAP, wxT("Lock coll. map"), wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+
+    Connect(ID_BUTTON_LOCK_CMAP, wxEVT_COMMAND_TOGGLEBUTTON_CLICKED,
+          wxCommandEventHandler(CArmManipulationControls::OnLockCmap));
+
+    //m_lock_cmap_->Show(false);
+    m_lock_cmap_->SetValue(false);
+    cmap_locked_ = false;
 
     wxSizer *vsizer_endef = new wxStaticBoxSizer(wxVERTICAL,this,wxT("End effector controls"));
     wxSizer *hsizer_endef_top = new wxBoxSizer(wxHORIZONTAL);
@@ -146,32 +137,17 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     hsizer_endef_mid->Add(buttons_["move_forw"], ID_BUTTON_MFORW);
     hsizer_endef_mid->Add(buttons_["move_back"], ID_BUTTON_MBACK);
 
-    hsizer_endef_mid2->Add(buttons_["grasp"], ID_BUTTON_GRASP);
-    hsizer_endef_mid2->Add(buttons_["stop_grasp"], ID_BUTTON_STOP_GRASP);
-
-    vsizer_endef_bot->Add(m_slider_roll,ID_SLIDER_ROLL);
-    vsizer_endef_bot->Add(m_slider_pitch,ID_SLIDER_PITCH);
-    vsizer_endef_bot->Add(m_slider_yaw,ID_SLIDER_YAW);
-
     vsizer_endef->Add(hsizer_endef_top,1,wxEXPAND);
     vsizer_endef->Add(hsizer_endef_mid,1,wxEXPAND);
     vsizer_endef->Add(hsizer_endef_mid2,1,wxEXPAND);
     vsizer_endef->Add(vsizer_endef_bot,1,wxEXPAND);
 
-    m_slider_roll->Enable(false);
-    m_slider_pitch->Enable(false);
-    m_slider_yaw->Enable(false);
-
     //---------------------------------------------------------------
 
     m_text_status = new wxStaticText(this, -1, wxT("status: waiting"));
     m_text_object = new wxStaticText(this, -1, wxT("object: none"));
+    m_text_action_ = new wxStaticText(this, -1, wxT("action: none"));
     m_text_timeout = new wxStaticText(this, -1, wxT("timeout: none"));
-    m_text_dist = new wxStaticText(this, -1, wxT("closest pos.: none"));
-
-    /*if (wait_for_start_) m_button_new->Enable(false);
-    else m_button_new->Enable(true);
-    m_button_plan->Enable(false);*/
 
     if (wait_for_start_) setButton("new",false);
     else setButton("new",true);
@@ -180,14 +156,21 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     buttons_["play"]->Enable(false);
     buttons_["execute"]->Enable(false);
     buttons_["reset"]->Enable(false);
+    buttons_["stop"]->Enable(false);
 
     buttons_["success"]->Enable(false);
     buttons_["repeat"]->Enable(false);
     buttons_["failed"]->Enable(false);
 
-    buttons_["switch"]->Enable(true);
+    buttons_["step_back"]->Enable(false);
+    buttons_["move_left"]->Enable(false);
+    buttons_["move_right"]->Enable(false);
+    buttons_["move_up"]->Enable(false);
+    buttons_["move_down"]->Enable(false);
+    buttons_["move_forw"]->Enable(false);
+    buttons_["move_back"]->Enable(false);
 
-    buttons_["autoadj"]->Enable(false);
+    buttons_["switch"]->Enable(true);
 
     buttons_["gripper_o"]->Enable(true); // TODO povolit tlacitka jen pokud bude k dispozici actionserver?
     buttons_["gripper_c"]->Enable(true);
@@ -196,20 +179,18 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
 
     wxSizer *vsizer = new wxBoxSizer(wxVERTICAL); // top sizer
 
-
     wxSizer *vsizer_top = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Trajectory planning"));
     wxSizer *hsizer_traj_top = new wxBoxSizer(wxHORIZONTAL);
     wxSizer *hsizer_traj_mid = new wxBoxSizer(wxHORIZONTAL);
     wxSizer *hsizer_traj_bot = new wxBoxSizer(wxHORIZONTAL);
-
 
     wxSizer *vsizer_mes = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Messages"));
 
     wxSizer *vsizer_add = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Additional controls"));
 
     wxSizer *hsizer_add_top = new wxBoxSizer(wxHORIZONTAL);
+    wxSizer *hsizer_add_mid = new wxBoxSizer(wxHORIZONTAL);
     wxSizer *hsizer_add_bot = new wxBoxSizer(wxHORIZONTAL);
-
 
     /* Trajectory planning related buttons, on top*/
     hsizer_traj_top->Add(buttons_["new"], ID_BUTTON_NEW);
@@ -218,7 +199,7 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     hsizer_traj_top->Add(buttons_["stop"], ID_BUTTON_STOP_TRAJ);
 
     hsizer_traj_mid->Add(buttons_["play"], ID_BUTTON_PLAY);
-    hsizer_traj_mid->Add(buttons_["autoadj"], ID_BUTTON_AUTOADJ);
+
     hsizer_traj_mid->Add(buttons_["reset"], ID_BUTTON_RESET);
 
     hsizer_traj_bot->Add(buttons_["success"], ID_BUTTON_SUCCESS);
@@ -229,33 +210,34 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     vsizer_top->Add(hsizer_traj_mid,1,wxEXPAND);
     vsizer_top->Add(hsizer_traj_bot,1,wxEXPAND);
 
-
     /* Status messages*/
     vsizer_mes->Add(m_text_status);
+    vsizer_mes->Add(m_text_action_);
     vsizer_mes->Add(m_text_object);
     vsizer_mes->Add(m_text_timeout);
-    vsizer_mes->Add(m_text_dist);
 
     hsizer_add_top->Add(buttons_["gripper_o"]);
     hsizer_add_top->Add(buttons_["gripper_c"]);
-    hsizer_add_bot->Add(buttons_["look_around"]);
-    hsizer_add_bot->Add(buttons_["refresh"]);
-    hsizer_add_bot->Add(buttons_["switch"]);
+    hsizer_add_mid->Add(buttons_["look_around"]);
+    hsizer_add_mid->Add(buttons_["refresh"]);
+    hsizer_add_mid->Add(buttons_["switch"]);
+
+    hsizer_add_bot->Add(m_lock_cmap_);
 
     vsizer_add->Add(hsizer_add_top,1,wxEXPAND);
+    vsizer_add->Add(hsizer_add_mid,1,wxEXPAND);
     vsizer_add->Add(hsizer_add_bot,1,wxEXPAND);
+
+    // tady pridat check box???
 
     vsizer->Add(vsizer_top,0,wxEXPAND);
     vsizer->Add(vsizer_add,0,wxEXPAND);
     vsizer->Add(vsizer_mes,0,wxEXPAND);
     vsizer->Add(vsizer_endef,0,wxEXPAND);
 
-    // TODO: co s temi ID pozic???
+    allow_repeat_ = false;
 
-    goal_pregrasp = false;
-    goal_away = false;
-
-    // TODO make it configurable - read same parameter from here and from but_arm_manip_node...
+    // TODO make it configurable ? - read same parameter from here and from but_arm_manip_node...
     aco_ = true;
 
     if (aco_) buttons_["switch"]->SetLabel(wxT("ACO enabled"));
@@ -283,7 +265,8 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
 
 void CArmManipulationControls::setButton(string but, bool state) {
 
-  buttons_[but]->Enable(state);
+  if (buttons_[but]!=NULL)
+    buttons_[but]->Enable(state);
 
 }
 
@@ -292,8 +275,6 @@ void CArmManipulationControls::setButton(string but, bool state) {
 CArmManipulationControls::~CArmManipulationControls() {
 
   if (cob_script!=NULL) delete cob_script;
-
-  // TODO delete vsech tlacitek apod.... ??
 
   ButtonsMap::iterator it;
 
@@ -305,8 +286,8 @@ CArmManipulationControls::~CArmManipulationControls() {
   delete m_text_status;
   delete m_text_object;
   delete m_text_timeout;
-  delete m_text_dist;
 
+  delete m_lock_cmap_;
 
 }
 
@@ -324,8 +305,10 @@ void CArmManipulationControls::NewThread() {
 
          success = true;
 
-         if (goal_pregrasp) status = "status: Move arm to desired position.";
-         if (goal_away) status = "status: Move arm to safe position.";
+         status = "status: Perform requested action.";
+
+         /*if (goal_pregrasp) status = "status: Move arm to desired position.";
+         if (goal_away) status = "status: Move arm to safe position.";*/
 
      } else {
 
@@ -349,15 +332,23 @@ void CArmManipulationControls::NewThread() {
      buttons_["plan"]->Enable(true);
      buttons_["reset"]->Enable(true);
 
-     if (goal_pregrasp) buttons_["repeat"]->Enable(true);
+     if (allow_repeat_) buttons_["repeat"]->Enable(true);
 
      buttons_["failed"]->Enable(true);
+
+     buttons_["step_back"]->Enable(true);
+     buttons_["move_left"]->Enable(true);
+     buttons_["move_right"]->Enable(true);
+     buttons_["move_up"]->Enable(true);
+     buttons_["move_down"]->Enable(true);
+     buttons_["move_forw"]->Enable(true);
+     buttons_["move_back"]->Enable(true);
 
 
    } else {
 
      setButton("new",true);
-     if (goal_pregrasp) buttons_["repeat"]->Enable(true);
+     if (allow_repeat_) buttons_["repeat"]->Enable(true);
      buttons_["failed"]->Enable(true);
 
    }
@@ -390,6 +381,7 @@ void CArmManipulationControls::OnNew(wxCommandEvent& event)
     buttons_["success"]->Enable(false);
     buttons_["switch"]->Enable(false);
     buttons_["repeat"]->Enable(false);
+    setButton("stop",false);
 
     m_text_status->SetLabel(wxString::FromAscii("status: Please wait..."));
 
@@ -430,6 +422,7 @@ void CArmManipulationControls::PlanThread() {
    m_text_status->SetLabel(wxString::FromAscii(status.c_str()));
 
    if (success) {
+
 
      setButton("new",false);
      buttons_["plan"]->Enable(false);
@@ -512,7 +505,7 @@ void CArmManipulationControls::OnPlay(wxCommandEvent& event)
 
    setButton("new",false);
    buttons_["plan"]->Enable(false);
-   buttons_["play"]->Enable(false);
+   buttons_["play"]->Enable(true);
    buttons_["execute"]->Enable(true);
    buttons_["reset"]->Enable(true);
    buttons_["success"]->Enable(false);
@@ -576,6 +569,8 @@ void CArmManipulationControls::OnExecute(wxCommandEvent& event) {
   /// wait for some time
   if (t_execute.timed_join(td)) {
 
+    setButton("stop",true);
+
     t_execute = boost::thread(&CArmManipulationControls::ExecuteThread,this);
 
   } else ROS_INFO("We have to wait until EXECUTE thread finishes.");
@@ -616,6 +611,14 @@ void CArmManipulationControls::ExecuteThread()
    wxMutexGuiEnter();
 
    m_text_status->SetLabel(wxString::FromAscii(status.c_str()));
+
+   setButton("step_back",false);
+   setButton("move_left",false);
+   setButton("move_right",false);
+   setButton("move_up",false);
+   setButton("move_down",false);
+   setButton("move_forw",false);
+   setButton("move_back",false);
 
    if (success) {
 
@@ -681,6 +684,7 @@ void CArmManipulationControls::OnReset(wxCommandEvent& event)
    buttons_["repeat"]->Enable(true);
    buttons_["failed"]->Enable(true);
    buttons_["switch"]->Enable(true);
+   setButton("stop",false);
 
 }
 
@@ -708,15 +712,16 @@ void CArmManipulationControls::OnSuccess(wxCommandEvent& event)
    if (wait_for_start_)  setButton("new",false);
    else  setButton("new",true);
 
+   setButton("stop",false);
+
    m_text_object->SetLabel(wxString::FromAscii("object: none"));
+   m_text_action_->SetLabel(wxString::FromAscii("action: none"));
 
    buttons_["success"]->Enable(false);
    buttons_["failed"]->Enable(false);
    buttons_["repeat"]->Enable(false);
    buttons_["switch"]->Enable(true);
 
-   goal_pregrasp = false;
-   goal_away = false;
 
 }
 
@@ -732,6 +737,7 @@ void CArmManipulationControls::OnFailed(wxCommandEvent& event)
 
        m_text_status->SetLabel(wxString::FromAscii("status: Failed :-("));
        m_text_object->SetLabel(wxString::FromAscii("object: none"));
+       m_text_action_->SetLabel(wxString::FromAscii("action: none"));
 
    } else {
 
@@ -754,8 +760,7 @@ void CArmManipulationControls::OnFailed(wxCommandEvent& event)
    buttons_["repeat"]->Enable(false);
    buttons_["switch"]->Enable(true);
 
-   goal_pregrasp = false;
-   goal_away = false;
+   setButton("stop",false);
 
 }
 
@@ -771,6 +776,7 @@ void CArmManipulationControls::OnRepeat(wxCommandEvent& event)
 
        m_text_status->SetLabel(wxString::FromAscii("status: Repeating action..."));
        m_text_object->SetLabel(wxString::FromAscii("object: none"));
+       m_text_action_->SetLabel(wxString::FromAscii("action: none"));
 
    } else {
 
@@ -792,10 +798,6 @@ void CArmManipulationControls::OnRepeat(wxCommandEvent& event)
    buttons_["success"]->Enable(false);
    buttons_["repeat"]->Enable(false);
    buttons_["switch"]->Enable(true);
-
-   goal_pregrasp = false;
-   goal_away = false;
-
 
 }
 
@@ -1081,36 +1083,41 @@ void CArmManipulationControls::OnGripperC(wxCommandEvent& event) {
 
 bool CArmManipulationControls::nav_start(srs_assisted_arm_navigation::ArmNavStart::Request &req, srs_assisted_arm_navigation::ArmNavStart::Response &res) {
 
+  char str[120];
 
-  if (req.pregrasp) {
-
-    char str[80];
-
-    snprintf(str,80,"Please navigate arm to pregrasp position for: %s",req.object_name.c_str());
-
-    wxMessageBox(wxString::FromAscii(str), wxString::FromAscii("Manual arm navigation"), wxOK, parent_,-1,-1);
+  action_ = req.action;
+  object_name_ = req.object_name;
+  allow_repeat_ = req.allow_repeat;
 
 
-    goal_pregrasp = true;
-    goal_away = false;
-    object_name = req.object_name;
+  if (req.object_name!="") {
+
+    snprintf(str,120,"%s (%s)",req.action.c_str(),req.object_name.c_str());
 
     std::string tmp;
-    tmp = std::string("object_name: ") + object_name;
+    tmp = std::string("object_name: ") + object_name_;
     m_text_object->SetLabel(wxString::FromAscii(tmp.c_str()));
+
+  } else {
+
+	  snprintf(str,120,"%s",req.action.c_str());
+
+	  std::string tmp;
+	  tmp = std::string("object_name: none");
+	  m_text_object->SetLabel(wxString::FromAscii(tmp.c_str()));
 
   }
 
-  if (req.away) {
+  std::string tmp;
+  tmp = std::string("action: ") + req.action;
+  m_text_action_->SetLabel(wxString::FromAscii(tmp.c_str()));
 
-      wxMessageBox(wxString::FromAscii("Please navigate arm to safe position"), wxString::FromAscii("Manual arm navigation"), wxOK, parent_,-1,-1);
 
-      goal_pregrasp = false;
-      goal_away = true;
-
-    }
+  wxMessageBox(wxString::FromAscii(str), wxString::FromAscii("Manual arm navigation"), wxOK, parent_,-1,-1);
 
   setButton("new",true);
+
+
   res.completed = true;
 
   return true;
@@ -1202,25 +1209,6 @@ void CArmManipulationControls::OnMoveRel(wxCommandEvent& event) {
 }
 
 
-
-void CArmManipulationControls::OnRoll(wxCommandEvent& event) {}
-
-void CArmManipulationControls::OnPitch(wxCommandEvent& event) {}
-
-void CArmManipulationControls::OnYaw(wxCommandEvent& event) {}
-
-
-void CArmManipulationControls::OnGrasp(wxCommandEvent& event) {
-
-
-
-}
-
-void CArmManipulationControls::OnStopGrasp(wxCommandEvent& event) {
-
-
-}
-
 void CArmManipulationControls::OnStopTraj(wxCommandEvent& event) {
 
   ROS_INFO("Stopping execution of trajectory");
@@ -1237,6 +1225,52 @@ void CArmManipulationControls::OnStopTraj(wxCommandEvent& event) {
      m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
 
    }
+
+
+}
+
+void CArmManipulationControls::OnLockCmap(wxCommandEvent& event) {
+
+	srs_env_model::LockCollisionMap srv;
+
+	if (cmap_locked_) {
+
+		ROS_INFO("Unlocking collision map");
+		srv.request.lock = 0;
+
+	} else {
+
+		ROS_INFO("Locking collision map");
+		srv.request.lock = 1;
+
+	}
+
+	if ( ros::service::exists(srs_env_model::LockCMap_SRV,true) && ros::service::call(srs_env_model::LockCMap_SRV,srv) ) {
+
+	       if (cmap_locked_) {
+
+	    	   m_text_status->SetLabel(wxString::FromAscii("status: Coll. map unlocked."));
+	    	   cmap_locked_ = false;
+	    	   m_lock_cmap_->SetValue(false);
+
+
+	       } else {
+
+	    	   m_text_status->SetLabel(wxString::FromAscii("status: Coll. map locked."));
+	    	   cmap_locked_ = true;
+	    	   m_lock_cmap_->SetValue(true);
+
+	       }
+
+	   } else {
+
+	     ROS_ERROR("failed when calling coll. map lock service");
+	     m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
+
+	     m_lock_cmap_->SetValue(cmap_locked_);
+
+	   }
+
 
 
 }
@@ -1272,8 +1306,8 @@ BEGIN_EVENT_TABLE(CArmManipulationControls, wxPanel)
     EVT_BUTTON(ID_BUTTON_MFORW,  CArmManipulationControls::OnMoveRel)
     EVT_BUTTON(ID_BUTTON_MBACK,  CArmManipulationControls::OnMoveRel)
 
-    EVT_BUTTON(ID_BUTTON_GRASP,  CArmManipulationControls::OnGrasp)
-    EVT_BUTTON(ID_BUTTON_STOP_GRASP,  CArmManipulationControls::OnStopGrasp)
     EVT_BUTTON(ID_BUTTON_STOP_TRAJ,  CArmManipulationControls::OnStopTraj)
+    //EVT_BUTTON(ID_BUTTON_LOCK_CMAP,  CArmManipulationControls::OnLockCmap)
+
 END_EVENT_TABLE()
 

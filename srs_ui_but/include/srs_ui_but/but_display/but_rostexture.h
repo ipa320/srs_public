@@ -37,7 +37,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
-
+#include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
@@ -51,73 +51,151 @@ namespace tf
 class TransformListener;
 }
 
-namespace rviz
+
+namespace srs_ui_but
 {
 
-typedef std::vector<std::string> V_string;
 
-class UnsupportedImageEncoding : public std::runtime_error
-{
-public:
-  UnsupportedImageEncoding(const std::string& encoding)
-  : std::runtime_error("Unsupported image encoding [" + encoding + "]")
-  {}
-};
+	/**
+	 * Connection between ROS and Ogre images. Internally uses OpenCV to convert between formats
+	 */
+	class CRosTextureConverter
+	{
+	public:
+		/**
+		 * String exception.
+		 */
+		class RTCException : public std::runtime_error
+		{
+		public:
+			//! Constructor
+			RTCException(const std::string& estr)
+				  : std::runtime_error(estr)
+		  {}
 
-class CRosTexture
-{
-public:
-  CRosTexture(const ros::NodeHandle& nh);
-  ~CRosTexture();
+		}; // class RTCException
 
-  void setTopic(const std::string& topic);
-  void setFrame(const std::string& frame, tf::TransformListener* tf_client);
-  bool update();
-  void clear();
+	public:
+		//! Constructor
+		CRosTextureConverter( const std::string & encoding = std::string(), bool bStaticTexture = false );
 
-  const Ogre::TexturePtr& getTexture() { return texture_; }
-  const sensor_msgs::Image::ConstPtr& getImage();
+		//! Constructor - with texture name
+		CRosTextureConverter( const std::string & name, const std::string & encoding, bool bStaticTexture = false );
 
-  uint32_t getWidth() { return width_; }
-  uint32_t getHeight() { return height_; }
-  uint32_t getImageCount() { return image_count_; }
+		//! Destructor
+		~CRosTextureConverter();
 
-  image_transport::ImageTransport& getImageTransport() { return it_; }
+		//! Set output encoding
+		void setEncoding( const std::string & encoding ){ m_output_encoding = encoding; }
 
-  void setTransportType(const std::string& transport_type);
-  const std::string& getTransportType() { return transport_type_; }
-  void getAvailableTransportTypes(V_string& types);
+		//! Set input image and convert it.
+		bool convert( const sensor_msgs::Image::ConstPtr& image, const std::string & texture_name, bool writeInfo = false );
 
-private:
-  void callback(const sensor_msgs::Image::ConstPtr& image);
+		//! Set input image and convert it. Internal name is used.
+		bool convert( const sensor_msgs::Image::ConstPtr& image, bool writeInfo = false )
+		{
+			return convert( image, m_texture_name, writeInfo );
+		}
 
-  ros::NodeHandle nh_;
-  image_transport::ImageTransport it_;
-  boost::shared_ptr<image_transport::SubscriberFilter> sub_;
-  boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > tf_filter_;
+		//! Get output ogre image
+		Ogre::TexturePtr & getOgreTexture(){ return m_ogre_image; }
 
-  std::string transport_type_;
+		//! Get output opencv image
+		cv_bridge::CvImage * getOpenCVImage() { return m_cv_image.get(); }
 
-  sensor_msgs::Image::ConstPtr current_image_;
-  boost::mutex mutex_;
-  bool new_image_;
 
-  Ogre::TexturePtr texture_;
-  Ogre::Image empty_image_;
 
-  uint32_t width_;
-  uint32_t height_;
+	protected:
+		//! Initialize Ogre texture
+		void initOgreTexture( Ogre::PixelFormat format, const std::string & name );
 
-  std::string topic_;
-  std::string frame_;
-  tf::TransformListener* tf_client_;
+		//! Convert string encoding to Ogre pixelformat
+		Ogre::PixelFormat getFormat( const std::string & encoding );
 
-  uint32_t image_count_;
+		//! Write some texture stats
+		void writeStats( Ogre::Image & image );
 
-  //! Flip image?
-  bool m_bFlip;
-};
+	protected:
+		//! OpenCv image pointer
+		cv_bridge::CvImagePtr m_cv_image;
 
-}
+		//! Ogre image pointer
+		Ogre::TexturePtr m_ogre_image;
+
+		//! Used output format
+		std::string m_output_encoding;
+
+		//! Used static texture pixel format
+		Ogre::PixelFormat m_static_format;
+
+		//! Used Ogre texture name
+		std::string m_texture_name;
+
+		//! Helper image
+		Ogre::Image m_empty_image;
+
+		//! Should be texture initialized only once?
+		bool m_bStaticTexture;
+
+
+	};  // class CRosTextureConverter
+
+	class CRosTopicTexture
+	{
+	public:
+		//! Constructor - encoding in OpenCV format
+		CRosTopicTexture( const ros::NodeHandle& nh, const std::string & texture_name, const std::string & encoding );
+
+		//! Constructor - encoding in Ogre format
+		//CRosTopicTexture( const ros::NodeHandle& nh, const std::string & texture_name, Ogre::PixelFormat encoding );
+
+		//! Set topic to subscribe to
+		void setTopic(const std::string& topic);
+
+		//! Get current topic
+		std::string getTopic() { return m_topic; }
+
+		//! Get current texture pointer
+		const Ogre::TexturePtr& getTexture() { return m_texture_converter.getOgreTexture(); }
+
+		//! Update content of texture from message
+		bool update();
+
+		//! Clear
+		void clear();
+
+	protected:
+		//! On new image callback function
+		void callback(const sensor_msgs::Image::ConstPtr& image);
+
+	protected:
+		//! Node handle
+		ros::NodeHandle m_nh;
+
+		//! Texture
+		CRosTextureConverter m_texture_converter;
+
+		//! Texture name
+		std::string m_name;
+
+		//! Current topic
+		std::string m_topic;
+
+		sensor_msgs::Image::ConstPtr m_current_image;
+		image_transport::ImageTransport m_it;
+		boost::shared_ptr<image_transport::SubscriberFilter> m_sub;
+		boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > m_tf_filter;
+		std::string m_transport_type;
+		boost::mutex m_mutex;
+		bool m_new_image;
+		std::string m_frame;
+		tf::TransformListener* m_tf_client;
+
+	};
+
+
+
+} // namespace srs_ui_but
+
 
 #endif

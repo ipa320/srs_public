@@ -45,7 +45,6 @@
 
 #include <srs_ui_but/ClosestPoint.h>
 
-
 namespace srs_ui_but
 {
 
@@ -74,6 +73,27 @@ public:
    * @param link is robot link from which we want to get the closest point
    */
   srs_ui_but::ClosestPoint getClosestPoint(std::string link);
+
+  /**
+   * @brief This function sets Point Cloud 2 topic to get closest points from it
+   * @param topic is Point Cloud 2 topic
+   */
+  void setPointCloudTopic(std::string topic)
+  {
+    topic_=topic;
+    ROS_INFO("Changing topic to: %s", topic.c_str());
+    point_cloud.unsubscribe();
+    point_cloud.subscribe(threaded_nh_, topic_, 1);
+  }
+
+  /**
+   * @brief This function gets the Point Cloud 2 topic
+   * @return point cloud topic
+   */
+  std::string getPointCloudTopic()
+  {
+    return topic_;
+  }
 
 private:
   /**
@@ -108,6 +128,9 @@ private:
 
   // Point cloud subscriber
   message_filters::Subscriber<sensor_msgs::PointCloud2> point_cloud;
+
+  // Point cloud topic
+  std::string topic_;
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

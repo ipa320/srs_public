@@ -106,6 +106,7 @@ protected:
 
   void showBoundingBoxControl(bool show);
 
+  void createBoundingBoxControl(float trans_x, float trans_y, float trans_z);
   void createBoundingBoxControl();
   void create();
   void createMenu();
@@ -114,3 +115,4 @@ protected:
 }
 
 #endif /* BOUNDINGBOX_H_ */
+

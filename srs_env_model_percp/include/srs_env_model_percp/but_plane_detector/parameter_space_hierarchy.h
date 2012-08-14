@@ -1,6 +1,3 @@
-#pragma once
-#ifndef BUT_PLANE_DET_PARAMSPACEH_H
-#define BUT_PLANE_DET_PARAMSPACEH_H
 /******************************************************************************
  * \file
  *
@@ -34,6 +31,10 @@
  *
  *	 Contains methods for construction / maxima search / adding of volumes etc.
  */
+
+#pragma once
+#ifndef BUT_PLANE_DET_PARAMSPACEH_H
+#define BUT_PLANE_DET_PARAMSPACEH_H
 
 // Opencv 2
 #include <opencv2/highgui/highgui.hpp>
@@ -104,7 +105,7 @@ namespace srs_env_model_percp
 			 * @param indices Found planes
 			 * @returns index of maximal plane
 			 */
-			int findMaxima(std::vector<Plane<float> > &indices, double min_value);
+			int findMaxima(std::vector<Plane<float> > &indices, double min_value, int neighborhood, int around);
 
 			/**
 			 * Adds a second volume to this with offset

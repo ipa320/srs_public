@@ -2,9 +2,17 @@ compositor DepthMap
 {
 technique
 	{
-		texture scene target_width target_height PF_R8G8B8
+		texture original_scene target_width target_height PF_R8G8B8
 		
-		target scene
+		target original_scene
+		{
+			// Render output from previous compositor (or original scene)
+            input previous
+		}
+		
+		texture modified_scene target_width target_height PF_R8G8B8
+		
+		target modified_scene
 		{
 			input none 
 			
@@ -23,13 +31,14 @@ technique
 		
 		target_output
 		{
+			// Start with cleared input
 			input none
-			
 			
 			pass render_quad
 			{
-				material copyColor
-				input 0 scene
+				material combineColorFS
+				input 0 modified_scene
+				input 1 original_scene
 			}
 			
 		}

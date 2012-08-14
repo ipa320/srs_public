@@ -339,88 +339,104 @@ void ParameterSpaceHierarchy::addVolume(ParameterSpace &second, int angle1, int 
 // @param indices Found planes
 // @returns index of maximal plane
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int ParameterSpaceHierarchy::findMaxima(std::vector<Plane<float> > &indices, double min_value)
+int ParameterSpaceHierarchy::findMaxima(std::vector<Plane<float> > &indices, double min_value, int neighborhood, int around)
 {
 	float a, b, c;
 	int maxind = -1;
 	float max = -1;
 	int angle1, angle2, shift;
 
+	int around3 = around + around + 1;
+	around3 = around3 * around3 * around3;
 	ParameterSpaceHierarchyFullIterator it(this);
 
 	// pass all non null points
 	while (not it.end)
 	{
 		double val = it.getVal();
+		// if value is greater than min_value
 		if (val > min_value)
 		{
 			this->fromIndex(it.currentI, angle1, angle2, shift);
-			if (angle1 >= 1 && angle1 < m_angleSize &&
-				angle2 >= 1 && angle2 < m_angleSize &&
-				shift >= 1 && shift < m_shiftSize)
+
+			// if we are in bounds due to search neighborhood
+			if (angle1 >= neighborhood+around && angle1 < m_angleSize-(neighborhood+around) &&
+				angle2 >= neighborhood+around && angle2 < m_angleSize-(neighborhood+around) &&
+				shift >= neighborhood+around && shift < m_shiftSize-(neighborhood+around))
 			{
-				val +=  get(angle1-1, angle2, shift) +
-						get(angle1+1, angle2, shift) +
-						get(angle1, angle2-1, shift) +
-						get(angle1, angle2+1, shift) +
-						get(angle1, angle2, shift+1) +
-						get(angle1, angle2, shift-1);
+				val = 0.0;
+				// compute value from neighborhood
+				for (int a1 = -neighborhood; a1 <= neighborhood; ++a1)
+				for (int a2 = -neighborhood; a2 <= neighborhood; ++a2)
+				for (int s = -neighborhood; s <= neighborhood; ++s)
+					val +=  get(angle1+a1, angle2+a2, shift+s);
+
 
 				bool ok = true;
 				double aux;
 				int xx, yy, zz;
-				for (int x = -1; x <= 1; ++x)
-				for (int y = -1; y <= 1; ++y)
-				for (int z = -1; z <= 1; ++z)
+
+				// search around meaned values
+				for (int x = -around; x <= around; ++x)
+				for (int y = -around; y <= around; ++y)
+				for (int z = -around; z <= around; ++z)
 				{
 					xx = angle1 + x;
 					yy = angle2 + y;
 					zz = shift + z;
-					aux = 	get(xx, yy, zz) +
-							get(xx-1, yy, zz) +
-							get(xx+1, yy, zz) +
-							get(xx, yy-1, zz) +
-							get(xx, yy+1, zz) +
-							get(xx, yy, zz+1) +
-							get(xx, yy, zz-1);
-						if (val < aux)
-						{
-							ok = false;
-							break;
-						}
+					aux = 0.0;
+					for (int a1 = -neighborhood; a1 <= neighborhood; ++a1)
+					for (int a2 = -neighborhood; a2 <= neighborhood; ++a2)
+					for (int s = -neighborhood; s <= neighborhood; ++s)
+						aux += get(xx+a1, yy+a2, zz+s);
+					if (val < aux)
+					{
+						ok = false;
+						break;
+					}
+				}
+
+				// if we found local maximum, we save plane
+				if (ok)
+				{
+//					toEuklid(getAngle(angle1), getAngle(angle2), a, b, c);
+//					indices.push_back(Plane<float>(a, b, c, getShift(shift)));
+//					if (val > max)
+//					{
+//						max = val;
+//						maxind = indices.size() - 1;
+//					}
+
+					double aroundx = 0;
+					double aroundy = 0;
+					double aroundz = 0;
+					double arounds = 0;
+					for (int x = -around; x <= around; ++x)
+					for (int y = -around; y <= around; ++y)
+					for (int z = -around; z <= around; ++z)
+					{
+						xx = angle1 + x;
+						yy = angle2 + y;
+						zz = shift + z;
+						toEuklid(getAngle(xx), getAngle(yy), a, b, c);
+						aroundx += a;
+						aroundy += b;
+						aroundz += c;
+						arounds += getShift(zz);
 					}
 
-					if (ok)
-					{
-						double aroundx = 0;
-						double aroundy = 0;
-						double aroundz = 0;
-						double arounds = 0;
-						for (int x = -1; x <= 1; ++x)
-						for (int y = -1; y <= 1; ++y)
-						for (int z = -1; z <= 1; ++z)
-						{
-							xx = angle1 + x;
-							yy = angle2 + y;
-							zz = shift + z;
-							toEuklid(getAngle(xx), getAngle(yy), a, b, c);
-							aroundx += a;
-							aroundy += b;
-							aroundz += c;
-							arounds += getShift(zz);
-						}
-						aroundx /= 7.0;
-						aroundy /= 7.0;
-						aroundz /= 7.0;
-						arounds /= 7.0;
-						std::cout << "Found plane size: " << val << " eq: " << aroundx <<" "<< aroundy <<" "<< aroundz <<" "<< arounds <<" "<< std::endl;
-						indices.push_back(Plane<float>(aroundx, aroundy, aroundz, arounds));
-						if (val > max)
+					aroundx /= around3;
+					aroundy /= around3;
+					aroundz /= around3;
+					arounds /= around3;
+					//std::cout << "Found plane size: " << val << " eq: " << aroundx <<" "<< aroundy <<" "<< aroundz <<" "<< arounds <<" "<< std::endl;
+					indices.push_back(Plane<float>(aroundx, aroundy, aroundz, arounds));
+					if (val > max)
 						{
 							max = val;
 							maxind = indices.size() - 1;
 						}
-					}
+				}
 			}
 		}
 		++it;

@@ -36,7 +36,7 @@ namespace objtree
 {
 
 /**
- * Bounding box class. Represent bounding box in octree.
+ * Bounding box class. Represent aligned bounding box in octree.
  */
 
 class BBox : public Object
@@ -50,6 +50,7 @@ public:
     virtual bool fitsIntoBox(const Box &box) const;
     virtual bool interfereWithBox(const Box &box) const;
     virtual bool isSimilar(const Object *object) const;
+    virtual bool isSimilarBBox(const BBox *object) const;
     virtual bool isPointInside(float x, float y, float z) const;
 
     const Box& box() const;

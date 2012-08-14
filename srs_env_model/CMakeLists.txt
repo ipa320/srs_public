@@ -46,6 +46,7 @@ set( SERVER_SOURCES src/but_server/but_server.cpp
                     )
 
 set( OBJTREE_SOURCE_FILES src/but_server/objtree/bbox.cpp
+                          src/but_server/objtree/gbbox.cpp
                           src/but_server/objtree/filter.cpp
                           src/but_server/objtree/node.cpp
                           src/but_server/objtree/object.cpp

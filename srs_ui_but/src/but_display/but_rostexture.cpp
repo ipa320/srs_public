@@ -40,261 +40,414 @@
 #include <tf/tf.h>
 
 #include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreColourValue.h>
 
-namespace rviz
+/*******************************************************************************************
+ *  CRosTextureConverter
+ *******************************************************************************************/
+
+/**
+ * Consturctor
+ */
+srs_ui_but::CRosTextureConverter::CRosTextureConverter( const std::string & encoding, bool bStaticTexture /*= false*/ )
+: m_output_encoding( encoding )
+, m_bStaticTexture( bStaticTexture )
 {
+	if( bStaticTexture )
+	{
+		// Get pixel format
+		try
+		{
+			m_static_format = getFormat(encoding);
+		}
+		catch (RTCException & e)
+		{
+			std::cerr << "CRosTextureConverter::CRosTextureConverter exception: " << e.what() << std::endl;
+			ROS_ERROR( "CRosTextureConverter::CRosTextureConverter exception: %s", e.what() );
+			return;
+		}
 
-CRosTexture::CRosTexture(const ros::NodeHandle& nh)
-: nh_(nh)
-, it_(nh_)
-, transport_type_("raw")
-, new_image_(false)
-, width_(0)
-, height_(0)
-, tf_client_(0)
-, image_count_(0)
-, m_bFlip( false )
-{
-  empty_image_.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		// Initialize static texture
+		initOgreTexture( m_static_format, "RosTexture ");
+	}
 
-  static uint32_t count = 0;
-  std::stringstream ss;
-  ss << "CRosTexture" << count++;
- // texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_, Ogre::TEX_TYPE_2D, 0);
+//	std::cerr << "CRosTextureConverter::CRosTextureConverter done" << std::endl;
 
-  texture_ = Ogre::TextureManager::getSingleton().createManual(ss.str(),
-		  Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
- 			Ogre::TEX_TYPE_2D, // Type
- 			empty_image_.getWidth(),	// Width
- 			empty_image_.getWidth(),	// Height
- 			1, 		// Depth
- 			0,		// Number of mipmaps
- 			Ogre::PF_R8G8B8A8,	// Pixel format
- 			Ogre::TU_DYNAMIC_WRITE_ONLY); // Usage
-
-  std::cerr << "Image created..." << std::endl;
 }
 
-CRosTexture::~CRosTexture()
+/**
+ * Constructor - with texture name
+ */
+srs_ui_but::CRosTextureConverter::CRosTextureConverter( const std::string & name, const std::string & encoding, bool bStaticTexture /*= false*/ )
+: m_output_encoding( encoding )
+, m_texture_name( name )
+, m_bStaticTexture( bStaticTexture )
 {
-  current_image_.reset();
+	if( bStaticTexture )
+	{
+
+		// Get pixel format
+		try
+		{
+			m_static_format = getFormat(encoding);
+		}
+		catch (RTCException & e)
+		{
+			std::cerr << "CRosTextureConverter::CRosTextureConverter exception: " << e.what() << std::endl;
+			ROS_ERROR( "CRosTextureConverter::CRosTextureConverter exception: %s", e.what() );
+			return;
+		}
+
+
+		if( m_texture_name.size() == 0)
+		{
+			std::cerr << "CRosTextureConverter::CRosTextureConverter exception: Wrong texture name - zero length. " << std::endl;
+			throw RTCException( "Wrong texture name - zero length." );
+			return;
+		}
+
+		// Initialize static texture
+		initOgreTexture( m_static_format, name );
+	}
+
+//	std::cerr << "CRosTextureConverter::CRosTextureConverter done" << std::endl;
+
 }
 
-void CRosTexture::clear()
+/**
+ * Destructor
+ */
+srs_ui_but::CRosTextureConverter::~CRosTextureConverter( )
 {
-  boost::mutex::scoped_lock lock(mutex_);
 
-  texture_->unload();
-  texture_->loadImage(empty_image_);
-
-  new_image_ = false;
-  current_image_.reset();
-
-  if (tf_filter_)
-  {
-    tf_filter_->clear();
-  }
-
-  image_count_ = 0;
 }
 
-void CRosTexture::setFrame(const std::string& frame, tf::TransformListener* tf_client)
+/**
+ * Set input image and convert it.
+ */
+bool srs_ui_but::CRosTextureConverter::convert( const sensor_msgs::Image::ConstPtr& image, const std::string & texture_name, bool writeInfo )
 {
-  tf_client_ = tf_client;
-  frame_ = frame;
-  setTopic(topic_);
+	if( writeInfo)
+		std::cerr << "CRosTextureConverter::convert. IE: " << image->encoding << " OE: " << m_output_encoding << std::endl;
+
+	try{
+		// Take input and convert it to the opencv image...
+		m_cv_image = cv_bridge::toCvCopy( image, m_output_encoding );
+	}
+	catch (cv_bridge::Exception& e)
+	{
+		std::cerr << "cv_bridge exception: " << e.what() << std::endl;
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+		return false;
+	}
+
+	Ogre::PixelFormat format( Ogre::PF_UNKNOWN );
+
+	if( !m_bStaticTexture )
+	{
+		std::string encoding( m_output_encoding );
+
+		// Output encoding not defined, so use input one
+		if( encoding.length() == 0 )
+		{
+			encoding = m_cv_image->encoding;
+		}
+
+		// Initialize ogre texture
+		try{
+			format = getFormat( encoding );
+			initOgreTexture( format, texture_name );
+		}
+		catch( RTCException & e)
+		{
+			std::cerr << "Texture converter exception: " << e.what() << std::endl;
+			ROS_ERROR( "Texture converter exception: %s", e.what() );
+			return false;
+		}
+	}else{
+
+		format = m_static_format;
+	}
+
+	// Convert texture
+
+	// Get data access and size
+	uchar *data_ptr = m_cv_image->image.ptr();
+	cv::Size size = m_cv_image->image.size();
+	size_t data_size( size.area() * m_cv_image->image.elemSize() );
+	int width = size.width;
+	int height = size.height;
+
+	// Buffer image
+	Ogre::Image ogre_image;
+
+	// Create pixel stream
+	Ogre::DataStreamPtr pixel_stream;
+	pixel_stream.bind(new Ogre::MemoryDataStream(data_ptr, data_size));
+
+	try
+	{
+		// Load data
+		ogre_image.loadRawData(pixel_stream, width, height, 1, format, 1, 0);
+
+//	if( m_bFlip )
+//		ogre_image.flipAroundX();
+	}
+	catch (Ogre::Exception& e)
+	{
+		// TODO: signal error better
+		ROS_ERROR("Error loading image: %s", e.what());
+		return false;
+	}
+
+	m_ogre_image->unload();
+	m_ogre_image->loadImage(ogre_image);
+
+	if( writeInfo )
+		writeStats( ogre_image );
+
+	return true;
 }
 
-void CRosTexture::setTopic(const std::string& topic)
+/**
+ * Convert string encoding to Ogre pixelformat
+ */
+Ogre::PixelFormat srs_ui_but::CRosTextureConverter::getFormat( const std::string & encoding)
 {
-  boost::mutex::scoped_lock lock(mutex_);
-  // Must reset the current image here because image_transport will unload the plugin as soon as we unsubscribe,
-  // which removes the code segment necessary for the shared_ptr's deleter to exist!
-  current_image_.reset();
+	if( encoding == "CV_8UC1" || encoding == "mono8" )
+		return Ogre::PF_BYTE_L;
 
-  topic_ = topic;
-  tf_filter_.reset();
+	if( encoding == "CV_8UC2" )
+		return Ogre::PF_BYTE_LA;
 
-  if (!sub_)
-  {
-    sub_.reset(new image_transport::SubscriberFilter());
-  }
+	if( encoding == "bgr8" || encoding == "CV_8UC3" || encoding == "bgr8: CV_8UC3" || encoding == "CV_8SC3" || encoding == "bgr8: CV_8SC3" )
+		return Ogre::PF_BYTE_BGR;
 
-  if (!topic.empty())
-  {
-	  std::cerr << "Subscribing..." << std::cerr;
+	if( encoding == "rgb8" || encoding == "rgb8: CV_8UC3" || encoding == "rgb8: CV_8SC3")
+		return Ogre::PF_BYTE_RGB;
 
-    sub_->subscribe(it_, topic, 1, image_transport::TransportHints(transport_type_));
+	if( encoding == "rgba8" || encoding == "CV_8UC4" || encoding == "rgba8: CV_8UC4" || encoding == "CV_8SC4" || encoding == "rgba8: CV_8SC4")
+		return Ogre::PF_BYTE_RGBA;
 
-    if (frame_.empty())
-    {
-      sub_->registerCallback(boost::bind(&CRosTexture::callback, this, _1));
-    }
-    else
-    {
-      ROS_ASSERT(tf_client_);
-      tf_filter_.reset(new tf::MessageFilter<sensor_msgs::Image>(*sub_, (tf::Transformer&)*tf_client_, frame_, 2, nh_));
-      tf_filter_->registerCallback(boost::bind(&CRosTexture::callback, this, _1));
-    }
-  }
-  else
-  {
-    sub_->unsubscribe();
-  }
+	if( encoding == "bgra8" || encoding == "bgra8: CV_8UC4" || encoding == "bgra8: CV_8SC4")
+		return Ogre::PF_BYTE_BGRA;
+
+	if( encoding == "CV_32FC1" || encoding == "32FC1" )
+		return Ogre::PF_FLOAT32_R;
+
+	if( encoding == "CV_32FC2" || encoding == "32FC2")
+		return Ogre::PF_FLOAT32_GR;
+
+	if( encoding == "CV_32FC3" || encoding == "32FC3" )
+		return Ogre::PF_FLOAT32_RGB;
+
+	if( encoding == "CV_32FC4" || encoding == "32FC4")
+		return Ogre::PF_FLOAT32_RGBA;
+
+	if( encoding == "mono16" )
+	{
+		return Ogre::PF_FLOAT16_R;
+	}
+
+	throw RTCException( "Unknown input format: " + encoding );
+
+	return Ogre::PF_UNKNOWN;
 }
 
-void CRosTexture::setTransportType(const std::string& transport_type)
+/**
+ * Initialize Ogre texture
+ */
+void srs_ui_but::CRosTextureConverter::initOgreTexture( Ogre::PixelFormat format, const std::string & name )
 {
-  transport_type_ = transport_type;
-  setTopic(topic_);
+	if( m_ogre_image.get() != 0 && m_ogre_image->getFormat() == format )
+	{
+		throw RTCException( "Cannot initialize ogre texture: " + name );
+		return;
+	}
+
+	m_empty_image.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
+	m_ogre_image = Ogre::TextureManager::getSingleton().createManual(name,
+			  Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+	 			Ogre::TEX_TYPE_2D, // Type
+	 			m_empty_image.getWidth(),	// Width
+	 			m_empty_image.getWidth(),	// Height
+	 			1, 		// Depth
+	 			0,		// Number of mipmaps
+	 			format,	// Pixel format
+	 			Ogre::TU_DYNAMIC_WRITE_ONLY); // Usage
 }
 
-void CRosTexture::getAvailableTransportTypes(V_string& types)
+/**
+ * Write some texture stats
+ */
+void srs_ui_but::CRosTextureConverter::writeStats( Ogre::Image & image )
 {
-  types.push_back("raw");
+	size_t width( image.getWidth() ), height( image.getHeight() ), x, y;
 
-  ros::master::V_TopicInfo topics;
-  ros::master::getTopics(topics);
-  ros::master::V_TopicInfo::iterator it = topics.begin();
-  ros::master::V_TopicInfo::iterator end = topics.end();
-  for (; it != end; ++it)
-  {
-    const ros::master::TopicInfo& ti = *it;
-    if (ti.name.find(topic_) == 0 && ti.name != topic_)
-    {
-      std::string type = ti.name.substr(topic_.size() + 1);
-      if (type.find('/') == std::string::npos)
-      {
-        types.push_back(type);
-      }
-    }
-  }
+	Ogre::ColourValue c;
+
+	double rmin( 100000), gmin( 100000), bmin( 100000), amin( 100000);
+	double rmax(-100000), gmax(-100000), bmax(-100000), amax(-100000);
+
+	for( y = 0; y < height; ++y )
+	{
+		for( x = 0; x < width; ++x )
+		{
+			c = image.getColourAt( x, y, 0 );
+
+			if( rmin > c.r ) rmin = c.r;
+			if( gmin > c.g ) gmin = c.g;
+			if( bmin > c.b ) bmin = c.b;
+			if( amin > c.a ) amin = c.a;
+
+			if( rmax < c.r ) rmax = c.r;
+			if( gmax < c.g ) gmax = c.g;
+			if( bmax < c.b ) bmax = c.b;
+			if( amax < c.a ) amax = c.a;
+
+		}
+	}
+
+	std::cerr << "Image size:     " << width << " x " << height << std::endl;
+	std::cerr << "Encoding: 	  " << m_output_encoding << std::endl;
+	std::cerr << "R: < " << rmin << ", " << rmax << " >" << std::endl;
+	std::cerr << "G: < " << gmin << ", " << gmax << " >" << std::endl;
+	std::cerr << "B: < " << bmin << ", " << bmax << " >" << std::endl;
+	std::cerr << "A: < " << amin << ", " << amax << " >" << std::endl;
 }
 
-const sensor_msgs::Image::ConstPtr& CRosTexture::getImage()
+/****************************************************************************************************
+ * CRosTopicTexture
+ ****************************************************************************************************/
+
+
+/**
+ * Constructor
+ */
+srs_ui_but::CRosTopicTexture::CRosTopicTexture( const ros::NodeHandle& nh, const std::string & texture_name, const std::string & encoding )
+: m_nh( nh )
+, m_texture_converter( texture_name, encoding, true )	// Create static texture converter
+, m_name( texture_name )
+, m_it(nh)
+, m_transport_type("raw")
+, m_new_image(false)
+, m_tf_client(0)
 {
-  boost::mutex::scoped_lock lock(mutex_);
-
-  return current_image_;
+	std::cerr << "CRosTopicTexture::CRosTopicTexture" << std::endl;
 }
 
-bool CRosTexture::update()
+/**
+ * Set topic to subscribe to
+ */
+
+void srs_ui_but::CRosTopicTexture::setTopic(const std::string& topic)
 {
-  sensor_msgs::Image::ConstPtr image;
-  bool new_image = false;
-  {
-    boost::mutex::scoped_lock lock(mutex_);
+	boost::mutex::scoped_lock lock(m_mutex);
+	  // Must reset the current image here because image_transport will unload the plugin as soon as we unsubscribe,
+	  // which removes the code segment necessary for the shared_ptr's deleter to exist!
+	  m_current_image.reset();
 
-    image = current_image_;
-    new_image = new_image_;
-  }
+	  m_topic = topic;
+	  m_tf_filter.reset();
 
-  if (!image || !new_image)
-  {
-    return false;
-  }
+	  if (!m_sub)
+	  {
+		  m_sub.reset(new image_transport::SubscriberFilter());
+	  }
 
-  new_image_ = false;
+	  if (!topic.empty())
+	  {
+		  m_sub->subscribe(m_it, topic, 1, image_transport::TransportHints(m_transport_type));
 
-  if (image->data.empty())
-  {
-    return false;
-  }
-
-  Ogre::PixelFormat format = Ogre::PF_R8G8B8;
-  Ogre::Image ogre_image;
-  std::vector<uint8_t> buffer;
-  void* data_ptr = (void*)&image->data[0];
-  uint32_t data_size = image->data.size();
-  if (image->encoding == sensor_msgs::image_encodings::RGB8)
-  {
-    format = Ogre::PF_BYTE_RGB;
-  }
-  else if (image->encoding == sensor_msgs::image_encodings::RGBA8)
-  {
-    format = Ogre::PF_BYTE_RGBA;
-  }
-  else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC4 ||
-           image->encoding == sensor_msgs::image_encodings::TYPE_8SC4 ||
-           image->encoding == sensor_msgs::image_encodings::BGRA8)
-  {
-    format = Ogre::PF_BYTE_BGRA;
-  }
-  else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC3 ||
-           image->encoding == sensor_msgs::image_encodings::TYPE_8SC3 ||
-           image->encoding == sensor_msgs::image_encodings::BGR8)
-  {
-    format = Ogre::PF_BYTE_BGR;
-  }
-  else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC1 ||
-           image->encoding == sensor_msgs::image_encodings::TYPE_8SC1 ||
-           image->encoding == sensor_msgs::image_encodings::MONO8)
-  {
-    format = Ogre::PF_BYTE_L;
-  }
-  else if (image->encoding == sensor_msgs::image_encodings::TYPE_16UC1 ||
-           image->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
-           image->encoding == sensor_msgs::image_encodings::MONO16)
-  {
-    format = Ogre::PF_BYTE_L;
-
-    // downsample manually to 8-bit, because otherwise the lower 8-bits are simply removed
-    buffer.resize(image->data.size() / 2);
-    data_size = buffer.size();
-    data_ptr = (void*)&buffer[0];
-    for (size_t i = 0; i < data_size; ++i)
-    {
-      uint16_t s = image->data[2*i] << 8 | image->data[2*i + 1];
-      float val = (float)s / std::numeric_limits<uint16_t>::max();
-      buffer[i] = val * 255;
-    }
-  }
-  else if (image->encoding.find("bayer") == 0)
-  {
-    format = Ogre::PF_BYTE_L;
-  }
-  else
-  {
-    throw UnsupportedImageEncoding(image->encoding);
-  }
-
-  width_ = image->width;
-  height_ = image->height;
-
-  // TODO: Support different steps/strides
-
-  Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream(data_ptr, data_size));
-
-  try
-  {
-	  // Load data
-    ogre_image.loadRawData(pixel_stream, width_, height_, 1, format, 1, 0);
-
-    if( m_bFlip )
-        ogre_image.flipAroundX();
-  }
-  catch (Ogre::Exception& e)
-  {
-    // TODO: signal error better
-    ROS_ERROR("Error loading image: %s", e.what());
-    return false;
-  }
-
-  texture_->unload();
-  texture_->loadImage(ogre_image);
-
-  return true;
+	    if (m_frame.empty())
+	    {
+	      m_sub->registerCallback(boost::bind(&CRosTopicTexture::callback, this, _1));
+	    }
+	    else
+	    {
+	      ROS_ASSERT(m_tf_client);
+	      m_tf_filter.reset(new tf::MessageFilter<sensor_msgs::Image>(*m_sub, (tf::Transformer&)*m_tf_client, m_frame, 2, m_nh));
+	      m_tf_filter->registerCallback(boost::bind(&CRosTopicTexture::callback, this, _1));
+	    }
+	  }
+	  else
+	  {
+	    m_sub->unsubscribe();
+	  }
 }
 
-void CRosTexture::callback(const sensor_msgs::Image::ConstPtr& msg)
+/**
+ * Update texture data
+ */
+bool srs_ui_but::CRosTopicTexture::update()
 {
-  boost::mutex::scoped_lock lock(mutex_);
+//	std::cerr << "CRosTopicTexture::update" << std::endl;
 
-  current_image_ = msg;
-  new_image_ = true;
+	sensor_msgs::Image::ConstPtr image;
 
-  ++image_count_;
+	bool new_image = false;
+	{
+		boost::mutex::scoped_lock lock(m_mutex);
+
+		image = m_current_image;
+		new_image = m_new_image;
+	}
+
+//	std::cerr << "Image: " << image << ", new_image: " << new_image << std::endl;
+
+	if (!image || !new_image)
+	{
+		return false;
+	}
+
+//	std::cerr << "Texture update. Topic: " << m_topic << std::endl;
+
+	m_new_image = false;
+
+	if (image->data.empty())
+	{
+		return false;
+	}
+
+	// Convert input data
+	return m_texture_converter.convert( image );
 }
 
+/**
+ * Clear data
+ */
+void srs_ui_but::CRosTopicTexture::clear()
+{
+	boost::mutex::scoped_lock lock(m_mutex);
+
+//	texture_->unload();
+//	texture_->loadImage(empty_image_);
+
+	m_new_image = false;
+	m_current_image.reset();
+
+	if (m_tf_filter)
+	{
+		m_tf_filter->clear();
+	}
 }
+
+/**
+ * On new image data callback
+ */
+void srs_ui_but::CRosTopicTexture::callback(const sensor_msgs::Image::ConstPtr& image)
+{
+	boost::mutex::scoped_lock lock(m_mutex);
+
+	m_current_image = image;
+	m_new_image = true;
+
+//	std::cerr << "CB: Image: " << m_current_image << ", new_image: " << m_new_image << std::endl;
+}
+
+
+
+
+
+

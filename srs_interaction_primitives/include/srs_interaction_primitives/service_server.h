@@ -135,7 +135,7 @@ bool setPreGraspPosition(SetPreGraspPosition::Request &req, SetPreGraspPosition:
 bool removePreGraspPosition(RemovePreGraspPosition::Request &req, RemovePreGraspPosition::Response &res);
 
 /**
- * @brief Change object's description.
+ * @brief Change primitive's description.
  *
  * @param req  Request of type ChangeDescription.
  * @param res  Response of type ChangeDescription.
@@ -143,7 +143,7 @@ bool removePreGraspPosition(RemovePreGraspPosition::Request &req, RemovePreGrasp
 bool changeDescription(ChangeDescription::Request &req, ChangeDescription::Response &res);
 
 /**
- * @brief Change object's pose.
+ * @brief Change primitive's pose.
  *
  * @param req  Request of type ChangePose.
  * @param res  Response of type ChangePose.
@@ -151,7 +151,7 @@ bool changeDescription(ChangeDescription::Request &req, ChangeDescription::Respo
 bool changePose(ChangePose::Request &req, ChangePose::Response &res);
 
 /**
- * @brief Change object's scale.
+ * @brief Change primitive's scale.
  *
  * @param req  Request of type ChangeScale.
  * @param res  Response of type ChangeScale.
@@ -159,7 +159,7 @@ bool changePose(ChangePose::Request &req, ChangePose::Response &res);
 bool changeScale(ChangeScale::Request &req, ChangeScale::Response &res);
 
 /**
- * @brief Change object's color.
+ * @brief Change primitive's color.
  *
  * @param req  Request of type ChangeColor.
  * @param res  Response of type ChangeColor.
@@ -167,7 +167,7 @@ bool changeScale(ChangeScale::Request &req, ChangeScale::Response &res);
 bool changeColor(ChangeColor::Request &req, ChangeColor::Response &res);
 
 /**
- * @brief Change object's direction
+ * @brief Change primitive's direction
  *
  * @param req  Request of type ChangeDirection.
  * @param res  Response of type ChangeDirection.
@@ -175,7 +175,7 @@ bool changeColor(ChangeColor::Request &req, ChangeColor::Response &res);
 bool changeDirection(ChangeDirection::Request &req, ChangeDirection::Response &res);
 
 /**
- * @brief Change object's velocity.
+ * @brief Change primitive's velocity.
  *
  * @param req  Request of type ChangeVelocity.
  * @param res  Response of type ChangeVelocity.
@@ -183,13 +183,20 @@ bool changeDirection(ChangeDirection::Request &req, ChangeDirection::Response &r
 bool changeVelocity(ChangeVelocity::Request &req, ChangeVelocity::Response &res);
 
 /**
- * @brief Gets object's update topic
+ * @brief Gets primitive's update topic
  *
  * @param req  Request of type GetUpdateTopic.
  * @param res  Response of type GetUpdateTopic.
  */
 bool getUpdateTopic(GetUpdateTopic::Request &req, GetUpdateTopic::Response &res);
 
+/**
+ * @brief Allows or denies interaction with Object
+ *
+ * @param req  Request of type SetAllowObjectInteraction.
+ * @param res  Response of type SetAllowObjectInteraction.
+ */
+bool setAllowObjectInteraction(SetAllowObjectInteraction::Request &req, SetAllowObjectInteraction::Response &res);
 
 }
 

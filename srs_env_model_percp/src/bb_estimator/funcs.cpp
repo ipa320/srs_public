@@ -71,84 +71,33 @@ extern int outliersPercent;
 extern double sidesRatio;
 
 // Modes of bounding box estimation
-//----------
-// They differ in interpretation of the specified 2D region of interest (ROI).
-
-// MODE1 = The ROI corresponds to projection of BB front face and the BB is 
-//         rotated to fit the viewing frustum (representing the back-projection
-//         of the ROI) in such way, that the BB front face is perpendicular
-//         to the frustum's center axis.
-//         (BB can be non-parallel with all axis.)
-
-// MODE2 = In the ROI is contained the whole projection of BB.
-//         (BB is parallel with all axis.)
-
-// MODE3 = The ROI corresponds to projection of BB front face.
-//         (BB is parallel with all axis.)
 extern int estimationMode;
 
 
-/*==============================================================================
- * Back perspective projection of a 2D point with a known depth:
- * 2D point in image coords + known depth => 3D point in world (camera) coords
- * (Result of back projection of an image point is typically a line. However,
- * in our case we know also its depth (from the depth map) and thus we can
- * determine its location on that line and so get a single 3D point.)
- *
- * The world coordinate system is in our case identical with the camera
- * coordinate system => Tx = Ty = 0 and R is identity => P[1:3,1:3] = K,
- * where P is the camera matrix and K is the intrinsic camera matrix.
- * (http://www.ros.org/wiki/image_pipeline/CameraInfo)
- *
- * This function implements these formulas:
- * X = x * Z / f_x
- * Y = y * Z / f_y
- * where [x,y] is an image point (with (0,0) in the middle of the image)
- * and [X,Y,Z] its perspective back projection in the given depth.
- *
- * @param p  2D image point.
- * @param z  Depth of the back projected 3D point.
- * @param fx  Focal length w.r.t. axis X.
- * @param fy  Focal length w.r.t. axis Y.
- * @return  The perspective back projection in the given depth.
+/******************************************************************************
+ * Back perspective projection of a 2D point with a known depth.
  */
+
 Point3f backProject(Point2i p, float z, float fx, float fy)
 {
     return Point3f((p.x * z) / fx, (p.y * z) / fy, z);
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Perspective projection of a 3D point to the image plane.
- * Intrinsic camera matrix for the raw (distorted) images is used:
- *     [fx  0 cx]
- * K = [ 0 fy cy]
- *     [ 0  0  1]
- * [u v w] = K * [X Y Z]
- *       x = u / w = fx * X / Z + cx
- *       y = v / w = fy * Y / Z + cy
- * Projects 3D points in the camera coordinate frame to 2D pixel
- * coordinates using the focal lengths (fx, fy) and principal point
- * (cx, cy).
  */
+
 Point2i fwdProject(Point3f p, float fx, float fy, float cx, float cy)
 {
     return Point2i(int(p.x * fx / p.z + cx + 0.5), int(p.y * fy / p.z + cy + 0.5));
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Calculation of statistics (mean, standard deviation, min and max).
- *
- * @param m  The matrix with depth information from which the statistics will
- *           be calculated (it is assumed that the unknown values are represented
- *           by zero).
- * @param mean  The calculated mean of m.
- * @param stdDev  The calculated standard deviation of m.
- * @return  True if the statistics was calculated. False if the statistics could
- *          not be calculated, because there is no depth information available
- *          in the specified ROI.
  */
+
 bool calcStats(Mat &m, float *mean, float *stdDev)
 {
     // Get the mask of known values (the unknown are represented by 0, the
@@ -214,20 +163,10 @@ bool calcStats(Mat &m, float *mean, float *stdDev)
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Calculation of distances from origin to the BB front and back face vertices.
- * (It is used in MODE1.)
- *
- * @param m  The matrix with distance information (distance from origin).
- * @param fx  Focal length w.r.t. X axis.
- * @param fy  Focal length w.r.t. Y axis.
- * @param roiLB  Left-bottom corner of ROI.
- * @param roiRT  Right-top corner of ROI.
- * @param d1  Caclulated distance from origin to the BB front face.
- * @param d2  Caclulated distance from origin to the BB back face.
- * @return  True if the distance values were calculated. False if not (due to
- *          missing depth information in function calcStats).
  */
+
 bool calcNearAndFarFaceDistance(Mat &m, float fx, float fy, Point2i roiLB,
                                 Point2i roiRT, float *d1, float *d2)
 {
@@ -277,17 +216,10 @@ bool calcNearAndFarFaceDistance(Mat &m, float fx, float fy, Point2i roiLB,
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Calculation of depth of near and far face of BB (perpendicular with all axis).
- * (It is used in MODE2 and MODE3.)
- *
- * @param m  The matrix with depth information.
- * @param f  Focal length.
- * @param z1  Caclulated depth of the near BB face.
- * @param z2  Caclulated depth of the far BB face.
- * @return  True if the depth values were calculated. False if not (due to
- *          missing depth information in function calcStats).
  */
+
 bool calcNearAndFarFaceDepth(Mat &m, float f, float *z1, float *z2)
 {    
     // Get statistics of depth in ROI
@@ -314,13 +246,8 @@ bool calcNearAndFarFaceDepth(Mat &m, float f, float *z1, float *z2)
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Bounding box estimation.
- *
- * @param stamp     time stamp obtained from message header.
- * @param p1,p2     input 2D rectangle.
- * @param mode      estimation mode.
- * @param bbXYZ     resulting bounding box corners.
  */
 
 bool estimateBB(const ros::Time& stamp,
@@ -388,9 +315,6 @@ bool estimateBB(const ros::Time& stamp,
                 depthMap.at<float>(y, x) = z;
             }
         }
-        
-        // The point cloud coming from COB is flipped around X and Y axis
-        //flip(depthMap, depthMap, -1);
     }
     else {
         ROS_ERROR("Unknown subscription variant!");
@@ -743,13 +667,8 @@ bool estimateBB(const ros::Time& stamp,
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Bounding box pose estimation.
- *
- * @param bbXYZ         input bounding box corners.
- * @param position      calculated BB position (i.e. position of its center).
- * @param orientation   calculated BB orientation (i.e. quaternion).
- * @param scale         BB dimensions.
  */
 
 bool estimateBBPose(const Point3f& bbLBF, const Point3f& bbRBF,
@@ -938,12 +857,8 @@ bool estimateBBPose(const Point3f& bbLBF, const Point3f& bbRBF,
 }
 
 
-/*==============================================================================
+/******************************************************************************
  * Image rectangle estimation.
- *
- * @param stamp     time stamp obtained from message header.
- * @param bbXYZ     input bounding box corners.
- * @param p1,p2     resulting 2D image rectangle.
  */
 
 bool estimateRect(const ros::Time& stamp,

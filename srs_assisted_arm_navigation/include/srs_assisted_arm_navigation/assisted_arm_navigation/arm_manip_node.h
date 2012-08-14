@@ -332,11 +332,15 @@ protected:
   //std::vector<std::string> coll_obj_bb_id;
   bool inited; /**< Indicates if the arm_nav_new was already called  */
 
+  bool planned_;
+
   std::vector<std::string> links_; /**< List of links which can be in collision of collision object */
 
   boost::circular_buffer<geometry_msgs::Pose> * gripper_poses_;
 
   boost::thread gripper_poses_thread_;
+
+  bool disable_gripper_poses_;
 
   void GripperPoses();
   void GripperPosesClean();

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_distance_linear_visualizer.h 839 2012-05-24 11:44:20Z spanel $
+ * $Id: but_distance_linear_visualizer.h 1002 2012-07-18 14:45:22Z xlokaj03 $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -49,10 +49,12 @@
 
 #include <srs_ui_but/GetClosestPoint.h>
 #include <srs_ui_but/ClosestPoint.h>
+#include <srs_ui_but/SetPointCloudTopic.h>
+
+#include <sensor_msgs/PointCloud2.h>
 
 #include <time.h>
 #include <GL/gl.h>
-
 
 namespace srs_ui_but
 {
@@ -125,7 +127,7 @@ protected:
    */
   const std::string getDistance()
   {
-	std::ostringstream text_d;
+    std::ostringstream text_d;
     text_d << fabs(distance_) << " m";
     return text_d.str();
   }
@@ -175,6 +177,15 @@ protected:
     return show_distance_;
   }
 
+  /*
+   * @brief Gets point cloud topic
+   * @return topic
+   */
+  std::string getTopic()
+  {
+    return pc_topic_;
+  }
+
   /**
    * @brief Sets link property
    * @param link is new link
@@ -205,7 +216,8 @@ protected:
   void setAlpha(float alpha)
   {
     alpha_ = alpha;
-    material_->getTechnique(0)->setAmbient(color_.r_, color_.g_, color_.b_);
+    //material_->getTechnique(0)->setAmbient(color_.r_, color_.g_, color_.b_);
+    material_->getTechnique(0)->setDiffuse(color_.r_, color_.g_, color_.b_, alpha_);
     propertyChanged(m_property_alpha_);
   }
 
@@ -215,7 +227,7 @@ protected:
    */
   void setThickness(float thickness)
   {
-    if (thickness > 0.1)
+    if (thickness > 0.5)
       thickness_ = 0.1;
     else
       thickness_ = thickness;
@@ -232,8 +244,37 @@ protected:
     propertyChanged(m_show_distance_property_);
   }
 
+  /**
+   * Set the incoming PointCloud topic
+   * @param topic The topic we should listen to
+   */
+  void setTopic(std::string topic)
+  {
+    if (!setPointCloudTopicClient_.exists())
+    {
+      setStatus(rviz::status_levels::Error, "Service", "set_point_cloud_topic service is not available");
+      m_sceneNode_->setVisible(false);
+      return;
+    }
+    else
+    {
+      setStatus(rviz::status_levels::Ok, "Service", "set_point_cloud_topic service ready");
+      m_sceneNode_->setVisible(true);
+    }
+
+    // Set parameters
+    setPointCloudTopicSrv_.request.topic = topic;
+    pc_topic_ = topic;
+
+    // Call service with specified parameters
+    setPointCloudTopicClient_.call(setPointCloudTopicSrv_);
+  }
+
   // Link
   std::string robot_link_;
+
+  //Point cloud topic
+  std::string pc_topic_;
 
   // Link and surface distance
   float distance_;
@@ -249,6 +290,7 @@ protected:
 
   // Display properties
   rviz::StringPropertyWPtr m_property_distance_;
+  rviz::ROSTopicStringPropertyWPtr m_property_topic_;
   rviz::TFFramePropertyWPtr m_property_link_;
   rviz::FloatPropertyWPtr m_property_alpha_, m_property_thickness_;
   rviz::ColorPropertyWPtr m_property_color_;
@@ -267,11 +309,14 @@ protected:
   // Draw distance text
   bool show_distance_;
 
-  // Client for get_closest_point service
-  ros::ServiceClient closestPointClient_;
+  // Client for get_closest_point and set_point_cloud_topic services
+  ros::ServiceClient getClosestPointClient_, setPointCloudTopicClient_;
 
   // GetClosestPoint Service parameters
-  srs_ui_but::GetClosestPoint closestPointSrv_;
+  srs_ui_but::GetClosestPoint getClosestPointSrv_;
+
+  // Set poinc cloud topic service parameters
+  srs_ui_but::SetPointCloudTopic setPointCloudTopicSrv_;
 
   // Closest point data
   srs_ui_but::ClosestPoint pointData_;

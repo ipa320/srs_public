@@ -64,19 +64,24 @@ void srs_env_model::CCMapPlugin::init(ros::NodeHandle & node_handle)
 	// Get FID to which will be points transformed when publishing collision map
 	node_handle.param("collisionmap_frame_id", m_cmapFrameId, COLLISION_MAP_FRAME_ID ); //
 
-	// Connect publisher
-	m_cmapPublisher = node_handle.advertise<arm_navigation_msgs::CollisionMap> (	m_cmapPublisherName, 100, m_latchedTopics);
-
 	// Create and publish service - get collision map
 	m_serviceGetCollisionMap = node_handle.advertiseService( GetCollisionMap_SRV, 	&CCMapPlugin::getCollisionMapSrvCallback, this);
 
 	// Create and publish service - is new collision map
 	m_serviceIsNewCMap = node_handle.advertiseService( IsNewCMap_SRV, &CCMapPlugin::isNewCmapSrvCallback, this );
+
+	m_serviceLockCMap = node_handle.advertiseService( LockCMap_SRV, &CCMapPlugin::lockCmapSrvCallback, this );
+
+	// Connect publishing services
+	pause( false, node_handle );
 }
 
 //! Called when new scan was inserted and now all can be published
 void srs_env_model::CCMapPlugin::onPublish(const ros::Time & timestamp)
 {
+	if( ! shouldPublish() )
+		return;
+
 	// Should map be published?
 	bool publishCollisionMap = m_publishCollisionMap && (m_latchedTopics || m_cmapPublisher.getNumSubscribers() > 0);
 
@@ -104,6 +109,9 @@ void srs_env_model::CCMapPlugin::onPublish(const ros::Time & timestamp)
 //! Set used octomap frame id and timestamp
 void srs_env_model::CCMapPlugin::onFrameStart( const SMapParameters & par )
 {
+	if( m_bLocked )
+		return;
+
 	// store parameters
 	tOctomapCrawler::onFrameStart( par );
 
@@ -118,11 +126,11 @@ void srs_env_model::CCMapPlugin::onFrameStart( const SMapParameters & par )
 	try
 	{
 		// Transformation - to, from, time, waiting time
-		m_tfListener.waitForTransform(m_cmapFrameId, par.frameId, par.currentTime, ros::Duration(0.2));
+		m_tfListener.waitForTransform(m_cmapFrameId, par.frameId, par.currentTime, ros::Duration(5));
 
 		m_tfListener.lookupTransform(m_cmapFrameId, par.frameId, par.currentTime, omapToCmapTf);
 
-		m_tfListener.waitForTransform(par.frameId, robotBaseFrameId, par.currentTime, ros::Duration(0.2));
+		m_tfListener.waitForTransform(par.frameId, robotBaseFrameId, par.currentTime, ros::Duration(5));
 
 		m_tfListener.lookupTransform(par.frameId, robotBaseFrameId, par.currentTime, baseToOmapTf);
 	}
@@ -153,6 +161,9 @@ void srs_env_model::CCMapPlugin::onFrameStart( const SMapParameters & par )
 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
 void srs_env_model::CCMapPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapParameters & mp)
 {
+	if( m_bLocked )
+			return;
+
 	// Should we publish something?
 	if (! m_publishCollisionMap)
 		return;
@@ -292,4 +303,38 @@ bool srs_env_model::CCMapPlugin::isNewCmapSrvCallback( srs_env_model::IsNewColli
 
 	return true;
 }
+
+/**
+ * @brief Lock collision map - disable its updates from new point cloud data
+ * @param req request - bool - lock/unlock
+ * @param res response -
+ */
+bool srs_env_model::CCMapPlugin::lockCmapSrvCallback( srs_env_model::LockCollisionMap::Request & req, srs_env_model::LockCollisionMap::Response & res )
+{
+	boost::mutex::scoped_lock lock( m_lockData );
+
+	bool locked( req.lock != 0 );
+
+	m_bLocked = locked;
+
+	if( locked )
+		std::cerr << "Locking called. Lock set." << std::endl;
+	else
+		std::cerr << "Locking called. Lock removed." << std::endl;
+
+	return true;
+}
+
+/**
+ *  Disconnect plugin from all topics
+ */
+void srs_env_model::CCMapPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+{
+	if( bPause )
+		m_cmapPublisher.shutdown();
+	else
+		m_cmapPublisher = node_handle.advertise<arm_navigation_msgs::CollisionMap> ( m_cmapPublisherName, 100, m_latchedTopics);
+}
+
+
 

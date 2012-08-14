@@ -18,7 +18,7 @@ from eval_objects import *
 from cob_3d_mapping_msgs.msg import *
 
 from srs_symbolic_grounding.srv import *
-from srs_symbolic_grounding.msg import *
+#from srs_symbolic_grounding.msg import *
 
 #from srs_grasping.srv import *
 from geometry_msgs.msg import *

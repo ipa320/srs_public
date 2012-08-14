@@ -11,6 +11,8 @@
   <depend package="std_msgs"/>
   <depend package="rospy"/>
   <depend package="roscpp"/>
+  <depend package="actionlib"/>
+  <depend package="srs_decision_making"/>
 
 </package>
 

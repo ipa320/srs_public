@@ -144,7 +144,7 @@ class SRS_StateMachine(smach.StateMachine):
         
         print step_id
         
-        json_feedback_current_action = '"current_action": {"name": "'+ name_of_the_action +'", "state": "' + state_of_the_action + '", "step_id": '+ str(step_id+1) +'", "target_object": '+ current_task_info.task_feedback.action_object +'", "parent_object": '+ current_task_info.task_feedback.action_object_parent +' }'
+        json_feedback_current_action = '"current_action": {"name": "'+ name_of_the_action +'", "state": "' + state_of_the_action + '", "step_id": "'+ str(step_id+1) +'", "target_object": "'+ current_task_info.task_feedback.action_object +'", "parent_object": "'+ current_task_info.task_feedback.action_object_parent +'"'+' }'
         
         json_feedback_last_action =''
         

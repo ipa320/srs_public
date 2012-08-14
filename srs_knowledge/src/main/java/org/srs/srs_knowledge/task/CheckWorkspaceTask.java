@@ -66,7 +66,7 @@ import com.hp.hpl.jena.ontology.Individual;
 import org.srs.srs_knowledge.task.*;
 
 import ros.pkg.srs_symbolic_grounding.srv.*;
-//import ros.pkg.srs_symbolic_grounding.msg.*;
+import ros.pkg.srs_symbolic_grounding.msg.*;
 import ros.pkg.srs_msgs.msg.SRSSpatialInfo;
 
 import ros.*;

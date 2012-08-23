@@ -31,6 +31,32 @@ from random import choice
 
 foo = ['table2', 'table1','fridge']
 
+fake_data=[
+"move(base,table1), detect(milkbox), move(base,fridge), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,fridge), detect(milkbox), move(base,table1), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table1), detect(milkbox), move(base,table2), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,fridge), detect(milkbox), move(base,table2), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table2), detect(milkbox), move(base,fridge), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table1), detect(milkbox), move(base,table2), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table1), detect(milkbox), move(base,fridge), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,fridge), detect(milkbox), move(base,fridge), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table1), detect(milkbox), move(base,fridge), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table2), detect(milkbox), move(base,fridge), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)"
+]
+
+fake_data1=[
+"move(base,table1), detect(milkbox), move(base,fridge), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,fridge), detect(milkbox), move(base,table1), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table1), detect(milkbox), move(base,table2), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table2), detect(milkbox), move(base,table2), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,fridge), detect(milkbox), move(base,table2), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,fridge), detect(milkbox), move(base,table2), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table2), detect(milkbox), move(base,fridge), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table1), detect(milkbox), move(base,table1), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,table1), detect(milkbox), move(base,table2), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)",
+"move(base,fridge), detect(milkbox), move(base,fridge), detect(milkbox), grasp(Milk box), place_on_tray(Milk box)"
+]
+
 historical_data_LW=[]
 
 #global action_sequences_global
@@ -156,7 +182,9 @@ def handle_consulting(req):
     #here we just read the historical_data from the txt file
     #the final data should come from a search based on the command (task classification) and candidates(for activity cluster)
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    data_for_likelihood=data_from_learning_window(10,'historical_data.txt')
+    #data_for_likelihood=data_from_learning_window(10,'historical_data.txt')
+    data_for_likelihood=fake_data1
+
     print"the historical_data based on learning_window_width=10 is: "
     print data_for_likelihood
     print "the number of historical_data is %d"%len(data_for_likelihood)

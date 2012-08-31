@@ -25,5 +25,6 @@ ROS environment perception package provided by dcgm-robotics@FIT group:
   <depend package="srs_env_model"/>
   <!--depend package="octomap_ros"/-->
   <depend package="srs_interaction_primitives"/>
+  <depend package="but_plane_segmentation" />
 </package>
 

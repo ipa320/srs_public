@@ -49,7 +49,7 @@
 #include <visualization_msgs/Marker.h>
 
 // but_scenemodel
-#include <srs_env_model_percp/but_seg_utils/normals.h>
+#include <but_segmentation/normals.h>
 
 
 namespace srs_env_model_percp
@@ -57,6 +57,7 @@ namespace srs_env_model_percp
 	/**
 	 * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
 	 */
+
 	class DynModelExporter
 	{
 		public:
@@ -78,14 +79,14 @@ namespace srs_env_model_percp
 			 * @param scene_cloud point cloud of the scene
 			 * @param sensorToWorldTf Sendor to map transformation matrix
 			 */
-			void update(std::vector<Plane<float> > & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+			void update(std::vector<but_plane_detector::Plane<float> > & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
 			
 			/**
 			 * Updates sent planes using but environment model server
 			 * @param planes Vector of found planes
 			 * @param scene_cloud point cloud of the scene
 			 */
-			void update(std::vector<Plane<float> > & planes, Normals &normals, tf::StampedTransform &sensorToWorldTf);
+			void update(std::vector<but_plane_detector::Plane<float> > & planes, but_plane_detector::Normals &normals, tf::StampedTransform &sensorToWorldTf);
 
 			/**
 			 * Updates sent planes using direct but interactive marker server
@@ -93,9 +94,9 @@ namespace srs_env_model_percp
 			 * @param scene_cloud point cloud of the scene
 			 * @param sensorToWorldTf Sendor to map transformation matrix
 			 */
-			void updateDirect(std::vector<Plane<float> > & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+			void updateDirect(std::vector<but_plane_detector::Plane<float> > & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
 
-			static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients& plane_coefficients, visualization_msgs::Marker& marker);
+			static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker);
 
 		private:
 			/**
@@ -105,10 +106,10 @@ namespace srs_env_model_percp
 			 * @param center Sendor to map transformation matrix
 			 * @param scale Sendor to map transformation matrix
 			 */
-			bool getCenterAndScale(Plane<float> &plane, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, pcl::PointXYZ &center, pcl::PointXYZ &scale);
+			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, pcl::PointXYZ &center, pcl::PointXYZ &scale);
 
-			bool getCenterAndScale(Plane<float> &plane, Normals &normals, pcl::PointXYZ &center, pcl::PointXYZ &scale);
-			void getCenterSAndScale(std::vector<Plane<float> > & planes, Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags);
+			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, but_plane_detector::Normals &normals, pcl::PointXYZ &center, pcl::PointXYZ &scale);
+			void getCenterSAndScale(std::vector<but_plane_detector::Plane<float> > & planes, but_plane_detector::Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags);
 
 			/**
 			 * Auxiliary node handle variable

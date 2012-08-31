@@ -48,6 +48,11 @@
 #include <srs_interaction_primitives/RemovePreGraspPosition.h>
 #include <srs_interaction_primitives/GetAllPrimitivesNames.h>
 #include <srs_interaction_primitives/SetAllowObjectInteraction.h>
+#include <srs_interaction_primitives/GetObject.h>
+#include <srs_interaction_primitives/GetUnknownObject.h>
+#include <srs_interaction_primitives/GetBillboard.h>
+#include <srs_interaction_primitives/GetBoundingBox.h>
+#include <srs_interaction_primitives/GetPlane.h>
 
 #include <string>
 
@@ -79,7 +84,8 @@ static const std::string ChangeScale_SRV = PACKAGE_NAME_PREFIX + std::string("/c
 static const std::string ChangeColor_SRV = PACKAGE_NAME_PREFIX + std::string("/change_color");
 static const std::string ChangeDirection_SRV = PACKAGE_NAME_PREFIX + std::string("/change_direction");
 static const std::string ChangeVelocity_SRV = PACKAGE_NAME_PREFIX + std::string("/change_velocity");
-static const std::string SetAllowObjectInteraction_SRV = PACKAGE_NAME_PREFIX + std::string("/set_allow_object_interaction");
+static const std::string SetAllowObjectInteraction_SRV = PACKAGE_NAME_PREFIX
+    + std::string("/set_allow_object_interaction");
 
 /*
  * Services for setting and removing primitive's grasping positions
@@ -96,6 +102,11 @@ static const std::string GetUpdateTopic_SRV = PACKAGE_NAME_PREFIX + std::string(
  * Other services
  */
 static const std::string GetAllPrimitivesNames_SRV = PACKAGE_NAME_PREFIX + std::string("/get_all_primitives_names");
+static const std::string GetObject_SRV = PACKAGE_NAME_PREFIX + std::string("/get_object");
+static const std::string GetUnknownObject_SRV = PACKAGE_NAME_PREFIX + std::string("/get_unknown_object");
+static const std::string GetBillboard_SRV = PACKAGE_NAME_PREFIX + std::string("/get_billboard");
+static const std::string GetBoundingBox_SRV = PACKAGE_NAME_PREFIX + std::string("/get_bounding_box");
+static const std::string GetPlane_SRV = PACKAGE_NAME_PREFIX + std::string("/get_plane");
 }
 
 #endif /* SERVICES_LIST_H_ */

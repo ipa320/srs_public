@@ -50,6 +50,8 @@ const int ID_RESET_BUTTON(101);
 const int ID_CLEARBOX_BUTTON(102);
 const int ID_MAPCLEAR_BUTTON(103);
 const int ID_CANCEL_BUTTON(104);
+const int ID_OBSTACLE_BUTTON(105);
+const int ID_TEXT_BOX(106);
 
 
 /**
@@ -62,30 +64,38 @@ srs_ui_but::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxS
 {
     // Create controls
     m_buttonReset = new wxButton(this, ID_RESET_BUTTON, wxT("Reset map"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-    m_buttonClearBoxAdd = new wxButton( this, ID_CLEARBOX_BUTTON, wxT("Add box"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-    m_buttonClearMap = new wxButton( this, ID_MAPCLEAR_BUTTON, wxT("Clear map"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_buttonBoxAdd = new wxButton( this, ID_CLEARBOX_BUTTON, wxT("Add box"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_buttonClearBox = new wxButton( this, ID_MAPCLEAR_BUTTON, wxT("Clear box on map"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
     m_buttonCancelClear = new wxButton( this, ID_CANCEL_BUTTON, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_buttonObstacleAdd = new wxButton( this, ID_OBSTACLE_BUTTON, wxT("Add obstacle"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_textBox = new wxTextCtrl( this, ID_TEXT_BOX, wxT(""));
 
     // Create layout
-    wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-    this->SetSizer(sizer);
+    wxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
+    this->SetSizer(vsizer);
 
     wxSizer *hsizer1 = new wxBoxSizer(wxHORIZONTAL);
     hsizer1->Add(m_buttonReset, ID_RESET_BUTTON, wxALIGN_LEFT);
 
     wxSizer *hsizer2 = new wxBoxSizer(wxHORIZONTAL);
-    hsizer2->Add(m_buttonClearBoxAdd, ID_CLEARBOX_BUTTON, wxALIGN_LEFT);
-    hsizer2->Add(m_buttonClearMap, ID_MAPCLEAR_BUTTON, wxALIGN_LEFT);
+    hsizer2->Add(m_buttonBoxAdd, ID_CLEARBOX_BUTTON, wxALIGN_LEFT);
+    hsizer2->Add(m_buttonClearBox, ID_MAPCLEAR_BUTTON, wxALIGN_LEFT);
+    hsizer2->Add( m_buttonObstacleAdd, ID_OBSTACLE_BUTTON, wxALIGN_LEFT);
     hsizer2->Add(m_buttonCancelClear, ID_CANCEL_BUTTON, wxALIGN_LEFT);
 
+    wxSizer *hsizer3 = new wxBoxSizer(wxHORIZONTAL);
+    hsizer3->Add(m_textBox, ID_TEXT_BOX, wxALIGN_LEFT);
+
     // No gizmo - nothing to do or to cancel.
-    m_buttonClearMap->Enable(false);
+    m_buttonClearBox->Enable(false);
     m_buttonCancelClear->Enable(false);
+    m_buttonObstacleAdd->Enable(false);
 
-    sizer->Add(hsizer1, 0, wxALIGN_LEFT);
-    sizer->Add(hsizer2, 0, wxALIGN_LEFT);
+    vsizer->Add(hsizer1, 0, wxALIGN_LEFT);
+    vsizer->Add(hsizer2, 0, wxALIGN_LEFT);
+    vsizer->Add(hsizer3, 0, wxALIGN_LEFT);
 
-    sizer->SetSizeHints(this);
+    vsizer->SetSizeHints(this);
 
     // Connect to services
     ros::NodeHandle node_handle;
@@ -116,6 +126,9 @@ srs_ui_but::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxS
     m_subGizmoPose = node_handle.subscribe<srs_interaction_primitives::PoseChanged> ( GIZMO_POSE_TOPIC, 10, &COctomapControlPane::gizmoPoseCB, this );
     m_subGizmoScale = node_handle.subscribe<srs_interaction_primitives::ScaleChanged>( GIZMO_SCALE_TOPIC, 10, &COctomapControlPane::gizmoScaleCB, this );
 
+    // Set text label parameters
+    m_textBox->SetEditable(false);
+
 }
 
 
@@ -137,13 +150,14 @@ void srs_ui_but::COctomapControlPane::OnReset(wxCommandEvent& event)
 /**
  * On create clearing box event handler
  */
-void srs_ui_but::COctomapControlPane::OnClearingBox(wxCommandEvent &event)
+void srs_ui_but::COctomapControlPane::OnAddBoxGizmo(wxCommandEvent &event)
 {
-	std::cerr << "Adding clearing box to the scene." << std::endl;
+	std::cerr << "Adding box to the scene." << std::endl;
 
 	addGizmo();
 
-	m_buttonClearMap->Enable(true);
+	m_buttonClearBox->Enable(true);
+	m_buttonObstacleAdd->Enable(true);
 	m_buttonCancelClear->Enable(true);
 }
 
@@ -151,7 +165,28 @@ void srs_ui_but::COctomapControlPane::OnClearingBox(wxCommandEvent &event)
  * On clear map event handler
  */
 
-void srs_ui_but::COctomapControlPane::OnClearMap( wxCommandEvent &event )
+void srs_ui_but::COctomapControlPane::OnClearBox( wxCommandEvent &event )
+{
+	// Create message
+	srs_env_model::RemoveCube rc;
+	rc.request.frame_id = GIZMO_FRAME_ID;
+	rc.request.pose = m_gizmoPose;
+	rc.request.size = m_gizmoScale;
+
+	// call
+	m_srvRemoveCubeFromOCmap.call( rc );
+
+	std::cerr << "Clear box area on map event" << std::endl;
+
+	// Remove gizmo and disable buttons
+	OnCancelBoxGizmo(event);
+}
+
+/**
+ * On clear map event handler
+ */
+
+void srs_ui_but::COctomapControlPane::OnAddObstacle( wxCommandEvent &event )
 {
 	// Create message
 	srs_env_model::RemoveCube rc;
@@ -165,19 +200,20 @@ void srs_ui_but::COctomapControlPane::OnClearMap( wxCommandEvent &event )
 	std::cerr << "Clear map event" << std::endl;
 
 	// Remove gizmo and disable buttons
-	OnCancelClear(event);
+	OnCancelBoxGizmo(event);
 }
 
 /**
- *On cancel clera map
+ *On cancel box gizmo map
  */
-void srs_ui_but::COctomapControlPane::OnCancelClear( wxCommandEvent &event )
+void srs_ui_but::COctomapControlPane::OnCancelBoxGizmo( wxCommandEvent &event )
 {
 	// remove gizmo
 	removeGizmo();
 
 	// Disable button
-	m_buttonClearMap->Enable(false);
+	m_buttonClearBox->Enable(false);
+	m_buttonObstacleAdd->Enable(false);
 	m_buttonCancelClear->Enable(false);
 }
 
@@ -198,6 +234,8 @@ void srs_ui_but::COctomapControlPane::addGizmo()
 		std::cerr << "Service call failed: " << m_srvAddGizmo.getService() << std::endl;
 	}
 	m_bGizmoAdded = true;
+
+	m_textBox->SetLabel( getGizmoStatusStr() );
 }
 /**
  * Remove gizmo from server
@@ -214,6 +252,8 @@ void srs_ui_but::COctomapControlPane::removeGizmo()
 	m_srvRemoveGizmo.call( rmo );
 
 	m_bGizmoAdded = false;
+
+	m_textBox->SetLabel( wxT("") );
 }
 
 /**
@@ -225,6 +265,8 @@ void srs_ui_but::COctomapControlPane::gizmoPoseCB( const srs_interaction_primiti
 		return;
 
 	m_gizmoPose = marker_update->new_pose;
+
+	m_textBox->SetLabel( getGizmoStatusStr() );
 }
 
 /**
@@ -238,6 +280,8 @@ void srs_ui_but::COctomapControlPane::gizmoScaleCB( const srs_interaction_primit
 	m_gizmoScale.x = marker_update->new_scale.x;
 	m_gizmoScale.y = marker_update->new_scale.y;
 	m_gizmoScale.z = marker_update->new_scale.z;
+
+	m_textBox->SetLabel( getGizmoStatusStr() );
 }
 
 
@@ -260,10 +304,21 @@ void srs_ui_but::COctomapControlPane::setGizmoPoseScale()
 	m_uoGizmo.request.scale.z = m_gizmoScale.z;
 }
 
+//! Create gizmo status string
+wxString srs_ui_but::COctomapControlPane::getGizmoStatusStr()
+{
+	wxString s;
+
+	s <<  wxString::Format(wxT("Position: %d, %d, %d"), m_gizmoPose.position.x, m_gizmoPose.position.y, m_gizmoPose.position.z);
+	std::cerr << "Writing text: " << s.c_str() << std::endl;
+
+	return s;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 BEGIN_EVENT_TABLE(srs_ui_but::COctomapControlPane, wxPanel)
     EVT_BUTTON(ID_RESET_BUTTON,  srs_ui_but::COctomapControlPane::OnReset)
-    EVT_BUTTON(ID_CLEARBOX_BUTTON,  srs_ui_but::COctomapControlPane::OnClearingBox)
-    EVT_BUTTON(ID_MAPCLEAR_BUTTON,  srs_ui_but::COctomapControlPane::OnClearMap)
-    EVT_BUTTON(ID_CANCEL_BUTTON,  srs_ui_but::COctomapControlPane::OnCancelClear)
+    EVT_BUTTON(ID_CLEARBOX_BUTTON,  srs_ui_but::COctomapControlPane::OnAddBoxGizmo)
+    EVT_BUTTON(ID_MAPCLEAR_BUTTON,  srs_ui_but::COctomapControlPane::OnClearBox)
+    EVT_BUTTON(ID_CANCEL_BUTTON,  srs_ui_but::COctomapControlPane::OnCancelBoxGizmo)
 END_EVENT_TABLE()

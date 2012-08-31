@@ -32,7 +32,7 @@
  */
 
 #include <srs_env_model_percp/but_seg_utils/kin2pcl_node.h>
-#include <srs_env_model_percp/but_seg_utils/normals.h>
+#include <but_segmentation/normals.h>
 
 // CV <-> ROS bridge
 #include <cv_bridge/cv_bridge.h>
@@ -52,6 +52,7 @@ using namespace cv;
 using namespace pcl;
 using namespace sensor_msgs;
 using namespace message_filters;
+using namespace but_plane_detector;
 
 namespace srs_env_model_percp
 {

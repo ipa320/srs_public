@@ -201,10 +201,47 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 
   bool publish_command = false;
 
+  bool data_received = false;
+
+  // try to get data
   data_mutex_.lock();
-  tactile_data = tactile_data_;
-  sdh_data = sdh_data_;
+  if (sdh_received_ && tact_received_) {
+
+	  data_received = true;
+	  tactile_data = tactile_data_;
+	  sdh_data = sdh_data_;
+
+  }
   data_mutex_.unlock();
+
+
+  if (!data_received) {
+
+	  ros::Rate w(1);
+
+	  while (!data_received && ros::ok()) {
+
+		  w.sleep();
+
+		  ROS_INFO("Waiting for data...");
+
+		  data_mutex_.lock();
+
+		  if (sdh_received_ && tact_received_) {
+
+			  data_received = true;
+			  tactile_data = tactile_data_;
+			  sdh_data = sdh_data_;
+
+		  }
+
+		  data_mutex_.unlock();
+
+	  }
+
+
+  }
+
 
   for(uint8_t i=0; i < joints_.size(); i++) {
 
@@ -393,6 +430,7 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 void ManualGrasping::SdhStateCallback(const pr2_controllers_msgs::JointTrajectoryControllerState::ConstPtr & msg) {
 
   data_mutex_.lock();
+  sdh_received_ = true;
   sdh_data_.actual = msg->actual;
   sdh_data_.desired = msg->desired;
   sdh_data_.error = msg->error;
@@ -406,6 +444,7 @@ void ManualGrasping::SdhStateCallback(const pr2_controllers_msgs::JointTrajector
 void ManualGrasping::TactileDataCallback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
 
   data_mutex_.lock();
+  tact_received_=true;
   tactile_data_.data = msg->data;
   tactile_data_stamp_ = ros::Time::now();
   data_mutex_.unlock();

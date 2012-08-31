@@ -42,7 +42,7 @@ Object::Object(InteractiveMarkerServerPtr server, string frame_id, string name) 
   setPrimitiveType(srs_interaction_primitives::PrimitiveType::OBJECT);
   use_material_ = translated_ = false;
 
-  if (ros::param::has (MoveArmToPregraspOnClick_PARAM))
+  if (ros::param::has(MoveArmToPregraspOnClick_PARAM))
     ros::param::get(MoveArmToPregraspOnClick_PARAM, move_arm_to_pregrasp_onclick_);
   else
     move_arm_to_pregrasp_onclick_ = false;
@@ -208,14 +208,7 @@ void Object::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
       }
       break;
   }
-  /*
-   // Transfer object into IMS frame
-   if (feedback->header.frame_id != frame_id_)
-   {
-   frame_id_ = feedback->header.frame_id;
-   object_.header.frame_id = frame_id_;
-   }
-   */
+
   server_->insert(object_);
   menu_handler_.reApply(*server_);
   server_->applyChanges();
@@ -234,7 +227,7 @@ void Object::createMenu()
                                 MenuHandler::UNCHECKED);
 
     bool show_pregrasp = false;
-    if (ros::param::has (ShowPregrasp_PARAM))
+    if (ros::param::has(ShowPregrasp_PARAM))
       ros::param::get(ShowPregrasp_PARAM, show_pregrasp);
     int handle_pregrasp = menu_handler_.insert("Show pre-grasp positions",
                                                boost::bind(&Object::menuCallback, this, _1));
@@ -288,9 +281,6 @@ void Object::createMenu()
 
 void Object::createMesh()
 {
-  /*
-   mesh_.header.frame_id = frame_id_;*/
-
   mesh_.pose.position.z = -0.5 * scale_.z;
 
   mesh_.color = color_;
@@ -318,9 +308,6 @@ void Object::setPoseLWH(Pose pose, Point bounding_box_lwh)
   scale_.z = bounding_box_lwh_.z;
 
   setPose(pose);
-
-  //pose_.position.z += 0.5 * bounding_box_lwh.z;
-  //BoundingBox::setPose(pose);
 }
 
 void Object::create()
@@ -329,23 +316,26 @@ void Object::create()
 
   scale_.x = bounding_box_lwh_.x;
   scale_.y = bounding_box_lwh_.y;
-  //  scale_.z = 0.5 * bounding_box_lwh_.z;
   scale_.z = bounding_box_lwh_.z;
 
   object_.header.frame_id = frame_id_;
-  //object_.header.stamp = ros::Time::now();
   object_.name = name_;
   object_.description = description_;
   object_.pose = pose_;
   object_.scale = maxScale(scale_);
 
-  //BoundingBox::createBoundingBoxControl(0.0f, 0.0f, scale_.z * 0.5);
-  BoundingBox::createBoundingBoxControl(0.0f, 0.0f, 0.0f);
-
   createMesh();
+
+  control_.name = "object_control";
+  control_.interaction_mode = InteractiveMarkerControl::BUTTON;
+  control_.always_visible = true;
   control_.markers.push_back(mesh_);
+
   object_.controls.clear();
   object_.controls.push_back(control_);
+
+  if (scale_.x != 0.0f && scale_.y != 0.0f && scale_.z != 0.0f)
+    BoundingBox::createBoundingBoxControl(0.0f, 0.0f, 0.0f);
 
   createMenu();
 }

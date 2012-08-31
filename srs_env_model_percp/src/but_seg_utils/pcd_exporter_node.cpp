@@ -47,7 +47,7 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
-#include <srs_env_model_percp/but_seg_utils/normals.h>
+#include <but_segmentation/normals.h>
 
 
 using namespace std;
@@ -56,6 +56,7 @@ using namespace cv;
 using namespace pcl;
 using namespace sensor_msgs;
 using namespace message_filters;
+using namespace but_plane_detector;
 
 namespace srs_env_model_percp
 {

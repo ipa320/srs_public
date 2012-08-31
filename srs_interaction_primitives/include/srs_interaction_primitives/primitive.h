@@ -161,10 +161,19 @@ public:
    */
   void setPoseType(int type)
   {
-    if (type == PoseType::POSE_CENTER|| type == PoseType::POSE_BASE)
+    if (type == PoseType::POSE_CENTER || type == PoseType::POSE_BASE)
     {
       pose_type_ = type;
     }
+  }
+
+  /**
+   * @brief Gets the way to set the pose
+   * @return type of the pose
+   */
+  int getPoseType()
+  {
+    return pose_type_;
   }
 
   /**
@@ -429,12 +438,30 @@ public:
   }
 
   /**
+   * @brief Gets the resource file with primitive's model (and material).
+   * @return resource path to the resource file
+   */
+  std::string getResource()
+  {
+    return resource_;
+  }
+
+  /**
    * @brief Sets usage of defined material or color
    * @param use_material material (true), color (false)
    */
   void setUseMaterial(bool use_material)
   {
     use_material_ = use_material;
+  }
+
+  /**
+   * @brief Gets usage of defined material or color
+   * @return use_material material (true), color (false)
+   */
+  bool getUseMaterial()
+  {
+    return use_material_;
   }
 
   /**
@@ -445,6 +472,15 @@ public:
   {
     object_resource_ = SHAPE;
     shape_ = shape;
+  }
+
+  /**
+   * @brief Gets shape of the mesh
+   * @return shape of t he mesh
+   */
+  arm_navigation_msgs::Shape getShape()
+  {
+    return shape_;
   }
 
   /**
@@ -621,16 +657,16 @@ protected:
                                                pregrasp4Control_, pregrasp5Control_, pregrasp6Control_;
   interactive_markers::MenuHandler menu_handler_;
 
-  // Transform listener
+// Transform listener
   tf::TransformListener *tfListener;
 
-  // Transformer
+// Transformer
   tf::Transformer transformer;
 
-  // Transformations
+// Transformations
   tf::StampedTransform feedbackToDefaultTransform;
 
-  // Common attributes
+// Common attributes
   std::string name_, description_, frame_id_;
   InteractiveMarkerServerPtr server_;
   geometry_msgs::Pose pose_;
@@ -639,15 +675,15 @@ protected:
   int pose_type_;
   geometry_msgs::Pose pose_change;
 
-  // Menu handelrs
+// Menu handelrs
   interactive_markers::MenuHandler::EntryHandle menu_handler_interaction_, menu_handler_interaction_movement_,
                                                 menu_handler_interaction_rotation_;
 
-  // Billboard's attributes
+// Billboard's attributes
   double velocity_;
   geometry_msgs::Quaternion direction_;
 
-  // Object's attributes
+// Object's attributes
   ObjectResource object_resource_;
   visualization_msgs::Marker mesh_;
   arm_navigation_msgs::Shape shape_;
@@ -656,7 +692,7 @@ protected:
   bool move_arm_to_pregrasp_onclick_;
   bool allow_object_interaction_;
 
-  // PlanePolygon's attributes
+// PlanePolygon's attributes
   Ogre::Vector3 normal_;
   geometry_msgs::Polygon polygon_;
 
@@ -667,6 +703,7 @@ protected:
   bool menu_created_;
   PreGraspPosition pregrasp1_, pregrasp2_, pregrasp3_, pregrasp4_, pregrasp5_, pregrasp6_;
 
-};
+}
+;
 }
 #endif /* PRIMITIVE_H_ */

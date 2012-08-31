@@ -35,6 +35,7 @@
 #include "but_camcast.h"
 #include "but_projection.h"
 #include "but_context_manager.h"
+#include "but_object_manager.h"
 
 #include "srs_ui_but/but_data_fusion/but_cam_display.h"
 
@@ -49,5 +50,6 @@ extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
   reg->registerDisplay<srs_ui_but::CButCamCast>("CButCamCast");
   reg->registerDisplay<srs_ui_but::CButProjection>("CButProjection");
   reg->registerDisplay<srs_ui_but::CButContextManager>("CButContextManager");
+  reg->registerDisplay<srs_ui_but::CButObjectManager>("CButObjectManager");
 }
 

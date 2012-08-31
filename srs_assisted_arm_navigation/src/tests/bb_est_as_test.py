@@ -32,8 +32,11 @@ import actionlib
 
 from srs_assisted_arm_navigation.msg import *
 from srs_interaction_primitives.srv import AddObject
+from srs_interaction_primitives.srv import AddUnknownObject
 from srs_env_model_percp.srv import EstimateBBAlt
 from srs_interaction_primitives.srv import RemovePrimitive
+from srs_interaction_primitives.srv import SetAllowObjectInteraction
+from srs_interaction_primitives.msg import PoseType
 from std_msgs.msg import ColorRGBA
 
 
@@ -53,6 +56,23 @@ def remove_im():
             
         return False
             
+            
+def set_interaction(object_name,allow_int):
+      
+      
+   rospy.wait_for_service('/interaction_primitives/set_allow_object_interaction')
+   
+   int_allow_srv =  rospy.ServiceProxy('/interaction_primitives/set_allow_object_interaction', SetAllowObjectInteraction)
+   
+   try:
+       
+       res = int_allow_srv(name = object_name,
+                           allow = allow_int)
+    
+    
+   except Exception, e:
+    
+    rospy.logerr('Cannot set interaction mode for object %s, error: %s',object_name,str(e))  
 
 def bb_est_feedback(feedback):
     
@@ -101,8 +121,11 @@ def bb_est_feedback(feedback):
  
     if object_added == False:
  
-        add_object = rospy.ServiceProxy('/interaction_primitives/add_object', AddObject)
-        rospy.loginfo('Calling %s service','/interaction_primitives/add_object')
+        add_object = rospy.ServiceProxy('/interaction_primitives/add_unknown_object', AddUnknownObject)
+        rospy.loginfo('Calling %s service','/interaction_primitives/add_unknown_object')
+ 
+        #add_object = rospy.ServiceProxy('/interaction_primitives/add_object', AddObject)
+        #rospy.loginfo('Calling %s service','/interaction_primitives/add_object')
     
         # color of the bounding box
         color = ColorRGBA()
@@ -113,13 +136,22 @@ def bb_est_feedback(feedback):
            
         try:
           
-            add_object(frame_id = '/map',
-                       name = 'unknown_object',
-                       description = 'Unknown object to grasp',
+            #===================================================================
+            # add_object(frame_id = '/map',
+            #           name = 'unknown_object',
+            #           description = 'Unknown object to grasp',
+            #           pose = est_result.pose,
+            #           bounding_box_lwh = est_result.bounding_box_lwh,
+            #           color = color,
+            #           use_material = False)
+            #===================================================================
+            
+            add_object(frame_id='/map',
+                       name='unknown_object',
+                       description='Unknown object to grasp',
+                       pose_type= PoseType.POSE_BASE,
                        pose = est_result.pose,
-                       bounding_box_lwh = est_result.bounding_box_lwh,
-                       color = color,
-                       use_material = False)
+                       scale = est_result.bounding_box_lwh)
             
             object_added = True
             
@@ -129,6 +161,9 @@ def bb_est_feedback(feedback):
         except Exception, e:
           
           rospy.logerr('Cannot add IM object to the scene, error: %s',str(e))
+          
+        # allow interaction for this object  
+        set_interaction('unknown_object',True)
       
     else:
         
@@ -167,6 +202,8 @@ def main():
   print result
   
   rospy.loginfo('Action finished')
+  
+  remove_im()
   
   #print result.grasped
   #print result.tip1_force

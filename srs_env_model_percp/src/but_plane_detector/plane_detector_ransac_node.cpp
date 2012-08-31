@@ -59,8 +59,8 @@
 
 #include <srs_env_model_percp/ClearPlanes.h>
 
-#include <srs_env_model_percp/but_seg_utils/filtering.h>
-#include <srs_env_model_percp/but_seg_utils/normals.h>
+#include <but_segmentation/filtering.h>
+#include <but_segmentation/normals.h>
 
 #include <srs_env_model_percp/topics_list.h>
 #include <srs_env_model_percp/services_list.h>
@@ -100,6 +100,7 @@ using namespace cv;
 using namespace pcl;
 using namespace sensor_msgs;
 using namespace message_filters;
+using namespace but_plane_detector;
 
 namespace srs_env_model_percp
 {
@@ -239,7 +240,7 @@ namespace srs_env_model_percp
 
 
 			visualization_msgs::Marker marker;
-			DynModelExporter::createMarkerForConvexHull(plane_cloud, *coefficients, marker);
+			DynModelExporter::createMarkerForConvexHull(plane_cloud, coefficients, marker);
 			marker.header.frame_id = settings.param_output_frame;
 			marker.header.stamp = pointcloud.header.stamp;
 			marker.id = id;

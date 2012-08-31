@@ -42,6 +42,7 @@
 #include <srs_env_model/InsertPlanes.h>
 
 using namespace pcl;
+using namespace but_plane_detector;
 
 namespace srs_env_model_percp
 {
@@ -490,7 +491,7 @@ namespace srs_env_model_percp
 		m_max_plane_shift_dev = max_plane_shift_dev;
 	}
 
-	void DynModelExporter::createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients& plane_coefficients, visualization_msgs::Marker& marker)
+	void DynModelExporter::createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker)
 	{
 		// init marker
 	    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
@@ -501,7 +502,7 @@ namespace srs_env_model_percp
 	    pcl::ProjectInliers<pcl::PointXYZ> proj;
 	    proj.setModelType (pcl::SACMODEL_PLANE);
 	    proj.setInputCloud (plane_cloud.makeShared());
-	    proj.setModelCoefficients (boost::make_shared<pcl::ModelCoefficients> (plane_coefficients));
+	    proj.setModelCoefficients (plane_coefficients);
 	    proj.filter(*cloud_projected);
 
 	    // create the convex hull in the plane

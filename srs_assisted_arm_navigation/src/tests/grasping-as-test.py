@@ -41,8 +41,10 @@ def main():
   rospy.loginfo("Waiting for server...")
   client.wait_for_server()
   goal = ManualGraspingGoal()
-  #goal.grasp_type = "open"
+  goal.grasp_type = 0 # 0 - round, 1 - square
   goal.max_force = 100
+  goal.accept_two_fingers_contact = True
+  goal.do_not_open_fingers = False
   client.send_goal(goal)
 
   #timeout = 240.0

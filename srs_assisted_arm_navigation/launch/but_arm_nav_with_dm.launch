@@ -5,9 +5,11 @@
   <!-- BUT planning environment -->
   <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.launch"/>
   
+  
   <!-- RVIZ with proper configuration -->
-  <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_assisted_arm_navigation)/config/arm_manip_but.vcg">
+  <include file="$(find srs_assisted_arm_navigation)/launch/rviz.launch"/>
+  <!--node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_assisted_arm_navigation)/config/arm_manip_but.vcg">
     <param name="wait_for_start" type="bool" value="true" />
-  </node>
+  </node-->
   
 </launch>

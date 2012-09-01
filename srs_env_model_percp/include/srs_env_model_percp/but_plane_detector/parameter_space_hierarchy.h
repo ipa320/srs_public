@@ -45,7 +45,7 @@
 
 // but_scenemodel
 #include <srs_env_model_percp/but_plane_detector/parameter_space.h>
-#include <but_segmentation/normals.h>
+//#include <but_segmentation/normals.h>
 
 
 namespace srs_env_model_percp

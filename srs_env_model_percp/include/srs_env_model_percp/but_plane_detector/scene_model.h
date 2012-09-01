@@ -51,7 +51,8 @@
 #include <opencv2/imgproc/imgproc_c.h>
 
 // but_scenemodel
-#include <but_segmentation/normals.h>
+//#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 #include <srs_env_model_percp/but_plane_detector/parameter_space.h>
 #include <srs_env_model_percp/but_plane_detector/parameter_space_hierarchy.h>
 

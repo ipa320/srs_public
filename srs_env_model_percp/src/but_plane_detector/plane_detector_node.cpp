@@ -59,8 +59,10 @@
 
 #include <srs_env_model_percp/ClearPlanes.h>
 
-#include <but_segmentation/filtering.h>
-#include <but_segmentation/normals.h>
+//#include <but_segmentation/filtering.h>
+//#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/filtering.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 #include <srs_env_model_percp/but_plane_detector/scene_model.h>
 #include <srs_env_model_percp/but_plane_detector/dyn_model_exporter.h>

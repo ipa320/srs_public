@@ -21,6 +21,12 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined services
 rosbuild_gensrv()
 
+
+# !!!
+rosbuild_add_library(but_segmentation src/but_segmentation/filtering.cpp src/but_segmentation/normals.cpp)
+rosbuild_add_openmp_flags(but_segmentation)
+
+
 # Plane detection node
 set( BUT_PLANE_DETECTOR_SOURCES src/but_plane_detector/plane_detector_node.cpp 
                                 src/but_plane_detector/parameter_space.cpp 
@@ -58,3 +64,4 @@ rosbuild_add_executable(bb_estimator_client src/bb_estimator/sample_client.cpp)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
+

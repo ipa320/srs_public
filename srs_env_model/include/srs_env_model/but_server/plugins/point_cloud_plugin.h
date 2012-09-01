@@ -85,9 +85,10 @@ namespace srs_env_model
         //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
         virtual void pause( bool bPause, ros::NodeHandle & node_handle );
 
+    public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     protected:
-
-
         /**
         * @brief Insert point cloud callback
         *

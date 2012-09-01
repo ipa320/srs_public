@@ -254,7 +254,7 @@ void srs_env_model::CCompressedPointCloudPlugin::onCameraChangedCB(const sensor_
 
 	//PERROR("OnCameraChange.");
 
-	ROS_DEBUG( "CCompressedPointCloudPlugin: onCameraChangedCB" );
+//	ROS_DEBUG( "CCompressedPointCloudPlugin: onCameraChangedCB" );
 
     // Set camera position frame id
     m_cameraFrameId = cam_info->header.frame_id;
@@ -273,7 +273,7 @@ void srs_env_model::CCompressedPointCloudPlugin::onCameraChangedCB(const sensor_
 //! Called when new scan was inserted and now all can be published
 void srs_env_model::CCompressedPointCloudPlugin::onPublish(const ros::Time & timestamp)
 {
-	ROS_DEBUG( "CCompressedPointCloudPlugin: onPublish" );
+//	ROS_DEBUG( "CCompressedPointCloudPlugin: onPublish" );
 
 //    PERROR( "Visible: " << m_countVisible << ", all: " << m_countAll << ", compression: " << double(m_countVisible)/double(m_countAll) );
 //    PERROR( "Num of points: " << m_data->size() );
@@ -293,12 +293,12 @@ void srs_env_model::CCompressedPointCloudPlugin::onPublish(const ros::Time & tim
 
 		if( m_bPublishComplete )
 		{
-			std::cerr << "Publishing complete cloud." << std::endl;
+//			std::cerr << "Publishing complete cloud." << std::endl;
 			m_octomap_updates_msg->isPartial = 0;
 		}
 		else
 		{
-			std::cerr << "Publishing only differential cloud." << std::endl;
+//			std::cerr << "Publishing only differential cloud." << std::endl;
 			m_octomap_updates_msg->isPartial = 1;
 		}
 

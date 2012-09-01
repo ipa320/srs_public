@@ -1,0 +1,29 @@
+<launch>
+	<!-- Set to use simulation time -->
+	<param name="/use_sim_time" value="true"/>
+
+	<!-- Configuration for COB, bringup simulation -->
+	<include file="$(find cob_default_robot_config)/upload_param.launch" />
+	<include file="$(find cob_default_env_config)/upload_param.launch" />
+	<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
+	<include file="$(find cob_bringup_sim)/launch/robot.launch" />
+
+    <!-- Run interaction primitives server -->
+    <!-- node pkg="srs_interaction_primitives" type="but_interaction_primitives_service_server" name="but_interaction_primitives_service_server"/ -->
+
+	<!-- Run depth image publishing node -->
+	<node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node"/>
+       
+	<!-- Run our dynamic scene model server node -->
+	<include file="$(find srs_env_model)/launch/only_butserver.launch"/>
+
+	<!-- Run compressed pointcloud decompressor node -->
+	<node pkg="srs_env_model" type="but_cpc_node" name="but_cpc_node" >
+		<remap from="input" to="/but_env_model/octomap_updates"/>
+		<remap from="output" to="/but_env_model/cpc_pointcloud_centers" />
+	</node>
+
+	<!-- Run rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_env_model)/config/cpc_test1.vcg"/>
+</launch>
+

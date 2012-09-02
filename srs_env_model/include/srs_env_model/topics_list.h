@@ -36,7 +36,6 @@ namespace srs_env_model
 /**
  * but_server
  */
-static const std::string SUBSCRIBER_CAMERA_POSITION_NAME = "/rviz_camera_position";
 static const std::string WORLD_FRAME_ID = "/map";
 static const std::string BASE_FRAME_ID = "/base_footprint";
 static const int NUM_PCFRAMES_PROCESSED = 3;
@@ -82,21 +81,36 @@ static const std::string MAP2D_FRAME_ID = "/map";
  */
 static const std::string OCTOMAP_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/binary_octomap");
 static const std::string OCTOMAP_FRAME_ID = "/map";
-static const std::string CAMERA_INFO_TOPIC_NAME = "/cam3d/rgb/camera_info";
+static const std::string CAMERA_INFO_TOPIC_NAME = "camera_info"; // /cam3d/rgb/camera_info
 static const std::string MARKERS_TOPIC_NAME = "/visualization_marker";
 
 /**
  * point_cloud_plugin
  */
 static const std::string POINTCLOUD_CENTERS_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/pointcloud_centers");
-static const std::string SUBSCRIBER_POINT_CLOUD_NAME = "/cam3d/rgb/points";
+static const std::string SUBSCRIBER_POINT_CLOUD_NAME = "points_in"; // /cam3d/rgb/points
 static const std::string DEFAULT_FRAME_ID = "/head_cam3d_link";
 
 /**
  * limited_point_cloud_plugin
  */
+static const std::string SUBSCRIBER_CAMERA_POSITION_NAME = "lpc_rviz_camera_position"; // /rviz_camera_position
 static const std::string VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME = PACKAGE_NAME_PREFIX
     + std::string("/visible_pointcloud_centers");
+
+/**
+ * compressed_point_cloud_plugin
+ */
+static const std::string CPC_CAMERA_INFO_PUBLISHER_NAME = CAMERA_INFO_TOPIC_NAME; // /cam3d/rgb/camera_info
+static const std::string CPC_PC_PUBLISHING_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/compressed_pointcloud_centers");
+static const std::string CPC_COMPLETE_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/octomap_updates");
+static const int CPC_NUM_DIFFERENTIAL_FRAMES = 5;
+
+/**
+ * CPC node
+ */
+static const std::string CPC_INPUT_TOPIC_NAME = "input"; // /but_env_model/octomap_updates
+static const std::string CPC_OUTPUT_TOPIC_NAME = "output"; //PACKAGE_NAME_PREFIX + std::string("/cpc_pointcloud_centers");
 
 /**
  * Context Server - topics

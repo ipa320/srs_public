@@ -60,6 +60,8 @@
 #include "srs_env_model_percp/EstimateBBAlt.h"
 #include "srs_env_model_percp/EstimateRect.h"
 #include "srs_env_model_percp/EstimateRectAlt.h"
+#include "srs_env_model_percp/Estimate2DHullMesh.h"
+#include "srs_env_model_percp/Estimate2DHullPointCloud.h"
 
 #include <algorithm>
 
@@ -71,13 +73,16 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/PointCloud2.h>
+
+#include <arm_navigation_msgs/Shape.h>
 
 #include <cv_bridge/cv_bridge.h>
-#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+#include <pcl/surface/convex_hull.h>
 
 #include <tf/transform_listener.h>
 
@@ -107,6 +112,9 @@ tf::TransformListener *tfListener;
 // Percentage of farthest points from mean considered as outliers when
 // calculating statistics of ROI
 int outliersPercent = OUTLIERS_PERCENT_DEFAULT;
+
+// Percentage of rows and columns considered for sampling (for calculation of statistics)
+int samplingPercent = SAMPLING_PERCENT_DEFAULT;
 
 // The required maximum ratio of sides length (the longer side is at maximum
 // sidesRatio times longer than the shorter one)
@@ -163,7 +171,7 @@ bool estimateBB_callback(srs_env_model_percp::EstimateBB::Request  &req,
     {
         return false;
     }
-    
+
     // Set response
     //--------------------------------------------------------------------------
     res.p1[0] = bbLBF.x; res.p1[1] = bbLBF.y; res.p1[2] = bbLBF.z;
@@ -179,14 +187,29 @@ bool estimateBB_callback(srs_env_model_percp::EstimateBB::Request  &req,
     res.pose.position.y = p.y;
     res.pose.position.z = p.z;
     
-    res.pose.orientation.x = q.x();
-    res.pose.orientation.y = q.y();
-    res.pose.orientation.z = q.z();
-    res.pose.orientation.w = q.w();
+    // Keep orientation only for the first estimation mode. For the others,
+    // the orientation is ignored (=> BB will be axis-aligned) and only position
+    // and scale is preserved.
+    // (The computed orientation represents the smallest rotation to achieve
+    // an axis alignment.)
+    if(estimationMode == 1) {
+        res.pose.orientation.x = q.x();
+        res.pose.orientation.y = q.y();
+        res.pose.orientation.z = q.z();
+        res.pose.orientation.w = q.w();
+    }
+    else {
+        res.pose.orientation.x = 0;
+        res.pose.orientation.y = 0;
+        res.pose.orientation.z = 0;
+        res.pose.orientation.w = 0;
+    }
     
     res.scale.x = s.x;
     res.scale.y = s.y;
     res.scale.z = s.z;
+    
+    
     
     // Log request timestamp
     //--------------------------------------------------------------------------
@@ -240,10 +263,23 @@ bool estimateBBAlt_callback(srs_env_model_percp::EstimateBBAlt::Request  &req,
     res.pose.position.y = p.y;
     res.pose.position.z = p.z - 0.5f * s.z;
     
-    res.pose.orientation.x = q.x();
-    res.pose.orientation.y = q.y();
-    res.pose.orientation.z = q.z();
-    res.pose.orientation.w = q.w();
+    // Keep orientation only for the first estimation mode. For the others,
+    // the orientation is ignored (=> BB will be axis-aligned) and only position
+    // and scale is preserved.
+    // (The computed orientation represents the smallest rotation to achieve
+    // an axis alignment.)
+    if(estimationMode == 1) {
+        res.pose.orientation.x = q.x();
+        res.pose.orientation.y = q.y();
+        res.pose.orientation.z = q.z();
+        res.pose.orientation.w = q.w();
+    }
+    else {
+        res.pose.orientation.x = 0;
+        res.pose.orientation.y = 0;
+        res.pose.orientation.z = 0;
+        res.pose.orientation.w = 0;
+    }
     
     res.bounding_box_lwh.x = 0.5f * s.x;
     res.bounding_box_lwh.y = 0.5f * s.y;
@@ -456,6 +492,97 @@ bool estimateRectAlt_callback(srs_env_model_percp::EstimateRectAlt::Request  &re
 
 
 /******************************************************************************
+ * Estimation service for 2D convex hull (in image plane coordinates) of a mesh
+ * (in world coordinates).
+ *
+ * @param req  Request of type Estimate2DHullMesh.
+ * @param res  Response of type Estimate2DHullMesh.
+ */
+bool estimate2DHullMesh_callback(srs_env_model_percp::Estimate2DHullMesh::Request  &req,
+                                 srs_env_model_percp::Estimate2DHullMesh::Response &res
+                                )
+{
+    vector<cv::Point3f> points;
+    vector<cv::Point2i> convexHull;
+
+    if(req.mesh.type != req.mesh.MESH) {
+        ROS_ERROR("The given shape is not a mesh.");
+        return false;
+    }
+    else {
+        for( int i = 0; i < (int)req.mesh.vertices.size(); i++ ) {
+            points.push_back(cv::Point3f(req.mesh.vertices[i].x,
+                                         req.mesh.vertices[i].y,
+                                         req.mesh.vertices[i].z));
+        }
+    }
+    
+    // Calculate the convex hull
+    estimate2DConvexHull(req.header.stamp, points, convexHull);
+    
+    // Set response
+    //--------------------------------------------------------------------------   
+    res.convexHull.points.resize(convexHull.size());
+    for( int i = 0; i < (int)convexHull.size(); i++ ) {
+       res.convexHull.points[i].x = convexHull[i].x;
+       res.convexHull.points[i].y = convexHull[i].y;
+       res.convexHull.points[i].z = 0;
+    }
+    
+    // Log request timestamp
+    //--------------------------------------------------------------------------
+    ROS_INFO("Request timestamp: %d.%d", req.header.stamp.sec, req.header.stamp.nsec);   
+
+    return true;
+}
+
+
+/******************************************************************************
+ * Estimation service for 2D convex hull (in image plane coordinates) of a point cloud
+ * (in world coordinates).
+ *
+ * @param req  Request of type Estimate2DHullPointCloud.
+ * @param res  Response of type Estimate2DHullPointCloud.
+ */
+bool estimate2DHullPointCloud_callback(srs_env_model_percp::Estimate2DHullPointCloud::Request  &req,
+                                       srs_env_model_percp::Estimate2DHullPointCloud::Response &res
+                                      )
+{
+    vector<cv::Point3f> points;
+    vector<cv::Point2i> convexHull;
+
+    // Convert to pcl/PointCloud
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    pcl::fromROSMsg(req.pointCloud, cloud);
+    
+    for(int y = 0; y < (int)cloud.height; y++) {
+        for(int x = 0; x < (int)cloud.width; x++) {
+            pcl::PointXYZ p = cloud.points[y * cloud.width + x]; 
+            points.push_back(cv::Point3f(p.x, p.y, p.z));
+        }
+    }
+    
+    // Calculate the convex hull
+    estimate2DConvexHull(req.header.stamp, points, convexHull);
+    
+    // Set response
+    //--------------------------------------------------------------------------   
+    res.convexHull.points.resize(convexHull.size());
+    for( int i = 0; i < (int)convexHull.size(); i++ ) {
+       res.convexHull.points[i].x = convexHull[i].x;
+       res.convexHull.points[i].y = convexHull[i].y;
+       res.convexHull.points[i].z = 0;
+    }
+    
+    // Log request timestamp
+    //--------------------------------------------------------------------------
+    ROS_INFO("Request timestamp: %d.%d", req.header.stamp.sec, req.header.stamp.nsec);   
+
+    return true;
+}
+
+
+/******************************************************************************
  * Adds messages to cache (for synchronized subscription variant #1) and obtains
  * the corresponding transformation.
  *
@@ -542,10 +669,12 @@ int main(int argc, char **argv)
     //--------------------------------------------------------------------------
     ros::NodeHandle private_nh("~");
     private_nh.param(OUTLIERS_PERCENT_PARAM, outliersPercent, OUTLIERS_PERCENT_DEFAULT);
+    private_nh.param(SAMPLING_PERCENT_PARAM, samplingPercent, SAMPLING_PERCENT_DEFAULT);
     private_nh.param(GLOBAL_FRAME_PARAM, sceneFrameId, GLOBAL_FRAME_DEFAULT);
     private_nh.param(SIDES_RATIO_PARAM, sidesRatio, SIDES_RATIO_DEFAULT);
 
     ROS_INFO_STREAM(OUTLIERS_PERCENT_PARAM << " = " << outliersPercent);
+    ROS_INFO_STREAM(SAMPLING_PERCENT_PARAM << " = " << samplingPercent);
     ROS_INFO_STREAM(GLOBAL_FRAME_PARAM << " = " << sceneFrameId);
     ROS_INFO_STREAM(SIDES_RATIO_PARAM << " = " << sidesRatio);
     
@@ -575,6 +704,8 @@ int main(int argc, char **argv)
     ros::ServiceServer serviceAlt = n.advertiseService(EstimateBBAlt_SRV, estimateBBAlt_callback);
     ros::ServiceServer serviceRect = n.advertiseService(EstimateRect_SRV, estimateRect_callback);
     ros::ServiceServer serviceRectAlt = n.advertiseService(EstimateRectAlt_SRV, estimateRectAlt_callback);
+    ros::ServiceServer service2DHullMesh = n.advertiseService(Estimate2DHullMesh_SRV, estimate2DHullMesh_callback);
+    ros::ServiceServer service2DHullPointCloud = n.advertiseService(Estimate2DHullPointCloud_SRV, estimate2DHullPointCloud_callback);
     ROS_INFO("Ready.");
     
     // Enters a loop, calling message callbacks

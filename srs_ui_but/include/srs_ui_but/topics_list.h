@@ -52,6 +52,18 @@ static const std::string Camera_PARAM = BUT_DATA_FUSION_PREFIX + std::string("/c
 static const std::string Depth_PARAM = BUT_DATA_FUSION_PREFIX + std::string("/depth");
 
 /**
+ * but_data_fusion - remapped parameters
+ */
+static const std::string DEFAULT_CAMERA_INFO = std::string("default_camera_info");
+static const std::string CAM3D_BASE = std::string("/cam3d/rgb/");
+static const std::string STEREO_LEFT_BASE = std::string("/stereo/left/");
+static const std::string STEREO_RIGHT_BASE = std::string("/stereo/right/");
+static const std::string MAP_TOPIC = std::string("/map");
+static const std::string DEPTH_IMAGE_IN = std::string("depth_image_in");
+static const std::string DEFAULT_CAMERA_IMAGE = std::string("default_camera_image");
+
+
+/**
  * but-display - parameters
  */
 static const std::string DEFAULT_GRIPPER_LINK = "/sdh_palm_link";
@@ -72,3 +84,7 @@ static const std::string CAMERA_LINK = "/head_cam3d_link";
 }
 
 #endif // BUT_GUI_TOPICS_LIST_H
+
+
+
+

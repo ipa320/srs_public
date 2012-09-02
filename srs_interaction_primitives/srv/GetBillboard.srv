@@ -1,0 +1,11 @@
+string name                         # Billboard name
+--- 
+string frame_id                     # Fixed Frame
+string name                         # Billboard name
+string description                  # Billboard description
+uint8 type                          # Billboard type
+float64 velocity                    # Billboard movement speed
+geometry_msgs/Quaternion direction  # Billboard movement direction
+uint8 pose_type                     # way to set the pose
+geometry_msgs/Pose pose             # position and orientation of the Billboard 
+geometry_msgs/Vector3 scale         # scale of the Billboard

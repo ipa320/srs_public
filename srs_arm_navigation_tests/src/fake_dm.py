@@ -66,9 +66,9 @@ def main():
   
     smach.StateMachine.add('from',move_arm_from_a_given_position_assisted(),
                            transitions={'completed':'grasp',
-                                        'not_completed':'fdm_not_completed',
-                                        'pre-empted':'fdm_pre-empted',
-                                        'failed':'fdm_failed'})
+                                        'not_completed':'grasp',
+                                        'pre-empted':'grasp',
+                                        'failed':'grasp'})
     
     smach.StateMachine.add('grasp',grasp_unknown_object_assisted(),
                            transitions={'completed':'fdm_completed',

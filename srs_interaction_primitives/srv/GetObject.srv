@@ -1,0 +1,12 @@
+string name                             # object's name
+--- 
+string name                             # object's name
+string frame_id                         # Fixed Frame
+uint8 pose_type                     # way to set the pose
+geometry_msgs/Pose pose                 # position and orientation of the object 
+geometry_msgs/Point bounding_box_lwh    # object's bounding box
+string description                      # object's description
+std_msgs/ColorRGBA color            # color of the object and bounding box 
+arm_navigation_msgs/Shape shape     # shape of the model
+string resource                     # resource file with model
+bool use_material                   # usage of material (or color)

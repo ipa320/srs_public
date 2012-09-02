@@ -241,7 +241,7 @@ void srs_ui_but::CProjectionData::setDepthTextureTopic( const std::string & topi
         {
     	m_textureRosDepth->setTopic( topic );
 
-        std::cerr << std::endl << "Depth texture topic set: " << m_textureRosDepth->getTopic() << std::endl;
+ //       std::cerr << std::endl << "Depth texture topic set: " << m_textureRosDepth->getTopic() << std::endl;
         }
 }
 
@@ -265,11 +265,53 @@ void srs_ui_but::CProjectionData::updateMatrices()
 	if( m_material.get() == 0 )
 		return;
 
+	Ogre::Matrix4 wt;
+
+//	std::cerr << "SetProjectionMatrix" << std::endl;
+
+	// Get camera to world matrix
+	{
+		tf::StampedTransform tfTransform;
+
+		// Get transform
+		try {
+			// Transformation - to, from, time, waiting time
+			m_tfListener.waitForTransform("/map", "/head_cam3d_link",
+						ros::Time(0), ros::Duration(5));
+
+			m_tfListener.lookupTransform("/map", "/head_cam3d_link",
+					ros::Time(0), tfTransform);
+
+		} catch (tf::TransformException& ex) {
+			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+		//	PERROR( "Transform error.");
+			return;
+		}
+
+		Eigen::Matrix4f trMatrix;
+
+		// Get transformation matrix
+		pcl_ros::transformAsMatrix(tfTransform, trMatrix);	// Sensor TF to defined base TF
+
+		for( int i = 0; i < 4; ++i)
+			for( int j = 0; j < 4; ++j)
+			{
+				wt[i][j] = trMatrix(i, j);
+			}
+	}
 
 	Ogre::Matrix4 pm( Ogre::Matrix4::CLIPSPACE2DTOIMAGESPACE * m_frustum->getProjectionMatrixWithRSDepth() );
 
 	// Compute projection matrix. CLIPSPACE2DTOIMAGESPACE: Useful little matrix which takes 2D clipspace {-1, 1} to {0,1} and inverts the Y.
 	Ogre::Matrix4 fm( pm * m_frustum->getViewMatrix() );
+
+//	m_frustum->getWorldTransforms( &wt );
+
+//	std::cerr << "WT:" << std::endl << wt << std::endl;
+
+	m_textureRosDepth->setMatrix( pm  );
+	//m_textureRosDepth->setCameraModel( m_camera_model );
+
 
 	// Set vertex program parameters
 	Ogre::GpuProgramParametersSharedPtr paramsVP( m_material->getTechnique(0)->getPass(0)->getVertexProgramParameters() );
@@ -280,29 +322,31 @@ void srs_ui_but::CProjectionData::updateMatrices()
 	}
 	else
 	{
-		std::cerr << "Named constant - texViewProjMatrix - not found..." << std::endl;
+		std::cerr << "Named constant not found..." << std::endl;
 	}
 
-	if( paramsVP->_findNamedConstantDefinition( "cameraPosition") )
-	{
-		paramsVP->setNamedConstant( "cameraPosition", m_projectorNode->getPosition() );
-	}
-	else
-	{
-		std::cerr << "Named constant -cameraPosition - not found..." << std::endl;
-	}
-
+	/*
 	// Set fragment program parameters
 	Ogre::GpuProgramParametersSharedPtr paramsFP( m_material->getTechnique(0)->getPass(0)->getFragmentProgramParameters() );
 
-	if( paramsFP->_findNamedConstantDefinition("testedDistance"))
+	if( paramsFP->_findNamedConstantDefinition("projectionMatrix"))
 	{
-		paramsFP->setNamedConstant( "testedDistance", float(0.1) );
+		paramsFP->setNamedConstant( "projectionMatrix", fm );
 	}
 	else
 	{
-		std::cerr << "Named constant not found: testedDistance " << std::endl;
+		std::cerr << "Named constant not found: projectionMatrix " << std::endl;
 	}
+
+	if( paramsFP->_findNamedConstantDefinition("invProjectionMatrix"))
+	{
+		paramsFP->setNamedConstant( "invProjectionMatrix", fm.inverse() );
+	}
+	else
+	{
+		std::cerr << "Named constant not found: invProjectionMatrix" << std::endl;
+	}
+*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

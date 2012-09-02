@@ -73,6 +73,10 @@ public:
       server_ = new actionlib::SimpleActionServer<ManualGraspingAction>(nh_, name, boost::bind(&ManualGrasping::execute, this, _1), false);
 
       inited_ = false;
+
+      tact_received_ = false;
+      sdh_received_ = false;
+
       action_name_ = name;
       jt_publisher_ = nh_.advertise<trajectory_msgs::JointTrajectory>("/sdh_controller/command", 10);
       tact_sub_  = nh_.subscribe("/sdh_controller/mean_values", 10, &ManualGrasping::TactileDataCallback,this);
@@ -113,6 +117,9 @@ protected:
     bool inited_;
     ros::Subscriber tact_sub_;
     ros::Subscriber state_sub_;
+
+    bool tact_received_;
+    bool sdh_received_;
 
     actionlib::SimpleActionServer<ManualGraspingAction> * server_;
     ros::NodeHandle nh_;

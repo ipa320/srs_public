@@ -39,6 +39,13 @@ namespace srs_env_model_percp
       */
 	const std::string OUTLIERS_PERCENT_PARAM    = "outliers_percent";
 
+    
+    /**
+     * bb_estimator - Percentage of rows and columns considered for sampling
+     * (for calculation of statistics)
+     */
+    const std::string SAMPLING_PERCENT_PARAM         = "sampling_percent";
+
 	/**
 	 * bb_estimator - scene (world) frame id
 	 */
@@ -55,6 +62,12 @@ namespace srs_env_model_percp
       * bb_estimator - default percentage of outliers
       */
     const int OUTLIERS_PERCENT_DEFAULT          = 10;
+
+    /**
+     * bb_estimator - Default percentage of rows and columns considered for sampling
+     * (for calculation of statistics)
+     */
+    const int SAMPLING_PERCENT_DEFAULT       = 30;
 
     /**
       * bb_estimator - default scene (world) frame id

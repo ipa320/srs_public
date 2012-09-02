@@ -1,6 +1,9 @@
 string object_name
 geometry_msgs/PoseStamped pose
 geometry_msgs/Point bb_lwh
+bool allow_collision # true allows collisions with gripper
+bool attached # not implemented yet
+string attach_to_frame_id
 ---
 bool completed
 string msg

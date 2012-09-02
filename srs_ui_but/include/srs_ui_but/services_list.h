@@ -43,6 +43,11 @@ static const std::string PACKAGE_NAME_PREFIX = "/but_gui";
  */
 static const std::string GetClosestPoint_SRV = PACKAGE_NAME_PREFIX + std::string("/get_closest_point");
 static const std::string SetPointCloudTopic_SRV = PACKAGE_NAME_PREFIX + std::string("/set_point_cloud_topic");
+
+/**
+ * Object manager services
+ */
+static const std::string GetAddedObjects_SRV = PACKAGE_NAME_PREFIX + std::string("/get_added_objects");
 }
 
 #endif /* BUT_SERVICES_SERVICES_LIST_H_ */

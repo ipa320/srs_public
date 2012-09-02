@@ -18,6 +18,11 @@ planedet_ht_gauss_shift_res: 11
 planedet_ht_gauss_angle_sigma: 0.04
 planedet_ht_gauss_shift_sigma: 0.15
 
+planedet_ht_lvl1_gauss_angle_res: 21
+planedet_ht_lvl1_gauss_shift_res: 21
+planedet_ht_lvl1_gauss_angle_sigma: 5.0
+planedet_ht_lvl1_gauss_shift_sigma: 5.0
+
 #
 planedet_search_minimum_current_space: 1500.0
 planedet_search_minimum_global_space: 1.5

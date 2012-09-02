@@ -10,5 +10,9 @@
     <param name="but_server_node/frame_skip" value="5" type="int"/>
     
     <!-- Run our dynamic scene model server node -->
-    <node name="but_server_node" pkg="srs_env_model" type="but_server_node" />
+    <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
+	    <param name="differential_frames_count" value="15" type="int"/> 
+		<remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info" />
+		<remap from="but_server_node/points_in" to="/cam3d/rgb/points" />
+    </node>
 </launch>

@@ -43,7 +43,8 @@
 // ROS
 #include <sensor_msgs/CameraInfo.h>
 
-#include <srs_env_model_percp/but_seg_utils/normals.h>
+//#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 
 namespace srs_env_model_percp
@@ -78,7 +79,7 @@ namespace srs_env_model_percp
 			 * Finds maximas in this and saves them as planes to given vector
 			 * @param indices Found planes
 			 */
-			int findMaxima(std::vector<Plane<float> > &indices);
+			int findMaxima(std::vector<but_plane_detector::Plane<float> > &indices);
 
 			/**
 			 * Generates a Gauss curve into this space (centered)

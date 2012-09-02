@@ -265,6 +265,10 @@ class grasp_unknown_object_assisted(smach.State):
              
              res = get_object(name=self.unknown_object_name)
              
+             if res.frame_id is not ('map' or '/map'):
+                 
+                rospy.logwarn('TODO: Transformation of IM pose needed! Frame_id: %s',res.frame_id)
+             
              self.object_pose = res.pose
              self.object_bb = res.scale        
           
@@ -273,6 +277,11 @@ class grasp_unknown_object_assisted(smach.State):
           rospy.logerr('Cannot add IM object to the scene, error: %s',str(e)) 
           
       if self.object_pose is not None:
+          
+          # conversion to lwh
+          self.object_pose.position.y -= res.scale.y/2.0
+          self.object_pose.position.z -= res.scale.z/2.0
+          
           
           return True
       else:
@@ -318,11 +327,18 @@ class grasp_unknown_object_assisted(smach.State):
       
       coll_obj(object_name = self.unknown_object_name,
                pose = mpose,
-               bb_lwh = self.object_bb);
+               bb_lwh = self.object_bb,
+               allow_collision=True,
+               attached=False,
+               attach_to_frame_id='');
       
     except Exception, e:
       
       rospy.logerr('Cannot add unknown object to the planning scene, error: %s',str(e))
+      
+  def change_bb_to_attached(self):
+      
+      rospy.loginfo('Setting object bb to be attached')
       
     
   def execute(self,userdata):
@@ -598,28 +614,36 @@ class move_arm_to_given_positions_assisted(smach.State):
     #target_pos = list(self.userdata.list_of_target_positions)
     target_pos = copy.deepcopy(self.userdata.list_of_target_positions)
     
-    pose_of_the_target_object_in_base_link = None
-    # self.pose_of_the_target_object_in_map -> transform it to /base_link
+#===============================================================================
+#    pose_of_the_target_object_in_base_link = None
+#    # self.pose_of_the_target_object_in_map -> transform it to /base_link
+#    
+#    t = rospy.Time(0)
+# 
+#    transf_target = '/base_link'
+# 
+#    listener.waitForTransform(transf_target,'/map',t,rospy.Duration(5))
+#  
+#    if listener.canTransform(transf_target,'/map',t):
+#    
+#      pose_of_the_target_object_in_base_link = listener.transformPose(transf_target,self.pose_of_the_target_object_in_map)
+#    
+#    else:
+#    
+#      rospy.logerr('Transformation is not possible!')
+#      #sys.exit(0)
+#      return 'failed' 
+#===============================================================================
     
-    t = rospy.Time(0)
-
-    transf_target = '/base_link'
-
-    listener.waitForTransform(transf_target,'/map',t,rospy.Duration(5))
-  
-    if listener.canTransform(transf_target,'/map',t):
+    #===========================================================================
+    # target_pos[data.pos_id-1].pre_grasp.pose.position.x += pose_of_the_target_object_in_base_link.pose.position.x
+    # target_pos[data.pos_id-1].pre_grasp.pose.position.y += pose_of_the_target_object_in_base_link.pose.position.y
+    # target_pos[data.pos_id-1].pre_grasp.pose.position.z += (pose_of_the_target_object_in_base_link.pose.position.z + self.userdata.bb_of_the_target_object['bb_lwh'].z/2)
+    #===========================================================================
     
-      pose_of_the_target_object_in_base_link = listener.transformPose(transf_target,self.pose_of_the_target_object_in_map)
-    
-    else:
-    
-      rospy.logerr('Transformation is not possible!')
-      #sys.exit(0)
-      return 'failed' 
-    
-    target_pos[data.pos_id-1].pre_grasp.pose.position.x += pose_of_the_target_object_in_base_link.pose.position.x
-    target_pos[data.pos_id-1].pre_grasp.pose.position.y += pose_of_the_target_object_in_base_link.pose.position.y
-    target_pos[data.pos_id-1].pre_grasp.pose.position.z += (pose_of_the_target_object_in_base_link.pose.position.z + self.userdata.bb_of_the_target_object['bb_lwh'].z/2)
+    target_pos[data.pos_id-1].pre_grasp.pose.position.x += self.pose_of_the_target_object_in_map.pose.position.x
+    target_pos[data.pos_id-1].pre_grasp.pose.position.y += self.pose_of_the_target_object_in_map.pose.position.y
+    target_pos[data.pos_id-1].pre_grasp.pose.position.z += (self.pose_of_the_target_object_in_map.pose.position.z + self.userdata.bb_of_the_target_object['bb_lwh'].z/2)
     
   
     print "Moving arm's IM to this position:"
@@ -728,11 +752,18 @@ class move_arm_to_given_positions_assisted(smach.State):
     
     coll_obj = rospy.ServiceProxy(self.s_coll_obj, ArmNavCollObj);
     
+    # hack - why is this needed???????
+    tpose = self.pose_of_the_target_object_in_map
+    #tpose.pose.position.y -= userdata.bb_of_the_target_object['bb_lwh'].y/2
+    
     try:
       
       coll_obj(object_name = userdata.name_of_the_target_object,
-               pose = userdata.pose_of_the_target_object,
-               bb_lwh = userdata.bb_of_the_target_object['bb_lwh']);
+               pose = tpose,
+               bb_lwh = userdata.bb_of_the_target_object['bb_lwh'],
+               allow_collision=False,
+               attached=False,
+               attach_to_frame_id='');
       
     except Exception, e:
       

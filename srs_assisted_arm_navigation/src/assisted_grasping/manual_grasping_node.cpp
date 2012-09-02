@@ -50,17 +50,11 @@ bool ManualGrasping::CloseRound(std::vector<double>& pos, std_msgs::Float32Multi
 	// separate closing of both parts of finger
 	if (tact.data[tact_f] < max_force_) {
 
-		/*if (fabs(pos[pos_f])<inc_tmp) pos[pos_f] = 0;
-		else pos[pos_f] += inc_tmp;*/
-
 		SetPhalanxPosition(pos,pos_f,0.9,inc_tmp);
 
 	}
 
 	if (tact.data[tact_t] < max_force_) {
-
-		/*if (fabs(pos[pos_t])<inc_tmp) pos[pos_t] = 0;
-		else pos[pos_t] += inc_tmp;*/
 
 		SetPhalanxPosition(pos,pos_t,0.0,inc_tmp);
 
@@ -82,14 +76,9 @@ bool ManualGrasping::CloseSquare(std::vector<double>& pos, std_msgs::Float32Mult
 
 	if (tact.data[tact_f] < max_force_ ) {
 
-		/*if (fabs(pos[pos_t])<inc_tmp) pos[pos_t] = 0;
-		else pos[pos_t] += inc_tmp;*/
-
 		SetPhalanxPosition(pos,pos_t,0,inc_tmp);
 
 		return false;
-
-
 
 	} else return true;
 

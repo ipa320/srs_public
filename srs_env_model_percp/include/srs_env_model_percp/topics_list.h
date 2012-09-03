@@ -40,6 +40,7 @@ namespace srs_env_model_percp
 	static const std::string DET_OUTPUT_POINT_CLOUD_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/point_cloud");
 	static const std::string DET_OUTPUT_PLANES_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/plane_array");
 	static const std::string DET_OUTPUT_MARKER_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/poly");
+	static const std::string DET_OUTPUT_IMAGE_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/image");
 
     /**
       * but_plane_detector - input topics
@@ -87,7 +88,7 @@ namespace srs_env_model_percp
       * bb_estimator - default topics to subscribe
       */
 	const std::string DEPTH_IMAGE_TOPIC_IN    = "depth_image_in";
-    const std::string POINT_CLOUD_TOPIC_IN    = "points_in";
+	const std::string POINT_CLOUD_TOPIC_IN    = "points_in";
 	const std::string CAMERA_INFO_TOPIC_IN    = "camera_info_in";
 	const std::string RGB_IMAGE_TOPIC_IN      = "rgb_image_in";
 }

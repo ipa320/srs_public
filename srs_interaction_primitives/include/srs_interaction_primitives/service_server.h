@@ -33,6 +33,7 @@
 #include <interactive_markers/interactive_marker_server.h>
 
 #include <srs_interaction_primitives/PrimitiveType.h>
+#include <std_msgs/UInt8.h>
 
 #include "primitive.h"
 #include "bounding_box.h"
@@ -197,6 +198,14 @@ bool getUpdateTopic(GetUpdateTopic::Request &req, GetUpdateTopic::Response &res)
  * @param res  Response of type SetAllowObjectInteraction.
  */
 bool setAllowObjectInteraction(SetAllowObjectInteraction::Request &req, SetAllowObjectInteraction::Response &res);
+
+/**
+ * @brief Gets object
+ *
+ * @param req  Request of type GetObject.
+ * @param res  Response of type GetObject.
+ */
+bool getObject(GetObject::Request &req, GetObject::Response &res);
 
 }
 

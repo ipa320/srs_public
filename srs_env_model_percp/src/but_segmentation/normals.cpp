@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
  * \file
  *
  * $Id: normals.cpp 694 2012-04-20 10:24:24Z ihulik $
@@ -30,24 +30,19 @@
  *	 Contains necessary classes for normal estimation from point clouds and height maps
  */
 
-// OpenCV
-#include <cv.h>
-#include <opencv2/imgproc/imgproc.hpp>
-
-// ROS
-#include <ros/ros.h>
-
-// Eigen
-#include <Eigen/Core>
-#include <Eigen/Eigenvalues>
-#include <Eigen/StdVector>
-
-#include <srs_env_model_percp/but_seg_utils/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 // std
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+
+// Eigen
+#include <Eigen/Core>
+#include <Eigen/Eigenvalues>
+
+// Open CV
+#include <opencv2/imgproc/imgproc.hpp>
 
 // pcl
 #include <pcl/point_cloud.h>
@@ -59,7 +54,7 @@ using namespace std;
 using namespace cv;
 
 
-namespace srs_env_model_percp
+namespace but_plane_detector
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,6 +128,7 @@ Normals::Normals(cv::Mat &points, const CameraInfoConstPtr& cam_info, int normal
 		ne.setInputCloud(cloud);
 		ne.compute(normals);
 
+		#pragma omp parallel for
 		for (int i = 0; i < points.rows; ++i)
 		for (int j = 0; j < points.cols; ++j)
 		{
@@ -218,6 +214,7 @@ Normals::Normals(cv::Mat &points, const CameraInfoConstPtr& cam_info, int normal
 			}
 		else if (normalType & NormalType::LSQAROUND)
 			{
+				#pragma omp parallel for
 				for (int i = 0; i < points.rows; ++i)
 					for (int j = 0; j < points.cols; ++j)
 					{
@@ -287,7 +284,7 @@ Normals::Normals(pcl::PointCloud<pcl::PointXYZ> &pointcloud, float threshold, in
 													m_planes(cvSize(pointcloud.width, pointcloud.height), CV_32FC4)
 {
 		// ... fill point cloud...
-
+neighborhood = 8;
 	Vec3f nullvector(0.0, 0.0, 0.0);
 	Vec4f nullvector4(0.0, 0.0, 0.0, 0.0);
 
@@ -329,44 +326,57 @@ Normals::Normals(pcl::PointCloud<pcl::PointXYZ> &pointcloud, float threshold, in
 //				m_planes.at<Vec4f>(i, j) = nullvector4;
 //		}
 ///////////////////////////////////////////////////////////////
-		// Estimate normals
-		pcl::IntegralImageNormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-		pcl::PointCloud<pcl::Normal> normals;
+//		// Estimate normals
+//		pcl::IntegralImageNormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+//		pcl::PointCloud<pcl::Normal> normals;
+//
+//		ne.setNormalEstimationMethod (ne.AVERAGE_DEPTH_CHANGE);
+//		ne.setDepthDependentSmoothing(true);
+//		ne.setMaxDepthChangeFactor(threshold);
+//		//ne.setRectSize(10, 10);
+//		ne.setNormalSmoothingSize((float)(neighborhood*2+1));
+//		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = pointcloud.makeShared();
+//		ne.setInputCloud(cloud);
+//		ne.compute(normals);
+//
+//		for (int i = 0; i < m_points.rows; ++i)
+//		for (int j = 0; j < m_points.cols; ++j)
+//		{
+//			Vec3f realPoint = m_points.at<Vec3f>(i, j);
+//
+//			Vec4f normal;
+//			if (normals(j, i).normal_x == normals(j, i).normal_x &&
+//				normals(j, i).normal_y == normals(j, i).normal_y &&
+//				normals(j, i).normal_z == normals(j, i).normal_z)
+//			{
+//				normal[0] = normals(j, i).normal_x;
+//				normal[1] = normals(j, i).normal_y;
+//				normal[2] = normals(j, i).normal_z;
+//
+////					if (normal[2] < 0)
+////					{
+////						normal[0] *= -1.0;
+////						normal[1] *= -1.0;
+////						normal[2] *= -1.0;
+////					}
+//				normal[3] = -(normal[0]*realPoint[0]+normal[1]*realPoint[1]+normal[2]*realPoint[2]);
+//				m_planes.at<Vec4f>(i, j) = normal;
+//			}
+//			else
+//				m_planes.at<Vec4f>(i, j) = nullvector4;
+//		}
 
-		ne.setNormalEstimationMethod (ne.AVERAGE_DEPTH_CHANGE);
-		ne.setDepthDependentSmoothing(true);
-		ne.setMaxDepthChangeFactor(threshold);
-		//ne.setRectSize(10, 10);
-		ne.setNormalSmoothingSize((float)(neighborhood*2+1));
-		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = pointcloud.makeShared();
-		ne.setInputCloud(cloud);
-		ne.compute(normals);
-
-		for (int i = 0; i < m_points.rows; ++i)
-		for (int j = 0; j < m_points.cols; ++j)
+	for (int i = 0; i < m_points.rows; ++i)
+	for (int j = 0; j < m_points.cols; ++j)
+	{
+		Vec3f realPoint = m_points.at<Vec3f>(i, j);
+		if (realPoint != nullvector)
 		{
-			Vec3f realPoint = m_points.at<Vec3f>(i, j);
-
-			Vec4f normal;
-			if (normals(j, i).normal_x == normals(j, i).normal_x &&
-				normals(j, i).normal_y == normals(j, i).normal_y &&
-				normals(j, i).normal_z == normals(j, i).normal_z)
-			{
-				normal[0] = normals(j, i).normal_x;
-				normal[1] = normals(j, i).normal_y;
-				normal[2] = normals(j, i).normal_z;
-
-//					if (normal[2] < 0)
-//					{
-//						normal[0] *= -1.0;
-//						normal[1] *= -1.0;
-//						normal[2] *= -1.0;
-//					}
-				normal[3] = -(normal[0]*realPoint[0]+normal[1]*realPoint[1]+normal[2]*realPoint[2]);
-				m_planes.at<Vec4f>(i, j) = normal;
-			}
-			else
-				m_planes.at<Vec4f>(i, j) = nullvector4;
+			Vec4f normal= getNormalLSQAround(i, j, 8, threshold);
+			m_planes.at<Vec4f>(i, j) = normal;
+		}
+		else
+			m_planes.at<Vec4f>(i, j) = nullvector4;
 		}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

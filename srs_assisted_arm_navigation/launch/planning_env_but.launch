@@ -3,12 +3,22 @@
   <!-- customized copy of cob_arm_navigation.launch and kinect_perception.launch from cob_arm_navigation -->
   <group>
   
-    <include file="$(find cob_arm_navigation)/launch/cob_planning_environment.launch" />
+    <!-- doesn't exist... -->
+    <!--include file="$(find cob_arm_navigation)/launch/cob_planning_environment.launch" /-->
+    
+    <!--include file="$(find cob_arm_navigation)/launch/planning_environment.xml" /-->
 
 	  <include file="$(find srs_assisted_arm_navigation)/launch/constraint_aware_kinematics.launch" />
 	  <include file="$(find srs_assisted_arm_navigation)/launch/ompl_planning.launch" />
-	  <include file="$(find cob_arm_navigation)/launch/trajectory_filter_server.launch" />
-	  <include file="$(find cob_arm_navigation)/launch/move_groups.launch" />
+	  <include file="$(find cob_arm_navigation)/launch/trajectory_filter_server.xml" />
+	  <!--include file="$(find cob_arm_navigation)/launch/move_groups.xml" /-->
+	  
+	  
+	  
+	  <node pkg="move_arm" type="move_arm_simple_action" name="cob_move_arm">
+        <rosparam file="$(find cob_manipulation_config)/$(env ROBOT)/move_arm.yaml"/>
+        <remap from="arm_ik" to="/cob_ik_wrapper/arm/get_constraint_aware_ik" />
+    </node>
 
 	  <!--maybe needed for table_top_manipulation --> 
 		<include file="$(find trajectory_filter_server)/launch/trajectory_unnormalize.launch"/>
@@ -32,7 +42,7 @@
       <remap from="cloud_out" to="/cam3d/rgb/points_filtered2" />-->
       <param name="sensor_frame" type="string" value="head_cam3d_link" />
       <param name="subsample_value" type="double" value=".03"/>
-      <rosparam command="load" file="$(find cob_arm_navigation)/config/$(env ROBOT)/self_filter.yaml" />
+      <rosparam command="load" file="$(find cob_manipulation_config)/$(env ROBOT)/self_filter.yaml" />
     </node>
       
     <node pkg="planning_environment" type="environment_server" output="screen" name="environment_server">      
@@ -44,16 +54,32 @@
     
     <node pkg="planning_environment" type="planning_scene_validity_server" output="screen" name="planning_scene_validity_server"/>      
   
-  <!-- Run BUT dynamic scene model server node -->
-  <node name="but_server_node" pkg="srs_env_model" type="but_server_node" respawn="true">
-    <param name="pointcloud_subscriber" value="/cam3d/depth/points_filtered2"/>
-    <param name="input_has_rgb" type="bool" value="false"/>
-    <!--param name="pointcloud_subscriber" value="/cam3d/rgb/points_filtered2"/-->
-    <param name="max_range" type="double" value="4"/>
-    <param name="pointcloud_min_z" value="0.2" type="double"/>
-    <param name="pointcloud_max_z" value="2.0" type="double" />
-    <param name="resolution" value="0.05" type="double"/>
-  </node>
+  
+  
+
+    <!-- Run our dynamic scene model server node -->
+    <node name="but_server_node" pkg="srs_env_model" type="but_server_node" respawn="true" output="log">
+    
+      <param name="input_has_rgb" type="bool" value="false"/>
+	    <param name="diferential_frames_count" value="1" type="int"/> 
+	    
+		  <remap from="cpc_camera_info" to="/cam3d/rgb/camera_info" />
+		  <remap from="ocp_camera_info" to="/cam3d/rgb/camera_info" /> 
+		  <remap from="pcp_points" to="/cam3d/depth/points_filtered2" />
+		  
+		  <remap from="but_server_node/camera_info" to="/cam3d/depth/camera_info" />
+		  <remap from="but_server_node/points_in" to="/cam3d/depth/points_filtered2" />
+		  
+		  <!-- Set 3d camera maximal relevant distance in meters -->
+      <param name="max_range" type="double" value="4.5"/>
+
+      <!-- Other parameters -->
+      <param name="pointcloud_min_z" value="0.2" type="double"/>
+      <param name="pointcloud_max_z" value="2.0" type="double" />
+      <param name="resolution" value="0.05" type="double"/>
+      <param name="frame_skip" value="5" type="int"/>
+		  
+    </node>
 	
 	</group>
 	

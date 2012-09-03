@@ -78,6 +78,7 @@
 #include "srs_env_model_percp/EstimateBBAlt.h"
 #include "srs_env_model_percp/EstimateRect.h"
 #include "srs_env_model_percp/EstimateRectAlt.h"
+#include "srs_env_model_percp/Estimate2DHullMesh.h"
 
 #include <srs_interaction_primitives/AddBoundingBox.h>
 #include <srs_interaction_primitives/ChangePose.h>
@@ -97,6 +98,8 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/image_encodings.h>
+
+#include <arm_navigation_msgs/Shape.h>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Vector3.h>
@@ -158,6 +161,7 @@ vector<Point2i> rectPoints(2); // Estimated rectangle after backward projection
 // Names of windows
 string inputVideoWinName("Input Video (use your mouse to specify a ROI)");
 string bbWinName("Bounding Box");
+string hullWinName("Convex Hull");
 
 // Bounding box colors
 Scalar bbColorFront(0, 0, 255); // Color of the front side edges of the box
@@ -171,8 +175,8 @@ tf::StampedTransform worldToSensorTf;
 enum displayModesEnum {RGB, DEPTH};
 int displayMode = RGB;
 
-// Client for communication with bb_estimator_server
-ros::ServiceClient bbEstimateClient, rectEstimateClient;
+// Clients for communication with bb_estimator_server
+ros::ServiceClient bbEstimateClient, rectEstimateClient, Hull2DMeshEstimateClient;
 
 // Client for the add_bounding_box, change_pose and change_scale service
 ros::ServiceClient bbAddClient, bbChangePoseClient, bbChangeScaleClient;
@@ -529,6 +533,156 @@ void sendRequest(Point2i p1, Point2i p2)
 }
 
 /*==============================================================================
+ * Test estimation service for 2D convex hull (in image plane coordinates) of a mesh
+ * (in world coordinates).
+ */
+void estimate2DHullMesh()
+{
+    // Create the request
+    //--------------------------------------------------------------------------
+    srs_env_model_percp::Estimate2DHullMesh srv;
+    
+    // Create a test mesh (in camera coordinates)
+    //--------------------------------------------------------------------------
+    arm_navigation_msgs::Shape mC;
+    mC.type = mC.MESH;
+    mC.vertices.resize(4);
+    mC.vertices[0].x = 0; mC.vertices[0].y = 0; mC.vertices[0].z = 1;
+    mC.vertices[1].x = 0; mC.vertices[1].y = 0.2; mC.vertices[1].z = 1;
+    mC.vertices[2].x = 0.2; mC.vertices[2].y = 0.2; mC.vertices[2].z = 1;
+    mC.vertices[3].x = -0.2; mC.vertices[3].y = 0.3; mC.vertices[3].z = 2;
+    
+    // triangle k is defined by tre vertices located at indices
+    // triangles[3k], triangles[3k+1], triangles[3k+2]
+    mC.triangles.resize(6);
+    mC.triangles[0] = 0; mC.triangles[1] = 1; mC.triangles[2] = 2;
+    mC.triangles[3] = 1; mC.triangles[4] = 2; mC.triangles[5] = 3;
+    
+    // When using simulated Clock time, now() returns time 0 until first message
+    // has been received on /clock topic => wait for that.
+    ros::Time reqTime;
+    do {
+        reqTime = ros::Time::now();
+    } while(reqTime.sec == 0);
+    srv.request.header.stamp = reqTime;
+    
+    // Read the messages from cache (the latest ones before the request timestamp)
+    //--------------------------------------------------------------------------
+    sensor_msgs::CameraInfoConstPtr camInfo = camInfoCache.getElemBeforeTime(reqTime);
+    if(camInfo == 0) {
+        ROS_ERROR("No camera info was obtained before the request time.");
+        return;
+    }
+    
+    // Get the intrinsic camera parameters
+    //--------------------------------------------------------------------------
+    Mat K = Mat(3, 3, CV_64F, (double *)camInfo->K.data());
+    float cx = (float)K.at<double>(0, 2);
+    float cy = (float)K.at<double>(1, 2);
+    float fx = (float)K.at<double>(0, 0);
+    float fy = (float)K.at<double>(1, 1);
+    //float f = (fx + fy) / 2.0;
+    
+    if(fx == 0 || fy == 0 || cx == 0 || cy == 0) {
+        ROS_ERROR("Intrinsic camera parameters are undefined.");
+    }
+    
+    // Obtain the corresponding transformation from world to camera coordinate system
+    //--------------------------------------------------------------------------
+    try {
+        tfListener->waitForTransform(sceneFrameId, camFrameId, reqTime, ros::Duration(0.2));
+        tfListener->lookupTransform(sceneFrameId, camFrameId, reqTime, worldToSensorTf);
+    }
+    catch(tf::TransformException& ex) {
+        string errorMsg = String("Transform error: ") + ex.what();
+        ROS_ERROR("%s", errorMsg.c_str());
+        return;
+    }
+    
+    // Transform the test mesh to world coordinates
+    //--------------------------------------------------------------------------
+    tf::Transformer t;
+    t.setTransform(worldToSensorTf);
+    arm_navigation_msgs::Shape mW;
+    mW.type = mW.MESH;
+    mW.vertices.resize(mC.vertices.size());
+    for( int i = 0; i < (int)mC.vertices.size(); i++ )
+    {
+        // Transformation to the world coordinates
+        tf::Stamped<tf::Point> vertex;
+        vertex.frame_id_ = camFrameId;
+        vertex.setX(mC.vertices[i].x);
+        vertex.setY(mC.vertices[i].y);
+        vertex.setZ(mC.vertices[i].z);
+        t.transformPoint(sceneFrameId, vertex, vertex);
+        
+        mW.vertices[i].x = vertex.getX();
+        mW.vertices[i].y = vertex.getY();
+        mW.vertices[i].z = vertex.getZ();
+    }
+    srv.request.mesh = mW;
+  
+    // Call the service (calls are blocking, it will return once the call is done)
+    //--------------------------------------------------------------------------
+    if( Hull2DMeshEstimateClient.call(srv) )
+    {
+        srs_env_model_percp::Estimate2DHullMesh::Response res = srv.response;
+        
+        // If the image does not have 3 channels => convert it (we want to visualize
+        // the bounding box in color, thus we need 3 channels)
+        Mat img3ch;
+        if(currentRgb.channels() != 3) {
+            cvtColor(currentRgb, img3ch, CV_GRAY2RGB, 3);
+        }
+        else {
+            currentRgb.copyTo(img3ch);
+        }
+        
+        // Draw the projected test mesh
+        //----------------------------------------------------------------------
+        // Project the vertices onto image plane
+        vector<Point2i> trPoints(mC.vertices.size());
+        for( int i = 0; i < (int)mC.vertices.size(); i++ ) {
+            Point3f p(mC.vertices[i].x, mC.vertices[i].y, mC.vertices[i].z);
+            trPoints[i] = Point2i(int(p.x * fx / p.z + cx + 0.5), int(p.y * fy / p.z + cy + 0.5));
+            //trPoints[i] = fwdProject(Point3f(mC.vertices[i].x, mC.vertices[i].y, mC.vertices[i].z), fx, fy, cx, cy);
+        }
+        
+        // Draw the triangles
+        for( int i = 2; i < (int)mC.triangles.size(); i += 3 ) {
+            line(img3ch,
+                Point(trPoints[mC.triangles[i - 2]].x, trPoints[mC.triangles[i - 2]].y),
+                Point(trPoints[mC.triangles[i - 1]].x, trPoints[mC.triangles[i - 1]].y), bbColor, 3);
+            line(img3ch,
+                Point(trPoints[mC.triangles[i - 1]].x, trPoints[mC.triangles[i - 1]].y),
+                Point(trPoints[mC.triangles[i]].x, trPoints[mC.triangles[i]].y), bbColor, 3);
+            line(img3ch,
+                Point(trPoints[mC.triangles[i - 2]].x, trPoints[mC.triangles[i - 2]].y),
+                Point(trPoints[mC.triangles[i]].x, trPoints[mC.triangles[i]].y), bbColor, 3);
+        }
+        
+        // Draw the resulting convex hull
+        //----------------------------------------------------------------------
+        for(int i = 0; i < (int)res.convexHull.points.size(); i++) {
+            int j = (i + 1) % res.convexHull.points.size();
+            
+            line(img3ch,
+                Point(res.convexHull.points[i].x, res.convexHull.points[i].y),
+                Point(res.convexHull.points[j].x, res.convexHull.points[j].y), bbColorFront, 1);
+        }
+        
+        // Show the image with visualized bounding box
+        imshow(hullWinName, img3ch);
+    }
+    else
+    {
+        std::string errMsg = "Failed to call service " + Estimate2DHullMesh_SRV + ".";
+        ROS_ERROR("%s", errMsg.c_str());
+    }
+}
+
+
+/*==============================================================================
  * Scales depth values (for visualization purposes).
  *
  * The provided depth is typically in CV_16SC1 datatype.
@@ -573,10 +727,15 @@ void sv1_processSubMsgs(const sensor_msgs::ImageConstPtr &rgb,
 {
     if(subVariant == SV_NONE) {
         subVariant = SV_1;
+        
+        // Set size of cache
+        camInfoCache.setCacheSize(CACHE_SIZE);
     }
     else if(subVariant != SV_1) {
         return;
     }
+    
+    camInfoCache.add(camInfo);
 
     // Get the intrinsic camera matrix of our camera
     Mat K = Mat(3, 3, CV_64F, (double *)camInfo->K.data());
@@ -627,10 +786,15 @@ void sv2_processSubMsgs(const sensor_msgs::ImageConstPtr &rgb,
 {
     if(subVariant == SV_NONE) {
         subVariant = SV_2;
+        
+        // Set size of cache
+        camInfoCache.setCacheSize(CACHE_SIZE);
     }
     else if(subVariant != SV_2) {
         return;
     }
+    
+    camInfoCache.add(camInfo);
 
     // Get the intrinsic camera matrix of our camera
     Mat K = Mat(3, 3, CV_64F, (double *)camInfo->K.data());
@@ -743,6 +907,9 @@ int main(int argc, char **argv)
     // Create a client for the /bb_estimator/estimate_rect service
     rectEstimateClient = n.serviceClient<srs_env_model_percp::EstimateRect>(EstimateRect_SRV);
     
+    // Create a client for the /estimate_2D_hull_mesh service
+    Hull2DMeshEstimateClient = n.serviceClient<srs_env_model_percp::Estimate2DHullMesh>(Estimate2DHullMesh_SRV);
+    
     // Create clients for the add_bounding_box, change_pose and change_scale services
     // (for manipulation with a visualization of BB)
     bbAddClient = n.serviceClient<srs_interaction_primitives::AddBoundingBox>(srs_interaction_primitives::AddBoundingBox_SRV);
@@ -804,6 +971,10 @@ int main(int argc, char **argv)
             estimationMode = (estimationMode == 3) ? 1 : (estimationMode + 1);
             ROS_INFO("Estimation mode %d activated.", estimationMode);
             sendRequest(roiP1, roiP2);
+        }
+        // If the key M was pressed -> test estimation service for 2D convex hull of a mesh
+        else if(key == 'm' || key == 'M') {
+            estimate2DHullMesh();
         }
         
         ros::spinOnce(); // Call all the message callbacks waiting to be called

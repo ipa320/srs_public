@@ -62,6 +62,8 @@ set( DISPLAY_SOURCE_FILES src/but_display/but_display.cpp
                           src/but_display/but_projection.cpp
 						  src/but_display/but_rostexture.cpp
 						  src/but_display/but_context_manager.cpp
+						  src/but_display/but_object_manager.cpp
+						  src/but_display/object_control_pane.cpp
 						  src/but_display/but_depthtexture.cpp
                           src/but_display/init.cpp 
                           )
@@ -84,3 +86,4 @@ rosbuild_add_executable(but_depthtoimage_node src/but_display/but_depthpctoimage
 
 # BUT data fusion
 rosbuild_add_executable(data_fusion_view src/but_data_fusion/view.cpp)
+

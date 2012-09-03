@@ -68,8 +68,8 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 			m_latchedTopics(false),
 			m_numPCFramesProcessed(1.0), m_frameCounter(0),
 			m_plugCMapHolder("CMAP"),
-			m_plugInputPointCloudHolder("PCIN"),
-			m_plugOcMapPointCloudHolder("PCOC"),
+			m_plugInputPointCloudHolder("PCIN", true),
+			m_plugOcMapPointCloudHolder("PCOC", false),
 			m_plugVisiblePointCloudHolder("PCVIS"),
 			m_plugOctoMap("OCM"),
 			m_plugCollisionObjectHolder("COB"),
@@ -78,6 +78,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 			m_plugMarkerArrayHolder( "MA" ),
 			m_plugObjTree( "OT" ),
 			m_plugOldIMarkers( 0 ),
+			m_plugCompressedPointCloudHolder( "CPC" ),
 			m_bUseOldIMP( false )
 #ifdef _EXAMPLES_
 			, m_plugExample("Example1")
@@ -111,6 +112,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	m_plugins.push_back( m_plugMap2DHolder.getPlugin() );
 	m_plugins.push_back( m_plugMarkerArrayHolder.getPlugin() );
 	m_plugins.push_back( &m_plugObjTree );
+	m_plugins.push_back( m_plugCompressedPointCloudHolder.getPlugin() );
 
 	if( m_bUseOldIMP )
 	{
@@ -166,8 +168,8 @@ srs_env_model::CButServer::~CButServer()
 /**
  Publish all data
  */
-void srs_env_model::CButServer::publishAll(const ros::Time& rostime) {
-
+void srs_env_model::CButServer::publishAll(const ros::Time& rostime)
+{
 	// Store start time
 	ros::WallTime startTime = ros::WallTime::now();
 
@@ -176,7 +178,6 @@ void srs_env_model::CButServer::publishAll(const ros::Time& rostime) {
 		ROS_WARN("Nothing to publish, octree is empty");
 		return;
 	}
-
 
 	// init markers:
 	visualization_msgs::MarkerArray occupiedNodesVis;
@@ -187,75 +188,22 @@ void srs_env_model::CButServer::publishAll(const ros::Time& rostime) {
 	//=========================================================================
 	// Plugins frame start
 
-	m_plugOcMapPointCloudHolder.connect( & m_plugOctoMap );
-	m_plugCollisionObjectHolder.connect( & m_plugOctoMap );
-	m_plugCMapHolder.connect( & m_plugOctoMap );
-	m_plugMap2DHolder.connect( & m_plugOctoMap );
-    m_plugMarkerArrayHolder.connect( & m_plugOctoMap );
-    m_plugVisiblePointCloudHolder.connect( & m_plugOctoMap );
-
-#ifdef _EXAMPLES_
-    m_plugExampleCrawlerHolder.connect( & m_plugOctoMap );
-#endif
+	connectPlugins();
 
 	// Crawl octomap
 	m_plugOctoMap.crawl( rostime );
 
-#ifdef _EXAMPLES_
-	m_plugExampleCrawlerHolder.disconnect();
-#endif
+	disconnectPlugins();
 
-	// Disconnect all
-	m_plugOcMapPointCloudHolder.disconnect();
-    m_plugCollisionObjectHolder.disconnect();
-	m_plugCMapHolder.disconnect();
-	m_plugMap2DHolder.disconnect();
-	m_plugMarkerArrayHolder.disconnect();
-	m_plugVisiblePointCloudHolder.disconnect();
-
-   // Publish point cloud
-    m_plugOcMapPointCloudHolder.publish( rostime );
-
-	// Publish collision object
-	m_plugCollisionObjectHolder.publish( rostime );
-
-	// Publish collision map
-	m_plugCMapHolder.publish( rostime );
-
-	// Publish 2D map
-	m_plugMap2DHolder.publish( rostime );
-
-	// Finalize octomap publishing
-	if (m_plugOctoMap.shouldPublish())
-		m_plugOctoMap.onPublish( rostime );
-
-	m_plugMarkerArrayHolder.publish(rostime);
-
-	// Publish pointcloud visible in rviz
-	m_plugVisiblePointCloudHolder.publish(rostime);
+	publishPlugins( rostime );
 
 	// Compute and show elapsed time
 	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
 	ROS_DEBUG("Map publishing in CButServer took %f sec", total_elapsed);
 
-	// Publish interactive markers
-	if( m_plugIMarkers != 0 && m_plugIMarkers->shouldPublish() )
-		m_plugIMarkers->onPublish( rostime );
-
-	// Old interactive markers
-	if( m_plugOldIMarkers != 0 && m_plugOldIMarkers->shouldPublish() )
-		m_plugOldIMarkers->onPublish( rostime );
-
-#ifdef _EXAMPLES_
-	// Publish data
-	if( m_plugExample.shouldPublish() )
-	  m_plugExample.onPublish(rostime);
-
-	m_plugExampleCrawlerHolder.publish(rostime);
-#endif
 }
 
-
+///////////////////////////////////////////////////////////////////////////////
 /**
  * On octomap data changed
  */
@@ -265,6 +213,7 @@ void srs_env_model::CButServer::onOcMapDataChanged( const tButServerOcMap & mapd
 	publishAll(ros::Time::now() );
 }
 
+///////////////////////////////////////////////////////////////////////////////
 /**
  * @brief Reset server and all plugins.
  */
@@ -278,6 +227,7 @@ void srs_env_model::CButServer::reset()
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
 /**
  * On pause service call
  */
@@ -287,8 +237,11 @@ bool srs_env_model::CButServer::onPause( ButServerPause::Request & request, ButS
 		pause( false );
 	else
 		pause( true );
+
+	return m_bIsPaused;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 /**
  * Pause-resume server
  */
@@ -314,4 +267,121 @@ void srs_env_model::CButServer::pause( bool bPause )
 
 	m_bIsPaused = bPause;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/**
+ * Connect plugins
+ */
+int srs_env_model::CButServer::connectPlugins()
+{
+	std::vector<std::string> plugins;
+
+
+	if(m_plugOcMapPointCloudHolder.connect( & m_plugOctoMap ) != 0 )
+		plugins.push_back(m_plugOcMapPointCloudHolder.getPlugin()->getName() );
+
+	if(m_plugCollisionObjectHolder.connect( & m_plugOctoMap ) != 0 )
+		plugins.push_back(m_plugCollisionObjectHolder.getPlugin()->getName() );
+
+	if(m_plugCMapHolder.connect( & m_plugOctoMap ) != 0 )
+		plugins.push_back(m_plugCMapHolder.getPlugin()->getName() );
+
+	if(m_plugMap2DHolder.connect( & m_plugOctoMap ) != 0 )
+		plugins.push_back(m_plugMap2DHolder.getPlugin()->getName() );
+
+	if(m_plugMarkerArrayHolder.connect( & m_plugOctoMap ) != 0 )
+		plugins.push_back(m_plugMarkerArrayHolder.getPlugin()->getName() );
+
+	if(m_plugVisiblePointCloudHolder.connect( & m_plugOctoMap ) != 0 )
+		plugins.push_back(m_plugVisiblePointCloudHolder.getPlugin()->getName() );
+
+	if(m_plugCompressedPointCloudHolder.connect( & m_plugOctoMap ) != 0 )
+		plugins.push_back(m_plugCompressedPointCloudHolder.getPlugin()->getName() );
+
+#ifdef _EXAMPLES_
+	if(m_plugExampleCrawlerHolder.connect( & m_plugOctoMap ) != 0 )
+		plugins.push_back(m_plugExampleCrawlerHolder.getPlugin()->getName() );
+#endif
+
+
+	// Write info
+/*
+	std::cerr << "Connected plugins: " << plugins.size() << std::endl;
+
+	std::vector<std::string>::iterator p, end( plugins.end() );
+	for( p = plugins.begin(); p != end; ++p  )
+		std::cerr << *p << " ";
+	std::cerr << std::endl;
+//*/
+	return plugins.size();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/**
+ * Disconnect plugins
+ */
+void srs_env_model::CButServer::disconnectPlugins()
+{
+#ifdef _EXAMPLES_
+	m_plugExampleCrawlerHolder.disconnect();
+#endif
+
+	// Disconnect all
+	m_plugOcMapPointCloudHolder.disconnect();
+    m_plugCollisionObjectHolder.disconnect();
+	m_plugCMapHolder.disconnect();
+	m_plugMap2DHolder.disconnect();
+	m_plugMarkerArrayHolder.disconnect();
+	m_plugVisiblePointCloudHolder.disconnect();
+	m_plugCompressedPointCloudHolder.disconnect();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/**
+ * Publish data
+ */
+void srs_env_model::CButServer::publishPlugins(const ros::Time& rostime)
+{
+	// Publish point cloud
+	m_plugOcMapPointCloudHolder.publish( rostime );
+
+	// Publish collision object
+	m_plugCollisionObjectHolder.publish( rostime );
+
+	// Publish collision map
+	m_plugCMapHolder.publish( rostime );
+
+	// Publish 2D map
+	m_plugMap2DHolder.publish( rostime );
+
+	// Finalize octomap publishing
+	if (m_plugOctoMap.shouldPublish())
+		m_plugOctoMap.onPublish( rostime );
+
+	m_plugMarkerArrayHolder.publish(rostime);
+
+	// Publish pointcloud visible in rviz
+	m_plugVisiblePointCloudHolder.publish(rostime);
+
+	// Publich limited pointcloud
+	m_plugCompressedPointCloudHolder.publish(rostime);
+
+	// Publish interactive markers
+	if( m_plugIMarkers != 0 && m_plugIMarkers->shouldPublish() )
+		m_plugIMarkers->onPublish( rostime );
+
+	// Old interactive markers
+	if( m_plugOldIMarkers != 0 && m_plugOldIMarkers->shouldPublish() )
+		m_plugOldIMarkers->onPublish( rostime );
+
+
+#ifdef _EXAMPLES_
+	// Publish data
+	if( m_plugExample.shouldPublish() )
+	  m_plugExample.onPublish(rostime);
+
+	m_plugExampleCrawlerHolder.publish(rostime);
+#endif
+}
+
 

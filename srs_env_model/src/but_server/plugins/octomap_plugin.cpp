@@ -247,6 +247,8 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 	if (!useFrame())
 		return;
 
+//	PERROR("insertCloud: Insert cloud start.");
+
 	// Lock data
 //	boost::mutex::scoped_lock lock(m_lockData);
 
@@ -267,6 +269,8 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 
 	tf::StampedTransform cloudToMapTf;
 
+//	PERROR("Get transforms.");
+
 	// Get transforms
 	try {
 		// Transformation - to, from, time, waiting time
@@ -286,6 +290,8 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 	if (m_mapParameters.frameId != cloud.header.frame_id) {
 		Eigen::Matrix4f c2mTM;
 
+//		PERROR("Transforming.");
+
 		pcl_ros::transformAsMatrix(cloudToMapTf, c2mTM);
 		pcl::transformPointCloud(pc_ground, pc_ground, c2mTM);
 		pcl::transformPointCloud(pc_nonground, pc_nonground, c2mTM);
@@ -299,8 +305,9 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
 
 	// Lock data
+//	PERROR("Try to lock.");
 	boost::mutex::scoped_lock lock(m_lockData);
-
+//	PERROR("Locked.");
 	insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
 	if (m_removeSpecles) {
 		degradeSingleSpeckles();
@@ -337,8 +344,12 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 	// Release lock
 	lock.unlock();
 
+//	PERROR("insertCloud: Unlocked.");
+
 	// Publish new data
 	invalidate();
+
+//	PERROR("insertCloud: End");
 }
 
 /**
@@ -486,8 +497,13 @@ void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime) {
 	// Lock data
 	boost::mutex::scoped_lock lock(m_lockData);
 
+//	std::cerr << "OCP.crawl start. Time: " << ros::Time::now() << std::endl;
+
+
 	// Fill needed structures
 	onCrawlStart(currentTime);
+
+	long count(0);
 
 	// Crawl through nodes
 	for (srs_env_model::tButServerOcTree::leaf_iterator it =
@@ -500,6 +516,7 @@ void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime) {
 		// Node is occupied?
 		if (m_data->octree.isNodeOccupied(*it)) {
 			handleOccupiedNode(it, m_mapParameters);
+			++count;
 		} else { // node not occupied => mark as free in 2D map if unknown so far
 
 			handleFreeNode(it, m_mapParameters);
@@ -507,6 +524,10 @@ void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime) {
 	} // Iterate through octree
 
 	handlePostNodeTraversal(m_mapParameters);
+
+//	std::cerr << "OCP.crawl end. Time: " << ros::Time::now() << std::endl;
+//	std::cerr << "OCP.crawl - count: " << count << std::endl;
+
 	/*
 	 std::stringstream ss;
 	 ss << "/home/wik/output/octomap" << filecounter << ".bt";

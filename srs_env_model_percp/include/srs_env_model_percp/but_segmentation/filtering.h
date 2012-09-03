@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
  * \file
  *
  * $Id: filtering.h 619 2012-04-16 13:47:28Z ihulik $
@@ -45,16 +45,10 @@
 // but_seg_utils
 #include "normals.h"
 
-namespace srs_env_model_percp
+namespace but_plane_detector
 {
-
-	#define DEFAULT_SIZE 2
-	#define DEPTH_DEFAULT_THRESH 200
-	#define NORMAL_DEFAULT_THRESH 0.3
 	#define NORMAL_COMPUTATION_SIZE 5
 	#define NORMAL_COMPUTATION_TYPE NormalType::PCL
-	#define PREDICTOR_DEFAULT_THRESH 0.02
-	#define PREDICTOR_SOBEL_SIZE 5
 
 	#define MIN_DISTANCE 0.1
 	#define MAX_DISTANCE 3.1

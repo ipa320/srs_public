@@ -44,6 +44,8 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
     inited = false;
     params_ = params;
 
+    collision_objects_frame_id_ = "/map"; // TODO read from parameter
+
     // TODO make it configurable through param.
     aco_ = true;
 

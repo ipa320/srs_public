@@ -1,4 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-   <node pkg="srs_ui_but" type="data_fusion_view" name="data_fusion_view" />
+   <node pkg="srs_ui_but" type="data_fusion_view" name="data_fusion_view" output="screen">
+     <remap from="default_camera_info" to="/cam3d/rgb/camera_info" />
+   	 <remap from="default_camera_image" to="/cam3d/rgb/image_raw" />
+   	 <remap from="depth_image_in" to="/cam3d/depth/points" />
+   </node>
 </launch>
+

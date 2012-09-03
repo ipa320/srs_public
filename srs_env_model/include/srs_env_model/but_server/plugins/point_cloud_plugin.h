@@ -53,7 +53,7 @@ namespace srs_env_model
 
     public:
         /// Constructor
-        CPointCloudPlugin(const std::string & name, bool subscribe = true );
+        CPointCloudPlugin(const std::string & name, bool subscribe );
 
         /// Destructor
         virtual ~CPointCloudPlugin();
@@ -62,7 +62,7 @@ namespace srs_env_model
         void enable( bool enabled ){ m_publishPointCloud = enabled; }
 
         //! Should plugin publish data?
-        bool shouldPublish();
+        virtual bool shouldPublish();
 
         //! Initialize plugin - called in server constructor
         virtual void init(ros::NodeHandle & node_handle);
@@ -85,9 +85,10 @@ namespace srs_env_model
         //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
         virtual void pause( bool bPause, ros::NodeHandle & node_handle );
 
+    public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     protected:
-
-
         /**
         * @brief Insert point cloud callback
         *
@@ -122,7 +123,6 @@ namespace srs_env_model
         //! Should this plugin subscribe to some publishing topic?
         bool m_bSubscribe;
 
-
         //! Transform listener
         tf::TransformListener m_tfListener;
 
@@ -156,6 +156,9 @@ namespace srs_env_model
         //! Pointcloud working mode
         bool m_bAsInput;
 
+        //! Output points transform matrix
+        Eigen::Matrix4f m_pcOutTM;
+
     }; // class CPointCloudPlugin
 
     /// Declare holder object - partial specialization of the default holder with predefined connection settings
@@ -168,8 +171,8 @@ namespace srs_env_model
 
     public:
         /// Create holder
-        SPointCloudPluginHolder( const std::string & name )
-        : tHolder(  name,  tHolder::ON_START | tHolder::ON_OCCUPIED | tHolder::ON_STOP)
+        SPointCloudPluginHolder( const std::string & name, bool subscribe )
+        : tHolder(  new CPointCloudPlugin( name, subscribe ),  tHolder::ON_START | tHolder::ON_OCCUPIED | tHolder::ON_STOP, true)
         {
 
         }

@@ -444,6 +444,8 @@ void srs_ui_but::CRosTopicTexture::callback(const sensor_msgs::Image::ConstPtr& 
 	m_new_image = true;
 
 //	std::cerr << "CB: Image: " << m_current_image << ", new_image: " << m_new_image << std::endl;
+
+//	std::cerr << "New image for: " << m_name << std::endl;
 }
 
 

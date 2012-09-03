@@ -1,0 +1,10 @@
+string name                 # Bounding Box name
+--- 
+string frame_id             # Fixed Frame
+string name                 # Bounding Box name
+string object_name          # Attached object name
+string description          # Bounding Box description
+geometry_msgs/Pose pose     # position and orientation of the Bounding Box 
+uint8 pose_type                     # way to set the pose
+geometry_msgs/Vector3 scale # scale of the Bounding Box 
+std_msgs/ColorRGBA color    # color of the Bounding Box 

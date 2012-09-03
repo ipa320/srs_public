@@ -82,6 +82,7 @@ material tested_projection
 			
 			fragment_program_ref tested_projectionFP_PS
 			{
+				param_named testedDistance float 1.0
 				// no params
 				
 			}		

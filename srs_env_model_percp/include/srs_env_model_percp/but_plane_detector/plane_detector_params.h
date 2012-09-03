@@ -86,6 +86,18 @@ namespace srs_env_model_percp
 	const std::string PARAM_HT_GAUSS_SHIFT_SIGMA			= "planedet_ht_gauss_shift_sigma";
 	const double 	  PARAM_HT_GAUSS_SHIFT_SIGMA_DEFAULT	= 0.15;
 
+	const std::string PARAM_HT_LVL1_GAUSS_ANGLE_RES				= "planedet_ht_lvl1_gauss_angle_res";
+	const double 	  PARAM_HT_LVL1_GAUSS_ANGLE_RES_DEFAULT		= 21;
+
+	const std::string PARAM_HT_LVL1_GAUSS_SHIFT_RES				= "planedet_ht_lvl1_gauss_shift_res";
+	const double 	  PARAM_HT_LVL1_GAUSS_SHIFT_RES_DEFAULT		= 21;
+
+	const std::string PARAM_HT_LVL1_GAUSS_ANGLE_SIGMA			= "planedet_ht_lvl1_gauss_angle_sigma";
+	const double 	  PARAM_HT_LVL1_GAUSS_ANGLE_SIGMA_DEFAULT	= 5.0;
+
+	const std::string PARAM_HT_LVL1_GAUSS_SHIFT_SIGMA			= "planedet_ht_lvl1_gauss_shift_sigma";
+	const double 	  PARAM_HT_LVL1_GAUSS_SHIFT_SIGMA_DEFAULT	= 5.0;
+
 
     /**
       * Plane search
@@ -137,6 +149,10 @@ namespace srs_env_model_percp
         double param_ht_gauss_shift_res;
         double param_ht_gauss_angle_sigma;
         double param_ht_gauss_shift_sigma;
+        double param_ht_lvl1_gauss_angle_res;
+        double param_ht_lvl1_gauss_shift_res;
+        double param_ht_lvl1_gauss_angle_sigma;
+        double param_ht_lvl1_gauss_shift_sigma;
 
         double param_search_minimum_current_space;
         double param_search_minimum_global_space;

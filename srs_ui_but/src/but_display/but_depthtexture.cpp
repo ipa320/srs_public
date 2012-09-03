@@ -63,7 +63,7 @@ srs_ui_but::CDepthImageConvertor::CDepthImageConvertor(const ros::NodeHandle& nh
 
 	// Allocate new Image message
 
-	std::cerr << "... CDepthImageConvertor: depth texture initialized..." << std::endl;
+//	std::cerr << "... CDepthImageConvertor: depth texture initialized..." << std::endl;
 }
 
 /**
@@ -72,6 +72,8 @@ srs_ui_but::CDepthImageConvertor::CDepthImageConvertor(const ros::NodeHandle& nh
 void srs_ui_but::CDepthImageConvertor::depthCb(const sensor_msgs::ImageConstPtr& raw_msg)
 {
 	boost::mutex::scoped_lock lock(m_mutex);
+
+//	std::cerr << "New depth image... " << std::endl;
 
 	// Convert image
 	convertDepth(raw_msg);

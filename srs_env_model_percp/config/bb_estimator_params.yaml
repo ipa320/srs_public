@@ -1,6 +1,9 @@
 # 
 #outliers_percent: 10
-outliers_percent: 30
+outliers_percent: 15
+
+#
+sampling_percent: 30
 
 # 
 global_frame: /map

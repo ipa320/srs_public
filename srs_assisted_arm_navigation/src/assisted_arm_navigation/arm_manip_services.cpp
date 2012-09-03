@@ -79,7 +79,7 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
 
     for(tmp = coll_obj_det.begin(); tmp != coll_obj_det.end(); tmp++) {
 
-      (*tmp).id = add_coll_obj_bb((*tmp).name,(*tmp).pose,(*tmp).bb_lwh);
+      (*tmp).id = add_coll_obj_bb((*tmp).name,(*tmp).pose,(*tmp).bb_lwh, (*tmp).allow_collision);
 
       }
 
@@ -292,7 +292,7 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
 
   ROS_INFO("Trying to add collision object name: %s",req.object_name.c_str());
 
-  if (req.pose.header.frame_id=="/map") {
+  if (req.pose.header.frame_id=="/map" || req.pose.header.frame_id=="map") {
 
     ROS_INFO("Ok, object pose is in /map coord. system. Lets store it.");
 
@@ -301,6 +301,8 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
     obj.name = req.object_name;
     obj.bb_lwh = req.bb_lwh;
     obj.pose = req.pose;
+
+    obj.allow_collision = req.allow_collision;
 
     coll_obj_det.push_back(obj);
 
@@ -354,6 +356,8 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
        obj.name = req.object_name;
        obj.bb_lwh = req.bb_lwh;
        obj.pose = pose_transf;
+
+       obj.allow_collision = req.allow_collision;
 
        coll_obj_det.push_back(obj);
 

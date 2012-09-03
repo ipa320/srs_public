@@ -25,8 +25,8 @@
      <remap from="joint_states" to="kitchen_joint_states" />
 		 <remap from="robot_description" to="kitchen_description" />
 		</node>
-		
-		
+	
+    
 	<!-- Run BUT dynamic scene model server node -->
   <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
     <param name="pointcloud_subscriber" value="/cam3d/rgb/points"/>
@@ -35,6 +35,11 @@
     <param name="pointcloud_min_z" value="0.2" type="double"/>
     <param name="pointcloud_max_z" value="2.0" type="double" />
     <param name="resolution" value="0.05" type="double"/>
+    <param name="diferential_frames_count" value="1" type="int"/> 
+	<remap from="cpc_camera_info" to="/cam3d/rgb/camera_info" />
+	<remap from="ocp_camera_info" to="/cam3d/rgb/camera_info" /> 
+	<remap from="pcp_points" to="/cam3d/rgb/points" />
+    
   </node>
 		
 	<!-- BUT cob teleop marker -->

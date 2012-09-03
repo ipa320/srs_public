@@ -31,7 +31,7 @@
  */
 
 #include <srs_env_model_percp/but_plane_detector/scene_model.h>
-#include <srs_env_model_percp/but_seg_utils/filtering.h>
+//#include <but_segmentation/filtering.h>
 
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
@@ -39,7 +39,7 @@
 
 using namespace pcl;
 using namespace cv;
-
+using namespace but_plane_detector;
 namespace srs_env_model_percp
 {
 
@@ -63,10 +63,15 @@ namespace srs_env_model_percp
 							int gauss_angle_res,
 							int gauss_shift_res,
 							double gauss_angle_sigma,
-							double gauss_shift_sigma) :	scene_cloud(new PointCloud<PointXYZRGB>),
+							double gauss_shift_sigma,
+							int lvl1_gauss_angle_res,
+							int lvl1_gauss_shift_res,
+							double lvl1_gauss_angle_sigma,
+							double lvl1_gauss_shift_sigma) :	scene_cloud(new PointCloud<PointXYZRGB>),
 														space(-M_PI, M_PI, min_shift, max_shift, angle_resolution, shift_resolution),
 														current_space(-M_PI, M_PI, min_shift, max_shift, angle_resolution, shift_resolution),
-														gauss(-(gauss_angle_res/2) * space.m_angleStep, (gauss_angle_res/2) * space.m_angleStep, -(gauss_shift_res/2) * space.m_shiftStep, (gauss_shift_res/2) * space.m_shiftStep, gauss_angle_res, gauss_shift_res)
+														gauss(-(gauss_angle_res/2) * space.m_angleStep, (gauss_angle_res/2) * space.m_angleStep, -(gauss_shift_res/2) * space.m_shiftStep, (gauss_shift_res/2) * space.m_shiftStep, gauss_angle_res, gauss_shift_res),
+														gaussPlane(-(lvl1_gauss_angle_res/2) * space.m_angleStep, (lvl1_gauss_angle_res/2) * space.m_angleStep, -(lvl1_gauss_shift_res/2) * space.m_shiftStep, (lvl1_gauss_shift_res/2) * space.m_shiftStep, lvl1_gauss_angle_sigma, lvl1_gauss_shift_sigma)
 	{
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Using hierarchic array
@@ -91,6 +96,7 @@ namespace srs_env_model_percp
 
 		// generate Gauss function in gauss space
 		gauss.generateGaussIn(gauss_angle_sigma, gauss_shift_sigma);
+		gaussPlane.generateGaussIn(0.14, 0.14);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,47 +153,205 @@ namespace srs_env_model_percp
 
 			space.addVolume(gauss, ai1, ai2, zi);
 		}
-		std::cout << "Adding into global" << std::endl;
+		std::cout << "Adding into global, size " << (double)space.getSize()*sizeof(double) / 1000000.0 << std::endl;
 
-//		used.resize(planes.size(), false);
+		used.resize(planes.size(), false);
 		planes.clear();
-//		used.clear();
-//
-//		aux.clear();
-//		counts.clear();
-		space.findMaxima(planes, min_global, blur, search_neighborhood);
+		used.clear();
+
+		aux.clear();
+		counts.clear();
+		space.findMaxima(aux, min_global, blur, search_neighborhood);
 
 // possible merging close planes
 ///////////////////////////////////////////////////////////////////////////////
-//		for (unsigned int i = 0; i < aux.size(); ++i)
+		for (unsigned int i = 0; i < aux.size(); ++i)
 //
-//		if (not used[i])
-//		{
-//			used[i] = true;
-//			Plane<float> final(aux[i].a, aux[i].b, aux[i].c, aux[i].d);
-//			int count = 1;
-//			for (unsigned int j = i+1; j < aux.size(); ++j)
-//			if (not used[j] && aux[i].isSimilar(aux[j], 0.01, 0.01))
-//			{
-//				used[j] = true;
-//				final.a += aux[j].a;
-//				final.b += aux[j].b;
-//				final.c += aux[j].c;
-//				final.d += aux[j].d;
-//				++count;
-//			}
-//
-//			final.a /= count;
-//			final.b /= count;
-//			final.c /= count;
-//			final.d /= count;
-//			planes.push_back(final);
-//			counts.push_back(count);
-//			total_count += count;
-//		}
+		if (not used[i])
+		{
+			used[i] = true;
+			Plane<float> final(aux[i].a, aux[i].b, aux[i].c, aux[i].d);
+			int count = 1;
+			for (unsigned int j = i+1; j < aux.size(); ++j)
+			if (not used[j] && aux[i].isSimilar(aux[j], 0.05, 0.05))
+			{
+				used[j] = true;
+				final.a += aux[j].a;
+				final.b += aux[j].b;
+				final.c += aux[j].c;
+				final.d += aux[j].d;
+				++count;
+			}
+
+			final.a /= count;
+			final.b /= count;
+			final.c /= count;
+			final.d /= count;
+			planes.push_back(final);
+			counts.push_back(count);
+			total_count += count;
+		}
 ///////////////////////////////////////////////////////////////////////////////
 
 		std::cout << "Found : " << planes.size() << " planes." << std::endl;
+//		//		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//		//					// Control visualisaation - uncoment to see HT space
+//		//					//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//									{	double min = 99999999999.0;
+//									double max = -99999999999.0;
+//									ParameterSpaceHierarchyFullIterator it1(&space);
+//									while (not it1.end)
+//									{
+//										float value = it1.getVal();
+//										if (value < min) min = value;
+//										if (value > max) max = value;
+//										++it1;
+//									}
+//
+//									ParameterSpaceHierarchyFullIterator it2(&space);
+//									while (not it2.end)
+//									{
+//										if (it2.getVal() != 0)
+//											it2.setVal(((it2.getVal() - min) / (max - min)));
+//										++it2;
+//									}
+//
+//									cv::Mat image = cv::Mat::zeros(cvSize(space.m_angleSize, space.m_angleSize), CV_32FC1);
+//									int shiftview = space.m_shiftSize/2;
+//									for (int angle1 = 0; angle1 < space.m_angleSize; angle1 += 1)
+//									for (int angle2 = 0; angle2 < space.m_angleSize; angle2 += 1)
+//									{
+//										image.at<float>(angle1, angle2) = space.get(angle1, angle2, shiftview);
+//									}
+//
+//
+//
+//									//create a new window & display the image
+//									cvNamedWindow("Smile", 1);
+//									cvShowImage("Smile", &IplImage(image));
+//									std::cout << "Viewing shift = " << shiftview << std::endl;
+//									//wait for key to close the window
+//									int key = 0;
+//									while(1)
+//									{
+//									    key = cvWaitKey();
+//									    key &= 0x0000ffff;
+//									    std::cout << key << std::endl;
+//									    if(key==27 || key == 0xffff) break;
+//
+//									    switch(key)
+//									    {
+//									        case 'a':
+//									        	if (shiftview < space.m_shiftSize-1)
+//									        	{
+//									        		++shiftview;
+//									        		for (int angle1 = 0; angle1 < space.m_angleSize; angle1 += 1)
+//									        		for (int angle2 = 0; angle2 < space.m_angleSize; angle2 += 1)
+//									        		{
+//									        			image.at<float>(angle1, angle2) = space.get(angle1, angle2, shiftview);
+//									        		}
+//									        	}
+//									        	cvShowImage("Smile", &IplImage(image));
+//									        	std::cout << "Viewing shift = " << shiftview << "/" << space.m_shiftSize-1 << std::endl;
+//									            break;
+//									        case 'z':
+//									        	if (shiftview > 0)
+//									        	{
+//									        		--shiftview;
+//									        		for (int angle1 = 0; angle1 < space.m_angleSize; angle1 += 1)
+//									        		for (int angle2 = 0; angle2 < space.m_angleSize; angle2 += 1)
+//									        		{
+//									        			image.at<float>(angle1, angle2) = space.get(angle1, angle2, shiftview);
+//									        		}
+//									        	}
+//									        	cvShowImage("Smile", &IplImage(image));
+//									        	std::cout << "Viewing shift = " << shiftview << "/" << space.m_shiftSize-1 << std::endl;
+//									            break;
+//									    }
+//									}
+//
+//
+//									cvDestroyWindow( "Smile" );}
+//		//		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//							// Control visualisaation - uncoment to see HT space
+//							//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//									double min = 99999999999.0;
+//									double max = -99999999999.0;
+//									ParameterSpaceHierarchyFullIterator it1(&current_space);
+//									while (not it1.end)
+//									{
+//										float value = it1.getVal();
+//										if (value < min) min = value;
+//										if (value > max) max = value;
+//										++it1;
+//									}
+//
+//									ParameterSpaceHierarchyFullIterator it2(&current_space);
+//									while (not it2.end)
+//									{
+//										if (it2.getVal() != 0)
+//											it2.setVal(50*((it2.getVal() - min) / (max - min)));
+//										++it2;
+//									}
+//
+//									cv::Mat image = cv::Mat::zeros(cvSize(current_space.m_angleSize, current_space.m_angleSize), CV_32FC1);
+//									int shiftview = current_space.m_shiftSize/2;
+//									for (int angle1 = 0; angle1 < current_space.m_angleSize; angle1 += 1)
+//									for (int angle2 = 0; angle2 < current_space.m_angleSize; angle2 += 1)
+//									{
+//										image.at<float>(angle1, angle2) = current_space.get(angle1, angle2, shiftview);
+//									}
+//
+//
+//
+//									//create a new window & display the image
+//									cvNamedWindow("Smile", 1);
+//									cvShowImage("Smile", &IplImage(image));
+//									std::cout << "Viewing shift = " << shiftview << std::endl;
+//									//wait for key to close the window
+//									int key = 0;
+//									while(1)
+//									{
+//									    key = cvWaitKey();
+//									    key &= 0x0000ffff;
+//									    std::cout << key << std::endl;
+//									    if(key==27 || key == 0xffff) break;
+//
+//									    switch(key)
+//									    {
+//									        case 'a':
+//									        	if (shiftview < current_space.m_shiftSize-1)
+//									        	{
+//									        		++shiftview;
+//									        		for (int angle1 = 0; angle1 < current_space.m_angleSize; angle1 += 1)
+//									        		for (int angle2 = 0; angle2 < current_space.m_angleSize; angle2 += 1)
+//									        		{
+//									        			image.at<float>(angle1, angle2) = current_space.get(angle1, angle2, shiftview);
+//									        		}
+//									        	}
+//									        	cvShowImage("Smile", &IplImage(image));
+//									        	std::cout << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
+//									            break;
+//									        case 'z':
+//									        	if (shiftview > 0)
+//									        	{
+//									        		--shiftview;
+//									        		for (int angle1 = 0; angle1 < current_space.m_angleSize; angle1 += 1)
+//									        		for (int angle2 = 0; angle2 < current_space.m_angleSize; angle2 += 1)
+//									        		{
+//									        			image.at<float>(angle1, angle2) = current_space.get(angle1, angle2, shiftview);
+//									        		}
+//									        	}
+//									        	cvShowImage("Smile", &IplImage(image));
+//									        	std::cout << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
+//									            break;
+//									    }
+//									}
+//
+//
+//									cvDestroyWindow( "Smile" );
+
+
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -256,7 +420,9 @@ namespace srs_env_model_percp
 				cache_space.getIndex(a1, a2, plane[3], i, j, k);
 				if (i < cache_space.m_angleSize && j < cache_space.m_angleSize && k < cache_space.m_shiftSize &&
 					i >= 0 && j >= 0 && k >= 0)
+				{
 					cache_space.set(i, j, k, cache_space.get(i, j, k) + 1);
+				}
 			}
 		}
 
@@ -264,10 +430,12 @@ namespace srs_env_model_percp
 		ParameterSpaceHierarchyFullIterator it(&cache_space);
 		int i, j, k;
 		double val;
+
 		// for each point in cache space which is not zero, write a multiplied gauss into the HT
 		while (not it.end)
 		{
 			val = it.getVal();
+
 			if (val > 0.0)
 			{
 				current_space.fromIndex(it.currentI, i, j, k);
@@ -277,6 +445,7 @@ namespace srs_env_model_percp
 		}
 
 		std::cout << "New parameter space size: " << (double)current_space.getSize()*sizeof(double) / 1000000.0 << " MB" << std::endl;
+
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -357,8 +526,8 @@ namespace srs_env_model_percp
 //			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //			// Control visualisaation - uncoment to see HT space
 //			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//					min = 99999999999.0;
-//					max = -99999999999.0;
+//					double min = 99999999999.0;
+//					double max = -99999999999.0;
 //					for (int shift = 0; shift < current_space.m_shiftSize; shift += 1)
 //					for (int angle1 = 0; angle1 < current_space.m_angleSize; angle1 += 1)
 //					for (int angle2 = 0; angle2 < current_space.m_angleSize; angle2 += 1)

@@ -45,7 +45,7 @@
 
 // but_scenemodel
 #include <srs_env_model_percp/but_plane_detector/parameter_space.h>
-#include <srs_env_model_percp/but_seg_utils/normals.h>
+//#include <but_segmentation/normals.h>
 
 
 namespace srs_env_model_percp
@@ -105,7 +105,7 @@ namespace srs_env_model_percp
 			 * @param indices Found planes
 			 * @returns index of maximal plane
 			 */
-			int findMaxima(std::vector<Plane<float> > &indices, double min_value, int neighborhood, int around);
+			int findMaxima(std::vector<but_plane_detector::Plane<float> > &indices, double min_value, int neighborhood, int around);
 
 			/**
 			 * Adds a second volume to this with offset

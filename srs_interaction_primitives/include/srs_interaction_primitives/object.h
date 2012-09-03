@@ -69,6 +69,15 @@ public:
   }
 
   /**
+   * Gets object's bounding box
+   * @return bounding_box_lwh is bounding box length, width and height
+   */
+  geometry_msgs::Point getBoundingBoxLWH()
+  {
+    return bounding_box_lwh_;
+  }
+
+  /**
    * Sets position orientation of the object and dimension of the bounding box.
    * @param pose is object's position and orientation
    * @param bounding_box_lwh is length, width and height of the bounding box

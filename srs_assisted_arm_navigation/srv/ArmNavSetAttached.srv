@@ -1,0 +1,5 @@
+string object_name
+#bool attached
+---
+bool completed
+string msg

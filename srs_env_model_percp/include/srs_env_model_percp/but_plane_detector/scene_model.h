@@ -51,7 +51,8 @@
 #include <opencv2/imgproc/imgproc_c.h>
 
 // but_scenemodel
-#include <srs_env_model_percp/but_seg_utils/normals.h>
+//#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 #include <srs_env_model_percp/but_plane_detector/parameter_space.h>
 #include <srs_env_model_percp/but_plane_detector/parameter_space_hierarchy.h>
 
@@ -85,7 +86,11 @@ namespace srs_env_model_percp
 					int gauss_angle_res = 11,
 					int gauss_shift_res = 11,
 					double gauss_angle_sigma = 0.04,
-					double gauss_shift_sigma = 0.15);
+					double gauss_shift_sigma = 0.15,
+					int lvl1_gauss_angle_res = 21,
+					int lvl1_gauss_shift_res = 21,
+					double lvl1_gauss_angle_sigma = 5.0,
+					double lvl1_gauss_shift_sigma = 5.0);
 
 		/**
 		 * Function adds a depth map with computed normals into existing Hough space
@@ -93,13 +98,13 @@ namespace srs_env_model_percp
 		 * @param cam_info Camera info object
 		 * @param normals Computed normals of depth image
 		 */
-		void AddNext(cv::Mat &depth, const sensor_msgs::CameraInfoConstPtr& cam_info, Normals &normals);
+		void AddNext(cv::Mat &depth, const sensor_msgs::CameraInfoConstPtr& cam_info, but_plane_detector::Normals &normals);
 
 		/**
 		 * Function adds a depth map with computed normals into existing Hough space
 		 * @param normals Normals object (point cloud with precomputed normals)
 		 */
-		void AddNext(Normals &normals);
+		void AddNext(but_plane_detector::Normals &normals);
 
 		/**
 		 * Clears all nodes with value lesser than parameter
@@ -122,9 +127,9 @@ namespace srs_env_model_percp
 		/**
 		 * Detected planes vector
 		 */
-		std::vector<Plane<float> > planes;
+		std::vector<but_plane_detector::Plane<float> > planes;
 
-	protected:
+	public:
 		/**
 		 * Hough space representation
 		 */
@@ -140,6 +145,7 @@ namespace srs_env_model_percp
 		 * Discretized Gauss function
 		 */
 		ParameterSpace gauss;
+		ParameterSpace gaussPlane;
 
 		/**
 		 * Maximum plane index

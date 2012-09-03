@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 1048 2012-07-25 19:10:51Z stancl $
+ * $Id: but_server.h 1221 2012-08-16 11:44:39Z stancl $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -72,6 +72,7 @@
 #include <srs_env_model/but_server/plugins/imarkers_plugin.h>
 #include <srs_env_model/but_server/plugins/marker_array_plugin.h>
 #include <srs_env_model/but_server/plugins/limited_point_cloud_plugin.h>
+#include <srs_env_model/but_server/plugins/compressed_point_cloud_plugin.h>
 #include <srs_env_model/but_server/plugins/objtree_plugin.h>
 
 #include <srs_env_model/ButServerPause.h>
@@ -131,6 +132,15 @@ protected:
 
     /// On pause service call
     bool onPause( ButServerPause::Request & request, ButServerPause::Response & response );
+
+    //! Connect plugins
+    int connectPlugins();
+
+    //! Disconnect plugins
+    void disconnectPlugins();
+
+    //! Publish all
+    void publishPlugins(const ros::Time& rostime);
 
 protected:
 
@@ -201,6 +211,9 @@ protected:
 
     /// Old interactive markers plugin
     COldIMarkersPlugin * m_plugOldIMarkers;
+
+    /// Compressed pointcloud plugin
+    SCompressedPointCloudPluginHolder< COctoMapPlugin > m_plugCompressedPointCloudHolder;
 
     /// Use old interactive server plugin?				TODO: Remov this when new is will be finished
     bool m_bUseOldIMP;

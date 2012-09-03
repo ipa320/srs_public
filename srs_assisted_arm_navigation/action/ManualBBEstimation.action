@@ -5,6 +5,7 @@ string object_name
 # result
 int16[2] p1
 int16[2] p2
+#string im_primitive_name
 ---
 # feedback
 time timestamp

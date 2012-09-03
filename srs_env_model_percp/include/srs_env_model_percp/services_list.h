@@ -52,7 +52,7 @@ namespace srs_env_model_percp
     static const std::string BB_ESTIMATOR_PREFIX = "/bb_estimator";
 
     /**
-     * bb_estimator - services performing bounding box estimation
+     * bb_estimator - services performing 3D bounding box estimation
      */
     const std::string EstimateBB_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_bb");
     const std::string EstimateBBAlt_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_bb_alt");
@@ -62,6 +62,12 @@ namespace srs_env_model_percp
      */
     const std::string EstimateRect_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_rect");
     const std::string EstimateRectAlt_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_rect_alt");
+    
+    /**
+     * bb_estimator - services performing 2D convex hull estimation of a mesh / point cloud
+     */
+    const std::string Estimate2DHullMesh_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_2D_hull_mesh");
+    const std::string Estimate2DHullPointCloud_SRV = BB_ESTIMATOR_PREFIX + std::string("/estimate_2D_hull_point_cloud");
 }
 
 #endif //BUT_PLANE_DETECTOR_SERVICES_LIST_H

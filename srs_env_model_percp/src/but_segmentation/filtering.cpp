@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
  * \file
  *
  * $Id: filtering.cpp 694 2012-04-20 10:24:24Z ihulik $
@@ -30,24 +30,22 @@
  *	 Contains necessary classes for depth map filtering
  */
 
-// OpenCV
+#include <srs_env_model_percp/but_segmentation/filtering.h>
+
+// Open CV
 #include <cv.h>
 
 // ROS
 #include <ros/ros.h>
-
+#include <omp.h>
 // Eigen
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
-#include <Eigen/StdVector>
-
-#include <srs_env_model_percp/but_seg_utils/filtering.h>
 
 using namespace sensor_msgs;
 using namespace cv;
 
-namespace srs_env_model_percp {
-
+namespace but_plane_detector {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // A class providing an interface to depth image segmenter
@@ -168,7 +166,8 @@ void Regions::watershedRegions(Mat &src, const CameraInfoConstPtr& cam_info,
 						   float alpha, float beta, float gamma
 						   )
 {
-	Mat output1;
+	ros::Time begin = ros::Time::now();
+	Mat output1 = src;;
 	Mat output2;
 
 	Mat markers = Mat::zeros(src.size(), CV_32FC1);
@@ -178,10 +177,6 @@ void Regions::watershedRegions(Mat &src, const CameraInfoConstPtr& cam_info,
 	unsigned short val;
 	if (type & WatershedType::DepthDiff)
 	{
-		if (alpha == 0)
-			alpha = DEFAULT_SIZE;
-		if (beta == 0)
-			beta = DEPTH_DEFAULT_THRESH;
 		gradientDepthDifference(src, output1, alpha, beta);
 		for (int i = 0; i < output1.rows; ++i)
 		for (int j = 0; j < output1.cols; ++j)
@@ -197,13 +192,14 @@ void Regions::watershedRegions(Mat &src, const CameraInfoConstPtr& cam_info,
 	}
 	else if (type & WatershedType::NormalDiff)
 	{
-		if (alpha == 0)
-			alpha = DEFAULT_SIZE;
-		if (beta == 0)
-			beta = NORMAL_DEFAULT_THRESH;
 		if (m_normals == NULL)
 			m_normals = new Normals(src, cam_info, NORMAL_COMPUTATION_TYPE, NORMAL_COMPUTATION_SIZE);
+		//std::cout << "Normal computation time:     " << (ros::Time::now() - begin).nsec / 1000000 << std::endl;
+		//begin = ros::Time::now();
 		gradientNormalDifference(m_normals->m_planes, output1, alpha, beta);
+		//std::cout << "Gradient computation time:   " << (ros::Time::now() - begin).nsec / 1000000 << std::endl;
+		//begin = ros::Time::now();
+		#pragma omp parallel for
 		for (int i = 0; i < output1.rows; ++i)
 		for (int j = 0; j < output1.cols; ++j)
 		{
@@ -215,19 +211,15 @@ void Regions::watershedRegions(Mat &src, const CameraInfoConstPtr& cam_info,
 			if (val >= seedThreshold)
 				markers.at<float>(i, j) = 1;
 		}
+		//std::cout << "Watershed computation time: " << (ros::Time::now() - begin).nsec / 1000000 << std::endl;
 	}
 	else if (type & WatershedType::Combined)
 	{
-		if (alpha == 0)
-			alpha = DEFAULT_SIZE;
-		if (beta == 0)
-			beta = DEPTH_DEFAULT_THRESH;
-		if (gamma == 0)
-			gamma = NORMAL_DEFAULT_THRESH;
 		if (m_normals == NULL)
 			m_normals = new Normals(src, cam_info, NORMAL_COMPUTATION_TYPE, NORMAL_COMPUTATION_SIZE);
 		gradientNormalDifference(m_normals->m_planes, output1, alpha, gamma);
 		gradientDepthDifference(src, output2, alpha, beta);
+		#pragma omp parallel for
 		for (int i = 0; i < output1.rows; ++i)
 		for (int j = 0; j < output1.cols; ++j)
 		{
@@ -242,13 +234,8 @@ void Regions::watershedRegions(Mat &src, const CameraInfoConstPtr& cam_info,
 	}
 	else if (type & WatershedType::PredictorDiff)
 	{
-		if (alpha == 0)
-			alpha = DEFAULT_SIZE;
-		if (beta == 0)
-			beta = PREDICTOR_DEFAULT_THRESH;
-		if (gamma == 0)
-			gamma = PREDICTOR_SOBEL_SIZE;
 		gradientPlanePredictor(src, output1, beta, alpha, gamma);
+		#pragma omp parallel for
 		for (int i = 0; i < output1.rows; ++i)
 		for (int j = 0; j < output1.cols; ++j)
 		{
@@ -305,6 +292,7 @@ void Regions::gradientDepthDifference(Mat &src, Mat& dst, int size, float differ
 
 	src.convertTo(input, CV_32F);
 
+	#pragma omp parallel for
 	for (int i = size; i < src.rows-size; ++i)
 	for (int j = size; j < src.cols-size; ++j)
 	{
@@ -336,6 +324,7 @@ void Regions::gradientNormalDifference(Mat &src, Mat& dst, int size, float diffe
 	float maxangle = M_PI - differenceThreshold;
 	Vec4f aux;
 
+	#pragma omp parallel for
 	for (int i = size; i < src.rows-size; ++i)
 	for (int j = size; j < src.cols-size; ++j)
 	{
@@ -409,6 +398,7 @@ void Regions::gradientPlanePredictor(Mat &src, Mat& dst, float differenceThresho
 	// for each
 	Vec3f z(0,0,1);
 
+	#pragma omp parallel for
 	for (int i = size; i < src.rows-size; ++i)
 		for (int j = size; j < src.cols-size; ++j)
 		{
@@ -654,6 +644,7 @@ void Regions::fillEverything(Plane<float> &plane, Mat & depth, Mat & mask, Mat &
 	Mat processedMask = Mat::zeros(depth.size(), CV_8UC1);
 
 	// loop in tile and mark all border pixels as seeds
+	//#pragma omp parallel for
 	for (int i = i_tile; i < maxi; ++i)
 		for (int j = j_tile; j < maxj; ++j)
 		{
@@ -735,6 +726,7 @@ void Regions::fillEverything(Plane<float> &plane, Mat & depth, Mat & mask, Mat &
 		// set current index
 		mask.at<int>(current[0], current[1]) = index;
 		// search neighbourhood
+
 		for (int i = -1; i <= 1; ++i)
 		for (int j = -1; j <= 1; ++j)
 		if (i != 0 || j != 0)

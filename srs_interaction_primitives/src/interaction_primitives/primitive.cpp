@@ -53,8 +53,6 @@ Primitive::Primitive(InteractiveMarkerServerPtr server, string frame_id, string 
   color_green_a01_.g = 1.0;
   color_green_a01_.b = 0.0;
   color_green_a01_.a = 0.1;
-
-  //tfListener = new tf::TransformListener();
 }
 
 void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
@@ -68,24 +66,6 @@ void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedbac
     pose_change.orientation.y -= feedback->pose.orientation.y;
     pose_change.orientation.z -= feedback->pose.orientation.z;
     pose_change.orientation.w -= feedback->pose.orientation.w;
-    /*
-     pose_change.position.x = pose_.position.x - object.pose.position.x;
-     pose_change.position.y = pose_.position.y - object.pose.position.y;
-     pose_change.position.z = pose_.position.z - object.pose.position.z;
-     pose_change.orientation.x = pose_.orientation.x - object.pose.orientation.x;
-     pose_change.orientation.y = pose_.orientation.y - object.pose.orientation.y;
-     pose_change.orientation.z = pose_.orientation.z - object.pose.orientation.z;
-     pose_change.orientation.w = pose_.orientation.w - object.pose.orientation.w;
-     */
-
-  /*  std::cout << std::endl << std::endl;
-    std::cout << pose_change << std::endl << std::endl;
-    std::cout << frame_id_ << std::endl;
-    std::cout << pose_ << std::endl;
-    std::cout << feedback->header.frame_id << std::endl;
-    std::cout << feedback->pose << std::endl;*/
-    //std::cout << object.header.frame_id << std::endl;
-    //std::cout << object.pose << std::endl;
 
     if (frame_id_ != feedback->header.frame_id)
     {
@@ -135,23 +115,12 @@ void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedbac
       pose_ = feedback->pose;
     }
 
-    //   frame_id_ = feedback->header.frame_id;
-
-    //  frame_id_ = feedback->header.frame_id;
-
     insert();
     server_->applyChanges();
 
     updatePublisher_->publishPoseChanged(feedback->pose, pose_change);
   }
 
-  // Transfer object into IMS frame
-  /* if (feedback->header.frame_id != frame_id_)
-   {
-   frame_id_ = feedback->header.frame_id;
-   pose_ = object.pose;
-   insert();
-   }*/
 }
 
 void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
@@ -398,10 +367,13 @@ void Primitive::removeRotationControls()
 
 void Primitive::removeControl(string name)
 {
+  ROS_WARN("REMOVING %s", name.c_str());
   for (unsigned int i = 0; i < object_.controls.size(); i++)
   {
+    std::cout << object_.controls[i].name << std::endl;
     if (object_.controls[i].name == name)
     {
+      ROS_WARN("OK");
       object_.controls.erase(object_.controls.begin() + i);
       return;
     }

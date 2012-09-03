@@ -66,6 +66,9 @@ extern tf::TransformListener *tfListener;
 // calculating statistics of ROI
 extern int outliersPercent;
 
+// Percentage of rows and columns considered for sampling (for calculation of statistics)
+extern int samplingPercent;
+
 // The required maximum ratio of sides length (the longer side is at maximum
 // sidesRatio times longer than the shorter one)
 extern double sidesRatio;
@@ -100,11 +103,31 @@ Point2i fwdProject(Point3f p, float fx, float fy, float cx, float cy)
 
 bool calcStats(Mat &m, float *mean, float *stdDev)
 {
+
     // Get the mask of known values (the unknown are represented by 0, the
     // known by 255)
     Mat negMask = m <= 0; // Negative values
     Mat infMask = m > 20; // "Infinite" values (more than 20 meters)
     Mat knownMask = ((negMask + infMask) == 0);
+    
+    // Sampling (to speed up the calculation we consider only pixels on a sampling
+    // grid, whose density is given by the specified parameter samplingPercent,
+    // which says how many percent of rows and columns should be considered)
+    int rowSamples = knownMask.rows * (samplingPercent / 100.0);
+    int columnSamples = knownMask.cols * (samplingPercent / 100.0);
+    int samplingStepY = max(rowSamples, 1);
+    int samplingStepX = max(columnSamples, 1);
+    
+    // Keep only pixels on a sampling grid
+    for(int y = 0; y < knownMask.rows; y++) {
+        if(y % samplingStepY != 0) {
+            for(int x = 0; x < knownMask.cols; x++) {
+                if(x % samplingStepX != 0) {
+                    knownMask.at<uchar>(y, x) = 0;
+                }
+            }
+        }
+    }
 
     // Mean and standard deviation
     Scalar meanS, stdDevS;
@@ -119,31 +142,73 @@ bool calcStats(Mat &m, float *mean, float *stdDev)
         ROS_WARN("No depth information available in the region of interest");
         return false;
     }
-    
+
     // Number of known values and outliers to be ignored
     int knownCount = sum(knownMask * (1.0/255.0))[0];
     int outliersCount = (knownCount * outliersPercent) / 100;
-    
+
     // Just for sure check if there will be some known values left after removal
     // of outliers.
     if((knownCount - outliersCount) > 0) {
+    
         // Values of m relative to the mean value
         Mat mMeanRel = abs(m - meanValue);
-        
+
         // Find and ignore the given percentage of outliers (the furthest points
         // from the mean value)
-        Point2i maxLoc;
-        for(int i = 0; i < outliersCount; i++) {
-            minMaxLoc(mMeanRel, NULL, NULL, NULL, &maxLoc, knownMask);
-            knownMask.at<uchar>(maxLoc.y, maxLoc.x) = 0;
+        //----------------------------------------------------------------------
+        vector<Point3f> outliers; // A vector to store a given number of the furthest
+                                  // points from the mean value (z of each Point3f
+                                  // stores an outlier value)
+        float currMin = 0; // Current min value included in the vector of outliers
+        int currMinIndex = 0;
+        
+        // Go through all the samples and find outliersCount of the furthest points
+        // from the mean value (outliers)
+        for(int y = 0; y < mMeanRel.rows; y++) {
+            for(int x = 0; x < mMeanRel.cols; x++) {
+                if(knownMask.at<uchar>(y, x)
+                   && (mMeanRel.at<float>(y, x) > currMin || (int)outliers.size() < outliersCount)) {
+                   
+                    Point3f outlier(x, y, mMeanRel.at<float>(y, x));
+                    
+                    // If the vector of outliers is not full yet
+                    if((int)outliers.size() < outliersCount) {
+                        outliers.push_back(outlier);
+                    }
+                    
+                    // If the vector of outliers is full already, replace the outlier with minimum value
+                    else {
+                        outliers.erase(outliers.begin() + currMinIndex);
+                        outliers.insert(outliers.begin() + currMinIndex, outlier);
+                    }
+                    
+                    // Update the current min value
+                    float min = 100;
+                    int minIndex = 0;
+                    for(unsigned int i = 0; i < outliers.size(); i++) {
+                        if(outliers[i].z < min) {
+                            min = outliers[i].z;
+                            minIndex = i;
+                        }
+                    }
+                    currMin = min;
+                    currMinIndex = minIndex;
+                }
+            }
         }
         
+        // Mask out all the outliers
+        for(unsigned int i = 0; i < outliers.size(); i++) {
+            knownMask.at<uchar>(outliers[i].y, outliers[i].x) = 0;
+        }
+
         // Mean and standard deviation (now ignoring the outliers)
         meanStdDev(m, meanS, stdDevS, knownMask);
         meanValue = meanS[0];
         stdDevValue = stdDevS[0];
     }
-    
+
     *mean = meanValue;
     *stdDev = stdDevValue;
 
@@ -261,7 +326,7 @@ bool estimateBB(const ros::Time& stamp,
     // Set estimation mode. If it is not specified in the request or the value
     // is not valid => set MODE1 (== 1) as default estimation mode.
     estimationMode = mode;
-    if(estimationMode == 0 || estimationMode > 3) {
+    if(estimationMode <= 0 || estimationMode > 3) {
         estimationMode = 1;
     }
     
@@ -328,7 +393,7 @@ bool estimateBB(const ros::Time& stamp,
     try {
         tfListener->waitForTransform(camFrameId, sceneFrameId,
                                      camInfo->header.stamp, ros::Duration(2.0));
-//                                     camInfo->header.stamp, ros::Duration(0.2));
+//                                   camInfo->header.stamp, ros::Duration(0.2));
         tfListener->lookupTransform(camFrameId, sceneFrameId,
                                     camInfo->header.stamp, sensorToWorldTf);
     }
@@ -406,7 +471,7 @@ bool estimateBB(const ros::Time& stamp,
     // MODE #1
     ////////////////////////////////////////////////////////////////////////////
     if(estimationMode == MODE1) {
-        
+
         // Convert depth to distance from origin (0,0,0) (= optical center).
         Mat roiD(roi.size(), CV_32F);
         for(int i = 0; i < roi.rows; i++) {
@@ -418,13 +483,13 @@ bool estimateBB(const ros::Time& stamp,
                 roiD.at<float>(i, j) = norm(P);
             }
         }
-        
+
         // Get distance from origin to the front and back face vertices
         float d1, d2;
         if(!calcNearAndFarFaceDistance(roiD, fx, fy, roiLB, roiRT, &d1, &d2)) {
             return false;
         }
-        
+
         // Front-face vertices of BB
         // Each of them is obtained by construction of a vector from origin with
         // length = d1 in direction of the corresponding ROI corner.
@@ -469,7 +534,7 @@ bool estimateBB(const ros::Time& stamp,
         float D = b*b - 4.0*c;
         float k = (-b + sqrt(D)) / 2.0;
         Point3f vecFFtoBF = k * vecMid;
-        
+
         // Back-face vertices
         bbLBB = bbLBF + vecFFtoBF;
         bbRBB = bbRBF + vecFFtoBF;
@@ -644,7 +709,6 @@ bool estimateBB(const ros::Time& stamp,
         bbLTB = Point3f(bbLBF.x, bbRTB.y, bbRTB.z);
     }
 
-
     // Transform the resulting BB vertices to the world coordinates
     //--------------------------------------------------------------------------
     tf::Transformer t;
@@ -662,6 +726,94 @@ bool estimateBB(const ros::Time& stamp,
         bbVertices[i]->y = vertex.getY();
         bbVertices[i]->z = vertex.getZ();
     }
+    
+    
+    // The resulting BB cannot go under the floor (z = 0). If it does so, then try
+    // to raise the bottom face of BB so the lowest BB corner is on the floor.
+    // This process is feasible only if the whole BB top face is above the floor.
+    //--------------------------------------------------------------------------
+    Point3f lowestCorner(0, 0, 0);
+    Point3f vec(0, 0, 0);
+    bool feasible = true;
+    bool isSensorFlipped = false; // Indicates if the camera sensor is flipped
+                                  // (if the top face in the sensor coordinates is also
+                                  // the top one in the world coordinates or not).
+    
+    // The top face in the sensor coordinates is also the top one in the world coordinates
+    if(bbLBF.z < lowestCorner.z) {
+        if(bbLTF.z <= 0) feasible = false;
+        vec = bbLTF - bbLBF;
+        lowestCorner = bbLBF;
+    }
+    if(bbRBF.z < lowestCorner.z && feasible) {
+        if(bbRTF.z <= 0) feasible = false;
+        vec = bbRTF - bbRBF;
+        lowestCorner = bbRBF;
+    }
+    if(bbLBB.z < lowestCorner.z && feasible) {
+        if(bbLTB.z <= 0) feasible = false;
+        vec = bbLTB - bbLBB;
+        lowestCorner = bbLBB;
+    }
+    if(bbRBB.z < lowestCorner.z && feasible) {
+        if(bbRTB.z <= 0) feasible = false;
+        vec = bbRTB - bbRBB;
+        lowestCorner = bbRBB;
+    }
+    
+    // The top face in the sensor coordinates is the bottom one in the world coordinates
+    // (sensor is flipped)
+    if(bbLTF.z < lowestCorner.z) {
+        if(bbLBF.z <= 0) feasible = false;
+        isSensorFlipped = true;
+        vec = bbLBF - bbLTF;
+        lowestCorner = bbLTF;
+    }
+    if(bbRTF.z < lowestCorner.z && feasible) {
+        if(bbRBF.z <= 0) feasible = false;
+        isSensorFlipped = true;
+        vec = bbRBF - bbRTF;
+        lowestCorner = bbRTF;
+    }
+    if(bbLTB.z < lowestCorner.z && feasible) {
+        if(bbLBB.z <= 0) feasible = false;
+        isSensorFlipped = true;
+        vec = bbLBB - bbLTB;
+        lowestCorner = bbLTB;
+    }
+    if(bbRTB.z < lowestCorner.z && feasible) {
+        if(bbRBB.z <= 0) feasible = false;
+        isSensorFlipped = true;
+        vec = bbRBB - bbRTB;
+        lowestCorner = bbRTB;
+    }
+    
+    if(lowestCorner.z < 0) {
+        if(!feasible) {
+            return false;
+        }
+        else {
+            // Compute a vector moving the bottom corners along the BB edges so the
+            // lowest corner is on the floor.
+            float scale = (-lowestCorner.z) / vec.z;
+            vec = vec * scale;
+            
+            // Raise the bottom/top corners along the BB edges
+            if(!isSensorFlipped) {
+                bbLBF += vec;
+                bbRBF += vec;
+                bbLBB += vec;
+                bbRBB += vec;
+            }
+            else {
+                bbLTF += vec;
+                bbRTF += vec;
+                bbLTB += vec;
+                bbRTB += vec;
+            }
+        }
+    }
+    
 
     return true;
 }
@@ -885,7 +1037,7 @@ bool estimateRect(const ros::Time& stamp,
     try {
         tfListener->waitForTransform(sceneFrameId, camFrameId,
                                      camInfo->header.stamp, ros::Duration(2.0));
-//                                     camInfo->header.stamp, ros::Duration(0.2));
+
         tfListener->lookupTransform(sceneFrameId, camFrameId,
                                     camInfo->header.stamp, worldToSensorTf);
     }
@@ -906,7 +1058,7 @@ bool estimateRect(const ros::Time& stamp,
     float cy = (float)K.at<double>(1, 2);
     float fx = (float)K.at<double>(0, 0);
     float fy = (float)K.at<double>(1, 1);
-//    float f = (fx + fy) / 2.0;
+    //float f = (fx + fy) / 2.0;
     
     if(fx == 0 || fy == 0 || cx == 0 || cy == 0) {
         ROS_ERROR("Intrinsic camera parameters are undefined.");
@@ -973,6 +1125,82 @@ bool estimateRect(const ros::Time& stamp,
     p2[0] = min(max(ap2.x, 0), width);
     p2[1] = min(max(ap2.y, 0), height);
 
+    return true;
+}
+
+
+/******************************************************************************
+ * 2D convex hull estimation.
+ */
+bool estimate2DConvexHull(const ros::Time& stamp,
+                          const std::vector<cv::Point3f> points,
+                          std::vector<cv::Point2i> &convexHull
+                         )
+{
+    // Read the messages from cache (the latest ones before the request timestamp)
+    //--------------------------------------------------------------------------
+    sensor_msgs::CameraInfoConstPtr camInfo = camInfoCache.getElemBeforeTime(stamp);
+    if(camInfo == 0) {
+        ROS_ERROR("Cannot calculate the image rectangle. "
+                  "No camera info was obtained before the request time.");
+        return false;
+    }
+    
+    // Obtain the corresponding transformation from camera to world coordinate system
+    //--------------------------------------------------------------------------
+    tf::StampedTransform worldToSensorTf;
+    camFrameId = camInfo->header.frame_id;
+    try {
+        tfListener->waitForTransform(sceneFrameId, camFrameId,
+                                     camInfo->header.stamp, ros::Duration(2.0));
+
+        tfListener->lookupTransform(sceneFrameId, camFrameId,
+                                    camInfo->header.stamp, worldToSensorTf);
+    }
+    catch(tf::TransformException& ex) {
+        string errorMsg = String("Transform error: ") + ex.what();
+        ROS_ERROR("%s", errorMsg.c_str());
+        return false;
+    }
+
+    // Get the intrinsic camera parameters (needed for back-projection)
+    //--------------------------------------------------------------------------
+    Mat K = Mat(3, 3, CV_64F, (double *)camInfo->K.data());
+    float cx = (float)K.at<double>(0, 2);
+    float cy = (float)K.at<double>(1, 2);
+    float fx = (float)K.at<double>(0, 0);
+    float fy = (float)K.at<double>(1, 1);
+    //float f = (fx + fy) / 2.0;
+    
+    if(fx == 0 || fy == 0 || cx == 0 || cy == 0) {
+        ROS_ERROR("Intrinsic camera parameters are undefined.");
+    }
+    
+    // Transform the BB vertices to the image plane
+    //--------------------------------------------------------------------------
+    tf::Transformer t;
+    t.setTransform(worldToSensorTf);
+    
+    // 2D points after projection to the image plane
+    vector<Point2i> trPoints(points.size());
+    
+    for( int i = 0; i < (int)points.size(); i++ )
+    {
+        // Transformation to the camera coordinates
+        tf::Stamped<tf::Point> vertex;
+        vertex.frame_id_ = sceneFrameId;
+        vertex.setX(points[i].x);
+        vertex.setY(points[i].y);
+        vertex.setZ(points[i].z);
+        t.transformPoint(camFrameId, vertex, vertex);
+        
+        // Projection to the image plane
+        trPoints[i] = fwdProject(Point3f(vertex.getX(), vertex.getY(), vertex.getZ()), fx, fy, cx, cy);
+    }
+
+    // Get a convex hull
+    cv::convexHull(trPoints, convexHull);
+    
     return true;
 }
 

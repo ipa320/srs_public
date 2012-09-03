@@ -32,6 +32,7 @@
 #include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/dialog.h>
+#include <wx/textctrl.h>
 
 #include <boost/shared_ptr.hpp>
 #include <interactive_markers/interactive_marker_server.h>
@@ -63,13 +64,16 @@ public:
 	virtual void OnReset(wxCommandEvent& event);
 
 	//! On reset octomap command event handler
-	virtual void OnClearingBox(wxCommandEvent& event);
+	virtual void OnAddBoxGizmo(wxCommandEvent& event);
 
 	/// On clear map event handler
-	virtual void OnClearMap( wxCommandEvent &event );
+	virtual void OnClearBox( wxCommandEvent &event );
+
+	/// On add obstacle event handler
+	virtual void OnAddObstacle( wxCommandEvent &event );
 
 	/// On cancel clera map
-	virtual void OnCancelClear( wxCommandEvent &event );
+	virtual void OnCancelBoxGizmo( wxCommandEvent &event );
 
 protected:
 	//! Add gizmo to the scene
@@ -87,6 +91,9 @@ protected:
 	//! Set gizmo pose-scale from the local copy
 	void setGizmoPoseScale();
 
+	//! Create gizmo status string
+	wxString getGizmoStatusStr();
+
 protected:
     //! stored window manager interface pointer
     rviz::WindowManagerInterface * m_wmi;
@@ -94,14 +101,20 @@ protected:
     //! Reset octomap button
     wxButton * m_buttonReset;
 
-    //! Create clearbox button
-    wxButton *m_buttonClearBoxAdd;
+    //! Create add box button
+    wxButton *m_buttonBoxAdd;
+
+    //! Create obstacle add button
+    wxButton *m_buttonObstacleAdd;
 
     //! Do map erase
-    wxButton *m_buttonClearMap;
+    wxButton *m_buttonClearBox;
 
     //! Cancel clearing
     wxButton *m_buttonCancelClear;
+
+    //! Static text control displaying gizmo info
+    wxTextCtrl * m_textBox;
 
 	//! Gizmo
     srs_interaction_primitives::AddUnknownObject m_uoGizmo;

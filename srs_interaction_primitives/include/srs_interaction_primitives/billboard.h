@@ -32,8 +32,10 @@
 #include "primitive.h"
 #include <srs_interaction_primitives/BillboardType.h>
 #include <OGRE/OgreVector3.h>
+#include <OGRE/OgreMatrix3.h>
 #include <OGRE/OgreQuaternion.h>
 
+#define PREDICTIONS_COUNT 3
 
 namespace srs_interaction_primitives
 {
@@ -87,6 +89,8 @@ private:
   void create();
   void createMenu();
   void createMesh();
+  void addTrajectoryPredictionMarkers();
+  void removeTrajectoryPredictionMarkers();
 };
 }
 #endif /* BILLBOARD_H_ */

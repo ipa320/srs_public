@@ -38,6 +38,7 @@ using namespace srs_env_model_percp;
 using namespace std;
 using namespace sensor_msgs;
 using namespace cv;
+using namespace but_plane_detector;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Constructor - creates and allocates a space (angle X angle X shift)

@@ -365,7 +365,9 @@ protected:
    * @bug Fails if it's called multiple times. For one object it works fine.
    */
   std::string add_coll_obj_attached(double x, double y, double z, double scx, double scz);
-  std::string add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh);
+  std::string add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll);
+
+  std::string collision_objects_frame_id_;
 
   //void armHasStoppedMoving();
 
@@ -378,6 +380,7 @@ protected:
     std::string id;
     geometry_msgs::PoseStamped pose;
     geometry_msgs::Point bb_lwh;
+    bool allow_collision;
 
   } t_det_obj;
 

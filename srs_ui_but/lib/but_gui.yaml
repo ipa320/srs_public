@@ -51,3 +51,8 @@ displays:
     display_name: Context Manager
     description: |
       This display allows to change context.  
+  -
+    class_name: CButObjectManager
+    display_name: Object Manager
+    description: |
+      This display allows to add object from SRS Object Database.  

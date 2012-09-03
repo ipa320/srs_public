@@ -4,8 +4,6 @@
     
     <!-- Other parameters -->
     <param name="but_server_node/pointcloud_min_z" value="0.0" type="double"/>
-    <!--param name="but_server_node/use_old_im" value="true" type="bool"/-->
-    <!--param name="but_server_node/resolution" value="0.025" type="double"/-->
     <param name="but_server_node/resolution" value="0.05" type="double"/>
     <param name="but_server_node/frame_skip" value="5" type="int"/>
     

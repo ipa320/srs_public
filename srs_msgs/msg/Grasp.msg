@@ -1,1 +1,1 @@
-srs_msgs/GraspConfiguration[] grasp_configuration
+srs_msgs/DBGrasp[] grasp_configuration

@@ -1,6 +1,3 @@
-#pragma once
-#ifndef BUT_PLANE_DET_POLYGONIZATION_H
-#define BUT_PLANE_DET_POLYGONIZATION_H
 /******************************************************************************
  * \file
  *
@@ -32,6 +29,10 @@
  * Description:
  *	 Class encapsulating region transformation into poly representation
  */
+
+#pragma once
+#ifndef BUT_PLANE_DET_POLYGONIZATION_H
+#define BUT_PLANE_DET_POLYGONIZATION_H
 
 // Opencv 2
 #include <opencv2/highgui/highgui.hpp>

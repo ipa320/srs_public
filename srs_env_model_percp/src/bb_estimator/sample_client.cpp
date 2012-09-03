@@ -31,23 +31,22 @@
  * performing bounding box estimation.
  *
  * There are two variants of subscription - to be the service able to work also
- * with a simulation of Care-o-Bot (subscription variant #2 is meant to be used
+ * with a simulation of Care-O-bot (subscription variant #2 is meant to be used
  * with simulation, which does not produce a depth map so it must be created from
  * a point cloud).
  *
+ * Required topics:
+ *  Subscription variant #1:
+ *   rgb_image_in - topic with Image messages containing RGB information
+ *   depth_image_in - topic with Image messages containing depth information
+ *   camera_info_in - topic with CameraInfo messages
+ *  Subscription variant #2:
+ *   rgb_image_in - topic with Image messages containing RGB information
+ *   points_in - topic with PointCloud2 messages containing Point Cloud
+ *   camera_info_in - topic with CameraInfo messages
+ *
  * Node parameters:
- *  Parameters for subscription variant #1:
- *  bb_sv1_rgb_topic - topic with Image messages containing RGB information
- *  bb_sv1_depth_topic - topic with Image messages containing depth information
- *  bb_sv1_camInfo_topic - topic with CameraInfo messages
- *
- *  Parameters for subscription variant #2:
- *  bb_sv2_rgb_topic - topic with Image messages containing RGB information
- *  bb_sv2_pointCloud_topic - topic with PointCloud2 messages containing Point Cloud
- *  bb_sv2_camInfo_topic - topic with CameraInfo messages
- *
- *  Other parameters:
- *  bb_scene_frame_id - Frame Id in which the BB coordinates are returned
+ *  global_frame - Frame Id in which the BB coordinates are returned
  *
  * Manual:
  * - Use your mouse to specify a region of interest (ROI) in the window with
@@ -72,6 +71,7 @@
 #include <srs_env_model_percp/bb_estimator/funcs.h>
 #include <srs_env_model_percp/services_list.h>
 #include <srs_env_model_percp/topics_list.h>
+#include <srs_env_model_percp/parameters_list.h>
 
 // Definition of the service for BB estimation
 #include "srs_env_model_percp/EstimateBB.h"
@@ -82,6 +82,8 @@
 #include <srs_interaction_primitives/AddBoundingBox.h>
 #include <srs_interaction_primitives/ChangePose.h>
 #include <srs_interaction_primitives/ChangeScale.h>
+#include <srs_interaction_primitives/services_list.h>
+#include <srs_interaction_primitives/PoseType.h>
 
 #include <algorithm>
 #include <cstdlib>
@@ -131,29 +133,15 @@ int subVariant = SV_NONE;
 // TF listener
 tf::TransformListener *tfListener;
 
-// Percentage of furthest points from mean considered as outliers when
+// Percentage of farthest points from mean considered as outliers when
 // calculating statistics of ROI
-int outliersPercent = outliersPercentDefault;
+int outliersPercent = OUTLIERS_PERCENT_DEFAULT;
 
 // The required maximum ratio of sides length (the longer side is at maximum
 // sidesRatio times longer than the shorter one)
-double sidesRatio = sidesRatioDefault;
+double sidesRatio = SIDES_RATIO_DEFAULT;
 
 // Modes of bounding box estimation
-//----------
-// They differ in interpretation of the specified 2D region of interest (ROI).
-
-// MODE1 = The ROI corresponds to projection of BB front face and the BB is
-//         rotated to fit the viewing frustum (representing the back-projection
-//         of the ROI) in such way, that the BB front face is perpendicular
-//         to the frustum's center axis.
-//         (BB can be non-parallel with all axis.)
-
-// MODE2 = In the ROI is contained the whole projection of BB.
-//         (BB is parallel with all axis.)
-
-// MODE3 = The ROI corresponds to projection of BB front face.
-//         (BB is parallel with all axis.)
 int estimationMode = 1;
 
 bool isWaitingForResponse = false; // Client is waiting for response from server
@@ -324,6 +312,7 @@ void visualizeWithMarkers()
         
         bbAddSrv.request.pose = bbPose;
         bbAddSrv.request.scale = bbScale;
+        bbAddSrv.request.pose_type = srs_interaction_primitives::PoseType::POSE_CENTER;
         
         bbAddSrv.request.color.r = 1.0;
         bbAddSrv.request.color.g = 0.0;
@@ -756,50 +745,41 @@ int main(int argc, char **argv)
     
     // Create clients for the add_bounding_box, change_pose and change_scale services
     // (for manipulation with a visualization of BB)
-    bbAddClient = n.serviceClient<srs_interaction_primitives::AddBoundingBox>("/but_interaction_primitives/add_bounding_box");
-    bbChangePoseClient = n.serviceClient<srs_interaction_primitives::ChangePose>("/but_interaction_primitives/change_pose");
-    bbChangeScaleClient = n.serviceClient<srs_interaction_primitives::ChangeScale>("/but_interaction_primitives/change_scale");
+    bbAddClient = n.serviceClient<srs_interaction_primitives::AddBoundingBox>(srs_interaction_primitives::AddBoundingBox_SRV);
+    bbChangePoseClient = n.serviceClient<srs_interaction_primitives::ChangePose>(srs_interaction_primitives::ChangePose_SRV);
+    bbChangeScaleClient = n.serviceClient<srs_interaction_primitives::ChangeScale>(srs_interaction_primitives::ChangeScale_SRV);
     
     // Create a TF listener
     tfListener = new tf::TransformListener();
     
-    // Get parameters from the parameter server
+    // Get private parameters from the parameter server
     // (the third parameter of function param is the default value)
     //--------------------------------------------------------------------------
-    std::string sv1_rgbTopic, sv1_depthTopic, sv1_camInfoTopic;
-    n.param("bb_sv1_rgb_topic", sv1_rgbTopic, sv1_rgbTopicDefault);
-    n.param("bb_sv1_depth_topic", sv1_depthTopic, sv1_depthTopicDefault);
-    n.param("bb_sv1_camInfo_topic", sv1_camInfoTopic, sv1_camInfoTopicDefault);
-    
-    std::string sv2_rgbTopic, sv2_pointCloudTopic, sv2_camInfoTopic;
-    n.param("bb_sv2_rgb_topic", sv2_rgbTopic, sv2_rgbTopicDefault);
-    n.param("bb_sv2_pointCloud_topic", sv2_pointCloudTopic, sv2_pointCloudTopicDefault);
-    n.param("bb_sv2_camInfo_topic", sv2_camInfoTopic, sv2_camInfoTopicDefault);
-    
-    n.param("bb_scene_frame_id", sceneFrameId, sceneFrameIdDefault);
+    ros::NodeHandle private_nh("~");
+    private_nh.param(GLOBAL_FRAME_PARAM, sceneFrameId, GLOBAL_FRAME_DEFAULT);
+
+    ROS_INFO_STREAM(GLOBAL_FRAME_PARAM << " = " << sceneFrameId);
 
     // Subscription and synchronization of messages
     // TODO: Create the subscribers dynamically and unsubscribe the unused
     // subscription variant.
     //--------------------------------------------------------------------------
     // Subscription variant #1
-    message_filters::Subscriber<Image> sv1_rgb_sub(n, sv1_rgbTopic, 1);
-    message_filters::Subscriber<Image> sv1_depth_sub(n, sv1_depthTopic, 1);
-    message_filters::Subscriber<CameraInfo> sv1_camInfo_sub(n, sv1_camInfoTopic, 1);
+    message_filters::Subscriber<Image> sv1_rgb_sub(n, RGB_IMAGE_TOPIC_IN, 1);
+    message_filters::Subscriber<Image> sv1_depth_sub(n, DEPTH_IMAGE_TOPIC_IN, 1);
+    message_filters::Subscriber<CameraInfo> sv1_camInfo_sub(n, CAMERA_INFO_TOPIC_IN, 1);
         
     typedef sync_policies::ApproximateTime<Image, Image, CameraInfo> sv1_MySyncPolicy;
-	Synchronizer<sv1_MySyncPolicy> sv1_sync(sv1_MySyncPolicy(QUEUE_SIZE),
-	    sv1_rgb_sub, sv1_depth_sub, sv1_camInfo_sub);
+	Synchronizer<sv1_MySyncPolicy> sv1_sync(sv1_MySyncPolicy(QUEUE_SIZE), sv1_rgb_sub, sv1_depth_sub, sv1_camInfo_sub);
 	sv1_sync.registerCallback(boost::bind(&sv1_processSubMsgs, _1, _2, _3));
 	
 	// Subscription variant #2
-	message_filters::Subscriber<Image> sv2_rgb_sub(n, sv2_rgbTopic, 1);
-    message_filters::Subscriber<PointCloud2> sv2_pointCloud_sub(n, sv2_pointCloudTopic, 1);
-    message_filters::Subscriber<CameraInfo> sv2_camInfo_sub(n, sv2_camInfoTopic, 1);
+	message_filters::Subscriber<Image> sv2_rgb_sub(n, RGB_IMAGE_TOPIC_IN, 1);
+    message_filters::Subscriber<PointCloud2> sv2_pointCloud_sub(n, POINT_CLOUD_TOPIC_IN, 1);
+    message_filters::Subscriber<CameraInfo> sv2_camInfo_sub(n, CAMERA_INFO_TOPIC_IN, 1);
     
     typedef sync_policies::ApproximateTime<Image, PointCloud2, CameraInfo> sv2_MySyncPolicy;
-	Synchronizer<sv2_MySyncPolicy> sv2_sync(sv2_MySyncPolicy(QUEUE_SIZE),
-	    sv2_rgb_sub, sv2_pointCloud_sub, sv2_camInfo_sub);
+	Synchronizer<sv2_MySyncPolicy> sv2_sync(sv2_MySyncPolicy(QUEUE_SIZE), sv2_rgb_sub, sv2_pointCloud_sub, sv2_camInfo_sub);
 	sv2_sync.registerCallback(boost::bind(&sv2_processSubMsgs, _1, _2, _3));
 
     // Create a window to show the incoming video and set its mouse event handler
@@ -807,7 +787,7 @@ int main(int argc, char **argv)
     namedWindow(inputVideoWinName.c_str(), CV_WINDOW_AUTOSIZE);
     cvSetMouseCallback(inputVideoWinName.c_str(), onMouse);
 
-    ROS_INFO("Ready.");
+    ROS_INFO("Ready");
 
     // Enters a loop
     //--------------------------------------------------------------------------

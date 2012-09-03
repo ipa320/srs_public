@@ -1,0 +1,12 @@
+# Action server is implemented in RVIZ plugin which acts as bb_estimator client
+# goal
+string object_name
+---
+# result
+int16[2] p1
+int16[2] p2
+---
+# feedback
+time timestamp
+int16[2] p1
+int16[2] p2

@@ -33,25 +33,36 @@ using namespace visualization_msgs;
 using namespace geometry_msgs;
 using namespace std_msgs;
 
-
 namespace srs_interaction_primitives
 {
 
 Object::Object(InteractiveMarkerServerPtr server, string frame_id, string name) :
-  BoundingBox(server, frame_id, name)
+    BoundingBox(server, frame_id, name)
 {
   setPrimitiveType(srs_interaction_primitives::PrimitiveType::OBJECT);
   use_material_ = translated_ = false;
-  move_arm_to_pregrasp_onclick_ = false;
+
+  if (ros::param::has (MoveArmToPregraspOnClick_PARAM))
+    ros::param::get(MoveArmToPregraspOnClick_PARAM, move_arm_to_pregrasp_onclick_);
+  else
+    move_arm_to_pregrasp_onclick_ = false;
+
   pregrasp1_.name = "control_grasp_xp";
   pregrasp2_.name = "control_grasp_xm";
   pregrasp3_.name = "control_grasp_yp";
   pregrasp4_.name = "control_grasp_ym";
   pregrasp5_.name = "control_grasp_zp";
   pregrasp6_.name = "control_grasp_zm";
+
+  allow_object_interaction_ = true;
+
+  if (pose_type_ == PoseType::POSE_BASE)
+  {
+    pose_.position.z += scale_.z * 0.5;
+  }
 }
 
-void Object::objectWithBoundingBoxCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
+void Object::objectCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
   if (move_arm_to_pregrasp_onclick_ && feedback->event_type == InteractiveMarkerFeedback::MOUSE_DOWN)
   {
@@ -215,8 +226,7 @@ void Object::createMenu()
   if (!menu_created_)
   {
     menu_created_ = true;
-    menu_handler_.setCheckState(
-                                menu_handler_.insert("Show bounding box", boost::bind(&Object::menuCallback, this, _1)),
+    menu_handler_.setCheckState(menu_handler_.insert("Show bounding box", boost::bind(&Object::menuCallback, this, _1)),
                                 MenuHandler::CHECKED);
     menu_handler_.setCheckState(menu_handler_.insert("Show description", boost::bind(&Object::menuCallback, this, _1)),
                                 MenuHandler::UNCHECKED);
@@ -224,10 +234,10 @@ void Object::createMenu()
                                 MenuHandler::UNCHECKED);
 
     bool show_pregrasp = false;
-    if (ros::param::has(PARAMETER_SHOW_PREGRASP))
-      ros::param::get(PARAMETER_SHOW_PREGRASP, show_pregrasp);
-    int handle_pregrasp =
-        menu_handler_.insert("Show pre-grasp positions", boost::bind(&Object::menuCallback, this, _1));
+    if (ros::param::has (ShowPregrasp_PARAM))
+      ros::param::get(ShowPregrasp_PARAM, show_pregrasp);
+    int handle_pregrasp = menu_handler_.insert("Show pre-grasp positions",
+                                               boost::bind(&Object::menuCallback, this, _1));
     if (show_pregrasp)
     {
       menu_handler_.setCheckState(handle_pregrasp, MenuHandler::CHECKED);
@@ -236,32 +246,52 @@ void Object::createMenu()
     else
       menu_handler_.setCheckState(handle_pregrasp, MenuHandler::UNCHECKED);
 
-    menu_handler_.setCheckState(menu_handler_.insert("Move arm to pre-grasp position on click",
-                                                     boost::bind(&Object::menuCallback, this, _1)),
-                                MenuHandler::UNCHECKED);
+    if (move_arm_to_pregrasp_onclick_)
+      menu_handler_.setCheckState(
+          menu_handler_.insert("Move arm to pre-grasp position on click", boost::bind(&Object::menuCallback, this, _1)),
+          MenuHandler::CHECKED);
+    else
+      menu_handler_.setCheckState(
+          menu_handler_.insert("Move arm to pre-grasp position on click", boost::bind(&Object::menuCallback, this, _1)),
+          MenuHandler::UNCHECKED);
 
-    bool allow_interation = true;
-    if (ros::param::has(PARAMETER_ALLOW_INTERACTION))
-      ros::param::get(PARAMETER_ALLOW_INTERACTION, allow_interation);
+    /*    if (ros::param::has (AllowInteraction_PARAM))
+     ros::param::get(AllowInteraction_PARAM, allow_interation_);*/
 
-    if (allow_interation)
+    /* if (allow_object_interaction_)
+     {
+     MenuHandler::EntryHandle menu_handler_interaction_ = menu_handler_.insert("Interaction");
+     menu_handler_.setCheckState(
+     menu_handler_.insert(menu_handler_interaction_, "Movement", boost::bind(&Object::menuCallback, this, _1)),
+     MenuHandler::UNCHECKED);
+     menu_handler_.setCheckState(
+     menu_handler_.insert(menu_handler_interaction_, "Rotation", boost::bind(&Object::menuCallback, this, _1)),
+     MenuHandler::UNCHECKED);
+     }*/
+    menu_handler_interaction_ = menu_handler_.insert("Interaction");
+    menu_handler_interaction_movement_ = menu_handler_.insert(menu_handler_interaction_, "Movement",
+                                                              boost::bind(&Object::menuCallback, this, _1));
+    menu_handler_interaction_rotation_ = menu_handler_.insert(menu_handler_interaction_, "Rotation",
+                                                              boost::bind(&Object::menuCallback, this, _1));
+
+    menu_handler_.setCheckState(menu_handler_interaction_movement_, MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_interaction_rotation_, MenuHandler::UNCHECKED);
+
+    if (!allow_object_interaction_)
     {
-      MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert("Interaction");
-      menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Movement", boost::bind(&Object::menuCallback,
-                                                                                                this, _1)),
-                                  MenuHandler::UNCHECKED);
-      menu_handler_.setCheckState(menu_handler_.insert(sub_menu_handle, "Rotation", boost::bind(&Object::menuCallback,
-                                                                                                this, _1)),
-                                  MenuHandler::UNCHECKED);
+      menu_handler_.setVisible(menu_handler_interaction_, false);
+      menu_handler_.setVisible(menu_handler_interaction_movement_, false);
+      menu_handler_.setVisible(menu_handler_interaction_rotation_, false);
     }
   }
 }
 
 void Object::createMesh()
 {
-  mesh_.pose = pose_;
-  mesh_.header.frame_id = frame_id_;
-  mesh_.pose.position.z -= 0.5 * bounding_box_lwh_.z;
+  /*
+   mesh_.header.frame_id = frame_id_;*/
+
+  mesh_.pose.position.z = -0.5 * scale_.z;
 
   mesh_.color = color_;
   mesh_.scale = Vector3();
@@ -283,9 +313,14 @@ void Object::createMesh()
 void Object::setPoseLWH(Pose pose, Point bounding_box_lwh)
 {
   bounding_box_lwh_ = bounding_box_lwh;
+  scale_.x = bounding_box_lwh_.x;
+  scale_.y = bounding_box_lwh_.y;
+  scale_.z = bounding_box_lwh_.z;
 
-  pose_.position.z += 0.5 * bounding_box_lwh.z;
-  BoundingBox::setPose(pose);
+  setPose(pose);
+
+  //pose_.position.z += 0.5 * bounding_box_lwh.z;
+  //BoundingBox::setPose(pose);
 }
 
 void Object::create()
@@ -298,22 +333,15 @@ void Object::create()
   scale_.z = bounding_box_lwh_.z;
 
   object_.header.frame_id = frame_id_;
-  object_.header.stamp = ros::Time::now();
+  //object_.header.stamp = ros::Time::now();
   object_.name = name_;
   object_.description = description_;
   object_.pose = pose_;
   object_.scale = maxScale(scale_);
 
-  //  if (!translated_)
-  //  {
-  //    if (frame_id_ == "/map")
-  //      pose_.position.z += scale_.z / 2;
-  //    else
-  //      pose_.position.y += scale_.z / 2;
-  //    translated_ = true;
-  //  }
+  //BoundingBox::createBoundingBoxControl(0.0f, 0.0f, scale_.z * 0.5);
+  BoundingBox::createBoundingBoxControl(0.0f, 0.0f, 0.0f);
 
-  BoundingBox::createBoundingBoxControl();
   createMesh();
   control_.markers.push_back(mesh_);
   object_.controls.clear();
@@ -326,7 +354,7 @@ void Object::insert()
 {
   create();
   updateControls();
-  server_->insert(object_, boost::bind(&Object::objectWithBoundingBoxCallback, this, _1));
+  server_->insert(object_, boost::bind(&Object::objectCallback, this, _1));
   menu_handler_.apply(*server_, name_);
 }
 

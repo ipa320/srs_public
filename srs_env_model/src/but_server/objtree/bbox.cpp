@@ -38,7 +38,7 @@ namespace objtree
 BBox::BBox(const Box &box) :
     m_box(box)
 {
-    m_type = BOUNDING_BOX;
+    m_type = ALIGNED_BOUNDING_BOX;
 }
 
 /**
@@ -88,9 +88,18 @@ bool BBox::interfereWithBox(const Box &box) const
  */
 bool BBox::isSimilar(const Object *object) const
 {
-    if(object->type() != BOUNDING_BOX) return false;
+    if(object->type() != ALIGNED_BOUNDING_BOX) return false;
 
-    BBox *box = (BBox*)object;
+    return isSimilarBBox((BBox*)object);
+}
+
+/**
+ * Compare other bounding box for similarity.
+ * @param box bounding box to compare
+ * @return true if bounding box is similar, false otherwise
+ */
+bool BBox::isSimilarBBox(const BBox *box) const
+{
 
     if(fabs(box->m_box.x-m_box.x) > 0.5f) return false;
     if(fabs(box->m_box.y-m_box.y) > 0.5f) return false;

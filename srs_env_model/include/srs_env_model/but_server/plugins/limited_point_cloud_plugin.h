@@ -61,6 +61,9 @@ public:
 	//! Called when new scan was inserted and now all can be published
 	virtual void onPublish(const ros::Time & timestamp);
 
+	//! Connect/disconnect plugin to/from all topics
+	virtual void pause( bool bPause, ros::NodeHandle & node_handle);
+
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -79,6 +82,9 @@ protected:
 
 	/// Camera frame id
 	std::string m_cameraFrameId;
+
+    // Camera position topic name
+    std::string m_cameraPositionTopic;
 
 	/// Camera normalized normal - part of the plane equation
 	Eigen::Vector3f m_normal, m_normalBuf;

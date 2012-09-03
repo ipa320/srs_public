@@ -31,8 +31,10 @@ import rospy
 import actionlib
 
 from srs_assisted_arm_navigation.msg import *
+from srs_assisted_arm_navigation.srv import GraspingAllow
 
 def main():
+    
   rospy.init_node('arm_manip_action_test')
   rospy.loginfo("Node for testing actionlib server")
  
@@ -41,8 +43,26 @@ def main():
   rospy.loginfo("Waiting for server...")
   client.wait_for_server()
   goal = ManualArmManipGoal()
-  goal.away = True
+  
+  goal.allow_repeat = False
+  goal.action = "Move arm to arbitrary position"
+  goal.object_name = ""
+  
   client.send_goal(goal)
+  
+  # call allow grasping service
+  rospy.wait_for_service('/but_arm_manip/grasping_allow')
+  
+      
+  grasping_allow = rospy.ServiceProxy('/but_arm_manip/grasping_allow',GraspingAllow)
+  
+  try:
+      
+    gr = grasping_allow(allow=True)
+      
+  except Exception, e:
+      
+    rospy.logerr("Error on calling service: %s",str(e))
   
   #timeout = 240.0
   rospy.loginfo("Waiting for result")
@@ -60,6 +80,15 @@ def main():
 
   if result.timeout:
     rospy.loginfo("User is sleeping")
+    
+  # call allow grasping serv. again....
+  try:
+      
+    gr = grasping_allow(allow=False)
+      
+  except Exception, e:
+      
+    rospy.logerr("Error on calling service: %s",str(e))
   
   rospy.loginfo("Time elapsed: %ss",result.time_elapsed.to_sec())
   

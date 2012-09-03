@@ -33,10 +33,9 @@
 
 namespace srs_env_model_percp
 {
-    static const std::string PACKAGE_NAME_PREFIX = "/but_env_percp";
+    static const std::string PACKAGE_NAME_PREFIX = "/but_env_model_percp";
 
-
-    /**
+    /**************************************************************************
      * but_plane_detector
      */
     static const std::string PLANE_DETECTOR_PREFIX = "/but_plane_detector";
@@ -44,10 +43,10 @@ namespace srs_env_model_percp
     /**
      * but_plane_detector - services
      */
-	static const std::string DET_SERVICE_CLEAR_PLANES = PLANE_DETECTOR_PREFIX + std::string("/but_env_model/clear_planes");
+	static const std::string DET_SERVICE_CLEAR_PLANES = PLANE_DETECTOR_PREFIX + std::string("/clear_planes");
 
 
-    /**
+    /**************************************************************************
      * bb_estimator
      */
     static const std::string BB_ESTIMATOR_PREFIX = "/bb_estimator";

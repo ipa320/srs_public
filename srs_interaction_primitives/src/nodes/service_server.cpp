@@ -56,6 +56,7 @@ bool addPlane(AddPlane::Request &req, AddPlane::Response &res)
   }
 
   Plane *plane = new Plane(imServer, req.frame_id, req.name);
+  plane->setPoseType(req.pose_type);
   plane->setPose(req.pose);
   plane->setScale(req.scale);
   plane->setColor(req.color);
@@ -105,6 +106,7 @@ bool addBillboard(AddBillboard::Request &req, AddBillboard::Response &res)
 
   Billboard *billboard = new Billboard(imServer, req.frame_id, req.name);
   billboard->setType(req.type);
+  billboard->setPoseType(req.pose_type);
   billboard->setPose(req.pose);
   billboard->setScale(req.scale);
   billboard->setDescription(req.description);
@@ -132,6 +134,7 @@ bool addBoundingBox(AddBoundingBox::Request &req, AddBoundingBox::Response &res)
 
   BoundingBox * boundingBox = new BoundingBox(imServer, req.frame_id, req.name);
   boundingBox->setAttachedObjectName(req.object_name);
+  boundingBox->setPoseType(req.pose_type);
   boundingBox->setPose(req.pose);
   boundingBox->setScale(req.scale);
   boundingBox->setColor(req.color);
@@ -167,8 +170,8 @@ bool addObject(AddObject::Request &req, AddObject::Response &res)
     object->setUseMaterial(req.use_material);
   }
   //  object->setPose(req.pose);
+  object->setPoseType(req.pose_type);
   object->setPoseLWH(req.pose, req.bounding_box_lwh);
-  object->setBoundingBoxLWH(req.bounding_box_lwh);
   object->setColor(req.color);
   object->setDescription(req.description);
   object->insert();
@@ -192,6 +195,7 @@ bool addUnknownObject(AddUnknownObject::Request &req, AddUnknownObject::Response
   }
 
   UnknownObject * unknownObject = new UnknownObject(imServer, req.frame_id, req.name);
+  unknownObject->setPoseType(req.pose_type);
   unknownObject->setPose(req.pose);
   unknownObject->setScale(req.scale);
   unknownObject->setDescription(req.description);
@@ -266,7 +270,7 @@ bool setPreGraspPosition(SetPreGraspPosition::Request &req, SetPreGraspPosition:
   InteractiveMarker tmp;
   if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
   {
-    ROS_ERROR("Object with that name doesn't exist!");
+    ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
 
@@ -285,7 +289,7 @@ bool removePreGraspPosition(RemovePreGraspPosition::Request &req, RemovePreGrasp
   InteractiveMarker tmp;
   if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
   {
-    ROS_ERROR("Object with that name doesn't exist!");
+    ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
 
@@ -304,7 +308,7 @@ bool changeDescription(ChangeDescription::Request &req, ChangeDescription::Respo
   InteractiveMarker tmp;
   if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
   {
-    ROS_ERROR("Object with that name doesn't exist!");
+    ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
 
@@ -323,7 +327,7 @@ bool changePose(ChangePose::Request &req, ChangePose::Response &res)
   InteractiveMarker tmp;
   if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
   {
-    ROS_ERROR("Object with that name doesn't exist!");
+    ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
 
@@ -342,7 +346,7 @@ bool changeScale(ChangeScale::Request &req, ChangeScale::Response &res)
   InteractiveMarker tmp;
   if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
   {
-    ROS_ERROR("Object with that name doesn't exist!");
+    ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
 
@@ -361,7 +365,7 @@ bool changeColor(ChangeColor::Request &req, ChangeColor::Response &res)
   InteractiveMarker tmp;
   if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
   {
-    ROS_ERROR("Object with that name doesn't exist!");
+    ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
 
@@ -382,7 +386,7 @@ bool changeDirection(ChangeDirection::Request &req, ChangeDirection::Response &r
   InteractiveMarker tmp;
   if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
   {
-    ROS_ERROR("Object with that name doesn't exist!");
+    ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
 
@@ -407,7 +411,7 @@ bool changeVelocity(ChangeVelocity::Request &req, ChangeVelocity::Response &res)
   InteractiveMarker tmp;
   if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
   {
-    ROS_ERROR("Object with that name doesn't exist!");
+    ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
 
@@ -425,6 +429,22 @@ bool changeVelocity(ChangeVelocity::Request &req, ChangeVelocity::Response &res)
   return true;
 }
 
+bool setAllowObjectInteraction(SetAllowObjectInteraction::Request &req, SetAllowObjectInteraction::Response &res){
+  ROS_INFO("SETTING OBJECT'S INTERACTION");
+
+  InteractiveMarker tmp;
+    if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
+    {
+      ROS_ERROR("Primitive with that name doesn't exist!");
+      return false;
+    }
+
+    primitives[req.name]->setAllowObjectInteraction(req.allow);
+
+    ROS_INFO("..... DONE");
+    return true;
+}
+
 bool getUpdateTopic(GetUpdateTopic::Request &req, GetUpdateTopic::Response &res)
 {
   ROS_INFO("GETTING UPDATE TOPIC");
@@ -432,7 +452,7 @@ bool getUpdateTopic(GetUpdateTopic::Request &req, GetUpdateTopic::Response &res)
   InteractiveMarker tmp;
   if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
   {
-    ROS_ERROR("Object with that name doesn't exist!");
+    ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
 
@@ -457,7 +477,7 @@ bool getAllPrimitivesNames(GetAllPrimitivesNames::Request &req, GetAllPrimitives
 
 
 /**
- * \brief Main function
+ * @brief Main function
  */
 int main(int argc, char **argv)
 {
@@ -489,6 +509,7 @@ int main(int argc, char **argv)
   ros::ServiceServer changeColorService = n.advertiseService(ChangeColor_SRV, changeColor);
   ros::ServiceServer changeDirectionService = n.advertiseService(ChangeDirection_SRV, changeDirection);
   ros::ServiceServer changeVelocityService = n.advertiseService(ChangeVelocity_SRV, changeVelocity);
+  ros::ServiceServer setAllowObjectInteractionService = n.advertiseService(SetAllowObjectInteraction_SRV, setAllowObjectInteraction);
 
   ros::ServiceServer setGraspingPositionService = n.advertiseService(SetGraspingPosition_SRV, setPreGraspPosition);
   ros::ServiceServer removeGraspingPositionService = n.advertiseService(RemoveGraspingPosition_SRV, removePreGraspPosition);

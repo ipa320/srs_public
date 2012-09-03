@@ -57,7 +57,8 @@
 import roslib; roslib.load_manifest('srs_symbolic_grounding')
 
 from srs_symbolic_grounding.srv import SymbolGroundingExploreBasePose
-from srs_symbolic_grounding.msg import *
+#from srs_symbolic_grounding.msg import *
+from std_msgs.msg import *
 from geometry_msgs.msg import *
 import rospy
 import math

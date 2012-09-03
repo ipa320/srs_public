@@ -61,13 +61,85 @@ from numpy import power
 
 class grasp_unknown_object_assisted(smach.State):
   def __init__(self):
-    smach.State.__init__(self,outcomes=['completed','not_completed','failed','pre-empted','repeat'],
+    smach.State.__init__(self,outcomes=['completed','not_completed','failed','pre-empted'],
                          input_keys=[''],
                          output_keys=[''])
+    
+    global listener
+ 
+    but_gui_ns = '/interaction_primitives'
+    
+    arm_manip_ns = '/but_arm_manip'
+    self.arm_action_name = arm_manip_ns + '/manual_arm_manip_action'
+    self.s_grasping_allow = arm_manip_ns + '/grasping_allow'
+    
+  
+  def add_im_for_object(self):
+   
+   # /but_arm_manip/manual_bb_estimation_action
+   roi_client = actionlib.SimpleActionClient('/but_arm_manip/manual_bb_estimation_action',ManualBBEstimationAction)
+   
+      
     
   def execute(self,userdata):
       
     global listener
+    
+    grasping_client = actionlib.SimpleActionClient('/but_arm_manip/manual_arm_manip_action',ManualArmManipAction)
+  
+    rospy.loginfo("Waiting for server...")
+    grasping_client.wait_for_server()
+    goal = ManualArmManipGoal()
+      
+    goal.allow_repeat = False
+    goal.action = "Grasp object and put it on tray"
+    goal.object_name = "Unknown object"
+      
+    grasping_client.send_goal(goal)
+      
+    # call allow grasping service
+    rospy.wait_for_service('/but_arm_manip/grasping_allow')
+      
+          
+    grasping_allow = rospy.ServiceProxy('/but_arm_manip/grasping_allow',GraspingAllow)
+      
+    try:
+          
+      gr = grasping_allow(allow=True)
+          
+    except Exception, e:
+          
+      rospy.logerr("Error on calling service: %s",str(e))
+      return 'failed'
+  
+  
+  
+  
+    rospy.loginfo("Waiting for result")
+    grasping_client.wait_for_result()
+  
+    result = grasping_client.get_result()
+    
+    
+    if result.success:
+        
+        rospy.loginfo('Object should be on tray.')
+        return 'completed'
+    
+    if result.failed:
+        
+        rospy.logwarn('Operator was not able to grasp object and put it on tray')
+        return 'failed'
+    
+    if result.timeout:
+        
+        rospy.logwarn('Action was too long')
+        return 'not_completed'
+    
+    
+    rospy.logerr('This should never happen!')
+    return 'failed'  
+    
     
 
 class move_arm_to_given_positions_assisted(smach.State):
@@ -99,18 +171,7 @@ class move_arm_to_given_positions_assisted(smach.State):
   def add_grpos(self,userdata):
       
     global listener
-    
-    if len(userdata.list_of_target_positions)==0:
-      
-      rospy.logerr('There are NO grasping target positions')
-      return None
-    
-    if len(userdata.list_of_target_positions) != len(userdata.list_of_id_for_target_positions):
-      
-      rospy.logerr('List with gr. positions has different length than list with IDs')
-      return None
-    
-
+  
     rospy.loginfo("Waiting for %s service",self.s_set_gr_pos)
     rospy.wait_for_service(self.s_set_gr_pos)
     set_gr_pos = rospy.ServiceProxy(self.s_set_gr_pos, SetPreGraspPosition)
@@ -169,7 +230,7 @@ class move_arm_to_given_positions_assisted(smach.State):
     
     except Exception, e:
     
-      rospy.logerr('Error on converting name (%s) to ID... Lets use ID=1. Error: %s',userdata.name_of_the_target_object,str(e))
+      rospy.logerr('Error on 0 name (%s) to ID... Lets use ID=1. Error: %s',userdata.name_of_the_target_object,str(e))
       obj_db_id = 1
     
     shape = None
@@ -208,6 +269,9 @@ class move_arm_to_given_positions_assisted(smach.State):
       
     bpose = copy.deepcopy(self.pose_of_the_target_object_in_map.pose)
     bpose.position.z += userdata.bb_of_the_target_object['bb_lwh'].z/2
+    
+    # TODO remove next line - it was just for testing!!!!!!!!
+    use_default_mesh = True
     
     try:
       
@@ -323,6 +387,16 @@ class move_arm_to_given_positions_assisted(smach.State):
       
     global listener
            
+           
+    if len(userdata.list_of_target_positions)==0:
+      
+      rospy.logerr('There are NO grasping target positions')
+      return 'failed'
+    
+    if len(userdata.list_of_target_positions) != len(userdata.list_of_id_for_target_positions):
+      
+      rospy.logerr('List with gr. positions has different length than list with IDs')
+      return 'failed'
     
     # try to transform pose of detected object from /base_link to /map
     transf_target = '/map'
@@ -330,6 +404,8 @@ class move_arm_to_given_positions_assisted(smach.State):
     rospy.loginfo('Lets transform pose of object from %s to %s frame',userdata.pose_of_the_target_object.header.frame_id,transf_target)
 
     t = rospy.Time(0)
+    
+    userdata.id_of_the_reached_position = -1
     
   
     pose_of_target = copy.deepcopy(userdata.pose_of_the_target_object)
@@ -387,10 +463,9 @@ class move_arm_to_given_positions_assisted(smach.State):
     
     goal = ManualArmManipGoal()
        
-    goal.pregrasp = True
+    goal.allow_repeat = True
+    goal.action = "Move arm to suitable pregrasp position"    
     goal.object_name = userdata.name_of_the_target_object
-    #goal.target_positions = list(userdata.list_of_target_positions)
-    #goal.positions_ids = userdata.list_of_id_for_target_positions
     
     rospy.loginfo("Sending goal...")
     client.send_goal(goal)
@@ -418,11 +493,11 @@ class move_arm_to_given_positions_assisted(smach.State):
       sdh_ps.pose.position.y = 0
       sdh_ps.pose.position.z = 0
       
-      listener.waitForTransform('/base_link',sdh_ps.header.frame_id,sdh_ps.header.stamp,rospy.Duration(10))
+      listener.waitForTransform('/map',sdh_ps.header.frame_id,sdh_ps.header.stamp,rospy.Duration(10))
   
-      if listener.canTransform('/base_link',sdh_ps.header.frame_id,sdh_ps.header.stamp):
+      if listener.canTransform('/map',sdh_ps.header.frame_id,sdh_ps.header.stamp):
     
-        sdh_ps_tr = listener.transformPose('/base_link',sdh_ps)
+        sdh_ps_tr = listener.transformPose('/map',sdh_ps)
     
       else:
     
@@ -430,17 +505,31 @@ class move_arm_to_given_positions_assisted(smach.State):
         userdata.id_of_the_reached_position = -1
         return 'not_completed'
       
-      print "sdh_palm_link pose in /base_link coord. system"
+      print "sdh_palm_link pose in /map coord. system"
       print sdh_ps_tr
+      
+      print "object pose in /map coord"
+      print self.pose_of_the_target_object_in_map
       
       min_dist = 1000
       min_id = -1
       
-      for idx in range(len(userdata.list_of_target_positions)):
+      pregrasp_pose_in_map = Vector3()
+      closest_one = Vector3()
       
-        dist = sqrt( power((sdh_ps_tr.pose.position.x - userdata.list_of_target_positions[idx].pre_grasp.pose.position.x),2) +
-                power((sdh_ps_tr.pose.position.y - userdata.list_of_target_positions[idx].pre_grasp.pose.position.y),2) + 
-                power((sdh_ps_tr.pose.position.z - userdata.list_of_target_positions[idx].pre_grasp.pose.position.z),2) );
+      for idx in range(len(userdata.list_of_target_positions)):
+        
+        pregrasp_pose_in_map.x = self.pose_of_the_target_object_in_map.pose.position.x + userdata.list_of_target_positions[idx].pre_grasp.pose.position.x
+        pregrasp_pose_in_map.y = self.pose_of_the_target_object_in_map.pose.position.y + userdata.list_of_target_positions[idx].pre_grasp.pose.position.y
+        pregrasp_pose_in_map.z = self.pose_of_the_target_object_in_map.pose.position.z + userdata.list_of_target_positions[idx].pre_grasp.pose.position.z + self.userdata.bb_of_the_target_object['bb_lwh'].z/2
+        
+        print "PREGRASP position in /map"
+        print idx
+        print pregrasp_pose_in_map
+      
+        dist = sqrt( power((sdh_ps_tr.pose.position.x - pregrasp_pose_in_map.x),2) +
+                power((sdh_ps_tr.pose.position.y - pregrasp_pose_in_map.y),2) + 
+                power((sdh_ps_tr.pose.position.z - pregrasp_pose_in_map.z),2) );
                 
         rospy.loginfo('Position ID=%d, distance=%fm',userdata.list_of_id_for_target_positions[idx],dist)
                 
@@ -448,9 +537,12 @@ class move_arm_to_given_positions_assisted(smach.State):
           
           min_dist = dist;
           min_id = userdata.list_of_id_for_target_positions[idx]
+          closest_one = copy.deepcopy(pregrasp_pose_in_map)
           
-      print "pose of closest pregrasp position"
-      print userdata.list_of_target_positions[min_id].pre_grasp.pose
+      print "pose of closest pregrasp position in /map"
+      print closest_one
+
+      #print userdata.list_of_target_positions[userdata.list_of_id_for_target_positions.index(min_id)].pre_grasp.pose
           
       # BUG!!! 
           
@@ -459,6 +551,10 @@ class move_arm_to_given_positions_assisted(smach.State):
         rospy.logerr("Distance to pregrasp position too long (%fm)",min_dist)
         min_id = -1
         return 'not_completed'
+      
+      else:
+        
+        rospy.loginfo("ID of closest position is %d and distance is %f",min_id,min_dist)
       
       userdata.id_of_the_reached_position = min_id
       return 'completed'
@@ -502,7 +598,11 @@ class move_arm_from_a_given_position_assisted(smach.State):
     client.wait_for_server()
     
     goal = ManualArmManipGoal()
-    goal.away = True
+    #goal.away = True
+    
+    goal.allow_repeat = False
+    goal.action = "Move arm to safe position"
+    goal.object_name = ""
     
     rospy.loginfo("Sending goal...")
     client.send_goal(goal)

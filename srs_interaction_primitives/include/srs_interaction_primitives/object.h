@@ -31,9 +31,6 @@
 
 #include "bounding_box.h"
 
-#define PARAMETER_ALLOW_INTERACTION "/srs_interaction_primitives/allow_object_interaction"
-#define PARAMETER_SHOW_PREGRASP "/srs_interaction_primitives/show_object_pregrasp"
-
 namespace srs_interaction_primitives
 {
 /**
@@ -81,7 +78,7 @@ public:
   /**
    * Callback
    */
-  void objectWithBoundingBoxCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void objectCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
 
   /**
    * Menu callback

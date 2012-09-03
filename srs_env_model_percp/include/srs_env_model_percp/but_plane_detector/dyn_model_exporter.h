@@ -1,6 +1,3 @@
-#pragma once
-#ifndef BUT_PLANE_DET_DYNMODELEXPORTER_H
-#define BUT_PLANE_DET_DYNMODELEXPORTER_H
 /******************************************************************************
  * \file
  *
@@ -33,6 +30,10 @@
  *	 Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
  */
 
+#pragma once
+#ifndef BUT_PLANE_DET_DYNMODELEXPORTER_H
+#define BUT_PLANE_DET_DYNMODELEXPORTER_H
+
 // ros
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
@@ -42,6 +43,10 @@
 // pcl
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/ModelCoefficients.h>
+#include <opencv2/highgui/highgui.hpp>
+
+#include <visualization_msgs/Marker.h>
 
 // but_scenemodel
 #include <srs_env_model_percp/but_seg_utils/normals.h>
@@ -58,7 +63,14 @@ namespace srs_env_model_percp
 			/**
 			 * Initialization
 			 */
-			DynModelExporter(ros::NodeHandle *node);
+			DynModelExporter(ros::NodeHandle *node,
+                             const std::string& original_frame,
+			                 const std::string& output_frame,
+			                 int minOutputCount,
+			                 double max_distance,
+			                 double max_plane_normal_dev,
+			                 double max_plane_shift_dev
+			                 );
 
 			/**
 			 * Updates sent planes using but environment model server
@@ -83,6 +95,8 @@ namespace srs_env_model_percp
 			 */
 			void updateDirect(std::vector<Plane<float> > & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
 
+			static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients& plane_coefficients, visualization_msgs::Marker& marker);
+
 		private:
 			/**
 			 * Returns center and scale of plane marker
@@ -92,7 +106,9 @@ namespace srs_env_model_percp
 			 * @param scale Sendor to map transformation matrix
 			 */
 			bool getCenterAndScale(Plane<float> &plane, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, pcl::PointXYZ &center, pcl::PointXYZ &scale);
+
 			bool getCenterAndScale(Plane<float> &plane, Normals &normals, pcl::PointXYZ &center, pcl::PointXYZ &scale);
+			void getCenterSAndScale(std::vector<Plane<float> > & planes, Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags);
 
 			/**
 			 * Auxiliary node handle variable
@@ -103,7 +119,14 @@ namespace srs_env_model_percp
 			 * Auxiliary index vector for managing modifications
 			 */
 			std::vector<bool> managedInd;
+
+			std::string original_frame_, output_frame_;
+
+			int m_minOutputCount;
+			double m_max_distance;
+			double m_max_plane_normal_dev;
+			double m_max_plane_shift_dev;
 	};
-} // but_plane_detector
+}
 
 #endif

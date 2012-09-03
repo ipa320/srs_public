@@ -1,9 +1,7 @@
 # goal
-bool pregrasp
-bool away
+string action # description what to do
+bool allow_repeat
 string object_name
-#geometry_msgs/Pose[] target_positions
-#int32[] positions_ids
 ---
 # result
 bool success
@@ -12,9 +10,6 @@ bool repeat
 bool timeout
 bool collision
 duration time_elapsed
-#int32 reached_position
-#geometry_msgs/Pose reached_position
-#bool pregrasps_not_suitable
 ---
 # feedback
 bool starting

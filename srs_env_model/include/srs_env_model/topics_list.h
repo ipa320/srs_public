@@ -33,69 +33,76 @@
 
 namespace srs_env_model
 {
-	/**
-     * but_server
-     */
-	static const std::string SUBSCRIBER_CAMERA_POSITION_NAME = "/rviz_camera_position";
-	static const std::string WORLD_FRAME_ID = "/map";
-	static const std::string BASE_FRAME_ID  = "/base_footprint";
-	static const int NUM_PCFRAMES_PROCESSED = 3;
+/**
+ * but_server
+ */
+static const std::string SUBSCRIBER_CAMERA_POSITION_NAME = "/rviz_camera_position";
+static const std::string WORLD_FRAME_ID = "/map";
+static const std::string BASE_FRAME_ID = "/base_footprint";
+static const int NUM_PCFRAMES_PROCESSED = 3;
 
-	/**
-     * cmap_plugin
-     */
-	static const std::string COLLISION_MAP_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/collision_map");
-	static const std::string COLLISION_MAP_FRAME_ID       = "/base_footprint";
-	static const double COLLISION_MAP_RADIUS_LIMIT        = 2.0;
+/**
+ * cmap_plugin
+ */
+static const std::string COLLISION_MAP_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/collision_map");
+static const std::string COLLISION_MAP_FRAME_ID = "/base_footprint";
+static const double COLLISION_MAP_RADIUS_LIMIT = 2.0;
 
-	/**
-     * collision_object_plugin
-     */
-	static const std::string COLLISION_OBJECT_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/collision_object");
-	static const std::string COLLISION_OBJECT_FRAME_ID       = "/map";
+/**
+ * collision_object_plugin
+ */
+static const std::string COLLISION_OBJECT_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/collision_object");
+static const std::string COLLISION_OBJECT_FRAME_ID = "/map";
 
-	/**
-     * imarkers_plugin
-     */
-	static const std::string IM_SERVER_FRAME_ID   = "/map";
-	static const std::string IM_SERVER_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/im_server");
+/**
+ * imarkers_plugin
+ */
+static const std::string IM_SERVER_FRAME_ID = "/map";
+static const std::string IM_SERVER_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/im_server");
 
-	/**
-     * imarkers_old_plugin
-     */
-	static const std::string OLD_IM_SERVER_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/old_im_server");
+/**
+ * imarkers_old_plugin
+ */
+static const std::string OLD_IM_SERVER_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/old_im_server");
 
-	/**
-     * marker_array_plugin
-     */
-	static const std::string MARKERARRAY_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/marker_array_object");
-	static const std::string MARKERARRAY_FRAME_ID       = "/map";
+/**
+ * marker_array_plugin
+ */
+static const std::string MARKERARRAY_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/marker_array_object");
+static const std::string MARKERARRAY_FRAME_ID = "/map";
 
-	/**
-     * map2d_plugin
-     */
-	static const std::string MAP2D_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/map2d_object");
-	static const std::string MAP2D_FRAME_ID       = "/map";
+/**
+ * map2d_plugin
+ */
+static const std::string MAP2D_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/map2d_object");
+static const std::string MAP2D_FRAME_ID = "/map";
 
-	/**
-     * octomap_plugin
-     */
-	static const std::string OCTOMAP_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/binary_octomap");
-	static const std::string OCTOMAP_FRAME_ID       = "/map";
-	static const std::string CAMERA_INFO_TOPIC_NAME = "/cam3d/rgb/camera_info";
-	static const std::string MARKERS_TOPIC_NAME     = "/visualization_marker";
+/**
+ * octomap_plugin
+ */
+static const std::string OCTOMAP_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/binary_octomap");
+static const std::string OCTOMAP_FRAME_ID = "/map";
+static const std::string CAMERA_INFO_TOPIC_NAME = "/cam3d/rgb/camera_info";
+static const std::string MARKERS_TOPIC_NAME = "/visualization_marker";
 
-	/**
-     * point_cloud_plugin
-     */
-	static const std::string POINTCLOUD_CENTERS_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/pointcloud_centers");
-	static const std::string SUBSCRIBER_POINT_CLOUD_NAME       = "/cam3d/rgb/points";
-	static const std::string DEFAULT_FRAME_ID                  = "/head_cam3d_link";
+/**
+ * point_cloud_plugin
+ */
+static const std::string POINTCLOUD_CENTERS_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/pointcloud_centers");
+static const std::string SUBSCRIBER_POINT_CLOUD_NAME = "/cam3d/rgb/points";
+static const std::string DEFAULT_FRAME_ID = "/head_cam3d_link";
 
-	/**
-     * limited_point_cloud_plugin
-     */
-	static const std::string VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/visible_pointcloud_centers");
+/**
+ * limited_point_cloud_plugin
+ */
+static const std::string VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME = PACKAGE_NAME_PREFIX
+    + std::string("/visible_pointcloud_centers");
+
+/**
+ * Context Server - topics
+ */
+static const std::string ContextChanged_TOPIC = PACKAGE_NAME_PREFIX + std::string("/context/changed");
+
 }
 
 #endif // BUT_ENV_MDOEL_TOPICS_LIST_H

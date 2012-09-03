@@ -1,0 +1,18 @@
+<launch>
+
+  <param name="/use_sim_time" value="true" />
+  <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+  
+  <include file="$(find srs_assisted_arm_navigation)/launch/cob_common.launch"/>
+  
+  <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.launch"/>
+  
+  <!-- BUT planning environment -->
+  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_octs.launch"/>
+  
+  <!-- RVIZ with proper configuration -->
+  <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_assisted_arm_navigation)/config/arm_manip_octs.vcg">
+    <param name="wait_for_start" type="bool" value="true" />
+  </node>
+  
+</launch>

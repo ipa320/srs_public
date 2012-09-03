@@ -67,6 +67,9 @@ namespace srs_env_model
         /// Called when all nodes was visited.
         virtual void handlePostNodeTraversal(const SMapParameters & mp);
 
+        //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
+        virtual void pause( bool bPause, ros::NodeHandle & node_handle );
+
     protected:
         /// Compute color from the height
         std_msgs::ColorRGBA heightMapColor(double h) const;

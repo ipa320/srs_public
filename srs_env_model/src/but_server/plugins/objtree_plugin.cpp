@@ -31,6 +31,7 @@
 #include <srs_env_model/topics_list.h>
 #include <srs_env_model/but_server/plugins/objtree_plugin.h>
 #include <srs_env_model/but_server/objtree/plane.h>
+#include <srs_env_model/but_server/objtree/gbbox.h>
 #include <srs_env_model/but_server/objtree/bbox.h>
 #include <srs_env_model/but_server/objtree/filter.h>
 
@@ -61,13 +62,17 @@ void CObjTreePlugin::init(ros::NodeHandle &node_handle)
     m_serviceGetObjectsInSphere = node_handle.advertiseService(GetObjectsInSphere_SRV, &CObjTreePlugin::srvGetObjectsInSphere, this);
     m_serviceGetPlane = node_handle.advertiseService(GetPlane_SRV, &CObjTreePlugin::srvGetPlane, this);
     m_serviceGetABox = node_handle.advertiseService(GetAlignedBox_SRV, &CObjTreePlugin::srvGetABox, this);
+    m_serviceGetBBox = node_handle.advertiseService(GetBoundingBox_SRV, &CObjTreePlugin::srvGetBBox, this);
     m_serviceInsertPlane = node_handle.advertiseService(InsertPlane_SRV, &CObjTreePlugin::srvInsertPlane, this);
     m_serviceInsertPlaneByPosition = node_handle.advertiseService(InsertPlaneByPosition_SRV, &CObjTreePlugin::srvInsertPlaneByPosition, this);
     m_serviceGetSimilarPlane = node_handle.advertiseService(GetSimilarPlane_SRV, &CObjTreePlugin::srvGetSimilarPlane, this);
     m_serviceInsertPlanes = node_handle.advertiseService(InsertPlanes_SRV, &CObjTreePlugin::srvInsertPlanes, this);
     m_serviceInsertABox = node_handle.advertiseService(InsertAlignedBox_SRV, &CObjTreePlugin::srvInsertABox, this);
     m_serviceInsertABoxByPosition = node_handle.advertiseService(InsertAlignedBoxByPosition_SRV, &CObjTreePlugin::srvInsertABoxByPosition, this);
+    m_serviceInsertBBox = node_handle.advertiseService(InsertBoundingBox_SRV, &CObjTreePlugin::srvInsertBBox, this);
+    m_serviceInsertBBoxByPosition = node_handle.advertiseService(InsertBoundingBoxByPosition_SRV, &CObjTreePlugin::srvInsertBBoxByPosition, this);
     m_serviceGetSimilarABox = node_handle.advertiseService(GetSimilarAlignedBox_SRV, &CObjTreePlugin::srvGetSimilarABox, this);
+    m_serviceGetSimilarBBox = node_handle.advertiseService(GetSimilarBoundingBox_SRV, &CObjTreePlugin::srvGetSimilarBBox, this);
     m_serviceRemoveObject = node_handle.advertiseService(RemoveObject_SRV, &CObjTreePlugin::srvRemoveObject, this);
     m_serviceShowObject = node_handle.advertiseService(ShowObject_SRV, &CObjTreePlugin::srvShowObject, this);
     m_serviceShowObjtree = node_handle.advertiseService(ShowObjtree_SRV, &CObjTreePlugin::srvShowObjtree, this);
@@ -111,6 +116,15 @@ bool CObjTreePlugin::srvInsertABox(srs_env_model::InsertAlignedBox::Request &req
     return true;
 }
 
+bool CObjTreePlugin::srvInsertBBox(srs_env_model::InsertBoundingBox::Request &req, srs_env_model::InsertBoundingBox::Response &res)
+{
+    res.object_id = insertBBox(req.object_id, req.pose, req.scale, INSERT);
+
+    showObject(res.object_id);
+
+    return true;
+}
+
 bool CObjTreePlugin::srvInsertPlaneByPosition(srs_env_model::InsertPlane::Request &req, srs_env_model::InsertPlane::Response &res)
 {
     if(m_octree.removeObject(req.plane.id))
@@ -141,6 +155,21 @@ bool CObjTreePlugin::srvInsertABoxByPosition(srs_env_model::InsertAlignedBox::Re
     return true;
 }
 
+bool CObjTreePlugin::srvInsertBBoxByPosition(srs_env_model::InsertBoundingBox::Request &req, srs_env_model::InsertBoundingBox::Response &res)
+{
+    if(m_octree.removeObject(req.object_id))
+        removePrimitiveMarker(req.object_id);
+
+    res.object_id = insertBBox(req.object_id, req.pose, req.scale, UPDATE);
+
+    if((unsigned int)req.object_id != res.object_id)
+        removePrimitiveMarker(res.object_id);
+
+    showObject(res.object_id);
+
+    return true;
+}
+
 bool CObjTreePlugin::srvGetSimilarPlane(srs_env_model::InsertPlane::Request &req, srs_env_model::InsertPlane::Response &res)
 {
     res.object_id = insertPlane(req.plane, GET_SIMILAR);
@@ -151,6 +180,13 @@ bool CObjTreePlugin::srvGetSimilarPlane(srs_env_model::InsertPlane::Request &req
 bool CObjTreePlugin::srvGetSimilarABox(srs_env_model::InsertAlignedBox::Request &req, srs_env_model::InsertAlignedBox::Response &res)
 {
     res.object_id = insertABox(req.object_id, req.position, req.scale, GET_SIMILAR);
+
+    return true;
+}
+
+bool CObjTreePlugin::srvGetSimilarBBox(srs_env_model::InsertBoundingBox::Request &req, srs_env_model::InsertBoundingBox::Response &res)
+{
+    res.object_id = insertBBox(req.object_id, req.pose, req.scale, GET_SIMILAR);
 
     return true;
 }
@@ -228,7 +264,7 @@ bool CObjTreePlugin::srvGetABox(srs_env_model::GetAlignedBox::Request &req, srs_
     const objtree::Object *object = m_octree.object(req.object_id);
     //Object hasn't been found
     if(!object) return true;
-    if(object->type() != objtree::Object::BOUNDING_BOX) return true;
+    if(object->type() != objtree::Object::ALIGNED_BOUNDING_BOX) return true;
 
     const objtree::BBox *box = (const objtree::BBox*)object;
 
@@ -239,6 +275,31 @@ bool CObjTreePlugin::srvGetABox(srs_env_model::GetAlignedBox::Request &req, srs_
     res.scale.x = box->box().w;
     res.scale.y = box->box().h;
     res.scale.z = box->box().d;
+
+    return true;
+}
+
+bool CObjTreePlugin::srvGetBBox(srs_env_model::GetBoundingBox::Request &req, srs_env_model::GetBoundingBox::Response &res)
+{
+    const objtree::Object *object = m_octree.object(req.object_id);
+    //Object hasn't been found
+    if(!object) return true;
+    if(object->type() != objtree::Object::GENERAL_BOUNDING_BOX) return true;
+
+    const objtree::GBBox *box = (const objtree::GBBox*)object;
+
+    res.pose.position.x = box->position().x;
+    res.pose.position.y = box->position().y;
+    res.pose.position.z = box->position().z;
+
+    res.pose.orientation.x = box->orientation().x;
+    res.pose.orientation.y = box->orientation().y;
+    res.pose.orientation.z = box->orientation().z;
+    res.pose.orientation.w = box->orientation().w;
+
+    res.scale.x = box->scale().x;
+    res.scale.y = box->scale().y;
+    res.scale.z = box->scale().z;
 
     return true;
 }
@@ -343,6 +404,81 @@ unsigned int CObjTreePlugin::insertABox(unsigned int id, const geometry_msgs::Po
     return -1;
 }
 
+unsigned int CObjTreePlugin::insertBBox(unsigned int id, const geometry_msgs::Pose &pose, const geometry_msgs::Vector3 &scale, CObjTreePlugin::Operation op)
+{
+    printf("insertBoundingBox called, mode %d\n", op);
+
+    if(op == INSERT && m_octree.removeObject(id))
+    {
+        //Updating existing box
+        removePrimitiveMarker(id);
+    }
+
+    objtree::Point newPosition(pose.position.x, pose.position.y, pose.position.z);
+    objtree::Vector4f newOrientation(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
+    objtree::Point newScale(scale.x, scale.y, scale.z);
+
+    //Compute minimal aligned bounding box
+    Eigen::Vector3f min, max;
+    Eigen::Vector3f vec[4];
+    vec[0] = Eigen::Vector3f(-scale.x/2.0f, -scale.y/2.0f, -scale.z/2.0f);
+    vec[1] = Eigen::Vector3f(-scale.x/2.0f,  scale.y/2.0f, -scale.z/2.0f);
+    vec[2] = Eigen::Vector3f( scale.x/2.0f, -scale.y/2.0f, -scale.z/2.0f);
+    vec[3] = Eigen::Vector3f( scale.x/2.0f,  scale.y/2.0f, -scale.z/2.0f);
+
+    Eigen::Quaternionf q(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+
+    min = max = q*vec[0];
+
+    for(int i = 1; i < 4; i++)
+    {
+        vec[i] = q*vec[i];
+
+        for(int j = 0; j < 3; j++)
+        {
+            if(min[j] > vec[i][j]) min[j] = vec[i][j];
+            if(max[j] < vec[i][j]) max[j] = vec[i][j];
+        }
+    }
+
+    for(int i = 0; i < 4; i++)
+    {
+        vec[i] = -vec[i];
+
+        for(int j = 0; j < 3; j++)
+        {
+            if(min[j] > vec[i][j]) min[j] = vec[i][j];
+            if(max[j] < vec[i][j]) max[j] = vec[i][j];
+        }
+    }
+
+    Eigen::Vector3f alignedScale(max-min);
+    objtree::Box alignedBox(min[0]+newPosition.x, min[1]+newPosition.y, min[2]+newPosition.z, alignedScale[0], alignedScale[1], alignedScale[2]);
+
+    objtree::GBBox *newBox = new objtree::GBBox(newPosition, newOrientation, newScale, alignedBox);
+    newBox->setId(id);
+
+    switch(op)
+    {
+        case INSERT: return m_octree.insert(newBox);
+        case UPDATE: return m_octree.insertUpdate(newBox);
+        case GET_SIMILAR:
+        {
+            unsigned int id = -1;
+            const objtree::Object *object = m_octree.getSimilarObject(newBox);
+            if(object)
+            {
+                id = object->id();
+            }
+
+            delete newBox;
+            return id;
+        }
+    }
+
+    return -1;
+}
+
 void CObjTreePlugin::showObject(unsigned int id)
 {
     const objtree::Object *object = m_octree.object(id);
@@ -353,7 +489,7 @@ void CObjTreePlugin::showObject(unsigned int id)
 
     switch(object->type())
     {
-        case objtree::Object::BOUNDING_BOX:
+        case objtree::Object::ALIGNED_BOUNDING_BOX:
         {
             objtree::BBox *box = (objtree::BBox*)object;
 
@@ -375,6 +511,38 @@ void CObjTreePlugin::showObject(unsigned int id)
             addBoxSrv.request.scale.x = box->box().w;
             addBoxSrv.request.scale.y = box->box().h;
             addBoxSrv.request.scale.z = box->box().d;
+
+            addBoxSrv.request.color.r = 1.0;
+            addBoxSrv.request.color.g = addBoxSrv.request.color.b = 0.0;
+
+            addBoxSrv.request.color.a = 1.0;
+
+            m_clientAddBoundingBox.call(addBoxSrv);
+        }
+        break;
+
+        case objtree::Object::GENERAL_BOUNDING_BOX:
+        {
+            objtree::GBBox *box = (objtree::GBBox*)object;
+
+            srs_interaction_primitives::AddBoundingBox addBoxSrv;
+
+            addBoxSrv.request.frame_id = IM_SERVER_FRAME_ID;
+            addBoxSrv.request.name = name;
+            addBoxSrv.request.description = name;
+
+            addBoxSrv.request.pose.position.x = box->position().x;
+            addBoxSrv.request.pose.position.y = box->position().y;
+            addBoxSrv.request.pose.position.z = box->position().z;
+
+            addBoxSrv.request.pose.orientation.x = box->orientation().x;
+            addBoxSrv.request.pose.orientation.y = box->orientation().y;
+            addBoxSrv.request.pose.orientation.z = box->orientation().z;
+            addBoxSrv.request.pose.orientation.w = box->orientation().w;
+
+            addBoxSrv.request.scale.x = box->scale().x;
+            addBoxSrv.request.scale.y = box->scale().y;
+            addBoxSrv.request.scale.z = box->scale().z;
 
             addBoxSrv.request.color.r = 1.0;
             addBoxSrv.request.color.g = addBoxSrv.request.color.b = 0.0;
@@ -526,6 +694,17 @@ void CObjTreePlugin::publishOctree(const std::list<objtree::Box> &nodes)
     }
 
     m_markerPub.publish(lines);
+}
+
+/**
+ *  Pause/resume plugin. All publishers and subscribers are disconnected on pause
+ */
+void CObjTreePlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+{
+	if( bPause )
+		m_markerPub.shutdown();
+	else
+		m_markerPub = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 100);
 }
 
 }

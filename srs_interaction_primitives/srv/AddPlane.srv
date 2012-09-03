@@ -2,6 +2,7 @@ string frame_id             # Fixed Frame
 string name                 # Plane name
 string description          # Plane description
 geometry_msgs/Pose pose     # position and orientation of the Plane 
+uint8 pose_type                     # way to set the pose
 geometry_msgs/Vector3 scale # scale of the Plane
 std_msgs/ColorRGBA color    # color of the Plane
 --- 

@@ -45,50 +45,53 @@
 namespace srs_env_model_percp
 {
 
-// Global variables
+/*
+ * Global variables
+ */
 static const float PI = 3.1415926535;
 const bool DEBUG = false; // If true, verbose outputs are written to console.
 //const bool DEBUG = true; // If true, verbose outputs are written to console.
 
-// Cache size
+/**
+ * Cache size
+ */
 const int CACHE_SIZE = 10;
 
-// Size of waiting queue for messages to arrive and complete their "set"
+/**
+ * Size of waiting queue for messages to arrive and complete their "set"
+ */
 const int QUEUE_SIZE = 10;
 
-// Subscription variants
-enum subVariantsEnum {SV_NONE=0, SV_1, SV_2};
+/**
+ * Subscription variants
+ */
+enum subVariantsEnum { SV_NONE = 0, SV_1, SV_2 };
 
-// Percentage of furthest points from mean considered as outliers when
-// calculating statistics of ROI
-const int outliersPercentDefault = 10;
+/**
+ * Modes of bounding box estimation
+ * They differ in interpretation of the specified 2D region of interest (ROI).
+ *
+ * MODE1 = The ROI corresponds to projection of BB front face and the BB is
+ *         rotated to fit the viewing frustum (representing the back-projection
+ *         of the ROI) in such way, that the BB front face is perpendicular
+ *         to the frustum's center axis.
+ *         (BB can be non-parallel with all axis.)
+ *
+ * MODE2 = In the ROI is contained the whole projection of BB.
+ *         (BB is parallel with all axis.)
+ *
+ * MODE3 = The ROI corresponds to projection of BB front face.
+ *         (BB is parallel with all axis.)
+ */
+enum estimationModeEnum { MODE1 = 1, MODE2, MODE3 };
 
-// The required maximum ratio of sides length (the longer side is at maximum
-// sidesRatio times longer than the shorter one)
-const double sidesRatioDefault = 5;
-
-// Modes of bounding box estimation
-//----------
-// They differ in interpretation of the specified 2D region of interest (ROI).
-
-// MODE1 = The ROI corresponds to projection of BB front face and the BB is 
-//         rotated to fit the viewing frustum (representing the back-projection
-//         of the ROI) in such way, that the BB front face is perpendicular
-//         to the frustum's center axis.
-//         (BB can be non-parallel with all axis.)
-
-// MODE2 = In the ROI is contained the whole projection of BB.
-//         (BB is parallel with all axis.)
-
-// MODE3 = The ROI corresponds to projection of BB front face.
-//         (BB is parallel with all axis.)
-enum estimationModeEnum{MODE1 = 1, MODE2, MODE3};
-
-// Point in 2D
+/**
+ * Point in 2D
+ */
 typedef boost::array<int16_t, 2> point2_t;
 
 
-/*==============================================================================
+/**
  * Back perspective projection of a 2D point with a known depth:
  * 2D point in image coords + known depth => 3D point in world (camera) coords
  * (Result of back projection of an image point is typically a line. However,
@@ -115,7 +118,7 @@ typedef boost::array<int16_t, 2> point2_t;
 cv::Point3f backProject(cv::Point2i p, float z, float fx, float fy);
 
 
-/*==============================================================================
+/**
  * Perspective projection of a 3D point to the image plane.
  * Intrinsic camera matrix for the raw (distorted) images is used:
  *     [fx  0 cx]
@@ -131,7 +134,7 @@ cv::Point3f backProject(cv::Point2i p, float z, float fx, float fy);
 cv::Point2i fwdProject(cv::Point3f p, float fx, float fy, float cx, float cy);
 
 
-/*==============================================================================
+/**
  * Calculation of statistics (mean, standard deviation, min and max).
  *
  * @param m  The matrix with depth information from which the statistics will
@@ -146,7 +149,7 @@ cv::Point2i fwdProject(cv::Point3f p, float fx, float fy, float cx, float cy);
 bool calcStats(cv::Mat &m, float *mean, float *stdDev);
 
 
-/*==============================================================================
+/**
  * Calculation of distances from origin to the BB front and back face vertices.
  * (It is used in MODE1.)
  *
@@ -166,7 +169,7 @@ bool calcNearAndFarFaceDistance(
 		);
 
 
-/*==============================================================================
+/**
  * Calculation of depth of near and far face of BB (perpendicular with all axis).
  * (It is used in MODE2 and MODE3.)
  *
@@ -180,7 +183,7 @@ bool calcNearAndFarFaceDistance(
 bool calcNearAndFarFaceDepth(cv::Mat &m, float f, float *z1, float *z2);
 
 
-/*==============================================================================
+/**
  * Bounding box estimation.
  *
  * @param stamp     time stamp obtained from message header.
@@ -188,9 +191,9 @@ bool calcNearAndFarFaceDepth(cv::Mat &m, float f, float *z1, float *z2);
  * @param mode      estimation mode.
  * @param bbXYZ     resulting bounding box corners.
  */
-
 bool estimateBB(const ros::Time& stamp,
-                const point2_t& p1, const point2_t& p2, int mode,
+                const point2_t& p1, const point2_t& p2,
+                int mode,
                 cv::Point3f& bbLBF, cv::Point3f& bbRBF,
                 cv::Point3f& bbRTF, cv::Point3f& bbLTF,
                 cv::Point3f& bbLBB, cv::Point3f& bbRBB,
@@ -198,7 +201,7 @@ bool estimateBB(const ros::Time& stamp,
                 );
 
 
-/*==============================================================================
+/**
  * Bounding box pose estimation.
  *
  * @param bbXYZ         input bounding box corners.
@@ -206,7 +209,6 @@ bool estimateBB(const ros::Time& stamp,
  * @param orientation   calculated BB orientation (i.e. quaternion).
  * @param scale         BB dimensions.
  */
-
 bool estimateBBPose(const cv::Point3f& bbLBF, const cv::Point3f& bbRBF,
                     const cv::Point3f& bbRTF, const cv::Point3f& bbLTF,
                     const cv::Point3f& bbLBB, const cv::Point3f& bbRBB,
@@ -217,14 +219,13 @@ bool estimateBBPose(const cv::Point3f& bbLBF, const cv::Point3f& bbRBF,
                     );
 
 
-/*==============================================================================
+/**
  * Image rectangle estimation.
  *
  * @param stamp     time stamp obtained from message header.
  * @param bbXYZ     input bounding box corners.
  * @param p1,p2     resulting 2D image rectangle.
  */
-
 bool estimateRect(const ros::Time& stamp,
                   const cv::Point3f& bbLBF, const cv::Point3f& bbRBF,
                   const cv::Point3f& bbRTF, const cv::Point3f& bbLTF,

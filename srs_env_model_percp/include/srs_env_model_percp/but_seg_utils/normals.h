@@ -98,7 +98,7 @@ namespace srs_env_model_percp
 			 * @param C ax + by + Cz + d = 0
 			 * @param D ax + by + cz + D = 0
 			 */
-			Plane(Scalar A, Scalar B, Scalar C, Scalar D)
+			Plane(const Scalar& A, const Scalar& B, const Scalar& C, const Scalar& D)
 			{
 				a = A;
 				b = B;
@@ -119,10 +119,10 @@ namespace srs_env_model_percp
 			 * Returns a distance of point and this plane
 			 * @param pt Point for distance computation
 			 */
-			double distance(cv::Vec<Scalar, 3> pt)
+			Scalar distance(const cv::Vec<Scalar, 3>& pt)
 			{
-				if (norm == 0) return 0;
-				return abs((a*pt[0] + b*pt[1] + c*pt[2] + d));
+				Scalar val = a*pt[0] + b*pt[1] + c*pt[2] + d;
+				return (val > 0? val : -val);
 			}
 
 			/**
@@ -131,10 +131,12 @@ namespace srs_env_model_percp
 			 * @param angleErr Error threshold in angle of normals
 			 * @param shiftErr Error threshold in shift (D coefficient)
 			 */
-			bool isSimilar(Plane &plane, Scalar angleErr, Scalar shiftErr)
+			bool isSimilar(const Plane &plane, const Scalar& angleErr, const Scalar& shiftErr)
 			{
 				Scalar angle = acos(((a * plane.a) + (b * plane.b) + (c * plane.c)));
-				if ((abs(angle) < angleErr  && abs(plane.d - d) < shiftErr) || (abs(angle) > M_PI - angleErr && abs(plane.d - d) < shiftErr))
+				Scalar xd = plane.d - d;
+				xd = (xd > 0 ? xd : - xd);
+				if ((angle < angleErr  && xd < shiftErr) || (angle > M_PI - angleErr && xd < shiftErr))
 					return true;
 				else
 					return false;
@@ -164,6 +166,29 @@ namespace srs_env_model_percp
 
 				Eigen::Quaternion<Scalar> q;
 				q = Eigen::AngleAxis<Scalar>(-angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
+
+				x = q.x();
+				y = q.y();
+				z = q.z();
+				w = q.w();
+			}
+
+			void getInverseQuaternionRotation(Scalar &x, Scalar &y, Scalar &z, Scalar &w)
+			{
+				Scalar nx = b*1 - c*0;
+				Scalar ny = c*0 - a*1;
+				Scalar nz = a*0 - b*0;
+
+				Scalar length = sqrt(nx*nx + ny*ny + nz*nz);
+				nx /= length;
+				ny /= length;
+				nz /= length;
+
+				Scalar sign = ((nx * 1 + ny * 0 + nz * 0) < 0) ? -1:1;
+				Scalar angle = acos(a*0 + b*0 + c*1) * sign;
+
+				Eigen::Quaternion<Scalar> q;
+				q = Eigen::AngleAxis<Scalar>(angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
 
 				x = q.x();
 				y = q.y();

@@ -31,6 +31,7 @@
 #include <srs_interaction_primitives/plane_polygon.h>
 #include <srs_interaction_primitives/unknown_object.h>
 #include <srs_interaction_primitives/object.h>
+#include <srs_interaction_primitives/PoseType.h>
 
 #include <geometry_msgs/Point32.h>
 #include "math.h"
@@ -54,150 +55,183 @@ int main(int argc, char** argv)
   InteractiveMarkerServerPtr server;
   server.reset(new InteractiveMarkerServer("test_primitives", "", false));
 
-  ColorRGBA c;
-
-  c.a = 0.2;
-  c.r = 1.0;
-  c.g = 0.0;
-  c.b = 0.0;
-  Pose p;
-  p.position.x = 5;
-  p.position.y = 2;
-  p.position.z = 1;
-  p.orientation.x = M_PI_4;
-  p.orientation.y = 0;
-  p.orientation.z = M_PI_4;
-  Vector3 s;
-  s.x = 1.0;
-  s.y = 1.0;
-  s.z = 1.0;
-
-  // Object
-  Billboard *chairBillboard = new Billboard(server, "/world", "person");
-  chairBillboard->setType(srs_interaction_primitives::BillboardType::CHAIR);
-  chairBillboard->setPose(p);
-  chairBillboard->setScale(s);
-  chairBillboard->setFrameID("/world");
-  chairBillboard->insert();
-  // Bounding box
-  BoundingBox * chairBoundingBox = new BoundingBox(server, "/world", chairBillboard->getName() + "_bbox");
-  chairBoundingBox->setAttachedObjectName(chairBillboard->getName());
-  chairBoundingBox->setPose(p);
-  chairBoundingBox->setScale(s);
-  chairBoundingBox->setColor(c);
-  chairBoundingBox->setDescription("Person bounding box");
-  chairBoundingBox->insert();
-
-  p.position.x = 1;
-  p.position.y = 2;
-  p.position.z = 2;
-  s.x = 1;
-  s.y = 1;
-  s.z = 1;
-  // Object
-  Billboard *milkBillboard = new Billboard(server, "/world", "milk_billboard");
-  Quaternion direction;
-  direction.x = 2.0;
-  direction.y = 1.0;
-  direction.z = 3.0;
-  direction.w = 1.0;
-  milkBillboard->setType(srs_interaction_primitives::BillboardType::MILK);
-  milkBillboard->setPose(p);
-  milkBillboard->setScale(s);
-  milkBillboard->setDirection(direction);
-  milkBillboard->setVelocity(3.4);
-  milkBillboard->setDescription("MLEEEEKO");
-  milkBillboard->insert();
-
-  UnknownObject * unknowObject = new UnknownObject(server, "/world", "unknown_object");
+  UnknownObject * unknowObject = new UnknownObject(server, "/world", "unknown_object_srs");
   unknowObject->setFrameID("/world");
   Pose pp;
   pp.position.x = 0;
   pp.position.y = 0;
-  pp.position.z = 0;
+  pp.position.z = 0.5;
+  pp.orientation.x = 0.5;
+  pp.orientation.w = 0.2;
+  pp.orientation.y = 1.3;
   unknowObject->setPose(pp);
   Vector3 ss;
   ss.x = 1;
   ss.y = 1;
   ss.z = 1;
   unknowObject->setScale(ss);
-  unknowObject->setDescription("Uknown object");
+  unknowObject->setDescription("Unknown object - SRS");
   unknowObject->insert();
 
-  Plane *plane = new Plane(server, "/world", "plane1");
-  c.a = 1.0;
-  p.position.x = 0;
-  p.position.y = 0;
-  p.position.z = 0;
-  s.x = 5;
-  s.y = 2;
-  plane->setColor(c);
-  plane->setFrameID("/world");
-  plane->setPose(p);
-  plane->setScale(s);
-  plane->insert();
-  c.g = 1.0;
-  plane->changeColor(c);
+  UnknownObject * unknowObject2 = new UnknownObject(server, "/world", "unknown_object_ipa");
+  unknowObject2->setFrameID("/world");
+  unknowObject2->setPoseType(srs_interaction_primitives::PoseType::POSE_BASE);
+  pp.position.x = 0;
+  pp.position.y = 0;
+  pp.position.z = 0;
+  unknowObject2->setPose(pp);
+  ss.x = 1;
+  ss.y = 1;
+  ss.z = 1;
+  unknowObject2->setScale(ss);
+  unknowObject2->setDescription("Unknown object - IPA");
+  unknowObject2->insert();
 
-  PlanePolygon *planePolygon = new PlanePolygon(server, "/world", "plane_polygon");
-  Polygon pol;
-  geometry_msgs::Point32 point;
-  c.r = 1;
-  c.g = 0;
-  c.b = 0;
-  c.a = 1.0;
-
-  point.x = 0.99171;
-  point.y = 0.93265;
-  point.z = -0.16251;
-  pol.points.push_back(point);
-  point.x = 0.47751;
-  point.y = -0.93946;
-  point.z = -0.64291;
-  pol.points.push_back(point);
-  point.x = -1.28507;
-  point.y = -0.68923;
-  point.z = 0.26852;
-  pol.points.push_back(point);
-  point.x = -0.77087;
-  point.y = 1.18289;
-  point.z = 0.74892;
-  pol.points.push_back(point);
-  planePolygon->setPolygon(pol);
-
-  Vector3 normal;
-  normal.x = 0.39652;
-  normal.y = -0.32885;
-  normal.z = 0.85710;
-  //planePolygon->setNormal(normal);
-
-
-  point.x = 0.22078;
-  point.y = 0.86032;
-  point.z = -0.40858;
-  pol.points.push_back(point);
-  point.x = 0.95152;
-  point.y = -1.00344;
-  point.z = 0.31976;
-  pol.points.push_back(point);
-  point.x = -0.92901;
-  point.y = 0.18325;
-  point.z = 0.50957;
-  pol.points.push_back(point);
-  point.x = -0.97683;
-  point.y = 1.84874;
-  point.z = -0.42075;
-  pol.points.push_back(point);
-  planePolygon->setPolygon(pol);
-
-  normal.x = 0.37210;
-  normal.y = 0.46077;
-  normal.z = 0.80575;
-  planePolygon->setNormal(normal);
-
-  planePolygon->setColor(c);
-  planePolygon->insert();
   /*
+   ColorRGBA c;
+
+   c.a = 0.2;
+   c.r = 1.0;
+   c.g = 0.0;
+   c.b = 0.0;
+   Pose p;
+   p.position.x = 5;
+   p.position.y = 2;
+   p.position.z = 1;
+   p.orientation.x = M_PI_4;
+   p.orientation.y = 0;
+   p.orientation.z = M_PI_4;
+   Vector3 s;
+   s.x = 1.0;
+   s.y = 1.0;
+   s.z = 1.0;
+
+   // Object
+   Billboard *chairBillboard = new Billboard(server, "/world", "person");
+   chairBillboard->setType(srs_interaction_primitives::BillboardType::CHAIR);
+   chairBillboard->setPose(p);
+   chairBillboard->setScale(s);
+   chairBillboard->setFrameID("/world");
+   chairBillboard->insert();
+   // Bounding box
+   BoundingBox * chairBoundingBox = new BoundingBox(server, "/world", chairBillboard->getName() + "_bbox");
+   chairBoundingBox->setAttachedObjectName(chairBillboard->getName());
+   chairBoundingBox->setPose(p);
+   chairBoundingBox->setScale(s);
+   chairBoundingBox->setColor(c);
+   chairBoundingBox->setDescription("Person bounding box");
+   chairBoundingBox->insert();
+
+   p.position.x = 1;
+   p.position.y = 2;
+   p.position.z = 2;
+   s.x = 1;
+   s.y = 1;
+   s.z = 1;
+   // Object
+   Billboard *milkBillboard = new Billboard(server, "/world", "milk_billboard");
+   Quaternion direction;
+   direction.x = 2.0;
+   direction.y = 1.0;
+   direction.z = 3.0;
+   direction.w = 1.0;
+   milkBillboard->setType(srs_interaction_primitives::BillboardType::MILK);
+   milkBillboard->setPose(p);
+   milkBillboard->setScale(s);
+   milkBillboard->setDirection(direction);
+   milkBillboard->setVelocity(3.4);
+   milkBillboard->setDescription("MLEEEEKO");
+   milkBillboard->insert();
+
+   UnknownObject * unknowObject = new UnknownObject(server, "/world", "unknown_object");
+   unknowObject->setFrameID("/world");
+   Pose pp;
+   pp.position.x = 0;
+   pp.position.y = 0;
+   pp.position.z = 0;
+   unknowObject->setPose(pp);
+   Vector3 ss;
+   ss.x = 1;
+   ss.y = 1;
+   ss.z = 1;
+   unknowObject->setScale(ss);
+   unknowObject->setDescription("Uknown object");
+   unknowObject->insert();
+
+   Plane *plane = new Plane(server, "/world", "plane1");
+   c.a = 1.0;
+   p.position.x = 0;
+   p.position.y = 0;
+   p.position.z = 0;
+   s.x = 5;
+   s.y = 2;
+   plane->setColor(c);
+   plane->setFrameID("/world");
+   plane->setPose(p);
+   plane->setScale(s);
+   plane->insert();
+   c.g = 1.0;
+   plane->changeColor(c);
+
+   PlanePolygon *planePolygon = new PlanePolygon(server, "/world", "plane_polygon");
+   Polygon pol;
+   geometry_msgs::Point32 point;
+   c.r = 1;
+   c.g = 0;
+   c.b = 0;
+   c.a = 1.0;
+
+   point.x = 0.99171;
+   point.y = 0.93265;
+   point.z = -0.16251;
+   pol.points.push_back(point);
+   point.x = 0.47751;
+   point.y = -0.93946;
+   point.z = -0.64291;
+   pol.points.push_back(point);
+   point.x = -1.28507;
+   point.y = -0.68923;
+   point.z = 0.26852;
+   pol.points.push_back(point);
+   point.x = -0.77087;
+   point.y = 1.18289;
+   point.z = 0.74892;
+   pol.points.push_back(point);
+   planePolygon->setPolygon(pol);
+
+   Vector3 normal;
+   normal.x = 0.39652;
+   normal.y = -0.32885;
+   normal.z = 0.85710;
+   //planePolygon->setNormal(normal);
+
+
+   point.x = 0.22078;
+   point.y = 0.86032;
+   point.z = -0.40858;
+   pol.points.push_back(point);
+   point.x = 0.95152;
+   point.y = -1.00344;
+   point.z = 0.31976;
+   pol.points.push_back(point);
+   point.x = -0.92901;
+   point.y = 0.18325;
+   point.z = 0.50957;
+   pol.points.push_back(point);
+   point.x = -0.97683;
+   point.y = 1.84874;
+   point.z = -0.42075;
+   pol.points.push_back(point);
+   planePolygon->setPolygon(pol);
+
+   normal.x = 0.37210;
+   normal.y = 0.46077;
+   normal.z = 0.80575;
+   planePolygon->setNormal(normal);
+
+   planePolygon->setColor(c);
+   planePolygon->insert();
+
    //Object
    s.x = 6;
    s.y = 3.2;

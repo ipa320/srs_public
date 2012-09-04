@@ -1,6 +1,6 @@
 <launch>
     <!-- Run our dynamic scene model server node -->
-    <include file="$(find srs_env_model)/launch/but_envmodel_common.launch"/>
+    <include file="$(find srs_env_model)/launch/but_envmodel_robot.launch"/>
 
     <!-- Run our GUI nodes -->
     <!--node pkg="cob_interactive_teleop" type="interactive_teleop" name="cob_interactive_teleop" /-->

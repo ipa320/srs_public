@@ -48,6 +48,7 @@
 #include "srs_assisted_arm_navigation/topics_list.h"
 
 #include "srs_assisted_arm_navigation/ManualGraspingAction.h"
+#include <control_msgs/FollowJointTrajectoryAction.h>
 
 #include "std_msgs/MultiArrayLayout.h"
 #include "std_msgs/MultiArrayDimension.h"
@@ -55,6 +56,12 @@
 #include "std_msgs/Float32MultiArray.h"
 #include "trajectory_msgs/JointTrajectory.h"
 #include "pr2_controllers_msgs/JointTrajectoryControllerState.h"
+#include <actionlib/client/simple_action_client.h>
+//#include "brics_actuator/JointVelocities.h"
+
+/*#include <boost/units/io.hpp>
+#include <boost/units/systems/angle/degrees.hpp>
+#include <boost/units/conversion.hpp>*/
 
 namespace srs_assisted_arm_navigation {
 
@@ -65,6 +72,11 @@ public:
 
     void TactileDataCallback(const std_msgs::Float32MultiArray::ConstPtr & msg);
     void SdhStateCallback(const pr2_controllers_msgs::JointTrajectoryControllerState::ConstPtr & msg);
+
+    bool OpenGripper();
+
+    void PublishVelocities();
+    void StopMotion();
 
     ManualGrasping(std::string name)/*:
     server_(nh_, name, boost::bind(&ManualGrasping::execute, this, _1), false)*/
@@ -77,8 +89,33 @@ public:
       tact_received_ = false;
       sdh_received_ = false;
 
+      /*std::vector<brics_actuator::JointValue> jv;
+
+      for (unsigned int i=0;i<joints_.size();i++) {
+
+    	  brics_actuator::JointValue jvt;
+
+    	  jvt.joint_uri = joints_[i];
+    	  jvt.unit = boost::units::to_string(boost::units::si::radians);
+    	  jvt.value = 0.0;
+
+    	  jv.push_back();
+
+      }*/
+
+      rate_ = 5.0;
+
+      max_speed_ = 3.66/15; // max. vel. 210 deg / sec -> 3.66 rad / s
+      accel_ = max_speed_ / (1.0 * rate_); // accelerate to max speed in one second
+
+
+      //vel_publisher_ = nh_.advertise<brics_actuator::JointVelocities>("/sdh_controller/command_vel", 10);
+      vel_publisher_ = nh_.advertise<std_msgs::Float32MultiArray>("/sdh_controller/set_velocities", 10);
+
+      sdh_trajectory_ctrl_client_ = new tsdh_trajectory_ctrl_client("/sdh_controller/follow_joint_trajectory",true);
+
       action_name_ = name;
-      jt_publisher_ = nh_.advertise<trajectory_msgs::JointTrajectory>("/sdh_controller/command", 10);
+      //jt_publisher_ = nh_.advertise<trajectory_msgs::JointTrajectory>("/sdh_controller/command", 10);
       tact_sub_  = nh_.subscribe("/sdh_controller/mean_values", 10, &ManualGrasping::TactileDataCallback,this);
       state_sub_ = nh_.subscribe("/sdh_controller/state", 10, &ManualGrasping::SdhStateCallback,this);
       server_->start();
@@ -113,6 +150,15 @@ public:
 
 protected:
 
+    typedef actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> tsdh_trajectory_ctrl_client;
+
+    tsdh_trajectory_ctrl_client *sdh_trajectory_ctrl_client_;
+
+    //brics_actuator::JointVelocities vel_;
+    std_msgs::Float32MultiArray vel_;
+    ros::Publisher vel_publisher_;
+
+
     std::vector<std::string> joints_;
     bool inited_;
     ros::Subscriber tact_sub_;
@@ -130,15 +176,20 @@ protected:
     bool initialized_;
 
     float max_force_;
-    float inc_;
+    //float inc_;
+
+    float max_speed_;
+    float accel_;
+
+    float rate_;
 
     void execute(const ManualGraspingGoalConstPtr &goal);
 
-    bool CloseRound(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f);
-    bool CloseSquare(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f);
-    bool InitializeFinger(std::vector<double>& pos,uint8_t pos_t, uint8_t pos_f);
+    //bool CloseRound(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f);
+    //bool CloseSquare(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f);
+   // bool InitializeFinger(std::vector<double>& pos,uint8_t pos_t, uint8_t pos_f);
 
-    bool SetPhalanxPosition(std::vector<double>& pos,uint8_t idx, double value, double inc);
+    //bool SetPhalanxPosition(std::vector<double>& pos,uint8_t idx, double value, double inc);
 
     ros::Publisher jt_publisher_;
 

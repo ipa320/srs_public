@@ -31,7 +31,7 @@ using namespace srs_assisted_arm_navigation;
 using namespace std;
 
 
-bool ManualGrasping::CloseRound(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f) {
+/*bool ManualGrasping::CloseRound(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f) {
 
 	float bigger = tact.data[tact_f] > tact.data[tact_t] ? tact.data[tact_f] : tact.data[tact_t];
 
@@ -62,9 +62,9 @@ bool ManualGrasping::CloseRound(std::vector<double>& pos, std_msgs::Float32Multi
 
 	return false;
 
-}
+}*/
 
-bool ManualGrasping::CloseSquare(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f) {
+/*bool ManualGrasping::CloseSquare(std::vector<double>& pos, std_msgs::Float32MultiArray& tact, uint8_t pos_t, uint8_t pos_f, uint8_t tact_t, uint8_t tact_f) {
 
 	float inc_tmp = 0;
 
@@ -82,9 +82,9 @@ bool ManualGrasping::CloseSquare(std::vector<double>& pos, std_msgs::Float32Mult
 
 	} else return true;
 
-}
+}*/
 
-bool ManualGrasping::SetPhalanxPosition(std::vector<double>& pos,uint8_t idx, double value, double inc) {
+/*bool ManualGrasping::SetPhalanxPosition(std::vector<double>& pos,uint8_t idx, double value, double inc) {
 
 
 	if ( pos[idx] == value ) return true;
@@ -106,9 +106,9 @@ bool ManualGrasping::SetPhalanxPosition(std::vector<double>& pos,uint8_t idx, do
 
 	return false;
 
-}
+}*/
 
-bool ManualGrasping::InitializeFinger(std::vector<double>& pos,uint8_t pos_t, uint8_t pos_f) {
+/*bool ManualGrasping::InitializeFinger(std::vector<double>& pos,uint8_t pos_t, uint8_t pos_f) {
 
 	const float inc_tmp = 5.0*inc_;
 
@@ -123,18 +123,104 @@ bool ManualGrasping::InitializeFinger(std::vector<double>& pos,uint8_t pos_t, ui
 	return ready;
 
 
+}*/
+
+// opening of fingers using position interface
+bool ManualGrasping::OpenGripper() {
+
+	trajectory_msgs::JointTrajectoryPoint jtp;
+
+	std::vector<double> positions_tmp;
+
+	positions_.push_back(0.0);
+	positions_.push_back(-0.9);
+	positions_.push_back(1.0);
+	positions_.push_back(-0.9);
+	positions_.push_back(1.0);
+	positions_.push_back(-0.9);
+	positions_.push_back(1.0);
+
+	jtp.positions = positions_tmp;
+	jtp.velocities = velocities_;
+	jtp.time_from_start = ros::Duration(0);
+
+
+	std::vector<trajectory_msgs::JointTrajectoryPoint> vp;
+	vp.push_back(jtp);
+
+	control_msgs::FollowJointTrajectoryGoal sdh_goal;
+
+	sdh_goal.trajectory.joint_names = joints_;
+	sdh_goal.goal_time_tolerance = ros::Duration(10);
+
+	sdh_goal.trajectory.joint_names = joints_;
+	sdh_goal.trajectory.points = vp;
+
+	sdh_trajectory_ctrl_client_->sendGoal(sdh_goal);
+
+	if (!sdh_trajectory_ctrl_client_->waitForResult(ros::Duration(30.0))) {
+
+
+		return false;
+
+	} else {
+
+		control_msgs::FollowJointTrajectoryResultConstPtr result = sdh_trajectory_ctrl_client_->getResult();
+
+		if (result->error_code != 0) {
+
+			ROS_WARN("SDH action - something is going wrong...");
+			return false;
+
+		} else return true;
+
+
+	}
+
+
 }
+
+
+void ManualGrasping::PublishVelocities() {
+
+
+	/*ros::Time now = ros::Time::now();
+
+	for(unsigned int i=0;i<vel_.velocities.size();i++)
+		vel_.velocities[i].timeStamp = now;
+
+	vel_publisher_.publish(vel_);*/
+
+
+	vel_publisher_.publish(vel_);
+
+}
+
+void ManualGrasping::StopMotion() {
+
+	for(unsigned int i=0;i<joints_.size();i++) {
+		//vel_.velocities[i].value = 0.0;
+		vel_.data[i] = 0.0;
+	  }
+
+	  PublishVelocities();
+
+
+}
+
 
 void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 
   ROS_INFO("Manual grasping action triggered");
 
-  trajectory_msgs::JointTrajectory jtr;
+
   ManualGraspingResult res;
   ManualGraspingFeedback feedback;
 
-  max_force_ = 500;
-  inc_ = 0.0005;
+  max_force_ = 1500;
+  //inc_ = 0.0005;
+
+  //inc_ = 0.01;
 
   if ((float)(goal->max_force) > max_force_) {
 
@@ -148,13 +234,8 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 
   ros::Time start_time = ros::Time::now();
 
-  ros::Time max_time = start_time + ros::Duration(30);
+  ros::Time max_time = start_time + ros::Duration(45);
 
-  jtr.header.stamp = ros::Time::now();
-  jtr.joint_names = joints_;
-
-  std::vector<double> positions;
-  std::vector<double> velocities;
 
   // values from cob_default_robot_config sdh_joint_configurations.yaml
   // opened (script server) 0.0, -0.9854, 0.9472, -0.9854, 0.9472, -0.9854, 0.9472
@@ -162,7 +243,7 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
   // closed - spravne je asi same nuly.....
   // /sdh_controller/state -> pr2_controllers_msgs/JointTrajectoryControllerState -> desired, actual, error
 
-  ros::Rate r(50);
+  ros::Rate r(rate_);
 
   std_msgs::Float32MultiArray tactile_data;
   pr2_controllers_msgs::JointTrajectoryControllerState sdh_data;
@@ -194,6 +275,7 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 
   // try to get data
   data_mutex_.lock();
+
   if (sdh_received_ && tact_received_) {
 
 	  data_received = true;
@@ -201,6 +283,7 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 	  sdh_data = sdh_data_;
 
   }
+
   data_mutex_.unlock();
 
 
@@ -231,18 +314,29 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 
   }
 
+	// open gripper
+	if (!initialized_) {
 
-  for(uint8_t i=0; i < joints_.size(); i++) {
 
-	  positions_[i] = sdh_data_.actual.positions[i];
+		if (!OpenGripper()) {
 
-  }
+			ROS_WARN("SDH action timeouted, could not open fingers.");
+
+			res.time_elapsed = ros::Time::now() - start_time;
+			server_->setAborted();
+
+		} else ROS_INFO("Gripper should be opened.");
+
+	}
+
 
   while(ros::ok()) {
 
 	publish_command = false;
 
     if (ros::Time::now() > max_time) {
+
+      StopMotion();
 
       res.grasped = false;
       res.time_elapsed = ros::Time::now() - start_time;
@@ -254,6 +348,8 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
     }
 
     if (server_->isPreemptRequested()) {
+
+       StopMotion();
 
        ROS_INFO("%s: Preempted", action_name_.c_str());
 
@@ -269,21 +365,9 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
     sdh_data = sdh_data_;
     data_mutex_.unlock();
 
-	// open gripper
-	if (!initialized_) {
+    positions_ = sdh_data_.actual.positions;
+    velocities_ = sdh_data_.actual.velocities;
 
-		if (!InitializeFinger(positions_,1,2)) publish_command = true;
-		if (!InitializeFinger(positions_,3,4)) publish_command = true;
-		if (!InitializeFinger(positions_,5,6)) publish_command = true;
-
-		if (!publish_command) {
-
-			ROS_INFO("Fingers are opened, let's start grasping.");
-			initialized_ = true;
-
-		}
-
-	}
 
 	if (initialized_) {
 
@@ -296,14 +380,16 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 
 		uint8_t fingers[3] = {0,0,0};
 
-		if ( (ceil(sdh_data.actual.positions[1]*10) == 0.0) ) fingers[0] = 1;
-		if ( (ceil(sdh_data.actual.positions[3]*10) == 0.0) ) fingers[1] = 1;
-		if ( (ceil(sdh_data.actual.positions[5]*10) == 0.0) ) fingers[2] = 1;
+		if ( sdh_data.actual.positions[1] < 0.1 ) fingers[0] = 1;
+		if ( sdh_data.actual.positions[3] < 0.1 ) fingers[1] = 1;
+		if ( sdh_data.actual.positions[5] < 0.1 ) fingers[2] = 1;
 
-		// is this really needed????
+		// check for zero position - is it really needed?
 		if ( fingers[0]!=0 || fingers[1]!=0 || fingers[2]!=0) {
 
-		  ROS_INFO("Manual grasping failed - one of the fingers reached 0 position.");
+		  StopMotion();
+
+		  ROS_ERROR("Manual grasping failed - one of the fingers reached 0 position.");
 		  res.grasped = false;
 		  res.time_elapsed = ros::Time::now() - start_time;
 		  server_->setAborted(res,"grasping failed");
@@ -322,18 +408,88 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 			// round
 			case 0: {
 
-				contact[1] = CloseRound(positions_,tactile_data,1,2,2,3); // thumb (positions: 1,2, tactile_data: 2,3)
+				for (unsigned int i=1;i<joints_.size()-2;i+=2) { // 7-2=5
+
+					// no contact
+					if (tactile_data.data[i]<0.1 && tactile_data.data[i+1]<0.1) {
+
+						// acceleration ramp - for phalanx only
+						if (velocities_[i]<max_speed_) {
+
+							ROS_INFO_ONCE("Starting acceleration ramp: idx %u",i);
+
+							//vel_.velocities[i] = velocities_[i] + accel_;
+							vel_.data[i] = velocities_[i] + accel_;
+
+							publish_command = true;
+
+						} // ramp
+
+
+						// deceleration
+						if (positions_[i]<0.3) {
+
+
+							ROS_INFO_ONCE("Starting deceleration ramp: idx %u, vel.: %f",i,velocities_[i]);
+
+							float speed_coef = (0.3-positions_[i])/0.3; // 0-1
+
+							//vel_.velocities[i].value = speed_coef * vel_.velocities[i].value;
+							vel_.data[i] = speed_coef * vel_.data[i];
+
+							publish_command = true;
+
+						}
+
+					} else {
+
+						ROS_INFO_ONCE("Have some contact... (idx: %u, %u)",i,i+1);
+
+						float bigger = tactile_data.data[i] > tactile_data.data[i+1] ? tactile_data.data[i] : tactile_data.data[i+1];
+
+						if (bigger>=max_force_) {
+
+							ROS_INFO_ONCE("Desired force (%f) reached (idx: %u, %u)",bigger,i,i+1);
+
+							bigger = max_force_;
+
+							contact[i] = true; // 1, 3, 5
+
+						} else contact[i] = false;
+
+
+						float speed_coef = (max_force_ - bigger)/max_force_; // 0-1
+
+						// velocity should decrease to zero with increasing presure
+						//vel_.velocities[i].value = max_speed_ * speed_coef;
+						vel_.data[i] = max_speed_ * speed_coef;
+
+						publish_command = true;
+
+
+						} // if tactile data else
+
+
+					} // for
+
+
+				/*contact[1] = CloseRound(positions_,tactile_data,1,2,2,3); // thumb (positions: 1,2, tactile_data: 2,3)
 				contact[2] = CloseRound(positions_,tactile_data,3,4,0,1); // finger 1
-				contact[3] = CloseRound(positions_,tactile_data,5,6,4,5); // finger 2 -> weird one
+				contact[3] = CloseRound(positions_,tactile_data,5,6,4,5); // finger 2 -> weird one*/
 
 			} break;
 
 			// square
 			case 1: {
 
-				contact[1] = CloseSquare(positions_,tactile_data,1,2,2,3); // thumb (positions: 1,2, tactile_data: 2,3)
+				/*contact[1] = CloseSquare(positions_,tactile_data,1,2,2,3); // thumb (positions: 1,2, tactile_data: 2,3)
 				contact[2] = CloseSquare(positions_,tactile_data,3,4,0,1); // finger 1
-				contact[3] = CloseSquare(positions_,tactile_data,5,6,4,5); // finger 2 -> weird one
+				contact[3] = CloseSquare(positions_,tactile_data,5,6,4,5); // finger 2 -> weird one*/
+
+				ROS_ERROR("Not implemented type of grasping!");
+				res.grasped = false;
+				res.time_elapsed = ros::Time::now() - start_time;
+				server_->setAborted(res,"grasping failed");
 
 			} break;
 
@@ -386,12 +542,8 @@ void ManualGrasping::execute(const ManualGraspingGoalConstPtr &goal) {
 
     if (publish_command) {
 
-    	trajectory_msgs::JointTrajectoryPoint jtp;
-    	jtp.positions = positions_;
-    	jtp.velocities = velocities_;
-    	jtp.time_from_start = ros::Duration(0);
-    	jtr.points.push_back(jtp);
-    	jt_publisher_.publish(jtr);
+    	PublishVelocities();
+
 
     } else {
 

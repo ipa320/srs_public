@@ -57,6 +57,7 @@
 #include "trajectory_msgs/JointTrajectory.h"
 #include "pr2_controllers_msgs/JointTrajectoryControllerState.h"
 #include <actionlib/client/simple_action_client.h>
+#include "cob_srvs/SetOperationMode.h"
 //#include "brics_actuator/JointVelocities.h"
 
 /*#include <boost/units/io.hpp>
@@ -75,8 +76,12 @@ public:
 
     bool OpenGripper();
 
+    void waitForNewData(double rate, std_msgs::Float32MultiArray& tactile_data, pr2_controllers_msgs::JointTrajectoryControllerState& sdh_data);
+
     void PublishVelocities();
-    void StopMotion();
+    void stopMotion();
+
+    bool setPosition(std::vector<double> positions);
 
     ManualGrasping(std::string name)/*:
     server_(nh_, name, boost::bind(&ManualGrasping::execute, this, _1), false)*/
@@ -103,14 +108,18 @@ public:
 
       }*/
 
-      rate_ = 5.0;
+      sdh_mode_client_ = nh_.serviceClient<cob_srvs::SetOperationMode>("/sdh_controller/set_operation_mode");
 
-      max_speed_ = 3.66/15; // max. vel. 210 deg / sec -> 3.66 rad / s
-      accel_ = max_speed_ / (1.0 * rate_); // accelerate to max speed in one second
+      rate_ = 20.0;
+
+      min_contact_force_ = 20;
+
+      max_speed_ = 3.66/10; // max. vel. 210 deg / sec -> 3.66 rad / s
+      accel_ = max_speed_ / (1.0 * rate_); // accelerate to max speed in xy seconds
 
 
       //vel_publisher_ = nh_.advertise<brics_actuator::JointVelocities>("/sdh_controller/command_vel", 10);
-      vel_publisher_ = nh_.advertise<std_msgs::Float32MultiArray>("/sdh_controller/set_velocities", 10);
+      vel_publisher_ = nh_.advertise<std_msgs::Float32MultiArray>("/sdh_controller/set_velocities_raw", 10);
 
       sdh_trajectory_ctrl_client_ = new tsdh_trajectory_ctrl_client("/sdh_controller/follow_joint_trajectory",true);
 
@@ -119,6 +128,14 @@ public:
       tact_sub_  = nh_.subscribe("/sdh_controller/mean_values", 10, &ManualGrasping::TactileDataCallback,this);
       state_sub_ = nh_.subscribe("/sdh_controller/state", 10, &ManualGrasping::SdhStateCallback,this);
       server_->start();
+
+      vel_.data.push_back(0.0);
+      vel_.data.push_back(0.0);
+      vel_.data.push_back(0.0);
+      vel_.data.push_back(0.0);
+      vel_.data.push_back(0.0);
+      vel_.data.push_back(0.0);
+      vel_.data.push_back(0.0);
 
       /*positions_.push_back(0.0);
       positions_.push_back(-0.9854);
@@ -148,6 +165,8 @@ public:
     void addJoint(std::string joint);
     void inited(bool val);
 
+    bool setMode(std::string mode);
+
 protected:
 
     typedef actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> tsdh_trajectory_ctrl_client;
@@ -157,6 +176,8 @@ protected:
     //brics_actuator::JointVelocities vel_;
     std_msgs::Float32MultiArray vel_;
     ros::Publisher vel_publisher_;
+
+    ros::ServiceClient sdh_mode_client_;
 
 
     std::vector<std::string> joints_;
@@ -174,6 +195,8 @@ protected:
     boost::mutex data_mutex_;
 
     bool initialized_;
+
+    float min_contact_force_;
 
     float max_force_;
     //float inc_;

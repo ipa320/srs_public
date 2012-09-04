@@ -42,7 +42,7 @@ def main():
   client.wait_for_server()
   goal = ManualGraspingGoal()
   goal.grasp_type = 0 # 0 - round, 1 - square
-  goal.max_force = 100
+  goal.max_force = 200
   goal.accept_two_fingers_contact = True
   goal.do_not_open_fingers = False
   client.send_goal(goal)

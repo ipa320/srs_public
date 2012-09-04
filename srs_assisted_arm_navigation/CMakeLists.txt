@@ -77,7 +77,7 @@ set( GRASPING_PROJECT_NAME assisted_grasping_node )
 include_directories( include/assisted_grasping )
 rosbuild_add_executable( ${GRASPING_PROJECT_NAME} ${GRASPING_SOURCE_FILES} )
 
-rosbuild_add_executable( video_flip_node src/assisted_grasping/video_flip.cpp )
+#rosbuild_add_executable( video_flip_node src/assisted_grasping/video_flip.cpp )
 
 # some checks of launch files
 rosbuild_add_roslaunch_check(launch)

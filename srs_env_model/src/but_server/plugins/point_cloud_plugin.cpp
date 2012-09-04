@@ -85,6 +85,11 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
 	node_handle.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
 
+	// Frame skipping
+	int fs(1);
+	node_handle.param("frame_skip", fs, fs);
+	m_use_every_nth = fs;
+
 	// Contains input pointcloud RGB?
 	if( node_handle.hasParam("input_has_rgb") )
 	{

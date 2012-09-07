@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <rosparam ns="srs_ui_but" file="$(find srs_ui_but)/config/object_manager.yaml" command="load"/>
+
+    <include file="$(find srs_object_database)/launch/srs_db.launch" />
+    <include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" />
+
+</launch>
+
+

@@ -37,6 +37,7 @@
 #include <sensor_msgs/image_encodings.h>
 
 #include <cv_bridge/cv_bridge.h>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
@@ -234,6 +235,19 @@ bool estimateRect(const ros::Time& stamp,
                   point2_t& p1, point2_t& p2
                   );
 
+/**
+ * 2D convex hull estimation.
+ *
+ * @param stamp       time stamp obtained from message header.
+ * @param points      input 3D points (in world coordinates).
+ * @param convexHull  resulting 2D convex hull (in image plane coordinates) of the input points.
+ */
+bool estimate2DConvexHull(const ros::Time& stamp,
+                          const std::vector<cv::Point3f> points,
+                          std::vector<cv::Point2i> &convexHull
+                         );
+
 }
 
 #endif // BB_ESTIMATOR_FUNCS_H
+

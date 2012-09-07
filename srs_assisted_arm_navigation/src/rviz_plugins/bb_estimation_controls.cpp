@@ -47,6 +47,9 @@ CButBBEstimationControls::CButBBEstimationControls(wxWindow *parent, const wxStr
     it_(nh_)
 {
 
+
+	ros::param::param<bool>("~is_video_flipped", is_video_flipped_ , true);
+
 	class_ptr = this;
 
     parent_ = parent;
@@ -57,6 +60,9 @@ CButBBEstimationControls::CButBBEstimationControls(wxWindow *parent, const wxStr
 
     as_.registerGoalCallback(    boost::bind(&CButBBEstimationControls::actionGoalCallback, this));
     as_.registerPreemptCallback( boost::bind(&CButBBEstimationControls::actionPreemptCallback, this));
+
+    image_width_ = 0;
+    image_height_ = 0;
 
     as_.start();
 
@@ -88,11 +94,20 @@ void CButBBEstimationControls::imageCallback(const sensor_msgs::ImageConstPtr& m
 
 	}
 
+	if (image_width_ == 0) {
+
+
+		image_width_ = msg->width;
+		image_height_ = msg->height;
+
+	}
+
 	if (some_data_ready_) {
 
 		cv::Point tl,br;
 
 		// TODO add mutex here???????
+
 		if (p1_[0] < p2_[0]) {
 
 			tl.x = p1_[0];
@@ -151,10 +166,23 @@ void CButBBEstimationControls::newData(int event, int x, int y) {
 
 		    some_data_ready_ = true;
 
-		    fb_.p1[0] = p1_[0];
-		    fb_.p1[1] = p1_[1];
-		    fb_.p2[0] = p2_[0];
-		    fb_.p2[1] = p2_[1];
+			// TODO: handle flipped video
+
+			if (!is_video_flipped_) {
+
+				fb_.p1[0] = p1_[0];
+				fb_.p1[1] = p1_[1];
+				fb_.p2[0] = p2_[0];
+				fb_.p2[1] = p2_[1];
+
+			} else {
+
+				fb_.p1[0] = image_width_  - p1_[0];
+				fb_.p1[1] = image_height_ - p1_[1];
+				fb_.p2[0] = image_width_  - p2_[0];
+				fb_.p2[1] = image_height_ - p2_[1];
+
+			}
 
 		    fb_.timestamp = ros::Time::now();
 
@@ -197,7 +225,7 @@ void CButBBEstimationControls::actionGoalCallback() {
 
 	cv::setMouseCallback(cv_win,onMouse,NULL);
 
-	sub_image_ = it_.subscribe("/cam3d/rgb/upright/image_color", 1, &CButBBEstimationControls::imageCallback,this);
+	sub_image_ = it_.subscribe("bb_video_in", 1, &CButBBEstimationControls::imageCallback,this);
 
 	//action_in_progress_ = true;
 
@@ -224,10 +252,21 @@ void CButBBEstimationControls::OnOk(wxCommandEvent& event) {
 
 	ManualBBEstimationResult result;
 
-	result.p1[0] = p1_[0];
-	result.p1[1] = p1_[1];
-	result.p2[0] = p2_[0];
-	result.p2[1] = p2_[1];
+	if (!is_video_flipped_) {
+
+		result.p1[0] = p1_[0];
+		result.p1[1] = p1_[1];
+		result.p2[0] = p2_[0];
+		result.p2[1] = p2_[1];
+
+	} else {
+
+		result.p1[0] = image_width_  - p1_[0];
+		result.p1[1] = image_height_ - p1_[1];
+		result.p2[0] = image_width_  - p2_[0];
+		result.p2[1] = image_height_ - p2_[1];
+
+	}
 
 	//action_in_progress_ = false;
 

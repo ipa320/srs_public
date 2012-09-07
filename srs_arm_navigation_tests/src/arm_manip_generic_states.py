@@ -36,7 +36,12 @@ from srs_interaction_primitives.srv import AddObject
 from srs_interaction_primitives.srv import RemovePrimitive
 from srs_interaction_primitives.srv import SetPreGraspPosition
 from srs_interaction_primitives.srv import RemovePreGraspPosition
+from srs_interaction_primitives.srv import GetUnknownObject
 from srs_interaction_primitives.msg import MoveArmToPreGrasp
+from srs_interaction_primitives.srv import SetAllowObjectInteraction
+from srs_interaction_primitives.srv import AddUnknownObject
+from srs_interaction_primitives.msg import PoseType
+from srs_env_model_percp.srv import EstimateBBAlt
 from math import fabs
 from math import sqrt
 from geometry_msgs.msg import Vector3
@@ -54,10 +59,94 @@ from geometry_msgs.msg import Pose
 #import threading
 from srs_assisted_arm_navigation.srv import ArmNavCollObj
 from srs_assisted_arm_navigation.srv import ArmNavMovePalmLink
+from srs_assisted_arm_navigation.srv import GraspingAllow
 import copy
 from shared_state_information import *
 from numpy import power
 
+
+class common_helper_methods():
+    
+   def __init__(self):
+        
+       but_gui_ns = '/interaction_primitives'
+       self.s_remove_object = but_gui_ns + '/remove_primitive'
+       self.s_allow_interaction = but_gui_ns + '/set_allow_object_interaction'
+    
+   def wait_for_srv(self,srv):
+       
+    available = False
+      
+    rospy.loginfo('Waiting for %s service',srv)
+    
+    try:
+        
+        rospy.wait_for_service(srv,timeout=60)
+        available = True
+        
+    except ROSException, e:
+        
+        rospy.logerr('Cannot set interaction mode for object %s, error: %s',object_name,str(e))  
+        
+    
+    if not available:
+        
+        rospy.logerr('Service %s is not available! Error: ',srv,e)
+    
+    return available
+        
+     
+    
+   def wait_for_topic(self,topic,topic_type):
+    
+    available = False
+    
+    rospy.loginfo('Waiting for %s topic',topic)
+    
+    try:
+    
+        rospy.wait_for_message(topic, topic_type, timeout=60)
+        
+    except ROSException, e:
+        
+        rospy.logerr('Topic %s is not available! Error: %s',topic,e)
+
+    
+    
+   def remove_im(self,object_name):
+
+    remove_object = rospy.ServiceProxy(self.s_remove_object, RemovePrimitive)
+    
+    removed = False
+    
+    try:
+    
+      remove_object(name=object_name)
+      removed = True
+      
+    except Exception, e:
+      
+      rospy.logerr('Cannot remove IM object from the scene, error: %s',str(e))
+      
+    return removed
+
+   def set_interaction(self,object_name,allow_int):
+      
+       int_allow_srv =  rospy.ServiceProxy(self.s_allow_interaction, SetAllowObjectInteraction)
+       
+       try:
+           
+           res = int_allow_srv(name = object_name,
+                               allow = allow_int)
+        
+        
+       except Exception, e:
+        
+        rospy.logerr('Cannot set interaction mode for object %s, error: %s',object_name,str(e))  
+
+
+      
+    
 
 class grasp_unknown_object_assisted(smach.State):
   def __init__(self):
@@ -66,34 +155,243 @@ class grasp_unknown_object_assisted(smach.State):
                          output_keys=[''])
     
     global listener
- 
+    
+    self.hlp = common_helper_methods()
+    
+    self.object_added = False
+    
+    self.object_pose = None
+    self.object_bb = None
+    
     but_gui_ns = '/interaction_primitives'
     
     arm_manip_ns = '/but_arm_manip'
     self.arm_action_name = arm_manip_ns + '/manual_arm_manip_action'
     self.s_grasping_allow = arm_manip_ns + '/grasping_allow'
+    self.s_allow_interaction = but_gui_ns + '/set_allow_object_interaction'
     
+    self.s_bb_est = '/bb_estimator/estimate_bb_alt'
+    self.s_add_unknown_object = but_gui_ns + '/add_unknown_object'
+    self.s_get_object = but_gui_ns + '/get_unknown_object'
+    
+    self.s_coll_obj = arm_manip_ns + '/arm_nav_coll_obj';
+    
+    self.unknown_object_name='unknown_object'
+    self.unknown_object_description='Unknown object to grasp'  
+  
+  def bb_est_feedback(self,feedback):
+    
+    rospy.loginfo('Feedback received')
+    
+    est = rospy.ServiceProxy('/bb_estimator/estimate_bb_alt',EstimateBBAlt)
+      
+    header=rospy.Header() 
+   
+    header.frame_id = '/map'
+    header.stamp = feedback.timestamp
+    
+    rospy.loginfo('Calling bb est srv')
+      
+    try:
+          
+      est_result = est(header=header,
+                       p1=feedback.p1,
+                       p2=feedback.p2,
+                       mode=1)
+          
+    except Exception, e:
+          
+      rospy.logerr("Error on calling service: %s",str(e))
+      return
+  
+    rospy.loginfo('BB estimation performed!')
+ 
+
+    if self.object_added == True:
+        
+        if self.hlp.remove_im(self.unknown_object_name) == True:
+            
+            self.object_added = False
+            
+ 
+    if self.object_added == False:
+ 
+        add_object = rospy.ServiceProxy(self.s_add_unknown_object, AddUnknownObject)
+        rospy.loginfo('Calling %s service',self.s_add_unknown_object)
+           
+        try:
+          
+            #===================================================================
+            # add_object(frame_id = '/map',
+            #           name = self.unknown_object_name,
+            #           description = self.unknown_object_description,
+            #           pose = est_result.pose,
+            #           bounding_box_lwh = est_result.bounding_box_lwh,
+            #           color = color,
+            #           use_material = False)
+            #===================================================================
+            
+            add_object(frame_id='/map',
+                       name=self.unknown_object_name,
+                       description=self.unknown_object_description,
+                       pose_type= PoseType.POSE_BASE,
+                       pose = est_result.pose,
+                       scale = est_result.bounding_box_lwh)
+            
+            self.object_added = True
+            
+            rospy.loginfo('IM added')
+          
+          
+        except Exception, e:
+          
+          rospy.logerr('Cannot add IM object to the scene, error: %s',str(e))
+          
+        # allow interaction for this object  
+        self.hlp.set_interaction(self.unknown_object_name,True)
+      
+    else:
+        
+        rospy.logerr('Could not add new IM - old one was not removed!');
+        
+    return
+  
+  
+  def get_im_pose(self):
+      
+      get_object = rospy.ServiceProxy(self.s_get_object, GetUnknownObject)
+      
+      try:
+             
+             res = get_object(name=self.unknown_object_name)
+             
+             if res.frame_id is not ('map' or '/map'):
+                 
+                rospy.logwarn('TODO: Transformation of IM pose needed! Frame_id: %s',res.frame_id)
+             
+             self.object_pose = res.pose
+             self.object_bb = res.scale        
+          
+      except Exception, e:
+          
+          rospy.logerr('Cannot add IM object to the scene, error: %s',str(e)) 
+          
+      if self.object_pose is not None:
+          
+          # conversion to lwh
+          self.object_pose.position.y -= res.scale.y/2.0
+          self.object_pose.position.z -= res.scale.z/2.0
+          
+          
+          return True
+      else:
+          
+          return False
+      
+      
   
   def add_im_for_object(self):
    
    # /but_arm_manip/manual_bb_estimation_action
    roi_client = actionlib.SimpleActionClient('/but_arm_manip/manual_bb_estimation_action',ManualBBEstimationAction)
    
+   rospy.loginfo("Waiting for ROI action server...")
+   roi_client.wait_for_server()
+  
+   goal = ManualBBEstimationGoal()
+   goal.object_name = 'unknown object'
+   
+   roi_client.send_goal(goal,feedback_cb=self.bb_est_feedback)
+  
+   rospy.loginfo("Waiting for result...")
+   roi_client.wait_for_result()
+      
+   result = roi_client.get_result()
+      
+   print result
+   
+   # not let's suppose that IM is already on its position.... 
+      
+   rospy.loginfo('Action finished')
+   
+  def add_bb_to_planning(self):
+      
+    coll_obj = rospy.ServiceProxy(self.s_coll_obj, ArmNavCollObj);
+    
+    mpose = PoseStamped()
+    
+    mpose.header.frame_id = '/map'
+    mpose.pose = self.object_pose
+    
+    try:
+      
+      coll_obj(object_name = self.unknown_object_name,
+               pose = mpose,
+               bb_lwh = self.object_bb,
+               allow_collision=True,
+               attached=False,
+               attach_to_frame_id='');
+      
+    except Exception, e:
+      
+      rospy.logerr('Cannot add unknown object to the planning scene, error: %s',str(e))
+      
+  def change_bb_to_attached(self):
+      
+      rospy.loginfo('Setting object bb to be attached')
       
     
   def execute(self,userdata):
       
     global listener
     
+    rospy.loginfo('Waiting for needed services and topics...')
+    
+    if self.hlp.wait_for_srv(self.s_grasping_allow) is False:
+         return 'failed'
+     
+    if self.hlp.wait_for_srv(self.s_allow_interaction) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_bb_est) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_add_unknown_object) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_get_object) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_coll_obj) is False:
+        return 'failed'
+    
+    
+    self.s_coll_obj
+    
     grasping_client = actionlib.SimpleActionClient('/but_arm_manip/manual_arm_manip_action',ManualArmManipAction)
   
-    rospy.loginfo("Waiting for server...")
+    rospy.loginfo("Waiting for grasping action server...")
     grasping_client.wait_for_server()
+     
+    # ask user to select and tune IM for unknown object
+    self.add_im_for_object()
+    
+    if not self.get_im_pose():
+        
+        rospy.logerr('Could not get position of unknown object. Lets try to continue without it...')
+        
+    else:
+        
+        self.add_bb_to_planning()
+        
+        
+    
+    # send grasping goal and allow grasping buttons :)
     goal = ManualArmManipGoal()
       
     goal.allow_repeat = False
     goal.action = "Grasp object and put it on tray"
-    goal.object_name = "Unknown object"
+    goal.object_name = self.unknown_object_name
       
     grasping_client.send_goal(goal)
       
@@ -112,9 +410,7 @@ class grasp_unknown_object_assisted(smach.State):
       rospy.logerr("Error on calling service: %s",str(e))
       return 'failed'
   
-  
-  
-  
+ 
     rospy.loginfo("Waiting for result")
     grasping_client.wait_for_result()
   
@@ -149,12 +445,14 @@ class move_arm_to_given_positions_assisted(smach.State):
                          output_keys=['id_of_the_reached_position'])
     
     global listener
-    #listener = TransformListener()
+    
+    self.hlp = common_helper_methods()
  
     but_gui_ns = '/interaction_primitives'
     self.s_set_gr_pos = but_gui_ns + '/set_pregrasp_position'
     self.s_add_object = but_gui_ns + '/add_object'
     self.s_remove_object = but_gui_ns + '/remove_primitive'
+    self.s_allow_interaction = but_gui_ns + '/set_allow_object_interaction'
     
     # object database
     self.s_get_object_id = '/get_models'
@@ -172,8 +470,6 @@ class move_arm_to_given_positions_assisted(smach.State):
       
     global listener
   
-    rospy.loginfo("Waiting for %s service",self.s_set_gr_pos)
-    rospy.wait_for_service(self.s_set_gr_pos)
     set_gr_pos = rospy.ServiceProxy(self.s_set_gr_pos, SetPreGraspPosition)
     rospy.loginfo('Calling service %s',self.s_set_gr_pos)
     
@@ -204,15 +500,10 @@ class move_arm_to_given_positions_assisted(smach.State):
         rospy.logerr('Cannot add gr pos IM for pos ID: %d, error: %s',idx+1,str(e))
     
     
-    
   def add_im(self,userdata):
       
     global listener
-    
-    #listener = TransformListener()
-    
-    rospy.loginfo("Waiting for %s service",self.s_get_object_id)
-    rospy.wait_for_service(self.s_get_object_id)
+        
     get_object_id = rospy.ServiceProxy(self.s_get_object_id, GetObjectId)
     rospy.loginfo('Calling service %s',self.s_get_object_id)
   
@@ -238,8 +529,6 @@ class move_arm_to_given_positions_assisted(smach.State):
     #db_shape = None
     use_default_mesh = True
     
-    rospy.loginfo("Waiting for %s service",self.s_get_model_mesh)
-    rospy.wait_for_service(self.s_get_model_mesh)
     get_model_mesh = rospy.ServiceProxy(self.s_get_model_mesh, GetMesh)
     rospy.loginfo('Calling service %s (with ID=%d)',self.s_get_model_mesh,obj_db_id)
     
@@ -254,9 +543,6 @@ class move_arm_to_given_positions_assisted(smach.State):
       
       rospy.logerr('Cannot get mesh from db. We will use default one for milkbox. Error: %s',str(e))
       
-       
-    rospy.loginfo("Waiting for %s service",self.s_add_object)
-    rospy.wait_for_service(self.s_add_object)
     add_object = rospy.ServiceProxy(self.s_add_object, AddObject)
     rospy.loginfo('Calling %s service',self.s_add_object)
 
@@ -303,26 +589,10 @@ class move_arm_to_given_positions_assisted(smach.State):
       
       rospy.logerr('Cannot add IM object to the scene, error: %s',str(e))
       
+    # disable interaction for this object
+    self.hlp.set_interaction(userdata.name_of_the_target_object, False)
+      
     return shape
-    
-    
-  def remove_im(self,userdata):
-      
-    global listener
-    
-    # clean-up : removing interactive marker...
-    rospy.loginfo("Waiting for %s service",self.s_remove_object)
-    rospy.wait_for_service(self.s_remove_object)
-    remove_object = rospy.ServiceProxy(self.s_remove_object, RemovePrimitive)
-    
-    try:
-    
-      remove_object(name=userdata.name_of_the_target_object)
-      
-    except Exception, e:
-      
-      rospy.logerr('Cannot remove IM object from the scene, error: %s',str(e))
- 
  
   def pregr_im_callback(self,data):
       
@@ -335,7 +605,6 @@ class move_arm_to_given_positions_assisted(smach.State):
                   self.userdata.list_of_target_positions[data.pos_id-1].pre_grasp.pose.position.y,
                   self.userdata.list_of_target_positions[data.pos_id-1].pre_grasp.pose.position.z);
     
-    rospy.wait_for_service(self.s_move_arm)
     move_arm = rospy.ServiceProxy(self.s_move_arm, ArmNavMovePalmLink);
     
     print "test - list_of_trg_pos"
@@ -345,27 +614,36 @@ class move_arm_to_given_positions_assisted(smach.State):
     #target_pos = list(self.userdata.list_of_target_positions)
     target_pos = copy.deepcopy(self.userdata.list_of_target_positions)
     
-    pose_of_the_target_object_in_base_link = None
-    # self.pose_of_the_target_object_in_map -> transform it to /base_link
+#===============================================================================
+#    pose_of_the_target_object_in_base_link = None
+#    # self.pose_of_the_target_object_in_map -> transform it to /base_link
+#    
+#    t = rospy.Time(0)
+# 
+#    transf_target = '/base_link'
+# 
+#    listener.waitForTransform(transf_target,'/map',t,rospy.Duration(5))
+#  
+#    if listener.canTransform(transf_target,'/map',t):
+#    
+#      pose_of_the_target_object_in_base_link = listener.transformPose(transf_target,self.pose_of_the_target_object_in_map)
+#    
+#    else:
+#    
+#      rospy.logerr('Transformation is not possible!')
+#      #sys.exit(0)
+#      return 'failed' 
+#===============================================================================
     
-    t = rospy.Time(0)
-
-    transf_target = '/base_link'
-
-    listener.waitForTransform(transf_target,'/map',t,rospy.Duration(5))
-  
-    if listener.canTransform(transf_target,'/map',t):
+    #===========================================================================
+    # target_pos[data.pos_id-1].pre_grasp.pose.position.x += pose_of_the_target_object_in_base_link.pose.position.x
+    # target_pos[data.pos_id-1].pre_grasp.pose.position.y += pose_of_the_target_object_in_base_link.pose.position.y
+    # target_pos[data.pos_id-1].pre_grasp.pose.position.z += (pose_of_the_target_object_in_base_link.pose.position.z + self.userdata.bb_of_the_target_object['bb_lwh'].z/2)
+    #===========================================================================
     
-      pose_of_the_target_object_in_base_link = listener.transformPose(transf_target,self.pose_of_the_target_object_in_map)
-    
-    else:
-    
-      rospy.logerr('Transformation is not possible!')
-      sys.exit(0) 
-    
-    target_pos[data.pos_id-1].pre_grasp.pose.position.x += pose_of_the_target_object_in_base_link.pose.position.x
-    target_pos[data.pos_id-1].pre_grasp.pose.position.y += pose_of_the_target_object_in_base_link.pose.position.y
-    target_pos[data.pos_id-1].pre_grasp.pose.position.z += (pose_of_the_target_object_in_base_link.pose.position.z + self.userdata.bb_of_the_target_object['bb_lwh'].z/2)
+    target_pos[data.pos_id-1].pre_grasp.pose.position.x += self.pose_of_the_target_object_in_map.pose.position.x
+    target_pos[data.pos_id-1].pre_grasp.pose.position.y += self.pose_of_the_target_object_in_map.pose.position.y
+    target_pos[data.pos_id-1].pre_grasp.pose.position.z += (self.pose_of_the_target_object_in_map.pose.position.z + self.userdata.bb_of_the_target_object['bb_lwh'].z/2)
     
   
     print "Moving arm's IM to this position:"
@@ -386,6 +664,38 @@ class move_arm_to_given_positions_assisted(smach.State):
   def execute(self,userdata):
       
     global listener
+    
+    rospy.loginfo('Waiting for needed services...')
+    
+    if self.hlp.wait_for_srv(self.s_set_gr_pos) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_add_object) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_remove_object) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_allow_interaction) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_get_object_id) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_get_model_mesh) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_coll_obj) is False:
+        return 'failed'
+    
+    if self.hlp.wait_for_srv(self.s_move_arm) is False:
+        return 'failed'
+    
+    # waiting for action server
+    client = actionlib.SimpleActionClient(self.action_name,ManualArmManipAction)
+    
+    rospy.loginfo("Waiting for actionlib server...")
+    client.wait_for_server()
            
            
     if len(userdata.list_of_target_positions)==0:
@@ -440,26 +750,25 @@ class move_arm_to_given_positions_assisted(smach.State):
     rospy.loginfo("Subscribing to %s topic",pregr_topic);
     rospy.Subscriber(pregr_topic, MoveArmToPreGrasp, self.pregr_im_callback)
     
-    rospy.loginfo("Waiting for %s service",self.s_coll_obj)
-    rospy.wait_for_service(self.s_coll_obj)
     coll_obj = rospy.ServiceProxy(self.s_coll_obj, ArmNavCollObj);
+    
+    # hack - why is this needed???????
+    tpose = self.pose_of_the_target_object_in_map
+    #tpose.pose.position.y -= userdata.bb_of_the_target_object['bb_lwh'].y/2
     
     try:
       
       coll_obj(object_name = userdata.name_of_the_target_object,
-               pose = userdata.pose_of_the_target_object,
-               bb_lwh = userdata.bb_of_the_target_object['bb_lwh']);
+               pose = tpose,
+               bb_lwh = userdata.bb_of_the_target_object['bb_lwh'],
+               allow_collision=False,
+               attached=False,
+               attach_to_frame_id='');
       
     except Exception, e:
       
       rospy.logerr('Cannot add detected object to the planning scene, error: %s',str(e))
     
-
-    # lets start action...    
-    client = actionlib.SimpleActionClient(self.action_name,ManualArmManipAction)
-    
-    rospy.loginfo("Waiting for actionlib server...")
-    client.wait_for_server()
     
     goal = ManualArmManipGoal()
        
@@ -477,7 +786,7 @@ class move_arm_to_given_positions_assisted(smach.State):
     result = client.get_result()
     
     # clean up
-    self.remove_im(userdata)
+    self.hlp.remove_im(userdata.name_of_the_target_object)
     
     rospy.loginfo("Time elapsed: %ss",result.time_elapsed.to_sec())
     

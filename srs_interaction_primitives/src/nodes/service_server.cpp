@@ -33,7 +33,6 @@ using namespace visualization_msgs;
 using namespace geometry_msgs;
 using namespace std_msgs;
 
-
 namespace srs_interaction_primitives
 {
 
@@ -42,7 +41,6 @@ std::map<std::string, Primitive*> primitives;
 
 // Interactive Marker server
 InteractiveMarkerServerPtr imServer;
-
 
 bool addPlane(AddPlane::Request &req, AddPlane::Response &res)
 {
@@ -429,20 +427,21 @@ bool changeVelocity(ChangeVelocity::Request &req, ChangeVelocity::Response &res)
   return true;
 }
 
-bool setAllowObjectInteraction(SetAllowObjectInteraction::Request &req, SetAllowObjectInteraction::Response &res){
+bool setAllowObjectInteraction(SetAllowObjectInteraction::Request &req, SetAllowObjectInteraction::Response &res)
+{
   ROS_INFO("SETTING OBJECT'S INTERACTION");
 
   InteractiveMarker tmp;
-    if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
-    {
-      ROS_ERROR("Primitive with that name doesn't exist!");
-      return false;
-    }
+  if ((!imServer->get(req.name, tmp)) || (primitives.count(req.name) != 1))
+  {
+    ROS_ERROR("Primitive with that name doesn't exist!");
+    return false;
+  }
 
-    primitives[req.name]->setAllowObjectInteraction(req.allow);
+  primitives[req.name]->setAllowObjectInteraction(req.allow);
 
-    ROS_INFO("..... DONE");
-    return true;
+  ROS_INFO("..... DONE");
+  return true;
 }
 
 bool getUpdateTopic(GetUpdateTopic::Request &req, GetUpdateTopic::Response &res)
@@ -473,8 +472,127 @@ bool getAllPrimitivesNames(GetAllPrimitivesNames::Request &req, GetAllPrimitives
   return true;
 }
 
+bool getObject(GetObject::Request &req, GetObject::Response &res)
+{
+  ROS_INFO("GETTING OBJECT");
+
+  if (primitives.count(req.name) > 0)
+  {
+    Object *obj = (Object*)primitives.at(req.name);
+    if (obj->getPrimitiveType() == srs_interaction_primitives::PrimitiveType::OBJECT)
+    {
+      res.name = req.name;
+      res.frame_id = obj->getFrameID();
+      res.pose_type = obj->getPoseType();
+      res.pose = obj->getPose();
+      res.bounding_box_lwh = obj->getBoundingBoxLWH();
+      res.description = obj->getDescription();
+      res.color = obj->getColor();
+      res.shape = obj->getShape();
+      res.resource = obj->getResource();
+      res.use_material = obj->getUseMaterial();
+      return true;
+    }
+  }
+  ROS_ERROR("Object with that name doesn't exist!");
+  return false;
 }
 
+bool getUnknownObject(GetUnknownObject::Request &req, GetUnknownObject::Response &res)
+{
+  ROS_INFO("GETTING OBJECT");
+
+  if (primitives.count(req.name) > 0)
+  {
+    UnknownObject *obj = (UnknownObject*)primitives.at(req.name);
+    if (obj->getPrimitiveType() == srs_interaction_primitives::PrimitiveType::UNKNOWN_OBJECT)
+    {
+      res.name = req.name;
+      res.frame_id = obj->getFrameID();
+      res.pose_type = obj->getPoseType();
+      res.pose = obj->getPose();
+      res.description = obj->getDescription();
+      res.scale = obj->getScale();
+      return true;
+    }
+  }
+  ROS_ERROR("Unknown Object with that name doesn't exist!");
+  return false;
+}
+
+bool getBillboard(GetBillboard::Request &req, GetBillboard::Response &res)
+{
+  ROS_INFO("GETTING BILLBOARD");
+
+  if (primitives.count(req.name) > 0)
+  {
+    Billboard *obj = (Billboard*)primitives.at(req.name);
+    if (obj->getPrimitiveType() == srs_interaction_primitives::PrimitiveType::BILLBOARD)
+    {
+      res.name = req.name;
+      res.frame_id = obj->getFrameID();
+      res.pose_type = obj->getPoseType();
+      res.pose = obj->getPose();
+      res.description = obj->getDescription();
+      res.scale = obj->getScale();
+      res.description = obj->getDescription();
+      res.type = obj->getType();
+      res.velocity = obj->getVelocity();
+      res.direction = obj->getDirection();
+      return true;
+    }
+  }
+  ROS_ERROR("Billboard with that name doesn't exist!");
+  return false;
+}
+
+bool getBoundingBox(GetBoundingBox::Request &req, GetBoundingBox::Response &res)
+{
+  ROS_INFO("GETTING BOUNDING BOX");
+
+  if (primitives.count(req.name) > 0)
+  {
+    BoundingBox *obj = (BoundingBox*)primitives.at(req.name);
+    if (obj->getPrimitiveType() == srs_interaction_primitives::PrimitiveType::BOUNDING_BOX)
+    {
+      res.name = req.name;
+      res.frame_id = obj->getFrameID();
+      res.pose_type = obj->getPoseType();
+      res.pose = obj->getPose();
+      res.description = obj->getDescription();
+      res.color = obj->getColor();
+      res.scale = obj->getScale();
+      res.object_name = obj->getAttachedObjectName();
+      return true;
+    }
+    ROS_ERROR("Bounding box with that name doesn't exist!");
+    return false;
+  }
+}
+
+bool getPlane(GetPlane::Request &req, GetPlane::Response &res)
+{
+  ROS_INFO("GETTING PLANE");
+
+  if (primitives.count(req.name) > 0)
+  {
+    Plane *obj = (Plane*)primitives.at(req.name);
+    if (obj->getPrimitiveType() == srs_interaction_primitives::PrimitiveType::PLANE)
+    {
+      res.name = req.name;
+      res.frame_id = obj->getFrameID();
+      res.pose_type = obj->getPoseType();
+      res.pose = obj->getPose();
+      res.description = obj->getDescription();
+      res.color = obj->getColor();
+      res.scale = obj->getScale();
+      return true;
+    }
+    ROS_ERROR("Plane with that name doesn't exist!");
+    return false;
+  }
+}
+}
 
 /**
  * @brief Main function
@@ -509,14 +627,22 @@ int main(int argc, char **argv)
   ros::ServiceServer changeColorService = n.advertiseService(ChangeColor_SRV, changeColor);
   ros::ServiceServer changeDirectionService = n.advertiseService(ChangeDirection_SRV, changeDirection);
   ros::ServiceServer changeVelocityService = n.advertiseService(ChangeVelocity_SRV, changeVelocity);
-  ros::ServiceServer setAllowObjectInteractionService = n.advertiseService(SetAllowObjectInteraction_SRV, setAllowObjectInteraction);
+  ros::ServiceServer setAllowObjectInteractionService = n.advertiseService(SetAllowObjectInteraction_SRV,
+                                                                           setAllowObjectInteraction);
 
   ros::ServiceServer setGraspingPositionService = n.advertiseService(SetGraspingPosition_SRV, setPreGraspPosition);
-  ros::ServiceServer removeGraspingPositionService = n.advertiseService(RemoveGraspingPosition_SRV, removePreGraspPosition);
+  ros::ServiceServer removeGraspingPositionService = n.advertiseService(RemoveGraspingPosition_SRV,
+                                                                        removePreGraspPosition);
 
   ros::ServiceServer getUpdateTopicService = n.advertiseService(GetUpdateTopic_SRV, getUpdateTopic);
 
-  ros::ServiceServer getAllPrimitivesNamesService = n.advertiseService(GetAllPrimitivesNames_SRV, getAllPrimitivesNames);
+  ros::ServiceServer getAllPrimitivesNamesService = n.advertiseService(GetAllPrimitivesNames_SRV,
+                                                                       getAllPrimitivesNames);
+  ros::ServiceServer getObjectService = n.advertiseService(GetObject_SRV, getObject);
+  ros::ServiceServer getUnknownObjectService = n.advertiseService(GetUnknownObject_SRV, getUnknownObject);
+  ros::ServiceServer getBillboardService = n.advertiseService(GetBillboard_SRV, getBillboard);
+  ros::ServiceServer getBoundingBoxService = n.advertiseService(GetBoundingBox_SRV, getBoundingBox);
+  ros::ServiceServer getPlaneService = n.advertiseService(GetPlane_SRV, getPlane);
 
   ROS_INFO("Interaction Primitives Service Server ready!");
 

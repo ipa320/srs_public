@@ -33,12 +33,11 @@ using namespace visualization_msgs;
 using namespace geometry_msgs;
 using namespace std_msgs;
 
-
 namespace srs_interaction_primitives
 {
 
 Billboard::Billboard(InteractiveMarkerServerPtr server, string frame_id, string name) :
-  Primitive(server, frame_id, name, srs_interaction_primitives::PrimitiveType::BILLBOARD)
+    Primitive(server, frame_id, name, srs_interaction_primitives::PrimitiveType::BILLBOARD)
 {
   velocity_ = 0.0;
   color_.r = 0;
@@ -76,6 +75,21 @@ void Billboard::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
       break;
     case 2:
       /*
+       * Billboard trajectory prediction
+       */
+      if (state == MenuHandler::CHECKED)
+      {
+        removeTrajectoryPredictionMarkers();
+        menu_handler_.setCheckState(handle, MenuHandler::UNCHECKED);
+      }
+      else
+      {
+        addTrajectoryPredictionMarkers();
+        menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
+      }
+      break;
+    case 3:
+      /*
        * Billboard description
        */
       if (state == MenuHandler::CHECKED)
@@ -112,11 +126,14 @@ void Billboard::createMenu()
   {
     menu_created_ = true;
     menu_handler_.setCheckState(
-                                menu_handler_.insert("Show trajectory", boost::bind(&Billboard::menuCallback, this, _1)),
-                                MenuHandler::UNCHECKED);
-    menu_handler_.setCheckState(menu_handler_.insert("Show description",
-                                                     boost::bind(&Billboard::menuCallback, this, _1)),
-                                MenuHandler::UNCHECKED);
+        menu_handler_.insert("Show trajectory", boost::bind(&Billboard::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(
+        menu_handler_.insert("Show trajectory prediction", boost::bind(&Billboard::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(
+        menu_handler_.insert("Show description", boost::bind(&Billboard::menuCallback, this, _1)),
+        MenuHandler::UNCHECKED);
   }
 
 }
@@ -127,6 +144,7 @@ void Billboard::createMesh()
   mesh_.mesh_use_embedded_materials = true;
   mesh_.scale.y = scale_.x;
   mesh_.scale.z = scale_.y;
+  // Model flip
   mesh_.pose.orientation.x = 180;
 
   if (billboard_type_ == BillboardType::CHAIR)
@@ -141,6 +159,70 @@ void Billboard::createMesh()
     mesh_.mesh_resource = "package://srs_interaction_primitives/meshes/person_head.dae";
   else
     ROS_ERROR("UNKNOWN BILLBOARD TYPE!");
+}
+
+void Billboard::addTrajectoryPredictionMarkers()
+{
+  visualization_msgs::InteractiveMarker predictionMarker;
+  predictionMarker = object_;
+  predictionMarker.controls.clear();
+
+  Ogre::Matrix3 *rotation = new Ogre::Matrix3();
+  Ogre::Quaternion orientation;
+  orientation.x = direction_.x;
+  orientation.y = direction_.y;
+  orientation.z = direction_.z;
+  orientation.w = direction_.w;
+  orientation.normalise();
+  orientation.ToRotationMatrix(*rotation);
+  Ogre::Vector3 position;
+  position.x = velocity_;
+  position.y = 0;
+  position.z = 0;
+  position = rotation->operator *(position);
+
+  predictionMarker.pose.position.x = pose_.position.x;
+  predictionMarker.pose.position.y = pose_.position.y;
+  predictionMarker.pose.position.z = pose_.position.z;
+
+  visualization_msgs::InteractiveMarkerControl predictionControl;
+  predictionControl.name = "prediction_control";
+  predictionControl.always_visible = true;
+  predictionControl.orientation_mode = InteractiveMarkerControl::VIEW_FACING;
+  predictionControl.interaction_mode = InteractiveMarkerControl::NONE;
+
+  for (int i = 1; i < PREDICTIONS_COUNT + 1; i++)
+  {
+    std::stringstream name;
+    name << name_ << "_prediction_" << i;
+    predictionMarker.name = name.str();
+    std::stringstream desc;
+    desc << i << "s";
+    predictionMarker.description = desc.str();
+    predictionMarker.pose.position.x += position.x;
+    predictionMarker.pose.position.y += position.y;
+    predictionMarker.pose.position.z += position.z;
+
+    predictionControl.markers.clear();
+    predictionMarker.controls.clear();
+
+    predictionControl.markers.push_back(mesh_);
+    predictionMarker.controls.push_back(predictionControl);
+
+    server_->insert(predictionMarker);
+  }
+  server_->applyChanges();
+}
+
+void Billboard::removeTrajectoryPredictionMarkers()
+{
+  for (int i = 1; i < PREDICTIONS_COUNT + 1; i++)
+  {
+    std::stringstream name;
+    name << name_ << "_prediction_" << i;
+    server_->erase(name.str());
+  }
+  server_->applyChanges();
 }
 
 void Billboard::create()

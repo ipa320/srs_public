@@ -254,13 +254,13 @@ namespace srs_env_model
 		}
 
 		/// Connect plugin to the data
-		void connect( tpOctomapPlugin * source )
+		int connect( tpOctomapPlugin * source )
 		{
 			if( m_connected )
 				disconnect();
 
 			if( !m_plugin->shouldPublish() )
-			    return;
+			    return 0;
 
 			if( source != 0 )
 			{
@@ -273,6 +273,8 @@ namespace srs_env_model
 				if( m_flags & ON_STOP)	m_conStop = m_source->getSigOnPost().connect( boost::bind(&tpPlugin::handlePostNodeTraversal, m_plugin, _1 ) );
 				m_connected = true;
 			}
+
+			return 1;
 		}
 
 		/// Disconnect plugin

@@ -38,12 +38,17 @@ set( SERVER_SOURCES src/but_server/but_server.cpp
                     src/but_server/plugins/imarkers_plugin.cpp
                     src/but_server/plugins/marker_array_plugin.cpp
                     src/but_server/plugins/limited_point_cloud_plugin.cpp
+                    src/but_server/plugins/compressed_point_cloud_plugin.cpp
                     src/but_server/plugins/objtree_plugin.cpp
                     src/but_server/plugins/old_imarkers_plugin.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_oriented_box.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_planes.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_polymesh.cpp
                     )
+                    
+set( CPC_SOURCES src/but_server/compressed_pc_publisher.cpp
+				 src/but_server/but_cpc_node.cpp
+					)                    
 
 set( OBJTREE_SOURCE_FILES src/but_server/objtree/bbox.cpp
                           src/but_server/objtree/gbbox.cpp
@@ -62,6 +67,10 @@ rosbuild_add_library( ${OBJTREE_LIB_NAME} ${OBJTREE_SOURCE_FILES} )
 # Add servernode executable
 rosbuild_add_executable( but_server_node ${SERVER_SOURCES} src/nodes/server_node.cpp )
 target_link_libraries( but_server_node ${OCTOMAP_LIBRARIES} ${OBJTREE_LIB_NAME} )
+
+# Add compressed pc subscriber-publisher executable
+rosbuild_add_executable( but_cpc_node ${CPC_SOURCES} )
+
 
 include_directories( include/but_server )
 

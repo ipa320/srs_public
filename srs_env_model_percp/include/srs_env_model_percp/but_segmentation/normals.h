@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
  * \file
  *
  * $Id: normals.h 693 2012-04-20 09:22:39Z ihulik $
@@ -49,7 +49,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-namespace srs_env_model_percp
+namespace but_plane_detector
 {
 	/**
 	 * Type of normal computation enum
@@ -98,7 +98,7 @@ namespace srs_env_model_percp
 			 * @param C ax + by + Cz + d = 0
 			 * @param D ax + by + cz + D = 0
 			 */
-			Plane(const Scalar& A, const Scalar& B, const Scalar& C, const Scalar& D)
+			Plane(Scalar A, Scalar B, Scalar C, Scalar D)
 			{
 				a = A;
 				b = B;
@@ -119,7 +119,7 @@ namespace srs_env_model_percp
 			 * Returns a distance of point and this plane
 			 * @param pt Point for distance computation
 			 */
-			Scalar distance(const cv::Vec<Scalar, 3>& pt)
+			Scalar distance(cv::Vec<Scalar, 3> pt)
 			{
 				Scalar val = a*pt[0] + b*pt[1] + c*pt[2] + d;
 				return (val > 0? val : -val);
@@ -131,7 +131,7 @@ namespace srs_env_model_percp
 			 * @param angleErr Error threshold in angle of normals
 			 * @param shiftErr Error threshold in shift (D coefficient)
 			 */
-			bool isSimilar(const Plane &plane, const Scalar& angleErr, const Scalar& shiftErr)
+			bool isSimilar(Plane &plane, Scalar angleErr, Scalar shiftErr)
 			{
 				Scalar angle = acos(((a * plane.a) + (b * plane.b) + (c * plane.c)));
 				Scalar xd = plane.d - d;

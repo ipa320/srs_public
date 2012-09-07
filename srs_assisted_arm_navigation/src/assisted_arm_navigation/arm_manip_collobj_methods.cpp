@@ -31,7 +31,7 @@ using namespace srs_assisted_arm_navigation;
 using namespace planning_scene_utils;
 
 
-std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh) {
+std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll=false) {
 
   std::string ret = "";
 
@@ -50,68 +50,83 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
   color.b = 1.0;
   color.a = 0.25;
 
-  geometry_msgs::PoseStamped mpose;
-
-  /// We have to transform object to /base_link system
-  ros::Time now = ros::Time::now();
-  //geometry_msgs::PoseStamped pose_transf;
-
-  pose.header.stamp = now; /// we need transformation for current time!
-
-  std::string target = "/base_link";
-
-  ROS_INFO("Trying to transform detected object bb from %s to %s frame",pose.header.frame_id.c_str(),target.c_str());
-
   bool transf = false;
 
-  ROS_INFO("Waiting for transformation between %s and %s",pose.header.frame_id.c_str(),target.c_str());
+  if (pose.header.frame_id != collision_objects_frame_id_) {
 
-  try {
+	  geometry_msgs::PoseStamped mpose;
 
-          if (tfl_->waitForTransform(target, pose.header.frame_id, now, ros::Duration(2.0))) {
+	  /// We have to transform object to /base_link system
+	  ros::Time now = ros::Time::now();
+	  //geometry_msgs::PoseStamped pose_transf;
 
-            tfl_->transformPose(target,pose,mpose);
+	  pose.header.stamp = now; /// we need transformation for current time!
 
-          } else {
+	  std::string target = collision_objects_frame_id_;
 
-            pose.header.stamp = ros::Time(0);
-            tfl_->transformPose(target,pose,mpose);
-            ROS_WARN("Using latest transform available, may be wrong.");
+	  ROS_INFO("Trying to transform detected object bb from %s to %s frame",pose.header.frame_id.c_str(),target.c_str());
 
-          }
+	  ROS_INFO("Waiting for transformation between %s and %s",pose.header.frame_id.c_str(),target.c_str());
 
-          transf = true;
+	  try {
 
-     }
+			  if (tfl_->waitForTransform(target, pose.header.frame_id, now, ros::Duration(2.0))) {
 
-      // In case of absence of transformation path
-      catch(tf::TransformException& ex){
-         std::cerr << "Transform error: " << ex.what() << std::endl;
-         transf = false;
-      }
+				tfl_->transformPose(target,pose,mpose);
 
+			  } else {
 
-   if (transf) {
+				pose.header.stamp = ros::Time(0);
+				tfl_->transformPose(target,pose,mpose);
+				ROS_WARN("Using latest transform available, may be wrong.");
 
-     //ROS_INFO("Successfully transformed - adding object %s to scene.",oname.c_str());
+			  }
 
-     mpose.pose.position.z +=  bb_lwh.z/2;
+			  transf = true;
 
-     ret = createCollisionObject(oname,
-                           mpose.pose,
-                           PlanningSceneEditor::Box,
-                           (bb_lwh.x)*inflate_bb_,
-                           (bb_lwh.y)*inflate_bb_,
-                           (bb_lwh.z)*inflate_bb_,
-                           color);
+		 }
 
-     ROS_INFO("Coll. obj. name=%s, id=%s",oname.c_str(),ret.c_str());
+		  // In case of absence of transformation path
+		  catch(tf::TransformException& ex){
+			 std::cerr << "Transform error: " << ex.what() << std::endl;
+			 transf = false;
+		  }
 
 
-   } // transf
-   else {
 
-     ROS_ERROR("Error on transforming - cannot add object %s to scene!",oname.c_str());
+  } else transf=true;
+
+  if (transf) {
+
+  		 //ROS_INFO("Successfully transformed - adding object %s to scene.",oname.c_str());
+
+	     geometry_msgs::PoseStamped mpose = pose;
+
+  		 mpose.pose.position.z +=  bb_lwh.z/2;
+
+  		 ret = createCollisionObject(oname,
+  							   mpose.pose,
+  							   PlanningSceneEditor::Box,
+  							   (bb_lwh.x)*inflate_bb_,
+  							   (bb_lwh.y)*inflate_bb_,
+  							   (bb_lwh.z)*inflate_bb_,
+  							   color);
+
+  		 ROS_INFO("Coll. obj. name=%s, id=%s",oname.c_str(),ret.c_str());
+
+
+  	   } // transf
+  	   else {
+
+  		 ROS_ERROR("Error on transforming - cannot add object %s to scene!",oname.c_str());
+
+  	   }
+
+
+   if (coll) {
+
+	   ROS_INFO("Allowing collisions of gripper with object: %s (NOT IMPLEMENTED YET)", name.c_str());
+	   // TODO
 
    }
 
@@ -126,7 +141,7 @@ std::string CArmManipulationEditor::add_coll_obj_attached(double x, double y, do
   std::string ret = "";
   ros::Time now = ros::Time::now();
 
-  std::string target = "/base_link";
+  std::string target = collision_objects_frame_id_;
 
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = "/arm_7_link";

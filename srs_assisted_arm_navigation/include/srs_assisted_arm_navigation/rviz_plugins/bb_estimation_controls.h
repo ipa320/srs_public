@@ -123,6 +123,11 @@ protected:
     int16_t p1_[2];
     int16_t p2_[2];
 
+    bool is_video_flipped_;
+
+    unsigned int image_width_;
+    unsigned int image_height_;
+
 
     int butt_down_x_;
     int butt_down_y_;

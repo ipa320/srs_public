@@ -70,7 +70,7 @@ srs_env_model::CPointCloudPlugin::~CPointCloudPlugin()
 //! Initialize plugin - called in server constructor
 void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 {
-	PERROR( "Initializing PointCloudPlugin" );
+//	PERROR( "Initializing PointCloudPlugin" );
 
 
 	// Read parameters
@@ -99,9 +99,9 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	// If should subscribe, create message filter and connect to the topic
 	if( m_bSubscribe )
 	{
-		PERROR("Subscribing to: " << m_pcSubscriberName );
+		//PERROR("Subscribing to: " << m_pcSubscriberName );
 		// Create subscriber
-		m_pcSubscriber  = new message_filters::Subscriber<tIncommingPointCloud>(node_handle, m_pcSubscriberName, 5);
+		m_pcSubscriber  = new message_filters::Subscriber<tIncommingPointCloud>(node_handle, m_pcSubscriberName, 1);
 
 		if (!m_pcSubscriber)
 		{
@@ -110,7 +110,7 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 		}
 
 		// Create message filter
-		m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_pcFrameId, 5);
+		m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_pcFrameId, 1);
 		m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1));
 
 		//std::cerr << "SUBSCRIBER NAME: " << m_pcSubscriberName << ", FRAMEID: " << m_pcFrameId << std::endl;
@@ -125,6 +125,12 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 //! Called when new scan was inserted and now all can be published
 void srs_env_model::CPointCloudPlugin::onPublish(const ros::Time & timestamp)
 {
+//	PERROR("Try lock");
+
+	boost::mutex::scoped_lock lock(m_lockData);
+
+//	PERROR("Lock");
+
 	// No subscriber or disabled
 	if( ! shouldPublish() )
 		return;
@@ -140,13 +146,17 @@ void srs_env_model::CPointCloudPlugin::onPublish(const ros::Time & timestamp)
 	// Set message parameters and publish
 	cloud.header.frame_id = m_pcFrameId;
 	cloud.header.stamp = timestamp;
+
+//	PERROR( "Publishing cloud. Size: " << m_data->size() << ", topic: " << m_pcPublisher.getTopic() );
 	m_pcPublisher.publish(cloud);
 
+//	PERROR("Unlock");
 }
 
 //! Set used octomap frame id and timestamp
 void srs_env_model::CPointCloudPlugin::onFrameStart( const SMapParameters & par )
 {
+//	PERROR( "Frame start. ");
 	m_data->clear();
 	m_ocFrameId = par.frameId;
 	m_DataTimeStamp = m_time_stamp = par.currentTime;
@@ -154,6 +164,31 @@ void srs_env_model::CPointCloudPlugin::onFrameStart( const SMapParameters & par 
 
 	// Pointcloud is used as output for octomap...
 	m_bAsInput = false;
+
+	// If different frame id
+	if( m_ocFrameId != m_pcFrameId )
+	{
+		tf::StampedTransform ocToPcTf;
+
+		// Get transform
+		try {
+			// Transformation - to, from, time, waiting time
+			m_tfListener.waitForTransform(m_pcFrameId, m_ocFrameId,
+					par.currentTime, ros::Duration(5));
+
+			m_tfListener.lookupTransform(m_pcFrameId, m_ocFrameId,
+					par.currentTime, ocToPcTf);
+
+		} catch (tf::TransformException& ex) {
+			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+			PERROR( "Transform error.");
+			return;
+		}
+
+
+		// Get transformation matrix
+		pcl_ros::transformAsMatrix(ocToPcTf, m_pcOutTM);	// Sensor TF to defined base TF
+	}
 }
 
 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
@@ -187,42 +222,20 @@ void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButSer
 
 void srs_env_model::CPointCloudPlugin::handlePostNodeTraversal(const SMapParameters & mp)
 {
+//	PERROR( "Frame end. ");
 //*
 	// If different frame id
 	if( (!m_bAsInput) && (m_ocFrameId != m_pcFrameId) )
 	{
-		tf::StampedTransform ocToPcTf;
-
-		// Get transform
-		try {
-			// Transformation - to, from, time, waiting time
-			m_tfListener.waitForTransform(m_pcFrameId, m_ocFrameId,
-					mp.currentTime, ros::Duration(5));
-
-			m_tfListener.lookupTransform(m_pcFrameId, m_ocFrameId,
-			        mp.currentTime, ocToPcTf);
-
-		} catch (tf::TransformException& ex) {
-			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
-			PERROR( "Transform error.");
-			return;
-		}
-
-		Eigen::Matrix4f ocToPcTM;
-
-		// Get transformation matrix
-		pcl_ros::transformAsMatrix(ocToPcTf, ocToPcTM);	// Sensor TF to defined base TF
-
-
 		// transform point cloud from sensor frame to the preset frame
-		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, ocToPcTM);
-
-
+		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
 	}
 
 //	PERROR( "Publishing cloud. Size: " << m_data->size() );
 
 //*/
+//	std::cerr << "PCOUT size: " << m_data->size() << std::endl;
+
 	// Invalidate data
 	invalidate();
 }
@@ -235,10 +248,19 @@ void srs_env_model::CPointCloudPlugin::handlePostNodeTraversal(const SMapParamet
  */
 void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::ConstPtr& cloud)
 {
+//	PERROR("Try lock");
 	boost::mutex::scoped_lock lock(m_lockData);
+//	PERROR("Lock");
 
 	if( ! useFrame() )
+	{
+		PERROR("Skipping frame: " << cloud->header.stamp);
+
 		return;
+	}
+
+//	std::cerr << "PCP.iccb start. Time: " << ros::Time::now() << std::endl;
+
 
 	ros::WallTime startTime = ros::WallTime::now();
 
@@ -268,6 +290,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	// If different frame id
 	if( cloud->header.frame_id != m_pcFrameId )
 	{
+//		PERROR( "Wait for input transform" );
 
 	    // Some transforms
 		tf::StampedTransform sensorToPcTf;
@@ -284,6 +307,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		} catch (tf::TransformException& ex) {
 			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
 			PERROR("Transform error");
+
 			return;
 		}
 
@@ -300,6 +324,8 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	// Filter input pointcloud
 	if( m_bFilterPC )		// TODO: Optimize this by removing redundant transforms
 	{
+//		PERROR( "Wait for filtering transform");
+
 		// Get transforms to and from base id
 		tf::StampedTransform pcToBaseTf, baseToPcTf;
 		try {
@@ -344,16 +370,20 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	m_data->header = cloud->header;
     m_data->header.frame_id = m_pcFrameId;
 
- //   PERROR("Insert cloud CB. Size: " << m_data->size() );
+//    PERROR("Insert cloud CB. Size: " << m_data->size() );
 
  	invalidate();
+
+ //	std::cerr << "PCP.iccb end. Time: " << ros::Time::now() << std::endl;
+
+// 	PERROR("Unlock");
 
 }
 
 //! Should plugin publish data?
 bool srs_env_model::CPointCloudPlugin::shouldPublish()
 {
-	return( m_data->size() > 0 && m_publishPointCloud && m_pcPublisher.getNumSubscribers() > 0 );
+	return( m_publishPointCloud && m_pcPublisher.getNumSubscribers() > 0 );
 }
 
 /**
@@ -385,7 +415,12 @@ bool srs_env_model::CPointCloudPlugin::isRGBCloud( const tIncommingPointCloud::C
  */
 void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
 {
+//	PERROR("Try lock");
+
 	boost::mutex::scoped_lock lock(m_lockData);
+
+//	PERROR("Lock");
+
 	if( bPause )
 	{
 		m_pcPublisher.shutdown();
@@ -415,4 +450,7 @@ void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nod
 			m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1));
 		}
 	}
+
+//	PERROR("Unlock");
+
 }

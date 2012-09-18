@@ -266,7 +266,8 @@ def handle_symbol_grounding_grasp_base_pose_experimental(req):
 	target_obj_h = req.target_obj_pose.position.z
 	target_obj_rpy = tf.transformations.euler_from_quaternion([req.target_obj_pose.orientation.x, req.target_obj_pose.orientation.y, req.target_obj_pose.orientation.z, req.target_obj_pose.orientation.w])
 	target_obj_th = target_obj_rpy[2]
-	
+	print "milk box position!!!!!!!!!!!!!"
+	print target_obj_x target_obj_y target_obj_h
 
 
 	robot_base_pose_x = rb_pose.x

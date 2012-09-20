@@ -14,6 +14,8 @@ sss = simple_script_server()
 
 from srs_grasping.srv import *
 from srs_knowledge.srv import *
+from pr2_controllers_msgs.msg import JointTrajectoryControllerState
+from srs_msgs.msg import SRSSpatialInfo 
 
 class select_srs_grasp(smach.State):
 
@@ -266,7 +268,7 @@ class grasp_base_pose_estimation(smach.State):
             print "Service call failed: %s"%e
             return 'failed'
 
-        parent_obj_geometry = SRSFurnitureGeometry()
+        parent_obj_geometry = SRSSpatialInfo()
         parent_obj_geometry.pose = target_object_pose
         parent_obj_geometry.l = all_workspaces_on_map.objectsInfo[index_of_the_target_workspace].l
         parent_obj_geometry.w = all_workspaces_on_map.objectsInfo[index_of_the_target_workspace].w

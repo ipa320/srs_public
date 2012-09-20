@@ -33,7 +33,7 @@ if __name__ == '__main__':
     try:
         # Initializes a rospy node so that the SimpleActionClient can
         # publish and subscribe over ROS.
-        json_parameters = '{"tasks":[{"time_schedule":1263798000000,"task":"get","deliver_destination":{"predefined_pose":"order"},"object":{"object_type":"Milkbox"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}'
+        json_parameters = '{"tasks":[{"time_schedule":1263798000000,"task":"fetch","deliver_destination":{"predefined_pose":"order"},"object":{"object_type":"Milkbox"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}'
         #json_parameters = "{\"tasks\":[{\"time_schedule\":1263798000000,\"task\":\"move\",\"destination\":{\"predefined_pose\":\"home\"}}],\"initializer\":{\"device_type\":\"ui_loc\",\"device_id\":\"ui_loc_0001\"}}"
         rospy.init_node('dm_client2')
         result = DM_client(json_parameters)

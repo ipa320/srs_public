@@ -1,0 +1,6 @@
+<launch>
+  <!-- send urdf to param server -->
+  <param name="milk_description" textfile="$(find cob_gazebo_objects)/objects/milk.urdf" /> 
+  <!-- spawn the model in gazebo -->
+  <node name="spawn_Milkbox" pkg="gazebo" type="spawn_model" args="-x 0.955555 -y -1 -z 0.9 -urdf -param milk_description -model Milkbox" respawn="false" output="screen" /> 
+</launch>

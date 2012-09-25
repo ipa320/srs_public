@@ -79,7 +79,7 @@ def symbol_grounding_grasp_base_pose_experimental_client(target_obj_pose, parent
 		print "Service call failed: %s" %e
 
 
-		
+'''		
 def getWorkspaceOnMap():
 	#print 'test get all workspace (furnitures basically here) from map'
 	try:
@@ -89,7 +89,7 @@ def getWorkspaceOnMap():
 	except rospy.ServiceException, e:
 		print "Service call failed: %s"%e
 		
-		
+'''		
 
 
 
@@ -108,10 +108,11 @@ if __name__ == "__main__":
 	target_obj_pose.orientation.w = 1
 
 
-	workspace_info = getWorkspaceOnMap()	
+	#workspace_info = getWorkspaceOnMap()	
 	
 	parent_obj_geometry = SRSSpatialInfo()
 	
+	'''
 	parent_obj_geometry.pose.position.x = workspace_info.objectsInfo[0].pose.position.x
 	parent_obj_geometry.pose.position.y = workspace_info.objectsInfo[0].pose.position.y
 	parent_obj_geometry.pose.position.z = workspace_info.objectsInfo[0].pose.position.z
@@ -122,13 +123,25 @@ if __name__ == "__main__":
 	parent_obj_geometry.l = workspace_info.objectsInfo[0].l
 	parent_obj_geometry.w = workspace_info.objectsInfo[0].w
 	parent_obj_geometry.h = workspace_info.objectsInfo[0].h
+	'''
 
-	#parent_obj_geometry.pose.position.x = -3.3
-	#parent_obj_geometry.pose.position.y = 0.5
+	parent_obj_geometry.pose.position.x = -3.3
+	parent_obj_geometry.pose.position.y = 0.5
+	parent_obj_geometry.pose.position.z = 1.0
+	parent_obj_geometry.pose.orientation.x = 0
+	parent_obj_geometry.pose.orientation.y = 0
+	parent_obj_geometry.pose.orientation.z = 0
+	parent_obj_geometry.pose.orientation.w = 1.0
+
+	parent_obj_geometry.l = 2.0
+	parent_obj_geometry.w = 1.0
+	parent_obj_geometry.h = 0.85
+
+
 
 
 	furniture_geometry_list = list()
-	furniture_geometry_list = workspace_info.objectsInfo
+	#furniture_geometry_list = workspace_info.objectsInfo
 	#rospy.loginfo(workspace_info.objectsInfo[6])
 
 

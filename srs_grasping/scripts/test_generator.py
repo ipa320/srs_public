@@ -59,13 +59,16 @@ import roslib;
 roslib.load_manifest('srs_grasping')
 import rospy
 import sys
+import time
 import grasping_functions
 
 class GENERATOR():
 
 	def run(self, object_id):
-
-		return grasping_functions.openraveutils.generator(object_id);
+		x = time.time()
+		res = grasping_functions.openraveutils.generator(object_id);
+		rospy.loginfo("Time employed: %s", str(time.time() - x))
+		return res
 
 
 if __name__ == "__main__":

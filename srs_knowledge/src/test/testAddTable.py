@@ -44,7 +44,7 @@ def updatePosInfo():
         posInfo.w = 0.74
 
         updatePos = rospy.ServiceProxy('update_pos_info', UpdatePosInfo)
-        res = updatePos('Table1', 7, posInfo, 'not used')
+        res = updatePos('Table0', 7, posInfo, 'not used')
         return res
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
@@ -54,7 +54,7 @@ def insertObject():
     print 'update spatial info'
     try:
         insertObj = rospy.ServiceProxy('insert_instance', InsertInstance)
-        res = insertObj('Table1', 'Table-PieceOfFurniture', '7', 'not used', 'not used')
+        res = insertObj('Table0', 'Table-PieceOfFurniture', '7', 'not used', 'not used')
         return res
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e

@@ -97,7 +97,22 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	//	this.nodeHandle = n;
 	this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
-	this.initTask(targetContent, this.userPose);
+	//this.initTask(targetContent, this.userPose);
+
+
+	if (this.initTask(targetContent, this.userPose)) {
+	    if(graspMode == ConfigInfo.GraspType.MOVE_AND_GRASP)  {
+		System.out.println("MOVE_AND_GRASP  " + targetContent);
+	    }
+	    else {
+		System.out.println("JUST_GRASP  " + targetContent);
+	    }
+	}
+	else {
+	    System.out.println("Task not constructed successfully");
+	}
+
+
     }
 
     @Override
@@ -356,13 +371,13 @@ public class FetchObjectTask extends org.srs.srs_knowledge.task.Task
 	return spatialInfo;
     }
 
-    private void initTask(String targetContent, String userPose) {
+    private boolean initTask(String targetContent, String userPose) {
 	acts = new ArrayList<ActionTuple>();
 	
 	setTaskTarget(targetContent);
 	System.out.println("TASK.JAVA: Created CurrentTask " + "get "
 			   + targetContent);
-	constructTask();
+	return constructTask();
     }   
 
     @Override

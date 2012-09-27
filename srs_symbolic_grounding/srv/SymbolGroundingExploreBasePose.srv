@@ -1,0 +1,7 @@
+srs_msgs/SRSSpatialInfo parent_obj_geometry
+srs_msgs/SRSSpatialInfo[] furniture_geometry_list
+---
+geometry_msgs/Pose2D[] explore_base_pose_list
+
+
+

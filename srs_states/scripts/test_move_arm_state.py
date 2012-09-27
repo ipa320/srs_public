@@ -20,7 +20,7 @@ class TestStates:
     # create a SMACH state machine
     SM = smach.StateMachine(outcomes=['overall_succeeded','overall_failed'])
     pose1 = PoseStamped()
-    pose1.header.frame_id = rospy.get_param("/srs_arm_kinematics/arm/tip_name");
+    pose1.header.frame_id = 'sdh_palm_link'
     pose1.header.stamp= rospy.Time.now()
     pose1.pose.position.x = 0
     pose1.pose.position.y = 0
@@ -33,7 +33,7 @@ class TestStates:
 
     # open the container
     with SM:
-      smach.StateMachine.add('MOVE_ARM_UNPLANNED', move_arm_unplanned(),
+      smach.StateMachine.add('MOVE_ARM_PLANNED', move_arm_planned(),
         transitions={'succeeded':'overall_succeeded', 'failed':'overall_failed', 'not_completed':'overall_failed', 'preempted':'overall_failed'})
     rospy.sleep(1.0) # let script server start
     try:

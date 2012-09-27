@@ -140,9 +140,10 @@ public class OntoQueryUtil
 
 	for( ; instancesOfObject.hasNext(); ) {
 	    stm = KnowledgeEngine.ontoDB.getPropertyOf(globalNameSpace, "spatiallyRelated", instancesOfObject.next());
-	    workspaceList.add(stm.getObject().asResource().getLocalName());
+	    if (stm != null) {
+		workspaceList.add(stm.getObject().asResource().getLocalName());
+	    }
 	}
-	
 	// list possible workspace(s), e.g. tables
 	ArrayList<String> otherWorkspaces = getFurnituresLinkedToObject(objectClassName);
 	
@@ -275,10 +276,10 @@ public class OntoQueryUtil
     public static ArrayList<String> getFurnituresLinkedToObject(String objectClassName) {
 	ArrayList<String> ret = new ArrayList<String>();
         OntClass objClass = KnowledgeEngine.ontoDB.model.getOntClass(OntoQueryUtil.GlobalNameSpace  + objectClassName );
-	/*	
-		for(Iterator<OntProperty> pros = objClass.listDeclaredProperties(true); pros.hasNext(); ) {
-		System.out.println(pros.next().getLocalName());
-		}
+	/*
+	  for(Iterator<OntProperty> pros = objClass.listDeclaredProperties(true); pros.hasNext(); ) {
+	  System.out.println(pros.next().getLocalName());
+	  }
 	*/
 	HashSet<String> supClasses = OntoQueryUtil.getSuperAndSubClassesOf(OntoQueryUtil.GlobalNameSpace + objectClassName, OntoQueryUtil.GlobalNameSpace + "GraspableObject", true);
 	Iterator<String> itSup = supClasses.iterator();

@@ -1,0 +1,6 @@
+string command
+string[] actions_results
+string[] objects
+---
+string relation
+

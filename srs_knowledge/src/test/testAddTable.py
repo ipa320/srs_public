@@ -26,12 +26,13 @@ def getWorkspaceOnMap():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
+
 def updatePosInfo():
     print 'update spatial info'
     try:
         posInfo = SRSSpatialInfo()
-        posInfo.pose.position.x = 1.15
-        posInfo.pose.position.y = -1.2
+        posInfo.pose.position.x = 0.65
+        posInfo.pose.position.y = 1.21
         posInfo.pose.position.z = 0.1
         posInfo.pose.orientation.x = 0
         posInfo.pose.orientation.y = 0
@@ -58,8 +59,18 @@ def insertObject():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
+def insertMilkbox():
+    print 'update spatial info'
+    try:
+        insertObj = rospy.ServiceProxy('insert_instance', InsertInstance)
+        res = insertObj('MilkBox0', 'Milkbox', '9', 'not used', 'not used')
+        return res
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
 if __name__ == "__main__":
     # print getObjectsOnMap()
     # print getWorkspaceOnMap()
     print insertObject()
     print updatePosInfo()
+    print insertMilkbox()

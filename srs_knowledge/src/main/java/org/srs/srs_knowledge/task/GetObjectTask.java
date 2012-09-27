@@ -102,12 +102,16 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     {	
 	this.graspType = graspMode;
 	// this.init(taskType, targetContent, userPose);
-	this.initTask(targetContent);
-	if(graspMode == ConfigInfo.GraspType.MOVE_AND_GRASP)  {
-	    System.out.println("MOVE_AND_GRASP  " + targetContent);
+	if (this.initTask(targetContent)) {
+	    if(graspMode == ConfigInfo.GraspType.MOVE_AND_GRASP)  {
+		System.out.println("MOVE_AND_GRASP  " + targetContent);
+	    }
+	    else {
+		System.out.println("JUST_GRASP  " + targetContent);
+	    }
 	}
 	else {
-	    System.out.println("JUST_GRASP  " + targetContent);
+	    System.out.println("Task not constructed successfully");
 	}
     }
 
@@ -142,7 +146,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    workspaces = OntoQueryUtil.getWorkspaceOfObject(this.targetContent, OntoQueryUtil.ObjectNameSpace, OntoQueryUtil.GlobalNameSpace, KnowledgeEngine.ontoDB);
 	}
 	catch(Exception e) {
-	    System.out.println(e.getMessage() + "\n" + e.toString());
+	    System.out.println("--> " + e.getMessage() + "\n" + e.toString());
 	    return false;
 	}
 	
@@ -815,13 +819,13 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
     }
 
 
-    private void initTask(String targetContent) {
-	acts = new ArrayList<ActionTuple>();
+    private boolean initTask(String targetContent) {
+	//acts = new ArrayList<ActionTuple>();
 	
 	setTaskTarget(targetContent);
 	System.out.println("TASK.JAVA: Created CurrentTask " + "get "
 			   + targetContent);
-	constructTask();
+	return constructTask();
     }   
 
     public boolean replan(OntologyDB onto, OntoQueryUtil ontoQuery) {

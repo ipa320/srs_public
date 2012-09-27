@@ -113,49 +113,47 @@ class srs_grasp(smach.State):
         post_grasp_stamped.pose.position.z += 0.2;
 
 	grasp_trajectory = [];
-	class FoundGoodGrasp(Exception): pass
+	postgrasp_trajectory = [];
+
+	class BadGrasp(Exception): pass
 	try:
+		#pre-grasp
 		(pgc1, error_code) = grasping_functions.graspingutils.callIKSolver(self.current_arm_state, pre_grasp_stamped)
-		if(error_code.val == error_code.SUCCESS):
-			grasp_trajectory.append(pgc1);
-			pre_grasp_stamped.pose.position.x -= 0.1;
+		if(error_code.val != error_code.SUCCESS):
+			raise BadGrasp();
+		grasp_trajectory.append(pgc1)
+
+
+		#second pre-grasp
+		aux_pre = pre_grasp_stamped.pose.position.x;
+		aux = 0.0;
+		for i in range(0,5):
+			aux += 0.01;
+			pre_grasp_stamped.pose.position.x = aux_pre + aux;
 			(pgc2, error_code) = grasping_functions.graspingutils.callIKSolver(pgc1, pre_grasp_stamped)
 			if(error_code.val == error_code.SUCCESS):
 				grasp_trajectory.append(pgc2);
-			(gc, error_code) = grasping_functions.graspingutils.callIKSolver(grasp_trajectory[len(grasp_trajectory)-1], grasp_stamped)
-			if(error_code.val == error_code.SUCCESS):
-				grasp_trajectory.append(gc);
-				(post_grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(gc, post_grasp_stamped)
-				if(error_code.val == error_code.SUCCESS):
-					raise FoundGoodGrasp();
-		"""
-	try:
-		for w in range(0,10):
-		    (pre_grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(self.current_arm_state, pre_grasp_stamped)		
-		    if(error_code.val == error_code.SUCCESS):
-		        for w in range(0,10):
-		            (grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(pre_grasp_conf, grasp_stamped)
-		            if(error_code.val == error_code.SUCCESS):	
-				for w in range(0,10):
-				        (post_grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(grasp_conf, post_grasp_stamped)	
-				        if(error_code.val == error_code.SUCCESS):
-						raise FoundGoodGrasp();
-		"""
-		sss.say(["I can't catch the object!"], False)
-		return 'not_completed';
+				break;	
 
-	except FoundGoodGrasp:
-		sss.say(["I am grasping the object now!"], False)
+
+		#grasp
+		(gc, error_code) = grasping_functions.graspingutils.callIKSolver(grasp_trajectory[len(grasp_trajectory)-1], grasp_stamped)
+		if(error_code.val != error_code.SUCCESS):
+			raise BadGrasp();		
+		grasp_trajectory.append(gc);
+
+
 
 		#Move arm to pregrasp->grasp position.
-		arm_handle = sss.move("arm", grasp_trajectory)
-		rospy.sleep(2)
+		arm_handle = sss.move("arm", grasp_trajectory, False)
+		sss.say(["I am grasping the object now!"])
 		arm_handle.wait()
+		rospy.sleep(3)
 
 		#Close SDH based on the grasp configuration to grasp.
-		sdh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)])
-		rospy.sleep(2);
+		sdh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)], False)
 		sdh_handle.wait()
+		rospy.sleep(2);
 
 		#Confirm the grasp based on force feedback
 		if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
@@ -168,22 +166,50 @@ class srs_grasp(smach.State):
 			print "to:\n", regrasp
 
 			sdh_handle = sss.move("sdh", [regrasp])
-			rospy.sleep(1)
+			rospy.sleep(2)
 			sdh_handle.wait()
 
 			if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
-				sss.say(["I can't catch the object!"], False)
-				return 'not_completed'
+				raise BadGrasp();
 
-		arm_handle = sss.move("arm",[post_grasp_conf])
+		#post-grasp
+		aux_x = post_grasp_stamped.pose.position.x;
+		aux = 0.0;
+
+		for i in range(0,5):
+			post_grasp_stamped.pose.position.x = aux_x + aux;
+			(post_grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(self.current_arm_state, post_grasp_stamped)
+			aux += 0.01;
+			if(error_code.val == error_code.SUCCESS):
+				postgrasp_trajectory.append(post_grasp_conf);
+				break;
+
+		if len(postgrasp_trajectory) == 0:
+			sss.say(["I can't move the object to the postgrasp position!"])
+		else:
+			#second post-grasp
+			aux_x = post_grasp_stamped.pose.position.x;
+			aux = 0.0;
+			for i in range(0,5):
+				post_grasp_stamped.pose.position.x = aux_x + aux;
+				(post_grasp_conf2, error_code) = grasping_functions.graspingutils.callIKSolver(post_grasp_conf, post_grasp_stamped)
+				aux += 0.02;
+				if(error_code.val == error_code.SUCCESS):
+					postgrasp_trajectory.append(post_grasp_conf2);
+					break;
+
+		arm_handle = sss.move("arm",postgrasp_trajectory, False)
+		sss.say(["I have grasped the object with success!"])
 		rospy.sleep(2)
 		arm_handle.wait()
-		#arm_handle = sss.move("arm","grasp_to_tray")
-		#arm_handle.wait()
 
-		sss.say(["I have grasped the object with success!"], False)
+		
 		return 'succeeded'
 
+
+	except BadGrasp:
+		sss.say(["I can't catch the object!"], False)
+		return 'not_completed';
 
 # estimate the best grasp position
 class grasp_base_pose_estimation(smach.State):

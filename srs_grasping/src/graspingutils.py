@@ -74,7 +74,6 @@ class graspingutils():
 			grasps = []
 			for hijo in hijos:
 				sdh_joint_values = ((hijo.getElementsByTagName('joint_values'))[0]).firstChild.nodeValue
-				
 				aux = (hijo.getElementsByTagName('GraspPose'))[0]
 				Translation = eval((aux.getElementsByTagName('Translation')[0]).firstChild.nodeValue)
 				Rotation = eval((aux.getElementsByTagName('Rotation')[0]).firstChild.nodeValue)
@@ -89,8 +88,10 @@ class graspingutils():
 				grasp.pose.orientation.z = float(Rotation[2])
 				grasp.pose.orientation.w = float(Rotation[3])
 				aux = (hijo.getElementsByTagName('PreGraspPose'))[0]
+
 				Translation = eval((aux.getElementsByTagName('Translation')[0]).firstChild.nodeValue)
 				Rotation = eval((aux.getElementsByTagName('Rotation')[0]).firstChild.nodeValue)
+
 				pre_grasp = PoseStamped()
 				pre_grasp.header.frame_id = "/base_link"; 
 				pre_grasp.pose.position.x = float(Translation[0])
@@ -111,6 +112,7 @@ class graspingutils():
 				GC.grasp = grasp
 				GC.category= str(category)
 				grasps.append(GC)
+
 			return grasps
 		except:
 			print "There are not generated files for this object."
@@ -147,16 +149,30 @@ class graspingutils():
 		req.ik_request.ik_seed_state.joint_state.position = current_pose;
 		req.ik_request.pose_stamped = goal_pose;
 		resp = self.ik_service(req);
-		result = [];
-		for o in resp.solution.joint_state.position:
-			result.append(o);
-		return (result, resp.error_code);
+		return (list(resp.solution.joint_state.position), resp.error_code);
 
 
 	def matrix_from_pose(self, gp): 
 		return numpy.matrix(self.array_from_pose(gp))
 
 
+	def pose_from_matrix(self, matrix):
+		t = tf.transformations.translation_from_matrix(matrix);
+		q = tf.transformations.quaternion_from_matrix(matrix);
+
+		ps = PoseStamped();
+		ps.header.stamp = rospy.Time.now();
+		ps.header.frame_id = "/base_link";
+		ps.pose.position.x = t[0];
+		ps.pose.position.y = t[1];
+		ps.pose.position.z = t[2];
+		ps.pose.orientation.x = q[0];
+		ps.pose.orientation.y = q[1];
+		ps.pose.orientation.z = q[2];
+		ps.pose.orientation.w = q[3];
+		return ps;
+
+		
 	def array_from_pose(self, gp): 
 
 		q = []
@@ -240,8 +256,6 @@ class graspingutils():
 
 	def set_pregrasp_offsets(self, category, pre, pregrasps_offsets):
 		if len(pregrasps_offsets) != 2:
-			print "pregrasps_offsets value must be an array with length 2: [X,Z]"
-			print "Using default values: [0.2, 0.0]"
 			return pre;
 
 		if category=="FRONT":

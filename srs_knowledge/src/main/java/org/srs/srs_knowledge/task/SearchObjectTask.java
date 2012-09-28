@@ -89,7 +89,14 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	//this.nodeHandle = n;
 	// this.userPose = userPose;
 	// this.init(taskType, targetContent, userPose);
-	this.initTask(targetContent);
+	//this.initTask(targetContent);
+	
+	if (this.initTask(targetContent)) {
+	    System.out.println("Search Object Task constructed successfully -- " + targetContent);
+	}
+	else {
+	    System.out.println("Task not constructed successfully");
+	}
     }
 
     /*
@@ -347,13 +354,13 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	return spatialInfo;
     }
 
-    private void initTask(String targetContent) {
+    private boolean initTask(String targetContent) {
 	acts = new ArrayList<ActionTuple>();
 	
 	setTaskTarget(targetContent);
 	System.out.println("TASK.JAVA: Created CurrentTask " + "get "
 			   + targetContent);
-	constructTask();
+	return constructTask();
     }   
 
     @Override

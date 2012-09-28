@@ -147,13 +147,13 @@ robot_config_post['navigation_object_on_tray_and_sdh']['head']='front'
 robot_config_pre['detection']['torso']='DM'
 robot_config_pre['detection']['tray']='down'
 robot_config_pre['detection']['arm']='folded'
-robot_config_pre['detection']['sdh']='DM'
+robot_config_pre['detection']['sdh']='cylclosed'
 robot_config_pre['detection']['head']='DM'
 #post-config
 robot_config_post['detection']['torso']='home'
 robot_config_post['detection']['tray']='NC'
 robot_config_post['detection']['arm']='NC'
-robot_config_post['detection']['sdh']='DM'
+robot_config_post['detection']['sdh']='cylclosed'
 robot_config_post['detection']['head']='front'   
 
 #environment update

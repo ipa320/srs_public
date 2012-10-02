@@ -1,0 +1,9 @@
+<launch>
+    <!-- Run srs_interaction_primitives service server -->
+    <node name="interaction_primitives_service_server" pkg="srs_interaction_primitives" type="interaction_primitives_service_server" />
+    <node name="clickable_positions_action_server" pkg="srs_interaction_primitives" type="clickable_positions_action_server" />
+
+    <!-- Run rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-f /world -d $(find srs_interaction_primitives)/config/action_server.vcg"/>
+</launch>
+

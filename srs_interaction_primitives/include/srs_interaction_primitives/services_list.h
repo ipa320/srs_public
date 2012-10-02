@@ -53,6 +53,8 @@
 #include <srs_interaction_primitives/GetBillboard.h>
 #include <srs_interaction_primitives/GetBoundingBox.h>
 #include <srs_interaction_primitives/GetPlane.h>
+#include <srs_interaction_primitives/ClickablePositions.h>
+#include <srs_interaction_primitives/RobotPosePrediction.h>
 
 #include <string>
 
@@ -107,6 +109,11 @@ static const std::string GetUnknownObject_SRV = PACKAGE_NAME_PREFIX + std::strin
 static const std::string GetBillboard_SRV = PACKAGE_NAME_PREFIX + std::string("/get_billboard");
 static const std::string GetBoundingBox_SRV = PACKAGE_NAME_PREFIX + std::string("/get_bounding_box");
 static const std::string GetPlane_SRV = PACKAGE_NAME_PREFIX + std::string("/get_plane");
+
+static const std::string ClickablePositions_SRV = PACKAGE_NAME_PREFIX + std::string("/clickable_positions");
+static const std::string RobotPosePrediction_SRV = PACKAGE_NAME_PREFIX + std::string("/robot_pose_prediction");
+
+
 }
 
 #endif /* SERVICES_LIST_H_ */

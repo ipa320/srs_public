@@ -42,6 +42,7 @@
 #include "plane_polygon.h"
 #include "object.h"
 #include "unknown_object.h"
+#include "clickable_positions/clickable_positions.h"
 #include "services_list.h"
 
 #include <cmath>
@@ -62,6 +63,8 @@ extern std::map<std::string, Primitive*> primitives;
 
 // Interactive Marker server
 extern InteractiveMarkerServerPtr imServer;
+
+ros::Publisher vis_pub;
 
 /**
  * @brief  Plane adding.
@@ -206,6 +209,22 @@ bool setAllowObjectInteraction(SetAllowObjectInteraction::Request &req, SetAllow
  * @param res  Response of type GetObject.
  */
 bool getObject(GetObject::Request &req, GetObject::Response &res);
+
+/**
+ * @brief Gets clicked position
+ *
+ * @param req  Request of type ClickPositions.
+ * @param res  Response of type ClickPositions.
+ */
+bool clickablePositions(ClickablePositions::Request &req, ClickablePositions::Response &res);
+
+/**
+ * @brief Show predicted robot's positions and trajectory
+ *
+ * @param req  Request of type RobotPosePrediction.
+ * @param res  Response of type RobotPosePrediction.
+ */
+bool robotPosePrediction(RobotPosePrediction::Request &req, RobotPosePrediction::Response &res);
 
 }
 

@@ -61,37 +61,6 @@
 namespace srs_interaction_primitives
 {
 
-/**
- * @brief Pre-grasp positions ids.
- */
-enum
-{
-  _, GRASP_1, GRASP_2, GRASP_3, GRASP_4, GRASP_5, GRASP_6
-};
-
-/**
- * @brief Object resource types.
- */
-enum ObjectResource
-{
-  SHAPE, RESOURCE_FILE
-};
-
-/**
- * @brief Pre-grasp position.
- */
-struct PreGraspPosition
-{
-  std::string name;
-  bool enabled;
-  geometry_msgs::Pose pose;
-
-  PreGraspPosition()
-  {
-    enabled = false;
-  }
-};
-
 typedef boost::shared_ptr<interactive_markers::InteractiveMarkerServer> InteractiveMarkerServerPtr;
 typedef geometry_msgs::Vector3 Scale;
 
@@ -332,198 +301,6 @@ public:
   }
 
   /**
-   * @brief Gets plane's normal.
-   * @return plane's normal
-   */
-  Ogre::Vector3 getNormal()
-  {
-    return normal_;
-  }
-
-  /**
-   * @brief Sets plane's normal.
-   * @param normal is plane's normal
-   */
-  void setNormal(Ogre::Vector3 normal)
-  {
-    normal_ = normal;
-  }
-
-  /**
-   * @brief Sets plane's normal.
-   * @param normal is plane's normal
-   */
-  void setNormal(geometry_msgs::Vector3 normal)
-  {
-    normal_ = Ogre::Vector3(normal.x, normal.y, normal.z);
-  }
-
-  /**
-   * @brief Sets direction to the billboard
-   * @param direction is billboard's direction
-   */
-  void setDirection(geometry_msgs::Quaternion direction)
-  {
-    if (primitive_type_ != srs_interaction_primitives::PrimitiveType::BILLBOARD)
-    {
-      ROS_WARN("This is object is not a billboard, you cannot set direction!");
-      return;
-    }
-
-    geometry_msgs::Quaternion direction_change;
-    direction_change.x = direction.w - direction_.x;
-    direction_change.y = direction.y - direction_.y;
-    direction_change.z = direction.z - direction_.z;
-    direction_change.w = direction.w - direction_.w;
-
-    updatePublisher_->publishMovementChanged(direction, direction_change, velocity_, 0.0f);
-
-    direction_ = direction;
-  }
-
-  /**
-   * @brief Gets billboard's movement direction
-   * @return billboard's movement direction
-   */
-  geometry_msgs::Quaternion getDirection()
-  {
-    if (primitive_type_ != srs_interaction_primitives::PrimitiveType::BILLBOARD)
-      ROS_WARN("This is object is not a billboard, you cannot get direction!");
-    return direction_;
-  }
-
-  /**
-   * @brief Sets velocity to the billboard
-   * @param velocity is billboard's velocity
-   */
-  void setVelocity(double velocity)
-  {
-    if (primitive_type_ != srs_interaction_primitives::PrimitiveType::BILLBOARD)
-    {
-      ROS_WARN("This is object is not a billboard, you cannot set velocity!");
-      return;
-    }
-    updatePublisher_->publishMovementChanged(direction_, geometry_msgs::Quaternion(), velocity, velocity - velocity_);
-    velocity_ = velocity;
-  }
-
-  /**
-   * @brief Sets PlanePolygon's polygon
-   * @param polygon is PlanePolygon's polygon
-   */
-  void setPolygon(geometry_msgs::Polygon polygon)
-  {
-    polygon_ = polygon;
-  }
-
-  /**
-   * @brief Gets billboard's movement velocity
-   * @return billboard's movement velocity
-   */
-  double getVelocity()
-  {
-    if (primitive_type_ != srs_interaction_primitives::PrimitiveType::BILLBOARD)
-      ROS_WARN("This is object is not a billboard, you cannot get velocity!");
-    return velocity_;
-  }
-
-  /**
-   * @brief Sets resource file with primitive's model (and material).
-   * @param resource path to the resource file
-   */
-  void setResource(std::string resource)
-  {
-    object_resource_ = RESOURCE_FILE;
-    resource_ = resource;
-  }
-
-  /**
-   * @brief Gets the resource file with primitive's model (and material).
-   * @return resource path to the resource file
-   */
-  std::string getResource()
-  {
-    return resource_;
-  }
-
-  /**
-   * @brief Sets usage of defined material or color
-   * @param use_material material (true), color (false)
-   */
-  void setUseMaterial(bool use_material)
-  {
-    use_material_ = use_material;
-  }
-
-  /**
-   * @brief Gets usage of defined material or color
-   * @return use_material material (true), color (false)
-   */
-  bool getUseMaterial()
-  {
-    return use_material_;
-  }
-
-  /**
-   * @brief Sets shape of the mesh
-   * @param shape is shape
-   */
-  void setShape(arm_navigation_msgs::Shape shape)
-  {
-    object_resource_ = SHAPE;
-    shape_ = shape;
-  }
-
-  /**
-   * @brief Gets shape of the mesh
-   * @return shape of t he mesh
-   */
-  arm_navigation_msgs::Shape getShape()
-  {
-    return shape_;
-  }
-
-  /**
-   * @brief Allows or denies interaction with Object
-   * @param allow is true or false
-   */
-  void setAllowObjectInteraction(bool allow)
-  {
-    allow_object_interaction_ = allow;
-    if (allow_object_interaction_)
-    {
-      menu_handler_.setVisible(menu_handler_interaction_, true);
-      menu_handler_.setVisible(menu_handler_interaction_movement_, true);
-      menu_handler_.setVisible(menu_handler_interaction_rotation_, true);
-    }
-    else
-    {
-      menu_handler_.setVisible(menu_handler_interaction_, false);
-      menu_handler_.setVisible(menu_handler_interaction_movement_, false);
-      menu_handler_.setVisible(menu_handler_interaction_rotation_, false);
-      removeMovementControls();
-      removeRotationControls();
-      server_->insert(object_);
-    }
-
-    menu_handler_.reApply(*server_);
-    server_->applyChanges();
-  }
-
-  /**
-   * @brief Sets specified pre-grasp position
-   * @param pos_num is specified position number (1-6)
-   * @param pose is pre-grasp position and orientation
-   */
-  void addPreGraspPosition(int pos_id, geometry_msgs::Pose pose);
-
-  /**
-   * @brief Removes specified pre-grasp position
-   * @param pos_num is specified position number (1-6)
-   */
-  void removePreGraspPosition(int pos_id);
-
-  /**
    * @brief Updates visible controls
    */
   void updateControls();
@@ -622,26 +399,6 @@ protected:
   void removeScaleControls();
 
   /**
-   * @brief Adds grasping positions
-   */
-  void addPregraspPositions();
-
-  /**
-   * @brief Removes grasping positions
-   */
-  void removePregraspPositions();
-
-  /**
-   * @brief Adds trajectory controls
-   */
-  void addTrajectoryControls();
-
-  /**
-   * @brief Removes trajectory control
-   */
-  void removeTrajectoryControls();
-
-  /**
    * @brief Scale controls feedback
    */
   void scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
@@ -653,8 +410,6 @@ protected:
                                                trajectoryControl_;
   visualization_msgs::InteractiveMarkerControl moveXControl_, moveYControl_, moveZControl_, rotateXControl_,
                                                rotateYControl, rotateZControl_;
-  visualization_msgs::InteractiveMarkerControl pregrasp1Control_, pregrasp2Control_, pregrasp3Control_,
-                                               pregrasp4Control_, pregrasp5Control_, pregrasp6Control_;
   interactive_markers::MenuHandler menu_handler_;
 
 // Transform listener
@@ -675,33 +430,11 @@ protected:
   int pose_type_;
   geometry_msgs::Pose pose_change;
 
-// Menu handelrs
-  interactive_markers::MenuHandler::EntryHandle menu_handler_interaction_, menu_handler_interaction_movement_,
-                                                menu_handler_interaction_rotation_;
-
-// Billboard's attributes
-  double velocity_;
-  geometry_msgs::Quaternion direction_;
-
-// Object's attributes
-  ObjectResource object_resource_;
-  visualization_msgs::Marker mesh_;
-  arm_navigation_msgs::Shape shape_;
-  std::string resource_;
-  bool use_material_;
-  bool move_arm_to_pregrasp_onclick_;
-  bool allow_object_interaction_;
-
-// PlanePolygon's attributes
-  Ogre::Vector3 normal_;
-  geometry_msgs::Polygon polygon_;
-
   UpdatePublisher *updatePublisher_;
 
   bool show_movement_control_, show_scale_control_, show_rotation_control_, show_measure_control_,
-       show_description_control_, show_pregrasp_control_, show_trajectory_control_;
+       show_description_control_,  show_trajectory_control_;
   bool menu_created_;
-  PreGraspPosition pregrasp1_, pregrasp2_, pregrasp3_, pregrasp4_, pregrasp5_, pregrasp6_;
 
 }
 ;

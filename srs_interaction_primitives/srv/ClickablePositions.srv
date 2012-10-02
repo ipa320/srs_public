@@ -1,0 +1,7 @@
+string frame_id
+string topic_suffix
+float64 radius
+std_msgs/ColorRGBA color
+geometry_msgs/Point[] positions
+---
+string topic 

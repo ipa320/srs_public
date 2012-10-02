@@ -81,6 +81,11 @@ public:
     virtual void pause( bool bPause, ros::NodeHandle & node_handle );
 
 protected:
+    //! Should plugin publish data?
+    virtual bool shouldPublish(){return false; }
+    //! Publish data - virtual function
+    virtual void publishInternal( const ros::Time & timestamp ){}
+
     /// Insert new plane, update if plane with same id exists
     bool srvInsertPlane(srs_env_model::InsertPlane::Request &req, srs_env_model::InsertPlane::Response &res);
     /// Insert new plane, update if similar plane exists

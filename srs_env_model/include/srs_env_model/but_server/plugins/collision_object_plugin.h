@@ -55,20 +55,18 @@ namespace srs_env_model
         //! Initialize plugin - called in server constructor
         virtual void init(ros::NodeHandle & node_handle);
 
-        //! Called when new scan was inserted and now all can be published
-        virtual void onPublish(const ros::Time & timestamp);
-
-        //! Set used octomap frame id and timestamp
-        virtual void onFrameStart( const SMapParameters & par );
-
-        /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-        virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapParameters & mp);
-
-        /// Called when all nodes was visited.
-        virtual void handlePostNodeTraversal(const SMapParameters & mp);
-
         //! Connect/disconnect plugin to/from all topics
         virtual void pause( bool bPause, ros::NodeHandle & node_handle);
+
+    protected:
+        //! Called when new scan was inserted and now all can be published
+        virtual void publishInternal(const ros::Time & timestamp);
+
+        //! Set used octomap frame id and timestamp
+        virtual void newMapDataCB( SMapWithParameters & par );
+
+        /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+        virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -105,24 +103,6 @@ namespace srs_env_model
         bool m_bConvert;
 
     }; // class CCollisionObjectPlugin
-
-    /// Declare holder object - partial specialization of the default holder with predefined connection settings
-    template< class tpOctomapPlugin >
-    struct SCollisionObjectPluginHolder : public  CCrawlingPluginHolder< CCollisionObjectPlugin, tpOctomapPlugin >
-    {
-    protected:
-        /// Define holder type
-        typedef CCrawlingPluginHolder< CCollisionObjectPlugin, tpOctomapPlugin > tHolder;
-
-    public:
-        /// Create holder
-        SCollisionObjectPluginHolder( const std::string & name )
-        : tHolder(  name,  tHolder::ON_START | tHolder::ON_OCCUPIED | tHolder::ON_STOP)
-        {
-
-        }
-
-    }; // struct SCollisionObjectPluginHolder
 
 }
 

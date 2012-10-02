@@ -115,7 +115,7 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
  * Set used octomap frame id and timestamp
  */
 
-void srs_env_model::CLimitedPointCloudPlugin::onFrameStart( const SMapParameters & par )
+void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 {
     // Reset counters
     m_countVisible = m_countHidden = 0;
@@ -123,15 +123,51 @@ void srs_env_model::CLimitedPointCloudPlugin::onFrameStart( const SMapParameters
     min = 10000000;
     max = -10000000;
 
-    // Call parent frame start
-    CPointCloudPlugin::onFrameStart( par );
-
     if( m_cameraFrameId.size() == 0 )
-    {
-        PERROR("Wrong camera frame id...");
-        m_bTransformCamera = false;
-        return;
-    }
+        {
+            m_bTransformCamera = false;
+            return;
+        }
+
+    if( ! m_publishPointCloud )
+    		return;
+
+    //	Clear data
+	m_data->clear();
+	m_ocFrameId = par.frameId;
+	m_DataTimeStamp = m_time_stamp = par.currentTime;
+	counter = 0;
+
+	// Pointcloud is used as output for octomap...
+	m_bAsInput = false;
+
+	bool bTransformOutput(m_ocFrameId != m_pcFrameId);
+
+	// If different frame id
+	if( bTransformOutput )
+	{
+		tf::StampedTransform ocToPcTf;
+
+		// Get transform
+		try {
+			// Transformation - to, from, time, waiting time
+			m_tfListener.waitForTransform(m_pcFrameId, m_ocFrameId,
+					par.currentTime, ros::Duration(5));
+
+			m_tfListener.lookupTransform(m_pcFrameId, m_ocFrameId,
+					par.currentTime, ocToPcTf);
+
+		} catch (tf::TransformException& ex) {
+			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+			PERROR( "Transform error.");
+			return;
+		}
+
+
+		// Get transformation matrix
+		pcl_ros::transformAsMatrix(ocToPcTf, m_pcOutTM);	// Sensor TF to defined base TF
+	}
+
 
     m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
 
@@ -175,12 +211,34 @@ void srs_env_model::CLimitedPointCloudPlugin::onFrameStart( const SMapParameters
   //  PERROR( "Copy position...");
     m_d = m_dBuf;
     m_normal = m_normalBuf;
+
+    tButServerOcTree & tree( par.map->octree );
+	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+
+	// Crawl through nodes
+	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+	{
+		// Node is occupied?
+		if (tree.isNodeOccupied(*it))
+		{
+			handleOccupiedNode(it, par);
+		}// Node is occupied?
+
+	} // Iterate through octree
+
+	if( bTransformOutput )
+	{
+		// transform point cloud from sensor frame to the preset frame
+		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
+	}
+
+	invalidate();
 }
 
 /**
  * hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
  */
-void srs_env_model::CLimitedPointCloudPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapParameters & mp)
+void srs_env_model::CLimitedPointCloudPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
     Eigen::Vector3f p( it.getX(), it.getY(), it.getZ() );
 
@@ -249,11 +307,11 @@ void srs_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB(const sr
 }
 
 //! Called when new scan was inserted and now all can be published
-void srs_env_model::CLimitedPointCloudPlugin::onPublish(const ros::Time & timestamp)
+void srs_env_model::CLimitedPointCloudPlugin::publishInternal(const ros::Time & timestamp)
 {
 //    PERROR( "Visible: " << m_countVisible << ", hidden: " << m_countHidden << ", min: " << min << ", max: " << max );
 //    PERROR( "Num of points: " << m_data->size() );
-    srs_env_model::CPointCloudPlugin::onPublish( timestamp );
+    srs_env_model::CPointCloudPlugin::publishInternal( timestamp );
 }
 
 /**
@@ -278,4 +336,6 @@ void srs_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandl
 		m_camPosSubscriber = node_handle.subscribe<srs_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &srs_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
 	}
 }
+
+
 

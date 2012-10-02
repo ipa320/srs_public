@@ -15,23 +15,20 @@ The package is partially derived from the pr2_arm_navigation package. It modifie
 
   <depend package="roscpp"/>
   <depend package="rviz"/>
-  <depend package="ogre"/>
-  <depend package="ogre_tools"/>
   <depend package="cob_arm_navigation"/>
   <depend package="cob_default_env_config"/>
   <depend package="cob_default_robot_config"/>
   <depend package="cob_navigation_global"/>
   <depend package="actionlib_msgs"/>
   <depend package="actionlib"/>
-  <depend package="cob_script_server"/>
+  <!--depend package="cob_script_server"/-->
   <depend package="cob_interactive_teleop"/>
-  <depend package="cob_tactiletools"/>
   <depend package="srs_env_model_percp"/>
   <depend package="srs_interaction_primitives"/>
+  <depend package="srs_assisted_arm_navigation_msgs"/>
 
   <export>
-    <rviz plugin="${prefix}/lib/but_arm_navigation.yaml"/>
-    <rosdoc config="rosdoc.yaml" />
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />
   </export>
 
 </package>

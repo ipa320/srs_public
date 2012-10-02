@@ -94,7 +94,7 @@ static const std::string DEFAULT_FRAME_ID = "/head_cam3d_link";
 /**
  * limited_point_cloud_plugin
  */
-static const std::string SUBSCRIBER_CAMERA_POSITION_NAME = "lpc_rviz_camera_position"; // /rviz_camera_position
+static const std::string SUBSCRIBER_CAMERA_POSITION_NAME = "rviz_camera_position"; // /rviz_camera_position
 static const std::string VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME = PACKAGE_NAME_PREFIX
     + std::string("/visible_pointcloud_centers");
 

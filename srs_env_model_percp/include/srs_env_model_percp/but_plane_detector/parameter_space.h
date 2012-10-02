@@ -43,8 +43,7 @@
 // ROS
 #include <sensor_msgs/CameraInfo.h>
 
-//#include <but_segmentation/normals.h>
-#include <srs_env_model_percp/but_segmentation/normals.h>
+#include <but_segmentation/normals.h>
 
 
 namespace srs_env_model_percp

@@ -70,18 +70,22 @@ void srs_env_model::CCMapPlugin::init(ros::NodeHandle & node_handle)
 	// Create and publish service - is new collision map
 	m_serviceIsNewCMap = node_handle.advertiseService( IsNewCMap_SRV, &CCMapPlugin::isNewCmapSrvCallback, this );
 
+	// Create and publish service - lock map
 	m_serviceLockCMap = node_handle.advertiseService( LockCMap_SRV, &CCMapPlugin::lockCmapSrvCallback, this );
+
+	// Create and publish service - remove cube from map
+	m_serviceRemoveCube = node_handle.advertiseService( RemoveCubeCMP_SRV, &CCMapPlugin::removeBoxCallback, this );
+
+	// Create and publish service - add cube to map
+	m_serviceAddCube = node_handle.advertiseService( AddCubeCMP_SRV, &CCMapPlugin::addBoxCallback, this );
 
 	// Connect publishing services
 	pause( false, node_handle );
 }
 
 //! Called when new scan was inserted and now all can be published
-void srs_env_model::CCMapPlugin::onPublish(const ros::Time & timestamp)
+void srs_env_model::CCMapPlugin::publishInternal(const ros::Time & timestamp)
 {
-	if( ! shouldPublish() )
-		return;
-
 	// Should map be published?
 	bool publishCollisionMap = m_publishCollisionMap && (m_latchedTopics || m_cmapPublisher.getNumSubscribers() > 0);
 
@@ -107,13 +111,10 @@ void srs_env_model::CCMapPlugin::onPublish(const ros::Time & timestamp)
 }
 
 //! Set used octomap frame id and timestamp
-void srs_env_model::CCMapPlugin::onFrameStart( const SMapParameters & par )
+void srs_env_model::CCMapPlugin::newMapDataCB( SMapWithParameters & par )
 {
 	if( m_bLocked )
 		return;
-
-	// store parameters
-	tOctomapCrawler::onFrameStart( par );
 
 	// Reset collision map buffer
 	m_dataBuffer->boxes.clear();
@@ -140,6 +141,7 @@ void srs_env_model::CCMapPlugin::onFrameStart( const SMapParameters & par )
 		return;
 	}
 
+
 	// World TF to the collision map TF
 	pcl_ros::transformAsMatrix(omapToCmapTf, m_worldToCMapTM );
 
@@ -156,10 +158,25 @@ void srs_env_model::CCMapPlugin::onFrameStart( const SMapParameters & par )
 	m_robotBasePosition.setY( msg.transform.translation.y );
 	m_robotBasePosition.setZ( msg.transform.translation.z );
 
+	tButServerOcTree & tree( par.map->octree );
+	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+
+	// Crawl through nodes
+	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+	{
+		// Node is occupied?
+		if (tree.isNodeOccupied(*it))
+		{
+			handleOccupiedNode(it, par);
+		}// Node is occupied?
+
+	} // Iterate through octree
+
+	invalidate();
 }
 
 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-void srs_env_model::CCMapPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapParameters & mp)
+void srs_env_model::CCMapPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
 	if( m_bLocked )
 			return;
@@ -181,7 +198,9 @@ void srs_env_model::CCMapPlugin::handleOccupiedNode(srs_env_model::tButServerOcT
 	}
 
 	// Add point to the collision map
-	arm_navigation_msgs::OrientedBoundingBox box;
+	//arm_navigation_msgs::OrientedBoundingBox box;
+	tBox box;
+
 	double size = it.getSize();
 	box.extents.x = box.extents.y = box.extents.z = size;
 	box.axis.x = box.axis.y = 0.0;
@@ -204,6 +223,10 @@ void srs_env_model::CCMapPlugin::handleOccupiedNode(srs_env_model::tButServerOcT
  */
 bool srs_env_model::CCMapPlugin::sameCMaps( arm_navigation_msgs::CollisionMap * map1, arm_navigation_msgs::CollisionMap * map2 )
 {
+	// Do not swap maps, if in the locked mode
+	if( m_bLocked )
+		return true;
+
 	// Wrong input
 	if( map1 == 0 || map2 == 0 )
 	{
@@ -335,6 +358,159 @@ void srs_env_model::CCMapPlugin::pause( bool bPause, ros::NodeHandle & node_hand
 	else
 		m_cmapPublisher = node_handle.advertise<arm_navigation_msgs::CollisionMap> ( m_cmapPublisherName, 100, m_latchedTopics);
 }
+
+/**
+ * @brief Remove all collision boxes within given box. Box is aligned with axes and uses the same frame id.
+ * @param center Clearing box center
+ * @param size Clearing box sizes
+ * @return Number of removed boxes.
+ */
+long srs_env_model::CCMapPlugin::removeInsideBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes )
+{
+	boost::mutex::scoped_lock lock( m_lockData );
+
+	// Create data copy
+	tBoxVec buffer( boxes.begin(), boxes.end() );
+
+	// Clear output
+	boxes.clear();
+
+	// Compute testing box extents
+	tBoxPoint extents;
+	extents.x = size.x / 2.0; extents.y = size.y / 2.0; extents.z = size.z / 2.0;
+
+	long counter(0);
+
+	// Add excluded boxes to the data
+	tBoxVec::iterator it, itEnd( buffer.end() );
+	for( it = buffer.begin(); it != itEnd; ++it )
+	{
+		if( abs( it->center.x - center.x ) > (it->extents.x + extents.x ) ||
+			abs( it->center.y - center.y ) > (it->extents.y + extents.y ) ||
+			abs( it->center.z - center.z ) > (it->extents.z + extents.z ) )
+		{
+			boxes.push_back( *it );
+			++counter;
+		}
+
+	}
+
+	// Return number of removed boxes
+	return buffer.size() - counter;
+}
+
+/**
+ * @brief Remove all boxes from cubical volume - service callback function
+ * @param req Request
+ * @param res Response
+ */
+bool srs_env_model::CCMapPlugin::removeBoxCallback( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res )
+{
+	// Test frame id
+	if (req.frame_id != m_cmapFrameId)
+	{
+		// Transform pose
+		geometry_msgs::PoseStamped ps, psout;
+		ps.header.frame_id = req.frame_id;
+		ps.header.stamp = m_mapTime;
+		ps.pose = req.pose;
+
+		m_tfListener.transformPose(m_cmapFrameId, ps, psout);
+		req.pose = psout.pose;
+
+		// Transform size
+		geometry_msgs::PointStamped vs, vsout;
+		vs.header.frame_id = req.frame_id;
+		vs.header.stamp = m_mapTime;
+		vs.point = req.size;
+
+		m_tfListener.transformPoint(m_cmapFrameId, vs, vsout);
+		req.size = vsout.point;
+	}
+
+	tBoxPoint center, size;
+
+	// Convert point type
+	center.x = req.pose.position.x; center.y = req.pose.position.y; center.z = req.pose.position.z;
+	size.x = req.size.x; size.y = req.size.y; size.z = req.size.z;
+
+	// Remove boxes
+	//long count =
+	removeInsideBox( center, size, m_data->boxes );
+
+//	std::cerr << "Removed " << count << " boxes..." << std::endl;
+
+	return true;
+}
+
+/**
+ * @brief Adds box to the collision map
+ * @param center Box center
+ * @param size Box size
+ */
+void srs_env_model::CCMapPlugin::addBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes )
+{
+	boost::mutex::scoped_lock lock( m_lockData );
+	tBox box;
+
+//	PERROR( "Removing box: " << std::endl << center << std::endl << size << std::endl )
+
+	box.extents.x = size.x / 2.0;
+	box.extents.y = size.y / 2.0;
+	box.extents.z = size.z / 2.0;
+	box.axis.x = box.axis.y = 0.0;
+	box.axis.z = 1.0;
+	box.angle = 0.0;
+	box.center.x = center.x;
+	box.center.y = center.y;
+	box.center.z = center.z;
+
+	boxes.push_back(box);
+}
+
+/**
+ * @brief Remove all boxes from cubical volume - service callback function
+ * @param req Request
+ * @param res Response
+ */
+bool srs_env_model::CCMapPlugin::addBoxCallback( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res )
+{
+	// Test frame id
+	if (req.frame_id != m_cmapFrameId)
+	{
+		// Transform pose
+		geometry_msgs::PoseStamped ps, psout;
+		ps.header.frame_id = req.frame_id;
+		ps.header.stamp = m_mapTime;
+		ps.pose = req.pose;
+
+		m_tfListener.transformPose(m_cmapFrameId, ps, psout);
+		req.pose = psout.pose;
+
+		// Transform size
+		geometry_msgs::PointStamped vs, vsout;
+		vs.header.frame_id = req.frame_id;
+		vs.header.stamp = m_mapTime;
+		vs.point = req.size;
+
+		m_tfListener.transformPoint(m_cmapFrameId, vs, vsout);
+		req.size = vsout.point;
+	}
+
+	tBoxPoint center, size;
+
+	// Convert point type
+	center.x = req.pose.position.x; center.y = req.pose.position.y; center.z = req.pose.position.z;
+	size.x = req.size.x; size.y = req.size.y; size.z = req.size.z;
+
+	// Add box
+	addBox( center, size, m_data->boxes );
+
+	return true;
+}
+
+
+
 
 
 

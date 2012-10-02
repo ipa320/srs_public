@@ -50,7 +50,6 @@ CButObjectManager::CButObjectManager(const std::string & name, rviz::Visualizati
       wi->showPane(m_objectWindow_);
     }
   }
-
 }
 
 CButObjectManager::~CButObjectManager()

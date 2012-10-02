@@ -2,12 +2,13 @@
 planedet_input: pcl
 
 # 
-global_frame: /map
+global_frame: /odom_combined
 
 # 
 original_frame: /head_cam3d_link
 
 #
+planedet_ht_keep_track: 1
 planedet_ht_maxdepth: 100.0
 planedet_ht_minshift: -40.0
 planedet_ht_maxshift: 40.0

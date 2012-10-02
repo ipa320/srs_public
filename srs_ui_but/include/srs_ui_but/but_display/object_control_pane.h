@@ -38,6 +38,8 @@
 #include <srs_object_database_msgs/GetMesh.h>
 #include <srs_interaction_primitives/services_list.h>
 
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+
 #include <wx/wx.h>
 #include <wx/menu.h>
 #include <wx/panel.h>
@@ -120,6 +122,8 @@ protected:
     m_statusLabel->SetLabel(wxString::FromUTF8((const char*)text.c_str()));
   }
 
+  void poseClickedCallback(const geometry_msgs::PoseWithCovarianceStamped &update);
+
   bool enabled_;
 
   rviz::WindowManagerInterface * m_wmi;
@@ -145,6 +149,9 @@ protected:
   std::vector<int> database_ids_;
   std::vector<std::string> database_descs_;
   std::vector<geometry_msgs::Vector3> database_sizes_;
+
+  // // Topic soubscribers
+  ros::Subscriber pose_clicked_;
 
 private:
 DECLARE_EVENT_TABLE()

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 1221 2012-08-16 11:44:39Z stancl $
+ * $Id: but_server.h 1586 2012-10-01 15:36:57Z stancl $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -80,7 +80,7 @@
 // Old interactive markers plugin used for testing
 #include <srs_env_model/but_server/plugins/old_imarkers_plugin.h>
 
-//#define _EXAMPLES_
+#define _EXAMPLES_
 #ifdef _EXAMPLES_
 #	include <srs_env_model/but_server/plugins/example_plugin.h>
 #endif
@@ -117,27 +117,14 @@ protected:
     //! Publish all
     void publishAll(const ros::Time& rostime = ros::Time::now());
 
-    /**
- * @brief Find speckle nodes (single occupied voxels with no neighbors). Only works on lowest resolution!
- * @param key
- * @return
- */
-    bool isSpeckleNode(const octomap::OcTreeKey& key) const;
-
     //! On octomap data changed
-    void onOcMapDataChanged( const tButServerOcMap & mapdata );
+    void onOcMapDataChanged( const tButServerOcMap & mapdata ){ publishAll(); }
 
     /// On reset service call
     bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response){ reset(); return true; }
 
     /// On pause service call
     bool onPause( ButServerPause::Request & request, ButServerPause::Response & response );
-
-    //! Connect plugins
-    int connectPlugins();
-
-    //! Disconnect plugins
-    void disconnectPlugins();
 
     //! Publish all
     void publishPlugins(const ros::Time& rostime);
@@ -170,7 +157,6 @@ protected:
     //======================================================================================================
     // Plugins
 
-
     /// All plugins vector type
     typedef std::vector<CServerPluginBase * > tVecPlugins;
 
@@ -182,48 +168,49 @@ protected:
 #define FOR_ALL_PLUGINS_PARAM( X, Y ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X(Y); } }
 
     /// Collision map
-    SCMapPluginHolder< COctoMapPlugin > m_plugCMapHolder;
+    boost::shared_ptr< CCMapPlugin > m_plugCMap;
 
     /// Incoming depth points cloud
-    SPointCloudPluginHolder< COctoMapPlugin > m_plugInputPointCloudHolder,
+    boost::shared_ptr< CPointCloudPlugin > m_plugInputPointCloud,
                                     /// Output depth points cloud - whole octomap
-                                                        m_plugOcMapPointCloudHolder;
+                                                        m_plugOcMapPointCloud;
     /// Visible points point cloud
-    SLimitedPointCloudPluginHolder< COctoMapPlugin > m_plugVisiblePointCloudHolder;
+    boost::shared_ptr< CPointCloudPlugin > m_plugVisiblePointCloud;
 
     /// Octo map plugin
-    COctoMapPlugin m_plugOctoMap;
+    boost::shared_ptr< COctoMapPlugin > m_plugOctoMap;
 
     /// Collision object plugin
-    SCollisionObjectPluginHolder< COctoMapPlugin > m_plugCollisionObjectHolder;
+    boost::shared_ptr< CCollisionObjectPlugin > m_plugCollisionObject;
 
     /// 2D map plugin
-    SMap2DPluginHolder< COctoMapPlugin > m_plugMap2DHolder;
+    boost::shared_ptr< CMap2DPlugin > m_plugMap2D;
 
     /// Interactive markers server plugin
-    CIMarkersPlugin * m_plugIMarkers;
+    boost::shared_ptr< CIMarkersPlugin > m_plugIMarkers;
 
     /// Marker array publisher plugin
-    SMarkerArrayHolder< COctoMapPlugin > m_plugMarkerArrayHolder;
+    boost::shared_ptr< CMarkerArrayPlugin > m_plugMarkerArray;
     
     /// ObjTree plugin
-    CObjTreePlugin m_plugObjTree;
+    boost::shared_ptr< CObjTreePlugin > m_plugObjTree;
 
     /// Old interactive markers plugin
-    COldIMarkersPlugin * m_plugOldIMarkers;
+    boost::shared_ptr< COldIMarkersPlugin > m_plugOldIMarkers;
 
     /// Compressed pointcloud plugin
-    SCompressedPointCloudPluginHolder< COctoMapPlugin > m_plugCompressedPointCloudHolder;
+    boost::shared_ptr< CCompressedPointCloudPlugin > m_plugCompressedPointCloud;
 
     /// Use old interactive server plugin?				TODO: Remov this when new is will be finished
     bool m_bUseOldIMP;
 
 #ifdef _EXAMPLES_
     /// Create example plugin
-    CExamplePlugin m_plugExample;
+    boost::shared_ptr< CExamplePlugin > m_plugExample;
 
     /// Create crawler plugin holder
-    SExampleCrawlerPluginHolder< COctoMapPlugin > m_plugExampleCrawlerHolder;
+    boost::shared_ptr< CExampleCrawlerPlugin > m_plugExampleCrawler;
+
 #endif
 };
 

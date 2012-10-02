@@ -1,0 +1,12 @@
+<launch>
+  
+  <!-- just for testing purposes -->
+  <!-- original data -->
+  <node name="tactile_data_gui" pkg="cob_tactiletools" type="tactile_data_gui.py" output="screen"/>
+  
+  <!-- filtered data -->
+  <node name="tactile_data_filtered_gui" pkg="cob_tactiletools" type="tactile_data_gui.py" output="screen">
+    <remap from="/sdh_controller/tactile_data" to="/sdh_controller/tactile_data_filtered"/>
+  </node>
+  
+</launch>

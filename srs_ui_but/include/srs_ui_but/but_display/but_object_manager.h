@@ -97,6 +97,10 @@ protected:
   bool getAddedObjects(GetAddedObjects::Request &req, GetAddedObjects::Response &res);
 
 protected:
+  /// Called when a mouse event happens inside the render window
+  void onRenderWindowMouseEvents(wxMouseEvent& event)
+  {
+  }
 
   // Object controls window
   CObjectControlPane * m_objectWindow_;

@@ -31,8 +31,8 @@
 #include <rviz/visualization_manager.h>
 #include <rviz/window_manager_interface.h>
 #include <sstream>
+#include <srs_ui_but/topics_list.h>
 
-#define CAMERA_POSITION_TOPIC_NAME std::string("/rviz_camera_position")
 
 /*
  *  Constructor

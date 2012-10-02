@@ -29,6 +29,7 @@
 
 using namespace planning_scene_utils;
 using namespace srs_assisted_arm_navigation;
+using namespace srs_assisted_arm_navigation_msgs;
 
 
 bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Response &res) {

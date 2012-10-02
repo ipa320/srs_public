@@ -98,6 +98,9 @@ namespace srs_env_model_percp
 	const std::string PARAM_HT_LVL1_GAUSS_SHIFT_SIGMA			= "planedet_ht_lvl1_gauss_shift_sigma";
 	const double 	  PARAM_HT_LVL1_GAUSS_SHIFT_SIGMA_DEFAULT	= 5.0;
 
+	const std::string PARAM_HT_KEEPTRACK						= "planedet_ht_keep_track";
+	const int 	  PARAM_HT_KEEPTRACK_DEFAULT					= 1;
+
 
     /**
       * Plane search
@@ -141,6 +144,7 @@ namespace srs_env_model_percp
         std::string param_original_frame;
 
         double param_ht_maxdepth;
+        int    param_ht_keeptrack;
         double param_ht_minshift;
         double param_ht_maxshift;
         double param_ht_angle_res;

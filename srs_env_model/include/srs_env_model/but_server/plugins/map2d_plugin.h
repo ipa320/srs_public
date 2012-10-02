@@ -49,29 +49,27 @@ namespace srs_env_model
         //! Enable or disable publishing
         void enable( bool enabled ){ m_publishMap2D = enabled; }
 
-        //! Should plugin publish data?
-        bool shouldPublish();
-
-        //! Initialize plugin - called in server constructor
-        virtual void init(ros::NodeHandle & node_handle);
-
-        //! Called when new scan was inserted and now all can be published
-        virtual void onPublish(const ros::Time & timestamp);
-
-        //! Set used octomap frame id and timestamp
-        virtual void onFrameStart( const SMapParameters & par );
-
-        //! Handle free node (does nothing here)
-        virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapParameters & mp );
-
-        /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-        virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapParameters & mp);
-
-        /// Called when all nodes was visited.
-        virtual void handlePostNodeTraversal(const SMapParameters & mp);
+		//! Initialize plugin - called in server constructor
+		virtual void init(ros::NodeHandle & node_handle);
 
         //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
         virtual void pause( bool bPause, ros::NodeHandle & node_handle );
+
+    protected:
+        //! Should plugin publish data?
+		bool shouldPublish();
+
+		//! Called when new scan was inserted and now all can be published
+		virtual void publishInternal(const ros::Time & timestamp);
+
+		//! Set used octomap frame id and timestamp
+		virtual void newMapDataCB( SMapWithParameters & par );
+
+		//! Handle free node (does nothing here)
+		virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapWithParameters & mp );
+
+		/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+		virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -116,23 +114,6 @@ namespace srs_env_model
 
     }; // class CMap2DPlugin
 
-    /// Declare holder object - partial specialization of the default holder with predefined connection settings
-    template< class tpOctomapPlugin >
-    struct SMap2DPluginHolder : public  CCrawlingPluginHolder< CMap2DPlugin, tpOctomapPlugin >
-    {
-    protected:
-        /// Define holder type
-        typedef CCrawlingPluginHolder< CMap2DPlugin, tpOctomapPlugin > tHolder;
-
-    public:
-        /// Create holder
-        SMap2DPluginHolder( const std::string & name )
-        : tHolder(  name,  tHolder::ON_START | tHolder::ON_OCCUPIED | tHolder::ON_FREE | tHolder::ON_STOP)
-        {
-
-        }
-
-    }; // struct SMap2DPluginHolder
 
 } // namespace srs_env_model
 

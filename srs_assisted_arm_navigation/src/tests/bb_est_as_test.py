@@ -30,7 +30,7 @@ import roslib; roslib.load_manifest('srs_assisted_arm_navigation')
 import rospy
 import actionlib
 
-from srs_assisted_arm_navigation.msg import *
+from srs_assisted_arm_navigation_msgs.msg import *
 from srs_interaction_primitives.srv import AddObject
 from srs_interaction_primitives.srv import AddUnknownObject
 from srs_env_model_percp.srv import EstimateBBAlt

@@ -334,7 +334,15 @@ srs_ui_but::CRosTopicTexture::CRosTopicTexture( const ros::NodeHandle& nh, const
 , m_new_image(false)
 , m_tf_client(0)
 {
-	std::cerr << "CRosTopicTexture::CRosTopicTexture" << std::endl;
+//	std::cerr << "CRosTopicTexture::CRosTopicTexture" << std::endl;
+}
+
+/**
+ * Destructor
+ */
+srs_ui_but::CRosTopicTexture::~CRosTopicTexture()
+{
+	m_sub->unsubscribe();
 }
 
 /**

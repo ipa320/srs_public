@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
  
   <!-- customized copy of cob_arm_navigation.launch and kinect_perception.launch from cob_arm_navigation -->

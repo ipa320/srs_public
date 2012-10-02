@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch> 
   
   <include file="$(find srs_assisted_arm_navigation)/launch/planning_env.launch" />

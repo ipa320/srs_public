@@ -1,0 +1,17 @@
+<package>
+  <description brief="srs_assisted_grasping_msgs">
+
+     srs_assisted_grasping_msgs
+
+  </description>
+  <author>Zdenek Materna</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_assisted_grasping_msgs</url>
+  <depend package="control_msgs"/>
+  <depend package="brics_actuator"/>
+  <depend package="actionlib_msgs"/>
+
+</package>
+
+

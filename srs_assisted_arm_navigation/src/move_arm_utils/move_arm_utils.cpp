@@ -3545,8 +3545,12 @@ std::string PlanningSceneEditor::createCollisionObject(const std::string& name,
   lockScene();
   arm_navigation_msgs::CollisionObject collision_object;
   collision_object.operation.operation = arm_navigation_msgs::CollisionObjectOperation::ADD;
-  collision_object.header.stamp = ros::Time(ros::WallTime::now().toSec());
-  collision_object.header.frame_id = cm_->getWorldFrameId();
+  collision_object.header.stamp = ros::Time(ros::Time::now().toSec());
+
+  //collision_object.header.frame_id = cm_->getWorldFrameId();
+  ros::param::param<std::string>("~world_frame",collision_object.header.frame_id,"base_link");
+  //cout << "collision_object.header.frame_id==" << collision_object.header.frame_id << endl;;
+
   if(name.empty()) {
     collision_object.id = generateNewCollisionObjectId();
   } else {

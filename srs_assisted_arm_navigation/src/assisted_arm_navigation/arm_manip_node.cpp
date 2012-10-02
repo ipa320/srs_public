@@ -30,6 +30,7 @@
 using namespace arm_navigation_msgs;
 using namespace planning_scene_utils;
 using namespace srs_assisted_arm_navigation;
+using namespace srs_assisted_arm_navigation_msgs;
 
 /**
  *  \todo use controllerDoneCallback / armHasStoppedMoving to check if the arm finished trajectory
@@ -44,7 +45,13 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
     inited = false;
     params_ = params;
 
-    collision_objects_frame_id_ = "/map"; // TODO read from parameter
+    // ros::param::param<std::string>("~world_frame",world_frame_,WORLD_FRAME);
+
+    ros::param::param<std::string>("~world_frame",collision_objects_frame_id_,WORLD_FRAME);
+
+    ROS_INFO("Using %s frame as world frame",collision_objects_frame_id_.c_str());
+
+    //collision_objects_frame_id_ = "/map"; // TODO read from parameter
 
     // TODO make it configurable through param.
     aco_ = true;

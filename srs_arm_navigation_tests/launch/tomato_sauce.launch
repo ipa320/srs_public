@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- send cup to param server -->
+	<param name="tomato_soup" textfile="$(find cob_gazebo_objects)/objects/tomato_soup.urdf" />
+
+	<!-- spawn model in gazebo -->
+	<node name="spawn_tomato_soup" pkg="gazebo" type="spawn_model" args="-urdf -param tomato_soup -x -2.95 -y -0.10 -z 1.02 -R 0 -P 0 -Y 0 -model tomaten_suppe" respawn="false" output="screen" />
+
+</launch>

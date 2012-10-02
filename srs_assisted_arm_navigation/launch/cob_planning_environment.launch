@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 	<param name="global_frame" value="/map" />
 	<!-- TODO: remove, use already uploaded description -->

@@ -30,8 +30,8 @@ import roslib; roslib.load_manifest('srs_assisted_arm_navigation')
 import rospy
 import actionlib
 
-from srs_assisted_arm_navigation.msg import *
-from srs_assisted_arm_navigation.srv import GraspingAllow
+from srs_assisted_arm_navigation_msgs.msg import *
+from srs_assisted_grasping_msgs.srv import GraspingAllow
 
 def main():
     

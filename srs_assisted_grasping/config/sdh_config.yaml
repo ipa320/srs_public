@@ -1,0 +1,48 @@
+# list of joints
+joints:
+ -
+  joint: sdh_knuckle_joint
+  has_tactile_pad: false
+  static: true
+ -  
+  joint: sdh_thumb_2_joint
+  has_tactile_pad: true  
+  static: false
+ -  
+  joint: sdh_thumb_3_joint
+  has_tactile_pad: true
+  static: false
+ -  
+  joint: sdh_finger_12_joint
+  has_tactile_pad: true
+  static: false
+ -  
+  joint: sdh_finger_13_joint
+  has_tactile_pad: true
+  static: false
+ -  
+  joint: sdh_finger_22_joint
+  has_tactile_pad: true
+  static: false
+ -  
+  joint: sdh_finger_23_joint
+  has_tactile_pad: true
+  static: false
+
+# default time for joint to arrive into target_configuration
+default_time: 5.0
+
+# maximum force which can be commanded for particular joint
+max_force: 1000.0
+
+# here one can limit max. velocity
+max_velocity: 1.5
+
+# acceleration ramp length in % of whole time
+a_ramp: 10.0
+
+# deceleration ramp length in % of whole time
+d_ramp: 20.0
+
+# rate at which is internal regulator running
+rate: 20.0

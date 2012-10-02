@@ -49,25 +49,24 @@
 #include <geometry_msgs/Vector3.h>
 #include "math.h"
 
-#include "srs_assisted_arm_navigation/ArmNavNew.h"
-#include "srs_assisted_arm_navigation/ArmNavPlan.h"
-#include "srs_assisted_arm_navigation/ArmNavPlay.h"
-#include "srs_assisted_arm_navigation/ArmNavReset.h"
-#include "srs_assisted_arm_navigation/ArmNavRefresh.h"
-#include "srs_assisted_arm_navigation/ArmNavExecute.h"
-#include "srs_assisted_arm_navigation/ArmNavStart.h"
-#include "srs_assisted_arm_navigation/ArmNavCollObj.h"
-#include "srs_assisted_arm_navigation/ArmNavMovePalmLink.h"
-#include "srs_assisted_arm_navigation/ArmNavMovePalmLinkRel.h"
-#include "srs_assisted_arm_navigation/ArmNavSwitchAttCO.h"
-#include "srs_assisted_arm_navigation/ArmNavStep.h"
-#include "srs_assisted_arm_navigation/ArmNavStop.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavNew.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavPlan.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavPlay.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavReset.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavRefresh.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavExecute.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavStart.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavCollObj.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavMovePalmLink.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavMovePalmLinkRel.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavSwitchAttCO.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavStep.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavStop.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavSuccess.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavFailed.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavRepeat.h"
 
-#include "srs_assisted_arm_navigation/ArmNavSuccess.h"
-#include "srs_assisted_arm_navigation/ArmNavFailed.h"
-#include "srs_assisted_arm_navigation/ArmNavRepeat.h"
-
-#include "srs_assisted_arm_navigation/ManualArmManipAction.h"
+#include "srs_assisted_arm_navigation_msgs/ManualArmManipAction.h"
 
 #include <actionlib/server/simple_action_server.h>
 
@@ -130,6 +129,9 @@ static const std::string GAZEBO_ROBOT_MODEL = "robot";
 static const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
 static const ros::Duration PLANNING_DURATION = ros::Duration(5.0);
 static const std::string SET_PLANNING_SCENE_DIFF_NAME = "environment_server/set_planning_scene_diff";
+
+static const std::string WORLD_FRAME = "/map";
+
 
 
 static const double START_TIMEOUT = 60.0; /**< This parameter defines time in which a user must click on NEW button (in RVIZ plugin) after start of action */
@@ -197,10 +199,10 @@ public:
     ros::NodeHandle nh_;
 
     ///Actionlib server
-    actionlib::SimpleActionServer<ManualArmManipAction> server_;
+    actionlib::SimpleActionServer<srs_assisted_arm_navigation_msgs::ManualArmManipAction> server_;
     std::string action_name_;
-    ManualArmManipActionFeedback feedback_;
-    ManualArmManipActionResult result_;
+    srs_assisted_arm_navigation_msgs::ManualArmManipActionFeedback feedback_;
+    srs_assisted_arm_navigation_msgs::ManualArmManipActionResult result_;
 
     ros::Time start_time_; /**< time at which the task was started */
     ros::Time timeout_; /**< updated on each user action */
@@ -221,7 +223,7 @@ public:
      * \param goal Goal of action (pregrasp position / away)
      *
      */
-    void executeCB(const ManualArmManipGoalConstPtr &goal);
+    void executeCB(const srs_assisted_arm_navigation_msgs::ManualArmManipGoalConstPtr &goal);
 
 
   private:
@@ -271,24 +273,24 @@ public:
    * Service callbacks. Each callback performes some action and sets new state of execution.
    *
    */
-  bool ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Response &res);
-  bool ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Response &res);
-  bool ArmNavPlay(ArmNavPlay::Request &req, ArmNavPlay::Response &res);
-  bool ArmNavExecute(ArmNavExecute::Request &req, ArmNavExecute::Response &res);
-  bool ArmNavReset(ArmNavReset::Request &req, ArmNavReset::Response &res);
-  bool ArmNavRefresh(ArmNavRefresh::Request &req, ArmNavRefresh::Response &res);
+  bool ArmNavNew(srs_assisted_arm_navigation_msgs::ArmNavNew::Request &req, srs_assisted_arm_navigation_msgs::ArmNavNew::Response &res);
+  bool ArmNavPlan(srs_assisted_arm_navigation_msgs::ArmNavPlan::Request &req, srs_assisted_arm_navigation_msgs::ArmNavPlan::Response &res);
+  bool ArmNavPlay(srs_assisted_arm_navigation_msgs::ArmNavPlay::Request &req, srs_assisted_arm_navigation_msgs::ArmNavPlay::Response &res);
+  bool ArmNavExecute(srs_assisted_arm_navigation_msgs::ArmNavExecute::Request &req, srs_assisted_arm_navigation_msgs::ArmNavExecute::Response &res);
+  bool ArmNavReset(srs_assisted_arm_navigation_msgs::ArmNavReset::Request &req, srs_assisted_arm_navigation_msgs::ArmNavReset::Response &res);
+  bool ArmNavRefresh(srs_assisted_arm_navigation_msgs::ArmNavRefresh::Request &req, srs_assisted_arm_navigation_msgs::ArmNavRefresh::Response &res);
 
-  bool ArmNavSuccess(ArmNavSuccess::Request &req, ArmNavSuccess::Response &res);
-  bool ArmNavFailed(ArmNavFailed::Request &req, ArmNavFailed::Response &res);
-  bool ArmNavRepeat(ArmNavRepeat::Request &req, ArmNavRepeat::Response &res);
+  bool ArmNavSuccess(srs_assisted_arm_navigation_msgs::ArmNavSuccess::Request &req, srs_assisted_arm_navigation_msgs::ArmNavSuccess::Response &res);
+  bool ArmNavFailed(srs_assisted_arm_navigation_msgs::ArmNavFailed::Request &req, srs_assisted_arm_navigation_msgs::ArmNavFailed::Response &res);
+  bool ArmNavRepeat(srs_assisted_arm_navigation_msgs::ArmNavRepeat::Request &req, srs_assisted_arm_navigation_msgs::ArmNavRepeat::Response &res);
 
-  bool ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCollObj::Response &res);
-  bool ArmNavMovePalmLink(ArmNavMovePalmLink::Request &req, ArmNavMovePalmLink::Response &res);
-  bool ArmNavMovePalmLinkRel(ArmNavMovePalmLinkRel::Request &req, ArmNavMovePalmLinkRel::Response &res);
-  bool ArmNavSwitchACO(ArmNavSwitchAttCO::Request &req, ArmNavSwitchAttCO::Response &res);
-  bool ArmNavStep(ArmNavStep::Request &req, ArmNavStep::Response &res);
+  bool ArmNavCollObj(srs_assisted_arm_navigation_msgs::ArmNavCollObj::Request &req, srs_assisted_arm_navigation_msgs::ArmNavCollObj::Response &res);
+  bool ArmNavMovePalmLink(srs_assisted_arm_navigation_msgs::ArmNavMovePalmLink::Request &req, srs_assisted_arm_navigation_msgs::ArmNavMovePalmLink::Response &res);
+  bool ArmNavMovePalmLinkRel(srs_assisted_arm_navigation_msgs::ArmNavMovePalmLinkRel::Request &req, srs_assisted_arm_navigation_msgs::ArmNavMovePalmLinkRel::Response &res);
+  bool ArmNavSwitchACO(srs_assisted_arm_navigation_msgs::ArmNavSwitchAttCO::Request &req, srs_assisted_arm_navigation_msgs::ArmNavSwitchAttCO::Response &res);
+  bool ArmNavStep(srs_assisted_arm_navigation_msgs::ArmNavStep::Request &req, srs_assisted_arm_navigation_msgs::ArmNavStep::Response &res);
   
-  bool ArmNavStop(ArmNavStop::Request &req, ArmNavStop::Response &res);
+  bool ArmNavStop(srs_assisted_arm_navigation_msgs::ArmNavStop::Request &req, srs_assisted_arm_navigation_msgs::ArmNavStop::Response &res);
 
 
   /** This callback is used to send interactive markers. It uses TimerEvent.
@@ -322,7 +324,11 @@ public:
 
   ros::Publisher gripper_rpy_publisher_;
 
+  std::string world_frame_;
+
 protected:
+
+
 
   std::string planning_scene_id; /**< ID of current planing scene */
   unsigned int mpr_id; /**< ID of current motion plan request */

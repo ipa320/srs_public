@@ -1,0 +1,14 @@
+name: but_assisted_plugins
+library: but_assisted_plugins
+displays:
+  -
+    class_name: CButArmNavDisplay
+    display_name: CButArmNavDisplay
+    description: |
+      This display shows controls for COB arm navigation.
+
+  -
+    class_name: CButBBEstimationDisplay
+    display_name: CButBBEstimationDisplay
+    description: |
+      This display acts as bb_estimator client.

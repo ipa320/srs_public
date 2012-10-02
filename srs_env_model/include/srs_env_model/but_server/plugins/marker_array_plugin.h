@@ -49,29 +49,30 @@ namespace srs_env_model
         //! Enable or disable publishing
         void enable( bool enabled ){ m_publishMarkerArray = enabled; }
 
-        //! Should plugin publish data?
-        bool shouldPublish();
-
         //! Initialize plugin - called in server constructor
         virtual void init(ros::NodeHandle & node_handle);
 
-        //! Called when new scan was inserted and now all can be published
-        virtual void onPublish(const ros::Time & timestamp);
-
-        //! Set used octo map frame id and time stamp
-        virtual void onFrameStart( const SMapParameters & par );
-
-        /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-        virtual void handleNode(const tButServerOcTree::iterator& it, const SMapParameters & mp);
-
-        /// Called when all nodes was visited.
-        virtual void handlePostNodeTraversal(const SMapParameters & mp);
-
-        //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
+         //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
         virtual void pause( bool bPause, ros::NodeHandle & node_handle );
 
     protected:
-        /// Compute color from the height
+		//! Called when new scan was inserted and now all can be published
+		 virtual void publishInternal(const ros::Time & timestamp);
+
+		 //! Set used octo map frame id and time stamp
+		 virtual void newMapDataCB( SMapWithParameters & par );
+
+		 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+		 virtual void handleNode(const tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+
+		 /// Called when all nodes was visited.
+		 virtual void handlePostNodeTraversal(const SMapWithParameters & mp);
+
+		 //! Should plugin publish data?
+		 virtual bool shouldPublish();
+
+
+		 /// Compute color from the height
         std_msgs::ColorRGBA heightMapColor(double h) const;
 
     public:
@@ -121,25 +122,6 @@ namespace srs_env_model
         std_msgs::ColorRGBA m_color;
 
     }; // class CMarkerArrayPlugin
-
-    /// Declare holder object - partial specialization of the default holder with predefined connection settings
-    template< class tpOctomapPlugin >
-    struct SMarkerArrayHolder : public  CCrawlingPluginHolder< CMarkerArrayPlugin, tpOctomapPlugin >
-    {
-    protected:
-        /// Define holder type
-        typedef CCrawlingPluginHolder< CMarkerArrayPlugin, tpOctomapPlugin > tMAHolder;
-
-    public:
-        /// Create holder
-        SMarkerArrayHolder( const std::string & name )
-        : tMAHolder(  name,  tMAHolder::ON_START | tMAHolder::ON_NODE | tMAHolder::ON_STOP)
-        {
-
-        }
-
-    }; // struct SMarkerArrayHolder
-
 
 } // namespace srs_env_model
 

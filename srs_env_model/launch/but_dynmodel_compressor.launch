@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+    
+    <node pkg="srs_wifi" name="cloud_compressor" type="cloud_compressor" respawn="false" output="screen">
+        <param name="compression_profile" value="LOW_RES_ONLINE_COMPRESSION_WITH_COLOR" />
+        <remap from="input" to="/but_env_model/pointcloud_centers" />
+        <remap from="output" to="/compressed_octree" />
+    </node>
+</launch>

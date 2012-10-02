@@ -59,10 +59,8 @@
 
 #include <srs_env_model_percp/ClearPlanes.h>
 
-//#include <but_segmentation/filtering.h>
-//#include <but_segmentation/normals.h>
-#include <srs_env_model_percp/but_segmentation/filtering.h>
-#include <srs_env_model_percp/but_segmentation/normals.h>
+#include <but_segmentation/filtering.h>
+#include <but_segmentation/normals.h>
 
 #include <srs_env_model_percp/topics_list.h>
 #include <srs_env_model_percp/services_list.h>

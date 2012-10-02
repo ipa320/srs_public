@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: dynModelExporter.h 693 2012-04-20 09:22:39Z ihulik $
+ * $Id: DynModelExporter2.h 693 2012-04-20 09:22:39Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -31,8 +31,8 @@
  */
 
 #pragma once
-#ifndef BUT_PLANE_DET_DYNMODELEXPORTER_H
-#define BUT_PLANE_DET_DYNMODELEXPORTER_H
+#ifndef BUT_PLANE_DET_DynModelExporter2_H
+#define BUT_PLANE_DET_DynModelExporter2_H
 
 // ros
 #include <ros/ros.h>
@@ -58,58 +58,41 @@ namespace srs_env_model_percp
 	 * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
 	 */
 
-	class DynModelExporter
+	class ExportedPlane
+	{
+		public:
+			ExportedPlane(): plane(0.0, 0.0, 0.0, 0.0) {}
+			int id;
+			but_plane_detector::Plane<float> plane;
+			visualization_msgs::Marker marker;
+	};
+
+	class DynModelExporter2
 	{
 		public:
 			/**
 			 * Initialization
 			 */
-			DynModelExporter(ros::NodeHandle *node,
+			DynModelExporter2(ros::NodeHandle *node,
                              const std::string& original_frame,
 			                 const std::string& output_frame,
 			                 int minOutputCount,
 			                 double max_distance,
 			                 double max_plane_normal_dev,
-			                 double max_plane_shift_dev
+			                 double max_plane_shift_dev,
+			                 int keep_tracking
 			                 );
-
-			/**
-			 * Updates sent planes using but environment model server
-			 * @param planes Vector of found planes
-			 * @param scene_cloud point cloud of the scene
-			 * @param sensorToWorldTf Sendor to map transformation matrix
-			 */
-			void update(std::vector<but_plane_detector::Plane<float> > & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
-			
 			/**
 			 * Updates sent planes using but environment model server
 			 * @param planes Vector of found planes
 			 * @param scene_cloud point cloud of the scene
 			 */
-			void update(std::vector<but_plane_detector::Plane<float> > & planes, but_plane_detector::Normals &normals, tf::StampedTransform &sensorToWorldTf);
-
-			/**
-			 * Updates sent planes using direct but interactive marker server
-			 * @param planes Vector of found planes
-			 * @param scene_cloud point cloud of the scene
-			 * @param sensorToWorldTf Sendor to map transformation matrix
-			 */
-			void updateDirect(std::vector<but_plane_detector::Plane<float> > & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+			void update(std::vector<but_plane_detector::Plane<float> > & planes, but_plane_detector::Normals &normals);
 
 			static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker);
 
+			std::vector<ExportedPlane> displayed_planes;
 		private:
-			/**
-			 * Returns center and scale of plane marker
-			 * @param plane Vector of found planes
-			 * @param scene_cloud point cloud of the scene
-			 * @param center Sendor to map transformation matrix
-			 * @param scale Sendor to map transformation matrix
-			 */
-			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, pcl::PointXYZ &center, pcl::PointXYZ &scale);
-
-			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, but_plane_detector::Normals &normals, pcl::PointXYZ &center, pcl::PointXYZ &scale);
-			void getCenterSAndScale(std::vector<but_plane_detector::Plane<float> > & planes, but_plane_detector::Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags);
 
 			/**
 			 * Auxiliary node handle variable
@@ -119,7 +102,8 @@ namespace srs_env_model_percp
 			/**
 			 * Auxiliary index vector for managing modifications
 			 */
-			std::vector<bool> managedInd;
+
+			int m_keep_tracking;
 
 			std::string original_frame_, output_frame_;
 

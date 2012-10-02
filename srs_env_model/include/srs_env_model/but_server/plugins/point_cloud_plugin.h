@@ -61,35 +61,35 @@ namespace srs_env_model
         //! Enable or disable publishing
         void enable( bool enabled ){ m_publishPointCloud = enabled; }
 
-        //! Should plugin publish data?
-        virtual bool shouldPublish();
-
         //! Initialize plugin - called in server constructor
         virtual void init(ros::NodeHandle & node_handle);
 
         //! Initialize plugin - called in server constructor, enable or disable subscription.
         virtual void init(ros::NodeHandle & node_handle, bool subscribe){ m_bSubscribe = subscribe; init(node_handle); }
 
-        //! Called when new scan was inserted and now all can be published
-        virtual void onPublish(const ros::Time & timestamp);
-
-        //! Set used octomap frame id and timestamp
-        virtual void onFrameStart( const SMapParameters & par );
-
-        /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-        virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapParameters & mp);
-
-        /// Called when all nodes was visited.
-        virtual void handlePostNodeTraversal(const SMapParameters & mp);
-
         //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
         virtual void pause( bool bPause, ros::NodeHandle & node_handle );
+
+        //! Wants plugin new map data?
+        virtual bool wantsMap();
 
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     protected:
-        /**
+      //! Set used octomap frame id and timestamp
+      virtual void newMapDataCB( SMapWithParameters & par );
+
+      //! Should plugin publish data?
+      virtual bool shouldPublish();
+
+      //! Publish data implementation
+      virtual void publishInternal( const ros::Time & timestamp );
+
+      /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+	  void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+
+	   /**
         * @brief Insert point cloud callback
         *
         * @param cloud Input point cloud
@@ -161,23 +161,6 @@ namespace srs_env_model
 
     }; // class CPointCloudPlugin
 
-    /// Declare holder object - partial specialization of the default holder with predefined connection settings
-    template< class tpOctomapPlugin >
-    struct SPointCloudPluginHolder : public  CCrawlingPluginHolder< CPointCloudPlugin, tpOctomapPlugin >
-    {
-    protected:
-        /// Define holder type
-        typedef CCrawlingPluginHolder< CPointCloudPlugin, tpOctomapPlugin > tHolder;
-
-    public:
-        /// Create holder
-        SPointCloudPluginHolder( const std::string & name, bool subscribe )
-        : tHolder(  new CPointCloudPlugin( name, subscribe ),  tHolder::ON_START | tHolder::ON_OCCUPIED | tHolder::ON_STOP, true)
-        {
-
-        }
-
-    }; // struct SPointCloudPluginHolder
 
 } // namespace srs_env_model
 

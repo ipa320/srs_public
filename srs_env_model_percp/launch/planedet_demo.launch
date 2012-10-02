@@ -1,0 +1,6 @@
+<launch>
+    <!-- Run the plane detection -->
+    <node pkg="srs_env_model_percp" type="but_plane_detector_demo" name="but_plane_detector_demo">
+        <rosparam file="$(find srs_env_model_percp)/config/planedet_params.yaml" command="load" />
+    </node>
+</launch>

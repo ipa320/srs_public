@@ -93,6 +93,11 @@ protected:
      */
     std::string getUniqueName();
 
+    //! Should plugin publish data?
+	virtual bool shouldPublish(){ return false; }
+
+	//! Publish data - virtual function
+	virtual void publishInternal( const ros::Time & timestamp ){}
 
 protected:
 	/// Insert some planes service

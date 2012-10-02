@@ -33,6 +33,7 @@
 #include <srs_env_model_msgs/RVIZCameraPosition.h>
 #include <srs_env_model/but_server/server_tools.h>
 #include <srs_env_model/OctomapUpdates.h>
+#include <srs_env_model/SetNumIncompleteFrames.h>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread/thread.hpp>
@@ -54,25 +55,26 @@ public:
 	//! Initialize plugin - called in server constructor
 	virtual void init(ros::NodeHandle & node_handle);
 
-	//! Set used octomap frame id and timestamp
-	virtual void onFrameStart( const SMapParameters & par );
-
-	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-	virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapParameters & mp);
-
-	//! Called when new scan was inserted and now all can be published
-	virtual void onPublish(const ros::Time & timestamp);
-
 	//! Connect/disconnect plugin to/from all topics
 	virtual void pause( bool bPause, ros::NodeHandle & node_handle);
 
-	//! Should plugin publish data?
-	virtual bool shouldPublish();
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 protected:
+	//! Set used octomap frame id and timestamp
+	virtual void newMapDataCB( SMapWithParameters & par );
+
+	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+	virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+
+	//! Should plugin publish data?
+	virtual bool shouldPublish();
+
+	//! Called when new scan was inserted and now all can be published
+	void publishInternal(const ros::Time & timestamp);
+
 	/// On camera position changed callback
 	void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
 
@@ -83,6 +85,9 @@ protected:
 
 	//! Test if point is in camera cone
 	bool inSensorCone(const cv::Point2d& uv) const;
+
+	/// Set number of incomplete frames callback
+	bool setNumIncompleteFramesCB( srs_env_model::SetNumIncompleteFrames::Request & req, srs_env_model::SetNumIncompleteFrames::Response & res );
 
 protected:
 	/// Should camera position and orientation be transformed?
@@ -160,25 +165,13 @@ protected:
 
 	//! Packed info message data
 	srs_env_model::OctomapUpdatesPtr m_octomap_updates_msg;
+
+	/// Service - set number of incomplete frames
+	ros::ServiceServer m_serviceSetNumIncomplete;
+
+	/// Should output pointcloud be transformed
+	bool m_bTransformOutput;
 };
-
-/// Declare holder object - partial specialization of the default holder with predefined connection settings
-template< class tpOctomapPlugin >
-struct SCompressedPointCloudPluginHolder : public  CCrawlingPluginHolder< CCompressedPointCloudPlugin, tpOctomapPlugin >
-{
-protected:
-	/// Define holder type
-	typedef CCrawlingPluginHolder< CCompressedPointCloudPlugin, tpOctomapPlugin > tHolder;
-
-public:
-	/// Create holder
-	SCompressedPointCloudPluginHolder( const std::string & name )
-	: tHolder(  name,  tHolder::ON_START | tHolder::ON_OCCUPIED | tHolder::ON_STOP)
-	{
-
-	}
-
-}; // struct SLimitedPointCloudPluginHolder
 
 } // namespace srs_env_model
 

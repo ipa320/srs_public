@@ -59,12 +59,12 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 /// Destructor
 srs_env_model::CPointCloudPlugin::~CPointCloudPlugin()
 {
-	if( m_pcSubscriber )
-		delete m_pcSubscriber;
+//	if( m_pcSubscriber )
+//		delete m_pcSubscriber;
 
 	// Delete tf
-	if (m_tfPointCloudSub)
-		delete m_tfPointCloudSub;
+//	if (m_tfPointCloudSub)
+//		delete m_tfPointCloudSub;
 }
 
 //! Initialize plugin - called in server constructor
@@ -84,11 +84,6 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	// Point cloud limits
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
 	node_handle.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
-
-	// Frame skipping
-	int fs(1);
-	node_handle.param("frame_skip", fs, fs);
-	m_use_every_nth = fs;
 
 	// Contains input pointcloud RGB?
 	if( node_handle.hasParam("input_has_rgb") )
@@ -128,7 +123,7 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 }
 
 //! Called when new scan was inserted and now all can be published
-void srs_env_model::CPointCloudPlugin::onPublish(const ros::Time & timestamp)
+void srs_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timestamp)
 {
 //	PERROR("Try lock");
 
@@ -159,9 +154,11 @@ void srs_env_model::CPointCloudPlugin::onPublish(const ros::Time & timestamp)
 }
 
 //! Set used octomap frame id and timestamp
-void srs_env_model::CPointCloudPlugin::onFrameStart( const SMapParameters & par )
+void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 {
-//	PERROR( "Frame start. ");
+	if( ! m_publishPointCloud )
+		return;
+
 	m_data->clear();
 	m_ocFrameId = par.frameId;
 	m_DataTimeStamp = m_time_stamp = par.currentTime;
@@ -194,10 +191,34 @@ void srs_env_model::CPointCloudPlugin::onFrameStart( const SMapParameters & par 
 		// Get transformation matrix
 		pcl_ros::transformAsMatrix(ocToPcTf, m_pcOutTM);	// Sensor TF to defined base TF
 	}
+
+	// Initialize leaf iterators
+	tButServerOcTree & tree( par.map->octree );
+	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+
+	// Crawl through nodes
+	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+	{
+		// Node is occupied?
+		if (tree.isNodeOccupied(*it))
+		{
+			handleOccupiedNode(it, par);
+		}// Node is occupied?
+
+	} // Iterate through octree
+
+	// If different frame id
+	if( (!m_bAsInput) && (m_ocFrameId != m_pcFrameId) )
+	{
+		// transform point cloud from sensor frame to the preset frame
+		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
+	}
+
+	invalidate();
 }
 
 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapParameters & mp)
+void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
 //	std::cerr << "PCP: handle occupied" << std::endl;
 	tPclPoint point;
@@ -224,27 +245,6 @@ void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButSer
 
 	++counter;
 }
-
-void srs_env_model::CPointCloudPlugin::handlePostNodeTraversal(const SMapParameters & mp)
-{
-//	PERROR( "Frame end. ");
-//*
-	// If different frame id
-	if( (!m_bAsInput) && (m_ocFrameId != m_pcFrameId) )
-	{
-		// transform point cloud from sensor frame to the preset frame
-		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
-	}
-
-//	PERROR( "Publishing cloud. Size: " << m_data->size() );
-
-//*/
-//	std::cerr << "PCOUT size: " << m_data->size() << std::endl;
-
-	// Invalidate data
-	invalidate();
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -388,7 +388,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 //! Should plugin publish data?
 bool srs_env_model::CPointCloudPlugin::shouldPublish()
 {
-	return( m_publishPointCloud && m_pcPublisher.getNumSubscribers() > 0 );
+	return( (!m_bAsInput) && m_publishPointCloud && m_pcPublisher.getNumSubscribers() > 0 );
 }
 
 /**
@@ -459,3 +459,12 @@ void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nod
 //	PERROR("Unlock");
 
 }
+
+/**
+ * Wants plugin new map data?
+ */
+bool srs_env_model::CPointCloudPlugin::wantsMap()
+{
+	return ! m_bAsInput;
+}
+

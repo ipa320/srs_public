@@ -149,6 +149,9 @@ namespace srs_ui_but
 		//! Constructor - encoding in Ogre format
 		//CRosTopicTexture( const ros::NodeHandle& nh, const std::string & texture_name, Ogre::PixelFormat encoding );
 
+		//! Destructor
+		~CRosTopicTexture();
+
 		//! Set topic to subscribe to
 		void setTopic(const std::string& topic);
 

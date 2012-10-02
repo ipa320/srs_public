@@ -33,13 +33,16 @@
 #include <wx/panel.h>
 #include <wx/dialog.h>
 #include <wx/textctrl.h>
+#include <wx/statbox.h>
+#include <wx/checkbox.h>
 
 #include <boost/shared_ptr.hpp>
 #include <interactive_markers/interactive_marker_server.h>
-#include <srs_interaction_primitives/AddUnknownObject.h>
+#include <srs_interaction_primitives/services_list.h>
 #include <srs_interaction_primitives/PoseChanged.h>
 #include <srs_interaction_primitives/ScaleChanged.h>
 #include <ros/ros.h>
+#include <rviz/displays_panel.h>
 
 namespace rviz
 {
@@ -67,10 +70,22 @@ public:
 	virtual void OnAddBoxGizmo(wxCommandEvent& event);
 
 	/// On clear map event handler
-	virtual void OnClearBox( wxCommandEvent &event );
+	virtual void OnClearBoxOctomap( wxCommandEvent &event );
+
+	/// On clear map event handler
+	virtual void OnClearBoxCMap( wxCommandEvent &event );
 
 	/// On add obstacle event handler
-	virtual void OnAddObstacle( wxCommandEvent &event );
+	virtual void OnAddObstacleOctomap( wxCommandEvent &event );
+
+	/// On add obstacle event handler
+	virtual void OnAddObstacleCMap( wxCommandEvent &event );
+
+	/// On lock octomap event handler
+	virtual void OnLockOctomap( wxCommandEvent &event );
+
+	/// On lock collision map event handler
+	virtual void OnLockCMap( wxCommandEvent & event );
 
 	/// On cancel clera map
 	virtual void OnCancelBoxGizmo( wxCommandEvent &event );
@@ -99,22 +114,34 @@ protected:
     rviz::WindowManagerInterface * m_wmi;
 
     //! Reset octomap button
-    wxButton * m_buttonReset;
+    wxButton * m_buttonResetOctomap;
 
     //! Create add box button
     wxButton *m_buttonBoxAdd;
 
     //! Create obstacle add button
-    wxButton *m_buttonObstacleAdd;
+    wxButton *m_buttonObstacleOctomap;
 
-    //! Do map erase
-    wxButton *m_buttonClearBox;
+    //! Do octomap erase
+    wxButton *m_buttonClearBoxOctomap;
 
-    //! Cancel clearing
-    wxButton *m_buttonCancelClear;
+    //! Do collision map erase
+    wxButton *m_buttonClearBoxCMap;
+
+    //! Do collision map box add
+    wxButton *m_buttonObstacleCMap;
+
+    //! Cancel box
+    wxButton *m_buttonCancelBox;
 
     //! Static text control displaying gizmo info
     wxTextCtrl * m_textBox;
+
+    //! Lock/unlock collision map checkbox
+    wxCheckBox * m_cbLockCMap;
+
+    //! Lock/unlock octomap checkbox
+    wxCheckBox * m_cbLockOctomap;
 
 	//! Gizmo
     srs_interaction_primitives::AddUnknownObject m_uoGizmo;
@@ -126,7 +153,22 @@ protected:
 	ros::ServiceClient m_srvRemoveGizmo;
 
 	//! Used services - remove cube from octomap
-	ros::ServiceClient m_srvRemoveCubeFromOCmap;
+	ros::ServiceClient m_srvRemoveCubeFromOctomap;
+
+	//! Used services - remove cube from collision map
+	ros::ServiceClient  m_srvRemoveCubeFromCMap;
+
+	//! Used services - add cube to collision map
+	ros::ServiceClient m_srvAddCubeToOctomap;
+
+	//! Used services - add cube to collision map
+	ros::ServiceClient m_srvLockCMap;
+
+	//! Used services - add cube to collision map
+	ros::ServiceClient m_srvLockOctomap;
+
+	//! Used services - add cube to collision map
+	ros::ServiceClient m_srvAddCubeToCMap;
 
 	//! Subscribers - gizmo position and scale
     ros::Subscriber m_subGizmoPose, m_subGizmoScale;

@@ -77,17 +77,25 @@ namespace srs_ui_but
     {
     protected:
         //! Material pointer
-        Ogre::MaterialPtr m_materialPtr;
+        Ogre::Material * m_materialPtr;
 
         //! Tested scheme name
         std::string m_schemeName;
 
+        //! Is listener not paused?
+        bool m_bNotPaused;
     public:
         //! Constructor
-        CMaterialListener( const std::string & materialName, const std::string & groupName, const std::string & schemeName );
+        //CMaterialListener( const std::string & materialName, const std::string & groupName, const std::string & schemeName );
 
         //! Constructor
         CMaterialListener( Ogre::Material * material, const std::string & schemeName );
+
+        //! Destructor
+        ~CMaterialListener();
+
+        //! Pause/run listener
+        void setPaused( bool bPaused ) { m_bNotPaused = !bPaused; }
 
         //! Scheme not found event handler - return stored material technique
         Ogre::Technique *handleSchemeNotFound(unsigned short, const Ogre::String& schemeName, Ogre::Material*mat, unsigned short, const Ogre::Renderable*);
@@ -121,7 +129,7 @@ namespace srs_ui_but
         virtual ~CProjectionData();
 
         //! Get material pointer
-        Ogre::Material * getMaterialPtr() { return m_material.get(); }
+        Ogre::Material * getMaterialPtr() { return m_materialPtr.get(); }
 
         //! Update frustrum aspect ratio
         void setFrustrumSize( Ogre::Vector2 size );
@@ -166,9 +174,10 @@ namespace srs_ui_but
     	void setCameraModel(const sensor_msgs::CameraInfo& msg) { m_textureRosDepth->setCameraModel(msg); }
 
 
+
     protected:
         //! Used material
-        Ogre::MaterialPtr m_material;
+        Ogre::MaterialPtr m_materialPtr;
 
         //! Old frustrum size
         Ogre::Vector2 m_frustrumSize;
@@ -191,6 +200,16 @@ namespace srs_ui_but
 
         //! Transform listener
         tf::TransformListener m_tfListener;
+
+        //! Texture unit state
+        Ogre::TextureUnitState * m_texState;
+
+        //! Whole data locking mutex
+        boost::mutex m_lock;
+
+        //! Sotred scene manager pointer
+        Ogre::SceneManager * m_manager;
+
 
     }; // class CProjectionData
 
@@ -310,11 +329,17 @@ namespace srs_ui_but
         //! Material part - get material manager, load groups etc.
         void createMaterials(Ogre::Camera * camera);
 
+        //! Remove materials
+        void removeMaterials();
+
         //! Clear texture
         void clear();
 
         /// Camera info callback
         void cameraInfoCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
+
+        //! Connect/disconnect listener
+        void connectML( bool bConnect );
 
     protected:
         //! Scene node
@@ -359,6 +384,14 @@ namespace srs_ui_but
         /// Camera size
         cv::Size m_camera_size;
 
+        /// Camera info lock
+        boost::mutex m_cameraInfoLock;
+
+        //! Material listener object
+        CMaterialListener * m_ml;
+
+        //! Is material listener connected
+        bool m_bMLConnected;
 
     };//class CButCamCast
 

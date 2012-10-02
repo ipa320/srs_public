@@ -48,6 +48,9 @@ public:
 	//! Consturctor
 	CDepthImageConvertor(const ros::NodeHandle& nh, const std::string & topic);
 
+	//! Destructor
+	~CDepthImageConvertor();
+
 	//! Get cv image access
 	cv_bridge::CvImage * getBridgeImage() { return m_bridge_image.get(); }
 

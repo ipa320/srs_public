@@ -52,6 +52,7 @@ srs_ui_but::CDepthImageConvertor::CDepthImageConvertor(const ros::NodeHandle& nh
 , m_topic( topic )
 , m_hints("raw", ros::TransportHints(), nh)
 , m_bCamModelInitialized( false )
+, m_counter(0)
 {
 	m_it.reset(new image_transport::ImageTransport(nh));
 
@@ -64,6 +65,14 @@ srs_ui_but::CDepthImageConvertor::CDepthImageConvertor(const ros::NodeHandle& nh
 	// Allocate new Image message
 
 //	std::cerr << "... CDepthImageConvertor: depth texture initialized..." << std::endl;
+}
+
+/**
+ * Destructor
+ */
+srs_ui_but::CDepthImageConvertor::~CDepthImageConvertor()
+{
+	m_sub_raw.shutdown();
 }
 
 /**
@@ -329,6 +338,7 @@ void  srs_ui_but::CDepthImageConvertor::setCameraModel(const sensor_msgs::Camera
 srs_ui_but::CRosDepthTexture::CRosDepthTexture( const ros::NodeHandle& nh, const std::string & texture_name, const std::string& topic_name, const std::string & encoding, bool bStaticTexture /*= false*/ )
 : CDepthImageConvertor( nh, topic_name )
 , m_texture_converter( texture_name, encoding, true )
+
 {
 
 }

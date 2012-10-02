@@ -69,6 +69,7 @@ static const std::string DEFAULT_CAMERA_IMAGE = std::string("default_camera_imag
 static const std::string DEFAULT_GRIPPER_LINK = "/sdh_palm_link";
 static const std::string DEFAULT_ROBOT_LINK = "/sdh_palm_link";
 static const std::string DEFAULT_COB_BASE_LINK = "/base_link";
+static const std::string CAMERA_POSITION_TOPIC_NAME = "/rviz_camera_position";
 
 /**
  * but-servcies - published topics

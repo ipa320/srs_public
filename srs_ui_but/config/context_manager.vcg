@@ -1,9 +1,10 @@
-Background\ ColorR=0
-Background\ ColorG=0
-Background\ ColorB=0
+Background\ ColorR=0,941176
+Background\ ColorG=0,941176
+Background\ ColorB=0,941176
 Fixed\ Frame=/world
 Target\ Frame=<Fixed Frame>
 Context\ Manager.Action=0
+Context\ Manager.Collision\ hazard=0
 Context\ Manager.Connection=0
 Context\ Manager.Context\ status=0
 Context\ Manager.Enabled=1
@@ -26,12 +27,12 @@ Interactive\ Markers.Enabled=1
 Interactive\ Markers.Show\ Axes=0
 Interactive\ Markers.Show\ Descriptions=1
 Interactive\ Markers.Show\ Tool\ Tips=1
-Interactive\ Markers.Update\ Topic=/but_interaction_primitives/update
+Interactive\ Markers.Update\ Topic=/interaction_primitives/update
 Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.651004 5.19183 4.58246 -0.313943 0.54619 -0.00116578
-Property\ Grid\ State=selection=Fixed Frame;expanded=.Global Options,Interactive Markers.Enabled,Context Manager.Enabled,Context Manager.Enabled.Context Manager.Context;scrollpos=0,0;splitterpos=229,458;ispageselected=1
+Camera\ Config=1.006 5.40183 6.43803 -0.313943 0.54619 -0.00116578
+Property\ Grid\ State=selection=Background Color;expanded=.Global Options,Interactive Markers.Enabled,Context Manager.Enabled;scrollpos=0,0;splitterpos=191,383;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz

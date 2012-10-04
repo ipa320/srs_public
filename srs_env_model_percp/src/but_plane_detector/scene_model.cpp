@@ -31,7 +31,7 @@
  */
 
 #include <srs_env_model_percp/but_plane_detector/scene_model.h>
-//#include <but_segmentation/filtering.h>
+#include <but_segmentation/filtering.h>
 
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>

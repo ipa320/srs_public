@@ -1,0 +1,20 @@
+<launch>
+    <!-- Set 3d camera maximal relevant distance in meters -->
+    <param name="but_server_node/max_range" type="double" value="4.5"/>
+    
+    <!-- Other parameters -->
+    <param name="but_server_node/pointcloud_min_z" value="0.0" type="double"/>
+    <!--param name="but_server_node/resolution" value="0.05" type="double"/-->
+    <!--param name="but_server_node/resolution" value="0.1" type="double"/-->
+    <!--param name="but_server_node/frame_skip" value="20" type="int"/-->
+    
+    <!-- Run our dynamic scene model server node -->
+    <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
+	<param name="differential_frames_count" value="15" type="int"/> 
+	<param name="resolution" value="0.1" type="double"/>
+	<param name="frame_skip" value="5" type="int"/>
+	<remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info" />
+	<remap from="but_server_node/points_in" to="/cam3d/rgb/points" />
+    </node>
+</launch>
+

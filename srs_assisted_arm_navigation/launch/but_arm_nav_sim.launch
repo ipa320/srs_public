@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 
   <param name="/use_sim_time" value="true" />
@@ -11,7 +12,7 @@
   <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.launch"/>
   
   <!-- RVIZ with proper configuration -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/rviz.launch"/>
+  <!--include file="$(find srs_assisted_arm_navigation_ui)/launch/rviz.launch"/-->
   <!--node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_assisted_arm_navigation)/config/arm_manip_but.vcg">
     <param name="wait_for_start" type="bool" value="true" />
   </node-->

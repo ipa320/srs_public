@@ -1,7 +1,7 @@
 Background\ ColorR=1
 Background\ ColorG=1
 Background\ ColorB=1
-Fixed\ Frame=/world
+Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
 Grid.Alpha=0,5
 Grid.Cell\ Size=1
@@ -22,12 +22,14 @@ Interactive\ Markers.Enabled=1
 Interactive\ Markers.Show\ Axes=0
 Interactive\ Markers.Show\ Descriptions=0
 Interactive\ Markers.Show\ Tool\ Tips=0
-Interactive\ Markers.Update\ Topic=/srs_interaction_primitives/update
+Interactive\ Markers.Update\ Topic=/interaction_primitives/update
+Marker.Enabled=1
+Marker.Marker\ Topic=/interaction_primitives
 Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.321 3.80053 16.841 0.68574 -0.258391 0.88767
-Property\ Grid\ State=selection=Interactive Markers.Enabled.Interactive Markers.Update Topic;expanded=.Global Options,Interactive Markers.Enabled;scrollpos=0,0;splitterpos=142,301;ispageselected=1
+Camera\ Config=1.311 3.80053 16.841 0.68574 -0.258391 0.88767
+Property\ Grid\ State=selection=Fixed Frame;expanded=.Global Options,Interactive Markers.Enabled,Marker.Enabled,Marker.Enabled.Marker.Namespaces;scrollpos=0,0;splitterpos=191,383;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -36,3 +38,7 @@ ClassName=rviz::GridDisplay
 Name=Interactive Markers
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
+[Display2]
+Name=Marker
+Package=rviz
+ClassName=rviz::MarkerDisplay

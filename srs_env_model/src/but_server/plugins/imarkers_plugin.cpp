@@ -79,7 +79,7 @@ void srs_env_model::CIMarkersPlugin::init(ros::NodeHandle & node_handle)
 
 
 	// Interactive marker server test
-	//*
+	/*
 	{
 		srs_env_model_msgs::PlaneDesc planedesc;
 

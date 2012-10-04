@@ -64,11 +64,14 @@
 /**
  * Material listener constructor
  */
+/*
 srs_ui_but::CMaterialListener::CMaterialListener( const std::string & materialName, const std::string & groupName, const std::string & schemeName )
 : m_schemeName( schemeName )
 {
+	std::cerr << "Listener constructor 1" << std::endl;
+
     // Create material
-    m_materialPtr = Ogre::MaterialManager::getSingleton().getByName( materialName, groupName );
+   // m_materialPtr = Ogre::MaterialManager::getSingleton().getByName( materialName, groupName );
 
     // Test if success
     if( m_materialPtr.get() == 0 )
@@ -78,14 +81,17 @@ srs_ui_but::CMaterialListener::CMaterialListener( const std::string & materialNa
     else
         {
         // Load it
-        m_materialPtr->load();
+    	//m_materialPtr->load();
 
         // Write info
         std::cerr << "Material " << groupName << ":" << materialName << " loaded..." << std::endl;
         std::cerr << "Num of techniques: " << m_materialPtr->getNumTechniques() << std::endl;
         m_materialPtr->getTechnique(0);
         }
+
+    std::cerr << "Listener constructor 1 done" << std::endl;
 }
+*/
 
 /**
  * Material listener constructor
@@ -94,27 +100,38 @@ srs_ui_but::CMaterialListener::CMaterialListener( Ogre::Material * material, con
 : m_materialPtr( material )
 , m_schemeName( schemeName )
 {
-    //	std::cerr << "Listener constructor" << std::endl;
+	return;
+
+//    	std::cerr << "Listener constructor 2" << std::endl;
 
     // Test if success
-    if( m_materialPtr.get() == 0 )
+    if( m_materialPtr == 0 )
         {
         std::cerr << "Cannot get material..." << std::endl;
         }
     else
         {
         // Load it
-        m_materialPtr->load();
+    	//m_materialPtr->load();
 
         // Write info
-        std::cerr << "Material assigned..." << std::endl;
-        std::cerr << "Num of techniques: " << m_materialPtr->getNumTechniques() << std::endl;
+//        std::cerr << "Material assigned..." << std::endl;
+ //       std::cerr << "Num of techniques: " << m_materialPtr->getNumTechniques() << std::endl;
         m_materialPtr->getTechnique(0);
         }
 
-    //	std::cerr << "Listener constructor done" << std::endl;
+//    	std::cerr << "Listener constructor 2 done" << std::endl;
 }
 
+/**
+ * Material listener destructor
+ */
+srs_ui_but::CMaterialListener::~CMaterialListener()
+{
+//	m_materialPtr->removeAllTechniques();
+//	m_materialPtr->unload();
+//	m_materialPtr.setNull();
+}
 
 /**
  * Scheme not found event handler - return stored material technique
@@ -124,7 +141,6 @@ Ogre::Technique *srs_ui_but::CMaterialListener::handleSchemeNotFound(unsigned sh
     if (schemeName == m_schemeName)
         {
         //LogManager::getSingleton().logMessage(">> adding glow to material: "+mat->getName());
-        //		std::cerr << "gettech " << m_materialPtr.get() << std::endl;
         return m_materialPtr->getBestTechnique();
         }
     return NULL;
@@ -140,8 +156,9 @@ srs_ui_but::CProjectionData::CProjectionData( Ogre::SceneManager * manager, cons
 : m_texW( 512 )
 , m_texH( 512 )
 , m_mode( TM_ROS )
+, m_manager( manager )
 {
-    std::cerr << "CProjectionData constructor" << std::endl;
+ //   std::cerr << "CProjectionData constructor" << std::endl;
 
     // Create frustum and projector node
     m_frustum = new Ogre::Frustum();
@@ -159,35 +176,38 @@ srs_ui_but::CProjectionData::CProjectionData( Ogre::SceneManager * manager, cons
     assert( m_textureRosDepth != 0 );
 
     // Create and init material
-    m_material = (Ogre::MaterialPtr)Ogre::MaterialManager::getSingleton().getByName(materialName, groupName);
-    m_material->getTechnique(0)->setLightingEnabled(false);
+    m_materialPtr = (Ogre::MaterialPtr)Ogre::MaterialManager::getSingleton().getByName(materialName, groupName);
+    m_materialPtr->load();
+//    std::cerr << "Num of techniques: " << m_materialPtr->getNumTechniques() << std::endl;
+    m_materialPtr->getTechnique(0)->setLightingEnabled(false);
 
-
-    Ogre::Pass *pass = m_material->getTechnique(0)->getPass(0);
+    Ogre::Pass *pass = m_materialPtr->getTechnique(0)->getPass(0);
 
     pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
     pass->setDepthBias(1);
     pass->setLightingEnabled(false);
 
     // Connect rgb texture and material
-    Ogre::TextureUnitState *texState = pass->createTextureUnitState(m_textureRosRGB->getTexture()->getName());
-    texState->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
-    texState->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
+    m_texState = pass->createTextureUnitState(m_textureRosRGB->getTexture()->getName());
+    m_texState->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+    m_texState->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
 
     Ogre::LayerBlendOperationEx op = Ogre::LBX_MODULATE;
-    texState->setColourOperationEx(op, Ogre::LBS_TEXTURE, Ogre::LBS_TEXTURE);
+    m_texState->setColourOperationEx(op, Ogre::LBS_TEXTURE, Ogre::LBS_TEXTURE);
 
     // Connect Depth texture and material
-	texState = pass->createTextureUnitState(m_textureRosDepth->getTexture()->getName());
-	texState->setDesiredFormat( Ogre::PF_FLOAT32_RGB );
-	texState->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
-	texState->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
+    m_texState = pass->createTextureUnitState(m_textureRosDepth->getTexture()->getName());
+    m_texState->setDesiredFormat( Ogre::PF_FLOAT32_RGB );
+    m_texState->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+    m_texState->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
 
-	texState->setColourOperationEx(op, Ogre::LBS_TEXTURE, Ogre::LBS_TEXTURE);
-
-    std::cerr << "CProjectionData constructor done" << std::endl;
+    m_texState->setColourOperationEx(op, Ogre::LBS_TEXTURE, Ogre::LBS_TEXTURE);
 
     updateMatrices();
+
+//    std::cerr << "CProjectionData constructor done" << std::endl;
+
+
 }
 
 /**
@@ -197,7 +217,21 @@ srs_ui_but::CProjectionData::CProjectionData( Ogre::SceneManager * manager, cons
 //! Destructor
 srs_ui_but::CProjectionData::~CProjectionData()
 {
+//	std::cerr << "CProjection data destructor start." << std::endl;
+//	m_material->unload();
+	//Ogre::MaterialManager::getSingleton().remove( m_material->getHandle() );
+//	Ogre::MaterialManager::getSingleton().remove( m_material->getName() );
 
+//	m_projectorNode->detachAllObjects();
+	m_manager->destroySceneNode( m_projectorNode );
+
+	// Remove all
+	delete m_textureRosDepth;
+	delete m_textureRosRGB;
+//	delete m_projectorNode; m_projectorNode = 0;
+	delete m_frustum;
+
+//	std::cerr << "CProjection data destructor end." << std::endl;
 }
 
 /**
@@ -262,7 +296,7 @@ void srs_ui_but::CProjectionData::clear()
 void srs_ui_but::CProjectionData::updateMatrices()
 {
 
-	if( m_material.get() == 0 )
+	if( m_materialPtr.get() == 0 )
 		return;
 
 	Ogre::Matrix4 wt;
@@ -314,7 +348,7 @@ void srs_ui_but::CProjectionData::updateMatrices()
 
 
 	// Set vertex program parameters
-	Ogre::GpuProgramParametersSharedPtr paramsVP( m_material->getTechnique(0)->getPass(0)->getVertexProgramParameters() );
+	Ogre::GpuProgramParametersSharedPtr paramsVP( m_materialPtr->getTechnique(0)->getPass(0)->getVertexProgramParameters() );
 
 	if( paramsVP->_findNamedConstantDefinition("texViewProjMatrix"))
 	{
@@ -347,6 +381,7 @@ void srs_ui_but::CProjectionData::updateMatrices()
 		std::cerr << "Named constant not found: invProjectionMatrix" << std::endl;
 	}
 */
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -356,8 +391,14 @@ void srs_ui_but::CProjectionData::updateMatrices()
  */
 srs_ui_but::CButProjection::CButProjection(const std::string & name,rviz::VisualizationManager * manager)
 : Display( name, manager )
+, m_pane( 0 )
+, m_projectionData( 0 )
 , m_camera_info_topic( CAMERA_INFO_TOPIC_NAME )
+, m_ml(0)
+, m_bMLConnected( false )
 {
+//	std::cerr << "CButProjection::CButProjection S" << std::endl;
+
     // Create and connect pane
     rviz::WindowManagerInterface * wi( manager->getWindowManager() );
 
@@ -412,11 +453,13 @@ srs_ui_but::CButProjection::CButProjection(const std::string & name,rviz::Visual
     // Create geometry
     createGeometry(private_nh);
 
-
     // Create publishing timer
     m_timer = private_nh.createTimer( ros::Duration(m_timerPeriod), boost::bind( &srs_ui_but::CButProjection::onTimerPublish, this, _1) );
 
     m_timer.start();
+
+ //   std::cerr << "CButProjection::CButProjection E" << std::endl;
+
 }
 
 /*
@@ -424,8 +467,26 @@ srs_ui_but::CButProjection::CButProjection(const std::string & name,rviz::Visual
  */
 srs_ui_but::CButProjection::~CButProjection()
 {
+
+//	std::cerr << "CButProjection destructor start." << std::endl;
+
+	lockRender();
+
+	m_timer.stop();
+
+	// Unsubscribe from topics
+	unsubscribe();
+	m_ciSubscriber->unsubscribe();
+
     // Destroy all geometry
     destroyGeometry();
+
+    // Destroy materials
+    removeMaterials();
+
+    unlockRender();
+
+//    std::cerr << "CButProjection destructor end." << std::endl;
 
 }
 
@@ -436,6 +497,7 @@ srs_ui_but::CButProjection::~CButProjection()
 void srs_ui_but::CButProjection::onEnable()
 {
     m_sceneNode->setVisible( true );
+    connectML( true );
 }
 
 /*
@@ -444,6 +506,7 @@ void srs_ui_but::CButProjection::onEnable()
 void srs_ui_but::CButProjection::onDisable()
 {
     m_sceneNode->setVisible( false );
+    connectML( false );
 }
 
 /**
@@ -472,8 +535,11 @@ void srs_ui_but::CButProjection::createProperties()
  */
 void srs_ui_but::CButProjection::subscribe()
 {
-	m_projectionData->setRGBTextureTopic(m_imageRGBInputTopicName);
-	m_projectionData->setDepthTextureTopic(m_imageDepthInputTopicName);
+	if( m_projectionData != 0 )
+	{
+		m_projectionData->setRGBTextureTopic(m_imageRGBInputTopicName);
+		m_projectionData->setDepthTextureTopic(m_imageDepthInputTopicName);
+	}
 
     if ( !isEnabled() )
         {
@@ -488,8 +554,11 @@ void srs_ui_but::CButProjection::subscribe()
  */
 void srs_ui_but::CButProjection::unsubscribe()
 {
-	m_projectionData->setRGBTextureTopic("");
-	m_projectionData->setDepthTextureTopic("");
+	if( m_projectionData != 0 )
+	{
+		m_projectionData->setRGBTextureTopic("");
+		m_projectionData->setDepthTextureTopic("");
+	}
 }
 
 /**
@@ -527,7 +596,10 @@ void srs_ui_but::CButProjection::setDepthTopic( const std::string& topic )
  */
 void srs_ui_but::CButProjection::clear()
 {
-    m_projectionData->clear();
+	if( m_projectionData != 0 )
+	{
+		m_projectionData->clear();
+	}
 
     setStatus(rviz::status_levels::Warn, "Image", "No Image received");
 }
@@ -537,15 +609,19 @@ void srs_ui_but::CButProjection::clear()
  */
 void srs_ui_but::CButProjection::createMaterials(Ogre::Camera * camera)
 {
-    // Get material manager
-    Ogre::MaterialManager& lMaterialManager = Ogre::MaterialManager::getSingleton();
+//	std::cerr << "CButProjection::createMaterials S" << std::endl;
+
+
+ //   std::cerr << "1" << std::endl;
 
     // Load materials
-    Ogre::String nameOfResourceGroup( "MaterialGroup1" );
+//    Ogre::String nameOfResourceGroup( "MaterialGroup1" );
     {
         // Create resource group
         Ogre::ResourceGroupManager& lRgMgr = Ogre::ResourceGroupManager::getSingleton();
-        lRgMgr.createResourceGroup(nameOfResourceGroup);
+//        lRgMgr.createResourceGroup(nameOfResourceGroup);
+
+ //       std::cerr << "2" << std::endl;
 
         // Get path
         std::string package_path( ros::package::getPath("srs_ui_but") );
@@ -553,17 +629,47 @@ void srs_ui_but::CButProjection::createMaterials(Ogre::Camera * camera)
         ogre_tools::V_string paths;
         Ogre::String resource_path(package_path + "/src/but_display/materials");
 
-        std::cerr << "Materials path: " << resource_path.c_str() << std::endl;
+ //       std::cerr << "3" << std::endl;
+
+//        std::cerr << "Materials path: " << resource_path.c_str() << std::endl;
+
+//        std::cerr << "Exisist: " << lRgMgr.resourceGroupExists("srs_ui_but") << std::endl;
+
+        if( ! lRgMgr.resourceGroupExists("srs_ui_but"))
+        {
+ //       	std::cerr << "Creating resource group: srs_ui_but" << std::endl;
+            lRgMgr.createResourceGroup("srs_ui_but");
+        }
+
+//        std::cerr << "4" << std::endl;
+
+        if( ! lRgMgr.isResourceGroupInitialised("srs_ui_but") )
+        {
+ //       	std::cerr << "Initializing resource group: srs_ui_but" << std::endl;
+            lRgMgr.addResourceLocation(resource_path, "FileSystem", "srs_ui_but");
+        	lRgMgr.initialiseResourceGroup("srs_ui_but");
+        }
+
+        if( ! lRgMgr.isResourceGroupLoaded("srs_ui_but") )
+        {
+ //       	std::cerr << "Loading resource group: srs_ui_but" << std::endl;
+            lRgMgr.addResourceLocation(resource_path, "FileSystem", "srs_ui_but");
+        	lRgMgr.loadResourceGroup("srs_ui_but");
+        }
+
+
+ //       std::cerr << "5" << std::endl;
+
+//        std::cerr << "Loaded materials: " << std::endl;
+/*
+
+        // Get material manager
+        Ogre::MaterialManager& lMaterialManager = Ogre::MaterialManager::getSingleton();
 
         // List loaded materials
         Ogre::ResourceManager::ResourceMapIterator materialIterator = lMaterialManager.getResourceIterator();
 
-        lRgMgr.createResourceGroup("srs_ui_but");
-        lRgMgr.addResourceLocation(resource_path, "FileSystem", "srs_ui_but");
-        lRgMgr.initialiseResourceGroup("srs_ui_but");
-        lRgMgr.loadResourceGroup("srs_ui_but");
-
-        std::cerr << "Loaded materials: " << std::endl;
+        // Write materials
         int count(0);
         while (materialIterator.hasMoreElements())
             {
@@ -577,28 +683,106 @@ void srs_ui_but::CButProjection::createMaterials(Ogre::Camera * camera)
             }
 
         std::cerr << "Num of materials: " << count << std::endl;
+    //*/
     }
+
 
     // Load compositor
     {
         if( Ogre::CompositorManager::getSingleton().addCompositor(camera->getViewport(), "zTestedProjection") == 0 )
             {
-            std::cout << "COMPOSITOR FAILED TO LOAD." << std::endl;
+            std::cerr << "COMPOSITOR FAILED TO LOAD." << std::endl;
             }
         else
             {
             Ogre::CompositorManager::getSingleton().setCompositorEnabled(camera->getViewport(), "zTestedProjection", true);
 
+//            std::cerr << "Creating Projection data" << std::endl;
+
             //! Create material
             m_projectionData = new CProjectionData( scene_manager_, update_nh_, "tested_projection", "srs_ui_but" );
 
-            // Create material listener
-            CMaterialListener *ml = new CMaterialListener( m_projectionData->getMaterialPtr(), "myscheme" );
-            //CMaterialListener *ml = new CMaterialListener( "depth", "srs_ui_but", "myscheme" );
-            Ogre::MaterialManager::getSingleton().addListener(ml);
+//            std::cerr << "Projection data done. Running CMaterialListener" << std::endl;
 
-            }
+            // Create material listener
+            m_ml = new CMaterialListener( m_projectionData->getMaterialPtr(), "myscheme" );
+
+            connectML( true );
+
+			}
     }
+//*/
+//    std::cerr << "CButProjection::createMaterials E" << std::endl;
+}
+
+//! Remove materials
+void srs_ui_but::CButProjection::removeMaterials()
+{
+	connectML(false);
+
+//	std::cerr << "Removing compositior" << std::endl;
+
+	// Get camera and discard compositor.
+	rviz::RenderPanel * panel = vis_manager_->getRenderPanel();
+	if( panel != 0 )
+	{
+		Ogre::Camera * camera = panel->getCamera();
+
+		Ogre::CompositorManager::getSingleton().setCompositorEnabled(camera->getViewport(), "zTestedProjection", false);
+		Ogre::CompositorManager::getSingleton().removeCompositor( camera->getViewport(), "zTestedProjection" );
+	}
+
+
+//	std::cerr << m_projectionData->getMaterialPtr() << std::endl;
+//	std::cerr << "Removing listener" << std::endl;
+    delete m_ml;
+
+ //   std::cerr << m_projectionData->getMaterialPtr() << std::endl;
+//    std::cerr << "Removing projection data "  << std::endl;
+    if( m_projectionData != 0 )
+    {
+    	delete m_projectionData;
+    }
+
+ //   std::cerr << m_projectionData->getMaterialPtr() << std::endl;
+
+//    std::cerr << "Destroying resource groups." << std::endl;
+
+//	Ogre::String nameOfResourceGroup( "MaterialGroup1" );
+	Ogre::ResourceGroupManager& lRgMgr = Ogre::ResourceGroupManager::getSingleton();
+	//Ogre::MaterialManager &mMgr = Ogre::MaterialManager::getSingleton();
+
+//	std::cerr << "RG: srs_ui_but. Status: " << lRgMgr.isResourceGroupInGlobalPool( "srs_ui_but" ) << ", " << lRgMgr.isResourceGroupInitialised("srs_ui_but") << ", " << lRgMgr.isResourceGroupLoaded("srs_ui_but") << std::endl;
+
+//	lRgMgr.unloadResourceGroup("srs_ui_but");
+	lRgMgr.destroyResourceGroup("srs_ui_but");
+//	lRgMgr.clearResourceGroup(nameOfResourceGroup);
+
+//	std::cerr << "RG: " << nameOfResourceGroup << std::endl;
+
+//	lRgMgr.destroyResourceGroup( nameOfResourceGroup );
+
+
+}
+
+
+void srs_ui_but::CButProjection::connectML( bool bConnect )
+{
+	if( bConnect == m_bMLConnected || m_ml == 0 )
+		return;
+
+	if( bConnect )
+	{
+		Ogre::MaterialManager::getSingleton().addListener( m_ml );
+//		std::cerr << "AAA: Listener added..." << std::endl;
+	}
+	else
+	{
+		Ogre::MaterialManager::getSingleton().removeListener( m_ml );
+//		std::cerr << "AAA: Listener removed..." << std::endl;
+	}
+
+		m_bMLConnected = bConnect;
 }
 
 /*
@@ -606,6 +790,8 @@ void srs_ui_but::CButProjection::createMaterials(Ogre::Camera * camera)
  */
 bool srs_ui_but::CButProjection::createGeometry(const ros::NodeHandle & nh)
 {
+//	std::cerr << "CButProjection::createGeometry S" << std::endl;
+
     // Get camera.
     rviz::RenderPanel * panel = vis_manager_->getRenderPanel();
     if( panel == 0 )
@@ -726,6 +912,8 @@ bool srs_ui_but::CButProjection::createGeometry(const ros::NodeHandle & nh)
     // Create and initialize materials
     createMaterials( camera );
 
+ //   std::cerr << "CButProjection::createGeometry E" << std::endl;
+
     return true;
 }
 
@@ -754,7 +942,10 @@ void srs_ui_but::CButProjection::update (float wall_dt, float ros_dt)
 
     try
     {
-        m_projectionData->update();
+    	if( m_projectionData != 0 )
+    	{
+    		m_projectionData->update();
+    	}
     }
     catch (UnsupportedImageEncoding& e)
     {
@@ -808,6 +999,8 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
 {
 	//   std::cerr << "Camera callback. Frame id: " << cam_info->header.frame_id << std::endl;
 
+	boost::mutex::scoped_lock( m_cameraInfoLock );
+
     // Get camera info
     ROS_DEBUG("OctMapPlugin: Set camera info: %d x %d\n", cam_info->height, cam_info->width);
     if( !m_camera_model.fromCameraInfo(*cam_info) )
@@ -850,16 +1043,18 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
     Ogre::Vector3 right = orientation * Ogre::Vector3::UNIT_X;
     position = position + (right * tx);
 
-    m_projectionData->setProjectorPosition( position );
-    m_projectionData->setProjectorOrientation( orientation );
+    if( m_projectionData != 0 )
+    {
+		m_projectionData->setProjectorPosition( position );
+		m_projectionData->setProjectorOrientation( orientation );
 
-    // f.setFOVy( fovX );
-    m_projectionData->setFOVy( fovy );
-    m_projectionData->setAspectRatio( aspect_ratio );
+		// f.setFOVy( fovX );
+		m_projectionData->setFOVy( fovy );
+		m_projectionData->setAspectRatio( aspect_ratio );
 
-    m_projectionData->setCameraModel( *cam_info );
-    m_projectionData->updateMatrices();
-
+		m_projectionData->setCameraModel( *cam_info );
+		m_projectionData->updateMatrices();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

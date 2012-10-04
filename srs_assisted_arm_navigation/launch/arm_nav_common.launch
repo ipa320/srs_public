@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
   
    
@@ -27,7 +28,7 @@
   <include file="$(find srs_assisted_arm_navigation)/launch/arm_manip_node.launch"/>
   
   <!-- grasping action server -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/grasping_node.launch"/>
+  <!--include file="$(find srs_assisted_arm_navigation)/launch/grasping_node.launch"/-->
   
   <!-- BUT cob teleop marker -->
   <node name="cob_interactive_teleop" pkg="cob_interactive_teleop" type="interactive_teleop">

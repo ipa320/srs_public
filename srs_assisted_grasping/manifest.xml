@@ -1,0 +1,29 @@
+<package>
+  <description brief="srs_assisted_grasping">
+
+     srs_assisted_grasping
+
+  </description>
+  <author>Zdenek Materna</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_assisted_grasping</url>
+  <depend package="srs_assisted_grasping_msgs"/>
+  <depend package="roscpp"/>
+  <depend package="actionlib"/>
+  <depend package="cob_script_server"/>
+  <depend package="srs_interaction_primitives"/>
+  <depend package="cob_srvs"/>
+  <depend package="srs_assisted_grasping_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="pr2_controllers_msgs"/>
+  <depend package="schunk_sdh"/>
+  <depend package="opencv2"/>
+  
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />
+  </export>
+
+</package>
+
+

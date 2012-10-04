@@ -49,13 +49,14 @@ public:
 	//! connection, publisher creation, etc.)
 	virtual void init(ros::NodeHandle & node_handle){}
 
+	//! This method is called when user wants to reset server.
+	virtual void reset() {}
+
+protected:
 	//!	New scan has been inserted in the octomap. After that
 	//! publishing stage starts and if this node has something to
 	//! publish (see last method), this method is called.
-	virtual void onPublish(const ros::Time & timestamp){}
-
-	//! This method is called when user wants to reset server.
-	virtual void reset() {}
+	virtual void publishInternal(const ros::Time & timestamp){}
 
 	//! Return true, if you want to publish something now. Called
 	//! before onPublish method.
@@ -91,59 +92,74 @@ public:
 
 	/// Basic plugin methods are the same
 	virtual void init(ros::NodeHandle & node_handle){}
-	virtual void onPublish(const ros::Time & timestamp){}
+
+	//! Reset plugin
 	virtual void reset() {}
-	virtual bool shouldPublish(){ return false; }
 
-	//! Called before octomap traversing starts.
+protected:
+
 	//! Set used octomap frame id and timestamp.
-	virtual void onFrameStart( const SMapParameters & par )
-	{ m_frame_id = par.frameId; m_time_stamp = par.currentTime; }
-
-	//! Handle free node - set its color to the green.
-	virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapParameters & mp )
+	virtual void newMapDataCB( SMapWithParameters & par )
 	{
-		it->r() = 0;
-		it->g() = 255;
-		it->b() = 0;
+		m_frame_id = par.frameId;
+		m_time_stamp = par.currentTime;
+
+		// Initialize leaf iterators
+		tButServerOcTree & tree( par.map->octree );
+		srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+
+		// Crawl through nodes
+		for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+		{
+			// Node is occupied?
+			if (tree.isNodeOccupied(*it))
+			{
+				handleOccupiedNode(it, par);
+			}// Node is occupied?
+			else
+			{
+				handleFreeNode(it, par);
+			}
+
+		} // Iterate through octree
+
+		invalidate();
 	}
 
-	/// Hook that is called when traversing all nodes of the updated Octree (does nothing here)
-	virtual void handleNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp) {};
+
+	virtual void publishInternal(const ros::Time & timestamp){}
+
+	/**
+	 * We publish no data
+	 */
+	virtual bool shouldPublish(){ return false; }
+
 
 	/// Hook that is called when traversing occupied nodes of the updated Octree.
 	/// We set node color to the stored one.
-	virtual void handleOccupiedNode(srs::tButServerOcTree::iterator& it, const SMapParameters & mp)
+	virtual void handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 	{
 		it->r() = (*m_data)[0];
 		it->g() = (*m_data)[1];
 		it->b() = (*m_data)[2];
 	}
 
+	//! Handle free node - set its color to the green.
+	virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapWithParameters & mp )
+	{
+		it->r() = 0;
+		it->g() = 255;
+		it->b() = 0;
+	}
+
 	/// Called when all nodes was visited.
-	virtual void handlePostNodeTraversal(const SMapParameters & mp){}
+	virtual void handlePostNodeTraversal(const SMapWithParameters & mp){}
 
 
 }; // class CExampleCrawlerPlugin
 
 
-/// Declare holder object - partial specialization of the default holder with predefined connection settings
-template< class tpOctomapPlugin >
-struct SExampleCrawlerPluginHolder : public  srs::CCrawlingPluginHolder< srs::CExampleCrawlerPlugin, tpOctomapPlugin >
-{
-protected:
-	/// Define holder type
-	typedef srs::CCrawlingPluginHolder< srs::CExampleCrawlerPlugin, tpOctomapPlugin > tHolder;
 
-public:
-	/// Create holder
-	SExampleCrawlerPluginHolder( const std::string & name )
-	: tHolder(  name,  tHolder::ON_START | tHolder::ON_OCCUPIED | tHolder::ON_FREE | tHolder::ON_STOP)
-	{
-
-	}
-
-}; // struct SExampleCrawlerPluginHolder
 
 } // namespace srs_env_model
 

@@ -37,6 +37,9 @@
 #include <std_srvs/Empty.h>
 
 #include <srs_env_model/RemoveCube.h>
+#include <srs_env_model/AddCube.h>
+#include <srs_env_model/SetCrawlingDepth.h>
+#include <srs_env_model/GetTreeDepth.h>
 
 
 //========================
@@ -49,22 +52,8 @@ namespace srs_env_model
 class COctoMapPlugin : public CServerPluginBase, public CDataHolderBase< tButServerOcMap >
 {
 public:
-	// Crawling signals
-
-	/// On crawling start
-	typedef boost::signal< void (const SMapParameters &) > tSigOnStart;
-
-	/// On node
-	typedef boost::signal< void (tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnNode;
-
-	/// On free node
-	typedef boost::signal< void (tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnFreeNode;
-
-	/// On occupied node
-	typedef boost::signal< void (tButServerOcTree::iterator &, const SMapParameters & ) > tSigOnOccupiedNode;
-
-	/// Post node traversal
-	typedef boost::signal< void (const SMapParameters &) > tSigOnPost;
+	/// On new octomap data signal
+	typedef boost::signal< void (SMapWithParameters &) > tSigOnNewData;
 
 public:
 	/// Constructor
@@ -97,26 +86,17 @@ public:
 	/// Crawl octomap
 	void crawl( const ros::Time & currentTime );
 
-	tSigOnStart & getSigOnStart() { return m_sigOnStart; }
-
-	tSigOnNode & getSigOnNode() { return m_sigOnNode; }
-
-	tSigOnFreeNode & getSigOnFreeNode() { return m_sigOnFreeNode; }
-
-	tSigOnOccupiedNode & getSigOnOccupiedNode() { return m_sigOnOccupiedNode; }
-
-	tSigOnPost & getSigOnPost(){ return m_sigOnPost; }
-
-	/// Should something be published?
-	virtual bool shouldPublish();
-
-	/// Publishing callback
-	virtual void onPublish(const ros::Time & timestamp);
+	tSigOnNewData & getSigOnNewData() { return m_sigOnNewData; }
 
 	//! Pause/resume plugin. All publishers and subscribers are disconnected on pause
 	virtual void pause( bool bPause, ros::NodeHandle & node_handle );
 
 protected:
+	/// Should something be published?
+	virtual bool shouldPublish();
+
+	/// Publishing callback
+	virtual void publishInternal(const ros::Time & timestamp);
 
 	/// Set octomap default parameters
 	void setDefaults();
@@ -128,21 +108,6 @@ protected:
 
 	/// label the input cloud "pc" into ground and nonground. Should be in the robot's fixed frame (not world!)
 	void filterGroundPlane(const tPointCloud& pc, tPointCloud& ground, tPointCloud& nonground) const;
-
-	/// On octomap crawling start
-	void onCrawlStart(const ros::Time & currentTime);
-
-	/// Handle node
-	void handleNode(tButServerOcTree::iterator & it, const SMapParameters & mp);
-
-	/// Handle free node
-	void handleFreeNode(tButServerOcTree::iterator & it, const SMapParameters & mp);
-
-	/// Handle occupied node
-	void handleOccupiedNode(tButServerOcTree::iterator & it, const SMapParameters & mp);
-
-	/// Called when all nodes was visited.
-	virtual void handlePostNodeTraversal(const SMapParameters & mp);
 
 	/// Fill map parameters
 	void fillMapParameters(const ros::Time & time);
@@ -180,9 +145,17 @@ protected:
 	/// Remove cube as a service - callback
 	bool removeCubeCB( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res );
 
+	/// Remove cube as a service - callback
+	bool addCubeCB( srs_env_model::AddCube::Request & req, srs_env_model::AddCube::Response & res );
+
 	/// For debugging purpouses - add cubical interactive marker to the scene
 	void addCubeGizmo( const geometry_msgs::Pose & pose, const geometry_msgs::Point & size );
 
+	/// Set crawling depth - service callback
+	bool setCrawlingDepthCB( srs_env_model::SetCrawlingDepth::Request & req, srs_env_model::SetCrawlingDepth::Response & res );
+
+	/// Get octomap tree depth - service callback
+	bool getTreeDepthCB( srs_env_model::GetTreeDepth::Request & req, srs_env_model::GetTreeDepth::Response & res );
 
 protected:
 
@@ -196,22 +169,10 @@ protected:
     octomap::KeyRay m_keyRay;
 
     /// On traversal start
-    tSigOnStart m_sigOnStart;
+    tSigOnNewData m_sigOnNewData;
 
-    /// On node signal
-    tSigOnNode m_sigOnNode;
-
-    /// On free node signal
-    tSigOnFreeNode m_sigOnFreeNode;
-
-    /// On occupied node signal
-    tSigOnOccupiedNode m_sigOnOccupiedNode;
-
-    /// On traversal end signal
-    tSigOnPost m_sigOnPost;
-
-    /// Octomap parameters
-    SMapParameters m_mapParameters;
+     /// Octomap parameters
+    SMapWithParameters m_mapParameters;
 
     //! Transform listener
     tf::TransformListener m_tfListener;
@@ -221,6 +182,15 @@ protected:
 
     /// Remove oriented box from octomap service
     ros::ServiceServer m_serviceRemoveCube;
+
+    /// Add oriented box to the octomap service
+    ros::ServiceServer m_serviceAddCube;
+
+    /// Set crawling depth
+    ros::ServiceServer m_serviceSetCrawlDepth;
+
+    /// Get octtree depth service
+    ros::ServiceServer m_serviceGetTreeDepth;
 
     /// Should octomap be published
     bool m_bPublishOctomap;
@@ -279,6 +249,12 @@ protected:
 
     /// Tester life counter
     unsigned int m_testerLifeCounter;
+
+    /// Camera info locking
+    boost::mutex m_lockCamera;
+
+    /// Maximal depth of tree used when crawling
+    unsigned char m_crawlDepth;
 
 }; // class COctoMapPlugin;
 

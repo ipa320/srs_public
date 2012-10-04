@@ -28,12 +28,13 @@
 #include <srs_assisted_arm_navigation/assisted_arm_navigation/arm_manip_node.h>
 
 using namespace srs_assisted_arm_navigation;
+using namespace srs_assisted_arm_navigation_msgs;
 
-void ManualArmManipActionServer::executeCB(const srs_assisted_arm_navigation::ManualArmManipGoalConstPtr &goal) {
+void ManualArmManipActionServer::executeCB(const ManualArmManipGoalConstPtr &goal) {
 
   ros::Rate r(1);
   ros::Rate r5(5);
-  srs_assisted_arm_navigation::ArmNavStart srv_start;
+  ArmNavStart srv_start;
 
   result_.result.collision = false;
   result_.result.success = false;

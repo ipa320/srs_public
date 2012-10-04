@@ -31,38 +31,24 @@ import rospy
 import smach
 import smach_ros
 import actionlib
-from srs_assisted_arm_navigation.msg import *
-from srs_interaction_primitives.srv import AddObject
-from srs_interaction_primitives.srv import RemovePrimitive
-from srs_interaction_primitives.srv import SetPreGraspPosition
-from srs_interaction_primitives.srv import RemovePreGraspPosition
-from srs_interaction_primitives.srv import GetUnknownObject
-from srs_interaction_primitives.msg import MoveArmToPreGrasp
-from srs_interaction_primitives.srv import SetAllowObjectInteraction
-from srs_interaction_primitives.srv import AddUnknownObject
-from srs_interaction_primitives.msg import PoseType
-from srs_env_model_percp.srv import EstimateBBAlt
-from math import fabs
-from math import sqrt
-from geometry_msgs.msg import Vector3
-from geometry_msgs.msg import PoseStamped
-from std_msgs.msg import ColorRGBA
-from srs_object_database_msgs.srv import GetMesh
-from srs_object_database_msgs.srv import GetObjectId
-#from srs_object_database_msgs.srv import GetMesh
-#from srs_object_database_msgs.srv import GetObjectId
-from arm_navigation_msgs.msg import CollisionObject
-from arm_navigation_msgs.msg import CollisionObjectOperation
-from arm_navigation_msgs.msg import Shape
-from geometry_msgs.msg import Pose
-#from tf import TransformListener
-#import threading
-from srs_assisted_arm_navigation.srv import ArmNavCollObj
-from srs_assisted_arm_navigation.srv import ArmNavMovePalmLink
-from srs_assisted_arm_navigation.srv import GraspingAllow
+
+from math import fabs, sqrt
 import copy
-from shared_state_information import *
 from numpy import power
+
+from geometry_msgs.msg import Vector3, PoseStamped, Pose
+from std_msgs.msg import ColorRGBA
+
+from srs_assisted_arm_navigation_msgs.msg import *
+from srs_assisted_arm_navigation_msgs.srv import ArmNavCollObj, ArmNavMovePalmLink
+from srs_assisted_grasping_msgs.srv import GraspingAllow
+
+from srs_interaction_primitives.srv import AddObject, RemovePrimitive, SetPreGraspPosition, RemovePreGraspPosition, GetUnknownObject, SetAllowObjectInteraction, AddUnknownObject
+from srs_interaction_primitives.msg import MoveArmToPreGrasp, PoseType 
+from srs_env_model_percp.srv import EstimateBBAlt
+from srs_object_database_msgs.srv import GetMesh, GetObjectId
+
+from shared_state_information import *
 
 
 class common_helper_methods():
@@ -338,7 +324,7 @@ class grasp_unknown_object_assisted(smach.State):
       
   def change_bb_to_attached(self):
       
-      rospy.loginfo('Setting object bb to be attached')
+      rospy.loginfo('Setting object bb to be attached (not implemented)')
       
     
   def execute(self,userdata):

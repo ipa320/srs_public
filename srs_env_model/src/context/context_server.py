@@ -78,6 +78,7 @@ class ContextServer(object):
         self._context.status_tag = Context.OK
         self._context.action_tag = Context.DEFAULT
         self._context.connection_tag = Context.UNKNOWN
+        self._context.collision_hazard_tag = Context.NONE
         
     def set_context(self, req):
         """
@@ -114,6 +115,8 @@ class ContextServer(object):
             self._action_tag_changed(context.action_tag)
         if self._context.connection_tag != context.connection_tag:
             self._connection_tag_changed(context.connection_tag)
+        if self._context.collision_hazard_tag != context.collision_hazard_tag:
+            self._collision_hazard_tag_changed(context.collision_hazard_tag)
             
     def _status_tag_changed(self, tag):
         """
@@ -144,6 +147,14 @@ class ContextServer(object):
         @type tag: int  
         """
         rospy.loginfo("Connection tag changed")
+    
+    def _collision_hazard_tag_changed(self, tag):
+        """
+        Collision hazard tag has changed.
+        @param tag: new tage value
+        @type tag: int  
+        """
+        rospy.loginfo("Collision hazard tag changed")
         
     def _set_emergency_status(self):
         """

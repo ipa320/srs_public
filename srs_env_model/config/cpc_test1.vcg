@@ -4,7 +4,7 @@ Background\ ColorB=0
 Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
 CButDisplay.Enabled=1
-CButDisplay.Position\:\ =0.886841, 6.54855, -10.7539
+CButDisplay.Position\:\ =-6.86089, 5.12867, -9.7779
 CButPointCloud.Alpha=1
 CButPointCloud.Billboard\ Size=0,01
 CButPointCloud.Color\ Transformer=Intensity
@@ -13,7 +13,7 @@ CButPointCloud.Enabled=1
 CButPointCloud.Position\ Transformer=XYZ
 CButPointCloud.Selectable=0
 CButPointCloud.Style=1
-CButPointCloud.Topic=/but_env_model/compressed_pointcloud_centers
+CButPointCloud.Topic=/but_env_model/cpc_pointcloud_centers
 CButPointCloud..AxisAutocompute\ Value\ Bounds=1
 CButPointCloud..AxisAxis=2
 CButPointCloud..AxisMax\ Value=10
@@ -27,11 +27,11 @@ CButPointCloud..IntensityChannel\ Name=z
 CButPointCloud..IntensityMax\ ColorR=1
 CButPointCloud..IntensityMax\ ColorG=1
 CButPointCloud..IntensityMax\ ColorB=1
-CButPointCloud..IntensityMax\ Intensity=3,83709
+CButPointCloud..IntensityMax\ Intensity=2,42535
 CButPointCloud..IntensityMin\ ColorR=0
 CButPointCloud..IntensityMin\ ColorG=0
 CButPointCloud..IntensityMin\ ColorB=0
-CButPointCloud..IntensityMin\ Intensity=2,89572
+CButPointCloud..IntensityMin\ Intensity=0,0247668
 CButPointCloud..IntensityUse\ full\ RGB\ spectrum=1
 Interactive\ Markers.Enabled=1
 Interactive\ Markers.Show\ Axes=0
@@ -42,17 +42,6 @@ Map.Alpha=0,7
 Map.Draw\ Behind=0
 Map.Enabled=1
 Map.Topic=/map
-Pose.Alpha=1
-Pose.ColorR=1
-Pose.ColorG=0,1
-Pose.ColorB=0
-Pose.Enabled=1
-Pose.Head\ Length=0,3
-Pose.Head\ Radius=0,2
-Pose.Shaft\ Length=1
-Pose.Shaft\ Radius=0,1
-Pose.Shape=0
-Pose.Topic=/move_base/current_goal
 Robot\ Model.Alpha=1
 Robot\ Model.Collision\ Enabled=0
 Robot\ Model.Enabled=1
@@ -163,29 +152,25 @@ Robot\:\ Robot\ Model\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.041 4.86579 12.7315 -0.628793 0.114604 0.127212
-Property\ Grid\ State=selection=CButPointCloud.Enabled.CButPointCloud.Topic;expanded=CButDisplay.Enabled.CButDisplay.StatusTopStatus,CButDisplay.Enabled.CButDisplay.Camera position,CButPointCloud.Enabled;scrollpos=0,8;splitterpos=247,496;ispageselected=1
+Camera\ Config=1.111 4.11579 12.7315 -0.628793 0.114604 0.127212
+Property\ Grid\ State=selection=;expanded=CButDisplay.Enabled.CButDisplay.StatusTopStatus,CButDisplay.Enabled.CButDisplay.Camera position;scrollpos=0,0;splitterpos=133,266;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz
 ClassName=rviz::RobotModelDisplay
 [Display1]
-Name=Pose
-Package=rviz
-ClassName=rviz::PoseDisplay
-[Display2]
 Name=Map
 Package=rviz
 ClassName=rviz::MapDisplay
-[Display3]
+[Display2]
 Name=CButDisplay
 Package=srs_ui_but
 ClassName=CButDisplay
-[Display4]
+[Display3]
 Name=CButPointCloud
 Package=srs_ui_but
 ClassName=CButPointCloud
-[Display5]
+[Display4]
 Name=Interactive Markers
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay

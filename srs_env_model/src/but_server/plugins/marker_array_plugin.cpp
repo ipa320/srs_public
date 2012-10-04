@@ -84,15 +84,15 @@ void srs_env_model::CMarkerArrayPlugin::init(ros::NodeHandle & node_handle)
 
 
 
-void srs_env_model::CMarkerArrayPlugin::onPublish(const ros::Time & timestamp)
+void srs_env_model::CMarkerArrayPlugin::publishInternal(const ros::Time & timestamp)
 {
-	if( m_markerArrayPublisher.getNumSubscribers() > 0 )
+	if( shouldPublish() )
 		m_markerArrayPublisher.publish(*m_data);
 }
 
 
 
-void srs_env_model::CMarkerArrayPlugin::onFrameStart(const SMapParameters & par)
+void srs_env_model::CMarkerArrayPlugin::newMapDataCB(SMapWithParameters & par)
 {
     // each array stores all cubes of a different size, one for each depth level:
     m_data->markers.resize(par.treeDepth + 1);
@@ -139,12 +139,20 @@ void srs_env_model::CMarkerArrayPlugin::onFrameStart(const SMapParameters & par)
     m_ocToMarkerArrayTrans = ocToMarkerArrayTM.block<3, 1> (0, 3);
 
 
+    tButServerOcTree & tree( par.map->octree );
+	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+
+	// Crawl through nodes
+	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+	{
+		handleNode(it, par);
+	} // Iterate through octree
+
+	handlePostNodeTraversal( par );
 
 }
 
-
-
-void srs_env_model::CMarkerArrayPlugin::handleNode(const srs_env_model::tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs_env_model::CMarkerArrayPlugin::handleNode(const srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
     unsigned idx = it.getDepth();
     assert(idx < m_data->markers.size());
@@ -178,7 +186,7 @@ void srs_env_model::CMarkerArrayPlugin::handleNode(const srs_env_model::tButServ
 
 
 
-void srs_env_model::CMarkerArrayPlugin::handlePostNodeTraversal(const SMapParameters & mp)
+void srs_env_model::CMarkerArrayPlugin::handlePostNodeTraversal(const SMapWithParameters & mp)
 {
     for (unsigned i= 0; i < m_data->markers.size(); ++i){
         double size = mp.map->octree.getNodeSize(i);

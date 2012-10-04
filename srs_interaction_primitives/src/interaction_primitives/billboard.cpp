@@ -120,6 +120,68 @@ int Billboard::getType()
   return billboard_type_;
 }
 
+void Billboard::updateControls()
+{
+  if (show_trajectory_control_)
+  {
+    removeTrajectoryControls();
+    addTrajectoryControls();
+  }
+  Primitive::updateControls();
+}
+
+void Billboard::removeTrajectoryControls()
+{
+  show_trajectory_control_ = false;
+  removeControl("trajectory_control");
+}
+
+void Billboard::addTrajectoryControls()
+{
+  show_trajectory_control_ = true;
+
+  trajectoryControl_.markers.clear();
+
+  trajectoryControl_.name = "trajectory_control";
+  trajectoryControl_.always_visible = true;
+  trajectoryControl_.orientation_mode = InteractiveMarkerControl::FIXED;
+
+  if (velocity_ != 0.0)
+  {
+    Marker trajectoryArrow;
+    trajectoryArrow.type = Marker::ARROW;
+    trajectoryArrow.pose.position.x = 0;
+    trajectoryArrow.pose.position.y = 0;
+    trajectoryArrow.pose.position.z = 0;
+    trajectoryArrow.pose.orientation = direction_;
+    trajectoryArrow.scale.x = 0.25;
+    trajectoryArrow.scale.y = 0.25;
+    trajectoryArrow.scale.z = velocity_;
+    trajectoryArrow.color.r = 1.0;
+    trajectoryArrow.color.g = 0.0;
+    trajectoryArrow.color.b = 0.0;
+    trajectoryArrow.color.a = 1.0;
+    trajectoryControl_.markers.push_back(trajectoryArrow);
+  }
+
+  ostringstream velocityText;
+  velocityText << velocity_ << "m/s";
+  Marker trajectoryText;
+  trajectoryText.type = Marker::TEXT_VIEW_FACING;
+  trajectoryText.text = velocityText.str();
+  trajectoryText.scale.z = 0.2;
+  trajectoryText.color.r = 1.0;
+  trajectoryText.color.g = 0.0;
+  trajectoryText.color.b = 0.0;
+  trajectoryText.color.a = 1.0;
+  trajectoryText.pose.position.x = 0.0;
+  trajectoryText.pose.position.y = 0.0;
+  trajectoryText.pose.position.z = 0.0;
+  trajectoryControl_.markers.push_back(trajectoryText);
+
+  object_.controls.push_back(trajectoryControl_);
+}
+
 void Billboard::createMenu()
 {
   if (!menu_created_)
@@ -206,7 +268,16 @@ void Billboard::addTrajectoryPredictionMarkers()
     predictionControl.markers.clear();
     predictionMarker.controls.clear();
 
-    predictionControl.markers.push_back(mesh_);
+    visualization_msgs::Marker sphere;
+    sphere.type = visualization_msgs::Marker::SPHERE;
+    sphere.color.g = 1;
+    sphere.color.b = 1;
+    sphere.color.a = 1;
+    sphere.scale.x = PREDICTION_SPHERE_SIZE;
+    sphere.scale.y = PREDICTION_SPHERE_SIZE;
+    sphere.scale.z = PREDICTION_SPHERE_SIZE;
+
+    predictionControl.markers.push_back(sphere);
     predictionMarker.controls.push_back(predictionControl);
 
     server_->insert(predictionMarker);

@@ -72,15 +72,15 @@ void srs_env_model::CMap2DPlugin::init(ros::NodeHandle & node_handle)
 
 
 
-void srs_env_model::CMap2DPlugin::onPublish(const ros::Time & timestamp)
+void srs_env_model::CMap2DPlugin::publishInternal(const ros::Time & timestamp)
 {
-	if( m_map2DPublisher.getNumSubscribers() > 0 )
+	if( shouldPublish() )
 		m_map2DPublisher.publish(*m_data);
 }
 
 
 
-void srs_env_model::CMap2DPlugin::onFrameStart(const SMapParameters & par)
+void srs_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
 {
 	m_data->header.frame_id = m_map2DFrameId;
 	m_data->header.stamp = par.currentTime;
@@ -189,11 +189,32 @@ void srs_env_model::CMap2DPlugin::onFrameStart(const SMapParameters & par)
 
 	// Allocate space to hold the data (init to unknown)
 	m_data->data.resize(m_data->info.width * m_data->info.height, -1);
+
+	tButServerOcTree & tree( par.map->octree );
+	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+
+	// Crawl through nodes
+	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+	{
+		// Node is occupied?
+		if (tree.isNodeOccupied(*it))
+		{
+			handleOccupiedNode(it, par);
+		}// Node is occupied?
+		else
+		{
+			handleFreeNode( it, par );
+		}
+
+	} // Iterate through octree
+
+	invalidate();
 }
 
-
-
-void srs_env_model::CMap2DPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator & it, const SMapParameters & mp)
+/**
+ * Occupied node handler
+ */
+void srs_env_model::CMap2DPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
 	if (it.getDepth() == mp.treeDepth)
 	{
@@ -217,8 +238,10 @@ void srs_env_model::CMap2DPlugin::handleOccupiedNode(srs_env_model::tButServerOc
 	}
 }
 
-
-void srs_env_model::CMap2DPlugin::handleFreeNode(srs_env_model::tButServerOcTree::iterator & it, const SMapParameters & mp )
+/**
+ * Free node handler
+ */
+void srs_env_model::CMap2DPlugin::handleFreeNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp )
 {
 	if (it.getDepth() == mp.treeDepth) {
 		octomap::OcTreeKey nKey = it.getKey(); //TODO: remove intermedate obj (1.4)
@@ -240,12 +263,6 @@ void srs_env_model::CMap2DPlugin::handleFreeNode(srs_env_model::tButServerOcTree
 			}
 		}
 	}
-}
-
-
-void srs_env_model::CMap2DPlugin::handlePostNodeTraversal(const SMapParameters & mp)
-{
-	invalidate();
 }
 
 /**

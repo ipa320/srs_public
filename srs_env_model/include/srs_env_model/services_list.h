@@ -70,18 +70,28 @@ namespace srs_env_model
     static const std::string GetCollisionMap_SRV = PACKAGE_NAME_PREFIX + std::string("/get_collision_map");
     static const std::string IsNewCMap_SRV = PACKAGE_NAME_PREFIX + std::string("/is_new_collision_map");
     static const std::string LockCMap_SRV = PACKAGE_NAME_PREFIX + std::string("/lock_collision_map");
+    static const std::string RemoveCubeCMP_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_cube_from_collision_map");
+    static const std::string AddCubeCMP_SRV = PACKAGE_NAME_PREFIX + std::string("/add_cube_to_collision_map");
 
     /**
      * octomap_plugin - services
      */
-    static const std::string RemoveCube_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_cube");
+    static const std::string RemoveCubeOctomap_SRV = PACKAGE_NAME_PREFIX + std::string("/remove_cube_from_octomap");
+    static const std::string AddCubeOctomap_SRV = PACKAGE_NAME_PREFIX + std::string("/add_cube_to_octomap");
     static const std::string ResetOctomap_SRV = PACKAGE_NAME_PREFIX + std::string("/reset_octomap");
+    static const std::string GetTreeDepth_SRV = PACKAGE_NAME_PREFIX + std::string("/get_tree_depth");
+    static const std::string SetCrawlDepth_SRV = PACKAGE_NAME_PREFIX + std::string("/set_crawl_depth");
 
     /**
      * Context server - services
      */
     static const std::string GetContext_SRV = PACKAGE_NAME_PREFIX + std::string("/context/get");
     static const std::string SetContext_SRV = PACKAGE_NAME_PREFIX + std::string("/context/set");
+
+    /**
+     * Compressed pointcloud plugin
+     */
+    static const std::string SetNumIncompleteFrames_SRV = PACKAGE_NAME_PREFIX + std::string("/set_num_incomplete_frames");
 }
 
 #endif //SRS_ENV_MODEL_SERVICES_LIST_H

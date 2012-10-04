@@ -63,7 +63,7 @@ namespace srs_env_model
 	typedef pcl::PointCloud<tPclPoint> tPointCloud;
 
 	/// All needed octo map parameters and something more...
-	struct SMapParameters
+	struct SMapWithParameters
 	{
 	public:
 		/// Frame skipping
@@ -74,6 +74,9 @@ namespace srs_env_model
 
 		/// Octomap tree depth
 		unsigned treeDepth;
+
+		/// Maximal tree depth used for crawling
+		unsigned char crawlDepth;
 
 		/// Hit probability
 		double probHit;
@@ -103,7 +106,7 @@ namespace srs_env_model
 		std::string frameId;
 
 		/// Map pointer
-		const tButServerOcMap * map;
+		tButServerOcMap * map;
 
 	}; // struct SMapParameters.
 
@@ -126,13 +129,10 @@ namespace srs_env_model
 		virtual void init(ros::NodeHandle & node_handle){}
 
 		//! Called when new scan was inserted and now all can be published
-		virtual void onPublish(const ros::Time & timestamp){}
+		void publish(const ros::Time & timestamp){ if( shouldPublish() ) publishInternal( timestamp ); }
 
 		//! Reset plugin content when reseting whole server
 		virtual void reset() {}
-
-		/// Should something be published?
-		virtual bool shouldPublish(){ return false; }
 
 		/// Set frame skip
 		void setFrameSkip(unsigned long skip){ m_use_every_nth = skip; }
@@ -144,6 +144,12 @@ namespace srs_env_model
 		std::string getName( ) { return m_name; }
 
 	protected:
+		//! Should data be published
+		virtual bool shouldPublish() = 0;
+
+		//! Publish data - virtual function
+		virtual void publishInternal( const ros::Time & timestamp ) = 0;
+
 		//! Counts frames and checks if node should publish in this frame
 		virtual bool useFrame() { return ++m_frame_number % m_use_every_nth == 0; }
 
@@ -167,24 +173,21 @@ namespace srs_env_model
 	class COctomapCrawlerBase
 	{
 	public:
+		//! Constructor
+		COctomapCrawlerBase() : m_crawlDepth(0) {}
+
 		//! Virtual destructor
 		virtual ~COctomapCrawlerBase() {}
 
-		//! Set used octomap frame id and timestamp
-		virtual void onFrameStart( const SMapParameters & par )
-			{ m_frame_id = par.frameId; m_time_stamp = par.currentTime; }
+		//! Handle new octomap data
+		void handleNewMapData( SMapWithParameters & par ){ if( wantsMap() ) newMapDataCB( par ); }
 
-		//! Handle free node (does nothing here)
-		virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapParameters & mp ){}
+		//! Wants plugin new map data?
+		virtual bool wantsMap() { return true; }
 
-		/// hook that is called when traversing all nodes of the updated Octree (does nothing here)
-		virtual void handleNode(tButServerOcTree::iterator& it, const SMapParameters & mp) {};
-
-		/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-		virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapParameters & mp){}
-
-		/// Called when all nodes was visited.
-		virtual void handlePostNodeTraversal(const SMapParameters & mp){}
+	protected:
+		//! New octomap data callback
+		virtual void newMapDataCB( SMapWithParameters & par ) = 0;
 
 	protected:
 		//! Octomap frame_id
@@ -193,134 +196,9 @@ namespace srs_env_model
 		//! Current timestamp
 		ros::Time m_time_stamp;
 
-	};
+		/// Maximal depth of tree used when crawling
+		unsigned char m_crawlDepth;
 
-	/// To the octomap attachable plugins envelope
-	template< class tpPlugin, class tpOctomapPlugin >
-	class CCrawlingPluginHolder
-	{
-	public:
-		/// Connection flags - set them to enable connection of according signal
-		enum EConnectionFlags
-		{
-			ON_START = 1,
-			ON_NODE  = 2,
-			ON_FREE  = 4,
-			ON_OCCUPIED = 8,
-			ON_STOP = 16,
-			ALL	= ON_START | ON_NODE | ON_FREE | ON_OCCUPIED | ON_STOP
-		};
-	public:
-
-		/// Creating constructor
-		CCrawlingPluginHolder( const std::string & name, int flags )
-		: m_plugin( new tpPlugin( name ) )
-		, m_source( 0 )
-		, m_connected( false )
-		, m_flags( flags )
-		{
-		    assert( m_plugin != 0 );
-		    m_bDeletePlugin = true;
-		}
-		/// Constructor
-		CCrawlingPluginHolder( tpPlugin * plugin, int flags, bool deletePlugin = false )
-		: m_plugin( plugin )
-		, m_source(0)
-		, m_connected( false )
-		, m_flags(flags)
-		{
-		    assert( plugin != 0 );
-		    m_bDeletePlugin = deletePlugin;
-		}
-
-		/// Connecting constructor
-		CCrawlingPluginHolder( tpPlugin * plugin, tpOctomapPlugin * source, EConnectionFlags flags, bool deletePlugin = false )
-		: m_plugin( plugin )
-		, m_source(0)
-		, m_connected( false )
-		, m_flags(flags)
-		{
-		    assert( plugin != 0 );
-		    connect(source);
-		    m_bDeletePlugin = deletePlugin;
-		}
-
-		/// Destructor
-		virtual ~CCrawlingPluginHolder()
-		{
-		    disconnect();
-		    if( m_bDeletePlugin && m_plugin != 0 )
-		        delete m_plugin;
-		}
-
-		/// Connect plugin to the data
-		int connect( tpOctomapPlugin * source )
-		{
-			if( m_connected )
-				disconnect();
-
-			if( !m_plugin->shouldPublish() )
-			    return 0;
-
-			if( source != 0 )
-			{
-				m_source = source;
-
-				if( m_flags & ON_START)	m_conStart = m_source->getSigOnStart().connect( boost::bind(&tpPlugin::onFrameStart, m_plugin, _1 ) );
-				if( m_flags & ON_NODE)	m_conNode = source->getSigOnNode().connect( boost::bind(&tpPlugin::handleNode, m_plugin, _1, _2 ) );
-				if( m_flags & ON_FREE)	m_conFreeNode = source->getSigOnFreeNode().connect( boost::bind(&tpPlugin::handleFreeNode, m_plugin, _1, _2 ) );
-				if( m_flags & ON_OCCUPIED)	m_conOccupiedNode = source->getSigOnOccupiedNode().connect( boost::bind(&tpPlugin::handleOccupiedNode, m_plugin, _1, _2 ) );
-				if( m_flags & ON_STOP)	m_conStop = m_source->getSigOnPost().connect( boost::bind(&tpPlugin::handlePostNodeTraversal, m_plugin, _1 ) );
-				m_connected = true;
-			}
-
-			return 1;
-		}
-
-		/// Disconnect plugin
-		void disconnect()
-		{
-			if( m_connected && m_source != 0 )
-			{
-				m_conStart.disconnect();
-				m_conNode.disconnect();
-				m_conFreeNode.disconnect();
-				m_conOccupiedNode.disconnect();
-				m_conStop.disconnect();
-
-				m_source = 0;
-				m_connected = false;
-			}
-		}
-
-		/// Publish data if exists
-		void publish(const ros::Time & timestamp)
-		{
-		    if( m_plugin->shouldPublish() )
-		        m_plugin->onPublish( timestamp );
-		}
-
-		/// Get plugin pointer
-		tpPlugin * getPlugin( ) { return m_plugin; }
-
-	protected:
-		/// Plugin pointer
-		tpPlugin * m_plugin;
-
-		/// Input source pointer
-		tpOctomapPlugin * m_source;
-
-		/// Connections
-		boost::signals::connection m_conStart, m_conNode, m_conFreeNode, m_conOccupiedNode, m_conStop;
-
-		/// Is plugin connected now?
-		bool m_connected;
-
-		/// Used flags
-		int m_flags;
-
-		/// Delete plugin data on exit?
-		bool m_bDeletePlugin;
 	};
 
 	/**

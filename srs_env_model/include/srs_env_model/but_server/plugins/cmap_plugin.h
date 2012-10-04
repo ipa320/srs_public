@@ -36,6 +36,7 @@
 #include <arm_navigation_msgs/CollisionMap.h>
 #include <tf/transform_listener.h>
 #include <tf/message_filter.h>
+#include <srs_env_model/RemoveCube.h>
 
 namespace srs_env_model
 {
@@ -43,7 +44,17 @@ namespace srs_env_model
     class CCMapPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< arm_navigation_msgs::CollisionMap >
     {
     protected:
+    	//! Crawler type
         typedef COctomapCrawlerBase<tButServerOcTree::NodeType> tOctomapCrawler;
+
+        //! Boxes vector type
+        typedef arm_navigation_msgs::CollisionMap::_boxes_type tBoxVec;
+
+        //! Box type
+        typedef arm_navigation_msgs::OrientedBoundingBox tBox;
+
+        //! Point type
+        typedef geometry_msgs::Point32 tBoxPoint;
 
     public:
         //! Constructor
@@ -55,18 +66,6 @@ namespace srs_env_model
         //! Initialize plugin - called in server constructor
         virtual void init(ros::NodeHandle & node_handle);
 
-        //! Called when new scan was inserted and now all can be published
-        virtual void onPublish(const ros::Time & timestamp);
-
-        //! Set used octomap frame id and timestamp
-        virtual void onFrameStart( const SMapParameters & par );
-
-        /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-        virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapParameters & mp);
-
-        /// Is something to publish and some subscriber to publish to?
-        virtual bool shouldPublish(  );
-
         //! Enable/disable collision map changes
         bool lockChanges( bool bLock );
 
@@ -75,6 +74,18 @@ namespace srs_env_model
 
 
     protected:
+		//! Set used octomap frame id and timestamp
+		virtual void newMapDataCB( SMapWithParameters & par );
+
+		/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+		void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+
+        //! Called when new scan was inserted and now all can be published
+        virtual void publishInternal(const ros::Time & timestamp);
+
+        /// Is something to publish and some subscriber to publish to?
+        virtual bool shouldPublish(  );
+
         //! Compare two collision maps and test if they are the same
         bool sameCMaps( arm_navigation_msgs::CollisionMap * map1, arm_navigation_msgs::CollisionMap * map2 );
 
@@ -102,6 +113,35 @@ namespace srs_env_model
          * @param res response -
          */
         bool lockCmapSrvCallback( srs_env_model::LockCollisionMap::Request & req, srs_env_model::LockCollisionMap::Response & res );
+
+        /**
+         * @brief Remove all collision boxes within given box. Box is aligned with axes and uses the same frame id.
+         * @param center Clearing box center
+         * @param size Clearing box sizes
+         * @return Number of removed boxes.
+         */
+        long removeInsideBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes );
+
+        /**
+		 * @brief Remove all boxes from cubical volume - service callback function
+		 * @param req Request
+		 * @param res Response
+		 */
+		bool removeBoxCallback( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res );
+
+        /**
+         * @brief Adds box to the collision map
+         * @param center Box center
+         * @param size Box size
+         */
+        void addBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes );
+
+        /**
+         * @brief Remove all boxes from cubical volume - service callback function
+         * @param req Request
+         * @param res Response
+         */
+        bool addBoxCallback( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res );
 
     protected:
         //! Collision map publisher name
@@ -140,6 +180,12 @@ namespace srs_env_model
         //! Lock collision map service
         ros::ServiceServer m_serviceLockCMap;
 
+        //! Remove cube from map service
+        ros::ServiceServer m_serviceRemoveCube;
+
+        //! Add cube to cmap service
+        ros::ServiceServer m_serviceAddCube;
+
         //! Transform listener
         tf::TransformListener m_tfListener;
 
@@ -167,23 +213,7 @@ namespace srs_env_model
 
     }; // class CCollisionMapPublisher
 
-    /// Declare holder object - partial specialization of the default holder with predefined connection settings
-    template< class tpOctomapPlugin >
-    struct SCMapPluginHolder : public  CCrawlingPluginHolder< CCMapPlugin, tpOctomapPlugin >
-    {
-    protected:
-        /// Define holder type
-        typedef CCrawlingPluginHolder< CCMapPlugin, tpOctomapPlugin > tCMPHolder;
 
-    public:
-        /// Create holder
-        SCMapPluginHolder( const std::string & name )
-        : tCMPHolder(  name,  tCMPHolder::ON_START | tCMPHolder::ON_OCCUPIED )
-        {
-
-        }
-
-    }; // struct SMarkerArrayHolder
 
 }
 

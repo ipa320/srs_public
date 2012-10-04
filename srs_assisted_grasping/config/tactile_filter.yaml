@@ -1,0 +1,15 @@
+# pre-filter data with median filter first
+median_prefilter: true
+
+# this could be 3 or 5
+median_width: 3
+
+# gaussian filter kernel width (must be positive and odd)
+gaussian_width: 3
+
+# gaussian filter kernel width (must be positive and odd)
+gaussian_height: 6
+
+gaussian_sigma_x: 0.0
+
+gaussian_sigma_y: 0.0

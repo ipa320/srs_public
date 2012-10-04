@@ -8,4 +8,5 @@ std_msgs/ColorRGBA color            # color of the object and bounding box
 arm_navigation_msgs/Shape shape     # shape of the model
 string resource                     # resource file with model
 bool use_material                   # usage of material (or color)
+bool allow_pregrasp                 # allows or disables pre-grasp menu entries
 --- 

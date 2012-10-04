@@ -37,10 +37,10 @@ namespace srs_interaction_primitives
 {
 
 Object::Object(InteractiveMarkerServerPtr server, string frame_id, string name) :
-    BoundingBox(server, frame_id, name)
+    BoundingBox(server, frame_id, name), show_pregrasp_control_(false), use_material_(false), translated_(false), allow_object_interaction_(
+        true)
 {
   setPrimitiveType(srs_interaction_primitives::PrimitiveType::OBJECT);
-  use_material_ = translated_ = false;
 
   if (ros::param::has(MoveArmToPregraspOnClick_PARAM))
     ros::param::get(MoveArmToPregraspOnClick_PARAM, move_arm_to_pregrasp_onclick_);
@@ -53,8 +53,6 @@ Object::Object(InteractiveMarkerServerPtr server, string frame_id, string name) 
   pregrasp4_.name = "control_grasp_ym";
   pregrasp5_.name = "control_grasp_zp";
   pregrasp6_.name = "control_grasp_zm";
-
-  allow_object_interaction_ = true;
 
   if (pose_type_ == PoseType::POSE_BASE)
   {
@@ -229,24 +227,22 @@ void Object::createMenu()
     bool show_pregrasp = false;
     if (ros::param::has(ShowPregrasp_PARAM))
       ros::param::get(ShowPregrasp_PARAM, show_pregrasp);
-    int handle_pregrasp = menu_handler_.insert("Show pre-grasp positions",
-                                               boost::bind(&Object::menuCallback, this, _1));
+    menu_handler_show_pregrasp_ = menu_handler_.insert("Show pre-grasp positions",
+                                                       boost::bind(&Object::menuCallback, this, _1));
     if (show_pregrasp)
     {
-      menu_handler_.setCheckState(handle_pregrasp, MenuHandler::CHECKED);
+      menu_handler_.setCheckState(menu_handler_show_pregrasp_, MenuHandler::CHECKED);
       addPregraspPositions();
     }
     else
-      menu_handler_.setCheckState(handle_pregrasp, MenuHandler::UNCHECKED);
+      menu_handler_.setCheckState(menu_handler_show_pregrasp_, MenuHandler::UNCHECKED);
 
+    menu_handler_move_to_pregrasp_ = menu_handler_.insert("Move arm to pre-grasp position on click",
+                                                          boost::bind(&Object::menuCallback, this, _1));
     if (move_arm_to_pregrasp_onclick_)
-      menu_handler_.setCheckState(
-          menu_handler_.insert("Move arm to pre-grasp position on click", boost::bind(&Object::menuCallback, this, _1)),
-          MenuHandler::CHECKED);
+      menu_handler_.setCheckState(menu_handler_move_to_pregrasp_, MenuHandler::CHECKED);
     else
-      menu_handler_.setCheckState(
-          menu_handler_.insert("Move arm to pre-grasp position on click", boost::bind(&Object::menuCallback, this, _1)),
-          MenuHandler::UNCHECKED);
+      menu_handler_.setCheckState(menu_handler_move_to_pregrasp_, MenuHandler::UNCHECKED);
 
     /*    if (ros::param::has (AllowInteraction_PARAM))
      ros::param::get(AllowInteraction_PARAM, allow_interation_);*/
@@ -276,7 +272,254 @@ void Object::createMenu()
       menu_handler_.setVisible(menu_handler_interaction_movement_, false);
       menu_handler_.setVisible(menu_handler_interaction_rotation_, false);
     }
+    if (!allow_pregrasp_)
+    {
+      menu_handler_.setVisible(menu_handler_show_pregrasp_, false);
+      menu_handler_.setVisible(menu_handler_move_to_pregrasp_, false);
+    }
   }
+}
+
+void Object::addPregraspPositions()
+{
+  show_pregrasp_control_ = true;
+
+  Marker arrow;
+  arrow.color = color_green_a01_;
+  arrow.color.a = GRASP_TRANSPARENCY;
+  arrow.scale.x = GRASP_ARROW_LENGTH;
+  arrow.scale.y = GRASP_ARROW_WIDTH;
+  arrow.scale.z = GRASP_ARROW_WIDTH;
+
+  Marker text;
+  text.type = Marker::TEXT_VIEW_FACING;
+  text.scale.z = GRASP_TEXT_SIZE;
+  text.color = color_green_a01_;
+  text.color.a = GRASP_TRANSPARENCY;
+
+  Marker point;
+  point.type = Marker::SPHERE;
+  point.scale.x = GRASP_POINT_SCALE;
+  point.scale.y = GRASP_POINT_SCALE;
+  point.scale.z = GRASP_POINT_SCALE;
+  point.color.r = 1;
+  point.color.g = 1;
+  point.color.b = 0;
+  point.color.a = arrow.color.a = GRASP_TRANSPARENCY;
+
+  pregrasp1Control_.markers.clear();
+  pregrasp2Control_.markers.clear();
+  pregrasp3Control_.markers.clear();
+  pregrasp4Control_.markers.clear();
+  pregrasp5Control_.markers.clear();
+  pregrasp6Control_.markers.clear();
+
+  if (pregrasp1_.enabled)
+  {
+    pregrasp1Control_.name = pregrasp1_.name;
+    pregrasp1Control_.interaction_mode = InteractiveMarkerControl::BUTTON;
+
+    arrow.pose = pregrasp1_.pose;
+    pregrasp1Control_.markers.push_back(arrow);
+
+    text.pose.position.x = pregrasp1_.pose.position.x;
+    text.pose.position.y = pregrasp1_.pose.position.y;
+    text.pose.position.z = pregrasp1_.pose.position.z + GRASP_TEXT_OFFSET;
+    text.text = "1";
+    pregrasp1Control_.markers.push_back(text);
+
+    point.pose = pregrasp1_.pose;
+    pregrasp1Control_.markers.push_back(point);
+
+    object_.controls.push_back(pregrasp1Control_);
+  }
+
+  if (pregrasp2_.enabled)
+  {
+    pregrasp2Control_.name = pregrasp2_.name;
+    pregrasp2Control_.interaction_mode = InteractiveMarkerControl::BUTTON;
+
+    arrow.pose = pregrasp2_.pose;
+    pregrasp2Control_.markers.push_back(arrow);
+
+    text.pose.position.x = pregrasp2_.pose.position.x;
+    text.pose.position.y = pregrasp2_.pose.position.y;
+    text.pose.position.z = pregrasp2_.pose.position.z + GRASP_TEXT_OFFSET;
+    text.text = "2";
+    pregrasp2Control_.markers.push_back(text);
+
+    point.pose = pregrasp2_.pose;
+    pregrasp2Control_.markers.push_back(point);
+
+    object_.controls.push_back(pregrasp2Control_);
+  }
+
+  if (pregrasp3_.enabled)
+  {
+    pregrasp3Control_.name = pregrasp3_.name;
+    pregrasp3Control_.interaction_mode = InteractiveMarkerControl::BUTTON;
+
+    arrow.pose = pregrasp3_.pose;
+    pregrasp3Control_.markers.push_back(arrow);
+
+    text.pose.position.x = pregrasp3_.pose.position.x;
+    text.pose.position.y = pregrasp3_.pose.position.y;
+    text.pose.position.z = pregrasp3_.pose.position.z + GRASP_TEXT_OFFSET;
+    text.text = "3";
+    pregrasp3Control_.markers.push_back(text);
+
+    point.pose = pregrasp3_.pose;
+    pregrasp3Control_.markers.push_back(point);
+
+    object_.controls.push_back(pregrasp3Control_);
+  }
+
+  if (pregrasp4_.enabled)
+  {
+    pregrasp4Control_.name = pregrasp4_.name;
+    pregrasp4Control_.interaction_mode = InteractiveMarkerControl::BUTTON;
+
+    arrow.pose = pregrasp4_.pose;
+    pregrasp4Control_.markers.push_back(arrow);
+
+    text.pose.position.x = pregrasp4_.pose.position.x;
+    text.pose.position.y = pregrasp4_.pose.position.y;
+    text.pose.position.z = pregrasp4_.pose.position.z + GRASP_TEXT_OFFSET;
+    text.text = "4";
+    pregrasp4Control_.markers.push_back(text);
+
+    point.pose = pregrasp4_.pose;
+    pregrasp4Control_.markers.push_back(point);
+
+    object_.controls.push_back(pregrasp4Control_);
+  }
+
+  if (pregrasp5_.enabled)
+  {
+    pregrasp5Control_.name = pregrasp5_.name;
+    pregrasp5Control_.interaction_mode = InteractiveMarkerControl::BUTTON;
+
+    arrow.pose = pregrasp5_.pose;
+    pregrasp5Control_.markers.push_back(arrow);
+
+    text.pose.position.x = pregrasp5_.pose.position.x;
+    text.pose.position.y = pregrasp5_.pose.position.y;
+    text.pose.position.z = pregrasp5_.pose.position.z + GRASP_TEXT_OFFSET;
+    text.text = "5";
+    pregrasp5Control_.markers.push_back(text);
+
+    point.pose = pregrasp5_.pose;
+    pregrasp5Control_.markers.push_back(point);
+
+    object_.controls.push_back(pregrasp5Control_);
+  }
+
+  if (pregrasp6_.enabled)
+  {
+    pregrasp6Control_.name = pregrasp6_.name;
+    pregrasp6Control_.interaction_mode = InteractiveMarkerControl::BUTTON;
+
+    arrow.pose = pregrasp6_.pose;
+    pregrasp6Control_.markers.push_back(arrow);
+
+    text.pose.position.x = pregrasp6_.pose.position.x;
+    text.pose.position.y = pregrasp6_.pose.position.y;
+    text.pose.position.z = pregrasp6_.pose.position.z + GRASP_TEXT_OFFSET;
+    text.text = "6";
+    pregrasp6Control_.markers.push_back(text);
+
+    point.pose = pregrasp6_.pose;
+    pregrasp6Control_.markers.push_back(point);
+
+    object_.controls.push_back(pregrasp6Control_);
+  }
+
+}
+
+void Object::removePregraspPositions()
+{
+  show_pregrasp_control_ = false;
+  removeControl(pregrasp1_.name);
+  removeControl(pregrasp2_.name);
+  removeControl(pregrasp3_.name);
+  removeControl(pregrasp4_.name);
+  removeControl(pregrasp5_.name);
+  removeControl(pregrasp6_.name);
+}
+
+void Object::addPreGraspPosition(int pos_id, Pose pose)
+{
+  switch (pos_id)
+  {
+    case GRASP_1:
+      pregrasp1_.enabled = true;
+      pregrasp1_.pose = pose;
+      break;
+    case GRASP_2:
+      pregrasp2_.enabled = true;
+      pregrasp2_.pose = pose;
+      break;
+    case GRASP_3:
+      pregrasp3_.enabled = true;
+      pregrasp3_.pose = pose;
+      break;
+    case GRASP_4:
+      pregrasp4_.enabled = true;
+      pregrasp4_.pose = pose;
+      break;
+    case GRASP_5:
+      pregrasp5_.enabled = true;
+      pregrasp5_.pose = pose;
+      break;
+    case GRASP_6:
+      pregrasp6_.enabled = true;
+      pregrasp6_.pose = pose;
+      break;
+    default:
+      ROS_WARN("Unknown pre-grasp position");
+      return;
+      break;
+  }
+}
+
+void Object::updateControls()
+{
+  if (show_pregrasp_control_)
+  {
+    removePregraspPositions();
+    addPregraspPositions();
+  }
+  Primitive::updateControls();
+}
+
+void Object::removePreGraspPosition(int pos_id)
+{
+  switch (pos_id)
+  {
+    case GRASP_1:
+      pregrasp1_.enabled = false;
+      break;
+    case GRASP_2:
+      pregrasp2_.enabled = false;
+      break;
+    case GRASP_3:
+      pregrasp3_.enabled = false;
+      break;
+    case GRASP_4:
+      pregrasp4_.enabled = false;
+      break;
+    case GRASP_5:
+      pregrasp5_.enabled = false;
+      break;
+    case GRASP_6:
+      pregrasp6_.enabled = false;
+      break;
+    default:
+      ROS_WARN("Unknown pre-grasp position");
+      return;
+      break;
+  }
+  updateControls();
 }
 
 void Object::createMesh()
@@ -320,7 +563,7 @@ void Object::create()
 
   object_.header.frame_id = frame_id_;
   object_.name = name_;
-  object_.description = description_;
+  //object_.description = description_;
   object_.pose = pose_;
   object_.scale = maxScale(scale_);
 

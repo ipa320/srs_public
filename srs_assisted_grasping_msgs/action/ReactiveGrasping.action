@@ -1,0 +1,11 @@
+# GOAL
+std_msgs/Float32MultiArray target_configuration # n joints, 7 for SDH (names should be specified in yaml file)
+std_msgs/Float32MultiArray max_force # m tactile pads
+duration time # time to reach target_configuration
+---
+# RESULT
+std_msgs/Float32MultiArray actual_joint_values # n
+std_msgs/Float32MultiArray actual_forces # m
+std_msgs/Float32MultiArray time_to_stop # n
+---
+# FEEDBACK

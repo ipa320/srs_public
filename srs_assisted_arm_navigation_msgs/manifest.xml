@@ -1,0 +1,17 @@
+<package>
+  <description brief="srs_assisted_arm_navigation_msgs">
+
+     srs_assisted_arm_navigation_msgs
+
+  </description>
+  <author>Zdenek Materna</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_assisted_arm_navigation_msgs</url>
+  
+  <depend package="geometry_msgs"/>
+  <depend package="actionlib_msgs"/>
+
+</package>
+
+

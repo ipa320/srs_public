@@ -52,22 +52,25 @@ public:
 	//! Initialize plugin - called in server constructor
 	virtual void init(ros::NodeHandle & node_handle);
 
-	//! Set used octomap frame id and timestamp
-	virtual void onFrameStart( const SMapParameters & par );
-
-	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-	virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapParameters & mp);
-
-	//! Called when new scan was inserted and now all can be published
-	virtual void onPublish(const ros::Time & timestamp);
-
 	//! Connect/disconnect plugin to/from all topics
 	virtual void pause( bool bPause, ros::NodeHandle & node_handle);
+
+	//! Wants plugin new map data?
+	virtual bool wantsMap() { return m_cameraFrameId.size() != 0; }
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 protected:
+	//! Set used octomap frame id and timestamp
+	virtual void newMapDataCB( SMapWithParameters & par );
+
+	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+	virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+
+	//! Called when new scan was inserted and now all can be published
+	virtual void publishInternal(const ros::Time & timestamp);
+
 	/// On camera position changed callback
 	void onCameraPositionChangedCB(const srs_env_model_msgs::RVIZCameraPosition::ConstPtr& position);
 
@@ -122,24 +125,6 @@ protected:
 	// Mutex used to lock camera position parameters
 	boost::recursive_mutex m_camPosMutex;
 };
-
-/// Declare holder object - partial specialization of the default holder with predefined connection settings
-template< class tpOctomapPlugin >
-struct SLimitedPointCloudPluginHolder : public  CCrawlingPluginHolder< CLimitedPointCloudPlugin, tpOctomapPlugin >
-{
-protected:
-	/// Define holder type
-	typedef CCrawlingPluginHolder< CLimitedPointCloudPlugin, tpOctomapPlugin > tHolder;
-
-public:
-	/// Create holder
-	SLimitedPointCloudPluginHolder( const std::string & name )
-	: tHolder(  name,  tHolder::ON_START | tHolder::ON_OCCUPIED | tHolder::ON_STOP)
-	{
-
-	}
-
-}; // struct SLimitedPointCloudPluginHolder
 
 } // namespace srs_env_model
 

@@ -1,13 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- Configuration for COB, bringup simulation -->
-    <include file="$(find cob_default_robot_config)/upload_param.launch" />
-    <include file="$(find cob_default_env_config)/upload_param.launch" />
-    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
-    <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+    <!-- Run COB stretch indicator -->
+    <node pkg="srs_ui_but" type="cob_stretch_publisher" name="cob_stretch_publisher" />
 
-   <node pkg="srs_ui_but" type="cob_stretch_publisher" name="cob_stretch_publisher" />
-
-   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find srs_ui_but)/config/cob_stretch_indicator.vcg" />
 </launch>
 

@@ -113,7 +113,7 @@ void srs_ui_but::CExampleDialog::OnQuit(wxCommandEvent& event)
 ///////////////////////////////////////////////////////////////////////////////
 
 const int ID_CHECKBOX(100);
-const int ID_RESET_BUTTON(101);
+const int ID_RESET_OCTOMAP_BUTTON(101);
 
 /**
  Constructor
@@ -123,7 +123,7 @@ srs_ui_but::CExamplePanelControls::CExamplePanelControls(wxWindow *parent, const
     , m_wmi( wmi )
 {
     // Create controls
-    m_button = new wxButton(this, ID_RESET_BUTTON, wxT("Reset map"));
+    m_button = new wxButton(this, ID_RESET_OCTOMAP_BUTTON, wxT("Reset map"));
 
     m_chkb = new wxCheckBox(this, ID_CHECKBOX, wxT("Chceckbox sample"),
                             wxPoint(20, 20));
@@ -134,7 +134,7 @@ srs_ui_but::CExamplePanelControls::CExamplePanelControls(wxWindow *parent, const
     this->SetSizer(sizer);
     wxSizer *hsizer = new wxBoxSizer(wxHORIZONTAL);
 
-    sizer->Add(m_button, ID_RESET_BUTTON, wxALIGN_RIGHT);
+    sizer->Add(m_button, ID_RESET_OCTOMAP_BUTTON, wxALIGN_RIGHT);
     sizer->Add(hsizer, 0, wxALIGN_LEFT);
 
     hsizer->Add(m_chkb);
@@ -172,6 +172,6 @@ void srs_ui_but::CExamplePanelControls::OnReset(wxCommandEvent& event)
 
 ///////////////////////////////////////////////////////////////////////////////
 BEGIN_EVENT_TABLE(srs_ui_but::CExamplePanelControls, wxPanel)
-    EVT_BUTTON(ID_RESET_BUTTON,  srs_ui_but::CExamplePanelControls::OnReset)
+    EVT_BUTTON(ID_RESET_OCTOMAP_BUTTON,  srs_ui_but::CExamplePanelControls::OnReset)
     EVT_CHECKBOX(ID_CHECKBOX, srs_ui_but::CExamplePanelControls::OnChckToggle )
 END_EVENT_TABLE()

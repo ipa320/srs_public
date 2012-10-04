@@ -24,6 +24,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 #ifndef BUT_CONTEXT_MANAGER_H_
 #define BUT_CONTEXT_MANAGER_H_
@@ -49,6 +50,7 @@
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <ogre_tools/movable_text.h>
+#include <srs_ui_but/but_ogre_tools/text_output.h>
 
 #include <srs_env_model/Context.h>
 #include <srs_env_model/ContextChanged.h>
@@ -59,9 +61,10 @@
 #include <srs_env_model/services_list.h>
 #include <srs_env_model/topics_list.h>
 
+#define ID_MESSAGE_RENDERER "txtMessageRenderer"
+
 namespace srs_ui_but
 {
-
 /**
  * @brief This tool displays distances around specified robot's link.
  *
@@ -172,6 +175,26 @@ protected:
   }
 
   /**
+   * @brief Gets context collision hazard
+   * @return context collision hazard
+   */
+  int getContextCollisionHazard()
+  {
+    return context_.collision_hazard_tag;
+  }
+
+  /**
+   * @brief Sets context collision hazard
+   * @param status is new context collision hazard
+   */
+  void setContextCollisionHazard(int collision_hazard)
+  {
+    context_.collision_hazard_tag = collision_hazard;
+    setContext();
+    propertyChanged(m_property_connection_);
+  }
+
+  /**
    * @brief Sets new context
    */
   void setContext()
@@ -196,6 +219,7 @@ protected:
       propertyChanged(m_property_status_);
       propertyChanged(m_property_action_);
       propertyChanged(m_property_connection_);
+      propertyChanged(m_property_collision_hazard_);
     }
   }
 
@@ -209,6 +233,7 @@ protected:
     propertyChanged(m_property_status_);
     propertyChanged(m_property_action_);
     propertyChanged(m_property_connection_);
+    propertyChanged(m_property_collision_hazard_);
   }
 
   /**
@@ -222,7 +247,7 @@ protected:
   virtual void onDisable();
 
   // Display properties
-  rviz::EnumPropertyWPtr m_property_status_, m_property_action_, m_property_connection_;
+  rviz::EnumPropertyWPtr m_property_status_, m_property_action_, m_property_connection_, m_property_collision_hazard_;
 
   // Properties
   srs_env_model::Context context_;
@@ -236,6 +261,8 @@ protected:
   // Context server properties
   bool context_server_enabled_;
 
+  // Message renderer
+  ogre_tools::TextOutput* message_renderer_;
 };
 
 } // namespace srs_ui_but

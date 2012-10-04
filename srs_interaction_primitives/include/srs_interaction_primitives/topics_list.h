@@ -36,6 +36,7 @@
 #include <srs_interaction_primitives/TagChanged.h>
 #include <srs_interaction_primitives/MoveArmToPreGrasp.h>
 #include <srs_interaction_primitives/PrimitiveType.h>
+#include <srs_interaction_primitives/PositionClicked.h>
 
 #include <srs_interaction_primitives/services_list.h>
 
@@ -47,5 +48,7 @@
 #define BUT_MovementChanged_TOPIC(im_name) INTERACTION_PRIMITIVES_UPDATE_TOPIC(im_name,"/movement_changed")
 #define BUT_TagChanged_TOPIC(im_name) INTERACTION_PRIMITIVES_UPDATE_TOPIC(im_name,"/tag_changed")
 #define BUT_MoveArmToPreGrasp_TOPIC(im_name) INTERACTION_PRIMITIVES_UPDATE_TOPIC(im_name,"/move_arm_to_pregrasp")
+
+#define BUT_PositionClicked_TOPIC(topic) srs_interaction_primitives::PACKAGE_NAME_PREFIX + "/clickable_positions/" + topic
 
 #endif /* TOPICS_LIST_H_ */

@@ -78,6 +78,9 @@ void srs_env_model::COctoMapPlugin::setDefaults() {
 	m_removeTester = 0; //new CTestingPolymesh(CTestingPolymesh::tPoint( 1.0, 1.0, 0.5 ), quat, CTestingPolymesh::tPoint( 1.0, 1.5, 2.0 ));
 
 	m_testerLife = 10;
+
+	// Set maximal tree depth used when crawling. Zero means maximal possible depth.
+	m_crawlDepth = 0;
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name) :
@@ -97,6 +100,7 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name) :
 	m_data->octree.setOccupancyThres(m_mapParameters.thresOccupancy);
 	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
 	m_mapParameters.map = m_data;
+	m_mapParameters.crawlDepth = m_crawlDepth;
 
 	// Set frame skipping
 	setFrameSkip(m_mapParameters.frameSkip);
@@ -117,6 +121,7 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
 	m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
 	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
 	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+	m_mapParameters.crawlDepth = m_crawlDepth;
 
 	// Set frame skipping
 	setFrameSkip(m_mapParameters.frameSkip);
@@ -225,8 +230,17 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	m_serviceResetOctomap = node_handle.advertiseService(ResetOctomap_SRV,
 			&srs_env_model::COctoMapPlugin::resetOctomapCB, this);
 
-	m_serviceRemoveCube = node_handle.advertiseService(RemoveCube_SRV,
+	m_serviceRemoveCube = node_handle.advertiseService(RemoveCubeOctomap_SRV,
 			&srs_env_model::COctoMapPlugin::removeCubeCB, this);
+
+	m_serviceAddCube = node_handle.advertiseService( AddCubeOctomap_SRV,
+			&srs_env_model::COctoMapPlugin::addCubeCB, this);
+
+	m_serviceSetCrawlDepth = node_handle.advertiseService( SetCrawlDepth_SRV,
+			&srs_env_model::COctoMapPlugin::setCrawlingDepthCB, this );
+
+	m_serviceGetTreeDepth = node_handle.advertiseService( GetTreeDepth_SRV,
+			&srs_env_model::COctoMapPlugin::getTreeDepthCB, this );
 
 	// Create publisher
 	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (
@@ -497,77 +511,13 @@ void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime) {
 	// Lock data
 	boost::mutex::scoped_lock lock(m_lockData);
 
-//	std::cerr << "OCP.crawl start. Time: " << ros::Time::now() << std::endl;
-
-
 	// Fill needed structures
-	onCrawlStart(currentTime);
-
-	long count(0);
-
-	// Crawl through nodes
-	for (srs_env_model::tButServerOcTree::leaf_iterator it =
-			m_data->octree.begin_leafs(), end = m_data->octree.end_leafs(); it
-			!= end; ++it) {
-
-		// call general hook:
-		handleNode(it, m_mapParameters);
-
-		// Node is occupied?
-		if (m_data->octree.isNodeOccupied(*it)) {
-			handleOccupiedNode(it, m_mapParameters);
-			++count;
-		} else { // node not occupied => mark as free in 2D map if unknown so far
-
-			handleFreeNode(it, m_mapParameters);
-		} // Node is occupied?
-	} // Iterate through octree
-
-	handlePostNodeTraversal(m_mapParameters);
-
-//	std::cerr << "OCP.crawl end. Time: " << ros::Time::now() << std::endl;
-//	std::cerr << "OCP.crawl - count: " << count << std::endl;
-
-	/*
-	 std::stringstream ss;
-	 ss << "/home/wik/output/octomap" << filecounter << ".bt";
-
-	 PERROR( "Writing: " << ss.str() );
-	 m_data->octree.writeBinary( ss.str() );
-	 ++filecounter;
-	 */
-}
-
-/// On octomap crawling start
-void srs_env_model::COctoMapPlugin::onCrawlStart(const ros::Time & currentTime) {
-
 	fillMapParameters(currentTime);
 
-	// Call signal
-	m_sigOnStart(m_mapParameters);
-}
+	// Call new data signal
+	m_sigOnNewData( m_mapParameters );
 
-/// Handle node
-void srs_env_model::COctoMapPlugin::handleNode(tButServerOcTree::iterator & it,
-		const SMapParameters & mp) {
-	m_sigOnNode(it, mp);
-}
 
-/// Handle free node
-void srs_env_model::COctoMapPlugin::handleFreeNode(
-		tButServerOcTree::iterator & it, const SMapParameters & mp) {
-	m_sigOnFreeNode(it, mp);
-}
-
-/// Handle occupied node
-void srs_env_model::COctoMapPlugin::handleOccupiedNode(
-		tButServerOcTree::iterator & it, const SMapParameters & mp) {
-	m_sigOnOccupiedNode(it, mp);
-}
-
-void srs_env_model::COctoMapPlugin::handlePostNodeTraversal(
-		const SMapParameters & mp) {
-	m_sigOnPost(mp);
 }
 
 //! Should plugin publish data?
@@ -575,7 +525,10 @@ bool srs_env_model::COctoMapPlugin::shouldPublish() {
 	return (m_bPublishOctomap && m_ocPublisher.getNumSubscribers() > 0);
 }
 
-void srs_env_model::COctoMapPlugin::onPublish(const ros::Time & timestamp)
+/**
+ * Publishing function
+ */
+void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 {
 	if( !shouldPublish() )
 		return;
@@ -620,12 +573,17 @@ void srs_env_model::COctoMapPlugin::cameraInfoCB(
 		const sensor_msgs::CameraInfo::ConstPtr &cam_info) {
 //	PERROR( std::endl << std::endl << "CAMERA INFO CALLBACK" << std::endl << std::endl)
 	// Get camera info
+
+	boost::mutex::scoped_lock lock( m_lockCamera );
+
 	ROS_DEBUG("OctMapPlugin: Set camera info: %d x %d\n", cam_info->height, cam_info->width);
 	m_camera_model.fromCameraInfo(*cam_info);
 	m_camera_size = m_camera_model.fullResolution();
 
 	// Set flag
 	m_bCamModelInitialized = true;
+
+
 
 }
 
@@ -652,6 +610,8 @@ void srs_env_model::COctoMapPlugin::degradeOutdatedRaycasting(
 	octomap::point3d min;
 	octomap::point3d max;
 	computeBBX(sensor_header, min, max);
+
+	boost::mutex::scoped_lock lock( m_lockCamera );
 
 	unsigned query_time = time(NULL);
 	unsigned max_update_time = 1;
@@ -998,6 +958,90 @@ bool srs_env_model::COctoMapPlugin::removeCubeCB(
 	return true;
 }
 
+bool srs_env_model::COctoMapPlugin::addCubeCB(
+		srs_env_model::AddCube::Request & req,
+		srs_env_model::AddCube::Response & res) {
+
+		PERROR( "Add cube to octomap: " << req.pose << " --- \n size: \n"  << req.size );
+
+	// Debug - show cube position
+	//addCubeGizmo( req.pose, req.size );
+
+	// Test frame id
+	if (req.frame_id != m_mapParameters.frameId) {
+		// Transform pose
+		geometry_msgs::PoseStamped ps, psout;
+		ps.header.frame_id = req.frame_id;
+		ps.header.stamp = m_mapParameters.currentTime;
+		ps.pose = req.pose;
+
+		m_tfListener.transformPose(m_mapParameters.frameId, ps, psout);
+		req.pose = psout.pose;
+
+		// Transform size
+		geometry_msgs::PointStamped vs, vsout;
+		vs.header.frame_id = req.frame_id;
+		vs.header.stamp = m_mapParameters.currentTime;
+		vs.point = req.size;
+
+		m_tfListener.transformPoint(m_mapParameters.frameId, vs, vsout);
+		req.size = vsout.point;
+
+		// PERROR( "Transformed cube from octomap: " << req.pose << " --- " << req.size );
+	}
+
+	PERROR( "Computing sizes..." );
+
+	// Compute minimal and maximal value
+	octomap::point3d pmin, pmax;
+	pmin(0) = req.pose.position.x - req.size.x * 0.5;
+	pmin(1) = req.pose.position.y - req.size.y * 0.5;
+	pmin(2) = req.pose.position.z - req.size.z * 0.5;
+
+	pmax(0) = req.pose.position.x + req.size.x * 0.5;
+	pmax(1) = req.pose.position.y + req.size.y * 0.5;
+	pmax(2) = req.pose.position.z + req.size.z * 0.5;
+
+	PERROR( "Sizes computed. Computing steps ");
+
+	float diff[3];
+	unsigned int steps[3];
+	for (int i=0;i<3;++i)
+	{
+	  diff[i] = pmax(i) - pmin(i);
+	  steps[i] = floor(diff[i] / m_mapParameters.resolution);
+
+	  std::cerr << "bbx " << i << " size: " << diff[i] << " " << steps[i] << " steps\n";
+	}
+
+	PERROR("Rendering... Resolution: " << m_mapParameters.resolution );
+
+	long counter(0);
+	octomap::point3d p = pmin;
+	for (unsigned int x = 0; x < steps[0]; ++x)
+	{
+		p.x() += m_mapParameters.resolution;
+		p.y() = pmin.y();
+
+		for (unsigned int y = 0; y < steps[1]; ++y)
+		{
+			p.y() += m_mapParameters.resolution;
+			p.z() = pmin.z();
+
+			for (unsigned int z = 0; z < steps[2]; ++z)
+			{
+				//          std::cout << "querying p=" << p << std::endl;
+				p.z() += m_mapParameters.resolution;
+				++counter;
+				m_data->octree.updateNode(p, true, true);
+			}
+		}
+	}
+
+	PERROR( "Added. Changed nodes: " << counter );
+	return true;
+}
+
 /**
  * For debugging purpouses - add cubical interactive marker to the scene
  */
@@ -1037,4 +1081,32 @@ void srs_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_h
 		// If should publish, create markers publisher
 		m_markerPublisher = node_handle.advertise<visualization_msgs::Marker> (	m_markers_topic_name, 10);
 	}
+}
+
+/**
+ * Set crawling depth - service callback
+ */
+bool srs_env_model::COctoMapPlugin::setCrawlingDepthCB( srs_env_model::SetCrawlingDepth::Request & req, srs_env_model::SetCrawlingDepth::Response & res )
+{
+	boost::mutex::scoped_lock lock(m_lockData);
+	m_crawlDepth = req.depth;
+
+	// Test maximal value
+	unsigned char td( m_data->octree.getTreeDepth() );
+	if( m_crawlDepth > td)
+		m_crawlDepth = td;
+
+	m_mapParameters.crawlDepth = m_crawlDepth;
+
+	return true;
+}
+
+/**
+ * Get octomap tree depth - service callback
+ */
+bool srs_env_model::COctoMapPlugin::getTreeDepthCB( srs_env_model::GetTreeDepth::Request & req, srs_env_model::GetTreeDepth::Response & res )
+{
+	res.depth = m_data->octree.getTreeDepth();
+
+	return true;
 }

@@ -70,9 +70,19 @@ int main(int argc, char** argv){
           mapFilename = std::string(argv[1]);
 
   try{
-          // Run server
-          srs_env_model::CButServer ms(mapFilename);
-          ros::spin();
+		// Run server
+		srs_env_model::CButServer ms(mapFilename);
+		ros::Rate loop_rate(10);
+
+		int count = 0;
+
+		while (ros::ok())
+		{
+			ros::spinOnce();
+
+			loop_rate.sleep();
+			++count;
+		}
   }catch(std::runtime_error& e){
           ROS_ERROR("octomap_server exception: %s", e.what());
           return -1;

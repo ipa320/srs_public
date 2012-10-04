@@ -172,6 +172,7 @@ bool addObject(AddObject::Request &req, AddObject::Response &res)
   object->setPoseLWH(req.pose, req.bounding_box_lwh);
   object->setColor(req.color);
   object->setDescription(req.description);
+  object->setAllowPregrasp(req.allow_pregrasp);
   object->insert();
   imServer->applyChanges();
 
@@ -271,8 +272,13 @@ bool setPreGraspPosition(SetPreGraspPosition::Request &req, SetPreGraspPosition:
     ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
+  if (primitives[req.name]->getPrimitiveType() != PrimitiveType::OBJECT)
+  {
+    ROS_ERROR("Primitive is not of type Object");
+    return false;
+  }
 
-  primitives[req.name]->addPreGraspPosition(req.pos_id, req.pose);
+  ((Object*)primitives[req.name])->addPreGraspPosition(req.pos_id, req.pose);
   primitives[req.name]->insert();
   imServer->applyChanges();
 
@@ -290,8 +296,13 @@ bool removePreGraspPosition(RemovePreGraspPosition::Request &req, RemovePreGrasp
     ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
+  if (primitives[req.name]->getPrimitiveType() != PrimitiveType::OBJECT)
+  {
+    ROS_ERROR("Primitive is not of type Object");
+    return false;
+  }
 
-  primitives[req.name]->removePreGraspPosition(req.pos_id);
+  ((Object*)primitives[req.name])->removePreGraspPosition(req.pos_id);
   primitives[req.name]->insert();
   imServer->applyChanges();
 
@@ -387,14 +398,13 @@ bool changeDirection(ChangeDirection::Request &req, ChangeDirection::Response &r
     ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
-
   if (primitives[req.name]->getPrimitiveType() != PrimitiveType::BILLBOARD)
   {
     ROS_WARN("This is object is not a billboard, direction cannot be changed!");
     return false;
   }
 
-  primitives[req.name]->setDirection(req.direction);
+  ((Billboard*)primitives[req.name])->setDirection(req.direction);
   primitives[req.name]->insert();
   imServer->applyChanges();
 
@@ -419,7 +429,7 @@ bool changeVelocity(ChangeVelocity::Request &req, ChangeVelocity::Response &res)
     return false;
   }
 
-  primitives[req.name]->setVelocity(req.velocity);
+  ((Billboard*)primitives[req.name])->setVelocity(req.velocity);
   primitives[req.name]->insert();
   imServer->applyChanges();
 
@@ -437,8 +447,13 @@ bool setAllowObjectInteraction(SetAllowObjectInteraction::Request &req, SetAllow
     ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
+  if (primitives[req.name]->getPrimitiveType() != PrimitiveType::OBJECT)
+  {
+    ROS_ERROR("Primitive is not of type Object");
+    return false;
+  }
 
-  primitives[req.name]->setAllowObjectInteraction(req.allow);
+  ((Object*)primitives[req.name])->setAllowObjectInteraction(req.allow);
 
   ROS_INFO("..... DONE");
   return true;
@@ -565,9 +580,9 @@ bool getBoundingBox(GetBoundingBox::Request &req, GetBoundingBox::Response &res)
       res.object_name = obj->getAttachedObjectName();
       return true;
     }
-    ROS_ERROR("Bounding box with that name doesn't exist!");
-    return false;
   }
+  ROS_ERROR("Bounding box with that name doesn't exist!");
+  return false;
 }
 
 bool getPlane(GetPlane::Request &req, GetPlane::Response &res)
@@ -588,10 +603,81 @@ bool getPlane(GetPlane::Request &req, GetPlane::Response &res)
       res.scale = obj->getScale();
       return true;
     }
-    ROS_ERROR("Plane with that name doesn't exist!");
-    return false;
   }
+  ROS_ERROR("Plane with that name doesn't exist!");
+  return false;
 }
+
+bool clickablePositions(ClickablePositions::Request &req, ClickablePositions::Response &res)
+{
+  ROS_INFO("ADDING CLICK POSITIONS");
+
+  std::vector<geometry_msgs::Point> positions;
+  for (unsigned int i = 0; i < req.positions.size(); i++)
+  {
+    positions.push_back(req.positions.at(i));
+  }
+  ClickablePositionsMarker *clickPositions = new ClickablePositionsMarker(req.frame_id, req.topic_suffix, req.radius,
+                                                                          req.color, positions);
+  imServer->insert(clickPositions->getMarker(),
+                   boost::bind(&ClickablePositionsMarker::markerFeedback, clickPositions, _1));
+  imServer->applyChanges();
+
+  res.topic = BUT_PositionClicked_TOPIC(req.topic_suffix);
+
+  ROS_INFO("DONE");
+  return true;
+}
+
+bool robotPosePrediction(RobotPosePrediction::Request &req, RobotPosePrediction::Response &res)
+{
+  ROS_INFO("ADDING ROBOT'S PREDICTED POSITIONS");
+
+  /*visualization_msgs::InteractiveMarker predictedPositions;
+   predictedPositions.header.frame_id = "/map";
+   predictedPositions.name = "robot_pose_prediction";
+
+   visualization_msgs::InteractiveMarkerControl control;
+   control.always_visible = true;
+   control.independent_marker_orientation = true;
+   control.interaction_mode = visualization_msgs::InteractiveMarkerControl::NONE;*/
+
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "/map";
+  marker.ns = "interaction_primitives";
+  marker.id = 0;
+
+  marker.header.stamp = ros::Time();
+  marker.lifetime = (req.ttl <= 0.0) ? ros::Duration(5) : ros::Duration(req.ttl);
+  marker.color.g = 1;
+  marker.color.a = 0.5;
+  marker.type = visualization_msgs::Marker::LINE_STRIP;
+  marker.scale.x = 0.05;
+  for (unsigned int i = 0; i < req.positions.size(); i++)
+  {
+    marker.points.push_back(req.positions.at(i).position);
+  }
+  // control.markers.push_back(marker);
+  vis_pub.publish(marker);
+
+  marker.id = 1;
+  marker.type = visualization_msgs::Marker::SPHERE_LIST;
+  marker.color.b = 1;
+  marker.scale.x = 0.1;
+  marker.scale.y = 0.1;
+  marker.scale.z = 0.1;
+  // control.markers.push_back(marker);
+  vis_pub.publish(marker);
+
+  // predictedPositions.controls.push_back(control);
+
+  // imServer->insert(predictedPositions);
+  // imServer->applyChanges();
+
+  ROS_INFO("DONE");
+  return true;
+}
+
 }
 
 /**
@@ -602,14 +688,16 @@ int main(int argc, char **argv)
   using namespace srs_interaction_primitives;
 
   // ROS initialization (the last argument is the name of the node)
-  ros::init(argc, argv, "interaction_primitives_service_server");
-
-  // Interactive Marker Server initialization
-  imServer.reset(new InteractiveMarkerServer("but_interaction_primitives", "", false));
-  imServer->clear();
+  ros::init(argc, argv, ros::this_node::getName());
 
   // NodeHandle is the main access point to communications with the ROS system
   ros::NodeHandle n;
+
+  // Interactive Marker Server initialization
+  imServer.reset(new InteractiveMarkerServer("interaction_primitives", "", false));
+  imServer->clear();
+
+  vis_pub = n.advertise<visualization_msgs::Marker>("interaction_primitives", 0);
 
   // Create and advertise this service over ROS
   ros::ServiceServer addBoundingBoxService = n.advertiseService(AddBoundingBox_SRV, addBoundingBox);
@@ -643,6 +731,9 @@ int main(int argc, char **argv)
   ros::ServiceServer getBillboardService = n.advertiseService(GetBillboard_SRV, getBillboard);
   ros::ServiceServer getBoundingBoxService = n.advertiseService(GetBoundingBox_SRV, getBoundingBox);
   ros::ServiceServer getPlaneService = n.advertiseService(GetPlane_SRV, getPlane);
+
+  ros::ServiceServer clickablePositionService = n.advertiseService(ClickablePositions_SRV, clickablePositions);
+  ros::ServiceServer robotPosePredictionService = n.advertiseService(RobotPosePrediction_SRV, robotPosePrediction);
 
   ROS_INFO("Interaction Primitives Service Server ready!");
 

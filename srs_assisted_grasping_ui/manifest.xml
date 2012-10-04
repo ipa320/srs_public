@@ -1,0 +1,26 @@
+<package>
+  <description brief="srs_assisted_grasping_ui">
+
+     srs_assisted_grasping_ui
+
+  </description>
+  <author>Zdenek Materna</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_assisted_grasping_ui</url>
+  <depend package="srs_assisted_grasping_msgs"/>
+  <depend package="srs_assisted_grasping"/>
+  <depend package="ogre"/>
+  <depend package="rviz"/>
+  <depend package="actionlib"/>
+  <depend package="roscpp"/>
+  <depend package="ogre_tools"/>
+  
+  <export>
+    <rviz plugin="${prefix}/lib/but_assisted_grasping.yaml"/>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+
+</package>
+
+

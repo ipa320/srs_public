@@ -1,0 +1,15 @@
+<launch>
+	<!-- TB2 bringup simulation -->
+	<include file="$(find btb_gazebo)/launch/robot_ipa_kitchen_world.launch" />
+
+	<!-- TB2 run gmapping -->
+	<include file="$(find btb_navigation)/launch/laser_gmapping_demo.launch" />
+
+	<!-- Run workshop node -->
+	<include file="$(find srs_env_model_percp)/launch/planedet_demo.launch" />
+
+	<!-- Run rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_env_model_percp)/config/planedet_rviz.vcg" />
+
+</launch>
+

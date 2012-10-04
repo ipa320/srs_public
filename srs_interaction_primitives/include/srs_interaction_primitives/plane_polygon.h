@@ -56,10 +56,49 @@ public:
    */
   PlanePolygon(InteractiveMarkerServerPtr server, std::string frame_id, std::string name);
 
+  /**
+   * @brief Gets plane's normal.
+   * @return plane's normal
+   */
+  Ogre::Vector3 getNormal()
+  {
+    return normal_;
+  }
+
+  /**
+   * @brief Sets plane's normal.
+   * @param normal is plane's normal
+   */
+  void setNormal(Ogre::Vector3 normal)
+  {
+    normal_ = normal;
+  }
+
+  /**
+   * @brief Sets plane's normal.
+   * @param normal is plane's normal
+   */
+  void setNormal(geometry_msgs::Vector3 normal)
+  {
+    normal_ = Ogre::Vector3(normal.x, normal.y, normal.z);
+  }
+
+  /**
+   * @brief Sets PlanePolygon's polygon
+   * @param polygon is PlanePolygon's polygon
+   */
+  void setPolygon(geometry_msgs::Polygon polygon)
+  {
+    polygon_ = polygon;
+  }
+
 protected:
   void create();
 
 private:
+  // PlanePolygon's attributes
+  Ogre::Vector3 normal_;
+  geometry_msgs::Polygon polygon_;
   visualization_msgs::Marker polygon_mesh_;
 };
 

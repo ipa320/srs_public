@@ -42,6 +42,7 @@ srs_env_model::CCompressedPointCloudPlugin::CCompressedPointCloudPlugin( const s
 , m_uncomplete_frames( 10 )
 , m_bPublishComplete( false )
 , m_octomap_updates_msg( new OctomapUpdates )
+, m_bTransformOutput( false )
 {
 	m_use_every_nth = 1;
 }
@@ -109,6 +110,12 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 		node_handle.param( "update_data_topic_name", m_ocUpdatePublisherName, CPC_COMPLETE_TOPIC_NAME );
 	}
 
+	// Services
+	{
+		m_serviceSetNumIncomplete = node_handle.advertiseService( SetNumIncompleteFrames_SRV,
+				&srs_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB, this );
+	}
+
     // Create publisher - simple point cloud
     m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
 
@@ -143,7 +150,7 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
  * Set used octomap frame id and timestamp
  */
 
-void srs_env_model::CCompressedPointCloudPlugin::onFrameStart( const SMapParameters & par )
+void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 {
 	ROS_DEBUG( "CCompressedPointCloudPlugin: onFrameStart" );
 
@@ -166,7 +173,44 @@ void srs_env_model::CCompressedPointCloudPlugin::onFrameStart( const SMapParamet
     max = -10000000;
 
     // Call parent frame start
-    CPointCloudPlugin::onFrameStart( par );
+    if( ! m_publishPointCloud )
+    		return;
+
+    // Clear data
+	m_data->clear();
+	m_ocFrameId = par.frameId;
+	m_DataTimeStamp = m_time_stamp = par.currentTime;
+	counter = 0;
+
+	// Pointcloud is used as output for octomap...
+	m_bAsInput = false;
+
+  	m_bTransformOutput = m_ocFrameId != m_pcFrameId;
+	// If different frame id
+	if( m_bTransformOutput )
+	{
+		tf::StampedTransform ocToPcTf;
+
+		// Get transform
+		try {
+			// Transformation - to, from, time, waiting time
+			m_tfListener.waitForTransform(m_pcFrameId, m_ocFrameId,
+					par.currentTime, ros::Duration(5));
+
+			m_tfListener.lookupTransform(m_pcFrameId, m_ocFrameId,
+					par.currentTime, ocToPcTf);
+
+		} catch (tf::TransformException& ex) {
+			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+			PERROR( "Transform error.");
+			return;
+		}
+
+
+		// Get transformation matrix
+		pcl_ros::transformAsMatrix(ocToPcTf, m_pcOutTM);	// Sensor TF to defined base TF
+
+	}
 
     if( m_cameraFrameId.size() == 0 )
     {
@@ -175,7 +219,7 @@ void srs_env_model::CCompressedPointCloudPlugin::onFrameStart( const SMapParamet
         return;
     }
 
-    m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
+    m_bTransformCamera = m_cameraFrameId != m_pcFrameId;
 
     m_to_sensor = tf::StampedTransform::getIdentity();
 
@@ -189,7 +233,7 @@ void srs_env_model::CCompressedPointCloudPlugin::onFrameStart( const SMapParamet
         // Get transforms
         try {
             // Transformation - to, from, time, waiting time
-            m_tfListener.waitForTransform(m_ocFrameId, m_cameraFrameId,
+            m_tfListener.waitForTransform(m_cameraFrameId, m_ocFrameId,
                     par.currentTime, ros::Duration(5));
 
             m_tfListener.lookupTransform( m_cameraFrameId, m_ocFrameId,
@@ -214,12 +258,34 @@ void srs_env_model::CCompressedPointCloudPlugin::onFrameStart( const SMapParamet
     m_octomap_updates_msg->camera_info = m_camera_info_buffer;
     m_octomap_updates_msg->pointcloud2.header.stamp = par.currentTime;
 
+    // Initialize leaf iterators
+	tButServerOcTree & tree( par.map->octree );
+	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+
+	// Crawl through nodes
+	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+	{
+		// Node is occupied?
+		if (tree.isNodeOccupied(*it))
+		{
+			handleOccupiedNode(it, par);
+		}// Node is occupied?
+
+	} // Iterate through octree
+
+	if( m_bTransformOutput )
+	{
+		// transform point cloud from octomap frame to the preset frame
+		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
+	}
+
+	invalidate();
 }
 
 /**
  * hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
  */
-void srs_env_model::CCompressedPointCloudPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapParameters & mp)
+void srs_env_model::CCompressedPointCloudPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
 //	PERROR("OnHandleOccupied");
 
@@ -271,15 +337,15 @@ void srs_env_model::CCompressedPointCloudPlugin::onCameraChangedCB(const sensor_
 }
 
 //! Called when new scan was inserted and now all can be published
-void srs_env_model::CCompressedPointCloudPlugin::onPublish(const ros::Time & timestamp)
+void srs_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time & timestamp)
 {
 //	ROS_DEBUG( "CCompressedPointCloudPlugin: onPublish" );
 
 //    PERROR( "Visible: " << m_countVisible << ", all: " << m_countAll << ", compression: " << double(m_countVisible)/double(m_countAll) );
 //    PERROR( "Num of points: " << m_data->size() );
-    srs_env_model::CPointCloudPlugin::onPublish( timestamp );
+//    srs_env_model::CPointCloudPlugin::publishInternal( timestamp );
 
-    if( m_ocUpdatePublisher.getNumSubscribers() > 0 )
+    if( shouldPublish() )
     {
     	// Fill header information
     	m_octomap_updates_msg->header = m_data->header;
@@ -362,4 +428,15 @@ bool srs_env_model::CCompressedPointCloudPlugin::shouldPublish()
 	}
 
 	return rv;
+}
+
+/**
+ * Set number of incomplete frames callback
+ */
+bool srs_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB( srs_env_model::SetNumIncompleteFrames::Request & req, srs_env_model::SetNumIncompleteFrames::Response & res )
+{
+	m_use_every_nth = req.num;
+	PERROR( "New number of incomplete frames set: " << m_use_every_nth );
+
+	return true;
 }

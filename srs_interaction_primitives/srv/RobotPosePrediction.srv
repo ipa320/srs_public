@@ -1,0 +1,3 @@
+geometry_msgs/Pose[] positions      # predicted positions
+float64 ttl                         # lifetime of the positions
+--- 

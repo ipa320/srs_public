@@ -69,7 +69,7 @@ void srs_env_model::CCollisionObjectPlugin::init(ros::NodeHandle & node_handle)
 
 
 
-void srs_env_model::CCollisionObjectPlugin::onPublish(const ros::Time & timestamp)
+void srs_env_model::CCollisionObjectPlugin::publishInternal(const ros::Time & timestamp)
 {
 	if( m_coPublisher.getNumSubscribers() > 0 )
 		m_coPublisher.publish(*m_data);
@@ -77,7 +77,7 @@ void srs_env_model::CCollisionObjectPlugin::onPublish(const ros::Time & timestam
 
 
 
-void srs_env_model::CCollisionObjectPlugin::onFrameStart(const SMapParameters & par)
+void srs_env_model::CCollisionObjectPlugin::newMapDataCB( SMapWithParameters & par )
 {
 	m_data->header.frame_id = m_coFrameId;
 	m_data->header.stamp = par.currentTime;
@@ -117,11 +117,27 @@ void srs_env_model::CCollisionObjectPlugin::onFrameStart(const SMapParameters & 
 	m_ocToCoRot  = ocToPcTM.block<3, 3> (0, 0);
 	m_ocToCoTrans = ocToPcTM.block<3, 1> (0, 3);
 
+	// Initialize leaf iterators
+	tButServerOcTree & tree( par.map->octree );
+	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+
+	// Crawl through nodes
+	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+	{
+		// Node is occupied?
+		if (tree.isNodeOccupied(*it))
+		{
+			handleOccupiedNode(it, par);
+		}// Node is occupied?
+
+	} // Iterate through octree
+
+	invalidate();
 }
 
 
 
-void srs_env_model::CCollisionObjectPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator & it, const SMapParameters & mp)
+void srs_env_model::CCollisionObjectPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
 	// Transform input point
 	Eigen::Vector3f point( it.getX(), it.getY(), it.getZ() );
@@ -146,12 +162,6 @@ void srs_env_model::CCollisionObjectPlugin::handleOccupiedNode(srs_env_model::tB
 	m_data->poses.push_back(pose);
 }
 
-
-
-void srs_env_model::CCollisionObjectPlugin::handlePostNodeTraversal(const SMapParameters & mp)
-{
-	invalidate();
-}
 
 //! Connect/disconnect plugin to/from all topics
 void srs_env_model::CCollisionObjectPlugin::pause( bool bPause, ros::NodeHandle & node_handle)

@@ -60,8 +60,8 @@ namespace srs_env_model_percp
       * but_seg_utils - kinect to pcl converter topics
       */
 	static const std::string KIN2PCL_NODE_NAME 					= "but_kin2pcl_node";
-	static const std::string KIN2PCL_INPUT_IMAGE_TOPIC 			= "/cam3d/depth/image_raw";
-	static const std::string KIN2PCL_INPUT_CAM_INFO_TOPIC 		= "/cam3d/depth/camera_info";
+	static const std::string KIN2PCL_INPUT_IMAGE_TOPIC 			= "/camera/depth/image";
+	static const std::string KIN2PCL_INPUT_CAM_INFO_TOPIC 		= "/camera/depth/camera_info";
 	static const std::string KIN2PCL_OUTPUT_POINT_CLOUD_TOPIC 	= PACKAGE_NAME_PREFIX + std::string("/point_cloud");
 	static const std::string KIN2PCL_OUTPUT_POINT_CLOUD_FRAMEID = "/openni_depth_frame";
 

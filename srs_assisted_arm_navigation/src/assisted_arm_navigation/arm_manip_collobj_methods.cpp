@@ -29,6 +29,7 @@
 
 using namespace srs_assisted_arm_navigation;
 using namespace planning_scene_utils;
+using namespace srs_assisted_arm_navigation_msgs;
 
 
 std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll=false) {
@@ -144,7 +145,8 @@ std::string CArmManipulationEditor::add_coll_obj_attached(double x, double y, do
   std::string target = collision_objects_frame_id_;
 
   geometry_msgs::PoseStamped pose;
-  pose.header.frame_id = "/arm_7_link";
+  pose.header.frame_id = "/arm_7_link"; //sdh_palm_link
+  //pose.header.frame_id = "sdh_palm_link"; // pokus
   pose.header.stamp = now;
   pose.pose.position.x = x;
   pose.pose.position.y = y;
@@ -220,7 +222,7 @@ std::string CArmManipulationEditor::add_coll_obj_attached(double x, double y, do
                               "arm_7_link",
                               links_);
 
-        changeToAttached(ret);
+        //changeToAttached(ret);
 
       } else {
 

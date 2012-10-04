@@ -1,0 +1,9 @@
+name: but_assisted_grasping_plugin
+library: but_assisted_grasping_plugin
+displays:
+
+  -
+    class_name: CButGraspingDisplay
+    display_name: CButGraspingDisplay
+    description: |
+      This display shows controls for COB assisted grasping.

@@ -28,16 +28,19 @@
 namespace srs_interaction_primitives
 {
 
-ClickablePositionsMarker::ClickablePositionsMarker(std::string frame_id, std::string topic_suffix, float radius,
-                                           std_msgs::ColorRGBA color, std::vector<geometry_msgs::Point> positions)
+ClickablePositionsMarker::ClickablePositionsMarker(InteractiveMarkerServerPtr imServer, std::string frame_id,
+                                                   std::string topic_suffix, float radius, std_msgs::ColorRGBA color,
+                                                   std::vector<geometry_msgs::Point> positions)
 {
+  imServer_ = imServer;
   frame_id_ = frame_id;
   topic_suffix_ = topic_suffix;
   radius_ = radius;
   color_ = color;
   positions_ = positions;
 
-  click_publisher_ = nh_.advertise<srs_interaction_primitives::PositionClicked>(BUT_PositionClicked_TOPIC(topic_suffix), 1);
+  click_publisher_ = nh_.advertise<srs_interaction_primitives::PositionClicked>(BUT_PositionClicked_TOPIC(topic_suffix),
+                                                                                1);
 
   create();
 }
@@ -82,6 +85,8 @@ void ClickablePositionsMarker::markerFeedback(const visualization_msgs::Interact
     PositionClicked msg;
     msg.position = controls_[feedback->control_name];
     click_publisher_.publish(msg);
+    imServer_->erase(interactive_marker_.name);
+    imServer_->applyChanges();
   }
 }
 

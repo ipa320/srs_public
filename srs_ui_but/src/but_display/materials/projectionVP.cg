@@ -27,12 +27,32 @@ void testedProjection_vp(
 		out float4 depthPos : TEXCOORD1,
 		
 		uniform float4x4 worldViewProjMatrix,
-		uniform float4x4 worldMatrix,
+		uniform float4x4 modelWorldMatrix,
 		uniform float4x4 texViewProjMatrix,
 		uniform float4x4 cameraProjMatrix,
-		uniform float3 cameraPosition
+		uniform float4 cameraPosition,
+		uniform float4 cameraPlane
 		)
 {
+	oPos = mul(worldViewProjMatrix, pos);
+
+	// multiply position by world matrix, then by projective view/proj
+	float4 newpos = mul(modelWorldMatrix, pos);
+	
+	texCoord = mul(texViewProjMatrix, newpos);
+	
+	// Compute point distance to the camera
+	float d = distance( newpos, cameraPosition );
+	
+	// Is point in front of camera plane?
+	float3 vertexPosition = newpos.xyz;
+	float3 planeNormal = cameraPlane.xyz;
+	float w = dot( newpos, cameraPlane );
+	
+	depthPos = float4(d, -w, d, d);
+}
+
+/*
 	oPos = mul(worldViewProjMatrix, pos);
 
 	// multiply position by world matrix, then by projective view/proj
@@ -40,7 +60,7 @@ void testedProjection_vp(
 	
 	texCoord = mul(texViewProjMatrix, newpos);
 	
-	float3 vertexPosition = pos.xyz;
+	float3 vertexPosition = newpos.xyz;
 	float d = distance( vertexPosition, cameraPosition );
-	depthPos[0] = d;
-}
+	depthPos = float4(d, d, d, d);
+*/

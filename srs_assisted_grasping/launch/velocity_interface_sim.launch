@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- node for simulation of SDH velocity interface -->
+  <node pkg="srs_assisted_grasping" name="fake_vel_int_node" type="fake_velocity_interface.py" respawn="false" output="screen">
+    <!--rosparam command="load" file="$(find srs_assisted_grasping)/config/sdh_config.yaml" /-->
+    <remap from="velocity_in" to="/sdh_controller/command_vel"/>
+    <remap from="state_in" to="/sdh_controller/state"/>
+    <remap from="position_out" to="/sdh_controller/command"/>
+  </node>
+  
+</launch>

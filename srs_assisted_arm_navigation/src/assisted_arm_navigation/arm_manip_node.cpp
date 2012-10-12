@@ -81,6 +81,52 @@ CArmManipulationEditor::~CArmManipulationEditor() {
 
 }
 
+bool CArmManipulationEditor::checkPose(geometry_msgs::PoseStamped &p, std::string frame) {
+
+
+ if (p.header.frame_id==frame) {
+
+	 return true;
+
+  } else {
+
+	ros::Time now = ros::Time::now();
+
+	try {
+
+		ROS_INFO("Pose frame_id (%s) differs from expected (%s), transforming.",p.header.frame_id.c_str(),frame.c_str());
+
+			if (tfl_->waitForTransform(frame, p.header.frame_id, now, ros::Duration(2.0))) {
+
+			  tfl_->transformPose(frame,p,p);
+
+			} else {
+
+			  p.header.stamp = ros::Time(0);
+			  tfl_->transformPose(frame,p,p);
+			  ROS_WARN("Using latest transform available, may be wrong.");
+
+			}
+
+			return true;
+
+	   }
+
+		// In case of absence of transformation path
+		catch(tf::TransformException& ex){
+		   std::cerr << "Transform error: " << ex.what() << std::endl;
+		   return false;
+		}
+
+
+
+  }
+
+ return false;
+
+}
+
+
 void CArmManipulationEditor::onPlanningSceneLoaded() {};
 void CArmManipulationEditor::updateState() {};
 void CArmManipulationEditor::planCallback(arm_navigation_msgs::ArmNavigationErrorCodes& errorCode) {

@@ -36,9 +36,12 @@
 
 #include <srs_object_database_msgs/GetObjectId.h>
 #include <srs_object_database_msgs/GetMesh.h>
+#include <srs_interaction_primitives/PositionClicked.h>
 #include <srs_interaction_primitives/services_list.h>
+#include <srs_interaction_primitives/topics_list.h>
 
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
 
 #include <wx/wx.h>
 #include <wx/menu.h>
@@ -56,6 +59,7 @@
 #include <vector>
 
 #define DefaultFrame_PARAM "/srs_ui_but/default_frame"
+#define CLICKABLE_POSITIONS_TOPIC "obj_manager_positions"
 
 const int ID_ADD_OBJECT_BUTTON(101);
 const int ID_OBJECTS_CHOICE(102);
@@ -72,6 +76,7 @@ const int ID_POSZ_TEXT(112);
 const int ID_ADDED_OBJECTS_CHOICE(113);
 const int ID_REMOVE_OBJECT_BUTTON(114);
 const int ID_COLOR_CLRPICKER(115);
+const int ID_CLICKABLEPOS_BUTTON(116);
 
 namespace rviz
 {
@@ -115,6 +120,11 @@ protected:
   void OnRemoveObject(wxCommandEvent& event);
 
   /**
+   * @brief On clickable positions command event handler
+   */
+  void OnClickablePositions(wxCommandEvent& event);
+
+  /**
    * @brief Sets status
    */
   void setStatus(std::string text)
@@ -122,7 +132,7 @@ protected:
     m_statusLabel->SetLabel(wxString::FromUTF8((const char*)text.c_str()));
   }
 
-  void poseClickedCallback(const geometry_msgs::PoseWithCovarianceStamped &update);
+  void poseClickedCallback(const srs_interaction_primitives::PositionClickedConstPtr &msg);
 
   bool enabled_;
 
@@ -131,7 +141,7 @@ protected:
   int object_count_;
   std::string default_frame_;
 
-  wxButton *m_addObjectButton, *m_removeObjectButton;
+  wxButton *m_addObjectButton, *m_removeObjectButton, *m_clickablePositions;
   wxChoice *m_objectsChoice, *m_addedObjectsChoice;
   wxTextCtrl *m_descriptionText, *m_frameText, *m_posxText, *m_posyText, *m_poszText;
   wxStaticText *m_descriptionLabel, *m_statusLabel, *m_frameLabel, *m_posLabel, *m_colorLabel;
@@ -139,7 +149,8 @@ protected:
   wxColourPickerCtrl *m_colorClrpicker;
 
   // Service clients
-  ros::ServiceClient get_models_client_, get_model_mesh_client_, add_object_client_, remove_primitive_client_;
+  ros::ServiceClient get_models_client_, get_model_mesh_client_, add_object_client_, remove_primitive_client_,
+                     clickable_positions_client_;
 
   // Get node handle
   ros::NodeHandle nh_;
@@ -151,7 +162,16 @@ protected:
   std::vector<geometry_msgs::Vector3> database_sizes_;
 
   // // Topic soubscribers
-  ros::Subscriber pose_clicked_;
+  ros::Subscriber pose_clicked_subscriber_;
+
+  // Transform listener
+  tf::TransformListener *tfListener_;
+
+  // Transformer
+  tf::Transformer transformer_;
+
+  // Transformations
+  tf::StampedTransform robotToFfTf_;
 
 private:
 DECLARE_EVENT_TABLE()

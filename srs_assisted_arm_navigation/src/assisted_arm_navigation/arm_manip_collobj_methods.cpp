@@ -53,9 +53,9 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
 
   bool transf = false;
 
-  if (pose.header.frame_id != collision_objects_frame_id_) {
+  geometry_msgs::PoseStamped mpose;
 
-	  geometry_msgs::PoseStamped mpose;
+  if (pose.header.frame_id != collision_objects_frame_id_) {
 
 	  /// We have to transform object to /base_link system
 	  ros::Time now = ros::Time::now();
@@ -65,7 +65,7 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
 
 	  std::string target = collision_objects_frame_id_;
 
-	  ROS_INFO("Trying to transform detected object bb from %s to %s frame",pose.header.frame_id.c_str(),target.c_str());
+	  ROS_INFO("Trying to transform detected object BB from %s to %s frame",pose.header.frame_id.c_str(),target.c_str());
 
 	  ROS_INFO("Waiting for transformation between %s and %s",pose.header.frame_id.c_str(),target.c_str());
 
@@ -95,13 +95,15 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
 
 
 
-  } else transf=true;
+  } else {
+
+	  ROS_INFO("BB of detected object is already in correct frame_id (%s). No need to transform.",pose.header.frame_id.c_str());
+	  mpose = pose;
+	  transf=true;
+
+  }
 
   if (transf) {
-
-  		 //ROS_INFO("Successfully transformed - adding object %s to scene.",oname.c_str());
-
-	     geometry_msgs::PoseStamped mpose = pose;
 
   		 mpose.pose.position.z +=  bb_lwh.z/2;
 
@@ -113,7 +115,7 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
   							   (bb_lwh.z)*inflate_bb_,
   							   color);
 
-  		 ROS_INFO("Coll. obj. name=%s, id=%s",oname.c_str(),ret.c_str());
+  		 ROS_INFO("Coll. obj. name=%s, id=%s has been created.",oname.c_str(),ret.c_str());
 
 
   	   } // transf

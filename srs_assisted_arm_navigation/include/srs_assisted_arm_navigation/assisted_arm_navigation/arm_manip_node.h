@@ -211,6 +211,8 @@ public:
 
     planning_scene_utils::PlanningSceneParameters params_;
 
+
+
     /**
      * Feedback of
      *
@@ -397,6 +399,7 @@ protected:
 
   void findIK(geometry_msgs::Pose new_pose);
 
+  bool checkPose(geometry_msgs::PoseStamped &p, std::string frame);
 
 private:
 

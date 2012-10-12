@@ -47,6 +47,7 @@
 #include <rviz/visualization_manager.h>
 #include <rviz/window_manager_interface.h>
 #include <rviz/frame_manager.h>
+#include <rviz/validate_floats.h>
 
 #include <wx/filedlg.h>
 
@@ -99,6 +100,8 @@ srs_ui_but::CMaterialListener::CMaterialListener( const std::string & materialNa
 srs_ui_but::CMaterialListener::CMaterialListener( Ogre::Material * material, const std::string & schemeName )
 : m_materialPtr( material )
 , m_schemeName( schemeName )
+, m_bDistanceChanged( true )
+, m_testingDistance( 1.0 )
 {
 	return;
 
@@ -140,12 +143,40 @@ Ogre::Technique *srs_ui_but::CMaterialListener::handleSchemeNotFound(unsigned sh
 {
     if (schemeName == m_schemeName)
         {
+
+    	// Change shader settings?
+    	if( m_bDistanceChanged )
+    	{
+    		m_bDistanceChanged = false;
+
+
+    		Ogre::GpuProgramParametersSharedPtr paramsFP( m_materialPtr->getBestTechnique()->getPass(0)->getFragmentProgramParameters() );
+
+			if( paramsFP->_findNamedConstantDefinition("testedDistance"))
+			{
+				paramsFP->setNamedConstant( "testedDistance", m_testingDistance );
+			}
+			else
+			{
+				std::cerr << "Named constant not found: projectionMatrix " << std::endl;
+			}
+
+    	}
+
         //LogManager::getSingleton().logMessage(">> adding glow to material: "+mat->getName());
         return m_materialPtr->getBestTechnique();
         }
     return NULL;
 }
 
+/**
+ * Set tested distance
+ */
+void srs_ui_but::CMaterialListener::setTestedDistance( float distance )
+{
+	m_bDistanceChanged = true;
+	m_testingDistance = distance;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -298,7 +329,7 @@ void srs_ui_but::CProjectionData::updateMatrices()
 
 	if( m_materialPtr.get() == 0 )
 		return;
-
+/*
 	Ogre::Matrix4 wt;
 
 //	std::cerr << "SetProjectionMatrix" << std::endl;
@@ -333,11 +364,16 @@ void srs_ui_but::CProjectionData::updateMatrices()
 				wt[i][j] = trMatrix(i, j);
 			}
 	}
+*/
+
+
+
 
 	Ogre::Matrix4 pm( Ogre::Matrix4::CLIPSPACE2DTOIMAGESPACE * m_frustum->getProjectionMatrixWithRSDepth() );
 
 	// Compute projection matrix. CLIPSPACE2DTOIMAGESPACE: Useful little matrix which takes 2D clipspace {-1, 1} to {0,1} and inverts the Y.
 	Ogre::Matrix4 fm( pm * m_frustum->getViewMatrix() );
+
 
 //	m_frustum->getWorldTransforms( &wt );
 
@@ -359,30 +395,29 @@ void srs_ui_but::CProjectionData::updateMatrices()
 		std::cerr << "Named constant not found..." << std::endl;
 	}
 
-	/*
-	// Set fragment program parameters
-	Ogre::GpuProgramParametersSharedPtr paramsFP( m_material->getTechnique(0)->getPass(0)->getFragmentProgramParameters() );
-
-	if( paramsFP->_findNamedConstantDefinition("projectionMatrix"))
+	if( paramsVP->_findNamedConstantDefinition("cameraPosition"))
 	{
-		paramsFP->setNamedConstant( "projectionMatrix", fm );
+		Ogre::Vector4 position( m_cameraPosition[0], m_cameraPosition[1], m_cameraPosition[2], 1.0 );
+		paramsVP->setNamedConstant( "cameraPosition", position );
 	}
 	else
 	{
-		std::cerr << "Named constant not found: projectionMatrix " << std::endl;
+		std::cerr << "Named constant not found: cameraPosition " << std::endl;
 	}
 
-	if( paramsFP->_findNamedConstantDefinition("invProjectionMatrix"))
-	{
-		paramsFP->setNamedConstant( "invProjectionMatrix", fm.inverse() );
-	}
-	else
-	{
-		std::cerr << "Named constant not found: invProjectionMatrix" << std::endl;
-	}
-*/
+	if( paramsVP->_findNamedConstantDefinition("cameraPlane"))
+		{
+			Ogre::Vector4 position( m_cameraEquation[0], m_cameraEquation[1], m_cameraEquation[2], m_cameraEquation[3] );
+			paramsVP->setNamedConstant( "cameraPlane", position );
+		}
+		else
+		{
+			std::cerr << "Named constant not found: cameraPlane " << std::endl;
+		}
 
 }
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -519,6 +554,13 @@ void srs_ui_but::CButProjection::createProperties()
 
     m_depth_topic_property = property_manager_->createProperty<rviz::ROSTopicStringProperty>( "Depth image Topic", property_prefix_, boost::bind( &CButProjection::getDepthTopic, this ),
                boost::bind( &CButProjection::setDepthTopic, this, _1 ), parent_category_, this );
+
+    m_distance_property = property_manager_->createProperty<rviz::FloatProperty>( "Tested distance", property_prefix_, boost::bind( &CButProjection::getTestedDistance, this ),
+				boost::bind( &CButProjection::setTestedDistance, this, _1), parent_category_, this );
+
+    // Set distance limits
+    rviz::FloatPropertyPtr distp( m_distance_property.lock());
+    distp->setMin( 0.0 ); distp->setMax( 10.0 );
 
     setPropertyHelpText(m_rgb_topic_property, "sensor_msgs::Image topic to subscribe to.");
     rviz::ROSTopicStringPropertyPtr topic_prop = m_rgb_topic_property.lock();
@@ -1008,14 +1050,20 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
 
     m_camera_size = m_camera_model.fullResolution();
 
-
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
     vis_manager_->getFrameManager()->getTransform(cam_info->header, position, orientation);
-    const cv::Mat_<double> pm( m_camera_model.projectionMatrix() );
+  //  const cv::Mat_<double> pm( m_camera_model.projectionMatrix() );
 
     // convert vision (Z-forward) frame to ogre frame (Z-out)
     orientation = orientation * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X);
+
+    // Get z-axis
+    Ogre::Vector3 normal( orientation.zAxis() );
+    normal.normalise();
+
+    // Compute camera plane equation
+    Ogre::Vector4 equation( normal.x, normal.y, normal.z, -normal.dotProduct( position) );
 
 
     float width = cam_info->width;
@@ -1027,7 +1075,8 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
 
     double fx = cam_info->P[0];
     double fy = cam_info->P[5];
-    Ogre::Radian fovy( 2.0*atan(height / (2.0 * fy)) );
+/*
+     Ogre::Radian fovy( 2.0*atan(height / (2.0 * fy)) );
 
     if( fovy != fovy)
     	return; // NAN
@@ -1036,12 +1085,24 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
 
     if( aspect_ratio != aspect_ratio )
     	return; //NaN
-
+*/
     // Add the camera's translation relative to the left camera (from P[3]);
     // Tx = -1*(P[3] / P[0])
     double tx = -1.0 * (cam_info->P[3] / fx);
     Ogre::Vector3 right = orientation * Ogre::Vector3::UNIT_X;
     position = position + (right * tx);
+
+//    std::cerr << right * tx << std::endl;
+
+    double ty = -1 * (cam_info->P[7] / fy);
+    Ogre::Vector3 down = orientation * Ogre::Vector3::UNIT_Y;
+    position = position + (down * ty);
+
+    if( !rviz::validateFloats( position ))
+    {
+    	return;
+    }
+
 
     if( m_projectionData != 0 )
     {
@@ -1049,10 +1110,11 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
 		m_projectionData->setProjectorOrientation( orientation );
 
 		// f.setFOVy( fovX );
-		m_projectionData->setFOVy( fovy );
-		m_projectionData->setAspectRatio( aspect_ratio );
+//		m_projectionData->setFOVy( fovy );
+//		m_projectionData->setAspectRatio( aspect_ratio );
 
 		m_projectionData->setCameraModel( *cam_info );
+		m_projectionData->setProjectorEquation( equation );
 		m_projectionData->updateMatrices();
     }
 }
@@ -1129,6 +1191,21 @@ void srs_ui_but::CButProjection::CControllPane::OnSave(wxCommandEvent& event)
 
 }
 
+/**
+ *  Set testing distance - property callback
+ */
+void srs_ui_but::CButProjection::setTestedDistance( float distance )
+{
+	m_ml->setTestedDistance( distance );
+}
+
+/**
+ * Get testing distance - property callback
+ */
+float srs_ui_but::CButProjection::getTestedDistance()
+{
+	return m_ml->getTestedDistance();
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////

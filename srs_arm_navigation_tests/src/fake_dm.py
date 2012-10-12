@@ -31,6 +31,7 @@ import rospy
 import smach
 import smach_ros
 from arm_manip_generic_states import *
+from assisted_grasping_generic_states import *
 from simulate_dm import *
 
 def main():

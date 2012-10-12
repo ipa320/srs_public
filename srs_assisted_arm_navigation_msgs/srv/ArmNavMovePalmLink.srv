@@ -1,4 +1,4 @@
-geometry_msgs/Pose sdh_palm_link_pose
+geometry_msgs/PoseStamped sdh_palm_link_pose
 ---
 bool completed
 string msg

@@ -13,7 +13,7 @@ void generalPurposeProjection_fp(
 
 void testedProjection_fp(
 		float4 texCoord		: TEXCOORD0,
-		float4 depthPos 	: TEXCOORD1,
+		float4 cam_z	 	: TEXCOORD1,
 		float4 inColor		: COLOR,
 		out float4 outCol	: COLOR,
 		uniform sampler2D texMap 	: TEXUNIT0,
@@ -21,12 +21,13 @@ void testedProjection_fp(
 		uniform float testedDistance
 )
 {
-
-	float4 col_depth = tex2Dproj( depthMap, texCoord );
-	float4 col_tex = tex2Dproj( texMap, texCoord );
+	// Get projected depth
+	float4 proj_depth = tex2Dproj( depthMap, texCoord );
+	float proj_z = proj_depth[2];
 	
-	float cam_z = col_depth[3];
-	float frag_z = depthPos[0];
+	// Get color
+	float4 col_tex = tex2Dproj( texMap, texCoord );
+
 /*	
 	float tested = frag_z - cam_z;
 	
@@ -47,9 +48,16 @@ void testedProjection_fp(
 			outCol = float4( 0.0, 0.0, 1.0, 1.0 );
 	}	
 */
-	if( abs( cam_z - frag_z ) < testedDistance )
+
+	float v = testedDistance * ( proj_z - cam_z[0] );
+	if( (abs( proj_z - cam_z[1] ) < testedDistance)  && cam_z[1] > 0)
 		outCol = col_tex;
 	else
 		outCol = inColor;
-
+/*
+	if( v < 0.0 )
+		outCol = float4( -v, 0.0, 0.0, 1.0 );
+	else		
+		outCol = float4( 0.0, v, 0.0, 1.0 );
+*/		
 }

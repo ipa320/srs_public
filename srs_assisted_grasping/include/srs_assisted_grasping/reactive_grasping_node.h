@@ -153,6 +153,9 @@ protected:
 
     ros::Publisher vel_publisher_;
 
+    bool publish(std::vector<double> vel);
+    void stop();
+
 
     ReactiveGraspingParams params_;
     Joints joints_;
@@ -170,6 +173,8 @@ protected:
     //schunk_sdh::TactileSensor tactile_data_;
     std::vector<int16_t> tactile_data_;
     trajectory_msgs::JointTrajectoryPoint sdh_data_act_;
+
+    std::vector<float> time_to_stop_;
 
 private:
 

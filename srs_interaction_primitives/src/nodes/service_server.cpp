@@ -617,7 +617,7 @@ bool clickablePositions(ClickablePositions::Request &req, ClickablePositions::Re
   {
     positions.push_back(req.positions.at(i));
   }
-  ClickablePositionsMarker *clickPositions = new ClickablePositionsMarker(req.frame_id, req.topic_suffix, req.radius,
+  ClickablePositionsMarker *clickPositions = new ClickablePositionsMarker(imServer,req.frame_id, req.topic_suffix, req.radius,
                                                                           req.color, positions);
   imServer->insert(clickPositions->getMarker(),
                    boost::bind(&ClickablePositionsMarker::markerFeedback, clickPositions, _1));

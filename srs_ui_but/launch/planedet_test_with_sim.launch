@@ -15,13 +15,14 @@
     <!-- Run our GUI nodes -->
     <include file="$(find cob_interactive_teleop)/launch/interactive_teleop_sim.launch" />
     <include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" />
-    <include file="$(find srs_ui_but)/launch/cob_stretch_indicator.launch" />
-    <include file="$(find srs_ui_but)/launch/distance_visualizer.launch" />
+    <!-- include file="$(find srs_ui_but)/launch/cob_stretch_indicator.launch" /-->
+    <!-- include file="$(find srs_ui_but)/launch/distance_visualizer.launch" /-->
 
-    <!-- Load predefined URDF model of the environment -->
-    <include file="$(find srs_ui_but)/launch/$(env ROBOT_ENV)/load_urdf_model.launch" />
+    <!-- Run the plane detection node -->
+    <!--include file="$(find srs_env_model_percp)/launch/but_planedet_common.launch" /-->
+    <include file="$(find srs_env_model_percp)/launch/planedet_demo.launch" />
 
     <!-- Run rviz -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_ui_but)/config/ui_test.vcg" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_ui_but)/config/planedet_test.vcg" />
 </launch>
 

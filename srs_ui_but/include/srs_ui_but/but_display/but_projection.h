@@ -84,6 +84,13 @@ namespace srs_ui_but
 
         //! Is listener not paused?
         bool m_bNotPaused;
+
+        //! Testing distance
+        float m_testingDistance;
+
+        //! Is distance changed
+        bool m_bDistanceChanged;
+
     public:
         //! Constructor
         //CMaterialListener( const std::string & materialName, const std::string & groupName, const std::string & schemeName );
@@ -97,7 +104,13 @@ namespace srs_ui_but
         //! Pause/run listener
         void setPaused( bool bPaused ) { m_bNotPaused = !bPaused; }
 
-        //! Scheme not found event handler - return stored material technique
+    	//! Set tested distance
+    	void setTestedDistance( float distance );
+
+    	//! Get current tested distance
+    	float getTestedDistance() { return m_testingDistance; }
+
+    	//! Scheme not found event handler - return stored material technique
         Ogre::Technique *handleSchemeNotFound(unsigned short, const Ogre::String& schemeName, Ogre::Material*mat, unsigned short, const Ogre::Renderable*);
     }; // class CMaterialListener
 
@@ -161,6 +174,9 @@ namespace srs_ui_but
         //! Set projecting direction
         void setProjectorOrientation( const Ogre::Quaternion & q ) { m_projectorNode->setOrientation( q ); }
 
+        //! Set camera plane equation
+        void setProjectorEquation( const Ogre::Vector4 & e ) { m_cameraEquation = e; }
+
         //! Update material projection matrix parameter
         void updateMatrices();
 
@@ -172,8 +188,6 @@ namespace srs_ui_but
 
     	//! Get camera model reference
     	void setCameraModel(const sensor_msgs::CameraInfo& msg) { m_textureRosDepth->setCameraModel(msg); }
-
-
 
     protected:
         //! Used material
@@ -210,6 +224,11 @@ namespace srs_ui_but
         //! Sotred scene manager pointer
         Ogre::SceneManager * m_manager;
 
+        //! Camera position
+        Ogre::Vector3 m_cameraPosition;
+
+        //! Computed camera equation parameters
+        Ogre::Vector4 m_cameraEquation;
 
     }; // class CProjectionData
 
@@ -341,6 +360,12 @@ namespace srs_ui_but
         //! Connect/disconnect listener
         void connectML( bool bConnect );
 
+        //! Set testing distance - property callback
+        void setTestedDistance( float distance );
+
+        //! Get testing distance - property callback
+        float getTestedDistance();
+
     protected:
         //! Scene node
         Ogre::SceneNode * m_sceneNode;
@@ -356,6 +381,9 @@ namespace srs_ui_but
 
         //! Depth image topic property
         rviz::ROSTopicStringPropertyWPtr m_depth_topic_property;
+
+        //! Tested distance property
+        rviz::FloatPropertyWPtr m_distance_property;
 
         //! Timer period
         double m_timerPeriod;
@@ -392,6 +420,8 @@ namespace srs_ui_but
 
         //! Is material listener connected
         bool m_bMLConnected;
+
+
 
     };//class CButCamCast
 

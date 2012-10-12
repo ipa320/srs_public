@@ -58,6 +58,8 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
 
    MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
 
+   ROS_INFO("Performing planning for %s end effector link.",data.getEndEffectorLink().c_str());
+
    data.setStartVisible(false);
 
    #define TR 0.1
@@ -293,97 +295,55 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
 
   ROS_INFO("Trying to add collision object name: %s",req.object_name.c_str());
 
-  if (req.pose.header.frame_id=="/map" || req.pose.header.frame_id=="map") {
 
-    ROS_INFO("Ok, object pose is in /map coord. system. Lets store it.");
+  if (checkPose(req.pose,"map")) {
 
-    t_det_obj obj;
+	  ROS_INFO("Ok, object pose is in /map coord. system. Lets store it.");
 
-    obj.name = req.object_name;
-    obj.bb_lwh = req.bb_lwh;
-    obj.pose = req.pose;
+	  t_det_obj obj;
 
-    obj.allow_collision = req.allow_collision;
+	  obj.name = req.object_name;
+	  obj.bb_lwh = req.bb_lwh;
+	  obj.pose = req.pose;
 
-    coll_obj_det.push_back(obj);
+	  obj.allow_collision = req.allow_collision;
 
-  } else {
+	  coll_obj_det.push_back(obj);
 
-    /// @todo Implement transformation of collision object if it is not in map coord. system.
-    //ROS_WARN("We have to do transform - NOT implemented yet.");
+	  return true;
 
-    ros::Time now = ros::Time::now();
-    geometry_msgs::PoseStamped pose_transf;
+  }
 
-    std::string target = "/map";
+  return false;
 
-    ROS_INFO("Trying to transform collision object from %s to %s frame",req.pose.header.frame_id.c_str(),target.c_str());
-
-    bool transf = false;
-
-    ROS_INFO("Waiting for transformation between %s and %s",req.pose.header.frame_id.c_str(),target.c_str());
-
-    try {
-
-            if (tfl_->waitForTransform(target, req.pose.header.frame_id, now, ros::Duration(2.0))) {
-
-              tfl_->transformPose(target,req.pose,pose_transf);
-
-            } else {
-
-              req.pose.header.stamp = ros::Time(0);
-              tfl_->transformPose(target,req.pose,pose_transf);
-              ROS_WARN("Using latest transform available, may be wrong.");
-
-            }
-
-            transf = true;
-
-       }
-
-        // In case of absence of transformation path
-        catch(tf::TransformException& ex){
-           std::cerr << "Transform error: " << ex.what() << std::endl;
-           transf = false;
-        }
-
-
-     if (transf) {
-
-       ROS_INFO("Successfully transformed - adding object %s to list.",req.object_name.c_str());
-
-       t_det_obj obj;
-
-       obj.name = req.object_name;
-       obj.bb_lwh = req.bb_lwh;
-       obj.pose = pose_transf;
-
-       obj.allow_collision = req.allow_collision;
-
-       coll_obj_det.push_back(obj);
-
-
-     } // transf
-
-  } // else
-
-  return true;
 
 }
 
 bool CArmManipulationEditor::ArmNavMovePalmLink(ArmNavMovePalmLink::Request &req, ArmNavMovePalmLink::Response &res) {
 
-  ROS_INFO("Lets try to move arm IMs little bit... :)");
 
   if (inited) {
 
+	geometry_msgs::PoseStamped ps(req.sdh_palm_link_pose);
+
+	//if (ps.header.frame_id != collision_objects_frame_id_) ROS_INFO("Setting position of end eff. to x: %f, y: %f, z: %f (in %s frame)",ps.pose.position.x,ps.pose.position.y,ps.pose.position.z,collision_objects_frame_id_.c_str());
+
+	if (!checkPose(ps,collision_objects_frame_id_)) return false;
+
+	ROS_INFO("Setting position of end eff. to x: %f, y: %f, z: %f (in %s frame)",ps.pose.position.x,ps.pose.position.y,ps.pose.position.z,ps.header.frame_id.c_str());
+
     boost::mutex::scoped_lock(im_server_mutex_);
 
-    if (interactive_marker_server_->setPose("MPR 0_end_control",req.sdh_palm_link_pose)) {
+    std_msgs::Header h;
+
+    h.frame_id = "map";
+    h.stamp = ros::Time::now();
+
+    if (interactive_marker_server_->setPose("MPR 0_end_control",ps.pose,h)) {
 
       interactive_marker_server_->applyChanges();
 
-      findIK(req.sdh_palm_link_pose);
+      findIK(ps.pose);
 
       res.completed = true;
       return true;

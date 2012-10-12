@@ -45,6 +45,12 @@ CObjectControlPane::CObjectControlPane(wxWindow *parent, const wxString& title, 
       srs_interaction_primitives::AddObject_SRV);
   remove_primitive_client_ = nh_.serviceClient<srs_interaction_primitives::RemovePrimitive>(
       srs_interaction_primitives::RemovePrimitive_SRV);
+  clickable_positions_client_ = nh_.serviceClient<srs_interaction_primitives::ClickablePositions>(
+      srs_interaction_primitives::ClickablePositions_SRV);
+  pose_clicked_subscriber_ = nh_.subscribe(BUT_PositionClicked_TOPIC(CLICKABLE_POSITIONS_TOPIC), 1,
+                                           &CObjectControlPane::poseClickedCallback, this);
+
+  tfListener_ = new tf::TransformListener();
 
   srs_object_database_msgs::GetObjectId srv;
 
@@ -80,6 +86,8 @@ CObjectControlPane::CObjectControlPane(wxWindow *parent, const wxString& title, 
                                    wxBU_EXACTFIT);
   m_removeObjectButton = new wxButton(this, ID_REMOVE_OBJECT_BUTTON, wxT("Remove object"), wxDefaultPosition,
                                       wxDefaultSize, wxBU_EXACTFIT);
+  m_clickablePositions = new wxButton(this, ID_CLICKABLEPOS_BUTTON, wxT("Show positions"), wxDefaultPosition,
+                                      wxDefaultSize, wxBU_EXACTFIT);
 
   m_statusLabel = new wxStaticText(this, ID_STATUS_LABEL, wxT(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE,
                                    wxT(""));
@@ -100,7 +108,6 @@ CObjectControlPane::CObjectControlPane(wxWindow *parent, const wxString& title, 
       size.y = srv.response.model_y_size[i];
       size.z = srv.response.model_z_size[i];
       database_sizes_.push_back(size);
-
       m_objectsChoice->AppendString(wxString::FromUTF8((const char*)srv.response.model_category[i].c_str()));
     }
     m_objectsChoice->SetSelection(0);
@@ -115,7 +122,7 @@ CObjectControlPane::CObjectControlPane(wxWindow *parent, const wxString& title, 
 
   wxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
   wxSizer *col1 = new wxBoxSizer(wxVERTICAL);
-  col1->Add(m_frameLabel, ID_FRAME_LABEL, wxALIGN_LEFT);
+  col1->Add(m_frameLabel, ID_FRAME_TEXT, wxALIGN_LEFT);
   col1->Add(m_posLabel, ID_POS_LABEL, wxALIGN_LEFT);
   col1->Add(m_descriptionLabel, ID_DESCRIPTION_LABEL, wxALIGN_LEFT);
   col1->Add(m_colorLabel, ID_COLOR_LABEL, wxALIGN_LEFT);
@@ -124,12 +131,15 @@ CObjectControlPane::CObjectControlPane(wxWindow *parent, const wxString& title, 
   sizer->Add(col1, 0, wxALIGN_TOP);
 
   wxSizer *col2 = new wxBoxSizer(wxVERTICAL);
-  col2->Add(m_frameText, ID_FRAME_TEXT, wxALIGN_LEFT);
-  wxSizer *posRow = new wxBoxSizer(wxHORIZONTAL);
-  posRow->Add(m_posxText, ID_POSX_TEXT, wxALIGN_LEFT);
-  posRow->Add(m_posyText, ID_POSY_TEXT, wxALIGN_LEFT);
-  posRow->Add(m_poszText, ID_POSZ_TEXT, wxALIGN_LEFT);
-  col2->Add(posRow, 0, wxALIGN_LEFT);
+  wxSizer *posRow1 = new wxBoxSizer(wxHORIZONTAL);
+  posRow1->Add(m_frameText, ID_FRAME_LABEL, wxALIGN_LEFT);
+  posRow1->Add(m_clickablePositions, ID_CLICKABLEPOS_BUTTON, wxALIGN_LEFT);
+  col2->Add(posRow1, 0, wxALIGN_LEFT);
+  wxSizer *posRow2 = new wxBoxSizer(wxHORIZONTAL);
+  posRow2->Add(m_posxText, ID_POSX_TEXT, wxALIGN_LEFT);
+  posRow2->Add(m_posyText, ID_POSY_TEXT, wxALIGN_LEFT);
+  posRow2->Add(m_poszText, ID_POSZ_TEXT, wxALIGN_LEFT);
+  col2->Add(posRow2, 0, wxALIGN_LEFT);
   col2->Add(m_descriptionText, ID_DESCRIPTION_TEXT, wxALIGN_LEFT);
   col2->Add(m_colorClrpicker, ID_COLOR_CLRPICKER, wxALIGN_LEFT);
   col2->Add(m_addObjectButton, ID_ADD_OBJECT_BUTTON, wxALIGN_LEFT);
@@ -181,10 +191,15 @@ void CObjectControlPane::OnAddObject(wxCommandEvent& event)
         object_name << "om_";
         object_name << object_count;
         double posx, posy, posz;
-        m_posxText->GetValue().ToDouble(&posx);
-        m_posyText->GetValue().ToDouble(&posy);
-        m_poszText->GetValue().ToDouble(&posz);
-
+        wxString strx = m_posxText->GetValue();
+        wxString stry = m_posyText->GetValue();
+        wxString strz = m_poszText->GetValue();
+        strx.Replace(wxT("."), wxT(","), true);
+        stry.Replace(wxT("."), wxT(","), true);
+        strz.Replace(wxT("."), wxT(","), true);
+        strx.ToDouble(&posx);
+        stry.ToDouble(&posy);
+        strz.ToDouble(&posz);
         add_object_srv.request.frame_id = m_frameText->GetValue().ToUTF8().data();
         add_object_srv.request.name = object_name.str();
         add_object_srv.request.description = m_descriptionText->GetValue().ToUTF8().data();
@@ -195,10 +210,6 @@ void CObjectControlPane::OnAddObject(wxCommandEvent& event)
         add_object_srv.request.color.g = (float)(m_colorClrpicker->GetColour().Green()) / 255;
         add_object_srv.request.color.b = (float)(m_colorClrpicker->GetColour().Blue()) / 255;
         add_object_srv.request.color.a = (float)(m_colorClrpicker->GetColour().Alpha()) / 255;
-        /*add_object_srv.request.color.r = (float)(m_colorDialog->GetColourData().GetColour().Red()) / 255;
-         add_object_srv.request.color.g = (float)(m_colorDialog->GetColourData().GetColour().Green()) / 255;
-         add_object_srv.request.color.b = (float)(m_colorDialog->GetColourData().GetColour().Blue()) / 255;
-         add_object_srv.request.color.a = (float)(m_colorDialog->GetColourData().GetColour().Alpha()) / 255;*/
         add_object_srv.request.pose_type = 0;
         add_object_srv.request.bounding_box_lwh.x = database_sizes_.at(index).x;
         add_object_srv.request.bounding_box_lwh.y = database_sizes_.at(index).y;
@@ -229,18 +240,91 @@ void CObjectControlPane::OnAddObject(wxCommandEvent& event)
   }
 }
 
+void CObjectControlPane::OnClickablePositions(wxCommandEvent& event)
+{
+  srs_interaction_primitives::ClickablePositions msg;
+  msg.request.frame_id = "/base_link";
+  msg.request.topic_suffix = CLICKABLE_POSITIONS_TOPIC;
+  msg.request.radius = 0.1;
+
+  msg.request.color.r = (float)(m_colorClrpicker->GetColour().Red()) / 255;
+  msg.request.color.g = (float)(m_colorClrpicker->GetColour().Green()) / 255;
+  msg.request.color.b = (float)(m_colorClrpicker->GetColour().Blue()) / 255;
+  msg.request.color.a = (float)(m_colorClrpicker->GetColour().Alpha()) / 255;
+
+  geometry_msgs::Point point;
+  // Front
+  point.x = 0.8;
+  point.y = 0.0;
+  point.z = 1.0;
+  msg.request.positions.push_back(point);
+
+  // Back
+  point.x = -0.4;
+  point.y = 0.0;
+  point.z = 1.0;
+  msg.request.positions.push_back(point);
+
+  // Left
+  point.x = 0.0;
+  point.y = -0.8;
+  point.z = 1.0;
+  msg.request.positions.push_back(point);
+
+  // Right
+  point.x = 0.0;
+  point.y = 0.8;
+  point.z = 1.0;
+  msg.request.positions.push_back(point);
+
+  // Top
+  point.x = 0.0;
+  point.y = 0.0;
+  point.z = 1.8;
+  msg.request.positions.push_back(point);
+
+  clickable_positions_client_.call(msg);
+}
+
 std::vector<std::string> CObjectControlPane::getObjectIds()
 {
   std::vector<std::string> objectIds;
-  for (int i = 0; i < m_addedObjectsChoice->GetStrings().size(); i++)
+  for (unsigned int i = 0; i < m_addedObjectsChoice->GetStrings().size(); i++)
   {
     objectIds.push_back(m_addedObjectsChoice->GetStrings().Item(i).ToUTF8().data());
   }
   return objectIds;
 }
 
+void CObjectControlPane::poseClickedCallback(const srs_interaction_primitives::PositionClickedConstPtr &msg)
+{
+  std::stringstream xval, yval, zval;
+
+  tfListener_->waitForTransform(m_frameText->GetValue().ToUTF8().data(), "/base_link", ros::Time(), ros::Duration(0.2));
+  tfListener_->lookupTransform(m_frameText->GetValue().ToUTF8().data(), "/base_link", ros::Time(), robotToFfTf_);
+
+  transformer_.setTransform(robotToFfTf_);
+
+  // Transform link to camera
+  tf::Stamped<btVector3> p;
+  p.setX(msg->position.x);
+  p.setY(msg->position.y);
+  p.setZ(msg->position.z);
+  p.frame_id_ = m_frameText->GetValue().ToUTF8().data();
+  transformer_.transformPoint("/base_link", p, p);
+
+  xval << p.getX();
+  yval << p.getY();
+  zval << p.getZ();
+
+  m_posxText->SetValue(wxString::FromUTF8((const char*)xval.str().c_str()));
+  m_posyText->SetValue(wxString::FromUTF8((const char*)yval.str().c_str()));
+  m_poszText->SetValue(wxString::FromUTF8((const char*)zval.str().c_str()));
+}
+
 }
 ///////////////////////////////////////////////////////////////////////////////
 BEGIN_EVENT_TABLE(srs_ui_but::CObjectControlPane, wxPanel) EVT_BUTTON(ID_ADD_OBJECT_BUTTON, srs_ui_but::CObjectControlPane::OnAddObject)
 EVT_BUTTON(ID_REMOVE_OBJECT_BUTTON, srs_ui_but::CObjectControlPane::OnRemoveObject)
+EVT_BUTTON(ID_CLICKABLEPOS_BUTTON, srs_ui_but::CObjectControlPane::OnClickablePositions)
 END_EVENT_TABLE()

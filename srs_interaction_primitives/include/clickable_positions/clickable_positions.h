@@ -31,10 +31,13 @@
 #include <visualization_msgs/InteractiveMarker.h>
 #include <visualization_msgs/InteractiveMarkerControl.h>
 #include <visualization_msgs/InteractiveMarkerFeedback.h>
+#include <interactive_markers/interactive_marker_server.h>
 #include <srs_interaction_primitives/topics_list.h>
 
 namespace srs_interaction_primitives
 {
+typedef boost::shared_ptr<interactive_markers::InteractiveMarkerServer> InteractiveMarkerServerPtr;
+
 /**
  * @brief This class represents clickable positions, which are visualized by the Interactive
  * Markers as a sphere. Clicked position is published at the specified topic.
@@ -46,13 +49,14 @@ class ClickablePositionsMarker
 public:
   /**
    * @brief Constructor.
+   * @param imServer is Interactive Marker Server
    * @param frame_id Fixed Frame
    * @param topic Topic suffix for publishing clicked position
    * @param radius Sphere radius
    * @param color Sphere color
    * @param positions Clickable positions
    */
-  ClickablePositionsMarker(std::string frame_id, std::string topic, float radius, std_msgs::ColorRGBA color,
+  ClickablePositionsMarker(InteractiveMarkerServerPtr imServer,std::string frame_id, std::string topic, float radius, std_msgs::ColorRGBA color,
                            std::vector<geometry_msgs::Point> positions);
   /**
    * @brief Destructor.
@@ -77,6 +81,9 @@ private:
   void create();
 
 private:
+  // Interactive Marker server
+  InteractiveMarkerServerPtr imServer_;
+
   std::string frame_id_;
   std::string topic_suffix_;
   float radius_;

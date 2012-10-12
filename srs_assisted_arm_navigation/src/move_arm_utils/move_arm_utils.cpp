@@ -1143,7 +1143,7 @@ void PlanningSceneEditor::makeSelectableAttachedObjectFromPlanningScene(const ar
                                                             state);
     geometry_msgs::PoseStamped ret_pose;
     cm_->convertPoseGivenWorldTransform(*robot_state_,
-                                        cm_->getWorldFrameId(), 
+                                        cm_->getWorldFrameId(),
                                         coll.header,
                                         coll.poses[0],
                                         ret_pose);
@@ -3547,8 +3547,9 @@ std::string PlanningSceneEditor::createCollisionObject(const std::string& name,
   collision_object.operation.operation = arm_navigation_msgs::CollisionObjectOperation::ADD;
   collision_object.header.stamp = ros::Time(ros::Time::now().toSec());
 
-  //collision_object.header.frame_id = cm_->getWorldFrameId();
-  ros::param::param<std::string>("~world_frame",collision_object.header.frame_id,"base_link");
+  ROS_INFO_ONCE("Using %s as frame_id for collision object.",cm_->getWorldFrameId().c_str());
+  collision_object.header.frame_id = cm_->getWorldFrameId();
+  //ros::param::param<std::string>("~world_frame",collision_object.header.frame_id,"base_link");
   //cout << "collision_object.header.frame_id==" << collision_object.header.frame_id << endl;;
 
   if(name.empty()) {

@@ -71,13 +71,11 @@ material tested_projection
 			vertex_program_ref tested_projectionVP_PS
 			{
 				param_named_auto worldViewProjMatrix worldviewproj_matrix
-				param_named_auto worldMatrix world_matrix
-				param_named_auto texelOffsets texel_offsets
-        		param_named_auto depthRange scene_depth_range
-        		
-				// You'll need to update the tex projection, I suggest using
-				// the Frustum class
-				// param_named modelViewProj worldviewproj_matrix
+				param_named_auto modelWorldMatrix world_matrix
+    			param_named cameraPosition float4 0.0 0.0 0.0 1.0
+    			param_named cameraPlane float4 0.0 0.0 1.0 0.0
+	    		param_named texViewProjMatrix float4x4 1 0 0 0  0 1 0 0  0 0 1 0  0 0 0 1
+				        		
 			}
 			
 			fragment_program_ref tested_projectionFP_PS

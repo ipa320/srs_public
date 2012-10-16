@@ -5,7 +5,7 @@ duration time # time to reach target_configuration
 ---
 # RESULT
 std_msgs/Float32MultiArray actual_joint_values # n
-std_msgs/Float32MultiArray actual_forces # m
+std_msgs/Int16MultiArray actual_forces # m
 std_msgs/Float32MultiArray time_to_stop # n
 ---
 # FEEDBACK

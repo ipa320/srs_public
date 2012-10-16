@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Configuration for COB, navigation -->
+  <include file="$(find cob_default_robot_config)/upload_param.launch" />
+  <include file="$(find cob_default_env_config)/upload_param.launch" />
+
+  <param name="/use_sim_time" value="true" />
+  <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+  
+  <!-- start COB script server -->
+  <include file="$(find cob_script_server)/launch/script_server.launch"/>
+  
+  <include file="$(find srs_assisted_grasping)/launch/grasping_node.launch"/>
+  
+  <include file="$(find srs_assisted_grasping)/launch/tactile_filter_gui.launch"/>
+
+</launch>

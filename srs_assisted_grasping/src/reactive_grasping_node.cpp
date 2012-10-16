@@ -171,11 +171,13 @@ ReactiveGrasping::ReactiveGrasping(std::string name) {
 
 	  server_ = new actionlib::SimpleActionServer<srs_assisted_grasping_msgs::ReactiveGraspingAction>(nh_, name, boost::bind(&ReactiveGrasping::execute, this, _1), false);
 
-	  sdh_mode_client_ = nh_.serviceClient<cob_srvs::SetOperationMode>("/sdh_controller/set_operation_mode");
+	  sdh_mode_client_ = nh_.serviceClient<cob_srvs::SetOperationMode>("set_mode_srv");
 
 	  vel_publisher_ = nh_.advertise<brics_actuator::JointVelocities>("velocity_out", 10);
 
 	  action_name_ = name;
+
+	  time_to_stop_.resize(joints_.joints.size());
 
 	  tact_sub_  = nh_.subscribe("tact_in", 10, &ReactiveGrasping::TactileDataCallback,this);
 	  state_sub_ = nh_.subscribe("state_in", 10, &ReactiveGrasping::SdhStateCallback,this);
@@ -187,6 +189,51 @@ ReactiveGrasping::ReactiveGrasping(std::string name) {
 
 }
 
+void ReactiveGrasping::stop() {
+
+	ROS_INFO("Immediately stopping.");
+
+	std::vector<double> vel;
+	vel.resize(joints_.joints.size());
+
+	for (unsigned int i=0; i < vel.size(); i++)
+		vel[i];
+
+	publish(vel);
+
+}
+
+bool ReactiveGrasping::publish(std::vector<double> vel) {
+
+	if (vel.size()!= joints_.joints.size()) {
+
+		ROS_ERROR("Error on publishing velocities - vector size mismatch.");
+		return false;
+
+	}
+
+
+	ros::Time now = ros::Time::now();
+
+	brics_actuator::JointVelocities msg;
+
+	for (unsigned int i=0; i < vel.size(); i++) {
+
+		brics_actuator::JointValue jv;
+
+		jv.timeStamp = now;
+		jv.joint_uri = joints_.joints[i];
+		jv.value = vel[i];
+
+		msg.velocities.push_back(jv);
+
+	}
+
+	vel_publisher_.publish(msg);
+
+	return true;
+
+}
 
 void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 
@@ -220,12 +267,30 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 
   if (fatal_error_) {
 
-	  server_->setAborted(res,"fatal error has occurred");
+	  server_->setAborted(res,"Fatal error has occurred.");
+	  return;
+
+  }
+
+  if (!setMode("velocity")) {
+
+	  server_->setAborted(res,"Could not set SDH to velocity mode.");
 	  return;
 
   }
 
   copyData();
+
+  double t1 = goal->time.toSec() * (params_.a_ramp / 100.0);
+  double t3 = goal->time.toSec() * (params_.d_ramp / 100.0);
+  double t2 = goal->time.toSec() - (t1 + t3);
+
+  ROS_INFO("t1=%f, t2=%f, t3=%f,tc=%f, rate=%f",t1,t2,t3,t1+t2+t3,params_.rate);
+  ROS_INFO("Acc. will take %f %% of total time, dec. %f %%.",params_.a_ramp,params_.d_ramp);
+
+  unsigned int num_of_acc = (unsigned int)ceil(t1 * params_.rate) - 1;
+  unsigned int num_of_vel = (unsigned int)ceil(t2 * params_.rate);
+  unsigned int num_of_dec = (unsigned int)ceil(t3 * params_.rate) - 1;
 
   // compute velocities for all non-static joints
   for (unsigned int i = 0; i < joints_.joints.size(); i++) {
@@ -233,44 +298,39 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 	  if (joints_.is_static[i]) {
 
 		  joints_.velocities[i].clear();
+		  continue;
 
 	  } else {
 
-		  // things to consider
-		  // rate
-		  // ramp - % of total time
 
-		  double pos_diff = fabs(sdh_data_act_.positions[i] - goal->target_configuration.data[i]);
+		  double pos_diff = /*fabs*/(goal->target_configuration.data[i] - sdh_data_act_.positions[i]);
 
-		  // acc -> const vel. -> dec
-		  // velocity = s / t
+		  double vel = (pos_diff / (0.5*t1 + t2 + 0.5*t3)); // constant velocity
+		  double acc = (vel / t1) * (1.0 / params_.rate); // dv = a * dt = v/1 * 1/r
+		  double dec = (vel / t3) * (1.0 / params_.rate);
 
-		  unsigned int num_of_acc = (unsigned int)ceil(goal->time.toSec() * (params_.a_ramp / 100.0));
-		  unsigned int num_of_dec = (unsigned int)ceil(goal->time.toSec() * (params_.d_ramp / 100.0));
-		  unsigned int num_of_vel = (unsigned int)ceil(goal->time.toSec() * params_.rate) - (num_of_acc + num_of_dec);
+		  ROS_INFO("Joint %d, dv1=%f (%u), v2=%f (%u), dv3=%f (%u)",i,acc,num_of_acc,vel,num_of_vel,dec,num_of_dec);
 
 		  joints_.velocities[i].resize(num_of_acc + num_of_vel + num_of_dec);
 
 		  joints_.velocities[i][0] = 0.0;
 
-		  // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		  double acc = 0.0;
-		  double dec = 0.0;
 
-
-		  for (unsigned int j=1; j < num_of_vel; j++) {
+		  for (unsigned int j=1; j < (num_of_acc + num_of_vel + num_of_dec); j++) {
 
 			  if (j < num_of_acc) {
 
 				  // acceleration
 				  joints_.velocities[i][j] = joints_.velocities[i][j-1] + acc;
 
+				  if (joints_.velocities[i][j] > vel) joints_.velocities[i][j] = vel;
+
 
 
 			  } else if ( (j >= num_of_acc) && (j <= (num_of_acc + num_of_vel)) ) {
 
 				  // constant velocity
-				  joints_.velocities[i][j] = joints_.velocities[i][j-1];
+				  joints_.velocities[i][j] = vel;
 
 			  } else {
 
@@ -287,9 +347,19 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 
 			  } // deceleration
 
+			  //std::cout << joints_.velocities[i][j] << " ";
+
 		  } // for num of vel
 
 	  } // else
+
+	  //std::cout << std::endl  << std::endl;
+
+  }
+
+  for(unsigned int i=0; i < joints_.joints.size(); i++) {
+
+	  time_to_stop_[i] = -1.0;
 
   }
 
@@ -299,6 +369,7 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
   if ( goal->time > ros::Duration(0) ) max_time = start_time + goal->time;
   else max_time = start_time + params_.default_time;
 
+  unsigned int iter = 0;
 
   while(ros::ok()) {
 
@@ -306,27 +377,122 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 	  if (server_->isPreemptRequested()) {
 
 	         ros::Duration time_elapsed = ros::Time::now() - start_time;
-
-	         double time_elapsed_d = (double)time_elapsed.sec + (10e-9)*((double)time_elapsed.nsec);
+	         double time_elapsed_d = time_elapsed.toSec();
 
 	         ROS_INFO("%s: Preempted, elapsed time: %f", action_name_.c_str(),time_elapsed_d);
 
 	         server_->setPreempted(res,std::string("preempted"));
+
+	         stop();
+
+	         setMode("position");
 
 	         return;
 
 	      }
 
 	  // check for time condition
-	  if (ros::Time::now() >= max_time) {
+	  if ((ros::Time::now() >= max_time) || iter >= (num_of_acc + num_of_vel + num_of_dec) ) {
 
-		  ROS_INFO("Max. time condition reached!");
+		  ros::Duration time_elapsed = ros::Time::now() - start_time;
+		  double time_elapsed_d = time_elapsed.toSec();
+
+		  ROS_INFO("Max. time condition reached (%fs, iter: %u)!",time_elapsed_d,iter);
+
+		  res.actual_forces.data = tactile_data_;
+
+
+		  res.actual_joint_values.data.resize(sdh_data_act_.positions.size());
+		  for (unsigned int i=0; i < sdh_data_act_.positions.size(); i++) {
+
+			  res.actual_joint_values.data[i] = (float)sdh_data_act_.positions[i];
+
+		  }
+
+		  ros::Duration d = ros::Time::now() - start_time;
+
+		  for (unsigned int i=0; i < time_to_stop_.size(); i++) {
+
+			  if (time_to_stop_[i] == -1.0) time_to_stop_[i] = d.toSec();
+
+		  }
+
+		  res.time_to_stop.data = time_to_stop_;
+
+		  server_->setSucceeded(res,"Max. time condition reached.");
+
+		  stop();
+
+		  setMode("position");
+
+		  return;
 
 	  }
 
 	  copyData();
 
-	  //
+	  // array for velocities
+	  std::vector<double> vel;
+	  vel.resize(joints_.joints.size());
+
+	  // tdb
+	  if (iter++ < (num_of_acc + num_of_vel + num_of_dec) ) {
+
+		  // for each joint, assign correct velocity here
+		  for(unsigned int i=0; i < joints_.joints.size(); i++) {
+
+			  vel[i] = 0.0;
+
+			  // skip static joints
+			  if (joints_.is_static[i]) continue;
+
+			  // skip joints which already reached their configuration
+			  if (fabs(sdh_data_act_.positions[i] - goal->target_configuration.data[i]) < 0.02) {
+
+				  if (time_to_stop_[i] == -1.0) {
+
+					  ros::Duration d = ros::Time::now() - start_time;
+					  time_to_stop_[i] = d.toSec();
+
+					  ROS_INFO("Joint %s (%u) reached target configuration in %f secs.",joints_.joints[i].c_str(),i,time_to_stop_[i]);
+
+				  }
+
+				  continue;
+
+			  }
+
+			  // test force only for joints with tactile pad
+			  if (joints_.has_tactile_pad[i]) {
+
+				  if (tactile_data_[i] >= goal->max_force.data[i]) {
+
+					  if (time_to_stop_[i] == -1.0) {
+
+						  ros::Duration d = ros::Time::now() - start_time;
+						  time_to_stop_[i] = d.toSec();
+
+						  ROS_INFO("Joint %s (%u) reached max. force (%d) in %f secs.",joints_.joints[i].c_str(),i,tactile_data_[i],time_to_stop_[i]);
+
+					  }
+
+					  continue;
+
+				  } else vel[i] = joints_.velocities[i][iter];
+
+
+			  } else vel[i] = joints_.velocities[i][iter];
+
+
+
+		  } // for over all joints
+
+		  //iter++;
+
+	  }
+
+	  // publish velocities
+	  publish(vel);
 
 	  r.sleep();
 
@@ -349,6 +515,8 @@ void ReactiveGrasping::copyData() {
 
 void ReactiveGrasping::SdhStateCallback(const pr2_controllers_msgs::JointTrajectoryControllerState::ConstPtr & msg) {
 
+  if (fatal_error_) return;
+
   boost::mutex::scoped_lock(feedback_data_.data_mutex);
 
   feedback_data_.sdh_data = *msg;
@@ -360,7 +528,7 @@ void ReactiveGrasping::SdhStateCallback(const pr2_controllers_msgs::JointTraject
 	  // check sizes of lists
 	  if (feedback_data_.sdh_data.joint_names.size() != joints_.joints.size()) {
 
-		  ROS_ERROR("Received data for more/less joints than configured!");
+		  ROS_ERROR_ONCE("Received data for more/less joints than configured!");
 		  fatal_error_ = true;
 		  return;
 
@@ -371,7 +539,7 @@ void ReactiveGrasping::SdhStateCallback(const pr2_controllers_msgs::JointTraject
 
 		  if (joints_.joints[i] != feedback_data_.sdh_data.joint_names[i]) {
 
-			  ROS_ERROR("Order or names of joint differs in config and received data!");
+			  ROS_ERROR_ONCE("Order or names of joint differs in config and received data!");
 			  fatal_error_ = true;
 			  return;
 
@@ -387,6 +555,8 @@ void ReactiveGrasping::SdhStateCallback(const pr2_controllers_msgs::JointTraject
 
 
 void ReactiveGrasping::TactileDataCallback(const schunk_sdh::TactileSensor::ConstPtr& msg) {
+
+  if (fatal_error_) return;
 
   boost::mutex::scoped_lock(feedback_data_.data_mutex);
 
@@ -417,7 +587,7 @@ void ReactiveGrasping::TactileDataCallback(const schunk_sdh::TactileSensor::Cons
 
 	  for (unsigned int j=0; j < (unsigned int)(msg->tactile_matrix[i].cells_x*msg->tactile_matrix[i].cells_y); j++) {
 
-		  if (msg->tactile_matrix[i].tactile_array[j] > max) max = msg->tactile_matrix[i].tactile_array[j] > max;
+		  if ( (msg->tactile_matrix[i].tactile_array[j]) > (max && msg->tactile_matrix[i].tactile_array[j] < 20000)) max = msg->tactile_matrix[i].tactile_array[j];
 
 	  }
 

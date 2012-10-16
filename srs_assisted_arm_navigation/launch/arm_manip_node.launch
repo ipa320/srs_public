@@ -6,7 +6,7 @@
     <param name="start_timeout" type="double" value="60.0"/>
     <param name="solve_timeout" type="double" value="300.0"/>
     <param name="inflate_bb" type="double" value="1.1"/>
-    <param name="world_frame" type="string" value="base_link"/>
+    <param name="world_frame" type="string" value="base_footprint"/>
   </node>
   
 </launch>

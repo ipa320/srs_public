@@ -19,6 +19,8 @@
   <depend package="pr2_controllers_msgs"/>
   <depend package="schunk_sdh"/>
   <depend package="opencv2"/>
+  <depend package="brics_actuator"/>
+  <depend package="trajectory_msgs"/>
   
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />

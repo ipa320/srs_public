@@ -8,6 +8,7 @@ import grasping_functions
 
 from srs_object_database_msgs.srv import *
 from srs_grasping.srv import *
+from srs_msgs.msg import GraspingErrorCodes
 
 class databaseutils():
 
@@ -27,11 +28,11 @@ class databaseutils():
 			resp = self.get_mesh_service(model_ids=[object_id])
 		except rospy.ServiceException, e:
 			rospy.logerr("Service did not process request: %s", str(e))
-			return -1
+			return GraspingErrorCodes.SERVICE_DID_NOT_PROCESS_REQUEST
 
 		if len(resp.msg) == 0:
 			rospy.logerr("The object with ID=%d has not mesh file in the DB", object_id);
-			return -1
+			return GraspingErrorCodes.UNKNOWN_OBJECT
 
 		mesh_file = "/tmp/mesh.iv"
 		f = open(mesh_file, 'w')
@@ -45,9 +46,9 @@ class databaseutils():
 			resp = self.insert_obj_service(model_id=object_id, data_grasp=grasp_file)
 		except rospy.ServiceException, e:
 		  	rospy.logerr("Service did not process request: %s", str(e))
-			return -1
+			return GraspingErrorCodes.SERVICE_DID_NOT_PROCESS_REQUEST
 
-		return 0;
+		return GraspingErrorCodes.SUCCESS;
 
 	def get_grasps(self, object_id):
 
@@ -57,12 +58,12 @@ class databaseutils():
 			resp = self.get_grasps_service(model_ids=[object_id]);
 		except rospy.ServiceException, e:
 		  	rospy.logerr("Service did not process request: %s", str(e))
-			return -1
+			return GraspingErrorCodes.SERVICE_DID_NOT_PROCESS_REQUEST
 		
 
 		if len(resp.msg) == 0:
 			rospy.loginfo("No grasping data for this object.");	
-			return -1;
+			return GraspingErrorCodes.NON_GENERATED_INFO;
 
 		try:
 			grasp_file = "/tmp/grasp.xml";
@@ -71,9 +72,9 @@ class databaseutils():
 			f.close();
 
 			GRASPS = self.graspingutils.get_grasps(grasp_file);
-			if GRASPS == -1:
+			if GRASPS == GraspingErrorCodes.CORRUPTED_GRASP_FILE:
 				rospy.logerr("ERROR reading the grasp file");
-				return -1;
+				return GraspingErrorCodes.CORRUPTED_GRASP_FILE;
 
 			os.remove(grasp_file);
 
@@ -85,18 +86,18 @@ class databaseutils():
 		except rospy.ServiceException, e:
 			rospy.logerr("Service did not process request: %s", str(e));
 			rospy.logerr("No grasping data for this object.");
-			return -1;
+			return GraspingErrorCodes.SERVICE_DID_NOT_PROCESS_REQUEST;
 
 	def get_object_id(self, object_name):
 		try:
 			resp = self.get_object_info_service("name", object_name)
 		except rospy.ServiceException, e:
 			rospy.logerr("Service did not process request: %s", str(e))
-			return -1
+			return GraspingErrorCodes.SERVICE_DID_NOT_PROCESS_REQUEST
 
 		if len(resp.model_ids) == 0:
 			rospy.logerr("No info for this object.");
-			return -1;
+			return GraspingErrorCodes.OBJECT_INFO_NOT_FOUND;
 
 		return resp.model_ids[0];
 
@@ -105,11 +106,11 @@ class databaseutils():
 			resp = self.get_object_info_service("id", str(object_id))
 		except rospy.ServiceException, e:
 			rospy.logerr("Service did not process request: %s", str(e))
-			return -1
+			return GraspingErrorCodes.SERVICE_DID_NOT_PROCESS_REQUEST
 
 		if len(resp.model_desc) == 0:
 			rospy.logerr("No info for this object.");
-			return -1;
+			return GraspingErrorCodes.OBJECT_INFO_NOT_FOUND;
 
 		return resp.model_desc[0];
 	

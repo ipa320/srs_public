@@ -4,3 +4,4 @@ float32[] pregrasp_offsets
 ---
 bool feasible_grasp_available
 srs_msgs/FeasibleGrasp[] grasp_configuration
+srs_msgs/GraspingErrorCodes error_code

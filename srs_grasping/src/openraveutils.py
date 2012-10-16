@@ -14,7 +14,7 @@ from numpy import *
 from traceback import print_exc
 from xml.dom.minidom import Document
 import re
-
+from srs_msgs.msg import GraspingErrorCodes
 class openraveutils():
 
 	def __init__(self, databaseutils=None, 
@@ -47,22 +47,22 @@ class openraveutils():
 			self.env.AddRobot(self.robot);
 		except:
 			rospy.logerr("The robot file %s does not exists.", self.robotName);
-			return -1;
+			return GraspingErrorCodes.CORRUPTED_ROBOT_MESH_FILE;
 			
 
 	def init_env(self,object_id):
 		mesh_file = self.databaseutils.get_mesh(object_id);
-		if mesh_file is -1:
-			return -1;
+		if mesh_file < 0:
+			return mesh_file
 
 		try:
 			target = self.env.ReadKinBodyXMLFile(mesh_file)
 			self.env.AddKinBody(target);
 			os.remove(mesh_file);
 		except:
-			rospy.logerr("The mesh data does not exist or does not work correctly.");
+			rospy.logerr("The mesh data does not work correctly.");
 			os.remove(mesh_file);
-			return -1;
+			return GraspingErrorCodes.CORRUPTED_MESH_FILE;
 
 		return openravepy.databases.grasping.GraspingModel(robot=self.robot,target=target);
 
@@ -70,8 +70,8 @@ class openraveutils():
 	def generate_grasp_file_OLD(self, object_id):
 
 		gmodel = self.init_env(object_id);
-		if gmodel is -1:
-			return -1
+		if gmodel < 0:
+			return gmodel
 
 		self.generate_grasps_OLD(gmodel);
 
@@ -106,12 +106,12 @@ class openraveutils():
 				e = tf.transformations.euler_from_matrix(matrix, axes='sxyz')
 
 				category = self.graspingutils.get_grasping_direction(matrix)
-				if category is -1:
+				if category is GraspingErrorCodes.UNKNOWN_CATEGORY:
 					continue
 
 				tp = []
 				tp = self.graspingutils.set_pregrasp(t, category, self.pregrasp_offset);
-				if tp is -1:
+				if tp is GraspingErrorCodes.UNKNOWN_CATEGORY:
 					continue;
 
 			   	f.write("<Grasp Index=\""+str(cont)+"\">\n")
@@ -155,20 +155,17 @@ class openraveutils():
 
 	def generator_OLD(self, object_id):
 		grasps = self.generate_grasp_file_OLD(object_id)
-		if grasps is -1:
+		if grasps < 0:
+			return grasps;
 
-			return -1;
+		return self.databaseutils.insert_grasps(object_id, grasps);
 
-		if self.databaseutils.insert_grasps(object_id, grasps) is -1:
-			return -1;
-
-		return 0;
 
 	def show_all_grasps(self, object_id, grasps):		#Group of grasps (grasp of GraspConfiguration)
 
 		gmodel = self.init_env(object_id);
-		if gmodel is -1:
-			return -1
+		if gmodel < 0:
+			return gmodel
 
 		self.init_simulator();
 		manip = self.robot.GetManipulator(self.manipulator)
@@ -188,13 +185,14 @@ class openraveutils():
 				self.env.UpdatePublishedBodies()
 
 				raw_input('Next config.')
-		return 0;
+		return GraspingErrorCodes.SUCCESS;
+
 
 	def grasp_view(self, object_id, grasp, object_pose):	#Individual grasp (grasp of GraspSubConfiguration)
 
 		gmodel = self.init_env(object_id);
-		if gmodel is -1:
-			return -1
+		if gmodel < 0:
+			return gmodel
 
 		self.init_simulator();
 
@@ -225,7 +223,7 @@ class openraveutils():
 				link.SetTransform(dot(Tdelta,link.GetTransform()))
 			self.env.UpdatePublishedBodies()
 			time.sleep(10.0)
-		return 0;
+		return GraspingErrorCodes.SUCCESS;
 
 
 	def init_simulator(self):
@@ -237,12 +235,12 @@ class openraveutils():
 
 	def generator(self, object_id):
 		grasps = self.generate_grasp_file(object_id)
-		if grasps is -1:
-			return -1;
-		elif self.databaseutils.insert_grasps(object_id, grasps) is -1:
-			return -1;
+		if grasps < 0:
+			return grasps;
+		elif self.databaseutils.insert_grasps(object_id, grasps) < 0:
+			return GraspingErrorCodes.SERVICE_DID_NOT_PROCESS_REQUEST;
 		else:
-			return 0;
+			return GraspingErrorCodes.SUCCESS;
 
 
 	def generate_grasps(self, gmodel, doc):
@@ -357,9 +355,8 @@ class openraveutils():
 	def generate_grasp_file(self, object_id):
 	
 		gmodel = self.init_env(object_id);
-		if gmodel is -1:
-			return -1
-
+		if gmodel < 0:
+			return gmodel
 
 		doc = Document()
 		GraspList = doc.createElement("GraspList")
@@ -408,12 +405,12 @@ class openraveutils():
 		e = tf.transformations.euler_from_matrix(matrix, axes='sxyz')
 
 		category = self.graspingutils.get_grasping_direction(matrix)
-		if category is -1:
+		if category is GraspingErrorCodes.UNKNOWN_CATEGORY:
 			return False;
 
 		tp = []
 		tp = self.graspingutils.set_pregrasp(t, category, self.pregrasp_offset);
-		if tp is -1:
+		if tp is GraspingErrorCodes.UNKNOWN_CATEGORY:
 			return False;
 
 		GraspList = (doc.getElementsByTagName("GraspList"))[0]

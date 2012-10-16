@@ -12,16 +12,15 @@ from kinematics_msgs.srv import *
 from cob_srvs.srv import *
 from geometry_msgs.msg import *
 from numpy import *
+from srs_msgs.msg import GraspingErrorCodes
 
 class graspingutils():
 
 	def __init__(self, simulation=True):
-
-		self.simulation = simulation;
+		self.simulation = simulation
 		self.ik_service = rospy.ServiceProxy('/arm_kinematics/get_constraint_aware_ik', GetConstraintAwarePositionIK)
 		self.is_grasped_service = rospy.ServiceProxy('/sdh_controller/is_grasped', Trigger)
 		self.is_cylindric_grasped_service = rospy.ServiceProxy('/sdh_controller/is_cylindric_grasped', Trigger)
-
 
 
 	def joint_filter(self, finalconfig):
@@ -32,6 +31,7 @@ class graspingutils():
 		else:
 			return (False, []);
 		
+
 	def get_grasping_direction(self,matrix):
 
 		x = (matrix)[0][2]
@@ -57,7 +57,7 @@ class graspingutils():
 			return "-Z"
 
 		else:
-			return -1
+			return GraspingErrorCodes.UNKNOWN_CATEGORY;
 
 
 	def valid_grasp(self, category):
@@ -116,7 +116,7 @@ class graspingutils():
 			return grasps
 		except:
 			print "There are not generated files for this object."
-			return -1
+			return GraspingErrorCodes.CORRUPTED_GRASP_FILE;
 
 
 	def get_grasp_category(self, pre, g):
@@ -194,11 +194,11 @@ class graspingutils():
 		if self.simulation:
 			#hack for gazebo simulation
 			e = tf.transformations.euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxzy');
-			rotacion =  tf.transformations.euler_matrix(e[0],e[1],-e[2], axes='sxyz');
+			rotacion = tf.transformations.euler_matrix(e[0],e[1],-e[2], axes='sxyz');
 		else:	
 			#real robot
 			e = tf.transformations.euler_from_quaternion([obj.orientation.x, obj.orientation.y, obj.orientation.z, obj.orientation.w],axes='sxyz');
-			rotacion =  tf.transformations.euler_matrix(e[0],e[1],e[2], axes='sxyz');
+			rotacion = tf.transformations.euler_matrix(e[0],e[1],e[2], axes='sxyz');
 
 		rotacion[0,3] = obj.position.x;
 		rotacion[1,3] = obj.position.y;
@@ -206,10 +206,13 @@ class graspingutils():
 
 		return rotacion;
 
+
 	def OR_to_COB(self, values):
+
 		OR = values[7:14]
 		values = [OR[2], OR[3], OR[4], OR[0], OR[1], OR[5], OR[6]]
 		return values
+
 
 	def COB_to_OR(self, values):
 
@@ -220,6 +223,7 @@ class graspingutils():
 			res[i+7] = float(values[i])
 		return eval(str(res))
 
+
 	def sdh_tactil_sensor_result(self):
 		rospy.loginfo("Reading SDH tactil sensors...");
 
@@ -229,9 +233,10 @@ class graspingutils():
 			response = resp1.success.data or resp2.success.data
 		except rospy.ServiceException, e:
 			rospy.logerr("Service did not process request: %s", str(e))
-			return -1
+			return GraspingErrorCodes.SERVICE_DID_NOT_PROCESS_REQUEST
 
 		return response
+
 
 	def set_pregrasp(self, t, category, pregrasp_offset):
 		t2 = [t[0], t[1], t[2]]
@@ -249,7 +254,7 @@ class graspingutils():
 		elif category == "-Z":
 			t2[2] += pregrasp_offset
 		else: 
-			return -1
+			return GraspingErrorCodes.UNKNOWN_CATEGORY
 		
 		return t2;
 
@@ -281,6 +286,4 @@ class graspingutils():
 			offset = (o, 0)[o<=0];
 			pre.position.z += offset;
 
-
 		return pre;
-

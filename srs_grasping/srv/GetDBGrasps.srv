@@ -1,3 +1,4 @@
 int32 object_id
 ---
 srs_msgs/DBGrasp[] grasp_configuration
+srs_msgs/GraspingErrorCodes error_code

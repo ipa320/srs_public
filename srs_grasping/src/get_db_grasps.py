@@ -62,6 +62,7 @@ import rospy
 
 import grasping_functions
 from srs_grasping.srv import *
+from srs_msgs.msg import GraspingErrorCodes
 
 
 class get_db_grasps():
@@ -71,7 +72,7 @@ class get_db_grasps():
 		rospy.loginfo("Waiting /get_model_grasp service...");
 		rospy.wait_for_service('/get_model_grasp');
 		rospy.loginfo("/get_db_grasps service is ready.");
-
+ 
 
 	def get_db_grasps(self, server_goal):
 		x = time.time();
@@ -79,16 +80,24 @@ class get_db_grasps():
 
 
 		server_result = GetDBGraspsResponse();
+		server_result.error_code.val = 0;
+		server_result.grasp_configuration = [];
 
 		resp = grasping_functions.databaseutils.get_grasps(server_goal.object_id);
-		if resp is grasping_functions.FAILED:
-			resp = grasping_functions.openraveutils.generator(server_goal.object_id);
-			if resp is grasping_functions.SUCCEDED:
-				resp = grasping_functions.databaseutils.get_grasps(server_goal.object_id);
-				server_result.grasp_configuration = resp.grasp_configuration;
+		if resp < 0:
+			resp2 = grasping_functions.openraveutils.generator(server_goal.object_id);
+			if resp2 is GraspingErrorCodes.SUCCESS:
+				resp_aux = grasping_functions.databaseutils.get_grasps(server_goal.object_id);
+				if resp_aux < 0:
+					server_result.error_code.val = resp_aux;
+				else:
+					server_result.error_code = GraspingErrorCodes.SUCCESS;
+					server_result.grasp_configuration = resp_aux.grasp_configuration;
+			else:
+				server_result.error_code.val = resp2;
 		else:
+			server_result.error_code.val = GraspingErrorCodes.SUCCESS;
 			server_result.grasp_configuration = resp.grasp_configuration;
-
 
 		print "Time employed: " + str(time.time() - x);
 		print "---------------------------------------";

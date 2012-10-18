@@ -8,6 +8,7 @@ import time
 import sys
 import tf
 import os
+import copy
 #import multiprocessing
 
 from numpy import *
@@ -277,7 +278,11 @@ class openraveutils():
 			with gmodel.GripperVisibility(gmodel.manip):
 			    if self.env.GetViewer() is not None:
 				self.env.UpdatePublishedBodies()
-			    producer,consumer,gatherer,numjobs = gmodel.generatepcg(*args,**kwargs)
+
+			    aux = [item for item in args]
+			    aux[1] = array([0.03, 0.05])	#standoffs
+				
+			    producer,consumer,gatherer,numjobs = gmodel.generatepcg(*aux,**kwargs)
 			    counter = 0
 			    counter_isValid = 0
 			    for work in producer():
@@ -308,6 +313,7 @@ class openraveutils():
 		grasp[gmodel.graspindices.get('igraspstandoff')] = standoff
 		grasp[gmodel.graspindices.get('igrasppreshape')] = preshape
 		grasp[gmodel.graspindices.get('imanipulatordirection')] = manipulatordirection
+
 		try:
 			contacts,finalconfig,mindist,volume = gmodel.testGrasp(grasp=grasp,graspingnoise=graspingnoise,translate=True,forceclosure=forceclosure,forceclosurethreshold=forceclosurethreshold)
 

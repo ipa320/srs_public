@@ -67,7 +67,7 @@ from srs_msgs.msg import *
 from pr2_controllers_msgs.msg import *
 from geometry_msgs.msg import *
 from kinematics_msgs.srv import *
-
+from srs_msgs.msg import GraspingErrorCodes
 
 class get_feasible_grasps():
 
@@ -82,7 +82,6 @@ class get_feasible_grasps():
 		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
 		self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state);
 		
-
 		rospy.loginfo("Waiting /arm_kinematics/get_constraint_aware_ik service...");
 		rospy.wait_for_service('/arm_kinematics/get_constraint_aware_ik')
 		rospy.loginfo("/arm_kinematics/get_constraint_aware_ik is ready.");
@@ -101,7 +100,9 @@ class get_feasible_grasps():
 			print "pregrasps_offsets value must be an array with length 2: [X,Z]"
 			print "Using default values: [0.2, 0.0]"
 
-		grasp_configuration = (self.client(request.object_id)).grasp_configuration;
+		client_response = self.client(request.object_id)
+		grasp_configuration = client_response.grasp_configuration;
+		error_code = client_response.error_code.val
 
 		#current_joint_configuration
 		while self.arm_state.get_num_connections() == 0:
@@ -110,37 +111,47 @@ class get_feasible_grasps():
 
 		rotacion = grasping_functions.graspingutils.rotation_matrix(request.object_pose);
 		resp = GetFeasibleGraspsResponse();
+		resp.error_code.val = 0;
+		resp.feasible_grasp_available = False;
+		resp.grasp_configuration = []
 
-		for grasp_configuration in grasp_configuration:
-			pre_trans = rotacion * grasping_functions.graspingutils.matrix_from_pose(grasp_configuration.pre_grasp.pose);
-			grasp_trans = rotacion *  grasping_functions.graspingutils.matrix_from_pose(grasp_configuration.grasp.pose);
+		if error_code == GraspingErrorCodes.SUCCESS:
 
-			pre = grasping_functions.graspingutils.pose_from_matrix(pre_trans);
-			g = grasping_functions.graspingutils.pose_from_matrix(grasp_trans);
+			for grasp_configuration in grasp_configuration:
+				pre_trans = rotacion * grasping_functions.graspingutils.matrix_from_pose(grasp_configuration.pre_grasp.pose);
+				grasp_trans = rotacion *  grasping_functions.graspingutils.matrix_from_pose(grasp_configuration.grasp.pose);
+
+				pre = grasping_functions.graspingutils.pose_from_matrix(pre_trans);
+				g = grasping_functions.graspingutils.pose_from_matrix(grasp_trans);
 			
-			category = grasping_functions.graspingutils.get_grasp_category(pre.pose.position, g.pose.position);
-			fpos = self.get_finger_positions(category)
-			nvg = FeasibleGrasp(grasp_configuration.sdh_joint_values, "/sdh_palm_link", g, pre, category);
-			pre.pose = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre.pose, request.pregrasp_offsets);
+				category = grasping_functions.graspingutils.get_grasp_category(pre.pose.position, g.pose.position);
+				fpos = self.get_finger_positions(category)
+				nvg = FeasibleGrasp(grasp_configuration.sdh_joint_values, "/sdh_palm_link", g, pre, category);
+				pre.pose = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre.pose, request.pregrasp_offsets);
 			
-			if (grasping_functions.graspingutils.valid_grasp(category)) and (not self.checkCollisions(fpos, nvg, request.object_pose)):
-				class FeasibleGraspFound(Exception): pass
-				try:
-					for w in range(0,self.ik_loop_reply):
-						(pgc, error) = grasping_functions.graspingutils.callIKSolver(self.cjc, pre);				
-						if(error.val == error.SUCCESS):
-							for k in range(0,self.ik_loop_reply):
-								(gc, error) = grasping_functions.graspingutils.callIKSolver(pgc, g);
-								if(error.val == error.SUCCESS):
-									raise FeasibleGraspFound();
-				except FeasibleGraspFound:
-					resp.feasible_grasp_available = True;
-					resp.grasp_configuration.append(nvg);
+				if (grasping_functions.graspingutils.valid_grasp(category)) and (not self.checkCollisions(fpos, nvg, request.object_pose)):
+					class FeasibleGraspFound(Exception): pass
+					try:
+						for w in range(0, self.ik_loop_reply):
+							(pgc, error) = grasping_functions.graspingutils.callIKSolver(self.cjc, pre);				
+							if(error.val == error.SUCCESS):
+								for k in range(0,self.ik_loop_reply):
+									(gc, error) = grasping_functions.graspingutils.callIKSolver(pgc, g);
+									if(error.val == error.SUCCESS):
+										raise FeasibleGraspFound();
+					except FeasibleGraspFound:
+						resp.feasible_grasp_available = True;
+						resp.grasp_configuration.append(nvg);
+						resp.error_code.val = GraspingErrorCodes.SUCCESS
 
+			#order grasps
+			if len(resp.grasp_configuration) > 0:
+				(resp.grasp_configuration).sort();
+			else:
+				resp.error_code.val = GraspingErrorCodes.GOAL_UNREACHABLE
+		else:
+			resp.error_code.val = error_code;
 
-		#order grasps
-		if len(resp.grasp_configuration) > 0:
-			(resp.grasp_configuration).sort();
 
 		rospy.loginfo(str(len(resp.grasp_configuration))+" valid grasps for this values.");	
 		rospy.loginfo("/get_feasible_grasps call has finished.");
@@ -151,7 +162,12 @@ class get_feasible_grasps():
 
 
 	def __cmp__(self, other):
-		return other.grasp.position.z - self.grasp.position.z
+		if other.grasp.position.z > self.grasp.position.z:
+			return 1
+		elif other.grasp.position.z < self.grasp.position.z:
+			return -1
+		else:
+			return 0
 
 
 	def get_joint_state(self, msg):
@@ -207,7 +223,7 @@ class get_feasible_grasps():
 		finger_pos = self.transform_finger_positions(fpositions, nvg.grasp.pose);
 		
 		for fp in finger_pos:
-			if obj_pose.position.z > (fp.pose.position.z + self.finger_correction):
+			if (obj_pose.position.z + 0.05)> (fp.pose.position.z + self.finger_correction):
 				return True;
 		return False;
 

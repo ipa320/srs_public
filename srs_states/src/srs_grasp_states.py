@@ -42,10 +42,9 @@ class select_srs_grasp(smach.State):
             return 'failed'
         
         get_grasps_from_position = rospy.ServiceProxy('get_feasible_grasps', GetFeasibleGrasps)
-        req = GetFeasibleGraspsRequest(userdata.target_object_id, object_pose_bl.pose, [0.0,0.15])
+        req = GetFeasibleGraspsRequest(userdata.target_object_id, object_pose_bl.pose, [0.0, 0.0]) #[X,Z]
         grasp_configuration = copy.deepcopy((get_grasps_from_position(req)).grasp_configuration)
-        
-        
+
         if len(grasp_configuration) < 1: # no valid configurations found
             print "grasp not possible"
             return 'not_possible'
@@ -69,7 +68,6 @@ class srs_grasp(smach.State):
 
 	self.current_arm_state = [];
         self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state)
-        
 
     def get_joint_state(self, msg):
         self.current_arm_state = list(msg.desired.positions)
@@ -83,8 +81,8 @@ class srs_grasp(smach.State):
 
     def execute(self, userdata): 
 
-	#grasp_configuration_id = userdata.grasp_configuration_id
-	grasp_configuration_id = self.get_fake_id(userdata.grasp_configuration);
+	grasp_configuration_id = userdata.grasp_configuration_id
+	#grasp_configuration_id = self.get_fake_id(userdata.grasp_configuration);
 	
         category = userdata.grasp_configuration[grasp_configuration_id].category
 	if category == "TOP":
@@ -98,7 +96,9 @@ class srs_grasp(smach.State):
             sdh_handle=sss.move("sdh", "cylopen")
         sdh_handle.wait()
         
+
         #Get the current arm joint states.
+	rospy.sleep(3)
         while self.arm_state.get_num_connections() == 0:
     		time.sleep(0.3)
     		continue
@@ -119,43 +119,64 @@ class srs_grasp(smach.State):
 
 	class BadGrasp(Exception): pass
 	try:
-		#pre-grasp
-		(pgc1, error_code) = grasping_functions.graspingutils.callIKSolver(self.current_arm_state, pre_grasp_stamped)
-		if(error_code.val != error_code.SUCCESS):
-			raise BadGrasp();
-		grasp_trajectory.append(pgc1)
+		try:
+			ipa_arm_navigation = rospy.get_param("srs/ipa_arm_navigation")
+		except Exception, e:
+			rospy.INFO('can not read parameter of srs/ipa_arm_navigation, use the default value planned arm navigation disabled')
 
+		if ipa_arm_navigation.lower() == 'true':
+			#mode = "planned"
+			grasp_trajectory.append(self.current_arm_state)
+		else:
+			#pre-grasp
+			(pgc1, error_code) = grasping_functions.graspingutils.callIKSolver(self.current_arm_state, pre_grasp_stamped)
+			if(error_code.val != error_code.SUCCESS):
+				sss.say(["I can not move the arm to the pregrasp position!"])
+				raise BadGrasp();
+			grasp_trajectory.append(pgc1)
 
-		#second pre-grasp
-		aux_pre = pre_grasp_stamped.pose.position.x;
-		aux = 0.0;
-		for i in range(0,5):
-			aux += 0.01;
-			pre_grasp_stamped.pose.position.x = aux_pre + aux;
-			(pgc2, error_code) = grasping_functions.graspingutils.callIKSolver(pgc1, pre_grasp_stamped)
-			if(error_code.val == error_code.SUCCESS):
-				grasp_trajectory.append(pgc2);
-				break;	
-
+			#second pre-grasp
+			aux_pre = pre_grasp_stamped.pose.position.x;
+			aux = 0.0;
+			for i in range(0,5):
+				aux += 0.02;
+				pre_grasp_stamped.pose.position.x = aux_pre + aux;
+				(pgc2, error_code) = grasping_functions.graspingutils.callIKSolver(pgc1, pre_grasp_stamped)
+				if(error_code.val == error_code.SUCCESS):
+					grasp_trajectory.append(pgc2);
+					break;	
 
 		#grasp
 		(gc, error_code) = grasping_functions.graspingutils.callIKSolver(grasp_trajectory[len(grasp_trajectory)-1], grasp_stamped)
 		if(error_code.val != error_code.SUCCESS):
+			sss.say(["I can not move the arm to the grasp position!"])
 			raise BadGrasp();		
 		grasp_trajectory.append(gc);
 
-
-
 		#Move arm to pregrasp->grasp position.
-		arm_handle = sss.move("arm", grasp_trajectory, False)
-		sss.say(["I am grasping the object now!"])
-		arm_handle.wait()
-		rospy.sleep(3)
+		arm_handle = sss.move("arm", grasp_trajectory, False)# , mode=mode);
+		rospy.sleep(4)
+		arm_handle.wait(6)
+
+
+                # wait while movement
+                r = rospy.Rate(10)
+                preempted = False
+                arm_state = -1
+                while True:
+			preempted = self.preempt_requested()
+                        arm_state = arm_handle.get_state()
+                        if preempted or ( arm_state == 3) or (arm_state == 4):
+                        	break # stop waiting  
+                        r.sleep()
+		
 
 		#Close SDH based on the grasp configuration to grasp.
 		sdh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)], False)
-		sdh_handle.wait()
-		rospy.sleep(2);
+		sss.say(["I am grasping the object now!"])
+		rospy.sleep(1);
+		sdh_handle.wait(2)
+		
 
 		#Confirm the grasp based on force feedback
 		if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
@@ -168,10 +189,11 @@ class srs_grasp(smach.State):
 			print "to:\n", regrasp
 
 			sdh_handle = sss.move("sdh", [regrasp])
-			rospy.sleep(2)
-			sdh_handle.wait()
+			rospy.sleep(1)
+			sdh_handle.wait(2)
 
 			if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
+				sss.say(["I can not fix the object correctly!"])
 				raise BadGrasp();
 
 		#post-grasp
@@ -187,7 +209,7 @@ class srs_grasp(smach.State):
 				break;
 
 		if len(postgrasp_trajectory) == 0:
-			sss.say(["I can't move the object to the postgrasp position!"])
+			sss.say(["I can not move the object to the postgrasp position!"])
 		else:
 			#second post-grasp
 			aux_x = post_grasp_stamped.pose.position.x;
@@ -203,14 +225,13 @@ class srs_grasp(smach.State):
 		arm_handle = sss.move("arm",postgrasp_trajectory, False)
 		sss.say(["I have grasped the object with success!"])
 		rospy.sleep(2)
-		arm_handle.wait()
+		arm_handle.wait(3)
 
-		
 		return 'succeeded'
 
 
 	except BadGrasp:
-		sss.say(["I can't catch the object!"], False)
+		sss.say(["I can not catch the object!"], False)
 		return 'not_completed';
 
 # estimate the best grasp position

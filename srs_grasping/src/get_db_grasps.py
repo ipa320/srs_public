@@ -91,7 +91,7 @@ class get_db_grasps():
 				if resp_aux < 0:
 					server_result.error_code.val = resp_aux;
 				else:
-					server_result.error_code = GraspingErrorCodes.SUCCESS;
+					server_result.error_code.val = GraspingErrorCodes.SUCCESS;
 					server_result.grasp_configuration = resp_aux.grasp_configuration;
 			else:
 				server_result.error_code.val = resp2;

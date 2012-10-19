@@ -70,8 +70,12 @@ srs_ui_but::CButDisplay::CButDisplay(const std::string & name,rviz::Visualizatio
     {
     	m_ocmap_window = new COctomapControlPane( wi->getParentWindow(), _T("Octomap control"), wi );
 
+
     	if( m_ocmap_window != 0 )
     	{
+    		m_ocmap_window->fixedFrameChanged( fixed_frame_ );
+    		m_ocmap_window->targetFrameChanged( target_frame_ );
+
     		wi->addPane( "Octomap control", m_ocmap_window );
     		wi->showPane( m_ocmap_window );
     		std::cerr << "Octomap control pane added..." << std::endl;

@@ -40,10 +40,9 @@
 #include <srs_env_model/LockServer.h>
 #include <srs_env_model/ButServerPause.h>
 
-#define GIZMO_NAME "OctomapClearingBoxGizmo"
-#define GIZMO_FRAME_ID "/map"
-#define GIZMO_POSE_TOPIC "/interaction_primitives/OctomapClearingBoxGizmo/update/pose_changed"
-#define GIZMO_SCALE_TOPIC "/interaction_primitives/OctomapClearingBoxGizmo/update/scale_changed"
+#define GIZMO_NAME "OctomapControlPaneBoxGizmo"
+#define GIZMO_POSE_TOPIC "/interaction_primitives/OctomapControlPaneBoxGizmo/update/pose_changed"
+#define GIZMO_SCALE_TOPIC "/interaction_primitives/OctomapControlPaneBoxGizmo/update/scale_changed"
 
 
 
@@ -59,6 +58,7 @@ const int ID_OBSTACLE_CMAP_BUTTON(108);
 const int ID_TEXT_BOX(107);
 const int ID_LOCK_OCTOMAP_CHECKBOX(109);
 const int ID_LOCK_CMAP_CHECKBOX(110);
+const int ID_ADD_BOX_ON_CLICK_BUTTON(111);
 
 /**
  Constructor
@@ -70,45 +70,57 @@ srs_ui_but::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxS
 {
 	/*
 	 * +------------------------------------+
-	 * | Add box | Cancel                   |
+	 * | +Selection box---------------------+
+	 * | | Add selection box				|
+	 * | | Add box on click					|
+	 * | | Hide selection box				|
 	 * +------------------------------------+
 	 * |
-	 * | +Octomap---------------------------+
-	 * | | Add obstacle						|
-	 * | | Clear Box					    |
-	 * | | Reset						    |
-	 * | | x Lock						    |
+	 * | +3D environment map----------------+
+	 * | | Insert points at selected position|
+	 * | | Clear points in box				|
+	 * | | Clear whole map					|
+	 * | | x Pause mapping server			|
 	 * | +----------------------------------+
 	 * | +Collision map---------------------+
-	 * | | Obstacle							|
-	 * | | Clear box						|
-	 * | | x Lock							|
+	 * | | Insert obstacle at selected position|
+	 * | | Clear collision map in box		|
+	 * | | x Lock collision map				|
 	 * | +----------------------------------+
 	 */
     // Create controls
 //	m_panel = new wxPanel( parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxVSCROLL, title);
-    m_buttonResetOctomap = new wxButton(this, ID_RESET_OCTOMAP_BUTTON, wxT("Reset map"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-    m_buttonBoxAdd = new wxButton( this, ID_ADD_BOX_BUTTON, wxT("Add box"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-    m_buttonClearBoxOctomap = new wxButton( this, ID_OCTOMAP_CLEAR_BUTTON, wxT("Clear box"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-    m_buttonClearBoxCMap = new wxButton( this, ID_CMAP_CLEAR_BUTTON, wxT("Clear box"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-    m_buttonCancelBox = new wxButton( this, ID_CANCEL_BUTTON, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-    m_buttonObstacleOctomap = new wxButton( this, ID_OBSTACLE_OCTOMAP_BUTTON, wxT("Add obstacle"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-    m_buttonObstacleCMap = new wxButton( this, ID_OBSTACLE_CMAP_BUTTON, wxT("Add obstacle"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-    m_cbLockOctomap = new wxCheckBox( this, ID_LOCK_OCTOMAP_CHECKBOX, wxT("Lock - pause server"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
-    m_cbLockCMap = new wxCheckBox( this, ID_LOCK_CMAP_CHECKBOX, wxT("Lock"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+	m_buttonBoxAdd = new wxButton( this, ID_ADD_BOX_BUTTON, wxT("Add selection box"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_buttonBoxOnClick  = new wxButton( this, ID_OBSTACLE_CMAP_BUTTON, wxT("Add box on click"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_buttonCancelBox = new wxButton( this, ID_CANCEL_BUTTON, wxT("Hide selection box"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+
+    m_buttonObstacleOctomap = new wxButton( this, ID_OBSTACLE_OCTOMAP_BUTTON, wxT("Insert points at selected position"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_buttonClearBoxOctomap = new wxButton( this, ID_OCTOMAP_CLEAR_BUTTON, wxT("Clear points in box"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+	m_buttonResetOctomap = new wxButton(this, ID_RESET_OCTOMAP_BUTTON, wxT("Clear whole map	"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_cbLockOctomap = new wxCheckBox( this, ID_LOCK_OCTOMAP_CHECKBOX, wxT("Pause mapping server"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+
+    m_buttonObstacleCMap = new wxButton( this, ID_OBSTACLE_CMAP_BUTTON, wxT("Insert obstacle at selected position"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_buttonClearBoxCMap = new wxButton( this, ID_CMAP_CLEAR_BUTTON, wxT("Clear collision map in box"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_cbLockCMap = new wxCheckBox( this, ID_LOCK_CMAP_CHECKBOX, wxT("Lock collision map"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+
     m_textBox = new wxTextCtrl( this, ID_TEXT_BOX, wxT(""));
+
+    // Add tool tips to the collision map buttons
+    m_buttonObstacleCMap->SetToolTip( wxT("To insert and preserve obstacle collision map must be locked first.") );
+    m_buttonClearBoxCMap->SetToolTip( wxT("To clear part of the collision map it must be locked first.") );
 
     // Create layout
     wxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(vsizer);
 
     // Box control buttons
-    wxSizer *hsizerBoxControls = new wxBoxSizer(wxHORIZONTAL);
+    wxStaticBoxSizer *hsizerBoxControls = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Selection box"));
     hsizerBoxControls->Add( m_buttonBoxAdd, ID_ADD_BOX_BUTTON, wxALIGN_LEFT );
+    hsizerBoxControls->Add( m_buttonBoxOnClick, ID_ADD_BOX_ON_CLICK_BUTTON, wxALIGN_LEFT );
     hsizerBoxControls->Add( m_buttonCancelBox, ID_CANCEL_BUTTON, wxALIGN_LEFT );
 
     // Octomap controls
-    wxStaticBoxSizer *sizerOctomapControls = new wxStaticBoxSizer( wxVERTICAL, this, wxT("Octomap") );
+    wxStaticBoxSizer *sizerOctomapControls = new wxStaticBoxSizer( wxVERTICAL, this, wxT("3D environment map") );
     sizerOctomapControls->Add( m_buttonObstacleOctomap, ID_OBSTACLE_OCTOMAP_BUTTON, wxALIGN_LEFT );
     sizerOctomapControls->Add( m_buttonClearBoxOctomap, ID_OCTOMAP_CLEAR_BUTTON, wxALIGN_LEFT );
     sizerOctomapControls->Add( m_buttonResetOctomap, ID_RESET_OCTOMAP_BUTTON, wxALIGN_LEFT );
@@ -151,7 +163,7 @@ srs_ui_but::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxS
 
     // Set gizmo name and defaults
     m_uoGizmo.request.name = GIZMO_NAME;
-    m_uoGizmo.request.frame_id = GIZMO_FRAME_ID;
+    m_uoGizmo.request.frame_id = m_fixedFrameId;
 
     // Set default values - pose and scale
     m_gizmoPose.position.x = 0.0;
@@ -163,8 +175,8 @@ srs_ui_but::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxS
     m_gizmoPose.orientation.z = 0.0;
     m_gizmoPose.orientation.w = 1.0;
 
-    m_gizmoScale.x = 2.0;
-    m_gizmoScale.y = 2.0;
+    m_gizmoScale.x = 1.0;
+    m_gizmoScale.y = 1.0;
     m_gizmoScale.z = 2.0;
 
 
@@ -198,14 +210,15 @@ void srs_ui_but::COctomapControlPane::OnReset(wxCommandEvent& event)
  */
 void srs_ui_but::COctomapControlPane::OnAddBoxGizmo(wxCommandEvent &event)
 {
-	std::cerr << "Adding box to the scene." << std::endl;
+//	std::cerr << "Adding box to the scene." << std::endl;
 
 	addGizmo();
 
 	m_buttonClearBoxOctomap->Enable(true);
 	m_buttonObstacleOctomap->Enable(true);
-	m_buttonClearBoxCMap->Enable(true);
-	m_buttonObstacleCMap->Enable(true);
+	// Set collision map control buttons states
+	m_buttonClearBoxCMap->Enable(m_cmapLocked && m_bGizmoAdded);
+	m_buttonObstacleCMap->Enable(m_cmapLocked && m_bGizmoAdded);
 	m_buttonCancelBox->Enable(true);
 }
 
@@ -217,7 +230,7 @@ void srs_ui_but::COctomapControlPane::OnClearBoxOctomap( wxCommandEvent &event )
 {
 	// Create message
 	srs_env_model::RemoveCube rc;
-	rc.request.frame_id = GIZMO_FRAME_ID;
+	rc.request.frame_id = m_fixedFrameId;
 	rc.request.pose = m_gizmoPose;
 	rc.request.size = m_gizmoScale;
 
@@ -237,7 +250,7 @@ void srs_ui_but::COctomapControlPane::OnClearBoxCMap( wxCommandEvent &event )
 {
 	// Create message
 	srs_env_model::RemoveCube rc;
-	rc.request.frame_id = GIZMO_FRAME_ID;
+	rc.request.frame_id = m_fixedFrameId;
 	rc.request.pose = m_gizmoPose;
 	rc.request.size = m_gizmoScale;
 
@@ -259,7 +272,7 @@ void srs_ui_but::COctomapControlPane::OnAddObstacleOctomap( wxCommandEvent &even
 {
 	// Create message
 	srs_env_model::RemoveCube rc;
-	rc.request.frame_id = GIZMO_FRAME_ID;
+	rc.request.frame_id = m_fixedFrameId;
 	rc.request.pose = m_gizmoPose;
 	rc.request.size = m_gizmoScale;
 
@@ -280,7 +293,7 @@ void srs_ui_but::COctomapControlPane::OnAddObstacleCMap( wxCommandEvent &event )
 {
 	// Create message
 	srs_env_model::RemoveCube rc;
-	rc.request.frame_id = GIZMO_FRAME_ID;
+	rc.request.frame_id = m_fixedFrameId;
 	rc.request.pose = m_gizmoPose;
 	rc.request.size = m_gizmoScale;
 
@@ -318,16 +331,20 @@ void srs_ui_but::COctomapControlPane::OnLockOctomap( wxCommandEvent & event )
 void srs_ui_but::COctomapControlPane::OnLockCMap( wxCommandEvent & event )
 {
 	// Get checkbox state
-	bool locked( m_cbLockCMap->GetValue() );
+	m_cmapLocked  = m_cbLockCMap->GetValue();
 
 	// Create message
 	srs_env_model::LockCollisionMap message;
-	message.request.lock = locked ? 1 : 0;
+	message.request.lock = m_cmapLocked ? 1 : 0;
 
 	// call
 	m_srvLockCMap.call( message );
 
 //	std::cerr << "Lock collision map event. " << std::endl;
+
+	// Set collision map control buttons states
+	m_buttonClearBoxCMap->Enable(m_cmapLocked && m_bGizmoAdded);
+	m_buttonObstacleCMap->Enable(m_cmapLocked && m_bGizmoAdded);
 
 }
 
@@ -355,10 +372,13 @@ void srs_ui_but::COctomapControlPane::OnCancelBoxGizmo( wxCommandEvent &event )
  */
 void srs_ui_but::COctomapControlPane::addGizmo()
 {
-	std::cerr << "remove old gizmo..." << std::endl;
+//	std::cerr << "remove old gizmo..." << std::endl;
 	// Remove old gizmo
 	removeGizmo();
 
+	setGizmoPoseScale();
+
+//	std::cerr << m_uoGizmo.request.frame_id << ", " << m_uoGizmo.request.pose << ", " << m_uoGizmo.request.scale << std::endl;
 
 	if( ! m_srvAddGizmo.call( m_uoGizmo ) )
 	{
@@ -384,7 +404,7 @@ void srs_ui_but::COctomapControlPane::removeGizmo()
 
 	m_bGizmoAdded = false;
 
-	m_textBox->SetLabel( wxT("") );
+	m_textBox->SetValue( wxT("") );
 }
 
 /**
@@ -392,12 +412,14 @@ void srs_ui_but::COctomapControlPane::removeGizmo()
  */
 void srs_ui_but::COctomapControlPane::gizmoPoseCB( const srs_interaction_primitives::PoseChangedConstPtr &marker_update )
 {
+//	std::cerr << "Gizmo pose: " << marker_update->new_pose << std::endl;
+
 	if( marker_update->marker_name != GIZMO_NAME )
 		return;
 
 	m_gizmoPose = marker_update->new_pose;
 
-	m_textBox->SetLabel( getGizmoStatusStr() );
+	m_textBox->SetValue( getGizmoStatusStr() );
 }
 
 /**
@@ -405,6 +427,8 @@ void srs_ui_but::COctomapControlPane::gizmoPoseCB( const srs_interaction_primiti
  */
 void srs_ui_but::COctomapControlPane::gizmoScaleCB( const srs_interaction_primitives::ScaleChangedConstPtr &marker_update )
 {
+//	std::cerr << "Gizmo scale" << marker_update->new_scale << std::endl;
+
 	if( marker_update->marker_name != GIZMO_NAME )
 		return;
 
@@ -412,7 +436,7 @@ void srs_ui_but::COctomapControlPane::gizmoScaleCB( const srs_interaction_primit
 	m_gizmoScale.y = marker_update->new_scale.y;
 	m_gizmoScale.z = marker_update->new_scale.z;
 
-	m_textBox->SetLabel( getGizmoStatusStr() );
+	m_textBox->SetValue( getGizmoStatusStr() );
 }
 
 
@@ -433,6 +457,8 @@ void srs_ui_but::COctomapControlPane::setGizmoPoseScale()
 	m_uoGizmo.request.scale.x = m_gizmoScale.x;
 	m_uoGizmo.request.scale.y = m_gizmoScale.y;
 	m_uoGizmo.request.scale.z = m_gizmoScale.z;
+
+	m_uoGizmo.request.frame_id = m_fixedFrameId;
 }
 
 //! Create gizmo status string
@@ -440,8 +466,10 @@ wxString srs_ui_but::COctomapControlPane::getGizmoStatusStr()
 {
 	wxString s;
 
-	s <<  wxString::Format(wxT("Position: %d, %d, %d"), m_gizmoPose.position.x, m_gizmoPose.position.y, m_gizmoPose.position.z);
-	std::cerr << "Writing text: " << s.c_str() << std::endl;
+	s << wxT("P: ") << m_gizmoPose.position.x << wxT(", " ) << m_gizmoPose.position.y << wxT(", " ) << m_gizmoPose.position.z;
+
+	//s <<  wxString::Format(wxT("Position: %f, %f, %f"), m_gizmoPose.position.x, m_gizmoPose.position.y, m_gizmoPose.position.z);
+	//std::cerr << "Writing text: " << s. << std::endl;
 
 	return s;
 }

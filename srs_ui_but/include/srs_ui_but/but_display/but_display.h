@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_display.h 839 2012-05-24 11:44:20Z spanel $
+ * $Id: but_display.h 1662 2012-10-17 11:49:26Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -108,8 +108,8 @@ public:
     ~CButDisplay();
 
     //OverridesfromDisplay
-    virtual void targetFrameChanged(){}
-    virtual void fixedFrameChanged(){}
+    virtual void targetFrameChanged() { m_ocmap_window->targetFrameChanged( target_frame_ ); }
+    virtual void fixedFrameChanged(){ m_ocmap_window->fixedFrameChanged( fixed_frame_ ); }
     virtual void createProperties();
 
     //! Update display

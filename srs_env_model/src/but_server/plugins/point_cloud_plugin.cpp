@@ -51,8 +51,10 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 , m_pointcloudMaxZ(std::numeric_limits<double>::max())
 , m_bUseRGB( true )
 , m_bRGB_byParameter(false)
+, m_bRegistrationMethodChanged( true )
+, m_oldCloud( new tPointCloud )
+, m_bufferCloud( new tPointCloud )
 {
-	m_data = new tData;
 	assert( m_data != 0 );
 }
 
@@ -80,6 +82,10 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 
 	// Point cloud subscribing topic name
 	node_handle.param("pointcloud_subscriber", m_pcSubscriberName, SUBSCRIBER_POINT_CLOUD_NAME);
+
+	// Get FID to which will be points transformed when publishing collision map
+	node_handle.param("pointcloud_input_frameid", m_pcFrameId, m_pcFrameId ); //
+
 
 	// Point cloud limits
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
@@ -120,6 +126,9 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	m_data->clear();
 
 //	PERROR( "PointCloudPlugin initialized..." );
+
+	// Set registration mode
+	setRegistrationMethod( PCL_REGISTRATION_MODE_ICP );
 }
 
 //! Called when new scan was inserted and now all can be published
@@ -326,6 +335,41 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, sensorToPcTM);
 	}
 
+	//*
+	// Registration
+	{
+		if( m_bRegistrationMethodChanged && m_registration.isRegistering() && m_data->size() > 0 )
+		{
+
+			pcl::copyPointCloud( *m_data, *m_oldCloud );
+			m_bRegistrationMethodChanged = false;
+
+//			std::cerr << "Copying cloud: " << m_oldCloud->size() << std::endl;
+		}
+		else
+		{
+//			pcl::copyPointCloud( *m_data, *m_bufferCloud );
+
+//			std::cerr << "Starting registration process " << m_data->size() << ", " << m_oldCloud->size() << ", " << m_bufferCloud->size() << ", " <<  m_data->width << ", " << m_data->height << ", " << m_data->is_dense << std::endl;
+
+			if( m_registration.process( m_data, m_oldCloud, m_bufferCloud) )
+			{
+				Eigen::Matrix4f transform( m_registration.getTransform() );
+
+				pcl::transformPointCloud( *m_bufferCloud, *m_oldCloud, transform );
+				pcl::copyPointCloud( *m_oldCloud, *m_data );
+//				std::cerr << "Registration succeeded"  << std::endl;
+			}
+			else
+			{
+				m_bRegistrationMethodChanged = true;
+//				std::cerr << "Registration failed" << std::endl;
+			}
+
+		}
+	}
+
+//*/
 	// Filter input pointcloud
 	if( m_bFilterPC )		// TODO: Optimize this by removing redundant transforms
 	{
@@ -359,6 +403,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 		// transform pointcloud from pc frame to the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, pcToBaseTM);
+/*
 
 		// filter height and range, also removes NANs:
 		pcl::PassThrough<tPclPoint> pass;
@@ -366,7 +411,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		pass.setFilterLimits(m_pointcloudMinZ, m_pointcloudMaxZ);
 		pass.setInputCloud(m_data->makeShared());
 		pass.filter(*m_data);
-
+*/
 		// transform pointcloud back to pc frame from the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, baseToPcTM);
 	}
@@ -375,7 +420,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	m_data->header = cloud->header;
     m_data->header.frame_id = m_pcFrameId;
 
-//    PERROR("Insert cloud CB. Size: " << m_data->size() );
+ //   PERROR("Insert cloud CB. Size: " << m_data->size() );
 
  	invalidate();
 

@@ -59,8 +59,14 @@ namespace srs_env_model
 	//! Define pcl point type
 	typedef pcl::PointXYZRGB tPclPoint;
 
-	//! Define point cloud type
+	//! Define pcl point cloud type
 	typedef pcl::PointCloud<tPclPoint> tPointCloud;
+
+	//! Point cloud shared pointer
+	typedef tPointCloud::Ptr tPointCloudPtr;
+
+	//! Point cloud constant pointer
+	typedef tPointCloud::ConstPtr tPointCloudConstPtr;
 
 	/// All needed octo map parameters and something more...
 	struct SMapWithParameters
@@ -106,7 +112,7 @@ namespace srs_env_model
 		std::string frameId;
 
 		/// Map pointer
-		tButServerOcMap * map;
+		boost::shared_ptr<tButServerOcMap> map;
 
 	}; // struct SMapParameters.
 
@@ -211,8 +217,17 @@ namespace srs_env_model
 		/// Data type
 		typedef tpDataType tData;
 
+		/// Data pointer type
+		typedef boost::shared_ptr< tData > tDataPtr;
+
 		/// Data has changed signal type
 		typedef boost::signal< void (const tData & ) > tSigDataHasChanged;
+
+		/// Constructor
+		CDataHolderBase() : m_data( new tData ) {}
+
+		/// Constructor
+		CDataHolderBase( tData * data ) : m_data( data ) { }
 
 	public:
 		//! Virtual destructor
@@ -236,7 +251,7 @@ namespace srs_env_model
 
 	protected:
 		/// Data
-		tData * m_data;
+		tDataPtr m_data;
 
 		/// Time stamp
 		ros::Time m_DataTimeStamp;

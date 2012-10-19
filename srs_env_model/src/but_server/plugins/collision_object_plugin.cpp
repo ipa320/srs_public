@@ -39,7 +39,6 @@ srs_env_model::CCollisionObjectPlugin::CCollisionObjectPlugin(const std::string 
 , m_coFrameId(COLLISION_OBJECT_FRAME_ID)
 , m_bConvert( false )
 {
-	m_data = new tData;
 	assert( m_data != 0 );
 }
 

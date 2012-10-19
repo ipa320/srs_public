@@ -79,7 +79,6 @@ public:
 	CExampleCrawlerPlugin( const std::string & name = "ExamplePlugin ")
 	: CServerPluginBase( name )
 	{
-		m_data = new tData;
 		m_data->resize(3);
 
 		// Store some data
@@ -88,7 +87,7 @@ public:
 	}
 
 	//! Destructor - do cleanup.
-	~CExampleCrawlerPlugin() { delete m_data; }
+	~CExampleCrawlerPlugin() { }
 
 	/// Basic plugin methods are the same
 	virtual void init(ros::NodeHandle & node_handle){}

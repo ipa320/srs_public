@@ -48,6 +48,7 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
     // ros::param::param<std::string>("~world_frame",world_frame_,WORLD_FRAME);
 
     ros::param::param<std::string>("~world_frame",collision_objects_frame_id_,WORLD_FRAME);
+    ros::param::param<std::string>("~aco_link",aco_link_,"arm_7_link");
 
     ROS_INFO("Using %s frame as world frame",collision_objects_frame_id_.c_str());
 
@@ -55,6 +56,27 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
 
     // TODO make it configurable through param.
     aco_ = true;
+
+    joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("/spacenav/joy",10,&CArmManipulationEditor::joyCallback,this);
+
+    spacenav.offset_received_ = false;
+    spacenav.rot_offset_received_ = false;
+    spacenav.lock_orientation_ = false;
+    spacenav.lock_position_ = false;
+
+    spacenav.buttons_.push_back(0);
+    spacenav.buttons_.push_back(0);
+
+    ros::param::param<double>("~spacenav/max_val",spacenav.max_val_,500.0);
+    ros::param::param<double>("~spacenav/step",spacenav.step_,0.1);
+    ros::param::param<double>("~spacenav/rot_step",spacenav.rot_step_,0.05);
+
+    ros::param::param<bool>("~joint_controls",joint_controls_,false);
+
+    spacenav_timer_ = nh_.createTimer(ros::Duration(0.05),&CArmManipulationEditor::timerCallback,this);
+
+    offset_sub_ = nh_.subscribe("/spacenav/offset",1,&CArmManipulationEditor::spacenavOffsetCallback,this);
+    rot_offset_sub_ = nh_.subscribe("/spacenav/rot_offset",1,&CArmManipulationEditor::spacenavRotOffsetCallback,this);
 
     links_ = clist;
 
@@ -68,6 +90,195 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
     mpr_id = 0;
 
 }
+
+void CArmManipulationEditor::timerCallback(const ros::TimerEvent& ev) {
+
+	ROS_INFO_ONCE("Spacenav timer callback triggered.");
+
+	if (!inited) return;
+
+	unsigned int state = action_server_ptr_->get_state();
+
+	if (state != ManualArmManipActionServer::S_NEW && state !=ManualArmManipActionServer::S_NONE) {
+
+		ROS_DEBUG("State is %u",state);
+
+		return;
+
+	}
+
+	ROS_INFO_ONCE("Processing spacenav data");
+
+	boost::mutex::scoped_lock(spacenav.mutex_);
+
+	// there is nothing to do
+	if (spacenav.lock_orientation_ && spacenav.lock_position_) return;
+
+	if (!spacenav.offset_received_) return;
+	else spacenav.offset_received_ = false;
+
+	if (!spacenav.rot_offset_received_) return;
+	else spacenav.rot_offset_received_ = false;
+
+	boost::mutex::scoped_lock(im_server_mutex_);
+
+	visualization_msgs::InteractiveMarker marker;
+	geometry_msgs::Pose new_pose;
+
+	if (!(interactive_marker_server_->get("MPR 0_end_control",marker))) {
+
+	    ROS_ERROR_ONCE("Can't get gripper IM pose.");
+
+	    return;
+
+	}
+
+	new_pose = marker.pose;
+
+	if (!spacenav.lock_position_) {
+
+		new_pose.position.x += (spacenav.offset.x/spacenav.max_val_)*spacenav.step_;
+		new_pose.position.y += (spacenav.offset.y/spacenav.max_val_)*spacenav.step_;
+		new_pose.position.z += (spacenav.offset.z/spacenav.max_val_)*spacenav.step_;
+
+	}
+
+	geometry_msgs::Vector3 rpy = GetAsEuler(marker.pose.orientation);
+
+	ROS_DEBUG("Gripper current RPY: %f, %f, %f (DEG)",rpy.x,rpy.y,rpy.z);
+
+	if (!spacenav.lock_orientation_) {
+
+		rpy.x += (spacenav.rot_offset.x/spacenav.max_val_)*spacenav.rot_step_;
+		rpy.y += (spacenav.rot_offset.y/spacenav.max_val_)*spacenav.rot_step_;
+		rpy.z += (spacenav.rot_offset.z/spacenav.max_val_)*spacenav.rot_step_;
+
+	}
+
+	/*if (rpy.x > 2*M_PI) rpy.x = rpy.x - 2*M_PI;
+	if (rpy.x < 0) rpy.x = 2*M_PI + rpy.x;
+
+	if (rpy.y > 2*M_PI) rpy.y = rpy.y - 2*M_PI;
+	if (rpy.y < 0) rpy.y = 2*M_PI + rpy.y;
+
+	if (rpy.z > 2*M_PI) rpy.z = rpy.z - 2*M_PI;
+	if (rpy.z < 0) rpy.z = 2*M_PI + rpy.z;*/
+
+	ROS_DEBUG("Gripper new RPY: %f, %f, %f (DEG)",rpy.x,rpy.y,rpy.z);
+
+
+	new_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rpy.x,rpy.y,rpy.z);
+
+	if ((interactive_marker_server_->setPose("MPR 0_end_control",new_pose))) {
+
+		  interactive_marker_server_->applyChanges();
+
+		  findIK(new_pose);
+
+	  }
+
+
+}
+
+void CArmManipulationEditor::spacenavOffsetCallback(const geometry_msgs::Vector3ConstPtr& offset) {
+
+
+	ROS_INFO_ONCE("Spacenav offset received!");
+
+	spacenav.mutex_.lock();
+
+	spacenav.offset_received_ = true;
+
+	spacenav.offset = *offset;
+
+	if (spacenav.offset.x > spacenav.max_val_) spacenav.offset.x = spacenav.max_val_;
+	if (spacenav.offset.x < -spacenav.max_val_) spacenav.offset.x = -spacenav.max_val_;
+
+	if (spacenav.offset.y > spacenav.max_val_) spacenav.offset.y = spacenav.max_val_;
+	if (spacenav.offset.y < -spacenav.max_val_) spacenav.offset.y = -spacenav.max_val_;
+
+	if (spacenav.offset.z > spacenav.max_val_) spacenav.offset.z = spacenav.max_val_;
+	if (spacenav.offset.z < -spacenav.max_val_) spacenav.offset.z = -spacenav.max_val_;
+
+	spacenav.mutex_.unlock();
+
+}
+
+void CArmManipulationEditor::spacenavRotOffsetCallback(const geometry_msgs::Vector3ConstPtr& rot_offset) {
+
+
+	ROS_INFO_ONCE("Spacenav rot_offset received!");
+
+	spacenav.mutex_.lock();
+
+	spacenav.rot_offset_received_ = true;
+
+	spacenav.rot_offset = *rot_offset;
+
+	if (spacenav.rot_offset.x > spacenav.max_val_) spacenav.rot_offset.x = spacenav.max_val_;
+	if (spacenav.rot_offset.x < -spacenav.max_val_) spacenav.rot_offset.x = -spacenav.max_val_;
+
+	if (spacenav.rot_offset.y > spacenav.max_val_) spacenav.rot_offset.y = spacenav.max_val_;
+	if (spacenav.rot_offset.y < -spacenav.max_val_) spacenav.rot_offset.y = -spacenav.max_val_;
+
+	if (spacenav.rot_offset.z > spacenav.max_val_) spacenav.rot_offset.z = spacenav.max_val_;
+	if (spacenav.rot_offset.z < -spacenav.max_val_) spacenav.rot_offset.z = -spacenav.max_val_;
+
+	spacenav.mutex_.unlock();
+
+}
+
+void CArmManipulationEditor::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
+
+	if (joy->buttons.size()==2) {
+
+		ROS_INFO_ONCE("Spacenav data received!");
+
+		boost::mutex::scoped_lock(spacenav.mutex_);
+
+		// left button pressed
+		if (spacenav.buttons_[0] == 0 && joy->buttons[0] == 1) {
+
+			if (spacenav.lock_position_) {
+
+				ROS_INFO("Spacenav - unlocking position.");
+				spacenav.lock_position_ = false;
+
+			} else {
+
+				ROS_INFO("Spacenav - locking position.");
+				spacenav.lock_position_ = true;
+
+			}
+
+
+		}
+
+		// right button pressed
+		if (spacenav.buttons_[1] == 0 && joy->buttons[1] == 1) {
+
+			if (spacenav.lock_orientation_) {
+
+				ROS_INFO("Spacenav - unlocking orientation.");
+				spacenav.lock_orientation_ = false;
+
+			} else {
+
+				ROS_INFO("Spacenav - locking orientation.");
+				spacenav.lock_orientation_ = true;
+
+			}
+
+
+		}
+
+
+		spacenav.buttons_ = joy->buttons;
+
+	}
+
+
+};
 
 CArmManipulationEditor::~CArmManipulationEditor() {
 
@@ -441,7 +652,7 @@ int main(int argc, char** argv)
       std::vector<std::string> links;
 
       /// @todo move to configuration file
-      links.push_back("arm_7_link");
+      /*links.push_back("arm_7_link");
       links.push_back("sdh_palm_link");
       links.push_back("sdh_grasp_link");
       links.push_back("sdh_tip_link");
@@ -456,13 +667,37 @@ int main(int argc, char** argv)
 
       links.push_back("sdh_thumb_1_link");
       links.push_back("sdh_thumb_2_link");
-      links.push_back("sdh_thumb_3_link");
+      links.push_back("sdh_thumb_3_link");*/
+
+
+      ros::NodeHandle n;
+      ros::NodeHandle nh("~");
+
+
+
+      XmlRpc::XmlRpcValue v;
+
+
+      if (nh.getParam("arm_links", v)) {
+
+          for(int i =0; i < v.size(); i++)
+          {
+            links.push_back(v[i]);
+            std::cerr << "link names: " << links[i] << std::endl;
+          }
+
+      } else {
+
+    	  ROS_ERROR("Could not get param: arm_links");
+    	  return 0;
+
+      }
 
       ROS_INFO("Creating planning scene editor");
       ps_editor = new CArmManipulationEditor(params,links);
 
       ROS_INFO("Advertising services");
-      ros::NodeHandle n;
+
       ros::ServiceServer service_new = n.advertiseService(SRV_NEW, &CArmManipulationEditor::ArmNavNew,ps_editor);
       ros::ServiceServer service_plan = n.advertiseService(SRV_PLAN, &CArmManipulationEditor::ArmNavPlan,ps_editor);
       ros::ServiceServer service_play = n.advertiseService(SRV_PLAY, &CArmManipulationEditor::ArmNavPlay,ps_editor);

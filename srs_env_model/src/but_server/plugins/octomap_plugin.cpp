@@ -42,11 +42,13 @@
 // Interactive marker
 #include <srs_interaction_primitives/AddUnknownObject.h>
 
+#define DEFAULT_RESOLUTION 0.1
+
 void srs_env_model::COctoMapPlugin::setDefaults() {
 
 	// Set octomap parameters
 	m_mapParameters.frameSkip = 2;
-	m_mapParameters.resolution = 0.1;
+	m_mapParameters.resolution = DEFAULT_RESOLUTION;
 	m_mapParameters.treeDepth = 0;
 	m_mapParameters.probHit = 0.7; // Probability of node, if node is occupied: 0.7
 	m_mapParameters.probMiss = 0.4; // Probability of node, if node is free: 0.4
@@ -83,13 +85,14 @@ void srs_env_model::COctoMapPlugin::setDefaults() {
 	m_crawlDepth = 0;
 }
 
-srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name) :
-	srs_env_model::CServerPluginBase(name), filecounter(0) {
+srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
+: srs_env_model::CServerPluginBase(name)
+, CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
+, filecounter(0)
+{
 	//
 	setDefaults();
 
-	// Create octomap
-	m_data = new tButServerOcMap(m_mapParameters.resolution);
 	assert( m_data != 0 );
 
 	// Set octomap parameters
@@ -107,12 +110,12 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name) :
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
-		const std::string & filename) :
-	srs_env_model::CServerPluginBase(name) {
+		const std::string & filename)
+:	srs_env_model::CServerPluginBase(name)
+, CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
+{
 	setDefaults();
 
-	// Create octomap
-	m_data = new tButServerOcMap(m_mapParameters.resolution);
 	assert( m_data != 0 );
 
 	// Set octomap parameters

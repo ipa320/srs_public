@@ -48,8 +48,8 @@ def main():
   
   script_goal.component_name = 'sdh'
   script_goal.function_name = 'move'
-  #script_goal.parameter_name = 'cylopen'
-  script_goal.parameter_name = 'cyltotalopen'
+  script_goal.parameter_name = 'cylopen'
+  #script_goal.parameter_name = 'cyltotalopen'
   script_goal.mode = ''
   
   script_client.send_goal(script_goal)

@@ -66,17 +66,17 @@ def main():
     
     pos_const = PositionConstraint()
     
-    pos_const.header.frame_id = 'base_footprint'
+    pos_const.header.frame_id = 'base_link'
     pos_const.link_name = 'sdh_palm_link'
     #pos_const.link_name = 'arm_7_link'
     
     # default position
-    pos_const.position.x =  -0.316
-    pos_const.position.y =  -0.816
-    pos_const.position.z = 1.593
-    #pos_const.position.x =  -0.623
-    #pos_const.position.y =  -0.460
-    #pos_const.position.z = 1.162
+    #pos_const.position.x =  -0.316
+    #pos_const.position.y =  -0.816
+    #pos_const.position.z = 1.593
+    pos_const.position.x =  -0.623
+    pos_const.position.y =  -0.460
+    pos_const.position.z = 1.162
     
     pos_const.constraint_region_shape.type = pos_const.constraint_region_shape.BOX
     pos_const.constraint_region_shape.dimensions.append(2*0.02)
@@ -98,7 +98,7 @@ def main():
     
     or_const = OrientationConstraint()
     
-    or_const.header.frame_id = 'base_footprint'
+    or_const.header.frame_id = 'base_link'
     or_const.link_name = 'sdh_palm_link'
     #or_const.link_name = 'arm_7_link'
     
@@ -109,14 +109,14 @@ def main():
     #or_const.orientation
     
     # default orientation
-    or_const.orientation.x = 0.380
-    or_const.orientation.y = 0.153
-    or_const.orientation.z = -0.656
-    or_const.orientation.w = 0.634
-    #or_const.orientation.x = 0.739
-    #or_const.orientation.y = -0.396
-    #or_const.orientation.z = -0.533
-    #or_const.orientation.w = 0.116
+    #or_const.orientation.x = 0.380
+    #or_const.orientation.y = 0.153
+    #or_const.orientation.z = -0.656
+    #or_const.orientation.w = 0.634
+    or_const.orientation.x = 0.739
+    or_const.orientation.y = -0.396
+    or_const.orientation.z = -0.533
+    or_const.orientation.w = 0.116
     
     or_const.absolute_pitch_tolerance = 0.04
     or_const.absolute_roll_tolerance = 0.04

@@ -41,7 +41,6 @@ srs_env_model::CMarkerArrayPlugin::CMarkerArrayPlugin(const std::string & name)
 , m_bTransform( false )
 , m_colorFactor(0.8)
 {
-    m_data = new tData;
     assert( m_data != 0 );
 }
 
@@ -49,8 +48,6 @@ srs_env_model::CMarkerArrayPlugin::CMarkerArrayPlugin(const std::string & name)
 
 srs_env_model::CMarkerArrayPlugin::~CMarkerArrayPlugin()
 {
-    if( m_data != 0 )
-        delete m_data;
 }
 
 

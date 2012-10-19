@@ -27,6 +27,8 @@ The package is partially derived from the pr2_arm_navigation package. It modifie
   <depend package="srs_interaction_primitives"/>
   <depend package="srs_assisted_arm_navigation_msgs"/>
   <depend package="cob_image_flip"/> <!-- todo -> move it + RVIZ + int. teleop to ui package ? -->
+  <depend package="sensor_msgs"/>
+  <depend package="message_filters"/>
 
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />

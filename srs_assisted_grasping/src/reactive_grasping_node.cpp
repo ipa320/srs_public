@@ -303,11 +303,18 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 	  } else {
 
 
-		  double pos_diff = /*fabs*/(goal->target_configuration.data[i] - sdh_data_act_.positions[i]);
+		  //double pos_diff = (goal->target_configuration.data[i] - sdh_data_act_.positions[i]);
+		  double pos_diff = (sdh_data_act_.positions[i] - goal->target_configuration.data[i]);
 
 		  double vel = (pos_diff / (0.5*t1 + t2 + 0.5*t3)); // constant velocity
 		  double acc = (vel / t1) * (1.0 / params_.rate); // dv = a * dt = v/1 * 1/r
 		  double dec = (vel / t3) * (1.0 / params_.rate);
+
+		  if (vel>=params_.max_velocity) {
+
+			  ROS_WARN("Joint %s will violate max. velocity limit (%f, limit %f).",joints_.joints[i].c_str(),vel,params_.max_velocity);
+
+		  }
 
 		  ROS_INFO("Joint %d, dv1=%f (%u), v2=%f (%u), dv3=%f (%u)",i,acc,num_of_acc,vel,num_of_vel,dec,num_of_dec);
 

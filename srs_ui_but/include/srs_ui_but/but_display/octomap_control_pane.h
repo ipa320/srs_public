@@ -37,6 +37,7 @@
 #include <wx/checkbox.h>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/signals.hpp>
 #include <interactive_markers/interactive_marker_server.h>
 #include <srs_interaction_primitives/services_list.h>
 #include <srs_interaction_primitives/PoseChanged.h>
@@ -90,6 +91,12 @@ public:
 	/// On cancel clera map
 	virtual void OnCancelBoxGizmo( wxCommandEvent &event );
 
+	//! Fixed frame has changed
+	void fixedFrameChanged( const std::string & frameId ) { m_fixedFrameId = frameId; std::cerr << "New fixed frame: " << frameId << std::endl; }
+
+	//! Target frame has changed
+	void targetFrameChanged( const std::string & frameId ) { m_targetFrameId = frameId; std::cerr << "New target frame: " << frameId << std::endl; }
+
 protected:
 	//! Add gizmo to the scene
 	void addGizmo();
@@ -133,6 +140,9 @@ protected:
 
     //! Cancel box
     wxButton *m_buttonCancelBox;
+
+    //! Add box on clicked position
+    wxButton *m_buttonBoxOnClick;
 
     //! Static text control displaying gizmo info
     wxTextCtrl * m_textBox;
@@ -181,6 +191,16 @@ protected:
 
     //! Gizmo was added to the scene
     bool m_bGizmoAdded;
+
+    //! Is collision map locked?
+    bool m_cmapLocked;
+
+    //! Fixed frame id
+    std::string m_fixedFrameId;
+
+    //! Target frame id
+    std::string m_targetFrameId;
+
 
 private:
     DECLARE_EVENT_TABLE()

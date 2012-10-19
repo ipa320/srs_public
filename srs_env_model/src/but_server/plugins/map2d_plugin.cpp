@@ -40,7 +40,6 @@ srs_env_model::CMap2DPlugin::CMap2DPlugin(const std::string & name)
 , m_minSizeX(0.0)
 , m_minSizeY(0.0)
 {
-	m_data = new tData;
 	assert( m_data != 0 );
 }
 

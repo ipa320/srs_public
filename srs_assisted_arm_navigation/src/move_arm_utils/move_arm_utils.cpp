@@ -60,7 +60,8 @@ using namespace actionlib;
 using namespace control_msgs;
 using namespace interactive_markers;
 
-#define MARKER_REFRESH_TIME 0.05
+//#define MARKER_REFRESH_TIME 0.05
+#define MARKER_REFRESH_TIME 0.5
 #define SAFE_DELETE(x) if(x != NULL) { delete x; x = NULL; }
 #define NOT_MOVING_VELOCITY_THRESHOLD 0.005
 #define NOT_MOVING_TIME_THRESHOLD 0.5	//seconds
@@ -3645,6 +3646,8 @@ bool PlanningSceneEditor::solveIKForEndEffectorPose(MotionPlanRequestData& data,
   ik_request.pose_stamped.header.frame_id = cm_->getWorldFrameId();
   ik_request.pose_stamped.header.stamp = ros::Time(ros::WallTime::now().toSec());
   
+  ROS_DEBUG("Solving IK for %s link in %s world frame id.",ik_request.ik_link_name.c_str(),cm_->getWorldFrameId().c_str());
+
   KinematicState* state = NULL;
   if(type == StartPosition)
   {

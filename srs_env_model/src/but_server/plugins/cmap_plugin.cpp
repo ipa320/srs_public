@@ -36,14 +36,13 @@ srs_env_model::CCMapPlugin::CCMapPlugin(const std::string & name)
 , m_collisionMapLimitRadius(2.0)
 , m_collisionMapVersion(0)
 , m_cmapFrameId(COLLISION_MAP_FRAME_ID)
+, m_dataBuffer( new tData )
 , m_publishCollisionMap( true )
+, m_tfListener( ros::Duration(12.0 * tf::Transformer::DEFAULT_CACHE_TIME), true )
 , m_latchedTopics(false)
 , m_bConvertPoint( false )
 , m_mapTime(0)
 {
-	// Create collision map and the buffer
-	m_data = new arm_navigation_msgs::CollisionMap();
-	m_dataBuffer = new arm_navigation_msgs::CollisionMap();
 }
 
 //! Initialize plugin - called in server constructor
@@ -90,7 +89,7 @@ void srs_env_model::CCMapPlugin::publishInternal(const ros::Time & timestamp)
 	bool publishCollisionMap = m_publishCollisionMap && (m_latchedTopics || m_cmapPublisher.getNumSubscribers() > 0);
 
 	// Test collision maps and swap them, if needed
-	if( ! sameCMaps( m_data, m_dataBuffer ) )
+	if( ! sameCMaps( m_data.get(), m_dataBuffer.get() ) )
 	{
 		// CMaps differs, increase version index and swap them
 		++m_collisionMapVersion;
@@ -339,12 +338,12 @@ bool srs_env_model::CCMapPlugin::lockCmapSrvCallback( srs_env_model::LockCollisi
 	bool locked( req.lock != 0 );
 
 	m_bLocked = locked;
-
+/*
 	if( locked )
 		std::cerr << "Locking called. Lock set." << std::endl;
 	else
 		std::cerr << "Locking called. Lock removed." << std::endl;
-
+*/
 	return true;
 }
 
@@ -399,6 +398,10 @@ long srs_env_model::CCMapPlugin::removeInsideBox( const tBoxPoint & center, cons
 	return buffer.size() - counter;
 }
 
+#define POINT_ADD( p0, p1, p2 ) {p0.x = p1.x + p2.x; p0.y = p1.y + p2.y; p0.z = p1.z + p2.z;}
+#define POINT_SUB( p0, p1, p2 ) {p0.x = p1.x - p2.x; p0.y = p1.y - p2.y; p0.z = p1.z - p2.z;}
+#define POINT_ABS( p0, p1 ) {p0.x = abs(p1.x); p0.y = abs(p1.y); p0.z = abs(p1.z); }
+
 /**
  * @brief Remove all boxes from cubical volume - service callback function
  * @param req Request
@@ -409,6 +412,13 @@ bool srs_env_model::CCMapPlugin::removeBoxCallback( srs_env_model::RemoveCube::R
 	// Test frame id
 	if (req.frame_id != m_cmapFrameId)
 	{
+		// Transform size
+		geometry_msgs::PointStamped vs, vsout;
+		vs.header.frame_id = req.frame_id;
+		vs.header.stamp = m_mapTime;
+		POINT_ADD( vs.point, req.size, req.pose.position );
+		m_tfListener.transformPoint(m_cmapFrameId, vs, vsout);
+
 		// Transform pose
 		geometry_msgs::PoseStamped ps, psout;
 		ps.header.frame_id = req.frame_id;
@@ -418,14 +428,10 @@ bool srs_env_model::CCMapPlugin::removeBoxCallback( srs_env_model::RemoveCube::R
 		m_tfListener.transformPose(m_cmapFrameId, ps, psout);
 		req.pose = psout.pose;
 
-		// Transform size
-		geometry_msgs::PointStamped vs, vsout;
-		vs.header.frame_id = req.frame_id;
-		vs.header.stamp = m_mapTime;
-		vs.point = req.size;
+		// Finalize size transform
+		POINT_SUB(req.size, vsout.point, psout.pose.position);
+		POINT_ABS(req.size, req.size);
 
-		m_tfListener.transformPoint(m_cmapFrameId, vs, vsout);
-		req.size = vsout.point;
 	}
 
 	tBoxPoint center, size;
@@ -435,10 +441,12 @@ bool srs_env_model::CCMapPlugin::removeBoxCallback( srs_env_model::RemoveCube::R
 	size.x = req.size.x; size.y = req.size.y; size.z = req.size.z;
 
 	// Remove boxes
-	//long count =
+	long count =
 	removeInsideBox( center, size, m_data->boxes );
 
-//	std::cerr << "Removed " << count << " boxes..." << std::endl;
+	std::cerr << "Removed " << count << " boxes..." << std::endl;
+
+	invalidate();
 
 	return true;
 }
@@ -453,7 +461,7 @@ void srs_env_model::CCMapPlugin::addBox( const tBoxPoint & center, const tBoxPoi
 	boost::mutex::scoped_lock lock( m_lockData );
 	tBox box;
 
-//	PERROR( "Removing box: " << std::endl << center << std::endl << size << std::endl )
+//	PERROR( "Adding box: " << std::endl << center << std::endl << size << std::endl )
 
 	box.extents.x = size.x / 2.0;
 	box.extents.y = size.y / 2.0;
@@ -478,6 +486,13 @@ bool srs_env_model::CCMapPlugin::addBoxCallback( srs_env_model::RemoveCube::Requ
 	// Test frame id
 	if (req.frame_id != m_cmapFrameId)
 	{
+		// Transform size
+		geometry_msgs::PointStamped vs, vsout;
+		vs.header.frame_id = req.frame_id;
+		vs.header.stamp = m_mapTime;
+		POINT_ADD( vs.point, req.size, req.pose.position );
+		m_tfListener.transformPoint(m_cmapFrameId, vs, vsout);
+
 		// Transform pose
 		geometry_msgs::PoseStamped ps, psout;
 		ps.header.frame_id = req.frame_id;
@@ -487,15 +502,12 @@ bool srs_env_model::CCMapPlugin::addBoxCallback( srs_env_model::RemoveCube::Requ
 		m_tfListener.transformPose(m_cmapFrameId, ps, psout);
 		req.pose = psout.pose;
 
-		// Transform size
-		geometry_msgs::PointStamped vs, vsout;
-		vs.header.frame_id = req.frame_id;
-		vs.header.stamp = m_mapTime;
-		vs.point = req.size;
+		// Finalize size transform
+		POINT_SUB(req.size, vsout.point, psout.pose.position);
+		POINT_ABS(req.size, req.size);
 
-		m_tfListener.transformPoint(m_cmapFrameId, vs, vsout);
-		req.size = vsout.point;
 	}
+
 
 	tBoxPoint center, size;
 
@@ -504,7 +516,11 @@ bool srs_env_model::CCMapPlugin::addBoxCallback( srs_env_model::RemoveCube::Requ
 	size.x = req.size.x; size.y = req.size.y; size.z = req.size.z;
 
 	// Add box
+//	std::cerr << "Adding box. " << m_data->boxes.size() << " -> ";
 	addBox( center, size, m_data->boxes );
+//	std::cerr << m_data->boxes.size() << std::endl;
+
+	invalidate();
 
 	return true;
 }

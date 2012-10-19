@@ -5,7 +5,8 @@ multi_dof_joints:
     child_frame_id: base_footprint
 groups:
   - name: arm
-    base_link: base_footprint
+    base_link: base_link
+#    base_link: arm_0_link
     tip_link: sdh_palm_link
     #tip_link: arm_7_link
 default_collision_operations:

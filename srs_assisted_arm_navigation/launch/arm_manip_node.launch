@@ -3,10 +3,18 @@
 
   <!-- arm manipulation actionlib server -->
   <node pkg="srs_assisted_arm_navigation" name="assisted_arm_navigation" type="assisted_arm_navigation_node" respawn="true" output="screen">
+  
+    <rosparam command="load" file="$(find srs_assisted_arm_navigation)/config/arm_links.yaml" />
+  
     <param name="start_timeout" type="double" value="60.0"/>
     <param name="solve_timeout" type="double" value="300.0"/>
     <param name="inflate_bb" type="double" value="1.1"/>
-    <param name="world_frame" type="string" value="base_footprint"/>
+    <param name="world_frame" type="string" value="base_link"/>
+    <param name="joint_controls" type="bool" value="false"/>
+    <param name="aco_link" type="string" value="arm_7_link"/>
+    <param name="spacenav/max_val" type="double" value="500.0"/>
+    <param name="spacenav/step" type="double" value="0.1"/>
+    <param name="spacenav/rot_step" type="double" value="0.2"/>
   </node>
   
 </launch>

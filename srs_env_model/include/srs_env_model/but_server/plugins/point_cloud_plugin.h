@@ -41,6 +41,9 @@
 // PCL includes
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 
+// Registration
+#include <srs_env_model/but_server/registration/pcl_registration_module.h>
+
 
 namespace srs_env_model
 {
@@ -72,6 +75,9 @@ namespace srs_env_model
 
         //! Wants plugin new map data?
         virtual bool wantsMap();
+
+        //! Set registration method
+        void setRegistrationMethod( EPclRegistrationMode method ) {  m_bRegistrationMethodChanged = m_registration.getMode() != method; m_registration.setMode( method ); }
 
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -158,6 +164,19 @@ namespace srs_env_model
 
         //! Output points transform matrix
         Eigen::Matrix4f m_pcOutTM;
+
+        //! Has been registration method changed?
+        bool m_bRegistrationMethodChanged;
+
+        //! Old point cloud used for registration
+        tPointCloudPtr m_oldCloud;
+
+        //! Used buffer cloud
+        tPointCloudPtr m_bufferCloud;
+
+        //! Registration module
+        CPclRegistration< tPclPoint, tPclPoint> m_registration;
+
 
     }; // class CPointCloudPlugin
 

@@ -163,7 +163,7 @@ namespace srs_env_model
         std::string m_cmapFrameId;
 
         /// Collision map message buffer - used to resolve if collision map has changed.
-        arm_navigation_msgs::CollisionMap * m_dataBuffer;
+        tDataPtr m_dataBuffer;
 
         /// Empty collision map - used when callers map id is the same as the current map id
         arm_navigation_msgs::CollisionMap m_dataEmpty;

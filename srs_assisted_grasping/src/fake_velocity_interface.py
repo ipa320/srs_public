@@ -49,7 +49,7 @@ class fake_velocity_interface():
         self.last_time = rospy.Time(0)
         self.last_vel_command = None
         
-        self.joint_names = ['sdh_knuckle_joint','sdh_finger_12_joint','sdh_finger_13_joint','sdh_finger_22_joint','sdh_finger_23_joint','sdh_thumb_2_joint','sdh_thumb_3_joint']
+        self.joint_names = ['sdh_knuckle_joint','sdh_thumb_2_joint','sdh_thumb_3_joint','sdh_finger_12_joint','sdh_finger_13_joint','sdh_finger_22_joint','sdh_finger_23_joint']
         
         self.joint_req_vel = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         
@@ -115,7 +115,7 @@ class fake_velocity_interface():
         
             for idx in range(0,len(req_vel)):
                 
-                self.req_pos[idx] = self.req_pos[idx] + (req_vel[idx]*self.dt*1.0)
+                self.req_pos[idx] = self.req_pos[idx] - (req_vel[idx]*self.dt*1.0)
         
                 jtp.positions[idx] = self.req_pos[idx]
                 jtp.velocities[idx] = req_vel[idx]

@@ -193,6 +193,7 @@ void ManualArmManipActionServer::srv_set_state(unsigned int n) {
 
   if (inited_) {
     new_state_ = n;
+    ROS_DEBUG("Setting internal state to %u",n);
     timeout_ = ros::Time::now();
   }
 

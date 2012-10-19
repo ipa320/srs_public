@@ -147,7 +147,7 @@ std::string CArmManipulationEditor::add_coll_obj_attached(double x, double y, do
   std::string target = collision_objects_frame_id_;
 
   geometry_msgs::PoseStamped pose;
-  pose.header.frame_id = "/arm_7_link"; //sdh_palm_link
+  pose.header.frame_id = aco_link_; //sdh_palm_link
   //pose.header.frame_id = "sdh_palm_link"; // pokus
   pose.header.stamp = now;
   pose.pose.position.x = x;
@@ -221,7 +221,7 @@ std::string CArmManipulationEditor::add_coll_obj_attached(double x, double y, do
         ROS_INFO("Attaching object to robot.");
 
         attachCollisionObject(ret,
-                              "arm_7_link",
+                              aco_link_,
                               links_);
 
         //changeToAttached(ret);

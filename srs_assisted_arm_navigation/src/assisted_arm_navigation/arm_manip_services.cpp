@@ -61,6 +61,7 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
    ROS_INFO("Performing planning for %s end effector link.",data.getEndEffectorLink().c_str());
 
    data.setStartVisible(false);
+   data.setJointControlsVisible(joint_controls_,this);
 
    #define TR 0.1
 

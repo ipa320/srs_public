@@ -76,7 +76,13 @@
 #include "std_msgs/MultiArrayLayout.h"
 #include "std_msgs/MultiArrayDimension.h"
 #include "std_msgs/Int32MultiArray.h"
+#include "sensor_msgs/Joy.h"
 
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+//#include <message_filters/time_synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include "geometry_msgs/Vector3.h"
 
 namespace srs_assisted_arm_navigation {
 
@@ -185,6 +191,13 @@ public:
    * Method for changing state of execution (state, new_state variables).
    *
    */
+
+  unsigned int get_state() {
+
+	  return state_;
+
+  }
+
   void srv_set_state(unsigned int n);
 
   ros::Duration start_timeout_; /**< Action should start before start_time_ + start_timeout_ */
@@ -295,6 +308,21 @@ public:
   bool ArmNavStop(srs_assisted_arm_navigation_msgs::ArmNavStop::Request &req, srs_assisted_arm_navigation_msgs::ArmNavStop::Response &res);
 
 
+  void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
+
+  typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::Vector3, geometry_msgs::Vector3> MySyncPolicy;
+
+  ros::Subscriber offset_sub_;
+  ros::Subscriber rot_offset_sub_;
+  ros::Subscriber joy_sub_;
+
+  void spacenavOffsetCallback(const geometry_msgs::Vector3ConstPtr& offset);
+  void spacenavRotOffsetCallback(const geometry_msgs::Vector3ConstPtr& rot_offset);
+
+
+
+  //ros::Subscriber joy_sub_;
+
   /** This callback is used to send interactive markers. It uses TimerEvent.
    *  @todo Make the period configurable.
    */
@@ -330,6 +358,31 @@ public:
 
 protected:
 
+  void timerCallback(const ros::TimerEvent& ev);
+
+  ros::Timer spacenav_timer_;
+
+  struct {
+
+	  boost::mutex mutex_;
+
+	  bool offset_received_;
+	  bool rot_offset_received_;
+
+	  bool lock_position_;
+	  bool lock_orientation_;
+
+	  geometry_msgs::Vector3 offset;
+	  geometry_msgs::Vector3 rot_offset;
+
+	  double max_val_;
+	  double step_;
+	  double rot_step_;
+
+	  vector<int> buttons_;
+
+
+  } spacenav;
 
 
   std::string planning_scene_id; /**< ID of current planing scene */
@@ -400,6 +453,9 @@ protected:
   void findIK(geometry_msgs::Pose new_pose);
 
   bool checkPose(geometry_msgs::PoseStamped &p, std::string frame);
+
+  bool joint_controls_;
+  std::string aco_link_;
 
 private:
 

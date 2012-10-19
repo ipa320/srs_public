@@ -49,6 +49,8 @@
     <remap from="colorimage" to="/cam3d/rgb/image_raw"/>
   </node>
   
+  <node pkg="spacenav_node" name="spacenav_node" type="spacenav_node" respawn="false"/>
+  
 
   <!--node pkg="tf" type="static_transform_publisher" name="sdh_link_2_tf_publisher"
         args="0 0 0 0 1.57 0  /sdh_palm_link /sdh_palm_link_2 100" /-->

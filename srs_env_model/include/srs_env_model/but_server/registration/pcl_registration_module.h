@@ -98,6 +98,9 @@ public:
 	//! @param node_handle Node handle
 	void init( ros::NodeHandle & node_handle );
 
+	//! Get registration mode as a string
+	std::string getStrMode() { return m_mode_names[ m_mode ]; }
+
 protected:
 	//! Convert string to the mode
 	//! @param name Mode name

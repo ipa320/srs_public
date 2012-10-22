@@ -311,7 +311,7 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 		  double p1 = goal->target_configuration.data[i];
 		  double p2 =  sdh_data_act_.positions[i];
 
-   		  double pos_diff = fabs(p1-p2);
+   		  double pos_diff = (p1-p2);
 
 		  /*if (p1 <= 0 && p2 <= 0) pos_diff = fabs(p1 - p2);
 	  	  if (p1 >= 0 && p2 >= 0) pos_diff = fabs(p1-p2);
@@ -331,7 +331,7 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 
 		  }
 
-		  ROS_INFO("Joint %d, dv1=%f (%u), v2=%f (%u), dv3=%f (%u)",i,acc,num_of_acc,vel,num_of_vel,dec,num_of_dec);
+		  ROS_INFO("Joint %d, dv1=%f (%u), v2=%f (%u), dv3=%f (%u), pos_diff: %f",i,acc,num_of_acc,vel,num_of_vel,dec,num_of_dec,pos_diff);
 
 		  joints_.velocities[i].resize(num_of_acc + num_of_vel + num_of_dec);
 
@@ -345,7 +345,7 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 				  // acceleration
 				  joints_.velocities[i][j] = joints_.velocities[i][j-1] + acc;
 
-				  if (joints_.velocities[i][j] > vel) joints_.velocities[i][j] = vel;
+				  if (fabs(joints_.velocities[i][j]) > fabs(vel)) joints_.velocities[i][j] = vel;
 
 
 
@@ -357,7 +357,7 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 			  } else {
 
 				  // deceleration
-				  if ( (joints_.velocities[i][j-1] - dec) > 0) {
+				  if ( fabs(joints_.velocities[i][j-1]) > fabs(dec) ) {
 
 				  	joints_.velocities[i][j] = joints_.velocities[i][j-1] - dec;
 

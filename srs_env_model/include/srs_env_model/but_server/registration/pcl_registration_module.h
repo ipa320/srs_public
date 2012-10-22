@@ -37,10 +37,10 @@ namespace srs_env_model
 {
 enum EPclRegistrationMode
 {
-	PCL_REGISTRATION_MODE_NONE,
-	PCL_REGISTRATION_MODE_ICP,
-	PCL_REGISTRATION_MODE_ICPNL,
-	PCL_REGISTRATION_MODE_SCA
+	PCL_REGISTRATION_MODE_NONE = 0,
+	PCL_REGISTRATION_MODE_ICP = 1,
+	PCL_REGISTRATION_MODE_ICPNL = 2,
+	PCL_REGISTRATION_MODE_SCA = 3
 };
 
 template <typename PointSource, typename PointTarget, typename Scalar = float>
@@ -94,6 +94,18 @@ public:
 		return m_registrationPtr;
 	}
 
+	//! Initialize parameters from the parameter server
+	//! @param node_handle Node handle
+	void init( ros::NodeHandle & node_handle );
+
+protected:
+	//! Convert string to the mode
+	//! @param name Mode name
+	EPclRegistrationMode modeFromString( const std::string & name );
+
+	//! Set parameters
+	void setRegistrationParameters();
+
 protected:
 	//! Used mode
 	EPclRegistrationMode m_mode;
@@ -109,6 +121,21 @@ protected:
 
 	//! Used registration
 	tRegistration * m_registrationPtr;
+
+	//---------------------------
+	// Common parameters
+
+	//! Maximum of iterations
+	int m_maxIterations;
+
+	//! RANSAC outlier rejection threshodl
+	double m_RANSACOutlierRejectionThreshold;
+
+	//! Maximal correspondence distance
+	double m_maxCorrespondenceDistance;
+
+	//! Transformation epsilon value
+	double m_transformationEpsilon ;
 
 }; // CPclRegistration
 

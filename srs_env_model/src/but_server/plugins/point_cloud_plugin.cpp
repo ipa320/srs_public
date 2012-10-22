@@ -127,6 +127,9 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 
 //	PERROR( "PointCloudPlugin initialized..." );
 
+	// Initialize registration module from the parameter server
+	m_registration.init( node_handle );
+
 	// Set registration mode
 	setRegistrationMethod( PCL_REGISTRATION_MODE_ICP );
 }

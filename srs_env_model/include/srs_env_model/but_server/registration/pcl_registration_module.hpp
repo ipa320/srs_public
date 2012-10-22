@@ -60,9 +60,73 @@ bool srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::process(
 	if( m_registrationPtr == 0 )
 		return false;
 
+	setRegistrationParameters();
+
 	m_registrationPtr->setInputCloud(source);
 	m_registrationPtr->setInputTarget(target);
 	m_registrationPtr->align( *output );
 
 	return m_registrationPtr->hasConverged();
+}
+
+//! Convert string to the mode
+//! @param name Mode name
+template <typename PointSource, typename PointTarget, typename Scalar>
+typename srs_env_model::EPclRegistrationMode
+srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::modeFromString( const std::string & name )
+{
+	std::string converted( name );
+	std::transform( converted.begin(), converted.end(), converted.begin(), ::toupper);
+
+	if( converted == m_mode_names[0] )
+		return PCL_REGISTRATION_MODE_NONE;
+
+	if( converted == m_mode_names[1] )
+		return PCL_REGISTRATION_MODE_ICP;
+
+	if( converted == m_mode_names[2] )
+		return PCL_REGISTRATION_MODE_ICPNL;
+
+	if( converted == m_mode_names[3] )
+		return PCL_REGISTRATION_MODE_SCA;
+
+	return PCL_REGISTRATION_MODE_NONE;
+}
+
+//! Initialize parameters from the parameter server
+//! @param node_handle Node handle
+template <typename PointSource, typename PointTarget, typename Scalar>
+void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::init( ros::NodeHandle & node_handle )
+{
+	// Handling mode
+	std::string strMode("NONE");
+	node_handle.param("registration_mode", strMode, strMode );
+	setMode( modeFromString(strMode) );
+
+	// Maximum iterations
+	int iterations(5);
+	node_handle.param("registration_maximum_iterations", iterations, iterations );
+	m_maxIterations = iterations;
+
+	// RANSAC outlier threshold
+	m_RANSACOutlierRejectionThreshold = 0.05;
+	node_handle.param("registration_ransac_outlier_rejection_threshold", m_RANSACOutlierRejectionThreshold, m_RANSACOutlierRejectionThreshold );
+
+	// Maximal correspondence distance
+	m_maxCorrespondenceDistance = std::sqrt (std::numeric_limits<double>::max ());
+	node_handle.param("registration_maximal_correspondence_distance", m_maxCorrespondenceDistance, m_maxCorrespondenceDistance );
+
+	// Transformation epsilon
+	m_transformationEpsilon = 0.0;
+	node_handle.param("registration_transformation_epsilon", m_transformationEpsilon, m_transformationEpsilon );
+}
+
+//! Set common registration parameters
+template <typename PointSource, typename PointTarget, typename Scalar>
+void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setRegistrationParameters()
+{
+	m_registrationPtr->setMaximumIterations( m_maxIterations );
+	m_registrationPtr->setRANSACOutlierRejectionThreshold ( m_RANSACOutlierRejectionThreshold );
+	m_registrationPtr->setMaxCorrespondenceDistance( m_maxCorrespondenceDistance );
+	m_registrationPtr->setTransformationEpsilon(m_transformationEpsilon);
 }

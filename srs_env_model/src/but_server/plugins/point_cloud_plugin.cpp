@@ -74,6 +74,7 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 {
 //	PERROR( "Initializing PointCloudPlugin" );
 
+	CServerPluginBase::init( node_handle );
 
 	// Read parameters
 
@@ -265,9 +266,10 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	boost::mutex::scoped_lock lock(m_lockData);
 //	PERROR("Lock");
 
+	//std::cerr << m_frame_number << ", " << m_use_every_nth << std::endl;
 	if( ! useFrame() )
 	{
-		PERROR("Skipping frame: " << cloud->header.stamp);
+	//	PERROR("Skipping frame: " << cloud->header.stamp);
 
 		return;
 	}

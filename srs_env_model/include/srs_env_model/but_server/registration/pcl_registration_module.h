@@ -140,6 +140,18 @@ protected:
 	//! Transformation epsilon value
 	double m_transformationEpsilon ;
 
+	//--------------------------
+	// SCA features
+
+	//! Minimum distances between samples
+	float m_scaMinSampleDistance;
+
+	//! Number of samples to use during each iteration.
+	int m_scaNumOfSamples;
+
+	//! Number of neighbors to use when selecting a random feature correspondence
+	int m_scaCorrespondenceRamdomness;
+
 }; // CPclRegistration
 
 } // namespace srs_env_model

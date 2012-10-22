@@ -126,13 +126,23 @@ namespace srs_env_model
 
 	public:
 		//! Constructor
-		CServerPluginBase( const std::string & name ) : m_frame_number( 0 ), m_use_every_nth( 1 ), m_name(name){ }
+		CServerPluginBase( const std::string & name )
+			: m_frame_number( 0 )
+			, m_use_every_nth( 1 )
+			, m_name(name)
+			, m_parameterNamePrefix("")
+		{ }
 
 		//! Virtual destructor.
 		virtual ~CServerPluginBase() {}
 
 		//! Initialize plugin - called in server constructor
-		virtual void init(ros::NodeHandle & node_handle){}
+		virtual void init(ros::NodeHandle & node_handle)
+		{
+			int fs;
+			node_handle.param( m_parameterNamePrefix + "frame_skip", fs, 1 );
+			m_use_every_nth = (fs >= 1) ? fs : 1;
+		}
 
 		//! Called when new scan was inserted and now all can be published
 		void publish(const ros::Time & timestamp){ if( shouldPublish() ) publishInternal( timestamp ); }
@@ -148,6 +158,9 @@ namespace srs_env_model
 
 		//! Get plugin name
 		std::string getName( ) { return m_name; }
+
+		//! Parameters prefix
+		void setParemetersPrefix( const std::string & prefix );
 
 	protected:
 		//! Should data be published
@@ -171,6 +184,9 @@ namespace srs_env_model
 
 		//! Locking mutex
 		boost::mutex m_lockMutex;
+
+		//! Paremeters names prefix
+		std::string m_parameterNamePrefix;
 
 	};
 

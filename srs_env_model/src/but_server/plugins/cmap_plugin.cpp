@@ -63,7 +63,7 @@ void srs_env_model::CCMapPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("collision_map_publisher", m_cmapPublisherName, COLLISION_MAP_PUBLISHER_NAME );
 
 	// Get FID to which will be points transformed when publishing collision map
-	node_handle.param("collisionmap_frame_id", m_cmapFrameId, COLLISION_MAP_FRAME_ID ); //
+	node_handle.param("collision_map_frame_id", m_cmapFrameId, COLLISION_MAP_FRAME_ID ); //
 
 	// Create and publish service - get collision map
 	m_serviceGetCollisionMap = node_handle.advertiseService( GetCollisionMap_SRV, 	&CCMapPlugin::getCollisionMapSrvCallback, this);

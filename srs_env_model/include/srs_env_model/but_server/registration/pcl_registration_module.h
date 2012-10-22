@@ -106,8 +106,11 @@ protected:
 	//! @param name Mode name
 	EPclRegistrationMode modeFromString( const std::string & name );
 
-	//! Set parameters
+	//! Set common parameters
 	void setRegistrationParameters();
+
+	//! Set SCA parameters
+	void setSCAParameters();
 
 protected:
 	//! Used mode

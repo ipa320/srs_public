@@ -224,10 +224,15 @@ bool ReactiveGrasping::publish(std::vector<double> vel) {
 		jv.timeStamp = now;
 		jv.joint_uri = joints_.joints[i];
 		jv.value = vel[i];
+		jv.unit = "rad/s";
+
+		std::cout << vel[i] << " ";
 
 		msg.velocities.push_back(jv);
 
 	}
+
+	std::cout << std::endl;
 
 	vel_publisher_.publish(msg);
 
@@ -303,14 +308,24 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 	  } else {
 
 
+		  double p1 = goal->target_configuration.data[i];
+		  double p2 =  sdh_data_act_.positions[i];
+
+   		  double pos_diff = fabs(p1-p2);
+
+		  /*if (p1 <= 0 && p2 <= 0) pos_diff = fabs(p1 - p2);
+	  	  if (p1 >= 0 && p2 >= 0) pos_diff = fabs(p1-p2);
+		  if (p1 < 0 && p2 > 0) pos_diff = p2 - p1;
+		  if (p1 > 0 && p2 < 0) pos_diff = p1 - p2;*/
+
 		  //double pos_diff = (goal->target_configuration.data[i] - sdh_data_act_.positions[i]);
-		  double pos_diff = (sdh_data_act_.positions[i] - goal->target_configuration.data[i]);
+		  //double pos_diff = (sdh_data_act_.positions[i] - goal->target_configuration.data[i]);
 
 		  double vel = (pos_diff / (0.5*t1 + t2 + 0.5*t3)); // constant velocity
 		  double acc = (vel / t1) * (1.0 / params_.rate); // dv = a * dt = v/1 * 1/r
 		  double dec = (vel / t3) * (1.0 / params_.rate);
 
-		  if (vel>=params_.max_velocity) {
+		  if (fabs(vel) >= params_.max_velocity) {
 
 			  ROS_WARN("Joint %s will violate max. velocity limit (%f, limit %f).",joints_.joints[i].c_str(),vel,params_.max_velocity);
 

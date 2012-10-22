@@ -226,13 +226,13 @@ bool ReactiveGrasping::publish(std::vector<double> vel) {
 		jv.value = vel[i];
 		jv.unit = "rad/s";
 
-		std::cout << vel[i] << " ";
+	//std::cout << vel[i] << " ";
 
 		msg.velocities.push_back(jv);
 
 	}
 
-	std::cout << std::endl;
+	//std::cout << std::endl;
 
 	vel_publisher_.publish(msg);
 

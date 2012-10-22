@@ -30,6 +30,8 @@
 
 #include <pcl_ros/transforms.h>
 
+#define FIXED_FRAME "/map"
+
 srs_env_model::CCMapPlugin::CCMapPlugin(const std::string & name)
 : srs_env_model::CServerPluginBase(name)
 , m_cmapPublisherName(COLLISION_MAP_PUBLISHER_NAME)
@@ -85,6 +87,9 @@ void srs_env_model::CCMapPlugin::init(ros::NodeHandle & node_handle)
 //! Called when new scan was inserted and now all can be published
 void srs_env_model::CCMapPlugin::publishInternal(const ros::Time & timestamp)
 {
+	// Lock data
+	boost::mutex::scoped_lock lock(m_lockData);
+
 	// Should map be published?
 	bool publishCollisionMap = m_publishCollisionMap && (m_latchedTopics || m_cmapPublisher.getNumSubscribers() > 0);
 
@@ -100,11 +105,19 @@ void srs_env_model::CCMapPlugin::publishInternal(const ros::Time & timestamp)
 		invalidate();
 	}
 
+	if( m_bLocked )
+	{
+		if( m_mapTime != timestamp )
+		{
+			retransformTF(timestamp);
+		}
+	}
+
 	// Publish collision map
 	if (publishCollisionMap) {
 //		std::cerr << "Publishing cmap. Frame id: " << m_cmapFrameId << ", Size: " << m_data->boxes.size() << std::endl;
 		m_data->header.frame_id = m_cmapFrameId;
-		m_data->header.stamp = m_time_stamp;
+		m_data->header.stamp = timestamp;
 		m_cmapPublisher.publish(*m_data);
 	}
 }
@@ -113,7 +126,11 @@ void srs_env_model::CCMapPlugin::publishInternal(const ros::Time & timestamp)
 void srs_env_model::CCMapPlugin::newMapDataCB( SMapWithParameters & par )
 {
 	if( m_bLocked )
+	{
 		return;
+	}
+	// Lock data
+	boost::mutex::scoped_lock lock(m_lockData);
 
 	// Reset collision map buffer
 	m_dataBuffer->boxes.clear();
@@ -122,16 +139,15 @@ void srs_env_model::CCMapPlugin::newMapDataCB( SMapWithParameters & par )
 
 	// Get octomap to collision map transform matrix
 	tf::StampedTransform omapToCmapTf,	// Octomap to collision map
-						 baseToOmapTf;  // Robot baselink to octomap
+						 baseToOmapTf,  // Robot baselink to octomap
+						 cmapToWorldTF; // Collision map to world
 	try
 	{
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_cmapFrameId, par.frameId, par.currentTime, ros::Duration(5));
-
 		m_tfListener.lookupTransform(m_cmapFrameId, par.frameId, par.currentTime, omapToCmapTf);
 
 		m_tfListener.waitForTransform(par.frameId, robotBaseFrameId, par.currentTime, ros::Duration(5));
-
 		m_tfListener.lookupTransform(par.frameId, robotBaseFrameId, par.currentTime, baseToOmapTf);
 	}
 	catch (tf::TransformException& ex) {
@@ -525,6 +541,84 @@ bool srs_env_model::CCMapPlugin::addBoxCallback( srs_env_model::RemoveCube::Requ
 	return true;
 }
 
+/**
+ * @brief retransform map to the new time frame
+ * @param currentTime time frame to transform to
+ */
+void srs_env_model::CCMapPlugin::retransformTF( const ros::Time & currentTime )
+{
+	// Listen and store current collision map transform matrix
+	tf::StampedTransform lockedToCurrentTF;
+
+	try
+	{
+		m_tfListener.waitForTransform( m_cmapFrameId, currentTime, m_cmapFrameId, m_mapTime, FIXED_FRAME, ros::Duration(5) );
+		m_tfListener.lookupTransform( m_cmapFrameId, currentTime, m_cmapFrameId, m_mapTime, FIXED_FRAME, lockedToCurrentTF );
+	}
+	catch (tf::TransformException& ex) {
+			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
+			PERROR( "Transform error.");
+			return;
+	}
+
+	Eigen::Matrix4f m;
+
+	// Get transform matrix
+	pcl_ros::transformAsMatrix( lockedToCurrentTF, m );
+
+	// Transform data front buffer
+	tBoxVec::iterator it, itEnd( m_data->boxes.end() );
+	for( it = m_data->boxes.begin(); it != itEnd; ++it )
+	{
+		// Copy values to the eigen vectors
+		Eigen::Vector4f position( it->center.x, it->center.y, it->center.z, 1.0f );
+		Eigen::Vector4f extents( it->extents.x, it->extents.y, it->extents.z, 1.0f );
+		extents += position;
+
+		// Retransform
+		position = m * position;
+		extents = m * extents;
+
+		// Copy values back to the box
+		it->center.x = position[0];
+		it->center.y = position[1];
+		it->center.z = position[2];
+
+		// Recompute extents
+		extents = extents - position;
+		it->extents.x = abs(extents[0]);
+		it->extents.y = abs(extents[1]);
+		it->extents.z = abs(extents[2]);
+	}
+
+	// Transform back buffer
+	itEnd = m_dataBuffer->boxes.end();
+	for( it = m_dataBuffer->boxes.begin(); it != itEnd; ++it )
+	{
+		// Copy values to the eigen vectors
+		Eigen::Vector4f position( it->center.x, it->center.y, it->center.z, 1.0f );
+		Eigen::Vector4f extents( it->extents.x, it->extents.y, it->extents.z, 1.0f );
+		extents += position;
+
+		// Retransform
+		position = m * position;
+		extents = m * extents;
+
+		// Copy values back to the box
+		it->center.x = position[0];
+		it->center.y = position[1];
+		it->center.z = position[2];
+
+		// Recompute extents
+		extents -= position;
+		it->extents.x = abs(extents[0]);
+		it->extents.y = abs(extents[1]);
+		it->extents.z = abs(extents[2]);
+	}
+
+	// Store timestamp
+	m_mapTime = currentTime;
+}
 
 
 

@@ -143,6 +143,12 @@ namespace srs_env_model
          */
         bool addBoxCallback( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res );
 
+        /**
+         * @brief retransform map to the new time frame
+         * @param currentTime time frame to transform to
+         */
+        void retransformTF( const ros::Time & currentTime );
+
     protected:
         //! Collision map publisher name
         std::string m_cmapPublisherName;
@@ -207,6 +213,7 @@ namespace srs_env_model
 
         /// Current cmap timestamp
         ros::Time m_mapTime;
+
 
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW

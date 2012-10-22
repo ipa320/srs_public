@@ -1,0 +1,11 @@
+<launch>
+
+<node pkg="nodelet" type="nodelet" name="openni_manager" output="screen" respawn="true" args="manager"/>
+
+<!-- throttling -->
+  <node pkg="nodelet" type="nodelet" name="pointcloud_throttle" args="load pointcloud_to_laserscan/CloudThrottle openni_manager" respawn="true">
+    <param name="max_rate" value="1.0"/>
+    <remap from="cloud_in" to="/cam3d/depth/points"/>
+    <remap from="cloud_out" to="/cam3d/depth/points_throttled"/>
+  </node>
+</launch>

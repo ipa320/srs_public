@@ -56,6 +56,8 @@ public:
 	typedef typename PointCloudTarget::Ptr 	PointTargetPtr;
 	typedef typename PointCloudTarget::ConstPtr 	PointTargetConstPtr;
 
+	// String mode names
+	static const std::string m_mode_names[];
 public:
 
 	//! Constructor

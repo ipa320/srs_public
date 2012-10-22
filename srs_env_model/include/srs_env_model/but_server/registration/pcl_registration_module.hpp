@@ -25,6 +25,10 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! Static member initialization
+template <typename PointSource, typename PointTarget, typename Scalar>
+const std::string srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::m_mode_names[4] = {"NONE", "ICP", "ICPNL", "SCA" };
+
 //! Set used mode
 template <typename PointSource, typename PointTarget, typename Scalar>
 void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setMode( EPclRegistrationMode mode )

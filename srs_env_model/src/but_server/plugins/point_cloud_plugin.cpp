@@ -237,7 +237,6 @@ void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButSer
 	point.y = it.getY();
 	point.z = it.getZ();
 
-
 	// Set color
 	point.r = it->r();
 	point.g = it->g();

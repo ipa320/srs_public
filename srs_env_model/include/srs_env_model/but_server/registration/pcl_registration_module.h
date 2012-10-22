@@ -101,6 +101,9 @@ public:
 	//! Get registration mode as a string
 	std::string getStrMode() { return m_mode_names[ m_mode ]; }
 
+	//! Reinitialize registration parameters
+	void resetParameters();
+
 protected:
 	//! Convert string to the mode
 	//! @param name Mode name

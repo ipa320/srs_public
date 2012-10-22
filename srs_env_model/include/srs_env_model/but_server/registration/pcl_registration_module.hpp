@@ -39,12 +39,16 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setMode(
 	{
 	case PCL_REGISTRATION_MODE_NONE:
 		m_registrationPtr = 0;
+		break;
 	case PCL_REGISTRATION_MODE_ICP:
 		m_registrationPtr = & m_algIcp;
+		break;
 	case PCL_REGISTRATION_MODE_ICPNL:
 		m_registrationPtr = & m_algIcpNl;
+		break;
 	case PCL_REGISTRATION_MODE_SCA:
 		m_registrationPtr = & m_algSCA;
+		break;
 	default:
 		m_registrationPtr = 0;
 	}
@@ -60,7 +64,7 @@ bool srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::process(
 	if( m_registrationPtr == 0 )
 		return false;
 
-	setRegistrationParameters();
+
 
 	m_registrationPtr->setInputCloud(source);
 	m_registrationPtr->setInputTarget(target);
@@ -103,6 +107,9 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::init( ro
 	node_handle.param("registration_mode", strMode, strMode );
 	setMode( modeFromString(strMode) );
 
+	//------------------------------------------
+	// Common parameters
+
 	// Maximum iterations
 	int iterations(5);
 	node_handle.param("registration_maximum_iterations", iterations, iterations );
@@ -119,6 +126,43 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::init( ro
 	// Transformation epsilon
 	m_transformationEpsilon = 0.0;
 	node_handle.param("registration_transformation_epsilon", m_transformationEpsilon, m_transformationEpsilon );
+
+	//-----------------------------------------
+	// SCA parameters
+
+	// Minimum distances between samples
+	m_scaMinSampleDistance = 0.0;
+	node_handle.param("registration_sca_min_sample_distance", m_scaMinSampleDistance, m_scaMinSampleDistance );
+
+	// Number of samples to use during each iteration.
+	m_scaNumOfSamples = 3;
+	node_handle.param("registration_sca_num_of_samples", m_scaNumOfSamples, m_scaNumOfSamples );
+
+	// Number of neighbors to use when selecting a random feature correspondence
+	m_scaCorrespondenceRamdomness = 10;
+	node_handle.param("registration_sca_correspondence_randomness", m_scaCorrespondenceRamdomness, m_scaCorrespondenceRamdomness );
+}
+
+//! Reinitialize registration parameters
+template <typename PointSource, typename PointTarget, typename Scalar>
+void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::resetParameters()
+{
+	if( m_mode == PCL_REGISTRATION_MODE_NONE )
+		return;
+
+	setRegistrationParameters();
+
+	switch( m_mode )
+	{
+	case PCL_REGISTRATION_MODE_ICP:
+		break;
+	case PCL_REGISTRATION_MODE_ICPNL:
+		break;
+	case PCL_REGISTRATION_MODE_SCA:
+		setSCAParameters();
+		break;
+	default:
+	}
 }
 
 //! Set common registration parameters
@@ -129,4 +173,13 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setRegis
 	m_registrationPtr->setRANSACOutlierRejectionThreshold ( m_RANSACOutlierRejectionThreshold );
 	m_registrationPtr->setMaxCorrespondenceDistance( m_maxCorrespondenceDistance );
 	m_registrationPtr->setTransformationEpsilon(m_transformationEpsilon);
+}
+
+//! Set SCA parameters
+template <typename PointSource, typename PointTarget, typename Scalar>
+void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setSCAParameters()
+{
+	m_algSCA.setMinSampleDistance( m_scaMinSampleDistance);
+	m_algSCA.setNumberOfSamples( m_scaNumOfSamples );
+	m_algSCA.setCorrespondenceRandomness(m_scaCorrespondenceRamdomness);
 }

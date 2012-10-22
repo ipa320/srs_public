@@ -8,6 +8,7 @@
     <!--param name="but_server_node/resolution" value="0.025" type="double"/-->
     <param name="but_server_node/resolution" value="0.05" type="double"/>
     <param name="but_server_node/frame_skip" value="5" type="int"/>
+    <param name="but_server_node/collisionmap_frame_id" value="/base_footprint" type="string"/>
     
     <!-- Run our dynamic scene model server node -->
 	<node name="but_server_node" pkg="srs_env_model" type="but_server_node">

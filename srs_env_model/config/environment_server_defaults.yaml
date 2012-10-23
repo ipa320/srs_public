@@ -4,9 +4,52 @@
 ###############################################################################
 # Octomap plugin
 
+# Octomap resolution
+ocmap_resolution: 0.1
+
+# Tree depth used for crawling. Zero means full tree
+ocmap_treedepth: 0
+
+# Probablility for a "hit" - or "occupied" (will be converted to logodds)
+ocmap_sensor_model/hit: 0.7
+
+# Probablility for a "miss" - or "free" (will be converted to logodds)
+ocmap_sensor_model/miss: 0.4
+
+# Probability threshold - if value of the node reaches this value, node is marked
+# as "stable" and can be compressed
+ocmap_sensor_model/min: 0.12
+
+# Probability threshold - if value of the node reaches this value, node is marked
+# as "stable" and can be compressed
+ocmap_sensor_model/max: 0.97
+
+# Maximum range for raycasting (-1: unlimited)
+ocmap_max_range: -1
+
+# Debugging information - visualize visible cone marker
+ocmap_visualize_markers: false
+
+# Filter ground plane?
+ocmap_filter_ground: false;
+
+# Ground filter parameters - distance of points from the plane for RANSAC
+ocmap_ground_filter/distance: 0.04;
+
+# Ground plane angle
+ocmap_ground_filter/angle: 0.15;
+
+# Ground plane distance
+ocmap_ground_filter/plane_distance: 0.07;
+
+# Raytrace input and try to delete all cells that should be free
+ocmap_filter_outdated: true;
 
 ###############################################################################
 # Point cloud plugin
+
+###############################################################################
+# Point cloud plugin - registration
 
 ###############################################################################
 # Collision map plugins

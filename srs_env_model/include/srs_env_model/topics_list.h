@@ -82,7 +82,7 @@ static const std::string MAP2D_FRAME_ID = "/map";
 static const std::string OCTOMAP_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/binary_octomap");
 static const std::string OCTOMAP_FRAME_ID = "/map";
 static const std::string CAMERA_INFO_TOPIC_NAME = "camera_info"; // /cam3d/rgb/camera_info
-static const std::string MARKERS_TOPIC_NAME = "/visualization_marker";
+static const std::string MARKERS_TOPIC_NAME = "visualization_marker";
 
 /**
  * point_cloud_plugin

@@ -150,7 +150,7 @@ protected:
 	// SCA features
 
 	//! Minimum distances between samples
-	float m_scaMinSampleDistance;
+	double m_scaMinSampleDistance;
 
 	//! Number of samples to use during each iteration.
 	int m_scaNumOfSamples;

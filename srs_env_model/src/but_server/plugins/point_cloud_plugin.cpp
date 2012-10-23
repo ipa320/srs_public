@@ -74,9 +74,12 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 {
 //	PERROR( "Initializing PointCloudPlugin" );
 
-	CServerPluginBase::init( node_handle );
-
 	// Read parameters
+
+	// Frame skipping
+	int fs;
+	node_handle.param( "pointcloud_frame_skip", fs, 1 );
+	m_use_every_nth = (fs >= 1) ? fs : 1;
 
 	// Point cloud publishing topic name
 	node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, POINTCLOUD_CENTERS_PUBLISHER_NAME );

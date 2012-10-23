@@ -150,8 +150,10 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::resetPar
 	if( m_mode == PCL_REGISTRATION_MODE_NONE )
 		return;
 
+	// Set common parameters
 	setRegistrationParameters();
 
+	// Set specialized parameters
 	switch( m_mode )
 	{
 	case PCL_REGISTRATION_MODE_ICP:
@@ -162,6 +164,7 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::resetPar
 		setSCAParameters();
 		break;
 	default:
+		;
 	}
 }
 

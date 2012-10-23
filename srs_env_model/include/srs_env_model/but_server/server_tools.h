@@ -130,7 +130,6 @@ namespace srs_env_model
 			: m_frame_number( 0 )
 			, m_use_every_nth( 1 )
 			, m_name(name)
-			, m_parameterNamePrefix("")
 		{ }
 
 		//! Virtual destructor.
@@ -139,9 +138,7 @@ namespace srs_env_model
 		//! Initialize plugin - called in server constructor
 		virtual void init(ros::NodeHandle & node_handle)
 		{
-			int fs;
-			node_handle.param( m_parameterNamePrefix + "frame_skip", fs, 1 );
-			m_use_every_nth = (fs >= 1) ? fs : 1;
+
 		}
 
 		//! Called when new scan was inserted and now all can be published
@@ -159,8 +156,6 @@ namespace srs_env_model
 		//! Get plugin name
 		std::string getName( ) { return m_name; }
 
-		//! Parameters prefix
-		void setParemetersPrefix( const std::string & prefix );
 
 	protected:
 		//! Should data be published
@@ -184,9 +179,6 @@ namespace srs_env_model
 
 		//! Locking mutex
 		boost::mutex m_lockMutex;
-
-		//! Paremeters names prefix
-		std::string m_parameterNamePrefix;
 
 	};
 

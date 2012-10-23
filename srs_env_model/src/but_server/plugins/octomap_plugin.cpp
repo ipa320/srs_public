@@ -170,26 +170,29 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	reset();
 
 	// Load parameters from the parameter server
-	node_handle.param("frame_skip", m_mapParameters.frameSkip,
-			m_mapParameters.frameSkip);
-	node_handle.param("resolution", m_mapParameters.resolution,
+//	node_handle.param("frame_skip", m_mapParameters.frameSkip,
+//			m_mapParameters.frameSkip);
+	node_handle.param("ocmap_resolution", m_mapParameters.resolution,
 			m_mapParameters.resolution);
-	node_handle.param("sensor_model/hit", m_mapParameters.probHit,
+	int td( m_mapParameters.treeDepth);
+	node_handle.param("ocmap_treedepth", td, td );
+	m_mapParameters.treeDepth = ( td < 0 ) ? 0 : td;
+	node_handle.param("ocmap_sensor_model/hit", m_mapParameters.probHit,
 			m_mapParameters.probHit);
-	node_handle.param("sensor_model/miss", m_mapParameters.probMiss,
+	node_handle.param("ocmap_sensor_model/miss", m_mapParameters.probMiss,
 			m_mapParameters.probMiss);
-	node_handle.param("sensor_model/min", m_mapParameters.thresMin,
+	node_handle.param("ocmap_sensor_model/min", m_mapParameters.thresMin,
 			m_mapParameters.thresMin);
-	node_handle.param("sensor_model/max", m_mapParameters.thresMax,
+	node_handle.param("ocmap_sensor_model/max", m_mapParameters.thresMax,
 			m_mapParameters.thresMax);
-	node_handle.param("max_range", m_mapParameters.maxRange,
+	node_handle.param("ocmap_max_range", m_mapParameters.maxRange,
 			m_mapParameters.maxRange);
 
 	// Filtering presets
 	{
 		node_handle.param("camera_info_topic", m_camera_info_topic,
 				m_camera_info_topic);
-		node_handle.param("visualize_markers", m_bVisualizeMarkers,
+		node_handle.param("ocmap_visualize_markers", m_bVisualizeMarkers,
 				m_bVisualizeMarkers);
 		node_handle.param("markers_topic", m_markers_topic_name,
 				m_markers_topic_name);
@@ -213,20 +216,23 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	setFrameSkip(m_mapParameters.frameSkip);
 
 	// Should ground plane be filtered?
-	node_handle.param("filter_ground", m_filterGroundPlane, m_filterGroundPlane);
+	node_handle.param("ocmap_filter_ground", m_filterGroundPlane, m_filterGroundPlane);
+
+	// Should potentially free cells be filtered?
+	node_handle.param("ocmap_filter_outdated", m_bRemoveOutdated, m_bRemoveOutdated );
 
 	// distance of points from plane for RANSAC
-	node_handle.param("ground_filter/distance", m_groundFilterDistance,
+	node_handle.param("ocmap_ground_filter/distance", m_groundFilterDistance,
 			m_groundFilterDistance);
 	// angular derivation of found plane:
-	node_handle.param("ground_filter/angle", m_groundFilterAngle,
+	node_handle.param("ocmap_ground_filter/angle", m_groundFilterAngle,
 			m_groundFilterAngle);
 	// distance of found plane from z=0 to be detected as ground (e.g. to exclude tables)
-	node_handle.param("ground_filter/plane_distance",
+	node_handle.param("ocmap_ground_filter/plane_distance",
 			m_groundFilterPlaneDistance, m_groundFilterPlaneDistance);
 
 	// Octomap publishing topic
-	node_handle.param("octomap_publishing_topic", m_ocPublisherName,
+	node_handle.param("ocmap_publishing_topic", m_ocPublisherName,
 			OCTOMAP_PUBLISHER_NAME);
 
 	// Advertise services

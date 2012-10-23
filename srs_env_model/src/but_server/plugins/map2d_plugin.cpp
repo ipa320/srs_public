@@ -60,10 +60,10 @@ bool srs_env_model::CMap2DPlugin::shouldPublish()
 
 void srs_env_model::CMap2DPlugin::init(ros::NodeHandle & node_handle)
 {
-	node_handle.param("collision_object_publisher", m_map2DPublisherName, MAP2D_PUBLISHER_NAME );
-	node_handle.param("collision_object_frame_id", m_map2DFrameId, MAP2D_FRAME_ID );
-	node_handle.param("min_x_size", m_minSizeX, m_minSizeX);
-	node_handle.param("min_y_size", m_minSizeY, m_minSizeY);
+	node_handle.param("map2d_publisher", m_map2DPublisherName, MAP2D_PUBLISHER_NAME );
+	node_handle.param("map2d_frame_id", m_map2DFrameId, MAP2D_FRAME_ID );
+	node_handle.param("map2d_min_x_size", m_minSizeX, m_minSizeX);
+	node_handle.param("map2d_min_y_size", m_minSizeY, m_minSizeY);
 
 	// Create publisher
 	m_map2DPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 100, m_latchedTopics);

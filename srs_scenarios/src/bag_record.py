@@ -169,30 +169,31 @@ if __name__ == "__main__":
     time_step = bagR.record_timestep
     start_time = rospy.rostime.get_time()
     
-    while not rospy.is_shutdown():
+    with bagR.bag as bagfile:
+
+	while not rospy.is_shutdown():
         
-        for tfs in bagR.wanted_tfs:
-            triggers = bagR.bag_processor(tfs)
-            if(triggers == "triggered"):
-                print "triggered"
-                bagR.bag.write("/tf", bagR.tfMsg)
-                for tfs in bagR.wanted_topics:
-                    print "triggered topic"
-                    msg = bagR.process_topics(tfs)
-                    bagR.bag.write(tfs, msg)
-                start_time = rospy.rostime.get_time()
-            else:
-                print "not_triggered"
-        print  "what time is it", rospy.rostime.get_time() - start_time      
-        if(rospy.rostime.get_time() - start_time > time_step):
-                print "triggered by time"
-                for tfs in bagR.wanted_tfs:
-                    fake_trigger = bagR.bag_processor(tfs)
-                    bagR.bag.write("/tf", bagR.tfMsg)
-                for tfs in bagR.wanted_topics:
-                    print "triggered topic with time"
-                    msg = bagR.process_topics(tfs)
-                    bagR.bag.write(tfs, msg)
-                start_time = rospy.rostime.get_time()
-    
-    bagR.bag.close()            
+		for tfs in bagR.wanted_tfs:
+		    triggers = bagR.bag_processor(tfs)
+		    if(triggers == "triggered"):
+		        rospy.loginfo("triggered")
+		        bagfile.write("/tf", bagR.tfMsg)
+		        for tfs in bagR.wanted_topics:
+		            print "triggered topic"
+		            msg = bagR.process_topics(tfs)
+		            bagfile.write(tfs, msg)
+		        start_time = rospy.rostime.get_time()
+		    else:
+		        rospy.loginfo("not triggered")
+		time_msg = "time passed:" + (str)(rospy.rostime.get_time() - start_time)
+		rospy.loginfo(time_msg)
+		if(rospy.rostime.get_time() - start_time > time_step):
+		        rospy.loginfo("triggered by time")
+		        for tfs in bagR.wanted_tfs:
+		            fake_trigger = bagR.bag_processor(tfs)
+		            bagfile.write("/tf", bagR.tfMsg)
+		        for tfs in bagR.wanted_topics:
+		            rospy.loginfo("triggered topic with time")
+		            msg = bagR.process_topics(tfs)
+		            bagfile.write(tfs, msg)
+		        start_time = rospy.rostime.get_time()    

@@ -105,11 +105,13 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::init( ro
 	node_handle.param("registration_mode", strMode, strMode );
 	setMode( modeFromString(strMode) );
 
+	std::cerr << "Used registration mode: " << strMode << std::endl;
+
 	//------------------------------------------
 	// Common parameters
 
 	// Maximum iterations
-	int iterations(5);
+	int iterations(6);
 	node_handle.param("registration_maximum_iterations", iterations, iterations );
 	m_maxIterations = iterations;
 
@@ -184,3 +186,5 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setSCAPa
 	m_algSCA.setNumberOfSamples( m_scaNumOfSamples );
 	m_algSCA.setCorrespondenceRandomness(m_scaCorrespondenceRamdomness);
 }
+
+

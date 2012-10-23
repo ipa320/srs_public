@@ -72,9 +72,6 @@ namespace srs_env_model
 	struct SMapWithParameters
 	{
 	public:
-		/// Frame skipping
-		int frameSkip;
-
 		/// Octomap resolution
 		double resolution;
 
@@ -127,9 +124,7 @@ namespace srs_env_model
 	public:
 		//! Constructor
 		CServerPluginBase( const std::string & name )
-			: m_frame_number( 0 )
-			, m_use_every_nth( 1 )
-			, m_name(name)
+			: m_name(name)
 		{ }
 
 		//! Virtual destructor.
@@ -147,9 +142,6 @@ namespace srs_env_model
 		//! Reset plugin content when reseting whole server
 		virtual void reset() {}
 
-		/// Set frame skip
-		void setFrameSkip(unsigned long skip){ m_use_every_nth = skip; }
-
 		//! Pause/resume plugin. All publishers and subscribers are disconnected on pause
 		virtual void pause( bool bPause, ros::NodeHandle & node_handle ){}
 
@@ -164,16 +156,7 @@ namespace srs_env_model
 		//! Publish data - virtual function
 		virtual void publishInternal( const ros::Time & timestamp ) = 0;
 
-		//! Counts frames and checks if node should publish in this frame
-		virtual bool useFrame() { return ++m_frame_number % m_use_every_nth == 0; }
-
 	protected:
-		//! Current frame number
-		unsigned long m_frame_number;
-
-		//! Use every n-th frame (if m_frame_number modulo m_use_every_nth)
-		unsigned long m_use_every_nth;
-
 		//! Plugin name
 		std::string m_name;
 

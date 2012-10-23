@@ -47,7 +47,6 @@
 void srs_env_model::COctoMapPlugin::setDefaults() {
 
 	// Set octomap parameters
-	m_mapParameters.frameSkip = 2;
 	m_mapParameters.resolution = DEFAULT_RESOLUTION;
 	m_mapParameters.treeDepth = 0;
 	m_mapParameters.probHit = 0.7; // Probability of node, if node is occupied: 0.7
@@ -55,7 +54,7 @@ void srs_env_model::COctoMapPlugin::setDefaults() {
 	m_mapParameters.thresMin = 0.12; // Clamping minimum threshold: 0.1192;
 	m_mapParameters.thresMax = 0.97; // Clamping maximum threshold: 0.971;
 	m_mapParameters.thresOccupancy = 0.5; // Occupied node threshold: 0.5
-	m_mapParameters.maxRange = -1.0;
+	m_mapParameters.maxRange = 7;
 
 	// Set ground filtering parameters
 	m_filterGroundPlane = false;
@@ -105,8 +104,6 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
 	m_mapParameters.map = m_data;
 	m_mapParameters.crawlDepth = m_crawlDepth;
 
-	// Set frame skipping
-	setFrameSkip(m_mapParameters.frameSkip);
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
@@ -125,9 +122,6 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
 	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
 	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
 	m_mapParameters.crawlDepth = m_crawlDepth;
-
-	// Set frame skipping
-	setFrameSkip(m_mapParameters.frameSkip);
 
 	// is filename valid?
 	if (filename.length() > 0) {
@@ -188,6 +182,7 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	node_handle.param("ocmap_max_range", m_mapParameters.maxRange,
 			m_mapParameters.maxRange);
 
+	node_handle.param("ocmap_frame_id", m_mapParameters.frameId, m_mapParameters.frameId );
 	// Filtering presets
 	{
 		node_handle.param("camera_info_topic", m_camera_info_topic,
@@ -211,9 +206,6 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 		m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
 		m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
 	}
-
-	// Set frame skipping
-	setFrameSkip(m_mapParameters.frameSkip);
 
 	// Should ground plane be filtered?
 	node_handle.param("ocmap_filter_ground", m_filterGroundPlane, m_filterGroundPlane);
@@ -266,9 +258,8 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	PERROR( "OctoMapPlugin initialized..." );
 }
 
-void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
-	if (!useFrame())
-		return;
+void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
+{
 
 //	PERROR("insertCloud: Insert cloud start.");
 
@@ -336,6 +327,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 		degradeSingleSpeckles();
 	}
 
+//	PERROR("Outdated");
 	if (m_bRemoveOutdated) {
 		octomap::point3d sensor_origin = getSensorOrigin(cloud.header);
 		octomap::pose6d sensor_pose(sensor_origin.x(), sensor_origin.y(),
@@ -348,10 +340,11 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(),
 			pc_nonground.size(), total_elapsed);
 
+//	PERROR("Filtered");
 	if (m_removeTester != 0) {
 		long removed = doObjectTesting(m_removeTester);
 
-		PERROR( "Removed leafs: " << removed);
+//		PERROR( "Removed leafs: " << removed);
 
 		if (removed > 0)
 			m_data->octree.prune();

@@ -79,6 +79,9 @@ namespace srs_env_model
         //! Set registration method
         void setRegistrationMethod( EPclRegistrationMode method ) {  m_bRegistrationMethodChanged = m_registration.getMode() != method; m_registration.setMode( method ); }
 
+		/// Set frame skip
+		void setFrameSkip(unsigned long skip){ m_use_every_nth = skip; }
+
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -106,6 +109,9 @@ namespace srs_env_model
          * Test if incomming pointcloud2 has rgb part
          */
         bool isRGBCloud( const tIncommingPointCloud::ConstPtr& cloud );
+
+		//! Counts frames and checks if node should publish in this frame
+		virtual bool useFrame() { return ++m_frame_number % m_use_every_nth == 0; }
 
     protected:
         //! Is publishing enabled?
@@ -153,12 +159,6 @@ namespace srs_env_model
         //! Counter
         long counter;
 
-        //! Has input cloud rgb data?
-        bool m_bUseRGB;
-
-        //! Input type was set by parameter
-        bool m_bRGB_byParameter;
-
         //! Pointcloud working mode
         bool m_bAsInput;
 
@@ -176,6 +176,12 @@ namespace srs_env_model
 
         //! Registration module
         CPclRegistration< tPclPoint, tPclPoint> m_registration;
+
+		//! Current frame number
+		unsigned long m_frame_number;
+
+		//! Use every n-th frame (if m_frame_number modulo m_use_every_nth)
+		unsigned long m_use_every_nth;
 
 
     }; // class CPointCloudPlugin

@@ -61,10 +61,8 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setMode(
 template <typename PointSource, typename PointTarget, typename Scalar>
 bool srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::process( PointSourcePtr & source, PointTargetPtr & target, PointSourcePtr & output )
 {
-	if( m_registrationPtr == 0 )
+	if( m_registrationPtr == 0 || m_mode == PCL_REGISTRATION_MODE_NONE )
 		return false;
-
-
 
 	m_registrationPtr->setInputCloud(source);
 	m_registrationPtr->setInputTarget(target);

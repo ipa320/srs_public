@@ -17,7 +17,7 @@
         <rosparam file="$(find srs_env_model_percp)/config/bb_estimator_params.yaml" command="load" />
         <remap from="camera_info_in" to="/cam3d/rgb/camera_info" />
         <!-- remap from="depth_image_in" to="/cam3d/depth/image_raw" /-->
-        <remap from="points_in" to="/cam3d/depth/points" />
+        <remap from="points_in" to="/cam3d/depth/points_throttled" />
   </node>
   
   <!--node pkg="srs_env_model_percp" type="bb_estimator_client" name="bb_estimator_client">
@@ -41,13 +41,13 @@
     <remap from="video_out" to="/cam3d/rgb/image_raw_flipped"/>
   </node-->
   
-  <node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/>
+  <!--node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/-->
   
   <!-- kinect image flip nodelet - flips kinect images if robot is looking backwards -->
-  <node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
+  <!--node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
     <remap from="pointcloud" to="/cam3d/depth/points"/>
     <remap from="colorimage" to="/cam3d/rgb/image_raw"/>
-  </node>
+  </node-->
   
   <!--node pkg="spacenav_node" name="spacenav_node" type="spacenav_node" respawn="false"/-->
   

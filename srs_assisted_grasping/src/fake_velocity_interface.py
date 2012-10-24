@@ -115,7 +115,7 @@ class fake_velocity_interface():
         
             for idx in range(0,len(req_vel)):
                 
-                self.req_pos[idx] = self.req_pos[idx] - (req_vel[idx]*self.dt*1.0)
+                self.req_pos[idx] = self.req_pos[idx] + (req_vel[idx]*self.dt)
         
                 jtp.positions[idx] = self.req_pos[idx]
                 jtp.velocities[idx] = req_vel[idx]

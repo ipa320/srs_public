@@ -54,15 +54,14 @@
     <remap from="cloud_out" to="/cam3d/depth/points_throttled"/>
   </node-->
 	
-	  <!-- self filter Kinect points -->
-    <!--node pkg="robot_self_filter" type="self_filter" respawn="true" name="stereo_self_filter" output="screen">
-      <remap from="cloud_in" to="/cam3d/depth/points_throttled"/-->
-      <!--remap from="cloud_in" to="/cam3d/depth/points" /-->
-      <!--remap from="cloud_out" to="/cam3d/depth/points_filtered2" />
-      <param name="sensor_frame" type="string" value="head_cam3d_link" />
+    <!-- self filter Kinect points -->
+    <node pkg="robot_self_filter" type="self_filter" respawn="true" name="stereo_self_filter" output="screen">
+      <remap from="cloud_in" to="/cam3d/depth/points_throttled"/>
+      <remap from="cloud_out" to="/cam3d/depth/points_filtered2"/>
+      <param name="sensor_frame" type="string" value="/head_cam3d_link"/>
       <param name="subsample_value" type="double" value=".03"/>
       <rosparam command="load" file="$(find cob_manipulation_config)/$(env ROBOT)/self_filter.yaml" />
-    </node-->
+    </node>
       
     <node pkg="planning_environment" type="environment_server" output="screen" name="environment_server">      
       <param name="use_monitor" type="bool" value="true"/>
@@ -78,27 +77,24 @@
 
     <!-- Run our dynamic scene model server node -->
     <node name="but_server_node" pkg="srs_env_model" type="but_server_node" respawn="true" output="log">
-    
-      <param name="input_has_rgb" type="bool" value="false"/>
-      <param name="diferential_frames_count" value="10" type="int"/> 
 	    
-		  <remap from="cpc_camera_info" to="/cam3d/rgb/camera_info" />
-		  <remap from="ocp_camera_info" to="/cam3d/rgb/camera_info" /> 
-		  <!--remap from="pcp_points" to="/cam3d/depth/points_filtered2" /-->
-		  <remap from="pcp_points" to="/cam3d/depth/points_throttled"/>
+      <!-- Node parameters -->
+      <rosparam file="$(find srs_env_model)/config/environment_server_defaults.yaml" command="load"/>
+	    
+      <remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info"/>
+      <remap from="but_server_node/points_in" to="/cam3d/depth/points_filtered2"/>
 		  
-		  <remap from="but_server_node/camera_info" to="/cam3d/depth/camera_info" />
-		  <!--remap from="but_server_node/points_in" to="/cam3d/depth/points_filtered2" /-->
-		  <remap from="but_server_node/points_in" to="/cam3d/depth/points_throttled"/>
+      <param name="registration_mode" type="string" value="none"/>
+      <!--param name="input_has_rgb" type="bool" value="false"/-->
 		  
-		  <!-- Set 3d camera maximal relevant distance in meters -->
-      <param name="max_range" type="double" value="4.5"/>
+      <!-- Set 3d camera maximal relevant distance in meters -->
+      <param name="ocmap_max_range" type="double" value="4.5"/>
 
       <!-- Other parameters -->
       <param name="pointcloud_min_z" value="0.2" type="double"/>
       <param name="pointcloud_max_z" value="2.0" type="double" />
-      <param name="resolution" value="0.05" type="double"/>
-      <param name="frame_skip" value="1" type="int"/>
+      <param name="ocmap_resolution" value="0.05" type="double"/>
+      <param name="pointcloud_frame_skip" value="1" type="int"/>
       <param name="collisionmap_frame_id" value="/base_footprint" type="string"/>
 		  
     </node>

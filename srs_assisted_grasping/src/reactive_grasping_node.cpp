@@ -164,6 +164,7 @@ ReactiveGrasping::ReactiveGrasping(std::string name) {
 
 	  feedback_data_.tactile_data.resize(joints_.num_of_tactile_pads);
 	  joints_.velocities.resize(joints_.joints.size());
+	  joints_.limits.resize(joints_.joints.size());
 
 	  feedback_data_.sdh_data_stamp = ros::Time(0);
 	  feedback_data_.tactile_data_stamp = ros::Time(0);
@@ -181,6 +182,18 @@ ReactiveGrasping::ReactiveGrasping(std::string name) {
 
 	  tact_sub_  = nh_.subscribe("tact_in", 10, &ReactiveGrasping::TactileDataCallback,this);
 	  state_sub_ = nh_.subscribe("state_in", 10, &ReactiveGrasping::SdhStateCallback,this);
+
+	  urdf::Model model;
+	  model.initParam("robot_description");
+
+	  for (unsigned int i=0; i < joints_.joints.size(); i++) {
+
+		  joints_.limits[i].min = model.getJoint(joints_.joints[i])->limits->lower;
+		  joints_.limits[i].max = model.getJoint(joints_.joints[i])->limits->upper;
+
+	  }
+
+
 	  server_->start();
 
 	  ROS_INFO("Action server started");
@@ -280,6 +293,38 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
   if (!setMode("velocity")) {
 
 	  server_->setAborted(res,"Could not set SDH to velocity mode.");
+	  return;
+
+  }
+
+  bool limit_error = false;
+
+  for(unsigned int i=0; i < joints_.joints.size(); i++) {
+
+	  if (joints_.is_static[i]) continue;
+
+	  double g = goal->target_configuration.data[i];
+
+  	  if ( (g < joints_.limits[i].min) || (g > joints_.limits[i].max) ) {
+
+  		  ROS_ERROR("Target configuration for %s joint violates limits!",joints_.joints[i].c_str());
+  		  limit_error = true;
+
+  	  }
+
+    }
+
+  if (limit_error) {
+
+	  server_->setAborted(res,"Target configuration out of limits.");
+	  return;
+
+  }
+
+  if (vel_publisher_.getNumSubscribers() == 0) {
+
+	  ROS_ERROR("No one is listening to our velocity commands!");
+	  server_->setAborted(res,"There is no listener.");
 	  return;
 
   }

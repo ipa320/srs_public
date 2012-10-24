@@ -77,6 +77,13 @@ static const std::string MAP2D_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::strin
 static const std::string MAP2D_FRAME_ID = "/map";
 
 /**
+ * collision_grid_plugin
+ */
+static const std::string COLLISIONGRID_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/collision_grid_object");
+static const std::string COLLISIONGRID_FRAME_ID = "/map";
+
+
+/**
  * octomap_plugin
  */
 static const std::string OCTOMAP_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/binary_octomap");

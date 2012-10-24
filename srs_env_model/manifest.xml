@@ -29,6 +29,7 @@ ROS dynamic environment model provided by dcgm-robotics@FIT group.
 	<depend package="actionlib" />
 	<depend package="cob_object_detection_msgs" />
 	<depend package="image_geometry"/>
+	<depend package="nodelet"/>
 
 	<depend package="srs_env_model_msgs" />
 	<depend package="srs_interaction_primitives" />
@@ -36,6 +37,7 @@ ROS dynamic environment model provided by dcgm-robotics@FIT group.
 	<export>
 		<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />
 		<rosdoc config="rosdoc.yaml" />
+		<nodelet plugin="${prefix}/nodelets.xml" />
 	</export>
 
 </package>

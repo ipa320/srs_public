@@ -64,13 +64,16 @@ set( OBJTREE_SOURCE_FILES src/but_server/objtree/bbox.cpp
 set( OBJTREE_LIB_NAME but_objtree )
 rosbuild_add_library( ${OBJTREE_LIB_NAME} ${OBJTREE_SOURCE_FILES} )
 
-#Environment model library
+# Environment model library
 set( SRS_ENV_MODEL_LIB_NAME but_env_model )
 rosbuild_add_library( ${SRS_ENV_MODEL_LIB_NAME} ${SERVER_SOURCES} )
 
 # Add servernode executable
 rosbuild_add_executable( but_server_node ${SERVER_SOURCES} src/nodes/server_node.cpp )
 target_link_libraries( but_server_node octomap_ros ${OBJTREE_LIB_NAME} )
+
+# Nodelets
+rosbuild_add_library( cloud_throttle src/nodes/cloud_throttle.cpp )
 
 
 # Add compressed pc subscriber-publisher executable

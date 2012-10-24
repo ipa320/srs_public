@@ -654,7 +654,7 @@ void ReactiveGrasping::TactileDataCallback(const schunk_sdh::TactileSensor::Cons
 
 	  for (unsigned int j=0; j < (unsigned int)(msg->tactile_matrix[i].cells_x*msg->tactile_matrix[i].cells_y); j++) {
 
-		  if ( (msg->tactile_matrix[i].tactile_array[j]) > (max && msg->tactile_matrix[i].tactile_array[j] < 20000)) max = msg->tactile_matrix[i].tactile_array[j];
+		  if ( (msg->tactile_matrix[i].tactile_array[j] > max) && (msg->tactile_matrix[i].tactile_array[j] < 20000) ) max = msg->tactile_matrix[i].tactile_array[j];
 
 	  }
 

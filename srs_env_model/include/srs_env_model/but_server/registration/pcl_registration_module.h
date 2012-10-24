@@ -37,10 +37,10 @@ namespace srs_env_model
 {
 enum EPclRegistrationMode
 {
-	PCL_REGISTRATION_MODE_NONE,
-	PCL_REGISTRATION_MODE_ICP,
-	PCL_REGISTRATION_MODE_ICPNL,
-	PCL_REGISTRATION_MODE_SCA
+	PCL_REGISTRATION_MODE_NONE = 0,
+	PCL_REGISTRATION_MODE_ICP = 1,
+	PCL_REGISTRATION_MODE_ICPNL = 2,
+	PCL_REGISTRATION_MODE_SCA = 3
 };
 
 template <typename PointSource, typename PointTarget, typename Scalar = float>
@@ -56,6 +56,8 @@ public:
 	typedef typename PointCloudTarget::Ptr 	PointTargetPtr;
 	typedef typename PointCloudTarget::ConstPtr 	PointTargetConstPtr;
 
+	// String mode names
+	static const std::string m_mode_names[];
 public:
 
 	//! Constructor
@@ -92,6 +94,27 @@ public:
 		return m_registrationPtr;
 	}
 
+	//! Initialize parameters from the parameter server
+	//! @param node_handle Node handle
+	void init( ros::NodeHandle & node_handle );
+
+	//! Get registration mode as a string
+	std::string getStrMode() { return m_mode_names[ m_mode ]; }
+
+	//! Reinitialize registration parameters
+	void resetParameters();
+
+protected:
+	//! Convert string to the mode
+	//! @param name Mode name
+	EPclRegistrationMode modeFromString( const std::string & name );
+
+	//! Set common parameters
+	void setRegistrationParameters();
+
+	//! Set SCA parameters
+	void setSCAParameters();
+
 protected:
 	//! Used mode
 	EPclRegistrationMode m_mode;
@@ -107,6 +130,33 @@ protected:
 
 	//! Used registration
 	tRegistration * m_registrationPtr;
+
+	//---------------------------
+	// Common parameters
+
+	//! Maximum of iterations
+	int m_maxIterations;
+
+	//! RANSAC outlier rejection threshodl
+	double m_RANSACOutlierRejectionThreshold;
+
+	//! Maximal correspondence distance
+	double m_maxCorrespondenceDistance;
+
+	//! Transformation epsilon value
+	double m_transformationEpsilon ;
+
+	//--------------------------
+	// SCA features
+
+	//! Minimum distances between samples
+	double m_scaMinSampleDistance;
+
+	//! Number of samples to use during each iteration.
+	int m_scaNumOfSamples;
+
+	//! Number of neighbors to use when selecting a random feature correspondence
+	int m_scaCorrespondenceRamdomness;
 
 }; // CPclRegistration
 

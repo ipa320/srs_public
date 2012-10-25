@@ -29,14 +29,20 @@
 #include <srs_env_model/topics_list.h>
 #include <pcl_ros/transforms.h>
 
+
 /**
  * Constructor
  */
 srs_env_model::COcToPcl::COcToPcl()
 : m_bTransformCamera( false )
-, m_bSpinThread( true )
-, m_bPublishCloud(true)
 , m_pcFrameId("/map")
+, m_bSpinThread( true )
+, m_bCamModelInitialized(false)
+, m_camera_stereo_offset_left(0)
+, m_camera_stereo_offset_right(0)
+, m_bPublishCloud(false)
+, m_fracX(1.5)
+, m_fracY(1.5)
 {
 
 }
@@ -64,8 +70,6 @@ void srs_env_model::COcToPcl::init(ros::NodeHandle & node_handle)
 		node_handle.param("camera_info_topic_name", m_cameraInfoTopic, CPC_CAMERA_INFO_PUBLISHER_NAME );
 	}
 
-	 // Create publisher - simple point cloud
-	m_pubConstrainedPC = node_handle.advertise<sensor_msgs::PointCloud2> (REGISTRATION_CONSTRAINED_CLOUD_PUBLISHER_NAME, 100, false);
 
 	// Subscribe to position topic
 	// Create subscriber
@@ -78,8 +82,18 @@ void srs_env_model::COcToPcl::init(ros::NodeHandle & node_handle)
 	}
 
 	// stereo cam params for sensor cone:
-	node_handle.param<int> ("compressed_pc_camera_stereo_offset_left", m_camera_stereo_offset_left, 0); // 128
-	node_handle.param<int> ("compressed_pc_camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
+//	node_handle.param<int> ("compressed_pc_camera_stereo_offset_left", m_camera_stereo_offset_left, 0); // 128
+//	node_handle.param<int> ("compressed_pc_camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
+
+	node_handle.param("registration_patch_view_fraction_x", m_fracX, m_fracX );
+	node_handle.param("registration_patch_view_fraction_y", m_fracY, m_fracY );
+
+	node_handle.param("registration_patch_publish_cloud", m_bPublishCloud, m_bPublishCloud );
+
+	if( m_bPublishCloud )
+		// Create publisher - simple point cloud
+		m_pubConstrainedPC = node_handle.advertise<sensor_msgs::PointCloud2> (REGISTRATION_CONSTRAINED_CLOUD_PUBLISHER_NAME, 100, false);
+
 }
 
 /**
@@ -176,6 +190,9 @@ bool srs_env_model::COcToPcl::computeCloud( const SMapWithParameters & par )
 	tButServerOcTree & tree( par.map->octree );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
+	// Compute fraction matrix
+	m_fracMatrix = btMatrix3x3::getIdentity().scaled( tf::Point( 1.0 / m_fracX, 1.0 / m_fracY, 1.0 ) );
+
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(par.treeDepth); it != itEnd; ++it)
 	{
@@ -213,6 +230,11 @@ void srs_env_model::COcToPcl::handleOccupiedNode(srs_env_model::tButServerOcTree
 	tf::Point pos(it.getX(), it.getY(), it.getZ());
 	if( m_bTransformCamera )
 		 pos = m_to_sensorTf(pos);
+
+	pos = pos * m_fracMatrix;
+
+	if( pos.z() < 0 )
+		return;
 
 	cv::Point2d uv = m_camera_model.project3dToPixel(cv::Point3d( pos.x(), pos.y(), pos.z()));
 
@@ -270,16 +292,24 @@ void srs_env_model::COcToPcl::onCameraChangedCB(const sensor_msgs::CameraInfo::C
  */
 bool srs_env_model::COcToPcl::inSensorCone(const cv::Point2d& uv) const
 {
-	//PERROR( uv.x << " > " << m_camera_stereo_offset_left + 1 << " && " << uv.x << " < " << m_camera_size.width + m_camera_stereo_offset_right - 2 );
+	const double x_offset( 0.0 ), y_offset( 0.0 );
+
 	//PERROR( uv.y <<	" > " << 1 << " && " << uv.y << " < " << m_camera_size.height - 2 );
 	// Check if projected 2D coordinate in pixel range.
 		// This check is a little more restrictive than it should be by using
 		// 1 pixel less to account for rounding / discretization errors.
 		// Otherwise points on the corner are accounted to be in the sensor cone.
-		return ((uv.x > m_camera_stereo_offset_left + 1) &&
-				(uv.x < m_camera_size.width + m_camera_stereo_offset_right - 2) &&
-				(uv.y > 1) &&
-				(uv.y < m_camera_size.height - 2));
+		bool rv((uv.x > m_camera_stereo_offset_left + 1 - x_offset) &&
+				(uv.x < m_camera_size.width + m_camera_stereo_offset_right - 2 + x_offset) &&
+				(uv.y > 1 - y_offset) &&
+				(uv.y < m_camera_size.height - 2 + y_offset));
+
+		if( ! rv )
+		{
+//			std::cerr << uv.x << ", "  << uv.y << " > " << m_camera_size.width << ", "  << m_camera_size.height << std::endl;
+		}
+
+		return rv;
 }
 
 /**

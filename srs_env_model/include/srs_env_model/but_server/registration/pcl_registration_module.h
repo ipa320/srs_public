@@ -43,6 +43,7 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <ros/callback_queue.h>
 #include <tf/transform_listener.h>
+#include <LinearMath/btMatrix3x3.h>
 
 namespace srs_env_model
 {
@@ -191,6 +192,9 @@ public:
 	//! Get cloud
 	tPointCloud & getCloud( ) { return m_cloud; }
 
+	//! Set output cloud frame id
+	void setCloudFrameId( const std::string & fid ){ m_pcFrameId = fid; }
+
 protected:
 	/// On camera position changed callback
 	void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
@@ -273,6 +277,14 @@ protected:
 	/// PC to sensor transformation
 	tf::Transform m_to_sensorTf;
 
+	//! Fraction of the field of view taken from the octomap (x-direction)
+	double m_fracX;
+
+	//! Fraction of the field of view taken from the octomap (y-direction)
+	double m_fracY;
+
+	//! View fraction computation matrix
+	btMatrix3x3 m_fracMatrix;
 };
 
 } // namespace srs_env_model

@@ -100,6 +100,19 @@ registration_sca_num_of_samples: 3
 # Number of neighbors to use when selecting a random feature correspondence
 m_scaCorrespondenceRamdomness: 10
 
+# As a point cloud that is registered to is generated one from the octomap.
+# Part visible from robot camera is taken. As an addition, voxels out of the view
+# frustum can be used too. This parameter desribes "scaling" of frustum. 
+# Default value means use whole frustum and half of half (1 + 2*0.25 = 1.5) on both sides. 
+registration_patch_view_fraction_x: 1.5
+
+# The same as before, but in y axis (x and y axis is related to the robot camera
+# coordinate system)
+registration_patch_view_fraction_y: 1.5
+
+# Patch cloud creation - should be patch cloud published? (f.e. for debug purposes)
+registration_patch_publish_cloud: false 
+
 ###############################################################################
 # Collision map plugin
 

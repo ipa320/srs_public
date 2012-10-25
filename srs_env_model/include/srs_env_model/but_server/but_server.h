@@ -68,7 +68,6 @@
 #include <srs_env_model/but_server/plugins/point_cloud_plugin.h>
 #include <srs_env_model/but_server/plugins/octomap_plugin.h>
 #include <srs_env_model/but_server/plugins/collision_object_plugin.h>
-#include <srs_env_model/but_server/plugins/map2d_plugin.h>
 #include <srs_env_model/but_server/plugins/imarkers_plugin.h>
 #include <srs_env_model/but_server/plugins/marker_array_plugin.h>
 #include <srs_env_model/but_server/plugins/limited_point_cloud_plugin.h>

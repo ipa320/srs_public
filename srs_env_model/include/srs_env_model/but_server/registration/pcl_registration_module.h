@@ -29,6 +29,8 @@
 #ifndef pcl_registration_module_H_included
 #define pcl_registration_module_H_included
 
+#include <srs_env_model/but_server/server_tools.h>
+#include <srs_env_model/OctomapUpdates.h>
 #include <pcl/registration/icp.h>
 #include <pcl/registration/ia_ransac.h>
 #include <pcl/registration/icp_nl.h>
@@ -40,6 +42,7 @@
 #include <ros/node_handle.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <ros/callback_queue.h>
+#include <tf/transform_listener.h>
 
 namespace srs_env_model
 {
@@ -123,6 +126,8 @@ protected:
 	//! Set SCA parameters
 	void setSCAParameters();
 
+	bool inSensorCone(const cv::Point2d& uv);
+
 protected:
 	//! Used mode
 	EPclRegistrationMode m_mode;
@@ -180,12 +185,12 @@ public:
 	//! Initialize plugin - called in server constructor
 	virtual void init(ros::NodeHandle & node_handle);
 
+	//! Get output pointcloud
+	bool computeCloud( const SMapWithParameters & par );
+
 protected:
 	/// On camera position changed callback
 	void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
-
-	/// Compute new frustum
-	void updateFrustum();
 
 	// main loop when spinning our own thread
 	// - process callbacks in our callback queue
@@ -195,12 +200,21 @@ protected:
 	//! Test if point is in camera cone
 	bool inSensorCone(const cv::Point2d& uv) const;
 
+	//! Called when new scan was inserted and now all can be published
+	void publishInternal(const ros::Time & timestamp);
+
+	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+	virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+
 protected:
 	/// Should camera position and orientation be transformed?
 	bool m_bTransformCamera;
 
 	/// Camera frame id
 	std::string m_cameraFrameId;
+
+	//! Output frame id
+	std::string m_pcFrameId;
 
 	// Camera position topic name
 	std::string m_cameraInfoTopic;
@@ -220,8 +234,45 @@ protected:
 	ros::CallbackQueue callback_queue_;
 	volatile bool need_to_terminate_;
 
+	/// Is camera model initialized?
+	bool m_bCamModelInitialized;
+
 	/// Camera offsets
 	int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
+
+	/// Output point cloud data
+	tPointCloud m_cloud;
+
+	//! Should i publish pointcloud
+	bool m_bPublishCloud;
+
+	/// Camera model
+	image_geometry::PinholeCameraModel m_camera_model, m_camera_model_buffer;
+
+	//! Camera info buffer
+	sensor_msgs::CameraInfo m_camera_info_buffer;
+
+	/// Camera size
+	cv::Size m_camera_size, m_camera_size_buffer;
+
+	//! Transform listener
+	tf::TransformListener m_tfListener;
+
+	//! Cloud publishers
+	ros::Publisher m_pubConstrainedPC;
+
+	//! Packed info message data
+	srs_env_model::OctomapUpdatesPtr m_octomap_updates_msg;
+
+	/// Crawled octomap frame id
+	std::string m_ocFrameId;
+
+	/// Time stamp
+	ros::Time m_DataTimeStamp, m_time_stamp;
+
+	/// PC to sensor transformation
+	tf::Transform m_to_sensorTf;
+
 };
 
 } // namespace srs_env_model

@@ -113,6 +113,10 @@ static const std::string CPC_COMPLETE_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::st
 static const int CPC_NUM_DIFFERENTIAL_FRAMES = 5;
 
 /**
+ * Registration
+ */
+static const std::string REGISTRATION_CONSTRAINED_CLOUD_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/registration_constrained_cloud");
+/**
  * CPC node
  */
 static const std::string CPC_INPUT_TOPIC_NAME = "input"; // /but_env_model/octomap_updates

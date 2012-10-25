@@ -44,7 +44,7 @@ set( SERVER_SOURCES src/but_server/but_server.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_oriented_box.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_planes.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_polymesh.cpp
-                    src/but_server/registration/pcl_registration_module.cpp
+                    src/but_server/registration/CPCtoOCRegistration.cpp
                     )
                     
 set( CPC_SOURCES src/but_server/compressed_pc_publisher.cpp

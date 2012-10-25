@@ -35,15 +35,6 @@
 #include <pcl/registration/ia_ransac.h>
 #include <pcl/registration/icp_nl.h>
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/recursive_mutex.hpp>
-#include <image_geometry/pinhole_camera_model.h>
-#include <ros/node_handle.h>
-#include <sensor_msgs/CameraInfo.h>
-#include <ros/callback_queue.h>
-#include <tf/transform_listener.h>
-#include <LinearMath/btMatrix3x3.h>
 
 namespace srs_env_model
 {
@@ -174,118 +165,6 @@ protected:
 
 }; // CPclRegistration
 
-/**
- * Get visible pointcloud from octomap module
- */
-class COcToPcl
-{
-public:
-	//! Constructor
-	COcToPcl();
-
-	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & node_handle);
-
-	//! Get output pointcloud
-	bool computeCloud( const SMapWithParameters & par );
-
-	//! Get cloud
-	tPointCloud & getCloud( ) { return m_cloud; }
-
-	//! Set output cloud frame id
-	void setCloudFrameId( const std::string & fid ){ m_pcFrameId = fid; }
-
-protected:
-	/// On camera position changed callback
-	void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
-
-	// main loop when spinning our own thread
-	// - process callbacks in our callback queue
-	// - process pending goals
-	void spinThread();
-
-	//! Test if point is in camera cone
-	bool inSensorCone(const cv::Point2d& uv) const;
-
-	//! Called when new scan was inserted and now all can be published
-	void publishInternal(const ros::Time & timestamp);
-
-	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-	virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
-
-protected:
-	/// Should camera position and orientation be transformed?
-	bool m_bTransformCamera;
-
-	/// Camera frame id
-	std::string m_cameraFrameId;
-
-	//! Output frame id
-	std::string m_pcFrameId;
-
-	// Camera position topic name
-	std::string m_cameraInfoTopic;
-
-	/// Subscriber - camera position
-	ros::Subscriber m_camPosSubscriber;
-
-	// Mutex used to lock camera position parameters
-	boost::recursive_mutex m_camPosMutex;
-
-	//! Spin out own input callback thread
-	bool m_bSpinThread;
-
-	// these are needed when spinning up a dedicated thread
-	boost::scoped_ptr<boost::thread> spin_thread_;
-	ros::NodeHandle node_handle_;
-	ros::CallbackQueue callback_queue_;
-	volatile bool need_to_terminate_;
-
-	/// Is camera model initialized?
-	bool m_bCamModelInitialized;
-
-	/// Camera offsets
-	int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
-
-	/// Output point cloud data
-	tPointCloud m_cloud;
-
-	//! Should i publish pointcloud
-	bool m_bPublishCloud;
-
-	/// Camera model
-	image_geometry::PinholeCameraModel m_camera_model, m_camera_model_buffer;
-
-	//! Camera info buffer
-	sensor_msgs::CameraInfo m_camera_info_buffer;
-
-	/// Camera size
-	cv::Size m_camera_size, m_camera_size_buffer;
-
-	//! Transform listener
-	tf::TransformListener m_tfListener;
-
-	//! Cloud publishers
-	ros::Publisher m_pubConstrainedPC;
-
-	/// Crawled octomap frame id
-	std::string m_ocFrameId;
-
-	/// Time stamp
-	ros::Time m_DataTimeStamp, m_time_stamp;
-
-	/// PC to sensor transformation
-	tf::Transform m_to_sensorTf;
-
-	//! Fraction of the field of view taken from the octomap (x-direction)
-	double m_fracX;
-
-	//! Fraction of the field of view taken from the octomap (y-direction)
-	double m_fracY;
-
-	//! View fraction computation matrix
-	btMatrix3x3 m_fracMatrix;
-};
 
 } // namespace srs_env_model
 

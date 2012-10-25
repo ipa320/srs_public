@@ -42,7 +42,7 @@
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 
 // Registration
-#include <srs_env_model/but_server/registration/pcl_registration_module.h>
+#include <srs_env_model/but_server/registration/CPCtoOCRegistration.h>
 
 
 namespace srs_env_model

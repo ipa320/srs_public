@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 	<!-- Run compressed pointcloud decompressor node -->
 	<node pkg="srs_env_model" type="but_cpc_node" name="but_cpc_node" >
@@ -7,5 +8,6 @@
 
 	<!-- Run rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_env_model)/config/envmodel_robot.vcg"/>
+
 </launch>
 

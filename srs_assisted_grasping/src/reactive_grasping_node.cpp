@@ -164,6 +164,7 @@ ReactiveGrasping::ReactiveGrasping(std::string name) {
 
 	  feedback_data_.tactile_data.resize(joints_.num_of_tactile_pads);
 	  joints_.velocities.resize(joints_.joints.size());
+	  joints_.limits.resize(joints_.joints.size());
 
 	  feedback_data_.sdh_data_stamp = ros::Time(0);
 	  feedback_data_.tactile_data_stamp = ros::Time(0);
@@ -181,6 +182,18 @@ ReactiveGrasping::ReactiveGrasping(std::string name) {
 
 	  tact_sub_  = nh_.subscribe("tact_in", 10, &ReactiveGrasping::TactileDataCallback,this);
 	  state_sub_ = nh_.subscribe("state_in", 10, &ReactiveGrasping::SdhStateCallback,this);
+
+	  urdf::Model model;
+	  model.initParam("robot_description");
+
+	  for (unsigned int i=0; i < joints_.joints.size(); i++) {
+
+		  joints_.limits[i].min = model.getJoint(joints_.joints[i])->limits->lower;
+		  joints_.limits[i].max = model.getJoint(joints_.joints[i])->limits->upper;
+
+	  }
+
+
 	  server_->start();
 
 	  ROS_INFO("Action server started");
@@ -224,10 +237,15 @@ bool ReactiveGrasping::publish(std::vector<double> vel) {
 		jv.timeStamp = now;
 		jv.joint_uri = joints_.joints[i];
 		jv.value = vel[i];
+		jv.unit = "rad/s";
+
+	//std::cout << vel[i] << " ";
 
 		msg.velocities.push_back(jv);
 
 	}
+
+	//std::cout << std::endl;
 
 	vel_publisher_.publish(msg);
 
@@ -279,6 +297,38 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 
   }
 
+  bool limit_error = false;
+
+  for(unsigned int i=0; i < joints_.joints.size(); i++) {
+
+	  if (joints_.is_static[i]) continue;
+
+	  double g = goal->target_configuration.data[i];
+
+  	  if ( (g < joints_.limits[i].min) || (g > joints_.limits[i].max) ) {
+
+  		  ROS_ERROR("Target configuration for %s joint violates limits!",joints_.joints[i].c_str());
+  		  limit_error = true;
+
+  	  }
+
+    }
+
+  if (limit_error) {
+
+	  server_->setAborted(res,"Target configuration out of limits.");
+	  return;
+
+  }
+
+  if (vel_publisher_.getNumSubscribers() == 0) {
+
+	  ROS_ERROR("No one is listening to our velocity commands!");
+	  server_->setAborted(res,"There is no listener.");
+	  return;
+
+  }
+
   copyData();
 
   double t1 = goal->time.toSec() * (params_.a_ramp / 100.0);
@@ -292,6 +342,8 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
   unsigned int num_of_vel = (unsigned int)ceil(t2 * params_.rate);
   unsigned int num_of_dec = (unsigned int)ceil(t3 * params_.rate) - 1;
 
+  bool velocity_limit_error = false;
+
   // compute velocities for all non-static joints
   for (unsigned int i = 0; i < joints_.joints.size(); i++) {
 
@@ -303,20 +355,32 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 	  } else {
 
 
+		  double p1 = goal->target_configuration.data[i];
+		  double p2 =  sdh_data_act_.positions[i];
+
+   		  double pos_diff = (p1-p2);
+
+		  /*if (p1 <= 0 && p2 <= 0) pos_diff = fabs(p1 - p2);
+	  	  if (p1 >= 0 && p2 >= 0) pos_diff = fabs(p1-p2);
+		  if (p1 < 0 && p2 > 0) pos_diff = p2 - p1;
+		  if (p1 > 0 && p2 < 0) pos_diff = p1 - p2;*/
+
 		  //double pos_diff = (goal->target_configuration.data[i] - sdh_data_act_.positions[i]);
-		  double pos_diff = (sdh_data_act_.positions[i] - goal->target_configuration.data[i]);
+		  //double pos_diff = (sdh_data_act_.positions[i] - goal->target_configuration.data[i]);
 
 		  double vel = (pos_diff / (0.5*t1 + t2 + 0.5*t3)); // constant velocity
 		  double acc = (vel / t1) * (1.0 / params_.rate); // dv = a * dt = v/1 * 1/r
 		  double dec = (vel / t3) * (1.0 / params_.rate);
 
-		  if (vel>=params_.max_velocity) {
+		  if (fabs(vel) >= params_.max_velocity) {
 
 			  ROS_WARN("Joint %s will violate max. velocity limit (%f, limit %f).",joints_.joints[i].c_str(),vel,params_.max_velocity);
 
+			  velocity_limit_error = true;
+
 		  }
 
-		  ROS_INFO("Joint %d, dv1=%f (%u), v2=%f (%u), dv3=%f (%u)",i,acc,num_of_acc,vel,num_of_vel,dec,num_of_dec);
+		  ROS_INFO("Joint %d, dv1=%f (%u), v2=%f (%u), dv3=%f (%u), pos_diff: %f",i,acc,num_of_acc,vel,num_of_vel,dec,num_of_dec,pos_diff);
 
 		  joints_.velocities[i].resize(num_of_acc + num_of_vel + num_of_dec);
 
@@ -330,7 +394,7 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 				  // acceleration
 				  joints_.velocities[i][j] = joints_.velocities[i][j-1] + acc;
 
-				  if (joints_.velocities[i][j] > vel) joints_.velocities[i][j] = vel;
+				  if (fabs(joints_.velocities[i][j]) > fabs(vel)) joints_.velocities[i][j] = vel;
 
 
 
@@ -342,7 +406,7 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 			  } else {
 
 				  // deceleration
-				  if ( (joints_.velocities[i][j-1] - dec) > 0) {
+				  if ( fabs(joints_.velocities[i][j-1]) > fabs(dec) ) {
 
 				  	joints_.velocities[i][j] = joints_.velocities[i][j-1] - dec;
 
@@ -361,6 +425,13 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 	  } // else
 
 	  //std::cout << std::endl  << std::endl;
+
+  }
+
+  if (velocity_limit_error) {
+
+	  server_->setAborted(res,"Some joint hit velocity limit.");
+	  return;
 
   }
 
@@ -594,7 +665,7 @@ void ReactiveGrasping::TactileDataCallback(const schunk_sdh::TactileSensor::Cons
 
 	  for (unsigned int j=0; j < (unsigned int)(msg->tactile_matrix[i].cells_x*msg->tactile_matrix[i].cells_y); j++) {
 
-		  if ( (msg->tactile_matrix[i].tactile_array[j]) > (max && msg->tactile_matrix[i].tactile_array[j] < 20000)) max = msg->tactile_matrix[i].tactile_array[j];
+		  if ( (msg->tactile_matrix[i].tactile_array[j] > max) && (msg->tactile_matrix[i].tactile_array[j] < 20000) ) max = msg->tactile_matrix[i].tactile_array[j];
 
 	  }
 

@@ -5,7 +5,7 @@
 # Octomap plugin
 
 # Octomap resolution
-ocmap_resolution: .1
+ocmap_resolution: .05
 
 # Tree depth used for crawling. Zero means full tree
 ocmap_treedepth: 0
@@ -53,16 +53,16 @@ ocmap_filter_outdated: true
 # Point cloud plugin
 
 # Input frames (clouds) skipping - use every n-th input message
-pointcloud_frame_skip: 5
+pointcloud_frame_skip: 1
 
 # Internal and published pointcloud frame id
 pointcloud_frameid: "/head_cam3d_link"
 
 # Point cloud limits in z-axis - minimum
-pointcloud_min_z: 0.1 
+pointcloud_min_z: 0.1
 
 # Point cloud limits in z-axis - maximum
-pointcloud_max_z: 3.0
+pointcloud_max_z:  3.0
 
 
 ###############################################################################
@@ -75,7 +75,7 @@ pointcloud_max_z: 3.0
 # "icp" - use ICP algorithm
 # "icpnl" - use nonlinear ICP algorithm
 # "sca" - use sample consensus alignment
-registration_mode: "noneo"
+registration_mode: "none"
 
 # Maximum iterations
 registration_maximum_iterations: 5
@@ -100,19 +100,6 @@ registration_sca_num_of_samples: 3
 # Number of neighbors to use when selecting a random feature correspondence
 m_scaCorrespondenceRamdomness: 10
 
-# As a point cloud that is registered to is generated one from the octomap.
-# Part visible from robot camera is taken. As an addition, voxels out of the view
-# frustum can be used too. This parameter desribes "scaling" of frustum. 
-# Default value means use whole frustum and half of half (1 + 2*0.25 = 1.5) on both sides. 
-registration_patch_view_fraction_x: 1.5
-
-# The same as before, but in y axis (x and y axis is related to the robot camera
-# coordinate system)
-registration_patch_view_fraction_y: 1.5
-
-# Patch cloud creation - should be patch cloud published? (f.e. for debug purposes)
-registration_patch_publish_cloud: false 
-
 ###############################################################################
 # Collision map plugin
 
@@ -133,7 +120,7 @@ collision_object_frame_id: "/map"
 # - the same parameters as point cloud plugin and:
 
 # How many differential frames should be published before full cloud
-compressed_pc_differential_frames_count: 5
+compressed_pc_differential_frames_count: 10
 
 # Stereo camera parameters - left camera offset
 compressed_pc_camera_stereo_offset_left: 0
@@ -168,5 +155,4 @@ marker_array_frame_id: "/map"
 
 ###############################################################################
 # Objtree plugin
-
 

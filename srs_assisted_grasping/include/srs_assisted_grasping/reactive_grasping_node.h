@@ -64,6 +64,7 @@
 #include "schunk_sdh/TactileSensor.h"
 
 #include "XmlRpcValue.h"
+#include <urdf/model.h>
 
 /*#include <boost/units/io.hpp>
 #include <boost/units/systems/angle/degrees.hpp>
@@ -82,10 +83,18 @@ struct ReactiveGraspingParams {
 
 };
 
+struct Limits {
+
+	double min;
+	double max;
+
+};
+
 struct Joints {
 
 
 	std::vector<std::string> joints;
+	std::vector<Limits> limits;
 	std::vector<bool> has_tactile_pad;
 	std::vector<bool> is_static;
 

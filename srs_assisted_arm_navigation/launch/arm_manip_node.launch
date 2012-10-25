@@ -2,7 +2,7 @@
 <launch>
 
   <!-- arm manipulation actionlib server -->
-  <node pkg="srs_assisted_arm_navigation" name="assisted_arm_navigation" type="assisted_arm_navigation_node" respawn="true" output="screen">
+  <node pkg="srs_assisted_arm_navigation" name="assisted_arm_navigation" type="assisted_arm_navigation_node" respawn="false" output="screen">
   
     <rosparam command="load" file="$(find srs_assisted_arm_navigation)/config/arm_links.yaml" />
   

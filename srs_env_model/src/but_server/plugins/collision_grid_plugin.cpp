@@ -36,7 +36,6 @@ srs_env_model::CCollisionGridPlugin::CCollisionGridPlugin(const std::string & na
 , m_publishGrid(true)
 , m_gridPublisherName(COLLISIONGRID_PUBLISHER_NAME)
 , m_latchedTopics(false)
-, m_gridFrameId(MAP2D_FRAME_ID)
 , m_minSizeX(0.0)
 , m_minSizeY(0.0)
 {
@@ -61,7 +60,9 @@ bool srs_env_model::CCollisionGridPlugin::shouldPublish()
 void srs_env_model::CCollisionGridPlugin::init(ros::NodeHandle & node_handle)
 {
 	node_handle.param("map2d_publisher", m_gridPublisherName, COLLISIONGRID_PUBLISHER_NAME );
-	node_handle.param("map2d_frame_id", m_gridFrameId, COLLISIONGRID_FRAME_ID );
+	int depth(m_crawlDepth);
+	node_handle.param("map2d_tree_depth", depth, depth );
+	m_crawlDepth = (depth < 0)?0:depth;
 	node_handle.param("map2d_min_x_size", m_minSizeX, m_minSizeX);
 	node_handle.param("map2d_min_y_size", m_minSizeY, m_minSizeY);
 
@@ -73,6 +74,8 @@ void srs_env_model::CCollisionGridPlugin::init(ros::NodeHandle & node_handle)
 
 void srs_env_model::CCollisionGridPlugin::publishInternal(const ros::Time & timestamp)
 {
+	boost::mutex::scoped_lock lock(m_lockData);
+
 	if( shouldPublish() )
 		m_gridPublisher.publish(*m_data);
 }
@@ -81,113 +84,93 @@ void srs_env_model::CCollisionGridPlugin::publishInternal(const ros::Time & time
 
 void srs_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 {
-	m_data->header.frame_id = m_gridFrameId;
+	// init projected 2D map:
+	m_data->header.frame_id = par.frameId;
 	m_data->header.stamp = par.currentTime;
-	m_data->info.resolution = par.resolution;
+	m_crawlDepth = par.treeDepth;
+	bool sizeChanged(false);
 
-	m_ocFrameId = par.frameId;
-	ros::Time timestamp( par.currentTime );
-
-	tf::StampedTransform ocToMap2DTf;
-
-	m_bConvert = m_ocFrameId != m_gridFrameId;
-
-	// Get transform
-	try {
-		// Transformation - to, from, time, waiting time
-		m_tfListener.waitForTransform(m_gridFrameId, m_ocFrameId,
-				timestamp, ros::Duration(5));
-
-		m_tfListener.lookupTransform(m_gridFrameId, m_ocFrameId,
-				timestamp, ocToMap2DTf);
-
-	} catch (tf::TransformException& ex) {
-		ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
-		PERROR( "Transform error.");
-		return;
-	}
-
-
-	Eigen::Matrix4f ocToMap2DTM;
-
-	// Get transformation matrix
-	pcl_ros::transformAsMatrix(ocToMap2DTf, ocToMap2DTM);
-
-	const tButServerOcMap &map(*par.map);
-
-	// Disassemble translation and rotation
-	m_ocToGridRot  = ocToMap2DTM.block<3, 3> (0, 0);
-	m_ocToGridTrans = ocToMap2DTM.block<3, 1> (0, 3);
-
+	// TODO: move most of this stuff into c'tor and init map only once (adjust if size changes)
 	double minX, minY, minZ, maxX, maxY, maxZ;
-	map.octree.getMetricMin(minX, minY, minZ);
-	map.octree.getMetricMax(maxX, maxY, maxZ);
+	par.map->octree.getMetricMin(minX, minY, minZ);
+	par.map->octree.getMetricMax(maxX, maxY, maxZ);
 
 	octomap::point3d minPt(minX, minY, minZ);
 	octomap::point3d maxPt(maxX, maxY, maxZ);
-
 	octomap::OcTreeKey minKey, maxKey, curKey;
-
-	// Try to create key
-	if (!map.octree.genKey(minPt, minKey)) {
-		ROS_ERROR("Could not create min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
-		return;
+	if (!par.map->octree.genKey(minPt, minKey)){
+	  ROS_ERROR("Could not create min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
+	  return;
 	}
 
-	if (!map.octree.genKey(maxPt, maxKey)) {
-		ROS_ERROR("Could not create max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
-		return;
+	if (!par.map->octree.genKey(maxPt, maxKey)){
+	  ROS_ERROR("Could not create max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
+	  return;
 	}
+	par.map->octree.genKeyAtDepth(minKey, par.treeDepth, minKey);
+	par.map->octree.genKeyAtDepth(maxKey, par.treeDepth, maxKey);
 
 	ROS_DEBUG("MinKey: %d %d %d / MaxKey: %d %d %d", minKey[0], minKey[1], minKey[2], maxKey[0], maxKey[1], maxKey[2]);
 
 	// add padding if requested (= new min/maxPts in x&y):
-	double halfPaddedX = 0.5 * m_minSizeX;
-	double halfPaddedY = 0.5 * m_minSizeY;
-
+	double halfPaddedX = 0.5*m_minSizeX;
+	double halfPaddedY = 0.5*m_minSizeY;
 	minX = std::min(minX, -halfPaddedX);
 	maxX = std::max(maxX, halfPaddedX);
-
 	minY = std::min(minY, -halfPaddedY);
 	maxY = std::max(maxY, halfPaddedY);
-
 	minPt = octomap::point3d(minX, minY, minZ);
 	maxPt = octomap::point3d(maxX, maxY, maxZ);
 
 	octomap::OcTreeKey paddedMaxKey;
-
-	if (!map.octree.genKey(minPt, m_paddedMinKey)) {
-		ROS_ERROR("Could not create padded min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
-		return;
+	if (!par.map->octree.genKey(minPt, m_paddedMinKey)){
+	  ROS_ERROR("Could not create padded min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
+	  return;
 	}
-
-	if (!map.octree.genKey(maxPt, paddedMaxKey)) {
-		ROS_ERROR("Could not create padded max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
-		return;
+	if (!par.map->octree.genKey(maxPt, paddedMaxKey)){
+	  ROS_ERROR("Could not create padded max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
+	  return;
 	}
+	par.map->octree.genKeyAtDepth(m_paddedMinKey, par.treeDepth, m_paddedMinKey);
+	par.map->octree.genKeyAtDepth(paddedMaxKey, par.treeDepth, paddedMaxKey);
 
-	ROS_DEBUG("Padded MinKey: %d %d %d / padded MaxKey: %d %d %d", m_paddedMinKey[0], m_paddedMinKey[1],
-			m_paddedMinKey[2], paddedMaxKey[0], paddedMaxKey[1], paddedMaxKey[2]);
-
+	ROS_DEBUG("Padded MinKey: %d %d %d / padded MaxKey: %d %d %d", m_paddedMinKey[0], m_paddedMinKey[1], m_paddedMinKey[2], paddedMaxKey[0], paddedMaxKey[1], paddedMaxKey[2]);
 	assert(paddedMaxKey[0] >= maxKey[0] && paddedMaxKey[1] >= maxKey[1]);
 
-	m_data->info.width = paddedMaxKey[0] - m_paddedMinKey[0] + 1;
-	m_data->info.height = paddedMaxKey[1] - m_paddedMinKey[1] + 1;
+	m_multires2DScale = 1 << (par.treeDepth - m_crawlDepth);
+	unsigned int newWidth = (paddedMaxKey[0] - m_paddedMinKey[0])/m_multires2DScale +1;
+	unsigned int newHeight = (paddedMaxKey[1] - m_paddedMinKey[1])/m_multires2DScale +1;
 
+	if (newWidth != m_data->info.width || newHeight != m_data->info.height)
+	  sizeChanged = true;
+
+	m_data->info.width = newWidth;
+	m_data->info.height = newHeight;
 	int mapOriginX = minKey[0] - m_paddedMinKey[0];
 	int mapOriginY = minKey[1] - m_paddedMinKey[1];
-
 	assert(mapOriginX >= 0 && mapOriginY >= 0);
 
 	// might not exactly be min / max of octree:
 	octomap::point3d origin;
-	map.octree.genCoords(m_paddedMinKey, par.treeDepth, origin);
+	par.map->octree.genCoords(m_paddedMinKey, m_crawlDepth, origin);
+	double gridRes = par.map->octree.getNodeSize(par.treeDepth);
+	m_data->info.resolution = gridRes;
+	m_data->info.origin.position.x = origin.x() - gridRes*0.5;
+	m_data->info.origin.position.y = origin.y() - gridRes*0.5;
 
-	m_data->info.origin.position.x = origin.x() - par.resolution* 0.5;
-	m_data->info.origin.position.y = origin.y() - par.resolution * 0.5;
+//	std::cerr << "Origin: " << origin << ", grid resolution: " << gridRes << ", computed origin: "<< mapOriginX << ".." << mapOriginY << std::endl;
 
-	// Allocate space to hold the data (init to unknown)
-	m_data->data.resize(m_data->info.width * m_data->info.height, -1);
+	if (par.treeDepth != m_crawlDepth){
+		m_data->info.origin.position.x -= par.resolution/2.0;
+		m_data->info.origin.position.y -= par.resolution/2.0;
+	}
+
+	if (sizeChanged){
+	  ROS_INFO("2D grid map size changed to %d x %d", m_data->info.width, m_data->info.height);
+	  m_data->data.clear();
+	  // init to unknown:
+	  m_data->data.resize(m_data->info.width * m_data->info.height, -1);
+	}
 
 	tButServerOcTree & tree( par.map->octree );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
@@ -215,22 +198,22 @@ void srs_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
  */
 void srs_env_model::CCollisionGridPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
-	if (it.getDepth() == mp.treeDepth)
+	if (it.getDepth() == m_crawlDepth)
 	{
 
 		octomap::OcTreeKey nKey = it.getKey(); // TODO: remove intermedate obj (1.4)
-		int i = nKey[0] - m_paddedMinKey[0];
-		int j = nKey[1] - m_paddedMinKey[1];
+		int i = (nKey[0] - m_paddedMinKey[0])/m_multires2DScale;;
+		int j = (nKey[1] - m_paddedMinKey[1])/m_multires2DScale;;
 		m_data->data[m_data->info.width * j + i] = 100;
 
 	} else {
 
-		int intSize = 1 << (mp.treeDepth - it.getDepth());
+		int intSize = 1 << (m_crawlDepth - it.getDepth());
 		octomap::OcTreeKey minKey = it.getIndexKey();
 		for (int dx = 0; dx < intSize; dx++) {
-			int i = minKey[0] + dx - m_paddedMinKey[0];
+			int i = (minKey[0] + dx - m_paddedMinKey[0])/m_multires2DScale;;
 			for (int dy = 0; dy < intSize; dy++) {
-				int j = minKey[1] + dy - m_paddedMinKey[1];
+				int j = (minKey[1] + dy - m_paddedMinKey[1])/m_multires2DScale;;
 				m_data->data[m_data->info.width * j + i] = 100;
 			}
 		}
@@ -242,20 +225,20 @@ void srs_env_model::CCollisionGridPlugin::handleOccupiedNode(srs_env_model::tBut
  */
 void srs_env_model::CCollisionGridPlugin::handleFreeNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp )
 {
-	if (it.getDepth() == mp.treeDepth) {
+	if (it.getDepth() == m_crawlDepth) {
 		octomap::OcTreeKey nKey = it.getKey(); //TODO: remove intermedate obj (1.4)
-		int i = nKey[0] - m_paddedMinKey[0];
-		int j = nKey[1] - m_paddedMinKey[1];
+		int i = (nKey[0] - m_paddedMinKey[0])/m_multires2DScale;;
+		int j = (nKey[1] - m_paddedMinKey[1])/m_multires2DScale;
 		if (m_data->data[m_data->info.width * j + i] == -1) {
 			m_data->data[m_data->info.width * j + i] = 0;
 		}
 	} else {
-		int intSize = 1 << (mp.treeDepth - it.getDepth());
+		int intSize = 1 << (m_crawlDepth - it.getDepth());
 		octomap::OcTreeKey minKey = it.getIndexKey();
 		for (int dx = 0; dx < intSize; dx++) {
-			int i = minKey[0] + dx - m_paddedMinKey[0];
+			int i = (minKey[0] + dx - m_paddedMinKey[0])/m_multires2DScale;
 			for (int dy = 0; dy < intSize; dy++) {
-				int j = minKey[1] + dy - m_paddedMinKey[1];
+				int j = (minKey[1] + dy - m_paddedMinKey[1])/m_multires2DScale;
 				if (m_data->data[m_data->info.width * j + i] == -1) {
 					m_data->data[m_data->info.width * j + i] = 0;
 				}

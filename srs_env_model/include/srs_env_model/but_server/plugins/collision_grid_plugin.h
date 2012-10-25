@@ -90,9 +90,6 @@ namespace srs_env_model
         //
         bool m_latchedTopics;
 
-        //! Used frame id (input data will be transformed to it)
-        std::string m_gridFrameId;
-
         /// Crawled octomap frame id
         std::string m_ocFrameId;
 
@@ -111,6 +108,9 @@ namespace srs_env_model
 
         /// Conversion between frame id's must be done...
         bool m_bConvert;
+
+        /// Grid scaling
+        unsigned m_multires2DScale;
 
     }; // class CCollisionGridPlugin
 

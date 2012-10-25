@@ -33,6 +33,14 @@
 #include <pcl/registration/ia_ransac.h>
 #include <pcl/registration/icp_nl.h>
 
+#include <boost/scoped_ptr.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <image_geometry/pinhole_camera_model.h>
+#include <ros/node_handle.h>
+#include <sensor_msgs/CameraInfo.h>
+#include <ros/callback_queue.h>
+
 namespace srs_env_model
 {
 enum EPclRegistrationMode
@@ -159,6 +167,62 @@ protected:
 	int m_scaCorrespondenceRamdomness;
 
 }; // CPclRegistration
+
+/**
+ * Get visible pointcloud from octomap module
+ */
+class COcToPcl
+{
+public:
+	//! Constructor
+	COcToPcl();
+
+	//! Initialize plugin - called in server constructor
+	virtual void init(ros::NodeHandle & node_handle);
+
+protected:
+	/// On camera position changed callback
+	void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
+
+	/// Compute new frustum
+	void updateFrustum();
+
+	// main loop when spinning our own thread
+	// - process callbacks in our callback queue
+	// - process pending goals
+	void spinThread();
+
+	//! Test if point is in camera cone
+	bool inSensorCone(const cv::Point2d& uv) const;
+
+protected:
+	/// Should camera position and orientation be transformed?
+	bool m_bTransformCamera;
+
+	/// Camera frame id
+	std::string m_cameraFrameId;
+
+	// Camera position topic name
+	std::string m_cameraInfoTopic;
+
+	/// Subscriber - camera position
+	ros::Subscriber m_camPosSubscriber;
+
+	// Mutex used to lock camera position parameters
+	boost::recursive_mutex m_camPosMutex;
+
+	//! Spin out own input callback thread
+	bool m_bSpinThread;
+
+	// these are needed when spinning up a dedicated thread
+	boost::scoped_ptr<boost::thread> spin_thread_;
+	ros::NodeHandle node_handle_;
+	ros::CallbackQueue callback_queue_;
+	volatile bool need_to_terminate_;
+
+	/// Camera offsets
+	int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
+};
 
 } // namespace srs_env_model
 

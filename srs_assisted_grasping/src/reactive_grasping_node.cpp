@@ -342,6 +342,8 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
   unsigned int num_of_vel = (unsigned int)ceil(t2 * params_.rate);
   unsigned int num_of_dec = (unsigned int)ceil(t3 * params_.rate) - 1;
 
+  bool velocity_limit_error = false;
+
   // compute velocities for all non-static joints
   for (unsigned int i = 0; i < joints_.joints.size(); i++) {
 
@@ -373,6 +375,8 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 		  if (fabs(vel) >= params_.max_velocity) {
 
 			  ROS_WARN("Joint %s will violate max. velocity limit (%f, limit %f).",joints_.joints[i].c_str(),vel,params_.max_velocity);
+
+			  velocity_limit_error = true;
 
 		  }
 
@@ -421,6 +425,13 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 	  } // else
 
 	  //std::cout << std::endl  << std::endl;
+
+  }
+
+  if (velocity_limit_error) {
+
+	  server_->setAborted(res,"Some joint hit velocity limit.");
+	  return;
 
   }
 

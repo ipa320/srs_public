@@ -30,6 +30,10 @@
 #ifndef BUT_GRASPING_H
 #define BUT_GRASPING_H
 
+
+#include <ros/ros.h>
+#include <string.h>
+
 #include <wx/wx.h>
 #include <wx/menu.h>
 #include <wx/panel.h>
@@ -38,8 +42,8 @@
 #include <wx/sizer.h>
 #include <wx/radiobox.h>
 #include <wx/checkbox.h>
-#include <ros/ros.h>
-#include <string.h>
+#include <wx/thread.h>
+#include <wx/choice.h>
 
 
 #include "cob_script_server/ScriptAction.h"
@@ -50,10 +54,12 @@
 #include <iostream>
 #include <sstream>
 
-#include "srs_assisted_grasping_msgs/ManualGraspingAction.h"
+#include "srs_assisted_grasping_msgs/ReactiveGraspingAction.h"
 #include "srs_assisted_grasping_msgs/GraspingAllow.h"
 #include "srs_assisted_grasping/services_list.h"
 #include "srs_assisted_grasping/topics_list.h"
+
+#include "schunk_sdh/TactileSensor.h"
 
 namespace rviz
 {
@@ -62,8 +68,17 @@ namespace rviz
 
 namespace srs_assisted_grasping_ui {
 
-static const double ABS_MAX_FORCE = 500.0;
+static const double ABS_MAX_FORCE = 3000.0;
 static const bool WAIT_FOR_ALLOW = true;
+
+struct Preset {
+
+	std::string name;
+	std::vector<double> forces;
+	std::vector<double> target_pos;
+	ros::Duration time;
+
+};
 
 
 class CButGraspingControls : public wxPanel
@@ -73,10 +88,10 @@ public:
     CButGraspingControls(wxWindow *parent, const wxString& title, rviz::WindowManagerInterface * wmi );
     ~CButGraspingControls();
 
-    void GraspingFeedback(const srs_assisted_grasping_msgs::ManualGraspingFeedbackConstPtr& feedback);
+    //void GraspingFeedback(const srs_assisted_grasping_msgs::ManualGraspingFeedbackConstPtr& feedback);
     void GraspingActive() {};
     void GraspingDone(const actionlib::SimpleClientGoalState& state,
-					  const srs_assisted_grasping_msgs::ManualGraspingResultConstPtr& result);
+					  const srs_assisted_grasping_msgs::ReactiveGraspingResultConstPtr& result);
 
 
     bool GraspingAllow(srs_assisted_grasping_msgs::GraspingAllow::Request &req, srs_assisted_grasping_msgs::GraspingAllow::Response &res);
@@ -84,7 +99,9 @@ public:
 
 protected:
 
-    typedef actionlib::SimpleActionClient<srs_assisted_grasping_msgs::ManualGraspingAction> grasping_action_client;
+    std::vector<Preset> presets_;
+
+    typedef actionlib::SimpleActionClient<srs_assisted_grasping_msgs::ReactiveGraspingAction> grasping_action_client;
 
     //! stored window manager interface pointer
     rviz::WindowManagerInterface * m_wmi;
@@ -104,11 +121,8 @@ protected:
     wxSlider *finger2_force_slider_;
     wxSlider *finger3_force_slider_;
 
-    wxRadioBox *grasp_type_;
-    wxRadioBox *preset_;
+    wxChoice *presets_choice_;
 
-    wxCheckBox *two_fingers_contact_;
-    wxCheckBox *do_not_open_fingers_;
 
     bool grasping_finished_;
 
@@ -119,8 +133,6 @@ protected:
     void OnStop(wxCommandEvent& event);
     void OnGrasp(wxCommandEvent& event);
     void OnMaxForceSlider(wxCommandEvent& event);
-    void OnGraspType(wxCommandEvent& event);
-    void OnPreset(wxCommandEvent& event);
 
     void EnableControls(); // get ready for grasping
     void DisableControls(bool state_of_stop_button=false);
@@ -137,6 +149,23 @@ protected:
     boost::thread t_grasping;
 
     ros::ServiceServer service_grasping_allow_;
+
+    ros::Subscriber tact_sub_; // for receiving tactile data
+
+    std::vector<int16_t> tactile_data_;
+    boost::mutex tactile_data_mutex_;
+
+    void TactileDataCallback(const schunk_sdh::TactileSensor::ConstPtr& msg);
+
+    //void timerCallback(const ros::TimerEvent& ev); // timer for updating gui
+	//ros::Timer gui_update_timer_;
+
+    boost::thread t_gui_update;
+    void GuiUpdateThread();
+
+    bool stop_gui_thread_;
+
+	bool tactile_data_received_;
 
 private:
 

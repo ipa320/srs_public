@@ -123,6 +123,10 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 
 	// Initialize registration module from the parameter server
 	m_registration.init( node_handle );
+
+	// Init scissors
+	m_ocScissors.init( node_handle );
+
 }
 
 //! Called when new scan was inserted and now all can be published
@@ -216,6 +220,9 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 		// transform point cloud from sensor frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
 	}
+
+	m_ocScissors.computeCloud( par );
+
 
 	invalidate();
 }

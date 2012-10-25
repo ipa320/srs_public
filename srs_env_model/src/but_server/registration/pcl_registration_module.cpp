@@ -36,6 +36,7 @@ srs_env_model::COcToPcl::COcToPcl()
 : m_bTransformCamera( false )
 , m_bSpinThread( true )
 , m_bPublishCloud(true)
+, m_pcFrameId("/map")
 {
 
 }
@@ -170,8 +171,6 @@ bool srs_env_model::COcToPcl::computeCloud( const SMapWithParameters & par )
 	// Store camera information
 	m_camera_size = m_camera_size_buffer;
 	m_camera_model.fromCameraInfo( m_camera_info_buffer);
-	m_octomap_updates_msg->camera_info = m_camera_info_buffer;
-	m_octomap_updates_msg->pointcloud2.header.stamp = par.currentTime;
 
 	// Initialize leaf iterators
 	tButServerOcTree & tree( par.map->octree );
@@ -193,6 +192,11 @@ bool srs_env_model::COcToPcl::computeCloud( const SMapWithParameters & par )
 		// transform point cloud from octomap frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(m_cloud, m_cloud, pcOutTM);
 	}
+
+	if( m_bPublishCloud )
+		publishInternal( m_DataTimeStamp );
+
+	return true;
 }
 
 /**
@@ -291,4 +295,21 @@ void srs_env_model::COcToPcl::spinThread()
 			}
 			callback_queue_.callAvailable(ros::WallDuration(0.033f));
 		}
+}
+
+/**
+ * Called when new scan was inserted and now all can be published
+ */
+void srs_env_model::COcToPcl::publishInternal(const ros::Time & timestamp)
+{
+	// Convert data
+	sensor_msgs::PointCloud2 msg;
+	pcl::toROSMsg< tPclPoint >(m_cloud, msg);
+
+	// Set message parameters and publish
+	msg.header.frame_id = m_pcFrameId;
+	msg.header.stamp = m_cloud.header.stamp;
+
+	// Publish data
+	m_pubConstrainedPC.publish( msg );
 }

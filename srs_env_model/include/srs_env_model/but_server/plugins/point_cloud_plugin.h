@@ -168,6 +168,9 @@ namespace srs_env_model
         //! Has been registration method changed?
         bool m_bRegistrationMethodChanged;
 
+        //!
+        COcToPcl m_ocScissors;
+
         //! Old point cloud used for registration
         tPointCloudPtr m_oldCloud;
 

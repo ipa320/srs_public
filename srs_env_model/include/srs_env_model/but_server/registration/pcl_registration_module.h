@@ -188,6 +188,9 @@ public:
 	//! Get output pointcloud
 	bool computeCloud( const SMapWithParameters & par );
 
+	//! Get cloud
+	tPointCloud & getCloud( ) { return m_cloud; }
+
 protected:
 	/// On camera position changed callback
 	void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
@@ -260,9 +263,6 @@ protected:
 
 	//! Cloud publishers
 	ros::Publisher m_pubConstrainedPC;
-
-	//! Packed info message data
-	srs_env_model::OctomapUpdatesPtr m_octomap_updates_msg;
 
 	/// Crawled octomap frame id
 	std::string m_ocFrameId;

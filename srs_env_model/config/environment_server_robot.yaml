@@ -62,7 +62,7 @@ pointcloud_frameid: "/head_cam3d_link"
 pointcloud_min_z: 0.1
 
 # Point cloud limits in z-axis - maximum
-pointcloud_max_z:  3.0
+pointcloud_max_z:  2.5
 
 
 ###############################################################################

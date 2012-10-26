@@ -5,7 +5,7 @@
 # Octomap plugin
 
 # Octomap resolution
-ocmap_resolution: .1
+ocmap_resolution: .05
 
 # Tree depth used for crawling. Zero means full tree
 ocmap_treedepth: 0
@@ -78,7 +78,7 @@ pointcloud_max_z: 3.0
 registration_mode: "icp"
 
 # Maximum iterations
-registration_maximum_iterations: 10
+registration_maximum_iterations: 5
 
 # RANSAC outlier threshold
 registration_ransac_outlier_rejection_threshold: .05

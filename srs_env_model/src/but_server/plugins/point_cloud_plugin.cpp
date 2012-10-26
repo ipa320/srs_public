@@ -49,11 +49,10 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 , m_bFilterPC(true)
 , m_pointcloudMinZ(-std::numeric_limits<double>::max())
 , m_pointcloudMaxZ(std::numeric_limits<double>::max())
-, m_bUseRGB( true )
-, m_bRGB_byParameter(false)
-, m_bRegistrationMethodChanged( true )
 , m_oldCloud( new tPointCloud )
 , m_bufferCloud( new tPointCloud )
+, m_frame_number( 0 )
+, m_use_every_nth( 5 )
 {
 	assert( m_data != 0 );
 }
@@ -74,8 +73,10 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 {
 //	PERROR( "Initializing PointCloudPlugin" );
 
-
-	// Read parameters
+	// Frame skipping
+	int fs( m_use_every_nth );
+	node_handle.param( "pointcloud_frame_skip", fs, 1 );
+//	m_use_every_nth = (fs >= 1) ? fs : 1;
 
 	// Point cloud publishing topic name
 	node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, POINTCLOUD_CENTERS_PUBLISHER_NAME );
@@ -84,19 +85,11 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("pointcloud_subscriber", m_pcSubscriberName, SUBSCRIBER_POINT_CLOUD_NAME);
 
 	// Get FID to which will be points transformed when publishing collision map
-	node_handle.param("pointcloud_input_frameid", m_pcFrameId, m_pcFrameId ); //
-
+	node_handle.param("pointcloud_frame_id", m_pcFrameId, m_pcFrameId ); //
 
 	// Point cloud limits
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
 	node_handle.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
-
-	// Contains input pointcloud RGB?
-	if( node_handle.hasParam("input_has_rgb") )
-	{
-		node_handle.param("input_has_rgb", m_bUseRGB, m_bUseRGB );
-		m_bRGB_byParameter = true;
-	}
 
 	// Create publisher
 	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
@@ -127,8 +120,6 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 
 //	PERROR( "PointCloudPlugin initialized..." );
 
-	// Set registration mode
-	setRegistrationMethod( PCL_REGISTRATION_MODE_ICP );
 }
 
 //! Called when new scan was inserted and now all can be published
@@ -237,7 +228,6 @@ void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButSer
 	point.y = it.getY();
 	point.z = it.getZ();
 
-
 	// Set color
 	point.r = it->r();
 	point.g = it->g();
@@ -262,14 +252,11 @@ void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButSer
  */
 void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::ConstPtr& cloud)
 {
-//	PERROR("Try lock");
 	boost::mutex::scoped_lock lock(m_lockData);
-//	PERROR("Lock");
 
 	if( ! useFrame() )
 	{
-		PERROR("Skipping frame: " << cloud->header.stamp);
-
+//		std::cerr << "Frame skipping" << std::endl;
 		return;
 	}
 
@@ -335,40 +322,11 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, sensorToPcTM);
 	}
 
-	//*
-	// Registration
-	{
-		if( m_bRegistrationMethodChanged && m_registration.isRegistering() && m_data->size() > 0 )
-		{
+//	PERROR("1");
 
-			pcl::copyPointCloud( *m_data, *m_oldCloud );
-			m_bRegistrationMethodChanged = false;
 
-//			std::cerr << "Copying cloud: " << m_oldCloud->size() << std::endl;
-		}
-		else
-		{
-//			pcl::copyPointCloud( *m_data, *m_bufferCloud );
 
-//			std::cerr << "Starting registration process " << m_data->size() << ", " << m_oldCloud->size() << ", " << m_bufferCloud->size() << ", " <<  m_data->width << ", " << m_data->height << ", " << m_data->is_dense << std::endl;
-
-			if( m_registration.process( m_data, m_oldCloud, m_bufferCloud) )
-			{
-				Eigen::Matrix4f transform( m_registration.getTransform() );
-
-				pcl::transformPointCloud( *m_bufferCloud, *m_oldCloud, transform );
-				pcl::copyPointCloud( *m_oldCloud, *m_data );
-//				std::cerr << "Registration succeeded"  << std::endl;
-			}
-			else
-			{
-				m_bRegistrationMethodChanged = true;
-//				std::cerr << "Registration failed" << std::endl;
-			}
-
-		}
-	}
-
+//	PERROR("2");
 //*/
 	// Filter input pointcloud
 	if( m_bFilterPC )		// TODO: Optimize this by removing redundant transforms
@@ -403,7 +361,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 		// transform pointcloud from pc frame to the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, pcToBaseTM);
-/*
+//*
 
 		// filter height and range, also removes NANs:
 		pcl::PassThrough<tPclPoint> pass;
@@ -411,7 +369,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		pass.setFilterLimits(m_pointcloudMinZ, m_pointcloudMaxZ);
 		pass.setInputCloud(m_data->makeShared());
 		pass.filter(*m_data);
-*/
+//*/
 		// transform pointcloud back to pc frame from the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, baseToPcTM);
 	}
@@ -441,9 +399,6 @@ bool srs_env_model::CPointCloudPlugin::shouldPublish()
  */
 bool srs_env_model::CPointCloudPlugin::isRGBCloud( const tIncommingPointCloud::ConstPtr& cloud )
 {
-	if(m_bRGB_byParameter)
-		return m_bUseRGB;
-
 	tIncommingPointCloud::_fields_type::const_iterator i, end;
 
 	for( i = cloud->fields.begin(), end = cloud->fields.end(); i != end; ++i )

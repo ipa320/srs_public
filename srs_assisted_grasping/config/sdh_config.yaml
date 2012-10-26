@@ -41,10 +41,11 @@ max_force: 1000.0
 max_velocity: 1.5
 
 # acceleration ramp length in % of whole time
-a_ramp: 20.0
+a_ramp: 10.0
 
 # deceleration ramp length in % of whole time
-d_ramp: 40.0
+d_ramp: 70.0
 
 # rate at which is internal regulator running
 rate: 50.0
+

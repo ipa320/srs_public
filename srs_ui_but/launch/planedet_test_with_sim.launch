@@ -1,13 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- Set to use simulation time -->
-    <param name="/use_sim_time" value="true"/>
-
     <!-- Configuration for COB, bringup simulation -->
-    <include file="$(find cob_default_robot_config)/upload_param.launch" />
-    <include file="$(find cob_default_env_config)/upload_param.launch" />
-    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
-    <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+    <include file="$(find srs_ui_but)/launch/run_sim.launch" />
 
     <!-- Run our dynamic scene model server node -->
     <include file="$(find srs_env_model)/launch/but_envmodel_common.launch" />
@@ -23,10 +17,11 @@
     <!-- include file="$(find srs_ui_but)/launch/distance_visualizer.launch" /-->
 
     <!-- Run the plane detection node -->
-    <!--include file="$(find srs_env_model_percp)/launch/but_planedet_common.launch" /-->
-    <include file="$(find srs_env_model_percp)/launch/planedet_demo.launch" />
+    <include file="$(find srs_env_model_percp)/launch/but_planedet_common.launch" />
+    <!--include file="$(find srs_env_model_percp)/launch/planedet_demo.launch" /-->
 
     <!-- Run rviz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_ui_but)/config/planedet_test.vcg" />
+
 </launch>
 

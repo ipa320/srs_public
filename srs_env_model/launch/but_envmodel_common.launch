@@ -1,19 +1,13 @@
+<?xml version="1.0"?>
 <launch>
-    <!-- Set 3d camera maximal relevant distance in meters -->
-    <param name="but_server_node/max_range" type="double" value="4.5"/>
-    
-    <!-- Other parameters -->
-    <param name="but_server_node/pointcloud_min_z" value="0.0" type="double"/>
-    <!--param name="but_server_node/use_old_im" value="true" type="bool"/-->
-    <!--param name="but_server_node/resolution" value="0.025" type="double"/-->
-    <param name="but_server_node/resolution" value="0.05" type="double"/>
-    <param name="but_server_node/frame_skip" value="5" type="int"/>
-    
     <!-- Run our dynamic scene model server node -->
     <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
-	    <param name="differential_frames_count" value="15" type="int"/> 
-		<remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info" />
-		<remap from="but_server_node/points_in" to="/cam3d/rgb/points" />
+        <rosparam file="$(find srs_env_model)/config/environment_server_defaults.yaml" command="load"/>
+        <remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info" />
+        <!--remap from="but_server_node/points_in" to="/cam3d/rgb/points" /-->
+        <remap from="but_server_node/points_in" to="/cam3d/rgb/points_throttled" />
+        <remap from="but_server_node/rviz_camera_position" to="/rviz_camera_position" />
     </node>
+
 </launch>
 

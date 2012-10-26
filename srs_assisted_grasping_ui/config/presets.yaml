@@ -1,0 +1,12 @@
+presets:
+ -
+  name: Empty bottle
+  forces: [300, 300, 300, 300, 300, 300]
+  target_pos: [0.0, 0.0, 1.0472, 0.0, 1.0472, 0.0, 1.0472] # cylclosed
+  time: 6.0
+  
+ -
+  name: Full bottle
+  forces: [900, 900, 900, 900, 900, 900]
+  target_pos: [0.0, 0.0, 1.0472, 0.0, 1.0472, 0.0, 1.0472] # cylclosed
+  time: 6.0

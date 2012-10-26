@@ -75,6 +75,9 @@ public:
 
         Ogre::Camera & getCamera() { return *m_camera; }
 
+        //! Set used camera frame id
+        void setCamFrameId( const std::string & fid ) { m_camFrameId = fid; }
+
     protected:
         //! Test if camera position and orientation has changed
         bool hasMoved( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation );
@@ -98,6 +101,9 @@ public:
 
         //! Publishing timer
         ros::Timer m_timer;
+
+        //! Camera frame id
+        std::string m_camFrameId;
     };
 
 public:
@@ -108,8 +114,13 @@ public:
     ~CButDisplay();
 
     //OverridesfromDisplay
-    virtual void targetFrameChanged() { m_ocmap_window->targetFrameChanged( target_frame_ ); }
-    virtual void fixedFrameChanged(){ m_ocmap_window->fixedFrameChanged( fixed_frame_ ); }
+    virtual void targetFrameChanged() { m_ocmap_window->targetFrameChanged( target_frame_ );  }
+    virtual void fixedFrameChanged()
+    {
+    	m_ocmap_window->fixedFrameChanged( fixed_frame_ );
+    	m_listener.setCamFrameId( target_frame_ );
+    	std::cerr << "Target frame: " << target_frame_ << std::endl;
+    }
     virtual void createProperties();
 
     //! Update display

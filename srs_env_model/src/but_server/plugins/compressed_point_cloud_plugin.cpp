@@ -94,20 +94,20 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
     // Read parameters
 	{
 		// Where to get camera position information
-		node_handle.param("camera_info_topic_name", m_cameraInfoTopic, CPC_CAMERA_INFO_PUBLISHER_NAME );
+		node_handle.param("compressed_pc_camera_info_topic_name", m_cameraInfoTopic, CPC_CAMERA_INFO_PUBLISHER_NAME );
 
 		// Point cloud publishing topic name
-		node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, CPC_PC_PUBLISHING_TOPIC_NAME );
+		node_handle.param("compressed_pc_pointcloud_centers_publisher", m_pcPublisherName, CPC_PC_PUBLISHING_TOPIC_NAME );
 
 		// How many uncomplete frames should be published before complete one
 		int uf;
-		node_handle.param("differential_frames_count", uf, CPC_NUM_DIFFERENTIAL_FRAMES );
+		node_handle.param("compressed_pc_differential_frames_count", uf, CPC_NUM_DIFFERENTIAL_FRAMES );
 		m_uncomplete_frames = uf;
 
 		std::cerr << "Num dif frames: " << m_uncomplete_frames << std::endl;
 
 		// Complete data topic name
-		node_handle.param( "update_data_topic_name", m_ocUpdatePublisherName, CPC_COMPLETE_TOPIC_NAME );
+		node_handle.param( "compressed_pc_update_data_topic_name", m_ocUpdatePublisherName, CPC_COMPLETE_TOPIC_NAME );
 	}
 
 	// Services
@@ -141,8 +141,8 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
     m_data->clear();
 
     // stereo cam params for sensor cone:
-	node_handle.param<int> ("camera_stereo_offset_left", m_camera_stereo_offset_left, 0); // 128
-	node_handle.param<int> ("camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
+	node_handle.param<int> ("compressed_pc_camera_stereo_offset_left", m_camera_stereo_offset_left, 0); // 128
+	node_handle.param<int> ("compressed_pc_camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
 
 }
 

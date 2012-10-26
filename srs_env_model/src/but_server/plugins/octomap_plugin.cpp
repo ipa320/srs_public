@@ -34,6 +34,7 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl_ros/transforms.h>
+#include <pcl/io/io.h>
 
 // Filtering
 #include <visualization_msgs/MarkerArray.h>
@@ -47,7 +48,6 @@
 void srs_env_model::COctoMapPlugin::setDefaults() {
 
 	// Set octomap parameters
-	m_mapParameters.frameSkip = 2;
 	m_mapParameters.resolution = DEFAULT_RESOLUTION;
 	m_mapParameters.treeDepth = 0;
 	m_mapParameters.probHit = 0.7; // Probability of node, if node is occupied: 0.7
@@ -55,7 +55,7 @@ void srs_env_model::COctoMapPlugin::setDefaults() {
 	m_mapParameters.thresMin = 0.12; // Clamping minimum threshold: 0.1192;
 	m_mapParameters.thresMax = 0.97; // Clamping maximum threshold: 0.971;
 	m_mapParameters.thresOccupancy = 0.5; // Occupied node threshold: 0.5
-	m_mapParameters.maxRange = -1.0;
+	m_mapParameters.maxRange = 7;
 
 	// Set ground filtering parameters
 	m_filterGroundPlane = false;
@@ -105,8 +105,6 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
 	m_mapParameters.map = m_data;
 	m_mapParameters.crawlDepth = m_crawlDepth;
 
-	// Set frame skipping
-	setFrameSkip(m_mapParameters.frameSkip);
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
@@ -125,9 +123,6 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
 	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
 	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
 	m_mapParameters.crawlDepth = m_crawlDepth;
-
-	// Set frame skipping
-	setFrameSkip(m_mapParameters.frameSkip);
 
 	// is filename valid?
 	if (filename.length() > 0) {
@@ -170,26 +165,30 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	reset();
 
 	// Load parameters from the parameter server
-	node_handle.param("frame_skip", m_mapParameters.frameSkip,
-			m_mapParameters.frameSkip);
-	node_handle.param("resolution", m_mapParameters.resolution,
+//	node_handle.param("frame_skip", m_mapParameters.frameSkip,
+//			m_mapParameters.frameSkip);
+	node_handle.param("ocmap_resolution", m_mapParameters.resolution,
 			m_mapParameters.resolution);
-	node_handle.param("sensor_model/hit", m_mapParameters.probHit,
+	int td( m_mapParameters.treeDepth);
+	node_handle.param("ocmap_treedepth", td, td );
+	m_mapParameters.treeDepth = ( td < 0 ) ? 0 : td;
+	node_handle.param("ocmap_sensor_model/hit", m_mapParameters.probHit,
 			m_mapParameters.probHit);
-	node_handle.param("sensor_model/miss", m_mapParameters.probMiss,
+	node_handle.param("ocmap_sensor_model/miss", m_mapParameters.probMiss,
 			m_mapParameters.probMiss);
-	node_handle.param("sensor_model/min", m_mapParameters.thresMin,
+	node_handle.param("ocmap_sensor_model/min", m_mapParameters.thresMin,
 			m_mapParameters.thresMin);
-	node_handle.param("sensor_model/max", m_mapParameters.thresMax,
+	node_handle.param("ocmap_sensor_model/max", m_mapParameters.thresMax,
 			m_mapParameters.thresMax);
-	node_handle.param("max_range", m_mapParameters.maxRange,
+	node_handle.param("ocmap_max_range", m_mapParameters.maxRange,
 			m_mapParameters.maxRange);
 
+	node_handle.param("ocmap_frame_id", m_mapParameters.frameId, m_mapParameters.frameId );
 	// Filtering presets
 	{
 		node_handle.param("camera_info_topic", m_camera_info_topic,
 				m_camera_info_topic);
-		node_handle.param("visualize_markers", m_bVisualizeMarkers,
+		node_handle.param("ocmap_visualize_markers", m_bVisualizeMarkers,
 				m_bVisualizeMarkers);
 		node_handle.param("markers_topic", m_markers_topic_name,
 				m_markers_topic_name);
@@ -209,24 +208,24 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 		m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
 	}
 
-	// Set frame skipping
-	setFrameSkip(m_mapParameters.frameSkip);
-
 	// Should ground plane be filtered?
-	node_handle.param("filter_ground", m_filterGroundPlane, m_filterGroundPlane);
+	node_handle.param("ocmap_filter_ground", m_filterGroundPlane, m_filterGroundPlane);
+
+	// Should potentially free cells be filtered?
+	node_handle.param("ocmap_filter_outdated", m_bRemoveOutdated, m_bRemoveOutdated );
 
 	// distance of points from plane for RANSAC
-	node_handle.param("ground_filter/distance", m_groundFilterDistance,
+	node_handle.param("ocmap_ground_filter/distance", m_groundFilterDistance,
 			m_groundFilterDistance);
 	// angular derivation of found plane:
-	node_handle.param("ground_filter/angle", m_groundFilterAngle,
+	node_handle.param("ocmap_ground_filter/angle", m_groundFilterAngle,
 			m_groundFilterAngle);
 	// distance of found plane from z=0 to be detected as ground (e.g. to exclude tables)
-	node_handle.param("ground_filter/plane_distance",
+	node_handle.param("ocmap_ground_filter/plane_distance",
 			m_groundFilterPlaneDistance, m_groundFilterPlaneDistance);
 
 	// Octomap publishing topic
-	node_handle.param("octomap_publishing_topic", m_ocPublisherName,
+	node_handle.param("ocmap_publishing_topic", m_ocPublisherName,
 			OCTOMAP_PUBLISHER_NAME);
 
 	// Advertise services
@@ -257,17 +256,49 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	m_markerPublisher = node_handle.advertise<visualization_msgs::Marker> (
 			m_markers_topic_name, 10);
 
+	m_registration.init( node_handle );
+
 	PERROR( "OctoMapPlugin initialized..." );
+
+	m_bNotFirst = false;
 }
 
-void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
-	if (!useFrame())
-		return;
+void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
+{
 
 //	PERROR("insertCloud: Insert cloud start.");
 
 	// Lock data
 //	boost::mutex::scoped_lock lock(m_lockData);
+
+	tPointCloud used_cloud;
+	pcl::copyPointCloud( cloud, used_cloud );
+	//*
+
+	Eigen::Matrix4f registration_transform( Eigen::Matrix4f::Identity() );
+		// Registration
+	{
+		if( cloud.size() > 0 && m_bNotFirst )
+		{
+//			pcl::copyPointCloud( *m_data, *m_bufferCloud );
+
+			std::cerr << "Starting registration process " << std::endl;
+
+			tPointCloudPtr cloudPtr( new tPointCloud );
+			pcl::copyPointCloud( cloud, *cloudPtr );
+
+			if( m_registration.registerCloud( cloudPtr, m_mapParameters ) )
+			{
+				registration_transform = m_registration.getTransform();
+
+//				pcl::transformPointCloud( cloud, used_cloud, transform );
+
+				std::cerr << "Registration succeeded"  << std::endl;
+			}
+			else
+				return;
+		}
+	}
 
 	ros::WallTime startTime = ros::WallTime::now();
 
@@ -275,13 +306,13 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 	tPointCloud pc_nonground; // everything else
 
 	if (m_filterGroundPlane) {
-		filterGroundPlane(cloud, pc_ground, pc_nonground);
+		filterGroundPlane(used_cloud, pc_ground, pc_nonground);
 
 	} else {
-		pc_nonground = cloud;
+		pc_nonground = used_cloud;
 		pc_ground.clear();
-		pc_ground.header = cloud.header;
-		pc_nonground.header = cloud.header;
+		pc_ground.header = used_cloud.header;
+		pc_nonground.header = used_cloud.header;
 	}
 
 	tf::StampedTransform cloudToMapTf;
@@ -315,6 +346,9 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 
 	}
 
+	// Use registration transform
+	pcl::transformPointCloud( pc_ground, pc_ground, registration_transform );
+
 	pc_ground.header = cloud.header;
 	pc_ground.header.frame_id = m_mapParameters.frameId;
 
@@ -330,6 +364,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 		degradeSingleSpeckles();
 	}
 
+//	PERROR("Outdated");
 	if (m_bRemoveOutdated) {
 		octomap::point3d sensor_origin = getSensorOrigin(cloud.header);
 		octomap::pose6d sensor_pose(sensor_origin.x(), sensor_origin.y(),
@@ -342,10 +377,11 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(),
 			pc_nonground.size(), total_elapsed);
 
+//	PERROR("Filtered");
 	if (m_removeTester != 0) {
 		long removed = doObjectTesting(m_removeTester);
 
-		PERROR( "Removed leafs: " << removed);
+//		PERROR( "Removed leafs: " << removed);
 
 		if (removed > 0)
 			m_data->octree.prune();
@@ -362,6 +398,8 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud) {
 	lock.unlock();
 
 //	PERROR("insertCloud: Unlocked.");
+
+	m_bNotFirst = true;
 
 	// Publish new data
 	invalidate();

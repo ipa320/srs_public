@@ -36,17 +36,23 @@ using namespace srs_assisted_grasping;
 
 const int ID_BUTTON_GRASP(101);
 const int ID_BUTTON_STOP(102);
-//const int ID_BUTTON_OPEN(103);
 const int ID_SLIDER_FORCE(104);
+
+const int ID_CHOICE(115);
 
 const int ID_SLIDER_FORCE_1(105);
 const int ID_SLIDER_FORCE_2(106);
 const int ID_SLIDER_FORCE_3(107);
 
-const int ID_RADIO_GRASP_TYPE(108);
-const int ID_RADIO_PRESET(109);
-const int ID_CHECK_TWOF(110);
-const int ID_CHECK_OPF(111);
+/*
+ * TODO
+ *
+ *  - subscribe for tactile data and visualize it (all the time)
+ *  - add groups "Object grasping", "Force feedback"
+ *  - add combobox for presets, hardcode some
+ *  - read grasping presets from YAML
+ *
+ */
 
 /**
  Constructor
@@ -61,7 +67,34 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
     ros::param::param<double>("~abs_max_force", abs_max_force_ , ABS_MAX_FORCE);
     ros::param::param<bool>("~wait_for_allow", wait_for_allow_ , WAIT_FOR_ALLOW);
 
-    //buttons_["open"] = new wxButton(this, ID_BUTTON_OPEN, wxT("Open"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    // TODO read presets from yaml
+    Preset pr;
+    pr.name = "Empty bottle";
+    pr.forces.resize(6);
+
+    for(int i=0; i < 6; i++) pr.forces[i] = 300.0;
+
+    pr.target_pos.resize(7);
+
+    pr.target_pos[0] = 0.0;
+    pr.target_pos[1] = 0.0;
+    pr.target_pos[2] = 1.0472;
+    pr.target_pos[3] = 0.0;
+    pr.target_pos[4] = 1.0472;
+    pr.target_pos[5] = 0.0;
+    pr.target_pos[6] = 1.0472;
+
+    pr.time = ros::Duration(5.0);
+
+    presets_.push_back(pr);
+
+    wxArrayString prt;
+
+    for(unsigned int i=0; i < presets_.size(); i++)
+    	prt.Add(wxString::FromAscii(presets_[i].name.c_str()));
+
+    presets_choice_ = new wxChoice(this, ID_CHOICE,wxDefaultPosition,wxDefaultSize,prt);
+
     buttons_["grasp"] = new wxButton(this, ID_BUTTON_GRASP, wxT("Grasp"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["stop"] = new wxButton(this, ID_BUTTON_STOP, wxT("Stop"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
@@ -82,28 +115,11 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
     finger2_force_slider_ = new wxSlider(this,ID_SLIDER_FORCE_2,0.0,0,abs_max_force_);
     finger3_force_slider_ = new wxSlider(this,ID_SLIDER_FORCE_3,0.0,0,abs_max_force_);
 
+    tactile_data_.resize(6);
+
     wxSizer *hsizer_buttons = new wxBoxSizer(wxHORIZONTAL);
 
-    wxArrayString grasp_types;
 
-    grasp_types.Add(wxT("Round"));
-    grasp_types.Add(wxT("Square"));
-    //grasp_types.Add(wxT("Cylindric"));
-
-    grasp_type_ = new wxRadioBox(this,ID_RADIO_GRASP_TYPE,wxT("Grasp type"),wxDefaultPosition,wxDefaultSize,grasp_types,3,wxRA_SPECIFY_COLS);
-
-    wxArrayString force_presets;
-
-    force_presets.Add(wxT("None"));
-    force_presets.Add(wxT("Paper box"));
-    force_presets.Add(wxT("Bottle"));
-    force_presets.Add(wxT("Book"));
-
-    preset_ = new wxRadioBox(this,ID_RADIO_PRESET,wxT("Presets"),wxDefaultPosition,wxDefaultSize,force_presets,4,wxRA_SPECIFY_COLS);
-
-    two_fingers_contact_ = new wxCheckBox(this,ID_CHECK_TWOF,wxT("Two fingers contact"));
-
-    do_not_open_fingers_ = new wxCheckBox(this,ID_CHECK_OPF,wxT("Do not open fingers"));
 
     hsizer_buttons->Add(buttons_["grasp"], ID_BUTTON_GRASP);
     hsizer_buttons->Add(buttons_["stop"], ID_BUTTON_STOP);
@@ -111,14 +127,15 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
     wxSizer *vsizer = new wxBoxSizer(wxVERTICAL); // top sizer
 
     vsizer->Add(hsizer_buttons);
-    vsizer->Add(preset_);
-    vsizer->Add(grasp_type_);
-    vsizer->Add(two_fingers_contact_);
-    vsizer->Add(do_not_open_fingers_);
+
+
+
     vsizer->Add(m_text_status_);
     vsizer->Add(m_text_max_force_);
 
-    wxSizer *vsizer_sliders = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Force sliders"));
+    vsizer->Add(presets_choice_);
+
+    wxSizer *vsizer_sliders = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Force feedback"));
 
     vsizer_sliders->Add(max_force_slider_,1,wxEXPAND);
 
@@ -127,7 +144,6 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
     vsizer_sliders->Add(finger3_force_slider_,1,wxEXPAND);
 
     vsizer->Add(vsizer_sliders,1,wxEXPAND);
-
 
 
     finger1_force_slider_->Enable(false);
@@ -157,10 +173,92 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
 
     ros::NodeHandle nh;
 
+    tactile_data_received_ = false;
+
+    stop_gui_thread_ = false;
+
+    t_gui_update = boost::thread(&CButGraspingControls::GuiUpdateThread,this);
+
+    //gui_update_timer_ = nh.createTimer(ros::Duration(0.5),&CButGraspingControls::timerCallback,this);
+
+    tact_sub_  = nh.subscribe("/sdh_controller/tactile_data_filtered", 10, &CButGraspingControls::TactileDataCallback,this);
+
     service_grasping_allow_ = nh.advertiseService(SRV_ALLOW,&CButGraspingControls::GraspingAllow,this);
 
 
 }
+
+void CButGraspingControls::GuiUpdateThread() {
+
+	ROS_INFO("Grasping GUI thread started.");
+
+	ros::Rate r(10);
+
+	while(!stop_gui_thread_) {
+
+		if (tactile_data_received_) {
+
+			std::vector<int16_t> tmp;
+
+			tactile_data_mutex_.lock();
+
+			tmp = tactile_data_;
+
+			tactile_data_mutex_.unlock();
+
+			wxMutexGuiEnter();
+
+			if (tmp[0] > tmp[1] ) finger1_force_slider_->SetValue(tmp[0]);
+			else finger1_force_slider_->SetValue(tmp[1]);
+
+			if (tmp[2] > tmp[3] ) finger2_force_slider_->SetValue(tmp[2]);
+			else finger2_force_slider_->SetValue(tmp[3]);
+
+			if (tmp[4] > tmp[5] ) finger3_force_slider_->SetValue(tmp[4]);
+			else finger3_force_slider_->SetValue(tmp[5]);
+
+			wxMutexGuiLeave();
+
+		}
+
+		r.sleep();
+
+	}
+
+	stop_gui_thread_ = false;
+
+
+}
+
+void CButGraspingControls::TactileDataCallback(const schunk_sdh::TactileSensor::ConstPtr& msg) {
+
+  ROS_INFO_ONCE("Tactile data received.");
+
+  tactile_data_mutex_.lock();
+
+  // for each pad find the maximum value
+  for(unsigned int i=0; i < 6; i++) {
+
+	  int16_t max = 0;
+
+	  for (unsigned int j=0; j < (unsigned int)(msg->tactile_matrix[i].cells_x*msg->tactile_matrix[i].cells_y); j++) {
+
+		  if ( (msg->tactile_matrix[i].tactile_array[j] > max) && (msg->tactile_matrix[i].tactile_array[j] < 20000) ) max = msg->tactile_matrix[i].tactile_array[j];
+
+	  }
+
+	  tactile_data_[i] = max;
+
+  }
+
+  tactile_data_received_ = true;
+
+  tactile_data_mutex_.unlock();
+
+
+}
+
+
 
 void CButGraspingControls::setButton(string but, bool state) {
 
@@ -172,6 +270,11 @@ void CButGraspingControls::setButton(string but, bool state) {
 
 CButGraspingControls::~CButGraspingControls() {
 
+  stop_gui_thread_ = true;
+
+  ros::Rate r(0.1);
+
+  while(stop_gui_thread_ == true) r.sleep();
 
   ButtonsMap::iterator it;
 
@@ -181,6 +284,7 @@ CButGraspingControls::~CButGraspingControls() {
     buttons_.clear();
 
     delete as_client_;
+
 
 }
 
@@ -204,19 +308,30 @@ void CButGraspingControls::GraspingThread() {
 
   }
 
-  ManualGraspingGoal goal;
+  int choice = presets_choice_->GetSelection();
+
+  ReactiveGraspingGoal goal;
+
+  goal.target_configuration.data.resize(presets_[choice].target_pos.size());
+  goal.max_force.data.resize(presets_[choice].forces.size());
+
+  for (unsigned int i=0; i < presets_[choice].target_pos.size(); i++)
+	  goal.target_configuration.data[i] = presets_[choice].target_pos[i];
+
+  for (unsigned int i=0; i < presets_[choice].forces.size(); i++)
+  	  goal.max_force.data[i] = presets_[choice].forces[i];
+
+  //goal.target_configuration.data = presets_[choice].target_pos;
+  //goal.max_force.data = presets_[choice].forces;
+
+  goal.time = presets_[choice].time;
 
   grasping_finished_ = false;
 
-  goal.max_force = (float)max_force_slider_->GetValue();
-  goal.grasp_type = (uint8_t)grasp_type_->GetSelection();
-  goal.accept_two_fingers_contact = two_fingers_contact_->GetValue();
-  goal.do_not_open_fingers = do_not_open_fingers_->GetValue();
-
   as_client_->sendGoal(goal,
 		  boost::bind(&CButGraspingControls::GraspingDone, this, _1, _2),
-		  boost::bind(&CButGraspingControls::GraspingActive, this),
-		  boost::bind(&CButGraspingControls::GraspingFeedback, this, _1));
+		  boost::bind(&CButGraspingControls::GraspingActive, this));
+
 
   // TODO timeout!!!!!!!!!!!!!! treat case if action fails.....
 
@@ -257,29 +372,9 @@ void CButGraspingControls::GraspingThread() {
 
 }
 
-void CButGraspingControls::GraspingFeedback(const ManualGraspingFeedbackConstPtr& feedback) {
-
-	static bool feedback_received = false;
-
-	if (!feedback_received) {
-
-		feedback_received = true;
-		ROS_INFO("Grasping action feedback received");
-
-	}
-
-	wxMutexGuiEnter();
-
-	finger1_force_slider_->SetValue((unsigned int)feedback->tip1_force);
-	finger2_force_slider_->SetValue((unsigned int)feedback->tip2_force);
-	finger3_force_slider_->SetValue((unsigned int)feedback->tip3_force);
-
-	wxMutexGuiLeave();
-
-}
 
 void CButGraspingControls::GraspingDone(const actionlib::SimpleClientGoalState& state,
-					  const ManualGraspingResultConstPtr& result) {
+					  const ReactiveGraspingResultConstPtr& result) {
 
 	ROS_INFO("Grasping action finished...");
 
@@ -308,9 +403,9 @@ void CButGraspingControls::GraspingDone(const actionlib::SimpleClientGoalState& 
 
 	  setButton("stop",false);
 
-	  finger1_force_slider_->SetValue(0);
+	  /*finger1_force_slider_->SetValue(0);
 	  finger2_force_slider_->SetValue(0);
-	  finger3_force_slider_->SetValue(0);
+	  finger3_force_slider_->SetValue(0);*/
 
 	  wxMutexGuiLeave();
 
@@ -336,10 +431,7 @@ void CButGraspingControls::EnableControls() {
 
 	setButton("grasp",true);
 	max_force_slider_->Enable(true);
-	grasp_type_->Enable(true);
-	preset_->Enable(true);
-	two_fingers_contact_->Enable(true);
-	do_not_open_fingers_->Enable(true);
+
 
 }
 
@@ -347,11 +439,9 @@ void CButGraspingControls::DisableControls(bool state_of_stop_button) {
 
 	setButton("grasp",false);
 	max_force_slider_->Enable(false);
-	grasp_type_->Enable(false);
+
 	setButton("stop",state_of_stop_button);
-	preset_->Enable(false);
-	two_fingers_contact_->Enable(false);
-	do_not_open_fingers_->Enable(false);
+
 
 }
 
@@ -364,7 +454,9 @@ void CButGraspingControls::OnGrasp(wxCommandEvent& event) {
 
     m_text_status_->SetLabel(wxString::FromAscii("status: Trying to grasp. Please wait..."));
 
+    //wxMutexGuiEnter();
     DisableControls(true);
+    //wxMutexGuiLeave();
 
     t_grasping = boost::thread(&CButGraspingControls::GraspingThread,this);
 
@@ -384,93 +476,42 @@ void CButGraspingControls::OnMaxForceSlider(wxCommandEvent& event) {
 
   m_text_max_force_->SetLabel(wxString::FromAscii(tmp.c_str()));
 
-  preset_->Select(0);
 
 }
 
 bool CButGraspingControls::GraspingAllow(GraspingAllow::Request &req, GraspingAllow::Response &res) {
 
+
 	if (req.allow) {
 
+		ROS_INFO("Grasping: enabling controls.");
+
+		//wxMutexGuiEnter();
 		EnableControls();
+		//wxMutexGuiLeave();
+
 		grasping_allowed_ = true;
 
 	} else {
 
+		ROS_INFO("Grasping: disabling controls.");
+
+		//wxMutexGuiEnter();
 		DisableControls();
+		//wxMutexGuiLeave();
+
 		grasping_allowed_ = false;
 
 	}
+
 
 	return true;
 
 }
 
-void CButGraspingControls::OnGraspType(wxCommandEvent& event) {
-
-	preset_->Select(0);
-
-}
-
-
-void CButGraspingControls::OnPreset(wxCommandEvent& event) {
-
-	int value = preset_->GetSelection();
-
-	if (value == 0) return;
-
-	/* force_presets.Add(wxT("Paper box"));
-	    force_presets.Add(wxT("Bottle"));
-	    force_presets.Add(wxT("Heavy object"));*/
-
-	switch(value) {
-
-		case 1: { // paper box
-
-			max_force_slider_->SetValue((int)(abs_max_force_*0.3));
-			grasp_type_->Select(1); // square
-
-		} break;
-
-		case 2: { // bottle
-
-			max_force_slider_->SetValue((int)(abs_max_force_*0.5));
-			grasp_type_->Select(0); // round
-
-
-		} break;
-
-		case 3: { // book
-
-			max_force_slider_->SetValue((int)(abs_max_force_*0.75));
-			grasp_type_->Select(1); // square
-
-
-		} break;
-
-
-
-
-	} // switch
-
-
-	stringstream ss (stringstream::in | stringstream::out);
-
-	ss << "max. force: ";
-	ss << max_force_slider_->GetValue();
-
-	string tmp = ss.str();
-	m_text_max_force_->SetLabel(wxString::FromAscii(tmp.c_str()));
-
-}
-
-
-
 
 BEGIN_EVENT_TABLE(CButGraspingControls, wxPanel)
     EVT_BUTTON(ID_BUTTON_GRASP,  CButGraspingControls::OnGrasp)
     EVT_BUTTON(ID_BUTTON_STOP,  CButGraspingControls::OnStop)
-    EVT_RADIOBOX(ID_RADIO_GRASP_TYPE, CButGraspingControls::OnGraspType)
-    EVT_RADIOBOX(ID_RADIO_PRESET, CButGraspingControls::OnPreset)
 END_EVENT_TABLE()
 

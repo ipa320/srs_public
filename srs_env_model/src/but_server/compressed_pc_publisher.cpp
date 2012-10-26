@@ -94,10 +94,11 @@ void srs_env_model::CCompressedPCPublisher::incommingDataCB( const tInputData::C
 
 	if( data->isPartial != 0 )
 	{
-		long oldcount( m_cloud.size() ), copied;
+//		long oldcount( m_cloud.size() ), copied;
 
 		// Remove old data from cloud
-		copied = removeFrustumFromCloud( data, m_cloud );
+//		copied =
+		removeFrustumFromCloud( data, m_cloud );
 
 		// Copy rest of the points from the actual point cloud
 		copyCloud( inbuffer, m_cloud, true );

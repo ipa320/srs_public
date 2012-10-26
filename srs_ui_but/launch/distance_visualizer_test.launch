@@ -1,16 +1,13 @@
 <?xml version="1.0"?>
 <launch>
     <!-- Configuration for COB, bringup simulation -->
-    <include file="$(find cob_default_robot_config)/upload_param.launch" />
-    <include file="$(find cob_default_env_config)/upload_param.launch" />
-    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
-    <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+    <include file="$(find srs_ui_but)/launch/run_sim.launch" />
 
-   <include file="$(find srs_env_model)/launch/only_butserver.launch"/>
-   <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
+    <include file="$(find srs_env_model)/launch/only_butserver.launch"/>
+    <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
 
-   <include file="$(find srs_ui_but)/launch/distance_visualizer.launch"/>
+    <include file="$(find srs_ui_but)/launch/distance_visualizer.launch"/>
 
-   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find srs_ui_but)/config/distance_visualizer_test.vcg" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find srs_ui_but)/config/distance_visualizer_test.vcg" />
 </launch>
 

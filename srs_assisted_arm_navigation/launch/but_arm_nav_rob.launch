@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <include file="$(find srs_assisted_arm_navigation)/launch/cob_common.launch"/>
+  <!--include file="$(find srs_assisted_arm_navigation)/launch/cob_common.launch"/-->
 
   <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.launch"/>
   

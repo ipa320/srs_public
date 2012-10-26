@@ -40,18 +40,27 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <ros/node_handle.h>
 
+#include <srs_env_model/but_server/server_tools.h>
+
 #include "pcl_registration_module.h"
+
+#include <pcl/filters/voxel_grid.h>
 
 namespace srs_env_model
 {
 /**
  * Get visible pointcloud from octomap module
  */
-class COcToPcl
+class COcPatchMaker
 {
 public:
+	//! Used cloud type
+	//typedef sensor_msgs::PointCloud2 tCloud;
+	typedef tPointCloud tCloud;
+
+public:
 	//! Constructor
-	COcToPcl();
+	COcPatchMaker();
 
 	//! Initialize plugin - called in server constructor
 	virtual void init(ros::NodeHandle & node_handle);
@@ -60,7 +69,7 @@ public:
 	bool computeCloud( const SMapWithParameters & par );
 
 	//! Get cloud
-	tPointCloud & getCloud( ) { return m_cloud; }
+	tCloud & getCloud( ) { return m_cloud; }
 
 	//! Set output cloud frame id
 	void setCloudFrameId( const std::string & fid ){ m_pcFrameId = fid; }
@@ -118,7 +127,7 @@ protected:
 	int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
 
 	/// Output point cloud data
-	tPointCloud m_cloud;
+	tCloud m_cloud;
 
 	//! Should i publish pointcloud
 	bool m_bPublishCloud;
@@ -155,7 +164,57 @@ protected:
 
 	//! View fraction computation matrix
 	btMatrix3x3 m_fracMatrix;
-};
+}; // class COcToPcl
+
+/**
+ * Registrates incomming point cloud to the octomap
+ */
+class CPcToOcRegistration
+{
+public:
+	//! Used cloud
+	typedef sensor_msgs::PointCloud2 tCloud;
+
+	//! Registration module type
+	typedef CPclRegistration< tPclPoint, tPclPoint> tRegistrator;
+
+public:
+	//! Constructor
+	CPcToOcRegistration();
+
+	//! Initialize plugin - called in server constructor
+	virtual void init(ros::NodeHandle & node_handle);
+
+	//! Register cloud to the octomap
+	bool registerCloud( tPointCloudPtr & cloud, const SMapWithParameters & map );
+
+	//! Get transform
+	Eigen::Matrix4f getTransform() { return m_registration.getTransform(); }
+
+	//! Is some registering mode set
+	bool isRegistering(){ return m_registration.isRegistering(); }
+
+
+
+protected:
+	//! Patch maker
+	COcPatchMaker m_patchMaker;
+
+	//! Registration module
+	tRegistrator m_registration;
+
+	//! Voxel grid filter
+	pcl::VoxelGrid<tCloud> m_gridFilter;
+
+	//! Cloud buffer
+	tCloud::Ptr m_resampledCloud;
+
+	//! Transform listener
+	tf::TransformListener m_tfListener;
+
+
+
+}; // class CPcToOcRegistration
 
 
 } // namespace srs_env_model

@@ -41,9 +41,6 @@
 // PCL includes
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 
-// Registration
-#include <srs_env_model/but_server/registration/CPCtoOCRegistration.h>
-
 
 namespace srs_env_model
 {
@@ -75,9 +72,6 @@ namespace srs_env_model
 
         //! Wants plugin new map data?
         virtual bool wantsMap();
-
-        //! Set registration method
-        void setRegistrationMethod( EPclRegistrationMode method ) {  m_bRegistrationMethodChanged = m_registration.getMode() != method; m_registration.setMode( method ); }
 
 		/// Set frame skip
 		void setFrameSkip(unsigned long skip){ m_use_every_nth = skip; }
@@ -165,20 +159,11 @@ namespace srs_env_model
         //! Output points transform matrix
         Eigen::Matrix4f m_pcOutTM;
 
-        //! Has been registration method changed?
-        bool m_bRegistrationMethodChanged;
-
-        //!
-        COcToPcl m_ocScissors;
-
         //! Old point cloud used for registration
         tPointCloudPtr m_oldCloud;
 
         //! Used buffer cloud
         tPointCloudPtr m_bufferCloud;
-
-        //! Registration module
-        CPclRegistration< tPclPoint, tPclPoint> m_registration;
 
 		//! Current frame number
 		unsigned long m_frame_number;

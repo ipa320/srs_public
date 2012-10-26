@@ -75,10 +75,10 @@ pointcloud_max_z: 3.0
 # "icp" - use ICP algorithm
 # "icpnl" - use nonlinear ICP algorithm
 # "sca" - use sample consensus alignment
-registration_mode: "noneo"
+registration_mode: "icp"
 
 # Maximum iterations
-registration_maximum_iterations: 5
+registration_maximum_iterations: 10
 
 # RANSAC outlier threshold
 registration_ransac_outlier_rejection_threshold: .05
@@ -104,14 +104,14 @@ m_scaCorrespondenceRamdomness: 10
 # Part visible from robot camera is taken. As an addition, voxels out of the view
 # frustum can be used too. This parameter desribes "scaling" of frustum. 
 # Default value means use whole frustum and half of half (1 + 2*0.25 = 1.5) on both sides. 
-registration_patch_view_fraction_x: 1.5
+registration_patch_view_fraction_x: 2.0
 
 # The same as before, but in y axis (x and y axis is related to the robot camera
 # coordinate system)
-registration_patch_view_fraction_y: 1.5
+registration_patch_view_fraction_y: 2.0
 
 # Patch cloud creation - should be patch cloud published? (f.e. for debug purposes)
-registration_patch_publish_cloud: false 
+registration_patch_publish_cloud: true 
 
 ###############################################################################
 # Collision map plugin

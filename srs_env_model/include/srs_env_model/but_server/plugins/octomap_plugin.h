@@ -41,6 +41,8 @@
 #include <srs_env_model/SetCrawlingDepth.h>
 #include <srs_env_model/GetTreeDepth.h>
 
+// Registration
+#include <srs_env_model/but_server/registration/CPCtoOCRegistration.h>
 
 //========================
 // Filtering
@@ -255,6 +257,12 @@ protected:
 
     /// Maximal depth of tree used when crawling
     unsigned char m_crawlDepth;
+
+    //! Registration module
+    CPcToOcRegistration m_registration;
+
+    //! First frame is already inserted
+    bool m_bNotFirst;
 
 }; // class COctoMapPlugin;
 

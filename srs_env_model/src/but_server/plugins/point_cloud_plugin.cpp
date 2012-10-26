@@ -49,7 +49,6 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 , m_bFilterPC(true)
 , m_pointcloudMinZ(-std::numeric_limits<double>::max())
 , m_pointcloudMaxZ(std::numeric_limits<double>::max())
-, m_bRegistrationMethodChanged( true )
 , m_oldCloud( new tPointCloud )
 , m_bufferCloud( new tPointCloud )
 , m_frame_number( 0 )
@@ -120,12 +119,6 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	m_data->clear();
 
 //	PERROR( "PointCloudPlugin initialized..." );
-
-	// Initialize registration module from the parameter server
-	m_registration.init( node_handle );
-
-	// Init scissors
-	m_ocScissors.init( node_handle );
 
 }
 
@@ -220,9 +213,6 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 		// transform point cloud from sensor frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
 	}
-
-	m_ocScissors.computeCloud( par );
-
 
 	invalidate();
 }
@@ -334,39 +324,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 //	PERROR("1");
 
-	//*
-	// Registration
-	{
-		if( m_bRegistrationMethodChanged && m_registration.isRegistering() && m_data->size() > 0 )
-		{
 
-			pcl::copyPointCloud( *m_data, *m_oldCloud );
-			m_bRegistrationMethodChanged = false;
-
-//			std::cerr << "Copying cloud: " << m_oldCloud->size() << std::endl;
-		}
-		else
-		{
-//			pcl::copyPointCloud( *m_data, *m_bufferCloud );
-
-//			std::cerr << "Starting registration process " << m_data->size() << ", " << m_oldCloud->size() << ", " << m_bufferCloud->size() << ", " <<  m_data->width << ", " << m_data->height << ", " << m_data->is_dense << std::endl;
-
-			if( m_registration.process( m_data, m_oldCloud, m_bufferCloud) )
-			{
-				Eigen::Matrix4f transform( m_registration.getTransform() );
-
-				pcl::transformPointCloud( *m_bufferCloud, *m_oldCloud, transform );
-				pcl::copyPointCloud( *m_oldCloud, *m_data );
-//				std::cerr << "Registration succeeded"  << std::endl;
-			}
-			else
-			{
-				m_bRegistrationMethodChanged = true;
-//				std::cerr << "Registration failed" << std::endl;
-			}
-
-		}
-	}
 
 //	PERROR("2");
 //*/
@@ -403,7 +361,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 		// transform pointcloud from pc frame to the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, pcToBaseTM);
-/*
+//*
 
 		// filter height and range, also removes NANs:
 		pcl::PassThrough<tPclPoint> pass;
@@ -411,7 +369,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		pass.setFilterLimits(m_pointcloudMinZ, m_pointcloudMaxZ);
 		pass.setInputCloud(m_data->makeShared());
 		pass.filter(*m_data);
-*/
+//*/
 		// transform pointcloud back to pc frame from the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, baseToPcTM);
 	}

@@ -31,12 +31,13 @@
 #include <srs_env_model/but_server/registration/pcl_registration_module.h>
 #include <srs_env_model/topics_list.h>
 #include <pcl_ros/transforms.h>
+#include <pcl/io/io.h>
 
 
 /**
  * Constructor
  */
-srs_env_model::COcToPcl::COcToPcl()
+srs_env_model::COcPatchMaker::COcPatchMaker()
 : m_bTransformCamera( false )
 , m_pcFrameId("/map")
 , m_bSpinThread( true )
@@ -53,7 +54,7 @@ srs_env_model::COcToPcl::COcToPcl()
 /**
  * Initialize module - called in server constructor
  */
-void srs_env_model::COcToPcl::init(ros::NodeHandle & node_handle)
+void srs_env_model::COcPatchMaker::init(ros::NodeHandle & node_handle)
 {
 	ROS_DEBUG("Initializing CCompressedPointCloudPlugin");
 
@@ -63,7 +64,7 @@ void srs_env_model::COcToPcl::init(ros::NodeHandle & node_handle)
 		node_handle.setCallbackQueue( &callback_queue_ );
 
 		need_to_terminate_ = false;
-		spin_thread_.reset( new boost::thread(boost::bind(&COcToPcl::spinThread, this)) );
+		spin_thread_.reset( new boost::thread(boost::bind(&COcPatchMaker::spinThread, this)) );
 		node_handle_ = node_handle;
 	}
 
@@ -76,7 +77,7 @@ void srs_env_model::COcToPcl::init(ros::NodeHandle & node_handle)
 
 	// Subscribe to position topic
 	// Create subscriber
-	m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &srs_env_model::COcToPcl::onCameraChangedCB, this );
+	m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &srs_env_model::COcPatchMaker::onCameraChangedCB, this );
 
 	if (!m_camPosSubscriber)
 	{
@@ -102,7 +103,7 @@ void srs_env_model::COcToPcl::init(ros::NodeHandle & node_handle)
 /**
  * Get output pointcloud
  */
-bool srs_env_model::COcToPcl::computeCloud( const SMapWithParameters & par )
+bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par )
 {
 	ROS_DEBUG( "CCompressedPointCloudPlugin: onFrameStart" );
 
@@ -222,7 +223,7 @@ bool srs_env_model::COcToPcl::computeCloud( const SMapWithParameters & par )
 /**
  * hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
  */
-void srs_env_model::COcToPcl::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
+void srs_env_model::COcPatchMaker::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
 //	PERROR("OnHandleOccupied");
 
@@ -267,7 +268,7 @@ void srs_env_model::COcToPcl::handleOccupiedNode(srs_env_model::tButServerOcTree
 /**
  * On camera position changed callback
  */
-void srs_env_model::COcToPcl::onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info)
+void srs_env_model::COcPatchMaker::onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info)
 {
 	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
 
@@ -293,7 +294,7 @@ void srs_env_model::COcToPcl::onCameraChangedCB(const sensor_msgs::CameraInfo::C
 /**
  * Test if point is in camera cone
  */
-bool srs_env_model::COcToPcl::inSensorCone(const cv::Point2d& uv) const
+bool srs_env_model::COcPatchMaker::inSensorCone(const cv::Point2d& uv) const
 {
 	const double x_offset( 0.0 ), y_offset( 0.0 );
 
@@ -318,7 +319,7 @@ bool srs_env_model::COcToPcl::inSensorCone(const cv::Point2d& uv) const
 /**
  * Main loop when spinning our own thread - process callbacks in our callback queue - process pending goals
  */
-void srs_env_model::COcToPcl::spinThread()
+void srs_env_model::COcPatchMaker::spinThread()
 {
 	while (node_handle_.ok())
 		{
@@ -333,7 +334,7 @@ void srs_env_model::COcToPcl::spinThread()
 /**
  * Called when new scan was inserted and now all can be published
  */
-void srs_env_model::COcToPcl::publishInternal(const ros::Time & timestamp)
+void srs_env_model::COcPatchMaker::publishInternal(const ros::Time & timestamp)
 {
 	// Convert data
 	sensor_msgs::PointCloud2 msg;
@@ -345,4 +346,71 @@ void srs_env_model::COcToPcl::publishInternal(const ros::Time & timestamp)
 
 	// Publish data
 	m_pubConstrainedPC.publish( msg );
+}
+
+//=============================================================================
+//	CPcToOcRegistration
+//=============================================================================
+
+/**
+ * Constructor
+ */
+srs_env_model::CPcToOcRegistration::CPcToOcRegistration()
+: m_resampledCloud( new sensor_msgs::PointCloud2 () )
+{
+
+}
+
+/**
+ *  Initialize plugin - called in server constructor
+ */
+void srs_env_model::CPcToOcRegistration::init(ros::NodeHandle & node_handle)
+{
+	// Initialize modules
+	m_patchMaker.init( node_handle );
+	m_registration.init( node_handle );
+}
+
+/**
+ * Register cloud to the octomap
+ */
+bool srs_env_model::CPcToOcRegistration::registerCloud( tPointCloudPtr & cloud, const SMapWithParameters & map )
+{
+	if( !m_registration.isRegistering() )
+	{
+		std::cerr << "No registration method selected." << std::endl;
+		return false;
+	}
+
+	// Get patch
+	m_patchMaker.setCloudFrameId( map.frameId );
+	m_patchMaker.computeCloud( map );
+
+	// Resample input cloud
+	sensor_msgs::PointCloud2::Ptr cloudMsg(new sensor_msgs::PointCloud2 ());
+
+	pcl::toROSMsg( *cloud, *cloudMsg);
+	std::cerr << "Patch size: " << m_patchMaker.getCloud().size() << ", " << cloudMsg->data.size() << std::endl;
+
+	m_gridFilter.setInputCloud( cloudMsg );
+	m_gridFilter.setLeafSize( map.resolution, map.resolution, map.resolution );
+	m_gridFilter.filter( *m_resampledCloud );
+
+	std::cerr << "Voxel grid size: " << m_resampledCloud->data.size() << std::endl;
+
+	// Try to register cloud
+	tPointCloudPtr cloudSource( new tPointCloud() );
+	tPointCloudPtr cloudBuffer( new tPointCloud() );
+	tPointCloudPtr cloudTarget( new tPointCloud() );
+	pcl::fromROSMsg( *m_resampledCloud, *cloudSource );
+	pcl::copyPointCloud( m_patchMaker.getCloud(), *cloudTarget );
+
+	std::cerr << "Calling registration: " << cloudSource->size() << ", " << cloudTarget->size() << std::endl;
+
+	bool rv( m_registration.process( cloudSource, cloudTarget, cloudBuffer ) );
+
+	if( ! rv )
+		std::cerr << "Registration failed" << std::endl;
+
+	return rv;
 }

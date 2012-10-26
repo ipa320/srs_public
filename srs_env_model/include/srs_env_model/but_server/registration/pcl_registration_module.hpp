@@ -24,6 +24,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+#define ROS_NOTE( s ) {std::sstream ss; ss << s; ROS_OUT("%s", ss.str().c_str() ); std::cerr << ss.str() << std::endl; }
 
 //! Static member initialization
 template <typename PointSource, typename PointTarget, typename Scalar>
@@ -100,12 +101,14 @@ srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::modeFromStrin
 template <typename PointSource, typename PointTarget, typename Scalar>
 void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::init( ros::NodeHandle & node_handle )
 {
+	std::cerr << "Setting registration parameters:" << std::endl;
+
 	// Handling mode
 	std::string strMode("NONE");
 	node_handle.param("registration_mode", strMode, strMode );
 	setMode( modeFromString(strMode) );
 
-	std::cerr << "Used registration mode: " << strMode << std::endl;
+	std::cerr << "Used registration mode: " <<  getStrMode() << ", " << strMode << ", " << modeFromString(strMode) << std::endl;
 
 	//------------------------------------------
 	// Common parameters
@@ -115,9 +118,13 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::init( ro
 	node_handle.param("registration_maximum_iterations", iterations, iterations );
 	m_maxIterations = iterations;
 
+	std::cerr << "Number of iterations: " << m_maxIterations << std::endl;
+
 	// RANSAC outlier threshold
 	m_RANSACOutlierRejectionThreshold = 0.05;
 	node_handle.param("registration_ransac_outlier_rejection_threshold", m_RANSACOutlierRejectionThreshold, m_RANSACOutlierRejectionThreshold );
+
+	std::cerr << "RANSAC outlier rejection threshold: " << m_RANSACOutlierRejectionThreshold << std::endl;
 
 	// Maximal correspondence distance
 	m_maxCorrespondenceDistance = std::sqrt (std::numeric_limits<double>::max ());

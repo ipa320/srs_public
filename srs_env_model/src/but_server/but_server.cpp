@@ -73,7 +73,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 			m_plugVisiblePointCloud( new CLimitedPointCloudPlugin( "PCVIS" ) ),
 			m_plugOctoMap( new COctoMapPlugin("OCM")),
 			m_plugCollisionObject( new CCollisionObjectPlugin( "COB" )),
-			m_plugMap2D( new CMap2DPlugin( "M2D" )),
+			m_plugMap2D( new CCollisionGridPlugin( "M2D" )),
 			m_plugIMarkers( ),
 			m_plugMarkerArray( new CMarkerArrayPlugin( "MA" ) ),
 			m_plugObjTree( new CObjTreePlugin( "OT" ) ),
@@ -145,7 +145,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	// Connect all crawlers
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCMapPlugin::handleNewMapData, m_plugCMap, _1 ) );
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CPointCloudPlugin::handleNewMapData, m_plugOcMapPointCloud, _1 ) );
-	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CMap2DPlugin::handleNewMapData, m_plugMap2D, _1 ) );
+	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCollisionGridPlugin::handleNewMapData, m_plugMap2D, _1 ) );
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CMarkerArrayPlugin::handleNewMapData, m_plugMarkerArray, _1 ) );
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCompressedPointCloudPlugin::handleNewMapData, m_plugCompressedPointCloud, _1 ) );
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCollisionObjectPlugin::handleNewMapData, m_plugCollisionObject, _1 ) );

@@ -34,6 +34,7 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl_ros/transforms.h>
+#include <pcl/io/io.h>
 
 // Filtering
 #include <visualization_msgs/MarkerArray.h>
@@ -255,7 +256,11 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	m_markerPublisher = node_handle.advertise<visualization_msgs::Marker> (
 			m_markers_topic_name, 10);
 
+	m_registration.init( node_handle );
+
 	PERROR( "OctoMapPlugin initialized..." );
+
+	m_bNotFirst = false;
 }
 
 void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
@@ -266,19 +271,48 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	// Lock data
 //	boost::mutex::scoped_lock lock(m_lockData);
 
+	tPointCloud used_cloud;
+	pcl::copyPointCloud( cloud, used_cloud );
+	//*
+
+	Eigen::Matrix4f registration_transform( Eigen::Matrix4f::Identity() );
+		// Registration
+	{
+		if( cloud.size() > 0 && m_bNotFirst )
+		{
+//			pcl::copyPointCloud( *m_data, *m_bufferCloud );
+
+			std::cerr << "Starting registration process " << std::endl;
+
+			tPointCloudPtr cloudPtr( new tPointCloud );
+			pcl::copyPointCloud( cloud, *cloudPtr );
+
+			if( m_registration.registerCloud( cloudPtr, m_mapParameters ) )
+			{
+				registration_transform = m_registration.getTransform();
+
+//				pcl::transformPointCloud( cloud, used_cloud, transform );
+
+				std::cerr << "Registration succeeded"  << std::endl;
+			}
+			else
+				return;
+		}
+	}
+
 	ros::WallTime startTime = ros::WallTime::now();
 
 	tPointCloud pc_ground; // segmented ground plane
 	tPointCloud pc_nonground; // everything else
 
 	if (m_filterGroundPlane) {
-		filterGroundPlane(cloud, pc_ground, pc_nonground);
+		filterGroundPlane(used_cloud, pc_ground, pc_nonground);
 
 	} else {
-		pc_nonground = cloud;
+		pc_nonground = used_cloud;
 		pc_ground.clear();
-		pc_ground.header = cloud.header;
-		pc_nonground.header = cloud.header;
+		pc_ground.header = used_cloud.header;
+		pc_nonground.header = used_cloud.header;
 	}
 
 	tf::StampedTransform cloudToMapTf;
@@ -311,6 +345,9 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 		pcl::transformPointCloud(pc_nonground, pc_nonground, c2mTM);
 
 	}
+
+	// Use registration transform
+	pcl::transformPointCloud( pc_ground, pc_ground, registration_transform );
 
 	pc_ground.header = cloud.header;
 	pc_ground.header.frame_id = m_mapParameters.frameId;
@@ -361,6 +398,8 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	lock.unlock();
 
 //	PERROR("insertCloud: Unlocked.");
+
+	m_bNotFirst = true;
 
 	// Publish new data
 	invalidate();

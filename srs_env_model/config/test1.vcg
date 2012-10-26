@@ -4,7 +4,7 @@ Background\ ColorB=0
 Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
 CButDisplay.Enabled=1
-CButDisplay.Position\:\ =4.21114, 7.14276, -9.32113
+CButDisplay.Position\:\ =-0.579213, 12.8379, -0.328333
 CButPointCloud.Alpha=1
 CButPointCloud.Billboard\ Size=0,01
 CButPointCloud.Color\ Transformer=Intensity
@@ -27,11 +27,11 @@ CButPointCloud..IntensityChannel\ Name=z
 CButPointCloud..IntensityMax\ ColorR=1
 CButPointCloud..IntensityMax\ ColorG=1
 CButPointCloud..IntensityMax\ ColorB=1
-CButPointCloud..IntensityMax\ Intensity=3,92072
+CButPointCloud..IntensityMax\ Intensity=3,9115
 CButPointCloud..IntensityMin\ ColorR=0
 CButPointCloud..IntensityMin\ ColorG=0
 CButPointCloud..IntensityMin\ ColorB=0
-CButPointCloud..IntensityMin\ Intensity=2,5597
+CButPointCloud..IntensityMin\ Intensity=2,60454
 CButPointCloud..IntensityUse\ full\ RGB\ spectrum=1
 CollisionMap.Alpha=1
 CollisionMap.ColorR=0,1
@@ -171,8 +171,8 @@ Robot\:\ Robot\ Model\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.986001 5.18579 12.7315 -0.628793 0.114604 0.127212
-Property\ Grid\ State=selection=;expanded=CButDisplay.Enabled.CButDisplay.StatusTopStatus,CButDisplay.Enabled.CButDisplay.Camera position,CollisionMap.Enabled.CollisionMap.StatusTopStatus;scrollpos=0,0;splitterpos=133,266;ispageselected=1
+Camera\ Config=0.036 4.8208 12.7315 -0.628793 0.114604 0.127212
+Property\ Grid\ State=selection=;expanded=CButDisplay.Enabled.CButDisplay.StatusTopStatus,CButDisplay.Enabled.CButDisplay.Camera position,CollisionMap.Enabled.CollisionMap.StatusTopStatus;scrollpos=0,0;splitterpos=134,369;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz

@@ -77,6 +77,12 @@ static const std::string MAP2D_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::strin
 static const std::string MAP2D_FRAME_ID = "/map";
 
 /**
+ * collision_grid_plugin
+ */
+static const std::string COLLISIONGRID_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/collision_grid_object");
+
+
+/**
  * octomap_plugin
  */
 static const std::string OCTOMAP_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/binary_octomap");
@@ -106,6 +112,10 @@ static const std::string CPC_PC_PUBLISHING_TOPIC_NAME = PACKAGE_NAME_PREFIX + st
 static const std::string CPC_COMPLETE_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/octomap_updates");
 static const int CPC_NUM_DIFFERENTIAL_FRAMES = 5;
 
+/**
+ * Registration
+ */
+static const std::string REGISTRATION_CONSTRAINED_CLOUD_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/registration_constrained_cloud");
 /**
  * CPC node
  */

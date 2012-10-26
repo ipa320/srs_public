@@ -21,6 +21,7 @@
   <depend package="opencv2"/>
   <depend package="brics_actuator"/>
   <depend package="trajectory_msgs"/>
+  <depend package="urdf"/>
   
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />

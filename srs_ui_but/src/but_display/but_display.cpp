@@ -32,7 +32,7 @@
 #include <rviz/window_manager_interface.h>
 #include <sstream>
 #include <srs_ui_but/topics_list.h>
-
+#include <tf/transform_broadcaster.h>
 
 /*
  *  Constructor
@@ -90,6 +90,7 @@ srs_ui_but::CButDisplay::CButDisplay(const std::string & name,rviz::Visualizatio
     // Create publisher
     this->m_cameraPositionPub = private_nh.advertise< srs_env_model_msgs::RVIZCameraPosition >(
     		m_cameraPositionPublisherName, 100, m_latchedTopics);
+
 }
 
 /*
@@ -322,6 +323,7 @@ srs_ui_but::CButDisplay::CNotifyCameraListener::CNotifyCameraListener( CButDispl
     , m_orientation( 0.0, 0.0, 0.0, 0.0 )
     , m_camera( 0 )
     , m_display( display )
+	, m_camFrameId( "/map" )
 {
 
 }
@@ -353,7 +355,17 @@ void srs_ui_but::CButDisplay::CNotifyCameraListener::cameraPreRenderScene(Ogre::
         // Update stored position
         m_position = position;
         m_orientation = orientation;
+
     }
+
+    // Publish tf transform
+    static tf::TransformBroadcaster br;
+
+    tf::Transform transform;
+	transform.setOrigin( tf::Vector3( -position.z, -position.x, position.y ) );
+	transform.setRotation( tf::Quaternion(-orientation.z, -orientation.x, orientation.y, orientation.w ) );
+	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), m_camFrameId, RVIZ_TF_NAME ));
+
 }
 
 /**
@@ -403,6 +415,8 @@ bool srs_ui_but::CButDisplay::CNotifyCameraListener::hasMoved( const Ogre::Vecto
 void srs_ui_but::CButDisplay::CNotifyCameraListener::changedCB( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation )
 {
     m_display->propertyPositionChanged();
+
+
 }
 
 /**

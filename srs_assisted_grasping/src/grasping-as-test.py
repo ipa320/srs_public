@@ -49,13 +49,14 @@ def main():
   script_goal.component_name = 'sdh'
   script_goal.function_name = 'move'
   script_goal.parameter_name = 'cylopen'
-  #script_goal.parameter_name = 'cyltotalopen'
+  #script_goal.parameter_name = 'home'
   script_goal.mode = ''
   
   script_client.send_goal(script_goal)
   
   script_client.wait_for_result()
-  
+ 
+  rospy.sleep(5.0) 
  
   client = actionlib.SimpleActionClient('/but_arm_manip/reactive_grasping_action',ReactiveGraspingAction)
   
@@ -65,11 +66,14 @@ def main():
   rospy.loginfo('Opening gripper using cob_script_server')
   goal = ReactiveGraspingGoal()
   
+  #goal.target_configuration.data = [0.0,-0.9854,0.9472,-0.9854,0.9472,-0.9854,0.9472] # cylopen
   #goal.target_configuration.data = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # home
-  goal.target_configuration.data = [0.0, 0.0, 1.0472, 0.0, 1.0472, 0.0, 1.0472] # cylclosed
+  #goal.target_configuration.data = [0.0, 0.0, 1.0472, 0.0, 1.0472, 0.0, 1.0472] # cylclosed
+  goal.target_configuration.data = [0,0,1.57,0,1.57,0,1.57] # fist
   #goal.target_configuration.data = [1.047,-0.262,1.047,-0.262,1.047,-0.262,1.047] # spherclosed
-  goal.max_force.data = [300.0, 300.0, 300.0, 300.0, 300.0, 300.0] # 6 tactile pads
-  goal.time = rospy.Duration(4.0)
+  f = 3000.0
+  goal.max_force.data = [f, f, f, f, f, f] # 6 tactile pads
+  goal.time = rospy.Duration(8.0)
   
   client.send_goal(goal)
 

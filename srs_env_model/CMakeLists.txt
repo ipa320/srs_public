@@ -34,7 +34,7 @@ set( SERVER_SOURCES src/but_server/but_server.cpp
                     src/but_server/plugins/octomap_plugin.cpp
                     src/but_server/plugins/point_cloud_plugin.cpp
                     src/but_server/plugins/collision_object_plugin.cpp
-                    src/but_server/plugins/map2d_plugin.cpp
+                    src/but_server/plugins/collision_grid_plugin.cpp
                     src/but_server/plugins/imarkers_plugin.cpp
                     src/but_server/plugins/marker_array_plugin.cpp
                     src/but_server/plugins/limited_point_cloud_plugin.cpp
@@ -44,6 +44,7 @@ set( SERVER_SOURCES src/but_server/but_server.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_oriented_box.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_planes.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_polymesh.cpp
+                    src/but_server/registration/CPCtoOCRegistration.cpp
                     )
                     
 set( CPC_SOURCES src/but_server/compressed_pc_publisher.cpp

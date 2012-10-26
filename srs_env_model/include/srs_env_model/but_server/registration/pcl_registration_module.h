@@ -29,9 +29,12 @@
 #ifndef pcl_registration_module_H_included
 #define pcl_registration_module_H_included
 
+#include <srs_env_model/but_server/server_tools.h>
+#include <srs_env_model/OctomapUpdates.h>
 #include <pcl/registration/icp.h>
 #include <pcl/registration/ia_ransac.h>
 #include <pcl/registration/icp_nl.h>
+
 
 namespace srs_env_model
 {
@@ -115,6 +118,8 @@ protected:
 	//! Set SCA parameters
 	void setSCAParameters();
 
+	bool inSensorCone(const cv::Point2d& uv);
+
 protected:
 	//! Used mode
 	EPclRegistrationMode m_mode;
@@ -159,6 +164,7 @@ protected:
 	int m_scaCorrespondenceRamdomness;
 
 }; // CPclRegistration
+
 
 } // namespace srs_env_model
 

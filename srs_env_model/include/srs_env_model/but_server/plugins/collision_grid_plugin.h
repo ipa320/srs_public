@@ -10,23 +10,23 @@
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
- * 
+ *
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
-#ifndef Map2DPlugin_H_included
-#define Map2DPlugin_H_included
+#ifndef CollisionGridPlugin_H_included
+#define CollisionGridPlugin_H_included
 
 #include <srs_env_model/but_server/server_tools.h>
 
@@ -37,17 +37,17 @@
 namespace srs_env_model
 {
 
-    class CMap2DPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< nav_msgs::OccupancyGrid >
+    class CCollisionGridPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< nav_msgs::OccupancyGrid >
     {
     public:
         /// Constructor
-        CMap2DPlugin(const std::string & name);
+        CCollisionGridPlugin(const std::string & name);
 
         /// Destructor
-        virtual ~CMap2DPlugin();
+        virtual ~CCollisionGridPlugin();
 
         //! Enable or disable publishing
-        void enable( bool enabled ){ m_publishMap2D = enabled; }
+        void enable( bool enabled ){ m_publishGrid = enabled; }
 
 		//! Initialize plugin - called in server constructor
 		virtual void init(ros::NodeHandle & node_handle);
@@ -76,13 +76,13 @@ namespace srs_env_model
 
     protected:
         //! Is publishing enabled?
-        bool m_publishMap2D;
+        bool m_publishGrid;
 
         //! Collision object publisher name
-        std::string m_map2DPublisherName;
+        std::string m_gridPublisherName;
 
         /// Collision object publisher
-        ros::Publisher m_map2DPublisher;
+        ros::Publisher m_gridPublisher;
 
         //! Transform listener
         tf::TransformListener m_tfListener;
@@ -90,17 +90,14 @@ namespace srs_env_model
         //
         bool m_latchedTopics;
 
-        //! Used frame id (input data will be transformed to it)
-        std::string m_map2DFrameId;
-
         /// Crawled octomap frame id
         std::string m_ocFrameId;
 
         /// Transformation from octomap to the collision object frame id - rotation
-        Eigen::Matrix3f m_ocToMap2DRot;
+        Eigen::Matrix3f m_ocToGridRot;
 
         /// Transformation from octomap to the collision object frame id - translation
-        Eigen::Vector3f m_ocToMap2DTrans;
+        Eigen::Vector3f m_ocToGridTrans;
 
         /// Padded key minimum
         octomap::OcTreeKey m_paddedMinKey;
@@ -112,7 +109,10 @@ namespace srs_env_model
         /// Conversion between frame id's must be done...
         bool m_bConvert;
 
-    }; // class CMap2DPlugin
+        /// Grid scaling
+        unsigned m_multires2DScale;
+
+    }; // class CCollisionGridPlugin
 
 
 } // namespace srs_env_model
@@ -122,6 +122,6 @@ namespace srs_env_model
 // namespace srs_env_model
 
 
-// Map2DPlugin_H_included
+// CollisionGridPlugin_H_included
 #endif
 

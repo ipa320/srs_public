@@ -68,12 +68,12 @@
 #include <srs_env_model/but_server/plugins/point_cloud_plugin.h>
 #include <srs_env_model/but_server/plugins/octomap_plugin.h>
 #include <srs_env_model/but_server/plugins/collision_object_plugin.h>
-#include <srs_env_model/but_server/plugins/map2d_plugin.h>
 #include <srs_env_model/but_server/plugins/imarkers_plugin.h>
 #include <srs_env_model/but_server/plugins/marker_array_plugin.h>
 #include <srs_env_model/but_server/plugins/limited_point_cloud_plugin.h>
 #include <srs_env_model/but_server/plugins/compressed_point_cloud_plugin.h>
 #include <srs_env_model/but_server/plugins/objtree_plugin.h>
+#include <srs_env_model/but_server/plugins/collision_grid_plugin.h>
 
 #include <srs_env_model/ButServerPause.h>
 
@@ -184,7 +184,7 @@ protected:
     boost::shared_ptr< CCollisionObjectPlugin > m_plugCollisionObject;
 
     /// 2D map plugin
-    boost::shared_ptr< CMap2DPlugin > m_plugMap2D;
+    boost::shared_ptr< CCollisionGridPlugin > m_plugMap2D;
 
     /// Interactive markers server plugin
     boost::shared_ptr< CIMarkersPlugin > m_plugIMarkers;

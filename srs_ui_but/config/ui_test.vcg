@@ -22,12 +22,12 @@ Distance\ Visualizer.Enabled=1
 Distance\ Visualizer.Line\ Thickness=0.01
 Distance\ Visualizer.Link=/sdh_palm_link
 Distance\ Visualizer.Show\ distance=1
-Distance\ Visualizer.Topic=/but_env_model/pointcloud_centers
+Distance\ Visualizer.Topic=/cam3d/depth/points_throttled
 Global\ 3D\ Voxel\ Map.Alpha=0.5
 Global\ 3D\ Voxel\ Map.Billboard\ Size=0.03
 Global\ 3D\ Voxel\ Map.Color\ Transformer=RGB8
 Global\ 3D\ Voxel\ Map.Decay\ Time=0
-Global\ 3D\ Voxel\ Map.Enabled=1
+Global\ 3D\ Voxel\ Map.Enabled=0
 Global\ 3D\ Voxel\ Map.Position\ Transformer=XYZ
 Global\ 3D\ Voxel\ Map.Selectable=0
 Global\ 3D\ Voxel\ Map.Style=2
@@ -350,8 +350,8 @@ Stretch\ Indicator.Thickness=0.5
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.951001 5.60359 8.61255 -0.22168 0.541248 0.936886
-Property\ Grid\ State=selection=;expanded=Stretch Indicator.Enabled.Stretch Indicator.Color options;scrollpos=0,0;splitterpos=194,390;ispageselected=1
+Camera\ Config=0.921001 4.75858 8.61255 -0.22168 0.541248 0.936886
+Property\ Grid\ State=selection=;expanded=Distance Visualizer.Enabled.Distance Visualizer.Options;scrollpos=0,0;splitterpos=163,327;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz

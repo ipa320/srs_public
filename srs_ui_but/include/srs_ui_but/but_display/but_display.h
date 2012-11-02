@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_display.h 1662 2012-10-17 11:49:26Z stancl $
+ * $Id: but_display.h 1757 2012-10-29 13:41:14Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *

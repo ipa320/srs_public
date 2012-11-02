@@ -67,7 +67,9 @@ namespace srs_env_model_percp
 							int lvl1_gauss_angle_res,
 							int lvl1_gauss_shift_res,
 							double lvl1_gauss_angle_sigma,
-							double lvl1_gauss_shift_sigma) :	scene_cloud(new PointCloud<PointXYZRGB>),
+							double lvl1_gauss_shift_sigma,
+							double plane_merge_angle,
+							double plane_merge_shift ) :	scene_cloud(new PointCloud<PointXYZRGB>),
 														space(-M_PI, M_PI, min_shift, max_shift, angle_resolution, shift_resolution),
 														current_space(-M_PI, M_PI, min_shift, max_shift, angle_resolution, shift_resolution),
 														gauss(-(gauss_angle_res/2) * space.m_angleStep, (gauss_angle_res/2) * space.m_angleStep, -(gauss_shift_res/2) * space.m_shiftStep, (gauss_shift_res/2) * space.m_shiftStep, gauss_angle_res, gauss_shift_res),
@@ -83,6 +85,8 @@ namespace srs_env_model_percp
 		m_shift_max = max_shift;
 		m_angle_res = angle_resolution;
 		m_shift_res = shift_resolution;
+		m_plane_merge_angle = plane_merge_angle;
+		m_plane_merge_shift = plane_merge_shift;
 
 		m_depth = max_depth;
 
@@ -108,7 +112,7 @@ namespace srs_env_model_percp
 	{
 		planes.clear();
 		std::vector<int> counts;
-		std::vector<Plane<float> > aux;
+		tPlanes aux;
 		current_space.findMaxima(planes, min_current, blur, search_neighborhood);
 		int total_count = 0;
 
@@ -173,7 +177,7 @@ namespace srs_env_model_percp
 			Plane<float> final(aux[i].a, aux[i].b, aux[i].c, aux[i].d);
 			int count = 1;
 			for (unsigned int j = i+1; j < aux.size(); ++j)
-			if (not used[j] && aux[i].isSimilar(aux[j], 0.05, 0.05))
+			if (not used[j] && aux[i].isSimilar(aux[j], m_plane_merge_angle, m_plane_merge_shift))
 			{
 				used[j] = true;
 				final.a += aux[j].a;
@@ -181,6 +185,8 @@ namespace srs_env_model_percp
 				final.c += aux[j].c;
 				final.d += aux[j].d;
 				++count;
+				//std::cerr << "merging " << aux[i].a << " " << aux[i].b << " " << aux[i].c << " " << aux[i].d << " ---> ";
+				//std::cerr << "with " << aux[j].a << " " << aux[j].b << " " << aux[j].c << " " << aux[j].d << std::endl;
 			}
 
 			final.a /= count;
@@ -405,16 +411,16 @@ namespace srs_env_model_percp
 				// angle on XZ plane with X
 				float a1, a2;
 				ParameterSpace::toAngles(plane[0], plane[1], plane[2], a1, a2);
-
-
-				PointXYZRGB rgbpoint(255, 255, 255);
-				rgbpoint.x = point[0];
-				rgbpoint.y = point[1];
-				rgbpoint.z = point[2];
-				rgbpoint.r = (plane[0]+1)*128;
-				rgbpoint.g = (plane[1]+1)*128;
-				rgbpoint.b = (plane[2]+1)*128;
-				scene_cloud->push_back(rgbpoint);
+//
+//
+//				PointXYZRGB rgbpoint(255, 255, 255);
+//				rgbpoint.x = point[0];
+//				rgbpoint.y = point[1];
+//				rgbpoint.z = point[2];
+//				rgbpoint.r = (plane[0]+1)*128;
+//				rgbpoint.g = (plane[1]+1)*128;
+//				rgbpoint.b = (plane[2]+1)*128;
+//				scene_cloud->push_back(rgbpoint);
 
 				int i, j, k;
 				cache_space.getIndex(a1, a2, plane[3], i, j, k);

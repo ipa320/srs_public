@@ -340,7 +340,7 @@ void ParameterSpaceHierarchy::addVolume(ParameterSpace &second, int angle1, int 
 // @param indices Found planes
 // @returns index of maximal plane
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int ParameterSpaceHierarchy::findMaxima(std::vector<Plane<float> > &indices, double min_value, int neighborhood, int around)
+int ParameterSpaceHierarchy::findMaxima(tPlanes &indices, double min_value, int neighborhood, int around)
 {
 	float a, b, c;
 	int maxind = -1;

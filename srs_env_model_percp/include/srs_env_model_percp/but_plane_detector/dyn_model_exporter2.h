@@ -47,71 +47,103 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <visualization_msgs/Marker.h>
-
+#include <pcl/surface/convex_hull.h>
+#include <pcl/surface/concave_hull.h>
 // but_scenemodel
 #include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_plane_detector/plane.h>
 
 
 namespace srs_env_model_percp
 {
+
+/**
+ * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
+ */
+
+class ExportedPlane
+{
+public:
+	ExportedPlane(): plane(but_plane_detector::Plane<float>(0.0, 0.0, 0.0, 0.0) ) {}
+	int id;
+	srs_env_model_percp::PlaneExt plane;
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
+
+class PointError
+{
+public:
+	PointError(int i_id, double i_error, bool i_deleted)
+	{
+		id = i_id;
+		error = i_error;
+		deleted = i_deleted;
+	}
+	int id;
+	double error;
+	bool deleted;
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
+
+class DynModelExporter2
+{
+public:
+	typedef but_plane_detector::Plane<float> tPlane;
+	typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
+	typedef std::vector<ExportedPlane, Eigen::aligned_allocator<ExportedPlane> > tExportedPlanes;
+public:
 	/**
-	 * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
+	 * Initialization
+	 */
+	DynModelExporter2(ros::NodeHandle *node,
+             const std::string& original_frame,
+	                 const std::string& output_frame,
+	                 int minOutputCount,
+	                 double max_distance,
+	                 double max_plane_normal_dev,
+	                 double max_plane_shift_dev,
+	                 int keep_tracking
+	                 );
+	/**
+	 * Updates sent planes using but environment model server
+	 * @param planes Vector of found planes
+	 * @param scene_cloud point cloud of the scene
+	 */
+	void update(tPlanes & planes, but_plane_detector::Normals &normals);
+
+	void createMarkerForConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
+	void addMarkerToConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
+
+
+	tExportedPlanes displayed_planes;
+
+private:
+
+	/**
+	 * Auxiliary node handle variable
+	 */
+	ros::NodeHandle *n;
+	
+	/**
+	 * Auxiliary index vector for managing modifications
 	 */
 
-	class ExportedPlane
-	{
-		public:
-			ExportedPlane(): plane(0.0, 0.0, 0.0, 0.0) {}
-			int id;
-			but_plane_detector::Plane<float> plane;
-			visualization_msgs::Marker marker;
-	};
+	int m_keep_tracking;
 
-	class DynModelExporter2
-	{
-		public:
-			/**
-			 * Initialization
-			 */
-			DynModelExporter2(ros::NodeHandle *node,
-                             const std::string& original_frame,
-			                 const std::string& output_frame,
-			                 int minOutputCount,
-			                 double max_distance,
-			                 double max_plane_normal_dev,
-			                 double max_plane_shift_dev,
-			                 int keep_tracking
-			                 );
-			/**
-			 * Updates sent planes using but environment model server
-			 * @param planes Vector of found planes
-			 * @param scene_cloud point cloud of the scene
-			 */
-			void update(std::vector<but_plane_detector::Plane<float> > & planes, but_plane_detector::Normals &normals);
+	std::string original_frame_, output_frame_;
 
-			static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker);
+	int m_minOutputCount;
+	double m_max_distance;
+	double m_max_plane_normal_dev;
+	double m_max_plane_shift_dev;
+};
 
-			std::vector<ExportedPlane> displayed_planes;
-		private:
 
-			/**
-			 * Auxiliary node handle variable
-			 */
-			ros::NodeHandle *n;
-			
-			/**
-			 * Auxiliary index vector for managing modifications
-			 */
-
-			int m_keep_tracking;
-
-			std::string original_frame_, output_frame_;
-
-			int m_minOutputCount;
-			double m_max_distance;
-			double m_max_plane_normal_dev;
-			double m_max_plane_shift_dev;
-	};
 }
 
 #endif
+

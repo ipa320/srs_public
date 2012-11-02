@@ -23,6 +23,7 @@ ROS environment perception package provided by dcgm-robotics@FIT group:
   <depend package="visualization_msgs"/>
   <depend package="pcl_ros"/>
   <depend package="srs_env_model"/>
+  <depend package="cob_3d_mapping_msgs"/>
   <!--depend package="octomap_ros"/-->
   <depend package="srs_interaction_primitives"/>
 

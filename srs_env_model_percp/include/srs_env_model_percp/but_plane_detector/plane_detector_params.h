@@ -101,6 +101,12 @@ namespace srs_env_model_percp
 	const std::string PARAM_HT_KEEPTRACK						= "planedet_ht_keep_track";
 	const int 	  PARAM_HT_KEEPTRACK_DEFAULT					= 1;
 
+	const std::string PARAM_HT_PLANE_MERGE_SHIFT				= "planedet_ht_plane_merge_shift";
+	const double 	  PARAM_HT_PLANE_MERGE_SHIFT_DEFAULT		= 0.1;
+
+	const std::string PARAM_HT_PLANE_MERGE_ANGLE				= "planedet_ht_plane_merge_angle";
+	const double 	  PARAM_HT_PLANE_MERGE_ANGLE_DEFAULT		= 0.3;
+
 
     /**
       * Plane search
@@ -157,6 +163,9 @@ namespace srs_env_model_percp
         double param_ht_lvl1_gauss_shift_res;
         double param_ht_lvl1_gauss_angle_sigma;
         double param_ht_lvl1_gauss_shift_sigma;
+
+        double param_ht_plane_merge_shift;
+        double param_ht_plane_merge_angle;
 
         double param_search_minimum_current_space;
         double param_search_minimum_global_space;

@@ -132,7 +132,8 @@ protected:
 
     void OnStop(wxCommandEvent& event);
     void OnGrasp(wxCommandEvent& event);
-    void OnMaxForceSlider(wxCommandEvent& event);
+    //void OnMaxForceSlider(wxCommandEvent& event);
+    void OnChoice(wxCommandEvent& event);
 
     void EnableControls(); // get ready for grasping
     void DisableControls(bool state_of_stop_button=false);

@@ -1,12 +1,23 @@
 presets:
  -
   name: Empty bottle
-  forces: [300, 300, 300, 300, 300, 300]
-  target_pos: [0.0, 0.0, 1.0472, 0.0, 1.0472, 0.0, 1.0472] # cylclosed
+  forces: [300.0, 300.0, 300.0, 300.0, 300.0, 300.0]
+  target_pos: [0.0, 0.0, 1.57, 0.0, 1.57, 0.0, 1.57] # fist
   time: 6.0
   
  -
   name: Full bottle
-  forces: [900, 900, 900, 900, 900, 900]
+  forces: [900.0, 900.0, 900.0, 900.0, 900.0, 900.0]
+  target_pos: [0.0, 0.0, 1.57, 0.0, 1.57, 0.0, 1.57] # fist
+  time: 6.0
+ -
+  name: Empty milkbox
+  forces: [300.0, 300.0, 300.0, 300.0, 300.0, 300.0]
+  target_pos: [0.0, 0.0, 1.0472, 0.0, 1.0472, 0.0, 1.0472] # cylclosed
+  time: 6.0
+  
+ -
+  name: Full milkbox
+  forces: [900.0, 900.0, 900.0, 900.0, 900.0, 900.0]
   target_pos: [0.0, 0.0, 1.0472, 0.0, 1.0472, 0.0, 1.0472] # cylclosed
   time: 6.0

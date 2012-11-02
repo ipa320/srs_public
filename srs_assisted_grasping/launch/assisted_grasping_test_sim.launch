@@ -23,12 +23,12 @@
   <!-- Wrapper for simulation (implementation of velocity interface) -->
   <include file="$(find srs_assisted_grasping)/launch/velocity_interface_sim.launch"/>
   
-  <include file="$(find srs_assisted_arm_navigation)/launch/kinect_throttling.launch"/>
+  <!--include file="$(find srs_assisted_arm_navigation)/launch/kinect_throttling.launch"/-->
   
   <!-- ARM manipulation stuff -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.launch"/>
+  <!--include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.launch"/-->
   
   <!-- BUT planning environment -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.launch"/>
+  <!--include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.launch"/-->
 
 </launch>

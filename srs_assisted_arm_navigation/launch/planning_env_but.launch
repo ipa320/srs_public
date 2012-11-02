@@ -84,7 +84,7 @@
       <remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info"/>
       <remap from="but_server_node/points_in" to="/cam3d/depth/points_filtered2"/>
 		  
-      <param name="registration_mode" type="string" value="none"/>
+      <param name="registration_mode" type="string" value="icpnl"/>
       <!--param name="input_has_rgb" type="bool" value="false"/-->
 		  
       <!-- Set 3d camera maximal relevant distance in meters -->

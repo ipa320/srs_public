@@ -3119,7 +3119,7 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   marker.name = data.getName() + nametag;
   marker.description = data.getName() + nametag;
 
-/*
+
   InteractiveMarkerControl control;
   control.orientation.w = 1;
   control.orientation.x = 1;
@@ -3148,16 +3148,11 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   marker.controls.push_back(control);
   control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
   marker.controls.push_back(control);
-*/
 
-  InteractiveMarkerControl control;
+
+  /*InteractiveMarkerControl control;
   control.always_visible = false;
   control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
-  /*control.orientation.w = 1;
-  control.orientation.x = 0;
-  control.orientation.y = 0;
-  control.orientation.z = 0;*/
-  // changed (Materna)
   control.orientation.w = 0.707;
   control.orientation.x = 0;
   control.orientation.y = -0.707;
@@ -3180,7 +3175,6 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   marker2.scale.x = .2;
   marker2.scale.y = .15;
   marker2.scale.z = .002;
-  //marker2.pose.position.x = .1;
   marker2.pose.position.z = 0.1; // added
 
   // added (Materna)
@@ -3198,8 +3192,6 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   marker2.scale.x = .1;
   marker2.scale.y = .35;
   marker2.pose.position.z = 0; // added
-  //marker2.pose.position.x = 0;
-  //marker2.pose.position.y = 0.1; // added (Materna)
   control2.markers.push_back( marker2 );
 
   marker.controls.push_back( control2 );
@@ -3235,11 +3227,9 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   marker3.scale.x = .1;
   marker3.scale.z = .35;
   marker3.pose.position.z = 0; // added (Materna)
-  //marker3.pose.position.x = 0;
-  //marker3.pose.position.y = .1; // added (Materna)
   control3.markers.push_back( marker3 );
 
-  marker.controls.push_back( control3 );
+  marker.controls.push_back( control3 );*/
 
   interactive_marker_server_->insert(marker, ik_control_feedback_ptr_);
   control.interaction_mode = InteractiveMarkerControl::MENU;

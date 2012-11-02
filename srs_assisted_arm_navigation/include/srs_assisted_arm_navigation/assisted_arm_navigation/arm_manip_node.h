@@ -65,6 +65,7 @@
 #include "srs_assisted_arm_navigation_msgs/ArmNavSuccess.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavFailed.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavRepeat.h"
+#include "srs_assisted_arm_navigation_msgs/AssistedArmNavigationState.h"
 
 #include "srs_assisted_arm_navigation_msgs/ManualArmManipAction.h"
 
@@ -83,6 +84,7 @@
 //#include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include "geometry_msgs/Vector3.h"
+#include <tf/transform_broadcaster.h>
 
 namespace srs_assisted_arm_navigation {
 
@@ -356,11 +358,19 @@ public:
 
   std::string world_frame_;
 
+  bool transf(std::string target_frame, geometry_msgs::PoseStamped& pose);
+
 protected:
+
+  tf::TransformBroadcaster br_;
 
   void timerCallback(const ros::TimerEvent& ev);
 
+  void tfTimerCallback(const ros::TimerEvent& ev);
+
   ros::Timer spacenav_timer_;
+
+  ros::Timer tf_timer_;
 
   struct {
 
@@ -378,11 +388,17 @@ protected:
 	  double max_val_;
 	  double step_;
 	  double rot_step_;
+	  bool use_rviz_cam_;
+	  std::string rviz_cam_link_;
 
 	  vector<int> buttons_;
 
 
   } spacenav;
+
+  ros::Publisher arm_nav_state_pub_;
+
+  void processSpaceNav();
 
 
   std::string planning_scene_id; /**< ID of current planing scene */
@@ -456,6 +472,7 @@ protected:
 
   bool joint_controls_;
   std::string aco_link_;
+
 
 private:
 

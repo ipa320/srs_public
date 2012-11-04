@@ -75,7 +75,7 @@ pointcloud_max_z: 3.0
 # "icp" - use ICP algorithm
 # "icpnl" - use nonlinear ICP algorithm
 # "sca" - use sample consensus alignment
-registration_mode: "none"
+registration_mode: "icp"
 
 # Maximum iterations
 registration_maximum_iterations: 20

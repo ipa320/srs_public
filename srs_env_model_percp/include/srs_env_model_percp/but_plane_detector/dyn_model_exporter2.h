@@ -50,100 +50,93 @@
 #include <pcl/surface/convex_hull.h>
 #include <pcl/surface/concave_hull.h>
 // but_scenemodel
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 #include <srs_env_model_percp/but_plane_detector/plane.h>
 
 
 namespace srs_env_model_percp
 {
+	/**
+	 * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
+	 */
 
-/**
- * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
- */
-
-class ExportedPlane
-{
-public:
-	ExportedPlane(): plane(but_plane_detector::Plane<float>(0.0, 0.0, 0.0, 0.0) ) {}
-	int id;
-	srs_env_model_percp::PlaneExt plane;
-public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-};
-
-
-class PointError
-{
-public:
-	PointError(int i_id, double i_error, bool i_deleted)
+	class ExportedPlane
 	{
-		id = i_id;
-		error = i_error;
-		deleted = i_deleted;
-	}
-	int id;
-	double error;
-	bool deleted;
-public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-};
+		public:
+			ExportedPlane(): plane(but_plane_detector::Plane<float>(0.0, 0.0, 0.0, 0.0) ) {}
+			int id;
+			srs_env_model_percp::PlaneExt plane;
+		public:
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	};
+
+	class PointError
+	{
+		public:
+			PointError(int i_id, double i_error, bool i_deleted)
+			{
+				id = i_id;
+				error = i_error;
+				deleted = i_deleted;
+			}
+			int id;
+			double error;
+			bool deleted;
+		public:
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	};
+
+	class DynModelExporter2
+	{
+	public:
+		typedef but_plane_detector::Plane<float> tPlane;
+		typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
+		typedef std::vector<ExportedPlane, Eigen::aligned_allocator<ExportedPlane> > tExportedPlanes;
+	public:
+			/**
+			 * Initialization
+			 */
+			DynModelExporter2(ros::NodeHandle *node,
+                             const std::string& original_frame,
+			                 const std::string& output_frame,
+			                 int minOutputCount,
+			                 double max_distance,
+			                 double max_plane_normal_dev,
+			                 double max_plane_shift_dev,
+			                 int keep_tracking
+			                 );
+			/**
+			 * Updates sent planes using but environment model server
+			 * @param planes Vector of found planes
+			 * @param scene_cloud point cloud of the scene
+			 */
+			void update(tPlanes & planes, but_plane_detector::Normals &normals);
+
+			void createMarkerForConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
+			void addMarkerToConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
 
 
-class DynModelExporter2
-{
-public:
-	typedef but_plane_detector::Plane<float> tPlane;
-	typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
-	typedef std::vector<ExportedPlane, Eigen::aligned_allocator<ExportedPlane> > tExportedPlanes;
-public:
-	/**
-	 * Initialization
-	 */
-	DynModelExporter2(ros::NodeHandle *node,
-             const std::string& original_frame,
-	                 const std::string& output_frame,
-	                 int minOutputCount,
-	                 double max_distance,
-	                 double max_plane_normal_dev,
-	                 double max_plane_shift_dev,
-	                 int keep_tracking
-	                 );
-	/**
-	 * Updates sent planes using but environment model server
-	 * @param planes Vector of found planes
-	 * @param scene_cloud point cloud of the scene
-	 */
-	void update(tPlanes & planes, but_plane_detector::Normals &normals);
+			tExportedPlanes displayed_planes;
+		private:
 
-	void createMarkerForConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
-	void addMarkerToConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
+			/**
+			 * Auxiliary node handle variable
+			 */
+			ros::NodeHandle *n;
+			
+			/**
+			 * Auxiliary index vector for managing modifications
+			 */
 
+			int m_keep_tracking;
 
-	tExportedPlanes displayed_planes;
+			std::string original_frame_, output_frame_;
 
-private:
-
-	/**
-	 * Auxiliary node handle variable
-	 */
-	ros::NodeHandle *n;
-	
-	/**
-	 * Auxiliary index vector for managing modifications
-	 */
-
-	int m_keep_tracking;
-
-	std::string original_frame_, output_frame_;
-
-	int m_minOutputCount;
-	double m_max_distance;
-	double m_max_plane_normal_dev;
-	double m_max_plane_shift_dev;
-};
-
-
+			int m_minOutputCount;
+			double m_max_distance;
+			double m_max_plane_normal_dev;
+			double m_max_plane_shift_dev;
+	};
 }
 
 #endif
-

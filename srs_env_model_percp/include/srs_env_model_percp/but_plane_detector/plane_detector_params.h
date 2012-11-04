@@ -107,6 +107,9 @@ namespace srs_env_model_percp
 	const std::string PARAM_HT_PLANE_MERGE_ANGLE				= "planedet_ht_plane_merge_angle";
 	const double 	  PARAM_HT_PLANE_MERGE_ANGLE_DEFAULT		= 0.3;
 
+	const std::string PARAM_HT_MIN_SMOOTH						= "planedet_ht_min_smooth";
+	const int 		  PARAM_HT_MIN_SMOOTH_DEFAULT				= 50;
+
 
     /**
       * Plane search
@@ -166,6 +169,7 @@ namespace srs_env_model_percp
 
         double param_ht_plane_merge_shift;
         double param_ht_plane_merge_angle;
+        int	   param_ht_min_smooth;
 
         double param_search_minimum_current_space;
         double param_search_minimum_global_space;

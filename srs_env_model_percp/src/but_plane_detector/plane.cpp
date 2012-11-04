@@ -11,7 +11,6 @@ PlaneExt::PlaneExt(but_plane_detector::Plane<float> plane) : but_plane_detector:
 	norm = plane.norm;
 
 	// Create a quaternion for rotation into XY plane
-	float x, y, z, w;
 	Eigen::Vector3f current(a, b, c);
 	Eigen::Vector3f target(0.0, 0.0, 1.0);
 	Eigen::Quaternion<float> q;
@@ -93,7 +92,7 @@ void PlaneExt::ConcaveHullRewrite(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hul
 
 void PlaneExt::ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices)
 {
-	// Join new polygon with tShapeMarkercurrent
+	// Join new polygon with current
 	ClipperLib::ExPolygons newPoly = PolygonizeConcaveHull(plane_hull, polygon_indices);
 
 	ClipperLib::Clipper clipper;

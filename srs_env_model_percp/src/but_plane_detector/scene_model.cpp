@@ -31,7 +31,7 @@
  */
 
 #include <srs_env_model_percp/but_plane_detector/scene_model.h>
-#include <but_segmentation/filtering.h>
+#include <srs_env_model_percp/but_segmentation/filtering.h>
 
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
@@ -385,7 +385,7 @@ namespace srs_env_model_percp
 	// Function adds a depth map with computed normals into existing Hough space
 	// @param normals Normals object (point cloud with precomputed normals)
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void SceneModel::AddNext(Normals &normals)
+	void SceneModel::AddNext(Normals &normals, double min_current)
 	{
 		ParameterSpaceHierarchy cache_space(m_angle_min, m_angle_max, m_shift_min, m_shift_max, m_angle_res, m_shift_res);
 		current_space.clear();
@@ -442,7 +442,7 @@ namespace srs_env_model_percp
 		{
 			val = it.getVal();
 
-			if (val > 0.0)
+			if (val >= min_current)
 			{
 				current_space.fromIndex(it.currentI, i, j, k);
 				current_space.addVolume(gauss, i, j, k, val);
@@ -460,7 +460,7 @@ namespace srs_env_model_percp
 	// @param cam_info Camera info object
 	// @param normals Computed normals of depth image
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void SceneModel::AddNext(Mat &depth, const sensor_msgs::CameraInfoConstPtr& cam_info, Normals &normals)
+	void SceneModel::AddNext(Mat &depth, const sensor_msgs::CameraInfoConstPtr& cam_info, Normals &normals, double min_current)
 	{
 		ParameterSpaceHierarchy cache_space(m_angle_min, m_angle_max, m_shift_min, m_shift_max, m_angle_res, m_shift_res);
 		current_space.clear();
@@ -519,7 +519,7 @@ namespace srs_env_model_percp
 			while (not it.end)
 			{
 				val = it.getVal();
-				if (val > 0.0)
+				if (val > min_current)
 				{
 					current_space.fromIndex(it.currentI, i, j, k);
 					current_space.addVolume(gauss, i, j, k, val);

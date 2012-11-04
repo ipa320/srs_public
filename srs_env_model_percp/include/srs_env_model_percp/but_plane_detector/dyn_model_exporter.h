@@ -49,92 +49,88 @@
 #include <visualization_msgs/Marker.h>
 
 // but_scenemodel
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 
 namespace srs_env_model_percp
 {
-
-/**
- * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
- */
-
-class DynModelExporter
-{
-public:
-	typedef but_plane_detector::Plane<float> tPlane;
-	typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
-
-public:
 	/**
-	 * Initialization
+	 * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
 	 */
-	DynModelExporter(ros::NodeHandle *node,
-             const std::string& original_frame,
-	                 const std::string& output_frame,
-	                 int minOutputCount,
-	                 double max_distance,
-	                 double max_plane_normal_dev,
-	                 double max_plane_shift_dev
-	                 );
 
-	/**
-	 * Updates sent planes using but environment model server
-	 * @param planes Vector of found planes
-	 * @param scene_cloud point cloud of the scene
-	 * @param sensorToWorldTf Sendor to map transformation matrix
-	 */
-	void update(tPlanes & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
-	
-	/**
-	 * Updates sent planes using but environment model server
-	 * @param planes Vector of found planes
-	 * @param scene_cloud point cloud of the scene
-	 */
-	void update(tPlanes & planes, but_plane_detector::Normals &normals, tf::StampedTransform &sensorToWorldTf);
+	class DynModelExporter
+	{
+		public:
+			typedef but_plane_detector::Plane<float> tPlane;
+			typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
 
-	/**
-	 * Updates sent planes using direct but interactive marker server
-	 * @param planes Vector of found planes
-	 * @param scene_cloud point cloud of the scene
-	 * @param sensorToWorldTf Sendor to map transformation matrix
-	 */
-	void updateDirect(tPlanes & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+			/**
+			 * Initialization
+			 */
+			DynModelExporter(ros::NodeHandle *node,
+                             const std::string& original_frame,
+			                 const std::string& output_frame,
+			                 int minOutputCount,
+			                 double max_distance,
+			                 double max_plane_normal_dev,
+			                 double max_plane_shift_dev
+			                 );
 
-	static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker);
+			/**
+			 * Updates sent planes using but environment model server
+			 * @param planes Vector of found planes
+			 * @param scene_cloud point cloud of the scene
+			 * @param sensorToWorldTf Sendor to map transformation matrix
+			 */
+			void update(tPlanes & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+			
+			/**
+			 * Updates sent planes using but environment model server
+			 * @param planes Vector of found planes
+			 * @param scene_cloud point cloud of the scene
+			 */
+			void update(tPlanes & planes, but_plane_detector::Normals &normals, tf::StampedTransform &sensorToWorldTf);
 
-private:
-	/**
-	 * Returns center and scale of plane marker
-	 * @param plane Vector of found planes
-	 * @param scene_cloud point cloud of the scene
-	 * @param center Sendor to map transformation matrix
-	 * @param scale Sendor to map transformation matrix
-	 */
-	bool getCenterAndScale(but_plane_detector::Plane<float> &plane, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, pcl::PointXYZ &center, pcl::PointXYZ &scale);
+			/**
+			 * Updates sent planes using direct but interactive marker server
+			 * @param planes Vector of found planes
+			 * @param scene_cloud point cloud of the scene
+			 * @param sensorToWorldTf Sendor to map transformation matrix
+			 */
+			void updateDirect(tPlanes & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
 
-	bool getCenterAndScale(but_plane_detector::Plane<float> &plane, but_plane_detector::Normals &normals, pcl::PointXYZ &center, pcl::PointXYZ &scale);
-	void getCenterSAndScale(tPlanes & planes, but_plane_detector::Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags);
+			static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker);
 
-	/**
-	 * Auxiliary node handle variable
-	 */
-	ros::NodeHandle *n;
-	
-	/**
-	 * Auxiliary index vector for managing modifications
-	 */
-	std::vector<bool> managedInd;
+		private:
+			/**
+			 * Returns center and scale of plane marker
+			 * @param plane Vector of found planes
+			 * @param scene_cloud point cloud of the scene
+			 * @param center Sendor to map transformation matrix
+			 * @param scale Sendor to map transformation matrix
+			 */
+			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, pcl::PointXYZ &center, pcl::PointXYZ &scale);
 
-	std::string original_frame_, output_frame_;
+			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, but_plane_detector::Normals &normals, pcl::PointXYZ &center, pcl::PointXYZ &scale);
+			void getCenterSAndScale(tPlanes & planes, but_plane_detector::Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags);
 
-	int m_minOutputCount;
-	double m_max_distance;
-	double m_max_plane_normal_dev;
-	double m_max_plane_shift_dev;
-};
+			/**
+			 * Auxiliary node handle variable
+			 */
+			ros::NodeHandle *n;
+			
+			/**
+			 * Auxiliary index vector for managing modifications
+			 */
+			std::vector<bool> managedInd;
 
+			std::string original_frame_, output_frame_;
 
+			int m_minOutputCount;
+			double m_max_distance;
+			double m_max_plane_normal_dev;
+			double m_max_plane_shift_dev;
+	};
 }
 
 #endif

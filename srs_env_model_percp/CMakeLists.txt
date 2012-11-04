@@ -23,10 +23,11 @@ rosbuild_gensrv()
 
 
 # TODO: Link against official BUT packages!
+include_directories( include/srs_env_model_percp )
 rosbuild_add_library( but_segmentation src/but_segmentation/filtering.cpp 
                                        src/but_segmentation/normals.cpp )
 rosbuild_add_openmp_flags( but_segmentation )
-include_directories( include/srs_env_model_percp )
+
 
 # Plane detection node
 set( BUT_PLANE_DETECTOR_SOURCES src/but_plane_detector/plane_detector_node.cpp 
@@ -39,30 +40,6 @@ set( BUT_PLANE_DETECTOR_SOURCES src/but_plane_detector/plane_detector_node.cpp
                       			src/but_plane_detector/plane.cpp )
 rosbuild_add_executable( but_plane_detector ${BUT_PLANE_DETECTOR_SOURCES} )
 target_link_libraries(but_plane_detector but_segmentation)
-
-#set( BUT_SRS1_SOURCES src/but_plane_detector/tb_workshop_test1_node.cpp 
-#                      src/but_plane_detector/parameter_space.cpp 
-#                      src/but_plane_detector/parameter_space_hierarchy.cpp 
-#                     src/but_plane_detector/scene_model.cpp 
-#                     src/but_plane_detector/dyn_model_exporter.cpp
-#                      src/but_plane_detector/dyn_model_exporter2.cpp
-#                      src/but_plane_detector/polypartition.cpp
-#                      src/but_plane_detector/clipper.cpp
-#                      src/but_plane_detector/plane.cpp )
-#rosbuild_add_executable( but_tb_test_1 ${BUT_SRS1_SOURCES} )
-#target_link_libraries(but_tb_test_1 but_segmentation)
-
-#set( BUT_SRS2_SOURCES src/but_plane_detector/tb_workshop_test2_node.cpp 
-#                      src/but_plane_detector/parameter_space.cpp 
-#                      src/but_plane_detector/parameter_space_hierarchy.cpp 
-#                      src/but_plane_detector/scene_model.cpp 
-#                      src/but_plane_detector/dyn_model_exporter.cpp
-#                      src/but_plane_detector/dyn_model_exporter2.cpp
-#                      src/but_plane_detector/polypartition.cpp 
-#                      src/but_plane_detector/clipper.cpp 
-#                      src/but_plane_detector/plane.cpp)
-#rosbuild_add_executable( but_tb_test_2 ${BUT_SRS2_SOURCES} )
-#target_link_libraries(but_tb_test_2 but_segmentation)
 
 
 # Plane detection node using pcl plane fitting

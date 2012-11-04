@@ -1,7 +1,34 @@
+/******************************************************************************
+ * \file
+ *
+ * $Id: plane.h 693 2012-10-20 09:22:39Z ihulik $
+ *
+ * Copyright (C) Brno University of Technology
+ *
+ * This file is part of software developed by dcgm-robotics@FIT group.
+ *
+ * Author: Rostislav Hulik (ihulik@fit.vutbr.cz)
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: 15.06.2012 (version 1.0)
+ *
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this file.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef PLANE_EXT_H
 #define PLANE_EXT_H
 
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 #include <srs_env_model_percp/but_plane_detector/clipper.hpp>
 #include <srs_env_model_percp/but_plane_detector/polypartition.h>
 #include <visualization_msgs/Marker.h>
@@ -18,75 +45,76 @@
 
 namespace srs_env_model_percp
 {
+	class PlaneExt : public but_plane_detector::Plane<float>
+	{
+	public:
+		typedef std::vector<cob_3d_mapping_msgs::Shape, Eigen::aligned_allocator<cob_3d_mapping_msgs::Shape> > tShapeMarker;
 
-class PlaneExt : public but_plane_detector::Plane<float>
-{
-public:
-	typedef std::vector<cob_3d_mapping_msgs::Shape, Eigen::aligned_allocator<cob_3d_mapping_msgs::Shape> > tShapeMarker;
+	//	typedef std::vector<pcl::Vertices, Eigen::aligned_allocator<pcl::Vertices> > tVertices;
+		typedef std::vector<pcl::Vertices> tVertices;
 
-//	typedef std::vector<pcl::Vertices, Eigen::aligned_allocator<pcl::Vertices> > tVertices;
-	typedef std::vector<pcl::Vertices> tVertices;
+		public:
+			/**
+			 * Creates an instance of this type... Must be on the basis of existing plane
+			 */
+			PlaneExt(but_plane_detector::Plane<float> plane);
 
-public:
-	PlaneExt(but_plane_detector::Plane<float> plane);
+			/**
+			 * Make a new marker and polygonized hull
+			 */
+			visualization_msgs::Marker NewPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud);
 
-	visualization_msgs::Marker NewPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud);
-	visualization_msgs::Marker AddPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud);
-	// Adds new points to current polygon
+			/**
+			 * Update marker and polygonized hull
+			 */
+			visualization_msgs::Marker AddPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud);
 
-	ClipperLib::ExPolygon 	   &getPolygon();
-	std::list<TPPLPoly>   	   &getMesh();
+			/**
+			 * Get polygon
+			 */
+			ClipperLib::ExPolygon 	   &getPolygon();
 
-	visualization_msgs::Marker &getMeshMarker();
+			/**
+			 * Get Mesh structure
+			 */
+			std::list<TPPLPoly>   	   &getMesh();
 
-	tShapeMarker &getShapeMarker();
+			/**
+			 * Get MarkerArray message
+			 */
+			visualization_msgs::Marker &getMeshMarker();
 
-protected:
-	// Computes concave hull of set of points
-	tVertices ComputeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_cloud, 
-                                     pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull
-                                     );
+			/**
+			 * Get Shape messages
+			 */
+			tShapeMarker &getShapeMarker();
 
-	// Computes hull U current polygon
-	void ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, 
-                                    tVertices &polygon_indices
-                                    );
+		protected:
+			// Computes concave hull of set of points
+			tVertices ComputeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull);
 
-	// Rewrites current plane with this hull
-	void ConcaveHullRewrite(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, 
-                                tVertices &polygon_indices
-                                );
+			// Computes hull U current polygon
+			void ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
 
-	ClipperLib::ExPolygons PolygonizeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, 
-                                                     tVertices &polygon_indices
-                                                     );
+			// Rewrites current plane with this hull
+			void ConcaveHullRewrite(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
 
-	// Simplifies plane polygon
-	//void SimplifyPolygon();
+			// Polygonizes current hull
+			ClipperLib::ExPolygons PolygonizeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
 
-	// Triangulates plane polygon
-	void TriangulatePlanePolygon();
+			// Triangulates plane polygon
+			void TriangulatePlanePolygon();
 
-	ClipperLib::ExPolygons	planePolygonsClipper;
-
-	Eigen::Affine3f		planeTransXY;
-
-	double planeShift;
-
-	pcl::ModelCoefficients::Ptr planeCoefficients;
-
-	visualization_msgs::Marker 	planeTriangles;
-
-	tShapeMarker planeTrianglesSRS;
-
-	Eigen::Quaternion<float> rotationQuaternion;
-
-public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-};
-
-
+			ClipperLib::ExPolygons  	planePolygonsClipper;
+			Eigen::Affine3f				planeTransXY;
+			double planeShift;
+			pcl::ModelCoefficients::Ptr planeCoefficients;
+			visualization_msgs::Marker 	planeTriangles;
+			tShapeMarker  planeTrianglesSRS;
+			Eigen::Quaternion<float> rotationQuaternion;
+		public:
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	};
 }
 
 #endif
-

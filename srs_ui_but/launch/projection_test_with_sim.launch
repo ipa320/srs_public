@@ -11,6 +11,9 @@
         <arg name="param_file" value="$(find srs_ui_but)/config/interactive_teleop_sim.yaml" />
     </include>
 
+    <!-- Run depth image publishing node (simulation only) -->
+    <node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node" />
+
     <!-- Run our GUI nodes -->
     <include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" />
     <include file="$(find srs_ui_but)/launch/cob_stretch_indicator.launch" />

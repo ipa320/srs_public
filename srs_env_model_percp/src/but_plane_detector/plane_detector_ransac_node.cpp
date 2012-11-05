@@ -59,8 +59,8 @@
 
 #include <srs_env_model_percp/ClearPlanes.h>
 
-#include <but_segmentation/filtering.h>
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/filtering.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 #include <srs_env_model_percp/topics_list.h>
 #include <srs_env_model_percp/services_list.h>
@@ -189,7 +189,7 @@ namespace srs_env_model_percp
 		visualization_msgs::MarkerArray marker_array;
 		int id = 1;
 
-		while (inliers->indices.size () > settings.param_visualisation_min_count)
+		while ((int)inliers->indices.size () > settings.param_visualisation_min_count)
 		{
 			++id;
 

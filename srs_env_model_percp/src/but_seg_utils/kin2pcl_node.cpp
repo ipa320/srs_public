@@ -32,7 +32,7 @@
  */
 
 #include <srs_env_model_percp/but_seg_utils/kin2pcl_node.h>
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 // CV <-> ROS bridge
 #include <cv_bridge/cv_bridge.h>

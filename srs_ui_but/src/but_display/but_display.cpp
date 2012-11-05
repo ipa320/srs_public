@@ -68,6 +68,7 @@ srs_ui_but::CButDisplay::CButDisplay(const std::string & name,rviz::Visualizatio
 
     if( wi != 0 )
     {
+    	// Create octomap control pane
     	m_ocmap_window = new COctomapControlPane( wi->getParentWindow(), _T("Octomap control"), wi );
 
 
@@ -78,9 +79,25 @@ srs_ui_but::CButDisplay::CButDisplay(const std::string & name,rviz::Visualizatio
 
     		wi->addPane( "Octomap control", m_ocmap_window );
     		wi->showPane( m_ocmap_window );
-    		std::cerr << "Octomap control pane added..." << std::endl;
+    		ROS_DEBUG("Octomap control pane added...");
 
     	}
+
+    	std::cerr << "Creating camera pane" << std::endl;
+    	// Create camera control pane
+
+    	m_camera_window = new CCameraControlPane( wi->getParentWindow(), _T("Camera control"), wi );
+
+    	if( m_camera_window != 0 )
+    	{
+    		m_camera_window->fixedFrameChanged( fixed_frame_ );
+    		m_camera_window->targetFrameChanged( target_frame_ );
+
+    		wi->addPane( "Camera control", m_camera_window );
+    		wi->showPane( m_camera_window );
+    		ROS_DEBUG("Camera control pane added...");
+    	}
+
     }
     else
     {
@@ -132,6 +149,18 @@ void srs_ui_but::CButDisplay::createProperties()
 
     // Set help text
     setPropertyHelpText(m_property_position, "Current camera position.");
+
+    // Get camera.
+	rviz::RenderPanel * panel = vis_manager_->getRenderPanel();
+	if( panel != 0 )
+	{
+		Ogre::Camera * camera = panel->getCamera();
+
+		// Set camera to window
+		m_camera_window->setCamera( camera );
+	}
+	else
+		ROS_DEBUG( "No render panel... ");
 }
 
 /*

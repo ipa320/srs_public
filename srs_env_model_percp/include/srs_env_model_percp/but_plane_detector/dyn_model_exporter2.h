@@ -47,9 +47,11 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <visualization_msgs/Marker.h>
-
+#include <pcl/surface/convex_hull.h>
+#include <pcl/surface/concave_hull.h>
 // but_scenemodel
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
+#include <srs_env_model_percp/but_plane_detector/plane.h>
 
 
 namespace srs_env_model_percp
@@ -61,15 +63,36 @@ namespace srs_env_model_percp
 	class ExportedPlane
 	{
 		public:
-			ExportedPlane(): plane(0.0, 0.0, 0.0, 0.0) {}
+			ExportedPlane(): plane(but_plane_detector::Plane<float>(0.0, 0.0, 0.0, 0.0) ) {}
 			int id;
-			but_plane_detector::Plane<float> plane;
-			visualization_msgs::Marker marker;
+			srs_env_model_percp::PlaneExt plane;
+		public:
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	};
+
+	class PointError
+	{
+		public:
+			PointError(int i_id, double i_error, bool i_deleted)
+			{
+				id = i_id;
+				error = i_error;
+				deleted = i_deleted;
+			}
+			int id;
+			double error;
+			bool deleted;
+		public:
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	};
 
 	class DynModelExporter2
 	{
-		public:
+	public:
+		typedef but_plane_detector::Plane<float> tPlane;
+		typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
+		typedef std::vector<ExportedPlane, Eigen::aligned_allocator<ExportedPlane> > tExportedPlanes;
+	public:
 			/**
 			 * Initialization
 			 */
@@ -87,11 +110,13 @@ namespace srs_env_model_percp
 			 * @param planes Vector of found planes
 			 * @param scene_cloud point cloud of the scene
 			 */
-			void update(std::vector<but_plane_detector::Plane<float> > & planes, but_plane_detector::Normals &normals);
+			void update(tPlanes & planes, but_plane_detector::Normals &normals);
 
-			static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker);
+			void createMarkerForConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
+			void addMarkerToConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
 
-			std::vector<ExportedPlane> displayed_planes;
+
+			tExportedPlanes displayed_planes;
 		private:
 
 			/**

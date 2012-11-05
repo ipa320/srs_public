@@ -44,32 +44,30 @@ using namespace srs_assisted_arm_navigation_msgs;
 
 const int ID_BUTTON_NEW(101);
 const int ID_BUTTON_PLAN(102);
-const int ID_BUTTON_PLAY(103);
+
 const int ID_BUTTON_EXECUTE(104);
 const int ID_BUTTON_RESET(105);
 const int ID_BUTTON_SUCCESS(106);
 const int ID_BUTTON_FAILED(107);
 
-const int ID_BUTTON_GRIPPER_O(109);
-const int ID_BUTTON_GRIPPER_C(110);
-const int ID_BUTTON_LOOK(111);
-const int ID_BUTTON_REFRESH(112);
+
 const int ID_BUTTON_SWITCH(113);
 const int ID_BUTTON_REPEAT(114);
 
 const int ID_BUTTON_UNDO(115);
 
-const int ID_BUTTON_MLEFT(117);
+/*const int ID_BUTTON_MLEFT(117);
 const int ID_BUTTON_MRIGHT(118);
 const int ID_BUTTON_MUP(119);
 const int ID_BUTTON_MDOWN(120);
 const int ID_BUTTON_MFORW(121);
-const int ID_BUTTON_MBACK(122);
+const int ID_BUTTON_MBACK(122);*/
+
+const int ID_CHECKBOX_POS(125);
+const int ID_CHECKBOX_OR(126);
 
 
 const int ID_BUTTON_STOP_TRAJ(123);
-const int ID_BUTTON_LOCK_CMAP(124);
-
 
 /**
  Constructor
@@ -85,165 +83,126 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     ros::param::param<bool>("~wait_for_start", wait_for_start_ , WAIT_FOR_START);
 
     buttons_["stop"] = new wxButton(this, ID_BUTTON_STOP_TRAJ, wxT("Stop"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["reset"] = new wxButton(this, ID_BUTTON_RESET, wxT("Reset"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-
-    buttons_["gripper_o"] = new wxButton(this, ID_BUTTON_GRIPPER_O, wxT("Open gripper"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["gripper_c"] = new wxButton(this, ID_BUTTON_GRIPPER_C, wxT("Close gripper"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["look_around"] = new wxButton(this, ID_BUTTON_LOOK, wxT("Look around"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["refresh"] = new wxButton(this, ID_BUTTON_REFRESH, wxT("Refresh"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-
-    buttons_["switch"] = new wxButton(this, ID_BUTTON_SWITCH, wxT("Disable ACO"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-
-    buttons_["success"] = new wxButton(this, ID_BUTTON_SUCCESS, wxT("Success"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["failed"] = new wxButton(this, ID_BUTTON_FAILED, wxT("Failed"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["repeat"] = new wxButton(this, ID_BUTTON_REPEAT, wxT("Repeat"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    b_switch_ = new wxToggleButton(this, ID_BUTTON_SWITCH, wxT("Avoid finger collisions"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    buttons_["success"] = new wxButton(this, ID_BUTTON_SUCCESS, wxT("Task completed"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    buttons_["failed"] = new wxButton(this, ID_BUTTON_FAILED, wxT("Cannot complete task"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    buttons_["repeat"] = new wxButton(this, ID_BUTTON_REPEAT, wxT("Repeat detection"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
     //---------------------------------------------------------------
     // end effector controls
-    buttons_["step_back"] = new wxButton(this, ID_BUTTON_UNDO, wxT("Undo"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-
-    buttons_["move_left"] = new wxButton(this, ID_BUTTON_MLEFT, wxT("L"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    buttons_["undo"] = new wxButton(this, ID_BUTTON_UNDO, wxT("Undo marker movement"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+   /* buttons_["move_left"] = new wxButton(this, ID_BUTTON_MLEFT, wxT("L"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["move_right"] = new wxButton(this, ID_BUTTON_MRIGHT, wxT("R"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["move_up"] = new wxButton(this, ID_BUTTON_MUP, wxT("U"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["move_down"] = new wxButton(this, ID_BUTTON_MDOWN, wxT("D"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["move_forw"] = new wxButton(this, ID_BUTTON_MFORW, wxT("F"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["move_back"] = new wxButton(this, ID_BUTTON_MBACK, wxT("B"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    buttons_["move_back"] = new wxButton(this, ID_BUTTON_MBACK, wxT("B"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);*/
 
-    buttons_["new"] = new wxButton(this, ID_BUTTON_NEW, wxT("New"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["plan"] = new wxButton(this, ID_BUTTON_PLAN, wxT("Plan"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    buttons_["play"] = new wxButton(this, ID_BUTTON_PLAY, wxT("Play"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    buttons_["new"] = new wxButton(this, ID_BUTTON_NEW, wxT("Start arm planning"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    buttons_["plan"] = new wxButton(this, ID_BUTTON_PLAN, wxT("Simulate movement"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["execute"] = new wxButton(this, ID_BUTTON_EXECUTE, wxT("Execute"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
+    buttons_["stop"]->SetForegroundColour (wxColour (255, 255, 255));
+    buttons_["stop"]->SetBackgroundColour (wxColour (255, 108, 108));
 
-    m_lock_cmap_ = new wxToggleButton(this, ID_BUTTON_LOCK_CMAP, wxT("Lock coll. map"), wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    m_pos_lock_ = new wxCheckBox(this,ID_CHECKBOX_POS,wxT("position"),wxDefaultPosition,wxDefaultSize);
+    m_or_lock_ = new wxCheckBox(this,ID_CHECKBOX_OR,wxT("orientation"),wxDefaultPosition,wxDefaultSize);
 
-    Connect(ID_BUTTON_LOCK_CMAP, wxEVT_COMMAND_TOGGLEBUTTON_CLICKED,
-          wxCommandEventHandler(CArmManipulationControls::OnLockCmap));
+    m_pos_lock_->Enable(false);
+    m_or_lock_->Enable(false);
 
-    //m_lock_cmap_->Show(false);
-    m_lock_cmap_->SetValue(false);
-    cmap_locked_ = false;
+    m_pos_lock_->Set3StateValue(wxCHK_UNDETERMINED);
+    m_or_lock_->Set3StateValue(wxCHK_UNDETERMINED);
 
-    wxSizer *vsizer_endef = new wxStaticBoxSizer(wxVERTICAL,this,wxT("End effector controls"));
+
+    /*wxSizer *vsizer_endef = new wxStaticBoxSizer(wxVERTICAL,this,wxT("End effector controls"));
     wxSizer *hsizer_endef_top = new wxBoxSizer(wxHORIZONTAL);
     wxSizer *hsizer_endef_mid = new wxBoxSizer(wxHORIZONTAL);
     wxSizer *hsizer_endef_mid2 = new wxBoxSizer(wxHORIZONTAL);
-    wxSizer *vsizer_endef_bot = new wxBoxSizer(wxVERTICAL);
+    wxSizer *vsizer_endef_bot = new wxBoxSizer(wxVERTICAL);*/
 
-    hsizer_endef_top->Add(buttons_["step_back"], ID_BUTTON_UNDO);
+    //hsizer_endef_top->Add(buttons_["undo"], ID_BUTTON_UNDO);
 
-    hsizer_endef_mid->Add(buttons_["move_left"], ID_BUTTON_MLEFT);
+    /*hsizer_endef_mid->Add(buttons_["move_left"], ID_BUTTON_MLEFT);
     hsizer_endef_mid->Add(buttons_["move_right"], ID_BUTTON_MRIGHT);
     hsizer_endef_mid->Add(buttons_["move_up"], ID_BUTTON_MUP);
     hsizer_endef_mid->Add(buttons_["move_down"], ID_BUTTON_MDOWN);
     hsizer_endef_mid->Add(buttons_["move_forw"], ID_BUTTON_MFORW);
-    hsizer_endef_mid->Add(buttons_["move_back"], ID_BUTTON_MBACK);
+    hsizer_endef_mid->Add(buttons_["move_back"], ID_BUTTON_MBACK);*/
 
-    vsizer_endef->Add(hsizer_endef_top,1,wxEXPAND);
+    /*vsizer_endef->Add(hsizer_endef_top,1,wxEXPAND);
     vsizer_endef->Add(hsizer_endef_mid,1,wxEXPAND);
     vsizer_endef->Add(hsizer_endef_mid2,1,wxEXPAND);
-    vsizer_endef->Add(vsizer_endef_bot,1,wxEXPAND);
+    vsizer_endef->Add(vsizer_endef_bot,1,wxEXPAND);*/
 
     //---------------------------------------------------------------
 
-    m_text_status = new wxStaticText(this, -1, wxT("status: waiting"));
-    m_text_object = new wxStaticText(this, -1, wxT("object: none"));
+    m_text_status = new wxStaticText(this, -1, wxT("status: not initialized yet."));
+
+    //m_text_object = new wxStaticText(this, -1, wxT("object: none"));
     m_text_action_ = new wxStaticText(this, -1, wxT("action: none"));
-    m_text_timeout = new wxStaticText(this, -1, wxT("timeout: none"));
+    //m_text_timeout = new wxStaticText(this, -1, wxT("timeout: none"));
 
-    if (wait_for_start_) setButton("new",false);
-    else setButton("new",true);
-    buttons_["plan"]->Enable(false);
-
-    buttons_["play"]->Enable(false);
-    buttons_["execute"]->Enable(false);
-    buttons_["reset"]->Enable(false);
-    buttons_["stop"]->Enable(false);
-
-    buttons_["success"]->Enable(false);
-    buttons_["repeat"]->Enable(false);
-    buttons_["failed"]->Enable(false);
-
-    buttons_["step_back"]->Enable(false);
-    buttons_["move_left"]->Enable(false);
-    buttons_["move_right"]->Enable(false);
-    buttons_["move_up"]->Enable(false);
-    buttons_["move_down"]->Enable(false);
-    buttons_["move_forw"]->Enable(false);
-    buttons_["move_back"]->Enable(false);
-
-    buttons_["switch"]->Enable(true);
-
-    buttons_["gripper_o"]->Enable(true); // TODO povolit tlacitka jen pokud bude k dispozici actionserver?
-    buttons_["gripper_c"]->Enable(true);
-    buttons_["look_around"]->Enable(true);
-    buttons_["refresh"]->Enable(true);
+    disableControls();
 
     wxSizer *vsizer = new wxBoxSizer(wxVERTICAL); // top sizer
 
     wxSizer *vsizer_top = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Trajectory planning"));
-    wxSizer *hsizer_traj_top = new wxBoxSizer(wxHORIZONTAL);
-    wxSizer *hsizer_traj_mid = new wxBoxSizer(wxHORIZONTAL);
-    wxSizer *hsizer_traj_bot = new wxBoxSizer(wxHORIZONTAL);
 
-    wxSizer *vsizer_mes = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Messages"));
+    wxSizer *vsizer_mes = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Task"));
+
+    // -----------------
+    wxSizer *vsizer_sn = new wxStaticBoxSizer(wxVERTICAL,this,wxT("SpaceNavigator locks"));
+    wxSizer *hsizer_sn_in = new wxBoxSizer(wxHORIZONTAL);
+
+    hsizer_sn_in->Add(m_pos_lock_,ID_CHECKBOX_POS);
+    hsizer_sn_in->Add(m_or_lock_,ID_CHECKBOX_OR);
+
+    vsizer_sn->Add(hsizer_sn_in,1,wxEXPAND);
+
+    // -----------------
 
     wxSizer *vsizer_add = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Additional controls"));
 
-    wxSizer *hsizer_add_top = new wxBoxSizer(wxHORIZONTAL);
-    wxSizer *hsizer_add_mid = new wxBoxSizer(wxHORIZONTAL);
-    wxSizer *hsizer_add_bot = new wxBoxSizer(wxHORIZONTAL);
 
-    /* Trajectory planning related buttons, on top*/
-    hsizer_traj_top->Add(buttons_["new"], ID_BUTTON_NEW);
-    hsizer_traj_top->Add(buttons_["plan"], ID_BUTTON_PLAN);
-    hsizer_traj_top->Add(buttons_["execute"], ID_BUTTON_EXECUTE);
-    hsizer_traj_top->Add(buttons_["stop"], ID_BUTTON_STOP_TRAJ);
 
-    hsizer_traj_mid->Add(buttons_["play"], ID_BUTTON_PLAY);
+    vsizer_top->Add(buttons_["new"]);
+    vsizer_top->Add(buttons_["plan"]);
+    vsizer_top->Add(buttons_["execute"]);
+    vsizer_top->Add(buttons_["stop"]);
+    vsizer_top->Add(m_text_status);
 
-    hsizer_traj_mid->Add(buttons_["reset"], ID_BUTTON_RESET);
 
-    hsizer_traj_bot->Add(buttons_["success"], ID_BUTTON_SUCCESS);
-    hsizer_traj_bot->Add(buttons_["repeat"], ID_BUTTON_REPEAT);
-    hsizer_traj_bot->Add(buttons_["failed"], ID_BUTTON_FAILED);
 
-    vsizer_top->Add(hsizer_traj_top,1,wxEXPAND);
-    vsizer_top->Add(hsizer_traj_mid,1,wxEXPAND);
-    vsizer_top->Add(hsizer_traj_bot,1,wxEXPAND);
 
-    /* Status messages*/
-    vsizer_mes->Add(m_text_status);
+
+    vsizer_mes->Add(buttons_["success"]);
+    vsizer_mes->Add(buttons_["repeat"]);
+    vsizer_mes->Add(buttons_["failed"]);
     vsizer_mes->Add(m_text_action_);
-    vsizer_mes->Add(m_text_object);
-    vsizer_mes->Add(m_text_timeout);
 
-    hsizer_add_top->Add(buttons_["gripper_o"]);
-    hsizer_add_top->Add(buttons_["gripper_c"]);
-    hsizer_add_mid->Add(buttons_["look_around"]);
-    hsizer_add_mid->Add(buttons_["refresh"]);
-    hsizer_add_mid->Add(buttons_["switch"]);
 
-    hsizer_add_bot->Add(m_lock_cmap_);
+    vsizer_add->Add(b_switch_);
+    vsizer_add->Add(buttons_["undo"]);
 
-    vsizer_add->Add(hsizer_add_top,1,wxEXPAND);
-    vsizer_add->Add(hsizer_add_mid,1,wxEXPAND);
-    vsizer_add->Add(hsizer_add_bot,1,wxEXPAND);
 
-    // tady pridat check box???
-
-    vsizer->Add(vsizer_top,0,wxEXPAND);
-    vsizer->Add(vsizer_add,0,wxEXPAND);
-    vsizer->Add(vsizer_mes,0,wxEXPAND);
-    vsizer->Add(vsizer_endef,0,wxEXPAND);
+    vsizer->Add(vsizer_top,0,wxEXPAND|wxHORIZONTAL);
+    vsizer->Add(vsizer_mes,0,wxEXPAND|wxHORIZONTAL);
+    vsizer->Add(vsizer_add,0,wxEXPAND|wxHORIZONTAL);
+    vsizer->Add(vsizer_sn,0,wxEXPAND|wxHORIZONTAL);
 
     allow_repeat_ = false;
 
     // TODO make it configurable ? - read same parameter from here and from but_arm_manip_node...
     aco_ = true;
 
-    if (aco_) buttons_["switch"]->SetLabel(wxT("ACO enabled"));
-    else buttons_["switch"]->SetLabel(wxT("ACO disabled"));
+    b_switch_->SetValue(aco_);
+
+    spacenav_pos_lock_ = false;
+    spacenav_or_lock_ = false;
+
+    /*if (aco_) buttons_["switch"]->SetLabel(wxT("ACO enabled"));
+    else buttons_["switch"]->SetLabel(wxT("ACO disabled"));*/
 
 
     vsizer->SetSizeHints(this);
@@ -251,19 +210,150 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
 
     ros::NodeHandle nh;
 
+    arm_nav_state_sub_ = nh.subscribe("/but_arm_manip/state",10, &CArmManipulationControls::stateCallback,this);
+
+    initialized_ = false;
+    state_received_ = false;
+    stop_gui_thread_ = false;
+    planning_started_ = false;
+    trajectory_planned_ = false;
+    arm_nav_called_ = false;
+
+    t_gui_update = boost::thread(&CArmManipulationControls::GuiUpdateThread,this);
+
     /**
      * Service provided by plugin. It can be used to inform user that his/her action is required.
      */
     service_start_ = nh.advertiseService(SRV_START,&CArmManipulationControls::nav_start,this);
 
-    cob_script = new cob_client("/script_server",true);
+    //cob_script = new cob_client("/script_server",true);
 
-    cob_script_inited = false;
+    //cob_script_inited = false;
 
 
 
 }
 ///////////////////////////////////////////////////////////////////////////////
+
+
+void CArmManipulationControls::setControlsToDefaultState() {
+
+	planning_started_ = false;
+
+	buttons_["new"]->SetLabel(wxT("Start arm planning"));
+
+	if (wait_for_start_) setButton("new",false);
+	else setButton("new",true);
+
+	setButton("plan",false);
+	setButton("execute",false);
+	//setButton("switch",true);
+	b_switch_->Enable(true);
+	setButton("stop",false);
+	setButton("undo",false);
+
+	if (!arm_nav_called_) {
+
+		setButton("success",false);
+		setButton("failed",false);
+		setButton("repeat",false);
+
+	}
+
+}
+
+void CArmManipulationControls::disableControls() {
+
+	setButton("new",false);
+
+	setButton("plan",false);
+	setButton("execute",false);
+	//setButton("switch",false);
+	b_switch_->Enable(false);
+
+	setButton("success",false);
+	setButton("failed",false);
+	setButton("repeat",false);
+
+	setButton("undo",false);
+
+	setButton("stop",false);
+
+	/*setButton("move_left",false);
+	setButton("move_right",false);
+	setButton("move_up",false);
+	setButton("move_down",false);
+	setButton("move_forw",false);
+	setButton("move_back",false);*/
+
+}
+
+
+void CArmManipulationControls::stateCallback(const AssistedArmNavigationState::ConstPtr& msg) {
+
+	ROS_INFO_ONCE("State received.");
+
+	if (!state_received_) state_received_ = true;
+
+	if ( (spacenav_pos_lock_ != msg->position_locked) || (spacenav_or_lock_ != msg->orientation_locked) ) {
+
+		spacenav_pos_lock_ = msg->position_locked;
+		spacenav_or_lock_ = msg->orientation_locked;
+
+	}
+
+}
+
+void CArmManipulationControls::GuiUpdateThread() {
+
+	ROS_INFO("Assisted arm nav. GUI thread started.");
+
+	ros::Rate r(5);
+
+	while(!stop_gui_thread_ && ros::ok()) {
+
+		if ( (!initialized_) && state_received_) {
+
+			wxMutexGuiEnter();
+			setControlsToDefaultState();
+
+			/*if (wait_for_start_) m_text_status = new wxStaticText(this, -1, wxT("status: waiting for task"));
+			else m_text_status = new wxStaticText(this, -1, wxT("status: let's start"));*/
+			if (wait_for_start_) m_text_status->SetLabel(wxT("status: waiting for task"));
+			else m_text_status->SetLabel(wxT("status: let's start"));
+
+			wxMutexGuiLeave();
+
+			ROS_INFO("Assisted arm nav. plugin initialized.");
+
+			initialized_ = true;
+
+		}
+
+		if (planning_started_) {
+
+			// update spacenav
+			wxMutexGuiEnter();
+
+			if (spacenav_pos_lock_) m_pos_lock_->Set3StateValue(wxCHK_CHECKED);
+			else m_pos_lock_->Set3StateValue(wxCHK_UNCHECKED);
+
+			if (spacenav_or_lock_) m_or_lock_->Set3StateValue(wxCHK_CHECKED);
+			else m_or_lock_->Set3StateValue(wxCHK_UNCHECKED);
+
+			wxMutexGuiLeave();
+
+		}
+
+		r.sleep();
+
+	}
+
+	ROS_INFO("Stopping assisted arm nav. GUI thread.");
+	stop_gui_thread_ = false;
+
+}
+
 
 void CArmManipulationControls::setButton(string but, bool state) {
 
@@ -276,7 +366,13 @@ void CArmManipulationControls::setButton(string but, bool state) {
 
 CArmManipulationControls::~CArmManipulationControls() {
 
-  if (cob_script!=NULL) delete cob_script;
+  stop_gui_thread_ = true;
+
+  ROS_INFO("Waiting for threads to finish.");
+
+  t_gui_update.join();
+
+  //if (cob_script!=NULL) delete cob_script;
 
   ButtonsMap::iterator it;
 
@@ -285,11 +381,13 @@ CArmManipulationControls::~CArmManipulationControls() {
 
   buttons_.clear();
 
+  delete b_switch_;
   delete m_text_status;
-  delete m_text_object;
-  delete m_text_timeout;
+  //delete m_text_object;
+  //delete m_text_timeout;
 
-  delete m_lock_cmap_;
+
+  ROS_INFO("Exiting...");
 
 }
 
@@ -331,27 +429,28 @@ void CArmManipulationControls::NewThread() {
 
    if (success) {
 
-     buttons_["plan"]->Enable(true);
-     buttons_["reset"]->Enable(true);
+	 disableControls();
 
-     if (allow_repeat_) buttons_["repeat"]->Enable(true);
+	 buttons_["new"]->SetLabel(wxT("Cancel planning"));
+	 planning_started_ = true;
 
-     buttons_["failed"]->Enable(true);
+	 setButton("new",true);
+	 setButton("plan",true);
+     setButton("undo",true);
 
-     buttons_["step_back"]->Enable(true);
-     buttons_["move_left"]->Enable(true);
-     buttons_["move_right"]->Enable(true);
-     buttons_["move_up"]->Enable(true);
-     buttons_["move_down"]->Enable(true);
-     buttons_["move_forw"]->Enable(true);
-     buttons_["move_back"]->Enable(true);
+
+     if (arm_nav_called_) {
+
+    	 if (allow_repeat_) buttons_["repeat"]->Enable(true);
+    	 buttons_["failed"]->Enable(true);
+
+     }
 
 
    } else {
 
-     setButton("new",true);
-     if (allow_repeat_) buttons_["repeat"]->Enable(true);
-     buttons_["failed"]->Enable(true);
+	   // handle error on communication
+	   setControlsToDefaultState();
 
    }
 
@@ -360,37 +459,101 @@ void CArmManipulationControls::NewThread() {
 }
 
 
-void CArmManipulationControls::OnNew(wxCommandEvent& event)
-{
+bool CArmManipulationControls::refresh() {
 
-  if (!ros::service::exists(SRV_NEW,true)) {
+	ROS_INFO("Refreshing planning scene");
 
-    m_text_status->SetLabel(wxString::FromAscii("status: communication error"));
-    ROS_ERROR("Service %s is not ready.",((std::string)SRV_NEW).c_str());
-    return;
+   ArmNavRefresh srv;
 
-  }
+   if ( ros::service::exists(SRV_REFRESH,true) && ros::service::call(SRV_REFRESH,srv) ) {
 
-  boost::posix_time::time_duration td = boost::posix_time::milliseconds(100);
+	 if (srv.response.completed) {
 
-  /// wait for some time
-  if (t_new.timed_join(td)) {
+	   m_text_status->SetLabel(wxString::FromAscii("status: Refreshed."));
 
-    buttons_["plan"]->Enable(false);
-    buttons_["reset"]->Enable(false);
-    setButton("new",false);
-    buttons_["play"]->Enable(false);
-    buttons_["success"]->Enable(false);
-    buttons_["switch"]->Enable(false);
-    buttons_["repeat"]->Enable(false);
-    setButton("stop",false);
+	 } else {
 
-    m_text_status->SetLabel(wxString::FromAscii("status: Please wait..."));
+	   m_text_status->SetLabel(wxString::FromAscii("status: Error on refreshing."));
+	   return false;
 
-    t_new = boost::thread(&CArmManipulationControls::NewThread,this);
+	 }
 
-  } else ROS_INFO("We have to wait until new thread finishes.");
+   } else {
 
+	 ROS_ERROR("failed when calling arm_nav_refresh service");
+	 m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
+	 return false;
+
+   }
+
+  return true;
+
+}
+
+void CArmManipulationControls::OnNew(wxCommandEvent& event) {
+
+	trajectory_planned_ = false;
+
+	if (!planning_started_) {
+
+		// planning was not started, so we want to start it
+
+		// first, let's try to refresh planning scene
+		if (!refresh()) return;
+
+		  if (!ros::service::exists(SRV_NEW,true)) {
+
+			m_text_status->SetLabel(wxString::FromAscii("status: communication error"));
+			ROS_ERROR("Service %s is not ready.",((std::string)SRV_NEW).c_str());
+			return;
+
+		  }
+
+		  boost::posix_time::time_duration td = boost::posix_time::milliseconds(100);
+
+		  /// wait for some time
+		  if (t_new.timed_join(td)) {
+
+			disableControls();
+
+			m_text_status->SetLabel(wxString::FromAscii("status: Please wait..."));
+
+			t_new = boost::thread(&CArmManipulationControls::NewThread,this);
+
+		  } else ROS_INFO("We have to wait until new thread finishes.");
+
+	} else {
+
+	   //  planning has been already started, so we want to cancel it
+	   ROS_INFO("Reset planning stuff to initial state");
+
+	   ArmNavReset srv;
+
+	   if ( ros::service::exists(SRV_RESET,true) && ros::service::call(SRV_RESET,srv) ) {
+
+		 if (srv.response.completed) {
+
+		   m_text_status->SetLabel(wxString::FromAscii("status: Ok, try it again"));
+
+		 } else {
+
+		   m_text_status->SetLabel(wxString::FromAscii(srv.response.error.c_str()));
+
+		 }
+
+	   } else {
+
+		 ROS_ERROR("failed when calling arm_nav_reset service");
+		 m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
+
+	   }
+
+	   setControlsToDefaultState();
+
+	   buttons_["new"]->SetLabel(wxT("Start arm planning"));
+	   planning_started_ = false;
+
+	}
 
 }
 
@@ -408,7 +571,12 @@ void CArmManipulationControls::PlanThread() {
 
      success = true;
 
-     if (srv.response.completed) status = "status: Trajectory is ready";
+     if (srv.response.completed) {
+
+    	 status = "status: Trajectory is ready";
+    	 trajectory_planned_ = true;
+
+     }
      else status = "status: " + srv.response.error;
 
    } else {
@@ -425,27 +593,27 @@ void CArmManipulationControls::PlanThread() {
 
    if (success) {
 
+	 disableControls();
 
-     setButton("new",false);
-     buttons_["plan"]->Enable(false);
-     buttons_["play"]->Enable(true);
-     buttons_["execute"]->Enable(true);
-     buttons_["reset"]->Enable(true);
-     buttons_["success"]->Enable(false);
-     buttons_["repeat"]->Enable(true);
+     setButton("new",true);
+     setButton("execute",true);
+     setButton("plan",true);
+
+     if (allow_repeat_) buttons_["repeat"]->Enable(true);
      buttons_["failed"]->Enable(true);
 
    } else {
 
-     setButton("new",false);
-     buttons_["plan"]->Enable(true);
-     buttons_["play"]->Enable(true);
-     buttons_["execute"]->Enable(true);
-     buttons_["reset"]->Enable(true);
-     buttons_["success"]->Enable(false);
-     buttons_["repeat"]->Enable(true);
-     buttons_["failed"]->Enable(true);
+	 disableControls();
+	 setButton("new",true);
+	 setButton("plan",true);
 
+	 if (arm_nav_called_) {
+
+		 if (allow_repeat_) buttons_["repeat"]->Enable(true);
+		 buttons_["failed"]->Enable(true);
+
+	 }
 
    }
 
@@ -456,65 +624,56 @@ void CArmManipulationControls::PlanThread() {
 void CArmManipulationControls::OnPlan(wxCommandEvent& event)
 {
 
-  if (!ros::service::exists(SRV_PLAN,true)) {
+  if (!trajectory_planned_) {
 
-    m_text_status->SetLabel(wxString::FromAscii("status: communication error"));
-    ROS_ERROR("Service %s is not ready.",((std::string)SRV_NEW).c_str());
-    return;
+	  if (!ros::service::exists(SRV_PLAN,true)) {
+
+		m_text_status->SetLabel(wxString::FromAscii("status: communication error"));
+		ROS_ERROR("Service %s is not ready.",((std::string)SRV_NEW).c_str());
+		return;
+
+	  }
+
+	  boost::posix_time::time_duration td = boost::posix_time::milliseconds(100);
+
+	  /// wait for some time
+	  if (t_plan.timed_join(td)) {
+
+		m_text_status->SetLabel(wxString::FromAscii("status: Planning. Please wait..."));
+		buttons_["plan"]->Enable(false);
+
+		t_plan = boost::thread(&CArmManipulationControls::PlanThread,this);
+
+	  } else ROS_INFO("We have to wait until PLAN thread finishes.");
+
+  } else {
+
+	 ArmNavPlay srv;
+
+	 if ( ros::service::exists(SRV_PLAY,true) && ros::service::call(SRV_PLAY,srv) ) {
+
+	   if (srv.response.completed) {
+
+		 m_text_status->SetLabel(wxString::FromAscii("status: Playing trajectory..."));
+
+	   } else {
+
+		 m_text_status->SetLabel(wxString::FromAscii(srv.response.error.c_str()));
+
+	   }
+
+	 } else {
+
+	   ROS_ERROR("failed when calling arm_nav_play service");
+	   m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
+
+	 }
 
   }
 
-  boost::posix_time::time_duration td = boost::posix_time::milliseconds(100);
-
-  /// wait for some time
-  if (t_plan.timed_join(td)) {
-
-    m_text_status->SetLabel(wxString::FromAscii("status: Planning. Please wait..."));
-    buttons_["plan"]->Enable(false);
-    buttons_["reset"]->Enable(false);
-
-    t_plan = boost::thread(&CArmManipulationControls::PlanThread,this);
-
-  } else ROS_INFO("We have to wait until PLAN thread finishes.");
-
 }
 
-void CArmManipulationControls::OnPlay(wxCommandEvent& event)
-{
 
-   ROS_INFO("Starting planning and filtering of new trajectory");
-
-   ArmNavPlay srv;
-
-   if ( ros::service::exists(SRV_PLAY,true) && ros::service::call(SRV_PLAY,srv) ) {
-
-     if (srv.response.completed) {
-
-       m_text_status->SetLabel(wxString::FromAscii("status: Playing trajectory..."));
-
-     } else {
-
-       m_text_status->SetLabel(wxString::FromAscii(srv.response.error.c_str()));
-
-     }
-
-   } else {
-
-     ROS_ERROR("failed when calling arm_nav_play service");
-     m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
-
-   }
-
-   setButton("new",false);
-   buttons_["plan"]->Enable(false);
-   buttons_["play"]->Enable(true);
-   buttons_["execute"]->Enable(true);
-   buttons_["reset"]->Enable(true);
-   buttons_["success"]->Enable(false);
-   buttons_["repeat"]->Enable(true);
-   buttons_["failed"]->Enable(true);
-
-}
 
 void CArmManipulationControls::OnSwitch(wxCommandEvent& event)
 {
@@ -534,12 +693,13 @@ void CArmManipulationControls::OnSwitch(wxCommandEvent& event)
 
        aco_ = !aco_;
 
-       if (aco_) buttons_["switch"]->SetLabel(wxT("ACO enabled"));
-       else buttons_["switch"]->SetLabel(wxT("ACO disabled"));
+       /*if (aco_) buttons_["switch"]->SetLabel(wxT("ACO enabled"));
+       else buttons_["switch"]->SetLabel(wxT("ACO disabled"));*/
 
      } else {
 
        m_text_status->SetLabel(wxString::FromAscii("Can't switch state of ACO"));
+       b_switch_->SetValue(aco_);
 
      }
 
@@ -549,6 +709,7 @@ void CArmManipulationControls::OnSwitch(wxCommandEvent& event)
 
      ROS_ERROR("failed when calling %s service",tmp.c_str());
      m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
+     b_switch_->SetValue(aco_);
 
    }
 
@@ -571,6 +732,7 @@ void CArmManipulationControls::OnExecute(wxCommandEvent& event) {
   /// wait for some time
   if (t_execute.timed_join(td)) {
 
+    disableControls();
     setButton("stop",true);
 
     t_execute = boost::thread(&CArmManipulationControls::ExecuteThread,this);
@@ -614,81 +776,34 @@ void CArmManipulationControls::ExecuteThread()
 
    m_text_status->SetLabel(wxString::FromAscii(status.c_str()));
 
-   setButton("step_back",false);
-   setButton("move_left",false);
-   setButton("move_right",false);
-   setButton("move_up",false);
-   setButton("move_down",false);
-   setButton("move_forw",false);
-   setButton("move_back",false);
+   //if (success) {
 
-   if (success) {
+	 setControlsToDefaultState();
+	 setButton("stop",true);
 
-     buttons_["plan"]->Enable(false);
-     buttons_["execute"]->Enable(false);
-     buttons_["reset"]->Enable(false);
-     buttons_["play"]->Enable(false);
-     setButton("new",true);
-     buttons_["success"]->Enable(true);
-     buttons_["failed"]->Enable(true);
-     buttons_["repeat"]->Enable(true);
-     buttons_["switch"]->Enable(true);
+	 if (arm_nav_called_) {
 
-   } else {
+		 if (allow_repeat_) setButton("repeat",true);
+		 setButton("failed",true);
+		 setButton("success",true);
 
-     buttons_["plan"]->Enable(false);
-     buttons_["execute"]->Enable(false);
-     buttons_["reset"]->Enable(true);
-     buttons_["play"]->Enable(false);
-     setButton("new",false);
-     buttons_["success"]->Enable(false);
-     buttons_["repeat"]->Enable(true);
-     buttons_["failed"]->Enable(true);
-     buttons_["switch"]->Enable(true);
+	 }
 
-   }
+
+   //} else {
+
+
+
+   //}
+
+   buttons_["new"]->SetLabel(wxT("Start arm planning"));
+   m_pos_lock_->Set3StateValue(wxCHK_UNDETERMINED);
+   m_or_lock_->Set3StateValue(wxCHK_UNDETERMINED);
 
    wxMutexGuiLeave();
 
 }
 
-void CArmManipulationControls::OnReset(wxCommandEvent& event)
-{
-   ROS_INFO("Reset planning stuff to initial state");
-
-   ArmNavReset srv;
-
-   if ( ros::service::exists(SRV_RESET,true) && ros::service::call(SRV_RESET,srv) ) {
-
-     if (srv.response.completed) {
-
-       m_text_status->SetLabel(wxString::FromAscii("status: Ok, try it again"));
-
-     } else {
-
-       m_text_status->SetLabel(wxString::FromAscii(srv.response.error.c_str()));
-
-     }
-
-   } else {
-
-     ROS_ERROR("failed when calling arm_nav_reset service");
-     m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
-
-   }
-
-   buttons_["plan"]->Enable(false);
-   buttons_["execute"]->Enable(false);
-   buttons_["reset"]->Enable(false);
-   buttons_["play"]->Enable(false);
-   setButton("new",true);
-   buttons_["success"]->Enable(false);
-   buttons_["repeat"]->Enable(true);
-   buttons_["failed"]->Enable(true);
-   buttons_["switch"]->Enable(true);
-   setButton("stop",false);
-
-}
 
 void CArmManipulationControls::OnSuccess(wxCommandEvent& event)
 {
@@ -707,23 +822,12 @@ void CArmManipulationControls::OnSuccess(wxCommandEvent& event)
 
    }
 
-   buttons_["plan"]->Enable(false);
-   buttons_["execute"]->Enable(false);
-   buttons_["reset"]->Enable(false);
-   buttons_["play"]->Enable(false);
-   if (wait_for_start_)  setButton("new",false);
-   else  setButton("new",true);
 
-   setButton("stop",false);
-
-   m_text_object->SetLabel(wxString::FromAscii("object: none"));
+   //m_text_object->SetLabel(wxString::FromAscii("object: none"));
    m_text_action_->SetLabel(wxString::FromAscii("action: none"));
 
-   buttons_["success"]->Enable(false);
-   buttons_["failed"]->Enable(false);
-   buttons_["repeat"]->Enable(false);
-   buttons_["switch"]->Enable(true);
-
+   arm_nav_called_ = false;
+   setControlsToDefaultState();
 
 }
 
@@ -735,10 +839,8 @@ void CArmManipulationControls::OnFailed(wxCommandEvent& event)
 
    if ( ros::service::exists(SRV_FAILED,true) && ros::service::call(SRV_FAILED,srv) ) {
 
-       buttons_["failed"]->Enable(false);
-
        m_text_status->SetLabel(wxString::FromAscii("status: Failed :-("));
-       m_text_object->SetLabel(wxString::FromAscii("object: none"));
+       //m_text_object->SetLabel(wxString::FromAscii("object: none"));
        m_text_action_->SetLabel(wxString::FromAscii("action: none"));
 
    } else {
@@ -746,23 +848,10 @@ void CArmManipulationControls::OnFailed(wxCommandEvent& event)
      ROS_ERROR("failed when calling arm_nav_failed service");
      m_text_status->SetLabel(wxString::FromAscii("Communication error"));
 
-     buttons_["failed"]->Enable(true);
-
    }
 
-   buttons_["plan"]->Enable(false);
-   buttons_["execute"]->Enable(false);
-   buttons_["reset"]->Enable(false);
-   buttons_["play"]->Enable(false);
-   if (wait_for_start_) setButton("new",false);
-   else setButton("new",true);
-
-   buttons_["success"]->Enable(false);
-   buttons_["repeat"]->Enable(false);
-   buttons_["repeat"]->Enable(false);
-   buttons_["switch"]->Enable(true);
-
-   setButton("stop",false);
+   arm_nav_called_ = false;
+   setControlsToDefaultState();
 
 }
 
@@ -774,10 +863,8 @@ void CArmManipulationControls::OnRepeat(wxCommandEvent& event)
 
    if ( ros::service::exists(SRV_REPEAT,true) && ros::service::call(SRV_REPEAT,srv) ) {
 
-       buttons_["repeat"]->Enable(false);
-
        m_text_status->SetLabel(wxString::FromAscii("status: Repeating action..."));
-       m_text_object->SetLabel(wxString::FromAscii("object: none"));
+       //m_text_object->SetLabel(wxString::FromAscii("object: none"));
        m_text_action_->SetLabel(wxString::FromAscii("action: none"));
 
    } else {
@@ -785,303 +872,13 @@ void CArmManipulationControls::OnRepeat(wxCommandEvent& event)
      ROS_ERROR("failed when calling arm_nav_repeat service");
      m_text_status->SetLabel(wxString::FromAscii("Communication error"));
 
-     buttons_["repeat"]->Enable(true);
-
    }
 
-   buttons_["plan"]->Enable(false);
-   buttons_["execute"]->Enable(false);
-   buttons_["reset"]->Enable(false);
-   buttons_["play"]->Enable(false);
-   if (wait_for_start_) setButton("new",false);
-   else setButton("new",true);
-
-   buttons_["failed"]->Enable(false);
-   buttons_["success"]->Enable(false);
-   buttons_["repeat"]->Enable(false);
-   buttons_["switch"]->Enable(true);
+   arm_nav_called_ = false;
+   setControlsToDefaultState();
 
 }
 
-bool CArmManipulationControls::InitCobScript() {
-
-  if (cob_script==NULL) {
-
-    return false;
-
-      }
-
-  if (!cob_script_inited) {
-
-    if (!cob_script->waitForServer(ros::Duration(3.0))) {
-
-        ROS_ERROR("No response from cob_script action server");
-        return false;
-
-      } else {
-
-        cob_script_server::ScriptAction goal;
-
-        goal.action_goal.goal.component_name = "sdh";
-        goal.action_goal.goal.function_name = "init";
-        goal.action_goal.goal.mode = "";
-        goal.action_goal.goal.parameter_name = "";
-
-        cob_script->sendGoal(goal.action_goal.goal);
-        cob_script->waitForResult((ros::Duration(5.0)));
-
-        if (cob_script->getState() != actionlib::SimpleClientGoalState::SUCCEEDED) return false;
-
-        goal.action_goal.goal.component_name = "torso";
-
-        cob_script->sendGoal(goal.action_goal.goal);
-        cob_script->waitForResult((ros::Duration(5.0)));
-
-        if (cob_script->getState() != actionlib::SimpleClientGoalState::SUCCEEDED) return false;
-
-        cob_script_inited = true;
-
-      }
-
-  }
-
-  if (cob_script_inited) return true;
-  else return false;
-
-}
-
-/// @todo Add GUI lock mutex!!!!!!!
-void CArmManipulationControls::GripperThread(unsigned char action) {
-
-  if (!InitCobScript()) {
-
-      /// @todo manage this situation somehow
-        return;
-
-    }
-
-    std::string status = "";
-
-
-    cob_script_server::ScriptAction goal;
-
-    goal.action_goal.goal.component_name = "sdh";
-    goal.action_goal.goal.function_name = "move";
-    goal.action_goal.goal.mode = "";
-
-    if (action==G_OPEN) goal.action_goal.goal.parameter_name = "cylopen";
-    else goal.action_goal.goal.parameter_name = "cylclosed";
-
-    cob_script->sendGoal(goal.action_goal.goal);
-
-    cob_script->waitForResult((ros::Duration(5.0)));
-
-    if (cob_script->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-
-
-      if (action==G_OPEN) {
-
-          //m_text_status->SetLabel(wxString::FromAscii("status: Gripper opened."));
-          status = "status: Gripper opened.";
-          ROS_INFO("Gripper should be opened...");
-      }
-      else {
-
-        //m_text_status->SetLabel(wxString::FromAscii("status: Gripper closed."));
-        status = "status: Gripper closed.";
-        ROS_INFO("Gripper should be closed...");
-
-      }
-
-    } else {
-
-      //m_text_status->SetLabel(wxString::FromAscii("status: Error during gripper action."));
-      status = "status: Error during gripper action.";
-      ROS_ERROR("Error on opening/closing gripper.");
-
-    }
-
-    wxMutexGuiEnter();
-
-    m_text_status->SetLabel(wxString::FromAscii(status.c_str()));
-    buttons_["gripper_o"]->Enable(true);
-    buttons_["gripper_c"]->Enable(true);
-    buttons_["look_around"]->Enable(true);
-    buttons_["refresh"]->Enable(true);
-
-    wxMutexGuiLeave();
-
-
-
-}
-
-void CArmManipulationControls::OnGripperO(wxCommandEvent& event) {
-
-  boost::posix_time::time_duration td = boost::posix_time::milliseconds(100);
-
-  // wait for some time
-  if (t_gripper.timed_join(td)) {
-
-    unsigned char action = G_OPEN;
-
-    buttons_["gripper_o"]->Enable(false);
-    buttons_["gripper_c"]->Enable(false);
-    buttons_["look_around"]->Enable(false);
-    buttons_["refresh"]->Enable(false);
-
-    m_text_status->SetLabel(wxString::FromAscii("status: Opening gripper."));
-
-    t_gripper = boost::thread(&CArmManipulationControls::GripperThread,this,action);
-
-  } else ROS_INFO("We have to wait until gripper thread finishes.");
-
-}
-
-/// @todo Add guimutex!!!!!!!!!!
-void CArmManipulationControls::LookThread() {
-
-  if (!InitCobScript()) {
-
-      /// @todo manage it
-      return;
-
-  }
-
-  std::string status = "";
-
-  cob_script_server::ScriptAction goal;
-
-  goal.action_goal.goal.component_name = "torso";
-  goal.action_goal.goal.function_name = "move";
-  goal.action_goal.goal.mode = "";
-  goal.action_goal.goal.parameter_name = "front_left";
-
-  /// @todo Are the timeouts sufficient?
-  cob_script->sendGoal(goal.action_goal.goal);
-  cob_script->waitForResult((ros::Duration(5.0)));
-
-  goal.action_goal.goal.parameter_name = "front";
-  cob_script->sendGoal(goal.action_goal.goal);
-  cob_script->waitForResult((ros::Duration(5.0)));
-
-  goal.action_goal.goal.parameter_name = "front_right";
-  cob_script->sendGoal(goal.action_goal.goal);
-  cob_script->waitForResult((ros::Duration(5.0)));
-
-  goal.action_goal.goal.parameter_name = "back_right";
-  cob_script->sendGoal(goal.action_goal.goal);
-  cob_script->waitForResult((ros::Duration(5.0)));
-
-  goal.action_goal.goal.parameter_name = "back";
-  cob_script->sendGoal(goal.action_goal.goal);
-  cob_script->waitForResult((ros::Duration(5.0)));
-
-  goal.action_goal.goal.parameter_name = "back_left";
-  cob_script->sendGoal(goal.action_goal.goal);
-  cob_script->waitForResult((ros::Duration(5.0)));
-
-  goal.action_goal.goal.parameter_name = "home";
-  cob_script->sendGoal(goal.action_goal.goal);
-  cob_script->waitForResult((ros::Duration(5.0)));
-
-  if (cob_script->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-
-    //m_text_status->SetLabel(wxString::FromAscii("status: Looking around completed."));
-    status = "status: Looking around completed.";
-    ROS_INFO("Looking around completed - collision map should be improved.");
-
-  } else {
-
-      //m_text_status->SetLabel(wxString::FromAscii("status: Looking around failed."));
-      status = "status: Looking around failed.";
-      ROS_INFO("Looking around failed.");
-
-  }
-
-
-  wxMutexGuiEnter();
-
-  m_text_status->SetLabel(wxString::FromAscii(status.c_str()));
-
-  buttons_["look_around"]->Enable(true);
-  buttons_["gripper_o"]->Enable(true);
-  buttons_["gripper_c"]->Enable(true);
-  buttons_["refresh"]->Enable(true);
-
-  wxMutexGuiLeave();
-
-}
-
-void CArmManipulationControls::OnLook(wxCommandEvent& event) {
-
-  boost::posix_time::time_duration td = boost::posix_time::milliseconds(100);
-
-  // wait for some time
-  if (t_look.timed_join(td)) {
-
-    buttons_["gripper_o"]->Enable(false);
-    buttons_["gripper_c"]->Enable(false);
-    buttons_["look_around"]->Enable(false);
-    buttons_["refresh"]->Enable(false);
-
-    m_text_status->SetLabel(wxString::FromAscii("status: Looking around."));
-    ROS_INFO("Looking around to improve collision map.");
-
-    t_look = boost::thread(&CArmManipulationControls::LookThread,this);
-
-  } else ROS_INFO("We have to wait until LOOKAROUND thread finishes.");
-
-}
-
-/// @todo Add another thread - sometimes it takes a lot of time.
-void CArmManipulationControls::OnRefresh(wxCommandEvent& event) {
-
-  ROS_INFO("Refreshing planning scene");
-
-   ArmNavRefresh srv;
-
-   if ( ros::service::exists(SRV_REFRESH,true) && ros::service::call(SRV_REFRESH,srv) ) {
-
-     if (srv.response.completed) {
-
-       m_text_status->SetLabel(wxString::FromAscii("status: Refreshed."));
-
-     } else {
-
-       m_text_status->SetLabel(wxString::FromAscii("status: Error on refreshing."));
-
-     }
-
-   } else {
-
-     ROS_ERROR("failed when calling arm_nav_refresh service");
-     m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
-
-   }
-
-}
-
-void CArmManipulationControls::OnGripperC(wxCommandEvent& event) {
-
-  boost::posix_time::time_duration td = boost::posix_time::milliseconds(100);
-
-  // wait for some time
-  if (t_gripper.timed_join(td)) {
-
-    unsigned char action = G_CLOSE;
-
-    buttons_["gripper_o"]->Enable(false);
-    buttons_["gripper_c"]->Enable(false);
-    buttons_["look_around"]->Enable(false);
-    buttons_["refresh"]->Enable(false);
-
-    m_text_status->SetLabel(wxString::FromAscii("status: Closing gripper."));
-
-    t_gripper = boost::thread(&CArmManipulationControls::GripperThread,this,action);
-
-  } else ROS_INFO("We have to wait until gripper thread finishes.");
-
-}
 
 bool CArmManipulationControls::nav_start(ArmNavStart::Request &req, ArmNavStart::Response &res) {
 
@@ -1091,6 +888,9 @@ bool CArmManipulationControls::nav_start(ArmNavStart::Request &req, ArmNavStart:
   object_name_ = req.object_name;
   allow_repeat_ = req.allow_repeat;
 
+  if (allow_repeat_) ROS_INFO("Received request for action. Repeated detection is allowed.");
+  else ROS_INFO("Received request for action. Repeated detection is NOT allowed.");
+
 
   if (req.object_name!="") {
 
@@ -1098,7 +898,7 @@ bool CArmManipulationControls::nav_start(ArmNavStart::Request &req, ArmNavStart:
 
     std::string tmp;
     tmp = std::string("object_name: ") + object_name_;
-    m_text_object->SetLabel(wxString::FromAscii(tmp.c_str()));
+    //m_text_object->SetLabel(wxString::FromAscii(tmp.c_str()));
 
   } else {
 
@@ -1106,7 +906,7 @@ bool CArmManipulationControls::nav_start(ArmNavStart::Request &req, ArmNavStart:
 
 	  std::string tmp;
 	  tmp = std::string("object_name: none");
-	  m_text_object->SetLabel(wxString::FromAscii(tmp.c_str()));
+	  //m_text_object->SetLabel(wxString::FromAscii(tmp.c_str()));
 
   }
 
@@ -1118,6 +918,7 @@ bool CArmManipulationControls::nav_start(ArmNavStart::Request &req, ArmNavStart:
   wxMessageBox(wxString::FromAscii(str), wxString::FromAscii("Manual arm navigation"), wxOK, parent_,-1,-1);
 
   setButton("new",true);
+  arm_nav_called_ = true;
 
 
   res.completed = true;
@@ -1130,6 +931,8 @@ bool CArmManipulationControls::nav_start(ArmNavStart::Request &req, ArmNavStart:
 void CArmManipulationControls::OnStepBack(wxCommandEvent& event) {
 
   ROS_INFO("Undoing last change in IM pose");
+
+  setButton("undo",false);
 
    ArmNavStep srv;
 
@@ -1154,11 +957,13 @@ void CArmManipulationControls::OnStepBack(wxCommandEvent& event) {
 
    }
 
+   setButton("undo",true);
+
 }
 
 
 
-void CArmManipulationControls::OnMoveRel(wxCommandEvent& event) {
+/*void CArmManipulationControls::OnMoveRel(wxCommandEvent& event) {
 
   int id = event.GetId();
 
@@ -1208,7 +1013,7 @@ void CArmManipulationControls::OnMoveRel(wxCommandEvent& event) {
     }
 
 
-}
+}*/
 
 
 void CArmManipulationControls::OnStopTraj(wxCommandEvent& event) {
@@ -1228,54 +1033,23 @@ void CArmManipulationControls::OnStopTraj(wxCommandEvent& event) {
 
    }
 
+   m_pos_lock_->Set3StateValue(wxCHK_UNDETERMINED);
+   m_or_lock_->Set3StateValue(wxCHK_UNDETERMINED);
+
+   //planning_started_ = false;
+
+   setControlsToDefaultState();
+
+   if (arm_nav_called_) {
+
+   		 if (allow_repeat_) buttons_["repeat"]->Enable(true);
+   		 buttons_["failed"]->Enable(true);
+
+   	 }
 
 }
 
-void CArmManipulationControls::OnLockCmap(wxCommandEvent& event) {
 
-	srs_env_model::LockCollisionMap srv;
-
-	if (cmap_locked_) {
-
-		ROS_INFO("Unlocking collision map");
-		srv.request.lock = 0;
-
-	} else {
-
-		ROS_INFO("Locking collision map");
-		srv.request.lock = 1;
-
-	}
-
-	if ( ros::service::exists(srs_env_model::LockCMap_SRV,true) && ros::service::call(srs_env_model::LockCMap_SRV,srv) ) {
-
-	       if (cmap_locked_) {
-
-	    	   m_text_status->SetLabel(wxString::FromAscii("status: Coll. map unlocked."));
-	    	   cmap_locked_ = false;
-	    	   m_lock_cmap_->SetValue(false);
-
-
-	       } else {
-
-	    	   m_text_status->SetLabel(wxString::FromAscii("status: Coll. map locked."));
-	    	   cmap_locked_ = true;
-	    	   m_lock_cmap_->SetValue(true);
-
-	       }
-
-	   } else {
-
-	     ROS_ERROR("failed when calling coll. map lock service");
-	     m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
-
-	     m_lock_cmap_->SetValue(cmap_locked_);
-
-	   }
-
-
-
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1287,29 +1061,19 @@ void CArmManipulationControls::OnLockCmap(wxCommandEvent& event) {
 BEGIN_EVENT_TABLE(CArmManipulationControls, wxPanel)
     EVT_BUTTON(ID_BUTTON_NEW,  CArmManipulationControls::OnNew)
     EVT_BUTTON(ID_BUTTON_PLAN,  CArmManipulationControls::OnPlan)
-    EVT_BUTTON(ID_BUTTON_PLAY,  CArmManipulationControls::OnPlay)
     EVT_BUTTON(ID_BUTTON_EXECUTE,  CArmManipulationControls::OnExecute)
-    EVT_BUTTON(ID_BUTTON_RESET,  CArmManipulationControls::OnReset)
     EVT_BUTTON(ID_BUTTON_SUCCESS,  CArmManipulationControls::OnSuccess)
     EVT_BUTTON(ID_BUTTON_FAILED,  CArmManipulationControls::OnFailed)
-    EVT_BUTTON(ID_BUTTON_GRIPPER_O,  CArmManipulationControls::OnGripperO)
-    EVT_BUTTON(ID_BUTTON_GRIPPER_C,  CArmManipulationControls::OnGripperC)
-    EVT_BUTTON(ID_BUTTON_LOOK,  CArmManipulationControls::OnLook)
-    EVT_BUTTON(ID_BUTTON_REFRESH,  CArmManipulationControls::OnRefresh)
-    EVT_BUTTON(ID_BUTTON_SWITCH,  CArmManipulationControls::OnSwitch)
+    EVT_TOGGLEBUTTON(ID_BUTTON_SWITCH,  CArmManipulationControls::OnSwitch)
     EVT_BUTTON(ID_BUTTON_REPEAT,  CArmManipulationControls::OnRepeat)
-
     EVT_BUTTON(ID_BUTTON_UNDO,  CArmManipulationControls::OnStepBack)
-
-    EVT_BUTTON(ID_BUTTON_MLEFT,  CArmManipulationControls::OnMoveRel)
+    /*EVT_BUTTON(ID_BUTTON_MLEFT,  CArmManipulationControls::OnMoveRel)
     EVT_BUTTON(ID_BUTTON_MRIGHT,  CArmManipulationControls::OnMoveRel)
     EVT_BUTTON(ID_BUTTON_MUP,  CArmManipulationControls::OnMoveRel)
     EVT_BUTTON(ID_BUTTON_MDOWN,  CArmManipulationControls::OnMoveRel)
     EVT_BUTTON(ID_BUTTON_MFORW,  CArmManipulationControls::OnMoveRel)
-    EVT_BUTTON(ID_BUTTON_MBACK,  CArmManipulationControls::OnMoveRel)
-
+    EVT_BUTTON(ID_BUTTON_MBACK,  CArmManipulationControls::OnMoveRel)*/
     EVT_BUTTON(ID_BUTTON_STOP_TRAJ,  CArmManipulationControls::OnStopTraj)
-    //EVT_BUTTON(ID_BUTTON_LOCK_CMAP,  CArmManipulationControls::OnLockCmap)
 
 END_EVENT_TABLE()
 

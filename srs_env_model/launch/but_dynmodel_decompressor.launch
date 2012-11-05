@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-   <node pkg="srs_wifi" name="cloud_decompressor" type="cloud_decompressor" respawn="false" output="screen">
-      <remap from="input"  to="/compressed_octree" />
-      <remap from="output" to="/but_env_model/decompressed_octree" />
-   </node>
-</launch>

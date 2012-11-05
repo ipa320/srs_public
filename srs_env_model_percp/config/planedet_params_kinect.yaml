@@ -8,7 +8,7 @@ planedet_input: pcl
 global_frame: /map
 
 # original frame id
-original_frame: /head_cam3d_link
+original_frame: /camera_rgb_optical_frame
 
 #-----------------------------------------------------------------------------------
 # PLANE HOUGH SPACE CONSTRUCTION PARAMS 
@@ -17,7 +17,7 @@ original_frame: /head_cam3d_link
 planedet_ht_keep_track: 1
 
 # Maximum depth in meters to count with (for real data, 3.0 is recommended)
-planedet_ht_maxdepth: 100.0
+planedet_ht_maxdepth: 3.0
 
 # HS minimal shift (d param) axis
 planedet_ht_minshift: -40.0
@@ -68,7 +68,7 @@ planedet_ht_min_smooth: 10
 # PLANE SEARCH PARAMS 
 # 
 # Minimum number of points forming a plane in one frame
-planedet_search_minimum_current_space: 2000.0
+planedet_search_minimum_current_space: 500.0
 
 # Minimum signature in global HS for detected plane
 planedet_search_minimum_global_space: 1.5

@@ -284,7 +284,6 @@ Normals::Normals(pcl::PointCloud<pcl::PointXYZ> &pointcloud, float threshold, in
 													m_planes(cvSize(pointcloud.width, pointcloud.height), CV_32FC4)
 {
 		// ... fill point cloud...
-neighborhood = 8;
 	Vec3f nullvector(0.0, 0.0, 0.0);
 	Vec4f nullvector4(0.0, 0.0, 0.0, 0.0);
 
@@ -326,58 +325,58 @@ neighborhood = 8;
 //				m_planes.at<Vec4f>(i, j) = nullvector4;
 //		}
 ///////////////////////////////////////////////////////////////
-//		// Estimate normals
-//		pcl::IntegralImageNormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-//		pcl::PointCloud<pcl::Normal> normals;
-//
-//		ne.setNormalEstimationMethod (ne.AVERAGE_DEPTH_CHANGE);
-//		ne.setDepthDependentSmoothing(true);
-//		ne.setMaxDepthChangeFactor(threshold);
-//		//ne.setRectSize(10, 10);
-//		ne.setNormalSmoothingSize((float)(neighborhood*2+1));
-//		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = pointcloud.makeShared();
-//		ne.setInputCloud(cloud);
-//		ne.compute(normals);
-//
-//		for (int i = 0; i < m_points.rows; ++i)
-//		for (int j = 0; j < m_points.cols; ++j)
-//		{
-//			Vec3f realPoint = m_points.at<Vec3f>(i, j);
-//
-//			Vec4f normal;
-//			if (normals(j, i).normal_x == normals(j, i).normal_x &&
-//				normals(j, i).normal_y == normals(j, i).normal_y &&
-//				normals(j, i).normal_z == normals(j, i).normal_z)
-//			{
-//				normal[0] = normals(j, i).normal_x;
-//				normal[1] = normals(j, i).normal_y;
-//				normal[2] = normals(j, i).normal_z;
-//
-////					if (normal[2] < 0)
-////					{
-////						normal[0] *= -1.0;
-////						normal[1] *= -1.0;
-////						normal[2] *= -1.0;
-////					}
-//				normal[3] = -(normal[0]*realPoint[0]+normal[1]*realPoint[1]+normal[2]*realPoint[2]);
-//				m_planes.at<Vec4f>(i, j) = normal;
-//			}
-//			else
-//				m_planes.at<Vec4f>(i, j) = nullvector4;
-//		}
+		// Estimate normals
+		pcl::IntegralImageNormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+		pcl::PointCloud<pcl::Normal> normals;
 
-	for (int i = 0; i < m_points.rows; ++i)
-	for (int j = 0; j < m_points.cols; ++j)
-	{
-		Vec3f realPoint = m_points.at<Vec3f>(i, j);
-		if (realPoint != nullvector)
+		ne.setNormalEstimationMethod (ne.COVARIANCE_MATRIX);
+		ne.setDepthDependentSmoothing(true);
+		ne.setMaxDepthChangeFactor(0.5);
+		//ne.setRectSize(10, 10);
+		ne.setNormalSmoothingSize((float)(8*2+1));
+		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = pointcloud.makeShared();
+		ne.setInputCloud(cloud);
+		ne.compute(normals);
+
+		for (int i = 0; i < m_points.rows; ++i)
+		for (int j = 0; j < m_points.cols; ++j)
 		{
-			Vec4f normal= getNormalLSQAround(i, j, 8, threshold);
-			m_planes.at<Vec4f>(i, j) = normal;
+			Vec3f realPoint = m_points.at<Vec3f>(i, j);
+
+			Vec4f normal;
+			if (normals(j, i).normal_x == normals(j, i).normal_x &&
+				normals(j, i).normal_y == normals(j, i).normal_y &&
+				normals(j, i).normal_z == normals(j, i).normal_z)
+			{
+				normal[0] = normals(j, i).normal_x;
+				normal[1] = normals(j, i).normal_y;
+				normal[2] = normals(j, i).normal_z;
+
+//					if (normal[2] < 0)
+//					{
+//						normal[0] *= -1.0;
+//						normal[1] *= -1.0;
+//						normal[2] *= -1.0;
+//					}
+				normal[3] = -(normal[0]*realPoint[0]+normal[1]*realPoint[1]+normal[2]*realPoint[2]);
+				m_planes.at<Vec4f>(i, j) = normal;
+			}
+			else
+				m_planes.at<Vec4f>(i, j) = nullvector4;
 		}
-		else
-			m_planes.at<Vec4f>(i, j) = nullvector4;
-		}
+
+//	for (int i = 0; i < m_points.rows; ++i)
+//	for (int j = 0; j < m_points.cols; ++j)
+//	{
+//		Vec3f realPoint = m_points.at<Vec3f>(i, j);
+//		if (realPoint != nullvector)
+//		{
+//			Vec4f normal= getNormalLSQAround(i, j, 8, threshold);
+//			m_planes.at<Vec4f>(i, j) = normal;
+//		}
+//		else
+//			m_planes.at<Vec4f>(i, j) = nullvector4;
+//		}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function computes normal for point (i, j) using direct computation (mean of surrounding triangles)

@@ -40,7 +40,7 @@
 srs_env_model::COcPatchMaker::COcPatchMaker()
 : m_bTransformCamera( false )
 , m_pcFrameId("/map")
-, m_bSpinThread( true )
+, m_bSpinThread( false )
 , m_bCamModelInitialized(false)
 , m_camera_stereo_offset_left(0)
 , m_camera_stereo_offset_right(0)
@@ -103,7 +103,7 @@ void srs_env_model::COcPatchMaker::init(ros::NodeHandle & node_handle)
 /**
  * Get output pointcloud
  */
-bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par )
+bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par, const ros::Time & time )
 {
 	ROS_DEBUG( "CCompressedPointCloudPlugin: onFrameStart" );
 
@@ -113,7 +113,7 @@ bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par 
 	// Clear data
 	m_cloud.clear();
 	m_ocFrameId = par.frameId;
-	m_DataTimeStamp = m_time_stamp = par.currentTime;
+	m_DataTimeStamp = m_time_stamp = time;
 
 	bool bTransformOutput = m_ocFrameId != m_pcFrameId;
 
@@ -129,10 +129,10 @@ bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par 
 		try {
 			// Transformation - to, from, time, waiting time
 			m_tfListener.waitForTransform(m_pcFrameId, m_ocFrameId,
-					par.currentTime, ros::Duration(5));
+					m_time_stamp, ros::Duration(5));
 
 			m_tfListener.lookupTransform(m_pcFrameId, m_ocFrameId,
-					par.currentTime, ocToPcTf);
+					m_time_stamp, ocToPcTf);
 
 		} catch (tf::TransformException& ex) {
 			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
@@ -153,42 +153,58 @@ bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par 
 		return false;
 	}
 
-	m_bTransformCamera = m_cameraFrameId != m_pcFrameId;
-
-	m_to_sensorTf = tf::StampedTransform::getIdentity();
-
-	// If different frame id
-	if( m_bTransformCamera )
-	{
-
-		// Some transforms
-		tf::StampedTransform camToOcTf, ocToCamTf;
-
-		// Get transforms
-		try {
-			// Transformation - to, from, time, waiting time
-			m_tfListener.waitForTransform(m_cameraFrameId, m_ocFrameId,
-					par.currentTime, ros::Duration(5));
-
-			m_tfListener.lookupTransform( m_cameraFrameId, m_ocFrameId,
-					par.currentTime, ocToCamTf );
-
-		} catch (tf::TransformException& ex) {
-			ROS_ERROR_STREAM( ": Transform error - " << ex.what() << ", quitting callback");
-			ROS_ERROR_STREAM( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_ocFrameId );
-			return false;
-		}
-
-
-		m_to_sensorTf = ocToCamTf;
-
-//        PERROR( "Camera position: " << m_camToOcTrans );
-	}
+	m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
 
 
 	// Store camera information
 	m_camera_size = m_camera_size_buffer;
 	m_camera_model.fromCameraInfo( m_camera_info_buffer);
+
+	// Transform camera model to the cloud time and frame id
+	{
+		tf::StampedTransform camTf;
+
+		// Modify camera position to the current time
+		if( m_bTransformCamera )
+		{
+			// We need camera to octomap transfor
+			try {
+					// Transformation - to, from, time, waiting time
+			//	std::cerr << "T1, try to get transform from " << m_cameraFrameId << " to " << m_ocFrameId << ", time: " << par.currentTime << std::endl;
+					m_tfListener.waitForTransform(m_ocFrameId, m_cameraFrameId,
+							m_time_stamp, ros::Duration(5.0));
+
+					m_tfListener.lookupTransform(m_ocFrameId, m_cameraFrameId,
+							m_time_stamp, camTf);
+
+				} catch (tf::TransformException& ex) {
+					ROS_ERROR_STREAM("Transform error1: " << ex.what() << ", quitting callback");
+					return false;
+				}
+
+		}
+		else
+		{
+			// Just move camera position "in time"
+			try {
+					// Time transformation - target frame, target time, source frame, source time, fixed frame, time, waiting time
+					m_tfListener.waitForTransform(m_cameraFrameId, m_time_stamp,
+												  m_cameraFrameId, m_camera_info_buffer.header.stamp,
+												  "/map", ros::Duration(1.0));
+
+					m_tfListener.lookupTransform( m_cameraFrameId, m_time_stamp,
+												  m_cameraFrameId, m_camera_info_buffer.header.stamp,
+												  "/map", camTf);
+
+				} catch (tf::TransformException& ex) {
+					ROS_ERROR_STREAM("Transform error2: " << ex.what() << ", quitting callback");
+					return false;
+				}
+		}
+
+		// We have transform so convert it to the eigen matrix
+		m_to_sensorTf = camTf.inverse();
+	}
 
 	// Initialize leaf iterators
 	tButServerOcTree & tree( par.map->octree );
@@ -232,8 +248,8 @@ void srs_env_model::COcPatchMaker::handleOccupiedNode(srs_env_model::tButServerO
 
 	// Test input point
 	tf::Point pos(it.getX(), it.getY(), it.getZ());
-	if( m_bTransformCamera )
-		 pos = m_to_sensorTf(pos);
+//	if( m_bTransformCamera )
+	pos = m_to_sensorTf(pos);
 
 	pos = pos * m_fracMatrix;
 
@@ -378,25 +394,30 @@ bool srs_env_model::CPcToOcRegistration::registerCloud( tPointCloudPtr & cloud, 
 {
 	if( !m_registration.isRegistering() )
 	{
-		std::cerr << "No registration method selected." << std::endl;
+		ROS_ERROR( "No registration method selected." );
 		return false;
 	}
 
+//	std::cerr << "Reg start" << std::endl;
+
 	// Get patch
 	m_patchMaker.setCloudFrameId( map.frameId );
-	m_patchMaker.computeCloud( map );
+	m_patchMaker.computeCloud( map, cloud->header.stamp );
+
+	if( m_patchMaker.getCloud().size() == 0 )
+		return false;
 
 	// Resample input cloud
 	sensor_msgs::PointCloud2::Ptr cloudMsg(new sensor_msgs::PointCloud2 ());
 
 	pcl::toROSMsg( *cloud, *cloudMsg);
-	std::cerr << "Patch size: " << m_patchMaker.getCloud().size() << ", " << cloudMsg->data.size() << std::endl;
+//	std::cerr << "Patch size: " << m_patchMaker.getCloud().size() << ", " << cloudMsg->data.size() << std::endl;
 
 	m_gridFilter.setInputCloud( cloudMsg );
 	m_gridFilter.setLeafSize( map.resolution, map.resolution, map.resolution );
 	m_gridFilter.filter( *m_resampledCloud );
 
-	std::cerr << "Voxel grid size: " << m_resampledCloud->data.size() << std::endl;
+//	std::cerr << "Voxel grid size: " << m_resampledCloud->data.size() << std::endl;
 
 	// Try to register cloud
 	tPointCloudPtr cloudSource( new tPointCloud() );
@@ -405,7 +426,7 @@ bool srs_env_model::CPcToOcRegistration::registerCloud( tPointCloudPtr & cloud, 
 	pcl::fromROSMsg( *m_resampledCloud, *cloudSource );
 	pcl::copyPointCloud( m_patchMaker.getCloud(), *cloudTarget );
 
-	std::cerr << "Calling registration: " << cloudSource->size() << ", " << cloudTarget->size() << std::endl;
+//	std::cerr << "Calling registration: " << cloudSource->size() << ", " << cloudTarget->size() << std::endl;
 
 	bool rv( m_registration.process( cloudSource, cloudTarget, cloudBuffer ) );
 

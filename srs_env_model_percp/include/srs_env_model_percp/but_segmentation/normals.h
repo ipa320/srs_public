@@ -134,9 +134,9 @@ namespace but_plane_detector
 			bool isSimilar(Plane &plane, Scalar angleErr, Scalar shiftErr)
 			{
 				Scalar angle = acos(((a * plane.a) + (b * plane.b) + (c * plane.c)));
-				Scalar xd = plane.d - d;
-				xd = (xd > 0 ? xd : - xd);
-				if ((angle < angleErr  && xd < shiftErr) || (angle > M_PI - angleErr && xd < shiftErr))
+				Scalar xd1 = plane.d - d;
+				Scalar xd2 = d - plane.d;
+				if ((angle < angleErr  && (xd1 > 0 ? xd1 : - xd1) < shiftErr) || (angle > M_PI - angleErr && (xd2 > 0 ? xd2 : - xd2) < shiftErr))
 					return true;
 				else
 					return false;
@@ -151,21 +151,27 @@ namespace but_plane_detector
 			 */
 			void getQuaternionRotation(Scalar &x, Scalar &y, Scalar &z, Scalar &w)
 			{
-				Scalar nx = b*1 - c*0;
-				Scalar ny = c*0 - a*1;
-				Scalar nz = a*0 - b*0;
+				Eigen::Vector3f current(a, b, c);
+				Eigen::Vector3f target(1.0, 0.0, 0.0);
 
-				Scalar length = sqrt(nx*nx + ny*ny + nz*nz);
-				nx /= length;
-				ny /= length;
-				nz /= length;
-
-
-				Scalar sign = ((nx * 1 + ny * 0 + nz * 0) < 0) ? -1:1;
-				Scalar angle = acos(a*0 + b*0 + c*1) * sign;
-
-				Eigen::Quaternion<Scalar> q;
-				q = Eigen::AngleAxis<Scalar>(-angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
+				Eigen::Quaternion<float> q;
+				q.setFromTwoVectors(current, target);
+//
+//				Scalar nx = b*1 - c*0;
+//				Scalar ny = c*0 - a*1;
+//				Scalar nz = a*0 - b*0;
+//
+//				Scalar length = sqrt(nx*nx + ny*ny + nz*nz);
+//				nx /= length;
+//				ny /= length;
+//				nz /= length;
+//
+//
+//				Scalar sign = ((nx * 1 + ny * 0 + nz * 0) < 0) ? -1:1;
+//				Scalar angle = acos(a*0 + b*0 + c*1) * sign;
+//
+//				Eigen::Quaternion<Scalar> q;
+//				q = Eigen::AngleAxis<Scalar>(-angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
 
 				x = q.x();
 				y = q.y();
@@ -175,20 +181,27 @@ namespace but_plane_detector
 
 			void getInverseQuaternionRotation(Scalar &x, Scalar &y, Scalar &z, Scalar &w)
 			{
-				Scalar nx = b*1 - c*0;
-				Scalar ny = c*0 - a*1;
-				Scalar nz = a*0 - b*0;
+				Eigen::Vector3f current(a, b, c);
+				Eigen::Vector3f target(1.0, 0.0, 0.0);
 
-				Scalar length = sqrt(nx*nx + ny*ny + nz*nz);
-				nx /= length;
-				ny /= length;
-				nz /= length;
+				Eigen::Quaternion<float> q;
+				q.setFromTwoVectors(target, current);
 
-				Scalar sign = ((nx * 1 + ny * 0 + nz * 0) < 0) ? -1:1;
-				Scalar angle = acos(a*0 + b*0 + c*1) * sign;
 
-				Eigen::Quaternion<Scalar> q;
-				q = Eigen::AngleAxis<Scalar>(angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
+//				Scalar nx = b*1 - c*0;
+//				Scalar ny = c*0 - a*1;
+//				Scalar nz = a*0 - b*0;
+//
+//				Scalar length = sqrt(nx*nx + ny*ny + nz*nz);
+//				nx /= length;
+//				ny /= length;
+//				nz /= length;
+//
+//				Scalar sign = ((nx * 1 + ny * 0 + nz * 0) < 0) ? -1:1;
+//				Scalar angle = acos(a*0 + b*0 + c*1) * sign;
+//
+//				Eigen::Quaternion<Scalar> q;
+//				q = Eigen::AngleAxis<Scalar>(angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
 
 				x = q.x();
 				y = q.y();
@@ -198,21 +211,56 @@ namespace but_plane_detector
 
 			void getQuaternionRotation(Scalar &x, Scalar &y, Scalar &z, Scalar &w, cv::Vec<Scalar, 3> &normal)
 			{
-				Scalar nx = b*normal[2] - c*normal[1];
-				Scalar ny = c*normal[0] - a*normal[2];
-				Scalar nz = a*normal[1] - b*normal[0];
+				Eigen::Vector3f current(a, b, c);
+				Eigen::Vector3f target(normal[0], normal[1], normal[2]);
 
-				Scalar length = sqrt(nx*nx + ny*ny + nz*nz);
-				nx /= length;
-				ny /= length;
-				nz /= length;
+				Eigen::Quaternion<float> q;
+				q.setFromTwoVectors(current, target);
 
+//				Scalar nx = b*normal[2] - c*normal[1];
+//				Scalar ny = c*normal[0] - a*normal[2];
+//				Scalar nz = a*normal[1] - b*normal[0];
+//
+//				Scalar length = sqrt(nx*nx + ny*ny + nz*nz);
+//				nx /= length;
+//				ny /= length;
+//				nz /= length;
+//
+//
+//				Scalar sign = ((nx * 1 + ny * 0 + nz * 0) < 0) ? -1:1;
+//				Scalar angle = acos(a*0 + b*0 + c*1) * sign;
+//
+//				Eigen::Quaternion<Scalar> q;
+//				q = Eigen::AngleAxis<Scalar>(-angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
 
-				Scalar sign = ((nx * 1 + ny * 0 + nz * 0) < 0) ? -1:1;
-				Scalar angle = acos(a*0 + b*0 + c*1) * sign;
+				x = q.x();
+				y = q.y();
+				z = q.z();
+				w = q.w();
+			}
 
-				Eigen::Quaternion<Scalar> q;
-				q = Eigen::AngleAxis<Scalar>(-angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
+			void getQuaternionRotationInverse(Scalar &x, Scalar &y, Scalar &z, Scalar &w, cv::Vec<Scalar, 3> &normal)
+			{
+				Eigen::Vector3f current(a, b, c);
+				Eigen::Vector3f target(normal[0], normal[1], normal[2]);
+
+				Eigen::Quaternion<float> q;
+				q.setFromTwoVectors(target, current);
+
+//				Scalar nx = b*normal[2] - c*normal[1];
+//				Scalar ny = c*normal[0] - a*normal[2];
+//				Scalar nz = a*normal[1] - b*normal[0];
+//
+//				Scalar length = sqrt(nx*nx + ny*ny + nz*nz);
+//				nx /= length;
+//				ny /= length;
+//				nz /= length;
+//
+//				Scalar sign = ((nx * 1 + ny * 0 + nz * 0) < 0) ? -1:1;
+//				Scalar angle = acos(a*0 + b*0 + c*1) * sign;
+//
+//				Eigen::Quaternion<Scalar> q;
+//				q = Eigen::AngleAxis<Scalar>(angle, Eigen::Matrix<Scalar, 3, 1>(nx, ny, nz));
 
 				x = q.x();
 				y = q.y();

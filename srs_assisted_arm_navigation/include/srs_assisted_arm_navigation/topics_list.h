@@ -37,6 +37,7 @@ namespace srs_assisted_arm_navigation
 	 * topics
 	 */
     static const std::string TOP_GRIPPER_RPY = PACKAGE_NAME_PREFIX + std::string("/gripper_rpy");
+    static const std::string TOP_STATE = PACKAGE_NAME_PREFIX + std::string("/state");
 
     /**
      * actions

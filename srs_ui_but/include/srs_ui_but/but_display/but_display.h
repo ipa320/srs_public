@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_display.h 1662 2012-10-17 11:49:26Z stancl $
+ * $Id: but_display.h 1798 2012-11-02 18:39:23Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -43,6 +43,7 @@
 
 #include "example_pane.h"
 #include "octomap_control_pane.h"
+#include "camera_control_pane.h"
 #include "srs_env_model_msgs/RVIZCameraPosition.h"
 
 namespace srs_ui_but
@@ -176,6 +177,9 @@ protected:
     
     //! Octomap controls window
     COctomapControlPane * m_ocmap_window;
+
+    //! Rviz camera control pane
+    CCameraControlPane * m_camera_window;
 
     //! Camera position publisher name
     std::string m_cameraPositionPublisherName;

@@ -49,7 +49,7 @@
 #include <visualization_msgs/Marker.h>
 
 // but_scenemodel
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 
 namespace srs_env_model_percp
@@ -61,6 +61,9 @@ namespace srs_env_model_percp
 	class DynModelExporter
 	{
 		public:
+			typedef but_plane_detector::Plane<float> tPlane;
+			typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
+
 			/**
 			 * Initialization
 			 */
@@ -79,14 +82,14 @@ namespace srs_env_model_percp
 			 * @param scene_cloud point cloud of the scene
 			 * @param sensorToWorldTf Sendor to map transformation matrix
 			 */
-			void update(std::vector<but_plane_detector::Plane<float> > & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+			void update(tPlanes & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
 			
 			/**
 			 * Updates sent planes using but environment model server
 			 * @param planes Vector of found planes
 			 * @param scene_cloud point cloud of the scene
 			 */
-			void update(std::vector<but_plane_detector::Plane<float> > & planes, but_plane_detector::Normals &normals, tf::StampedTransform &sensorToWorldTf);
+			void update(tPlanes & planes, but_plane_detector::Normals &normals, tf::StampedTransform &sensorToWorldTf);
 
 			/**
 			 * Updates sent planes using direct but interactive marker server
@@ -94,7 +97,7 @@ namespace srs_env_model_percp
 			 * @param scene_cloud point cloud of the scene
 			 * @param sensorToWorldTf Sendor to map transformation matrix
 			 */
-			void updateDirect(std::vector<but_plane_detector::Plane<float> > & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+			void updateDirect(tPlanes & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
 
 			static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker);
 
@@ -109,7 +112,7 @@ namespace srs_env_model_percp
 			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, pcl::PointXYZ &center, pcl::PointXYZ &scale);
 
 			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, but_plane_detector::Normals &normals, pcl::PointXYZ &center, pcl::PointXYZ &scale);
-			void getCenterSAndScale(std::vector<but_plane_detector::Plane<float> > & planes, but_plane_detector::Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags);
+			void getCenterSAndScale(tPlanes & planes, but_plane_detector::Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags);
 
 			/**
 			 * Auxiliary node handle variable

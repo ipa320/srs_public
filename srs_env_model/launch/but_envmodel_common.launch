@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <launch>
+    <!-- Don't forget to run the Kinect throttling nodelete somewhere -->
+    <!-- include file="$(find srs_env_model)/launch/kinect_throttling.launch" /-->
+
     <!-- Run our dynamic scene model server node -->
     <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
         <rosparam file="$(find srs_env_model)/config/environment_server_defaults.yaml" command="load"/>

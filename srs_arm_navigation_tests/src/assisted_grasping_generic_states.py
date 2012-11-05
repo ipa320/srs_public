@@ -101,7 +101,7 @@ class grasp_unknown_object_assisted(smach.State):
       est_result = est(header=header,
                        p1=feedback.p1,
                        p2=feedback.p2,
-                       mode=1)
+                       mode=2)
           
     except Exception, e:
           

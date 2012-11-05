@@ -43,7 +43,7 @@
 // ROS
 #include <sensor_msgs/CameraInfo.h>
 
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 
 namespace srs_env_model_percp
@@ -57,7 +57,11 @@ namespace srs_env_model_percp
 	 */
 	class ParameterSpace
 	{
-		public:
+	public:
+		typedef but_plane_detector::Plane<float> tPlane;
+		typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
+
+			public:
 			/**
 			 * Constructor - creates and allocates a space (angle X angle X shift)
 			 * @param anglemin Minimal angle in space
@@ -78,7 +82,7 @@ namespace srs_env_model_percp
 			 * Finds maximas in this and saves them as planes to given vector
 			 * @param indices Found planes
 			 */
-			int findMaxima(std::vector<but_plane_detector::Plane<float> > &indices);
+			int findMaxima(tPlanes &indices);
 
 			/**
 			 * Generates a Gauss curve into this space (centered)

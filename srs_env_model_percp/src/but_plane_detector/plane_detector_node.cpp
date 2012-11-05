@@ -59,11 +59,11 @@
 
 #include <srs_env_model_percp/ClearPlanes.h>
 
-#include <but_segmentation/filtering.h>
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/filtering.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 #include <srs_env_model_percp/but_plane_detector/scene_model.h>
-#include <srs_env_model_percp/but_plane_detector/dyn_model_exporter.h>
+#include <srs_env_model_percp/but_plane_detector/dyn_model_exporter2.h>
 #include <srs_env_model_percp/but_plane_detector/plane_detector_params.h>
 
 #include <srs_env_model_percp/topics_list.h>
@@ -97,6 +97,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <float.h>
+#include <cob_3d_mapping_msgs/Shape.h>
+#include <cob_3d_mapping_msgs/ShapeArray.h>
 using namespace std;
 using namespace cv;
 using namespace pcl;
@@ -109,11 +111,15 @@ namespace srs_env_model_percp
     int counter = 0;
     sensor_msgs::PointCloud2 cloud_msg;
     tf::MessageFilter<sensor_msgs::PointCloud2> *transform_filter;
+
+    tf::MessageFilter<Image> *transform_filterDepth;
+    tf::MessageFilter<CameraInfo> *transform_filterCam;
     tf::TransformListener *tfListener;
+    tf::TransformListener *tfListenerCam;
     ros::Publisher pub1;
     ros::Publisher pub2;
     ros::Publisher pub3;
-    DynModelExporter *exporter = NULL;
+    DynModelExporter2 *exporter = NULL;
 
     sensor_msgs::CameraInfo cam_info_legacy;
     sensor_msgs::CameraInfoConstPtr cam_info_aux (&cam_info_legacy);
@@ -128,6 +134,42 @@ namespace srs_env_model_percp
     void callbackkinect( const sensor_msgs::ImageConstPtr& dep, const sensor_msgs::CameraInfoConstPtr& cam_info);
     bool clear(srs_env_model_percp::ClearPlanes::Request &req,srs_env_model_percp::ClearPlanes::Response &res);
     bool getParams(ros::NodeHandle nh);
+
+    void getPlanes(Normals &normal, pcl::PointCloud<pcl::PointXYZ> &pointcloud)
+    {
+		// Add point cloud to current Hough space and recompute planes
+		model->AddNext(normal, settings.param_ht_min_smooth);
+		model->recomputePlanes( settings.param_search_minimum_current_space,
+								settings.param_search_minimum_global_space,
+								settings.param_search_maxima_search_blur,
+								settings.param_search_maxima_search_neighborhood);
+
+		// update current sent planes
+		exporter->update(model->planes, normal);
+
+		visualization_msgs::MarkerArray marker_array;
+    	cob_3d_mapping_msgs::ShapeArray shape_array;
+    	shape_array.header.frame_id = settings.param_output_frame;
+
+    	for (unsigned int i = 0; i < exporter->displayed_planes.size(); ++i)
+    	{
+    		marker_array.markers.push_back(exporter->displayed_planes[i].plane.getMeshMarker());
+    		marker_array.markers.back().header.frame_id = settings.param_output_frame;
+    		marker_array.markers.back().header.stamp = pointcloud.header.stamp;
+
+    		PlaneExt::tShapeMarker shapes = exporter->displayed_planes[i].plane.getShapeMarker();
+    		for (unsigned int j = 0; j < shapes.size(); ++j)
+    		{
+    			shape_array.shapes.push_back(shapes[j]);
+    			shape_array.shapes.back().header.frame_id=settings.param_output_frame;
+    			shape_array.shapes.back().id = i * 100 + j;
+    		}
+    	}
+
+    	std::cerr << "Total no of sent planes:  " << exporter->displayed_planes.size() << std::endl;
+    	pub2.publish(marker_array);
+    	pub3.publish(shape_array);
+    }
 
     /**
 	 * Callback function manages sync of messages
@@ -147,11 +189,99 @@ namespace srs_env_model_percp
 		std::cerr << "Width: " << pointcloud.width << " height: " << pointcloud.height << std::endl;
 		std::cerr << "=========================================================" << endl;
 
+    	// get indices of points to be deleted (max depth)
+    	std::vector<unsigned int> zero_indices;
+    	for (unsigned int i = 0; i < pointcloud.points.size(); ++i)
+    	{
+    		if (pointcloud.points[i].z > settings.param_ht_maxdepth)
+    			zero_indices.push_back(i);
+    	}
+
+    	// transform to world
+    	tf::StampedTransform sensorToWorldTf;
+    	try {
+    		tfListener->waitForTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, ros::Duration(2.0));
+    		tfListener->lookupTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, sensorToWorldTf);
+    	}
+    	catch(tf::TransformException& ex){
+    		std::cerr << "Transform error: " << ex.what() << ", quitting callback" << std::endl;
+    		return;
+    	}
+
+    	// transform pointcloud from sensor frame to fixed robot frame
+    	Eigen::Matrix4f sensorToWorld;
+    	pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
+    	pcl::transformPointCloud(pointcloud, pointcloud, sensorToWorld);
+
+    	// set all zero indices to point(0,0,0)
+		for (unsigned int i = 0; i < zero_indices.size(); ++i)
+		{
+			pointcloud.points[zero_indices[i]].x = 0.0;
+    		pointcloud.points[zero_indices[i]].y = 0.0;
+    		pointcloud.points[zero_indices[i]].z = 0.0;
+		}
+
+    	// Compute normals on point cloud
+    	Normals normal(pointcloud);
+
+		// get planes from point cloud
+		getPlanes(normal, pointcloud);
+
+		// Control out
+		ros::Time end = ros::Time::now();
+		std::cerr << "DONE.... Computation time: " << (end-begin).nsec/1000000.0 << " ms." << std::endl;
+		std::cerr << "=========================================================" << endl<< endl;
+	}
+
+
+	void callbackkinect( const sensor_msgs::ImageConstPtr& dep, const CameraInfoConstPtr& cam_info)
+	{
+		++counter;
+		ros::Time begin = ros::Time::now();
+
+		//  Debug info
+		std::cerr << "Recieved frame..." << std::endl;
+		std::cerr << "Cam info: fx:" << cam_info->K[0] << " fy:" << cam_info->K[4] << " cx:" << cam_info->K[2] <<" cy:" << cam_info->K[5] << std::endl;
+		std::cerr << "Depth image h:" << dep->height << " w:" << dep->width << " e:" << dep->encoding << " " << dep->step << endl;
+		std::cerr << "=========================================================" << endl;
+
+		//get image from message
+		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(dep);
+		cv::Mat depth = cv_image->image;
+
+		pcl::PointCloud<PointXYZ> pointcloud;
+		pointcloud.resize(depth.rows * depth.cols);
+		pointcloud.width = depth.cols;
+		pointcloud.height = depth.rows;
+		pointcloud.header = dep->header;
+		// get indices of points to be deleted (max depth)
+		std::vector<unsigned int> zero_indices;
+
+		unsigned short aux;
+		for (int i = 0; i < depth.rows; ++i)
+		for (int j = 0; j < depth.cols; ++j)
+		{
+			pcl::PointXYZ point(0.0, 0.0, 0.0);
+			if ((aux = depth.at<unsigned short>(i, j)) != 0)
+			{
+				point.z = aux/1000.0;
+				point.x = ( (j - cam_info->K[2]) * point.z / cam_info->K[0] );
+				point.y = ( (i - cam_info->K[5]) * point.z / cam_info->K[4] );
+
+				if (point.z > settings.param_ht_maxdepth)
+					zero_indices.push_back(i);
+			}
+			else
+				zero_indices.push_back(i);
+
+			pointcloud[i * depth.rows + j] = point;
+		}
+
 		// transform to world
 		tf::StampedTransform sensorToWorldTf;
 		try {
-			tfListener->waitForTransform(settings.param_output_frame, cloud->header.frame_id, cloud->header.stamp, ros::Duration(2.0));
-			tfListener->lookupTransform(settings.param_output_frame, cloud->header.frame_id, cloud->header.stamp, sensorToWorldTf);
+			tfListener->waitForTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, ros::Duration(2.0));
+			tfListener->lookupTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, sensorToWorldTf);
 		}
 		catch(tf::TransformException& ex){
 			std::cerr << "Transform error: " << ex.what() << ", quitting callback" << std::endl;
@@ -163,289 +293,18 @@ namespace srs_env_model_percp
 		pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
 		pcl::transformPointCloud(pointcloud, pointcloud, sensorToWorld);
 
-		// Compute normals on point cloud
-		Normals normal(pointcloud);
-
-		// Add point cloud to current Hough space and recompute planes
-		model->AddNext(normal);
-		model->recomputePlanes( settings.param_search_minimum_current_space,
-								settings.param_search_minimum_global_space,
-								settings.param_search_maxima_search_blur,
-								settings.param_search_maxima_search_neighborhood);
-
-				// TODO debug point cloud output
-				////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				pcl::PointCloud<pcl::PointXYZRGB> outcloud;
-				outcloud.header.frame_id = settings.param_output_frame;
-
-				// Majkl's note: The following line has been commented out and modified because
-				// it's necessary to use aligned allocator when creating STL containers and
-				// classes containing Eigen types.
-//				std::vector<pcl::PointCloud<pcl::PointXYZ> > planecloud(model->planes.size());
-
-				typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
-				typedef std::vector<PointCloud, Eigen::aligned_allocator<PointCloud> > PlaneCloud;
-				PlaneCloud planecloud(model->planes.size());
-
-				for (int i = 0; i < normal.m_points.rows; ++i)
-				for (int j = 0; j < normal.m_points.cols; ++j)
-				{
-					Vec3f point = normal.m_points.at<Vec3f>(i, j);
-					cv::Vec4f localPlane = normal.m_planes.at<cv::Vec4f>(i, j);
-					Plane<float> aaa(localPlane[0], localPlane[1], localPlane[2], localPlane[3]);
-					double dist = DBL_MAX;
-					int chosen = -1;
-					// find the best plane
-					for (unsigned int a = 0; a < model->planes.size(); ++a)
-					{
-						if (model->planes[a].distance(point) < dist && model->planes[a].distance(point) < settings.param_visualisation_distance &&
-							model->planes[a].isSimilar(aaa, settings.param_visualisation_plane_normal_dev, settings.param_visualisation_plane_shift_dev))
-						{
-							dist = model->planes[a].distance(point);
-							chosen = a;
-						}
-					}
-					// if there is good plane, insert point into point cloud
-					if (chosen > -1)
-					{
-						pcl::PointXYZRGB current;
-						current.x = point[0];
-						current.y = point[1];
-						current.z = point[2];
-						// some not good debug info about planes
-						current.r = abs(model->planes[chosen].a)*255;
-						current.g = abs(model->planes[chosen].b)*255;
-						current.b = abs(model->planes[chosen].d)*255;
-						outcloud.push_back(current);
-
-						pcl::PointXYZ current2;
-						current2.x = point[0];
-						current2.y = point[1];
-						current2.z = point[2];
-						planecloud[chosen].points.push_back(current2);
-
-
-					}
-				}
-				pub1.publish(outcloud);
-				////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//			visualization_msgs::MarkerArray marker_array;
-//			for (unsigned int i = 0; i < planecloud.size(); ++i)
-//			{
-//				if (planecloud[i].points.size() > 20)
-//				{
-//				pcl::ModelCoefficients coefs;
-//				coefs.values.push_back(model->planes[i].a);
-//				coefs.values.push_back(model->planes[i].b);
-//				coefs.values.push_back(model->planes[i].c);
-//				coefs.values.push_back(model->planes[i].d);
-//
-//				visualization_msgs::Marker marker;
-//				DynModelExporter::createMarkerForConvexHull(planecloud[i], coefs, marker);
-//				marker.header.frame_id = settings.param_output_frame;
-//				marker.header.stamp = pointcloud.header.stamp;
-//				marker.id = i;
-//				marker.ns = "Normals";
-//				marker.pose.position.x = 0.0;
-//				marker.pose.position.y = 0.0;
-//				marker.pose.position.z = 0.0;
-//				marker.pose.orientation.x = 0.0;
-//				marker.pose.orientation.y = 0.0;
-//				marker.pose.orientation.z = 0.0;
-//				marker.pose.orientation.w = 1.0;
-//				marker.scale.x = 1;
-//				marker.scale.y = 1;
-//				marker.scale.z = 1;
-//				marker.color.r = 0.5;
-//				marker.color.g = 0.0;
-//				marker.color.b = 0.0;
-//				marker.color.a = 0.8;
-//				marker_array.markers.push_back(marker);
-//				}
-//			}
-//			pub2.publish(marker_array);
-		// update planes on server
-		exporter->update(model->planes, normal, sensorToWorldTf);
-
-		// Control out
-		ros::Time end = ros::Time::now();
-		std::cerr << "DONE.... Computation time: " << (end-begin).nsec/1000000.0 << " ms." << std::endl;
-		std::cerr << "=========================================================" << endl<< endl;
-	}
-
-	void callbackkinect( const sensor_msgs::ImageConstPtr& dep, const CameraInfoConstPtr& cam_info)
-	{
-		++counter;
-		ros::Time begin = ros::Time::now();
-//		//  Debug info
-//		std::cerr << "Recieved frame..." << std::endl;
-//		std::cerr << "Cam info: fx:" << cam_info->K[0] << " fy:" << cam_info->K[4] << " cx:" << cam_info->K[2] <<" cy:" << cam_info->K[5] << std::endl;
-//		std::cerr << "Depth image h:" << dep->height << " w:" << dep->width << " e:" << dep->encoding << " " << dep->step << endl;
-//		std::cerr << "=========================================================" << endl;
-//
-//		//get image from message
-//		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(dep);
-//		cv::Mat depth = cv_image->image;
-//
-//
-//		Normals normal(depth, cam_info, NormalType::LSQAROUND);
-//
-//		model->AddNext(depth, cam_info_aux, normal);
-//		model->recomputePlanes();
-//
-//		model->scene_cloud->header.frame_id = "/head_cam3d_link";
-//
-//		pub1.publish(model->scene_cloud);
-//		//	pub2.publish(model->current_hough_cloud);
-//		//exporter->update(model->planes, normal);
-
-		//get image from message
-		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(dep);
-		cv::Mat depth = cv_image->image;
-
-		pcl::PointCloud<pcl::PointXYZ> pointcloud;
-		pointcloud.resize(depth.rows*depth.cols/16);
-		pointcloud.height = depth.rows/4;
-		pointcloud.width = depth.cols/4;
-		pointcloud.header.frame_id = dep->header.frame_id;
-		pointcloud.header.stamp = dep->header.stamp;
-
-		for (unsigned int w = 0; w < pointcloud.width; ++w)
-		for (unsigned int h = 0; h < pointcloud.height; ++h)
+		// set all zero indices to point(0,0,0)
+		for (unsigned int i = 0; i < zero_indices.size(); ++i)
 		{
-			if (w % 4 == 0 && h % 4 == 0)
-			{
-			float aux = depth.at<unsigned short>(h, w);
-			PointXYZ realPoint;
-
-			realPoint.z = aux/1000.0;
-			realPoint.x = ( (w - cam_info->K[2]) * realPoint.z / cam_info->K[0] );
-			realPoint.y = ( (h - cam_info->K[5]) * realPoint.z / cam_info->K[4] );
-
-			pointcloud.points[h/4 * pointcloud.width + w/4] = realPoint;
-			depth.at<unsigned short>(h, w) = realPoint.z/3.5 * 255;
-			}
+			pointcloud.points[zero_indices[i]].x = 0.0;
+		    pointcloud.points[zero_indices[i]].y = 0.0;
+		    pointcloud.points[zero_indices[i]].z = 0.0;
 		}
 
-		ros::Time testbegin = ros::Time::now();
-		// Compute normals on point cloud
 		Normals normal(pointcloud);
+		getPlanes(normal, pointcloud);
 
-		// Add point cloud to current Hough space and recompute planes
-		model->AddNext(normal);
-		model->recomputePlanes( settings.param_search_minimum_current_space,
-								settings.param_search_minimum_global_space,
-								settings.param_search_maxima_search_blur,
-								settings.param_search_maxima_search_neighborhood);
-		/////////////////////////////////////////////t///////////////////////
-		ros::Time testend = ros::Time::now();
-		std::cout.setf(ios::fixed, ios::floatfield);
-		std::cout.precision(10);
-
-				// TODO debug point cloud output
-				////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				pcl::PointCloud<pcl::PointXYZRGB> outcloud;
-					outcloud.header.frame_id = settings.param_output_frame;
-
-						std::vector<pcl::PointCloud<pcl::PointXYZ> > planecloud(model->planes.size());
-
-						for (int i = 0; i < normal.m_points.rows; ++i)
-						for (int j = 0; j < normal.m_points.cols; ++j)
-						{
-							Vec3f point = normal.m_points.at<Vec3f>(i, j);
-							cv::Vec4f localPlane = normal.m_planes.at<cv::Vec4f>(i, j);
-							Plane<float> aaa(localPlane[0], localPlane[1], localPlane[2], localPlane[3]);
-							double dist = DBL_MAX;
-							int chosen = -1;
-							// find the best plane
-							for (unsigned int a = 0; a < model->planes.size(); ++a)
-							{
-								if (model->planes[a].distance(point) < dist && model->planes[a].distance(point) < settings.param_visualisation_distance &&
-									model->planes[a].isSimilar(aaa, 0.4, settings.param_visualisation_plane_shift_dev))
-								{
-									dist = model->planes[a].distance(point);
-									chosen = a;
-								}
-							}
-							// if there is good plane, insert point into point cloud
-							if (chosen > -1)
-							{
-								pcl::PointXYZRGB current;
-								current.x = point[0];
-								current.y = point[1];
-								current.z = point[2];
-								// some not good debug info about planes
-								current.r = abs(model->planes[chosen].a)*255;
-								current.g = abs(model->planes[chosen].b)*255;
-								current.b = abs(model->planes[chosen].d)*255;
-								outcloud.push_back(current);
-
-								pcl::PointXYZ current2;
-								current2.x = point[0];
-								current2.y = point[1];
-								current2.z = point[2];
-								planecloud[chosen].points.push_back(current2);
-
-
-							}
-						}
-						pub1.publish(outcloud);
-						////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-					visualization_msgs::MarkerArray marker_array;
-					visualization_msgs::Marker marker;
-					marker.header.frame_id = settings.param_output_frame;
-					marker.header.stamp = pointcloud.header.stamp;
-					marker.id = 1;
-					marker.ns = "Normals";
-					marker.pose.position.x = 0.0;
-					marker.pose.position.y = 0.0;
-					marker.pose.position.z = 0.0;
-					marker.pose.orientation.x = 0.0;
-					marker.pose.orientation.y = 0.0;
-					marker.pose.orientation.z = 0.0;
-					marker.pose.orientation.w = 1.0;
-					marker.scale.x = 1;
-					marker.scale.y = 1;
-					marker.scale.z = 1;
-					marker.color.r = 0.5;
-					marker.color.g = 0.0;
-					marker.color.b = 0.0;
-					marker.color.a = 0.8;
-					for (unsigned int i = 0; i < planecloud.size(); ++i)
-					{
-						if (planecloud[i].points.size() > 20)
-						{
-						pcl::ModelCoefficients::Ptr coefs(new pcl::ModelCoefficients);;
-						coefs->values.push_back(model->planes[i].a);
-						coefs->values.push_back(model->planes[i].b);
-						coefs->values.push_back(model->planes[i].c);
-						coefs->values.push_back(model->planes[i].d);
-
-						std::ofstream fileout("out_node.csv", std::ofstream::ios_base::app);
-
-												fileout << "Hough node;" << pointcloud.header.stamp.nsec << ";" << model->planes[i].a << ";" << model->planes[i].b << ";"
-														<< model->planes[i].c << ";" << model->planes[i].d << ";" << (testend-testbegin).nsec
-														<< ";" << model->space.getSize()*sizeof(double) << std::endl;
-
-
-												fileout.close();
-
-						DynModelExporter::createMarkerForConvexHull(planecloud[i], coefs, marker);
-
-						//marker_array.markers.push_back(marker);
-						}
-					}
-					pub2.publish(marker);
-					pub1.publish(outcloud);
-
-					cv_image->image = depth;
-					pub3.publish(cv_image->toImageMsg());
-				// update planes on server
-				//exporter->update(model->planes, normal, sensorToWorldTf);
 		// Control out
-		std::cerr << "Kinect input not ready yet.... doing nothing." << std::endl;
 		ros::Time end = ros::Time::now();
 		std::cerr << "DONE.... Computation time: " << (end-begin).nsec/1000000.0 << " ms." << std::endl;
 		std::cerr << "=========================================================" << endl<< endl;
@@ -470,6 +329,7 @@ namespace srs_env_model_percp
         nh.param(PARAM_NODE_OUTPUT_FRAME, settings.param_output_frame, PARAM_NODE_OUTPUT_FRAME_DEFAULT);
         nh.param(PARAM_NODE_ORIGINAL_FRAME, settings.param_original_frame, PARAM_NODE_ORIGINAL_FRAME_DEFAULT);
 
+        nh.param(PARAM_HT_KEEPTRACK, settings.param_ht_keeptrack, PARAM_HT_KEEPTRACK_DEFAULT);
 		nh.param(PARAM_HT_MAXDEPTH, settings.param_ht_maxdepth, PARAM_HT_MAXDEPTH_DEFAULT);
 		nh.param(PARAM_HT_MINSHIFT, settings.param_ht_minshift, PARAM_HT_MINSHIFT_DEFAULT);
 		nh.param(PARAM_HT_MAXSHIFT, settings.param_ht_maxshift, PARAM_HT_MAXSHIFT_DEFAULT);
@@ -483,6 +343,10 @@ namespace srs_env_model_percp
 		nh.param(PARAM_HT_LVL1_GAUSS_SHIFT_RES, settings.param_ht_lvl1_gauss_shift_res, PARAM_HT_LVL1_GAUSS_SHIFT_RES_DEFAULT);
 		nh.param(PARAM_HT_LVL1_GAUSS_ANGLE_SIGMA, settings.param_ht_lvl1_gauss_angle_sigma, PARAM_HT_LVL1_GAUSS_ANGLE_SIGMA_DEFAULT);
 		nh.param(PARAM_HT_LVL1_GAUSS_SHIFT_SIGMA, settings.param_ht_lvl1_gauss_shift_sigma, PARAM_HT_LVL1_GAUSS_SHIFT_SIGMA_DEFAULT);
+		nh.param(PARAM_HT_MIN_SMOOTH, settings.param_ht_min_smooth, PARAM_HT_MIN_SMOOTH_DEFAULT);
+
+		nh.param(PARAM_HT_PLANE_MERGE_ANGLE, settings.param_ht_plane_merge_angle, PARAM_HT_PLANE_MERGE_ANGLE_DEFAULT);
+		nh.param(PARAM_HT_PLANE_MERGE_SHIFT, settings.param_ht_plane_merge_shift, PARAM_HT_PLANE_MERGE_SHIFT_DEFAULT);
 
 		nh.param(PARAM_VISUALISATION_DISTANCE, settings.param_visualisation_distance, PARAM_VISUALISATION_DISTANCE_DEFAULT);
 		nh.param(PARAM_VISUALISATION_PLANE_NORMAL_DEV, settings.param_visualisation_plane_normal_dev, PARAM_VISUALISATION_PLANE_NORMAL_DEV_DEFAULT);
@@ -497,7 +361,6 @@ namespace srs_env_model_percp
 		return true;
 	}
 }
-
 
 /**
  * Main detector module body
@@ -526,7 +389,9 @@ int main( int argc, char** argv )
 							settings.param_ht_lvl1_gauss_angle_res,
 							settings.param_ht_lvl1_gauss_shift_res,
 							settings.param_ht_lvl1_gauss_angle_sigma,
-							settings.param_ht_lvl1_gauss_shift_sigma);
+							settings.param_ht_lvl1_gauss_shift_sigma,
+							settings.param_ht_plane_merge_angle,
+							settings.param_ht_plane_merge_shift);
 	ros::ServiceServer service = n.advertiseService(DET_SERVICE_CLEAR_PLANES, clear);
 
 	// Print out parameters
@@ -561,19 +426,21 @@ int main( int argc, char** argv )
 	// if PCL input
 	if (settings.param_node_input == PARAM_NODE_INPUT_PCL)
 	{
-		exporter = new DynModelExporter(&n,
-		                                settings.param_original_frame,
-                                        settings.param_output_frame,
+		exporter = new DynModelExporter2(&n,
+										settings.param_original_frame,
+	                                    settings.param_output_frame,
 										settings.param_visualisation_min_count,
 										settings.param_visualisation_distance,
 										settings.param_visualisation_plane_normal_dev,
-										settings.param_visualisation_plane_shift_dev);
+										settings.param_visualisation_plane_shift_dev,
+										settings.param_ht_keeptrack);
 
 		// MESSAGES
 		message_filters::Subscriber<PointCloud2 > point_cloud(n, DET_INPUT_POINT_CLOUD_TOPIC, 1);
 
 		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZRGB> > (DET_OUTPUT_POINT_CLOUD_TOPIC, 1);
 		pub2 = n.advertise<visualization_msgs::MarkerArray > (DET_OUTPUT_MARKER_TOPIC, 1);
+		pub3 = n.advertise<cob_3d_mapping_msgs::ShapeArray > (DET_OUTPUT_MARKER_SRS_TOPIC, 1);
 
 		// sync images
 		tfListener = new tf::TransformListener();
@@ -589,25 +456,36 @@ int main( int argc, char** argv )
 	// if kinect input
 	else if (settings.param_node_input == PARAM_NODE_INPUT_KINECT)
 	{
-		exporter = new DynModelExporter(&n,
-                                        settings.param_original_frame,
-                                        settings.param_output_frame,
-                                        settings.param_visualisation_min_count,
-                                        settings.param_visualisation_distance,
-                                        settings.param_visualisation_plane_normal_dev,
-                                        settings.param_visualisation_plane_shift_dev);
+
+		exporter = new DynModelExporter2(&n,
+										settings.param_original_frame,
+	                                    settings.param_output_frame,
+										settings.param_visualisation_min_count,
+										settings.param_visualisation_distance,
+										settings.param_visualisation_plane_normal_dev,
+										settings.param_visualisation_plane_shift_dev,
+										settings.param_ht_keeptrack);
 
 		// MESSAGES
 		message_filters::Subscriber<Image> depth_sub(n, DET_INPUT_IMAGE_TOPIC, 1);
 		message_filters::Subscriber<CameraInfo> info_sub_depth(n, DET_INPUT_CAM_INFO_TOPIC, 1);
 
+		tfListener = new tf::TransformListener();
+		transform_filterDepth = new tf::MessageFilter<Image> (depth_sub, *tfListener, settings.param_output_frame, 1);
+
+		tfListenerCam = new tf::TransformListener();
+		transform_filterCam = new tf::MessageFilter<CameraInfo> (info_sub_depth, *tfListenerCam, settings.param_output_frame, 1);
+
+		message_filters::TimeSynchronizer<Image, CameraInfo> sync(*transform_filterDepth, *transform_filterCam, 10);
+
+		// register callback called when everything synchronized arrives
+		sync.registerCallback(boost::bind(&callbackkinect, _1, _2));
+
+
 		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZRGB> > (DET_OUTPUT_POINT_CLOUD_TOPIC, 1);
 		pub2 = n.advertise<visualization_msgs::MarkerArray > (DET_OUTPUT_MARKER_TOPIC, 1);
-		pub3 = n.advertise<Image> (DET_OUTPUT_IMAGE_TOPIC, 1);
+		pub3 = n.advertise<cob_3d_mapping_msgs::ShapeArray > (DET_OUTPUT_MARKER_SRS_TOPIC, 1);
 
-		typedef sync_policies::ApproximateTime<Image, CameraInfo> MySyncPolicy;
-		Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), depth_sub, info_sub_depth);
-		sync.registerCallback(boost::bind(&callbackkinect, _1, _2));
 		std::cerr << "Plane detector initialized and listening depth images..." << std::endl;
 		ros::spin();
 

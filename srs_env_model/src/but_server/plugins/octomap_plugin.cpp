@@ -249,7 +249,7 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 			m_ocPublisherName, 100, m_latchedTopics);
 
 	// Add camera info subscriber
-	m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10,
+	m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 1,
 			&srs_env_model::COctoMapPlugin::cameraInfoCB, this);
 
 	// If should publish, create markers publisher
@@ -276,27 +276,33 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	//*
 
 	Eigen::Matrix4f registration_transform( Eigen::Matrix4f::Identity() );
-		// Registration
+
+	// Registration
 	{
-		if( cloud.size() > 0 && m_bNotFirst )
+
+
+		if( m_registration.isRegistering() && cloud.size() > 0 && m_bNotFirst )
 		{
 //			pcl::copyPointCloud( *m_data, *m_bufferCloud );
-
-			std::cerr << "Starting registration process " << std::endl;
 
 			tPointCloudPtr cloudPtr( new tPointCloud );
 			pcl::copyPointCloud( cloud, *cloudPtr );
 
 			if( m_registration.registerCloud( cloudPtr, m_mapParameters ) )
 			{
+//				std::cerr << "Starting registration process " << std::endl;
+
 				registration_transform = m_registration.getTransform();
 
 //				pcl::transformPointCloud( cloud, used_cloud, transform );
 
-				std::cerr << "Registration succeeded"  << std::endl;
+//				std::cerr << "Registration succeeded"  << std::endl;
 			}
 			else
+			{
+//				std::cerr << "reg failed." << std::endl;
 				return;
+			}
 		}
 	}
 

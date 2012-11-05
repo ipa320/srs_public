@@ -224,7 +224,7 @@ void ParameterSpace::generateGaussIn(double angleSigma, double shiftSigma)
 // Finds maximas in this and saves them as planes to given vector
 // @param indices Found planes
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int ParameterSpace::findMaxima(std::vector<Plane<float> > &indices)
+int ParameterSpace::findMaxima(tPlanes &indices)
 {
 	int around = 2;
 	float a, b, c;

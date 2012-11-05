@@ -228,6 +228,9 @@ protected:
     /// Camera info topic name
     std::string m_camera_info_topic;
 
+    //! Camera frame id
+    std::string m_camFrameId;
+
     /// Camera info subscriber
     ros::Subscriber m_ciSubscriber;
 

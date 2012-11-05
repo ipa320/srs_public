@@ -40,6 +40,7 @@ namespace srs_env_model_percp
 	static const std::string DET_OUTPUT_POINT_CLOUD_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/point_cloud");
 	static const std::string DET_OUTPUT_PLANES_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/plane_array");
 	static const std::string DET_OUTPUT_MARKER_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/poly");
+	static const std::string DET_OUTPUT_MARKER_SRS_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/srs_poly_array");
 	static const std::string DET_OUTPUT_IMAGE_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/image");
 
     /**

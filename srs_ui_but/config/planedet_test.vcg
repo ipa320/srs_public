@@ -15,7 +15,7 @@ Distance\ Visualizer.Enabled=1
 Distance\ Visualizer.Line\ Thickness=0.01
 Distance\ Visualizer.Link=/sdh_palm_link
 Distance\ Visualizer.Show\ distance=1
-Distance\ Visualizer.Topic=
+Distance\ Visualizer.Topic=/cam3d/depth/points
 Interactive\ Markers.Enabled=1
 Interactive\ Markers.Show\ Axes=0
 Interactive\ Markers.Show\ Descriptions=0
@@ -105,6 +105,9 @@ Live\ Point\ Cloud..IntensityMin\ ColorG=0
 Live\ Point\ Cloud..IntensityMin\ ColorB=0
 Live\ Point\ Cloud..IntensityMin\ Intensity=0
 Live\ Point\ Cloud..IntensityUse\ full\ RGB\ spectrum=0
+MarkerArray.Enabled=1
+MarkerArray.Marker\ Array\ Topic=/but_plane_detector/poly
+MarkerArray.Normals=1
 Robot\ Interactive\ Teleop.Enabled=1
 Robot\ Interactive\ Teleop.Show\ Axes=0
 Robot\ Interactive\ Teleop.Show\ Descriptions=1
@@ -231,8 +234,8 @@ Stretch\ Indicator.Thickness=0.5
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.796002 5.40359 10.2775 -0.22168 0.541248 0.936886
-Property\ Grid\ State=selection=;expanded=;scrollpos=0,0;splitterpos=215,431;ispageselected=1
+Camera\ Config=0.871002 5.1936 10.2775 -0.22168 0.541248 0.936886
+Property\ Grid\ State=selection=Stretch Indicator.Enabled;expanded=Distance Visualizer.Enabled.Distance Visualizer.StatusTopStatus,MarkerArray.Enabled.MarkerArray.Namespaces;scrollpos=0,0;splitterpos=163,327;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz
@@ -269,3 +272,7 @@ ClassName=CButCOBStretchIndicator
 Name=Distance Visualizer
 Package=srs_ui_but
 ClassName=CButDistanceLinearVisualizer
+[Display9]
+Name=MarkerArray
+Package=rviz
+ClassName=rviz::MarkerArrayDisplay

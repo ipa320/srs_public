@@ -51,7 +51,7 @@
 #include <opencv2/imgproc/imgproc_c.h>
 
 // but_scenemodel
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 #include <srs_env_model_percp/but_plane_detector/parameter_space.h>
 #include <srs_env_model_percp/but_plane_detector/parameter_space_hierarchy.h>
 
@@ -64,6 +64,10 @@ namespace srs_env_model_percp
 {
 	class SceneModel
 	{
+	public:
+		typedef but_plane_detector::Plane<float> tPlane;
+		typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
+
 		public:
 		/**
 		 * Constructor - initializes a scene and allocates necessary space - a space of (angle, angle, d) where angles are angles of plane normal and d is d parameter of plane equation.
@@ -89,7 +93,9 @@ namespace srs_env_model_percp
 					int lvl1_gauss_angle_res = 21,
 					int lvl1_gauss_shift_res = 21,
 					double lvl1_gauss_angle_sigma = 5.0,
-					double lvl1_gauss_shift_sigma = 5.0);
+					double lvl1_gauss_shift_sigma = 5.0,
+					double plane_merge_angle = 0.3,
+					double plane_merge_shift = 0.1);
 
 		/**
 		 * Function adds a depth map with computed normals into existing Hough space
@@ -97,13 +103,13 @@ namespace srs_env_model_percp
 		 * @param cam_info Camera info object
 		 * @param normals Computed normals of depth image
 		 */
-		void AddNext(cv::Mat &depth, const sensor_msgs::CameraInfoConstPtr& cam_info, but_plane_detector::Normals &normals);
+		void AddNext(cv::Mat &depth, const sensor_msgs::CameraInfoConstPtr& cam_info, but_plane_detector::Normals &normals, double min_current);
 
 		/**
 		 * Function adds a depth map with computed normals into existing Hough space
 		 * @param normals Normals object (point cloud with precomputed normals)
 		 */
-		void AddNext(but_plane_detector::Normals &normals);
+		void AddNext(but_plane_detector::Normals &normals, double min_current);
 
 		/**
 		 * Clears all nodes with value lesser than parameter
@@ -126,7 +132,7 @@ namespace srs_env_model_percp
 		/**
 		 * Detected planes vector
 		 */
-		std::vector<but_plane_detector::Plane<float> > planes;
+		tPlanes planes;
 
 	public:
 		/**
@@ -167,6 +173,9 @@ namespace srs_env_model_percp
 		double m_shift_max;
 		int m_angle_res;
 		int m_shift_res;
+
+		double m_plane_merge_shift;
+		double m_plane_merge_angle;
 	};
 } // but_plane_detector
 

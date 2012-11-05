@@ -273,7 +273,7 @@ class sm_srs_grasp_planned (smach.StateMachine):
                     transitions={'succeeded':step_after_grasp_select, 'not_possible':'GRASP_BEST_BASE_POSE_ESTIMATION', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'grasp_configuration':'grasp_configuration', 'poses':'poses', 'object':'target_object', 'target_object_id':'target_object_id'})
             
-                smach.StateMachine.add('GRASP_MOVE_ARM', move_arm_unplanned(),
+                smach.StateMachine.add('GRASP_MOVE_ARM', move_arm_planned(),
                     transitions={'succeeded':'GRASP_SRS_GRASP', 'not_completed':'GRASP_SRS_GRASP', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'poses':'poses', 'index_of_the_selected_pose':'pose_id'})
             
@@ -300,7 +300,7 @@ class sm_srs_grasp_planned (smach.StateMachine):
                     transitions={'succeeded':step_after_grasp_select, 'not_possible':'GRASP_BEST_BASE_POSE_ESTIMATION', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'grasp_configuration':'grasp_configuration', 'poses':'poses', 'object':'target_object', 'target_object_id':'target_object_id'})
             
-                smach.StateMachine.add('GRASP_MOVE_ARM', move_arm_unplanned(),
+                smach.StateMachine.add('GRASP_MOVE_ARM', move_arm_planned(),
                     transitions={'succeeded':'GRASP_SRS_GRASP', 'not_completed':'GRASP_SRS_GRASP', 'failed':'failed', 'preempted':'preempted'},
                     remapping={'poses':'poses', 'index_of_the_selected_pose':'pose_id'})
             

@@ -154,7 +154,7 @@ class get_feasible_grasps():
 
 
 		rospy.loginfo(str(len(resp.grasp_configuration))+" valid grasps for this values.");	
-		rospy.loginfo("/get_feasible_grasps call has finished.");
+		rospy.loginfo("/get_feasible_grasps call has finished with error_code: "+str(resp.error_code));
 		print "Time employed: " + str(time.time() - x);
 		print "---------------------------------------";
 		return resp;

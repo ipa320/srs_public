@@ -123,7 +123,7 @@ class put_object_on_tray(smach.State):
                 return 'preempted'
             
             # release object
-            if userdata.grasp_categorisation == 'side':
+            if userdata.grasp_categorisation == 'side' or userdata.grasp_categorisation == 'front':
                 sss.move("sdh","cylopen")
             elif userdata.grasp_categorisation == 'top':
                 sss.move("sdh","spheropen")

@@ -62,6 +62,12 @@ namespace srs_env_model_percp
 	const std::string PARAM_HT_MAXDEPTH						= "planedet_ht_maxdepth";
 	const double 	  PARAM_HT_MAXDEPTH_DEFAULT				= 100.0;
 
+	const std::string PARAM_HT_MAXHEIGHT					= "planedet_ht_max_height";
+	const double 	  PARAM_HT_MAXHEIGHT_DEFAULT			= 3.0;
+
+	const std::string PARAM_HT_MINHEIGHT					= "planedet_ht_min_height";
+	const double 	  PARAM_HT_MINHEIGHT_DEFAULT			= 0.1;
+
 	const std::string PARAM_HT_MINSHIFT						= "planedet_ht_minshift";
 	const double 	  PARAM_HT_MINSHIFT_DEFAULT				= -40.0;
 
@@ -142,6 +148,9 @@ namespace srs_env_model_percp
 	const std::string PARAM_VISUALISATION_PLANE_SHIFT_DEV				= "planedet_visualisation_plane_shift_dev";
 	const double 	  PARAM_VISUALISATION_PLANE_SHIFT_DEV_DEFAULT		= 0.45;
 
+	const std::string PARAM_VISUALISATION_COLOR							= "planedet_visualisation_color";
+	const std::string PARAM_VISUALISATION_COLOR_DEFAULT					= "plane_eq";
+
 
 	/**
 	 * Structure encapsulates all parameters of the plane detector.
@@ -153,6 +162,8 @@ namespace srs_env_model_percp
         std::string param_original_frame;
 
         double param_ht_maxdepth;
+        double param_ht_maxheight;
+        double param_ht_minheight;
         int    param_ht_keeptrack;
         double param_ht_minshift;
         double param_ht_maxshift;
@@ -180,6 +191,7 @@ namespace srs_env_model_percp
         double param_visualisation_plane_normal_dev;
         double param_visualisation_plane_shift_dev;
         int    param_visualisation_min_count;
+        std::string param_visualisation_color;
     };
 }
 

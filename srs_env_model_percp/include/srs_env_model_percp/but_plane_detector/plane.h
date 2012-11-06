@@ -89,6 +89,8 @@ namespace srs_env_model_percp
 			 */
 			tShapeMarker &getShapeMarker();
 
+			void setColor(std_msgs::ColorRGBA &new_color);
+
 		protected:
 			// Computes concave hull of set of points
 			tVertices ComputeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull);
@@ -105,6 +107,7 @@ namespace srs_env_model_percp
 			// Triangulates plane polygon
 			void TriangulatePlanePolygon();
 
+
 			ClipperLib::ExPolygons  	planePolygonsClipper;
 			Eigen::Affine3f				planeTransXY;
 			double planeShift;
@@ -112,6 +115,7 @@ namespace srs_env_model_percp
 			visualization_msgs::Marker 	planeTriangles;
 			tShapeMarker  planeTrianglesSRS;
 			Eigen::Quaternion<float> rotationQuaternion;
+			std_msgs::ColorRGBA color;
 		public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	};

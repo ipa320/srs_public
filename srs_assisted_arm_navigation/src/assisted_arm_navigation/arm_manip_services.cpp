@@ -208,6 +208,13 @@ bool CArmManipulationEditor::ArmNavExecute(ArmNavExecute::Request &req, ArmNavEx
 
   reset();
 
+  ros::Rate r(10);
+
+  // TODO put some timeout there !!!!
+  while (monitor_status_ == Executing) r.sleep();
+
+  ROS_INFO("Trajectory should be executed.");
+
   res.completed = true;
 
   /// @todo Wait for stop of arm movement (optionally, should be configurable by param).

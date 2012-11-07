@@ -56,6 +56,10 @@ const int ID_BUTTON_REPEAT(114);
 
 const int ID_BUTTON_UNDO(115);
 
+const int ID_BUTTON_LIFT(118);
+const int ID_BUTTON_MOVE_TO_HOLD(119);
+
+
 /*const int ID_BUTTON_MLEFT(117);
 const int ID_BUTTON_MRIGHT(118);
 const int ID_BUTTON_MUP(119);
@@ -101,6 +105,12 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     buttons_["new"] = new wxButton(this, ID_BUTTON_NEW, wxT("Start arm planning"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["plan"] = new wxButton(this, ID_BUTTON_PLAN, wxT("Simulate movement"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["execute"] = new wxButton(this, ID_BUTTON_EXECUTE, wxT("Execute"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+
+    buttons_["lift"] = new wxButton(this, ID_BUTTON_LIFT, wxT("Lift the object"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    setButton("lift",false);
+
+    buttons_["hold"] = new wxButton(this, ID_BUTTON_MOVE_TO_HOLD, wxT("Move to hold pos."),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    setButton("hold",false);
 
     buttons_["stop"]->SetForegroundColour (wxColour (255, 255, 255));
     buttons_["stop"]->SetBackgroundColour (wxColour (255, 108, 108));
@@ -184,6 +194,8 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
 
     vsizer_add->Add(b_switch_);
     vsizer_add->Add(buttons_["undo"]);
+    vsizer_add->Add(buttons_["lift"]);
+    vsizer_add->Add(buttons_["hold"]);
 
 
     vsizer->Add(vsizer_top,0,wxEXPAND|wxHORIZONTAL);
@@ -251,6 +263,8 @@ void CArmManipulationControls::setControlsToDefaultState() {
 	b_switch_->Enable(true);
 	setButton("stop",false);
 	setButton("undo",false);
+	setButton("lift",false);
+	setButton("hold",false);
 
 	if (!arm_nav_called_) {
 
@@ -278,13 +292,8 @@ void CArmManipulationControls::disableControls() {
 	setButton("undo",false);
 
 	setButton("stop",false);
-
-	/*setButton("move_left",false);
-	setButton("move_right",false);
-	setButton("move_up",false);
-	setButton("move_down",false);
-	setButton("move_forw",false);
-	setButton("move_back",false);*/
+	setButton("lift",false);
+	setButton("hold",false);
 
 }
 
@@ -437,6 +446,8 @@ void CArmManipulationControls::NewThread() {
 	 setButton("new",true);
 	 setButton("plan",true);
      setButton("undo",true);
+     setButton("lift",true);
+     setButton("hold",true);
 
 
      if (arm_nav_called_) {
@@ -487,6 +498,103 @@ bool CArmManipulationControls::refresh() {
    }
 
   return true;
+
+}
+
+void CArmManipulationControls::OnHold(wxCommandEvent& event) {
+
+	ROS_INFO("We will try to lift gripper a bit.");
+
+	disableControls();
+
+	geometry_msgs::PoseStamped npose;
+
+	npose.header.stamp = ros::Time::now();
+	npose.header.frame_id = "/base_link";
+
+	// TODO read it from some parameter
+  npose.pose.position.x = -0.223;
+  npose.pose.position.y = 0.046;
+  npose.pose.position.z = 0.920;
+
+  npose.pose.orientation.x = 0.020;
+  npose.pose.orientation.y = 0.707;
+  npose.pose.orientation.z = -0.706;
+  npose.pose.orientation.w = 0.033;
+
+  ArmNavMovePalmLink srv;
+
+  //srv.request.relative_shift = move;
+  srv.request.sdh_palm_link_pose = npose;
+
+  if ( ros::service::exists(SRV_MOVE_PALM_LINK,true) && ros::service::call(SRV_MOVE_PALM_LINK,srv) ) {
+
+	  if (!srv.response.completed) {
+
+		m_text_status->SetLabel(wxString::FromAscii("status: Error on moving to home pos."));
+		setControlsToDefaultState();
+		return;
+
+	  }
+
+	} else {
+
+	  ROS_ERROR("failed when calling %s service",SRV_MOVE_PALM_LINK.c_str());
+	  m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
+
+	  setControlsToDefaultState();
+	  return;
+
+	}
+
+  wxCommandEvent ev;
+
+  // plan trajectory
+  OnPlan(ev);
+
+
+}
+
+void CArmManipulationControls::OnLift(wxCommandEvent& event) {
+
+	ROS_INFO("We will try to lift gripper a bit.");
+
+	disableControls();
+
+	geometry_msgs::Point move;
+
+	move.x = 0.0;
+	move.y = 0.0;
+	move.z = 0.15;
+
+  ArmNavMovePalmLinkRel srv;
+
+  srv.request.relative_shift = move;
+
+  if ( ros::service::exists(SRV_MOVE_PALM_LINK_REL,true) && ros::service::call(SRV_MOVE_PALM_LINK_REL,srv) ) {
+
+	  if (!srv.response.completed) {
+
+		m_text_status->SetLabel(wxString::FromAscii("status: Error on lift."));
+		setControlsToDefaultState();
+		return;
+
+	  }
+
+	} else {
+
+	  ROS_ERROR("failed when calling %s service",SRV_MOVE_PALM_LINK_REL.c_str());
+	  m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
+
+	  setControlsToDefaultState();
+	  return;
+
+	}
+
+  wxCommandEvent ev;
+
+  // plan trajectory
+  OnPlan(ev);
 
 }
 
@@ -734,6 +842,7 @@ void CArmManipulationControls::OnExecute(wxCommandEvent& event) {
 
     disableControls();
     setButton("stop",true);
+    m_text_status->SetLabel(wxT("status: Executing trajectory..."));
 
     t_execute = boost::thread(&CArmManipulationControls::ExecuteThread,this);
 
@@ -755,7 +864,7 @@ void CArmManipulationControls::ExecuteThread()
      if (srv.response.completed) {
 
        success = true;
-       status = "status: Executing trajectory...";
+       status = "status: Trajectory was executed.";
 
      } else {
 
@@ -1074,6 +1183,7 @@ BEGIN_EVENT_TABLE(CArmManipulationControls, wxPanel)
     EVT_BUTTON(ID_BUTTON_MFORW,  CArmManipulationControls::OnMoveRel)
     EVT_BUTTON(ID_BUTTON_MBACK,  CArmManipulationControls::OnMoveRel)*/
     EVT_BUTTON(ID_BUTTON_STOP_TRAJ,  CArmManipulationControls::OnStopTraj)
-
+    EVT_BUTTON(ID_BUTTON_LIFT,  CArmManipulationControls::OnLift)
+    EVT_BUTTON(ID_BUTTON_MOVE_TO_HOLD,  CArmManipulationControls::OnHold)
 END_EVENT_TABLE()
 

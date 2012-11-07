@@ -93,9 +93,6 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	m_serviceReset = private_nh.advertiseService(ServerReset_SRV, &CButServer::onReset, this);
 	m_servicePause = private_nh.advertiseService(ServerPause_SRV, &CButServer::onPause, this);
 
-	// Is map static (loaded from file)?
-	bool staticMap(filename != "");
-
 	m_latchedTopics = false;
 	private_nh.param("latch", m_latchedTopics, m_latchedTopics);
 	private_nh.param<bool>("use_old_im", m_bUseOldIMP, m_bUseOldIMP);
@@ -152,7 +149,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CLimitedPointCloudPlugin::handleNewMapData, m_plugVisiblePointCloud, _1 ) );
 
 	// Connect octomap data changed signal with server publish
-	m_plugOctoMap->getSigDataChanged().connect( boost::bind( &CButServer::onOcMapDataChanged, *this, _1 ));
+	m_plugOctoMap->getSigDataChanged().connect( boost::bind( &CButServer::onOcMapDataChanged, *this, _1, _2 ));
 
 
 } // Constructor
@@ -176,7 +173,7 @@ srs_env_model::CButServer::~CButServer()
 void srs_env_model::CButServer::publishAll(const ros::Time& rostime)
 {
 	// Store start time
-	ros::WallTime startTime = ros::WallTime::now();
+//	ros::WallTime startTime = ros::WallTime::now();
 
 	// If no data, do nothing
 	if (m_plugOctoMap->getSize() <= 1) {
@@ -199,8 +196,8 @@ void srs_env_model::CButServer::publishAll(const ros::Time& rostime)
 	publishPlugins( rostime );
 
 	// Compute and show elapsed time
-	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
-	ROS_DEBUG("Map publishing in CButServer took %f sec", total_elapsed);
+//	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
+//	ROS_DEBUG("Map publishing in CButServer took %f sec", total_elapsed);
 
 }
 

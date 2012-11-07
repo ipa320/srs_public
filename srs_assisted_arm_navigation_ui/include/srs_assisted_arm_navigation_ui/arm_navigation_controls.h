@@ -56,6 +56,7 @@
 #include "srs_assisted_arm_navigation_msgs/ArmNavStep.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavStop.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavMovePalmLinkRel.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavMovePalmLink.h"
 #include "srs_assisted_arm_navigation_msgs/AssistedArmNavigationState.h"
 
 //#include "srs_env_model/LockCollisionMap.h"
@@ -116,6 +117,9 @@ public:
 
     void OnGrasp(wxCommandEvent& event);
     void OnStopGrasp(wxCommandEvent& event);
+
+    void OnLift(wxCommandEvent& event);
+    void OnHold(wxCommandEvent& event);
 
     void OnStopTraj(wxCommandEvent& event);
 

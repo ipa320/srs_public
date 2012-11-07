@@ -6,6 +6,7 @@
 
 # Octomap resolution
 ocmap_resolution: .05
+#ocmap_resolution: .025
 
 # Tree depth used for crawling. Zero means full tree
 ocmap_treedepth: 0
@@ -75,16 +76,20 @@ pointcloud_max_z: 3.0
 # "icp" - use ICP algorithm
 # "icpnl" - use nonlinear ICP algorithm
 # "sca" - use sample consensus alignment
-registration_mode: "icp"
+registration_mode: "none"
+#registration_mode: "icp"
 
 # Maximum iterations
 registration_maximum_iterations: 20
+#registration_maximum_iterations: 50
 
 # RANSAC outlier threshold
 registration_ransac_outlier_rejection_threshold: .02
+#registration_ransac_outlier_rejection_threshold: .005
 
 # Maximal correspondence distance
 registration_maximal_correspondence_distance: 5.0
+#registration_maximal_correspondence_distance: 50.0
 
 # Transformation epsilon
 registration_transformation_epsilon: 0.1

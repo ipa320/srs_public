@@ -85,6 +85,7 @@ void srs_env_model::COctoMapPlugin::setDefaults() {
 	m_crawlDepth = 0;
 
 	m_bMapLoaded = false;
+	m_bNotFirst = false;
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
@@ -280,10 +281,11 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 {
 
-//	PERROR("insertCloud: Insert cloud start.");
+//	PERROR("insertCloud: Try lock.");
 
 	// Lock data
 	boost::mutex::scoped_lock lock(m_lockData);
+//	PERROR("insertCloud: Locked.");
 
 	tPointCloud used_cloud;
 	pcl::copyPointCloud( cloud, used_cloud );
@@ -320,7 +322,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 		}
 	}
 
-	ros::WallTime startTime = ros::WallTime::now();
+//	ros::WallTime startTime = ros::WallTime::now();
 
 	tPointCloud pc_ground; // segmented ground plane
 	tPointCloud pc_nonground; // everything else
@@ -389,9 +391,9 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 		degradeOutdatedRaycasting(cloud.header, sensor_origin);
 	}
 
-	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
-	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(),
-			pc_nonground.size(), total_elapsed);
+//	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
+	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground).)", pc_ground.size(),
+			pc_nonground.size());
 
 //	PERROR("Filtered");
 	if (m_removeTester != 0) {
@@ -571,15 +573,18 @@ void srs_env_model::COctoMapPlugin::reset(bool clearLoaded)
 /// Crawl octomap
 void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime) {
 	// Lock data
+/*	Already locked in invalidate method
+	PERROR( "crawl: Try lock");
 	boost::mutex::scoped_lock lock(m_lockData);
-
+	PERROR( "crawl: Locked");
+*/
 	// Fill needed structures
 	fillMapParameters(currentTime);
 
 	// Call new data signal
 	m_sigOnNewData( m_mapParameters );
 
-
+//	PERROR( "crawl: Unlocked");
 }
 
 //! Should plugin publish data?
@@ -596,7 +601,10 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 		return;
 
 	// Lock data
+//	PERROR( "publish: Try lock");
 	boost::mutex::scoped_lock lock(m_lockData);
+//	PERROR( "publish: Locked");
+
 	octomap_ros::OctomapBinary map;
 	map.header.frame_id = m_mapParameters.frameId;
 	map.header.stamp = timestamp;
@@ -604,6 +612,8 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 	octomap::octomapMapToMsgData(m_data->octree, map.data);
 
 	m_ocPublisher.publish(map);
+
+//	PERROR( "publish: Unlocked");
 }
 
 /// Fill map parameters
@@ -629,6 +639,8 @@ bool srs_env_model::COctoMapPlugin::resetOctomapCB(
 	reset(true);
 
 	std::cerr << "Reset done..." << std::endl;
+
+	invalidate();
 
 	return true;
 }
@@ -824,7 +836,7 @@ void srs_env_model::COctoMapPlugin::computeBBX(
 	// // visualize axis-aligned querying bbx
 	visualization_msgs::Marker bbx;
 	bbx.header.frame_id = m_mapParameters.frameId;
-	bbx.header.stamp = ros::Time::now();
+	bbx.header.stamp = sensor_header.stamp;
 	bbx.ns = "OCM_plugin";
 	bbx.id = 1;
 	bbx.action = visualization_msgs::Marker::ADD;
@@ -843,7 +855,7 @@ void srs_env_model::COctoMapPlugin::computeBBX(
 	// visualize sensor cone
 	visualization_msgs::Marker bbx_points;
 	bbx_points.header.frame_id = m_mapParameters.frameId;
-	bbx_points.header.stamp = ros::Time::now();
+	bbx_points.header.stamp = sensor_header.stamp;
 	bbx_points.ns = "OCM_plugin";
 	bbx_points.id = 2;
 	bbx_points.action = visualization_msgs::Marker::ADD;
@@ -1186,6 +1198,8 @@ bool srs_env_model::COctoMapPlugin::loadOctreeCB( srs_env_model::LoadSaveRequest
 	// reset data
 	reset(true);
 
+	boost::mutex::scoped_lock lock(m_lockData);
+
 	setDefaults();
 
 	assert( m_data != 0 );
@@ -1215,10 +1229,15 @@ bool srs_env_model::COctoMapPlugin::loadOctreeCB( srs_env_model::LoadSaveRequest
 			// Map was loaded
 			m_bMapLoaded = true;
 
+			// Unlock data before invalidation
+			lock.unlock();
+
 			// We have new data
 			invalidate();
 
 			res.all_ok = true;
+
+			m_bNotFirst = m_data->octree.getNumLeafNodes() > 0;
 
 		} else {
 

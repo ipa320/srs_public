@@ -131,6 +131,8 @@ void srs_env_model::CCollisionObjectPlugin::newMapDataCB( SMapWithParameters & p
 
 	} // Iterate through octree
 
+	m_DataTimeStamp = par.currentTime;
+
 	invalidate();
 }
 

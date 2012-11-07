@@ -35,7 +35,7 @@
 	</group>
 
         <!-- Run BUT plane detection node -->
-        <include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" />
+        <!--include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" /-->
 	</group>
 
         <group>

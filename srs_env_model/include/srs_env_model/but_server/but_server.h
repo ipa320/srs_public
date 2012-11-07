@@ -115,10 +115,10 @@ public:
 
 protected:
     //! Publish all
-    void publishAll(const ros::Time& rostime = ros::Time::now());
+    void publishAll(const ros::Time& rostime );
 
     //! On octomap data changed
-    void onOcMapDataChanged( const tButServerOcMap & mapdata ){ publishAll(); }
+    void onOcMapDataChanged( const tButServerOcMap & mapdata, const ros::Time & stamp ){ publishAll(stamp); }
 
     /// On reset service call
     bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response){ reset(); return true; }

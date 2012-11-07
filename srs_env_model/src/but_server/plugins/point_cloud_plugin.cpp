@@ -125,11 +125,11 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 //! Called when new scan was inserted and now all can be published
 void srs_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timestamp)
 {
-//	PERROR("Try lock");
+//	PERROR("Publish: Try lock");
 
 	boost::mutex::scoped_lock lock(m_lockData);
 
-//	PERROR("Lock");
+//	PERROR("Publish: Lock");
 
 	// No subscriber or disabled
 	if( ! shouldPublish() )
@@ -150,7 +150,7 @@ void srs_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timesta
 //	PERROR( "Publishing cloud. Size: " << m_data->size() << ", topic: " << m_pcPublisher.getTopic() );
 	m_pcPublisher.publish(cloud);
 
-//	PERROR("Unlock");
+//	PERROR("Publish: Unlock");
 }
 
 //! Set used octomap frame id and timestamp
@@ -158,6 +158,12 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 {
 	if( ! m_publishPointCloud )
 		return;
+
+//	PERROR("New map: Try lock");
+
+	boost::mutex::scoped_lock lock(m_lockData);
+
+//	PERROR("New map: Lock");
 
 	m_data->clear();
 	m_ocFrameId = par.frameId;
@@ -214,6 +220,11 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
 	}
 
+	m_DataTimeStamp = par.currentTime;
+
+	lock.unlock();
+//	PERROR( "New map: Unlocked");
+
 	invalidate();
 }
 
@@ -252,7 +263,11 @@ void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButSer
  */
 void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::ConstPtr& cloud)
 {
+//	PERROR("insertCloud: Try lock");
+
 	boost::mutex::scoped_lock lock(m_lockData);
+
+//	PERROR("insertCloud: Locked");
 
 	if( ! useFrame() )
 	{
@@ -262,8 +277,6 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 //	std::cerr << "PCP.iccb start. Time: " << ros::Time::now() << std::endl;
 
-
-	ros::WallTime startTime = ros::WallTime::now();
 
 	m_bAsInput = true;
 
@@ -378,7 +391,14 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	m_data->header = cloud->header;
     m_data->header.frame_id = m_pcFrameId;
 
+    // Store timestamp
+    m_DataTimeStamp = cloud->header.stamp;
+
  //   PERROR("Insert cloud CB. Size: " << m_data->size() );
+
+    // Unlock for invalidation (it has it's own lock)
+    lock.unlock();
+//    PERROR("insertCloud: Unlocked");
 
  	invalidate();
 

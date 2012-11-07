@@ -208,6 +208,13 @@ bool CArmManipulationEditor::ArmNavExecute(ArmNavExecute::Request &req, ArmNavEx
 
   reset();
 
+  ros::Rate r(10);
+
+  // TODO put some timeout there !!!!
+  while (monitor_status_ == Executing) r.sleep();
+
+  ROS_INFO("Trajectory should be executed.");
+
   res.completed = true;
 
   /// @todo Wait for stop of arm movement (optionally, should be configurable by param).
@@ -296,27 +303,38 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
 
   ROS_INFO("Trying to add collision object name: %s",req.object_name.c_str());
 
+  geometry_msgs::PoseStamped opose = req.pose;
 
-  if (checkPose(req.pose,"map")) {
+  if (checkPose(opose,"/map")) {
 
 	  ROS_INFO("Ok, object pose is in /map coord. system. Lets store it.");
 
-	  t_det_obj obj;
 
-	  obj.name = req.object_name;
-	  obj.bb_lwh = req.bb_lwh;
-	  obj.pose = req.pose;
+  } else {
 
-	  obj.allow_collision = req.allow_collision;
+	ROS_INFO("Object is not in map frame, lets transform it first.");
 
-	  coll_obj_det.push_back(obj);
+	
+	if (!transf("/map",opose)) {
 
-	  return true;
+		ROS_ERROR("Error on transforming collision object.");
+		return false;
 
-  }
+	};
 
-  return false;
+}
 
+  t_det_obj obj;
+
+  obj.name = req.object_name;
+  obj.bb_lwh = req.bb_lwh;
+  obj.pose = opose;
+
+  obj.allow_collision = req.allow_collision;
+
+  coll_obj_det.push_back(obj);
+
+  return true;
 
 }
 

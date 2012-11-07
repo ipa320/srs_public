@@ -212,7 +212,7 @@ namespace srs_env_model
 		typedef boost::shared_ptr< tData > tDataPtr;
 
 		/// Data has changed signal type
-		typedef boost::signal< void (const tData & ) > tSigDataHasChanged;
+		typedef boost::signal< void (const tData &, const ros::Time & ) > tSigDataHasChanged;
 
 		/// Constructor
 		CDataHolderBase() : m_data( new tData ) {}
@@ -237,7 +237,16 @@ namespace srs_env_model
 		virtual bool hasValidData() { return m_data != 0; }
 
 		/// Invalidate data - calls invalid signal
-		void invalidate() { if( hasValidData() ) m_sigDataChanged( *m_data ); }
+		void invalidate()
+		{
+			if( hasValidData() )
+			{
+	//			std::cerr << "invalidate: Locked." << std::endl;
+				boost::mutex::scoped_lock lock(m_lockData);
+				m_sigDataChanged( *m_data, m_DataTimeStamp );
+	//			std::cerr << "invalidate: Unlocked." << std::endl;
+			}
+		}
 
 
 	protected:

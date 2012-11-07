@@ -19,6 +19,12 @@ planedet_ht_keep_track: 1
 # Maximum depth in meters to count with (for real data, 3.0 is recommended)
 planedet_ht_maxdepth: 100.0
 
+# Maximum height in meters to be considered
+planedet_ht_max_height: 3.0
+
+# Minimum height in meters to be considered
+planedet_ht_min_height: 0.1
+
 # HS minimal shift (d param) axis
 planedet_ht_minshift: -40.0
 
@@ -93,3 +99,6 @@ planedet_visualisation_plane_shift_dev: 0.1
 
 # Minimal point count for visualised plane
 planedet_visualisation_min_count: 2000
+
+# Color creation method (plane_eq / mean_color / centroid / random)
+planedet_visualisation_color: mean_color

@@ -23,7 +23,9 @@ The package is partially derived from the pr2_arm_navigation package. It modifie
   <depend package="actionlib"/>
   <!--depend package="cob_script_server"/-->
   <depend package="cob_interactive_teleop"/>
+  <depend package="srs_env_model"/>
   <depend package="srs_env_model_percp"/>
+  <depend package="srs_env_model_utils"/>
   <depend package="srs_interaction_primitives"/>
   <depend package="srs_assisted_arm_navigation_msgs"/>
   <depend package="cob_image_flip"/> <!-- todo -> move it + RVIZ + int. teleop to ui package ? -->

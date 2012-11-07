@@ -65,11 +65,12 @@ namespace srs_env_model_percp
 	// @param planes Vector of found planes
 	// @param scene_cloud point cloud of the scene
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void DynModelExporter2::update(tPlanes & planes, Normals &normals)
+	void DynModelExporter2::update(tPlanes & planes, Normals &normals, std::string color_method, cv::Mat rgb)
 	{
 		if (m_keep_tracking == 0)
 			displayed_planes.clear();
 		std::vector<PointCloud<pcl::PointXYZ>, Eigen::aligned_allocator<PointCloud<pcl::PointXYZ> > > planesInPCloud(planes.size());
+		std::vector<std_msgs::ColorRGBA, Eigen::aligned_allocator<std_msgs::ColorRGBA> > colors(planes.size());
 
 		for (int i = 0; i < normals.m_points.rows; ++i)
 		for (int j = 0; j < normals.m_points.cols; ++j)
@@ -99,6 +100,23 @@ namespace srs_env_model_percp
 				{
 					PointXYZ pclpoint(point[0], point[1], point[2]);
 					planesInPCloud[chosen].push_back(pclpoint);
+
+					if (color_method == "mean_color")
+					{
+						cv::Vec<unsigned char, 3> color = rgb.at<cv::Vec<unsigned char, 3> >(i, j);
+						colors[chosen].r += (float)color[0]/255.0;
+						colors[chosen].g += (float)color[1]/255.0;
+						colors[chosen].b += (float)color[2]/255.0;
+						//std::cerr << color[0] << " " << color[1] << " " << color[2] << std::endl;
+					}
+					else if (color_method == "mean_color")
+					{
+						cv::Vec<unsigned char, 3> color = rgb.at<cv::Vec<unsigned char, 3> >(i, j);
+						colors[chosen].r += point[0] / 5.0;
+						colors[chosen].g += point[1] / 5.0;
+						colors[chosen].b += point[2] / 5.0;
+											//std::cerr << color[0] << " " << color[1] << " " << color[2] << std::endl;
+					}
 //					if (point[2] > 0.9 && point[2] < 1.0 && (planes[chosen].d < -0.5 || planes[chosen].d > 0.5) && (planes[chosen].c < -0.5 || planes[chosen].c > 0.5))
 //					{
 //						std::cerr << planes[chosen].a << " " << planes[chosen].b << " " << planes[chosen].c << " " << planes[chosen].d << " --- > ";
@@ -108,6 +126,17 @@ namespace srs_env_model_percp
 			}
 		}
 
+		if (color_method == "mean_color" || color_method == "centroid")
+		{
+			for (unsigned int i = 0; i < colors.size(); ++i)
+				if(planesInPCloud.size() > 0)
+				{
+					colors[i].r /= planesInPCloud[i].size();
+					colors[i].g /= planesInPCloud[i].size();
+					colors[i].b /= planesInPCloud[i].size();
+					colors[i].a = 1.0;
+				}
+		}
 		// Indexed in point cloud
 		////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -147,6 +176,19 @@ namespace srs_env_model_percp
 
 					newplane.id = displayed_planes.size();
 					newplane.plane.getMeshMarker().id = newplane.id;
+					if (color_method == "mean_color")
+					{
+						std::cerr << "setting color: " << colors[j].r << " " << colors[j].g << " " << colors[j].b << std::endl;
+						newplane.plane.setColor(colors[j]);
+					}
+					else if (color_method == "random")
+					{
+						colors[j].r = (float)rand()/INT_MAX * 0.5 + 0.2;
+						colors[j].g = (float)rand()/INT_MAX * 0.5 + 0.2;
+						colors[j].b = (float)rand()/INT_MAX * 0.5 + 0.2;
+						colors[j].a = 1.0;
+						newplane.plane.setColor(colors[j]);
+					}
 					//newplane.plane.getShapeMarker().id = newplane.id;
 					displayed_planes.push_back(newplane);
 				}
@@ -197,10 +239,6 @@ namespace srs_env_model_percp
 	    plane.getMeshMarker().scale.x = 1.00;
 	    plane.getMeshMarker().scale.y = 1.00;
 	    plane.getMeshMarker().scale.z = 1.00;
-	    plane.getMeshMarker().color.r = abs(plane.a) / 2.0 + 0.2;
-	    plane.getMeshMarker().color.g = abs(plane.b) / 2.0 + 0.2;
-	    plane.getMeshMarker().color.b = abs(plane.d) / 10.0 + 0.2;
-	    plane.getMeshMarker().color.a = 1.0;
 //
 
 	}

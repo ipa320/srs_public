@@ -110,7 +110,7 @@ namespace srs_env_model_percp
 			 * @param planes Vector of found planes
 			 * @param scene_cloud point cloud of the scene
 			 */
-			void update(tPlanes & planes, but_plane_detector::Normals &normals);
+			void update(tPlanes & planes, but_plane_detector::Normals &normals, std::string color_method = "plane_eq", cv::Mat rgb = cv::Mat());
 
 			void createMarkerForConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
 			void addMarkerToConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);

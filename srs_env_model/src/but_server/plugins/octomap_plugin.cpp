@@ -83,12 +83,16 @@ void srs_env_model::COctoMapPlugin::setDefaults() {
 
 	// Set maximal tree depth used when crawling. Zero means maximal possible depth.
 	m_crawlDepth = 0;
+
+	m_bMapLoaded = false;
+	m_bNotFirst = false;
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
 : srs_env_model::CServerPluginBase(name)
 , CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
 , filecounter(0)
+, m_bMapLoaded(false)
 {
 	//
 	setDefaults();
@@ -111,6 +115,7 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
 		const std::string & filename)
 :	srs_env_model::CServerPluginBase(name)
 , CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
+, m_bMapLoaded(false)
 {
 	setDefaults();
 
@@ -121,7 +126,9 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
 	m_data->octree.setProbMiss(m_mapParameters.probMiss);
 	m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
 	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
+	m_data->octree.setOccupancyThres(m_mapParameters.thresOccupancy);
 	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+	m_mapParameters.map = m_data;
 	m_mapParameters.crawlDepth = m_crawlDepth;
 
 	// is filename valid?
@@ -136,15 +143,17 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
 			// get resolution
 			m_mapParameters.resolution = m_data->octree.getResolution();
 
+			// Map was loaded
+			m_bMapLoaded = true;
+
 			// We have new data
 			invalidate();
 
 		} else {
 
 			// Something is wrong - cannot load data...
-			ROS_ERROR("Could not open requested file %s, exiting.", filename.c_str());
+			ROS_ERROR("Could not open requested file %s, continuing in standard mode.", filename.c_str());
 			PERROR( "Transform error.");
-			exit(-1);
 		}
 	}
 }
@@ -162,7 +171,7 @@ srs_env_model::COctoMapPlugin::~COctoMapPlugin() {
 void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	PERROR( "Initializing OctoMapPlugin" );
 
-	reset();
+	reset(false);
 
 	// Load parameters from the parameter server
 //	node_handle.param("frame_skip", m_mapParameters.frameSkip,
@@ -244,6 +253,12 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 	m_serviceGetTreeDepth = node_handle.advertiseService( GetTreeDepth_SRV,
 			&srs_env_model::COctoMapPlugin::getTreeDepthCB, this );
 
+	m_serviceLoadMap = node_handle.advertiseService( LoadMap_SRV,
+			&srs_env_model::COctoMapPlugin::loadOctreeCB, this);
+
+	m_serviceSaveMap = node_handle.advertiseService( SaveMap_SRV,
+				&srs_env_model::COctoMapPlugin::saveOctreeCB, this);
+
 	// Create publisher
 	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (
 			m_ocPublisherName, 100, m_latchedTopics);
@@ -266,10 +281,11 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 {
 
-//	PERROR("insertCloud: Insert cloud start.");
+//	PERROR("insertCloud: Try lock.");
 
 	// Lock data
-//	boost::mutex::scoped_lock lock(m_lockData);
+	boost::mutex::scoped_lock lock(m_lockData);
+//	PERROR("insertCloud: Locked.");
 
 	tPointCloud used_cloud;
 	pcl::copyPointCloud( cloud, used_cloud );
@@ -306,7 +322,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 		}
 	}
 
-	ros::WallTime startTime = ros::WallTime::now();
+//	ros::WallTime startTime = ros::WallTime::now();
 
 	tPointCloud pc_ground; // segmented ground plane
 	tPointCloud pc_nonground; // everything else
@@ -361,10 +377,6 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	pc_nonground.header = cloud.header;
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
 
-	// Lock data
-//	PERROR("Try to lock.");
-	boost::mutex::scoped_lock lock(m_lockData);
-//	PERROR("Locked.");
 	insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
 	if (m_removeSpecles) {
 		degradeSingleSpeckles();
@@ -379,9 +391,9 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 		degradeOutdatedRaycasting(cloud.header, sensor_origin);
 	}
 
-	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
-	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(),
-			pc_nonground.size(), total_elapsed);
+//	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
+	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground).)", pc_ground.size(),
+			pc_nonground.size());
 
 //	PERROR("Filtered");
 	if (m_removeTester != 0) {
@@ -543,10 +555,15 @@ void srs_env_model::COctoMapPlugin::filterGroundPlane(const tPointCloud & pc,
 	}
 }
 
-void srs_env_model::COctoMapPlugin::reset() {
+void srs_env_model::COctoMapPlugin::reset(bool clearLoaded)
+{
+	if( m_bMapLoaded && (!clearLoaded) )
+		return;
+
 	// Lock data
 	boost::mutex::scoped_lock lock(m_lockData);
 	m_data->octree.clear();
+	setDefaults();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -556,15 +573,18 @@ void srs_env_model::COctoMapPlugin::reset() {
 /// Crawl octomap
 void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime) {
 	// Lock data
+/*	Already locked in invalidate method
+	PERROR( "crawl: Try lock");
 	boost::mutex::scoped_lock lock(m_lockData);
-
+	PERROR( "crawl: Locked");
+*/
 	// Fill needed structures
 	fillMapParameters(currentTime);
 
 	// Call new data signal
 	m_sigOnNewData( m_mapParameters );
 
-
+//	PERROR( "crawl: Unlocked");
 }
 
 //! Should plugin publish data?
@@ -581,7 +601,10 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 		return;
 
 	// Lock data
+//	PERROR( "publish: Try lock");
 	boost::mutex::scoped_lock lock(m_lockData);
+//	PERROR( "publish: Locked");
+
 	octomap_ros::OctomapBinary map;
 	map.header.frame_id = m_mapParameters.frameId;
 	map.header.stamp = timestamp;
@@ -589,6 +612,8 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 	octomap::octomapMapToMsgData(m_data->octree, map.data);
 
 	m_ocPublisher.publish(map);
+
+//	PERROR( "publish: Unlocked");
 }
 
 /// Fill map parameters
@@ -609,7 +634,14 @@ void srs_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time) {
 bool srs_env_model::COctoMapPlugin::resetOctomapCB(
 		std_srvs::Empty::Request& request, std_srvs::Empty::Response& response) {
 	std::cerr << "Reset octomap service called..." << std::endl;
-	reset();
+
+	// When reseting, loaded octomap should be cleared
+	reset(true);
+
+	std::cerr << "Reset done..." << std::endl;
+
+	invalidate();
+
 	return true;
 }
 
@@ -804,7 +836,7 @@ void srs_env_model::COctoMapPlugin::computeBBX(
 	// // visualize axis-aligned querying bbx
 	visualization_msgs::Marker bbx;
 	bbx.header.frame_id = m_mapParameters.frameId;
-	bbx.header.stamp = ros::Time::now();
+	bbx.header.stamp = sensor_header.stamp;
 	bbx.ns = "OCM_plugin";
 	bbx.id = 1;
 	bbx.action = visualization_msgs::Marker::ADD;
@@ -823,7 +855,7 @@ void srs_env_model::COctoMapPlugin::computeBBX(
 	// visualize sensor cone
 	visualization_msgs::Marker bbx_points;
 	bbx_points.header.frame_id = m_mapParameters.frameId;
-	bbx_points.header.stamp = ros::Time::now();
+	bbx_points.header.stamp = sensor_header.stamp;
 	bbx_points.ns = "OCM_plugin";
 	bbx_points.id = 2;
 	bbx_points.action = visualization_msgs::Marker::ADD;
@@ -1155,5 +1187,92 @@ bool srs_env_model::COctoMapPlugin::getTreeDepthCB( srs_env_model::GetTreeDepth:
 {
 	res.depth = m_data->octree.getTreeDepth();
 
+	return true;
+}
+
+/**
+ * Load map service callback
+ */
+bool srs_env_model::COctoMapPlugin::loadOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res )
+{
+	// reset data
+	reset(true);
+
+	boost::mutex::scoped_lock lock(m_lockData);
+
+	setDefaults();
+
+	assert( m_data != 0 );
+
+	// Set octomap parameters
+	m_data->octree.setProbHit(m_mapParameters.probHit);
+	m_data->octree.setProbMiss(m_mapParameters.probMiss);
+	m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
+	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
+	m_data->octree.setOccupancyThres(m_mapParameters.thresOccupancy);
+	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+	m_mapParameters.map = m_data;
+	m_mapParameters.crawlDepth = m_crawlDepth;
+
+	// is filename valid?
+	if (req.filename.length() > 0) {
+		// Try to load data
+		if (m_data->octree.readBinary(req.filename)) {
+			ROS_INFO("Octomap file %s loaded (%zu nodes).", req.filename.c_str(), m_data->octree.size());
+
+			// get tree depth
+			m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+
+			// get resolution
+			m_mapParameters.resolution = m_data->octree.getResolution();
+
+			// Map was loaded
+			m_bMapLoaded = true;
+
+			// Unlock data before invalidation
+			lock.unlock();
+
+			// We have new data
+			invalidate();
+
+			res.all_ok = true;
+
+			m_bNotFirst = m_data->octree.getNumLeafNodes() > 0;
+
+		} else {
+
+			// Something is wrong - cannot load data...
+			ROS_ERROR("Could not open requested file %s, continuing in standard mode.", req.filename.c_str());
+			PERROR( "Transform error.");
+
+			res.all_ok = false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Load map service callback
+ */
+bool srs_env_model::COctoMapPlugin::saveOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res )
+{
+	if(req.filename.length() == 0 )
+	{
+		ROS_ERROR("Wrong filename: Zero length string.");
+		res.all_ok = false;
+		return false;
+	}
+
+	bool rv(m_data->octree.writeBinaryConst(req.filename));
+
+	if( !rv )
+	{
+		ROS_ERROR("Could not save file: %s", req.filename.c_str());
+		res.all_ok = false;
+		return false;
+	}
+
+	res.all_ok = true;
 	return true;
 }

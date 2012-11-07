@@ -49,6 +49,7 @@ namespace srs_env_model_percp
 	static const std::string DET_INPUT_POINT_CLOUD_TOPIC = "points_in";
 	static const std::string DET_INPUT_IMAGE_TOPIC = "depth_image_in";
 	static const std::string DET_INPUT_CAM_INFO_TOPIC = "camera_info_in";
+	static const std::string DET_INPUT_RGB_IMAGE_TOPIC = "rgb_in";
 
     /**
       * but_plane_detector - required env. model services

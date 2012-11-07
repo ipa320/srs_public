@@ -19,6 +19,10 @@ PlaneExt::PlaneExt(but_plane_detector::Plane<float> plane) : but_plane_detector:
 
 	planeShift = -d;
 
+	color.r = abs(a) / 2.0 + 0.2;
+	color.g = abs(b) / 2.0 + 0.2;
+	color.b = abs(d) / 5.0;
+	color.a = 1.0;
 
 	// Plane coefficients pre-calculation...
 	planeCoefficients->values.push_back(a);
@@ -177,10 +181,8 @@ void PlaneExt::TriangulatePlanePolygon()
 		planeTrianglesSRS.back().centroid.x = planeShift*a;
 		planeTrianglesSRS.back().centroid.y = planeShift*b;
 		planeTrianglesSRS.back().centroid.z = planeShift*c;
-		planeTrianglesSRS.back().color.r = abs(a) / 2.0 + 0.2;
-		planeTrianglesSRS.back().color.g = abs(b) / 2.0 + 0.2;
-		planeTrianglesSRS.back().color.b = abs(d) / 10.0 + 0.2;
-		planeTrianglesSRS.back().color.a = 1.0;
+		planeTrianglesSRS.back().color = color;
+		planeTriangles.color = color;
 	}
 
 	// compute centroid
@@ -224,6 +226,15 @@ visualization_msgs::Marker &PlaneExt::getMeshMarker()
 PlaneExt::tShapeMarker &PlaneExt::getShapeMarker()
 {
 	return planeTrianglesSRS;
+}
+
+void PlaneExt::setColor(std_msgs::ColorRGBA &new_color)
+{
+	planeTriangles.color = new_color;
+	for (unsigned int i = 0; i < planeTrianglesSRS.size(); ++i)
+		planeTrianglesSRS[i].color = new_color;
+
+	color = new_color;
 }
 
 }

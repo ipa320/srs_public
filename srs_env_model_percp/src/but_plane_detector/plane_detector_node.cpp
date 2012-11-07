@@ -1,4 +1,4 @@
-/******************************************************************************
+/***********************************B*******************************************
  * \file
  *
  * $Id: detector.cpp 777 2012-05-11 11:23:17Z ihulik $
@@ -208,7 +208,7 @@ namespace srs_env_model_percp
    		// transform to world
    		tf::StampedTransform sensorToWorldTf;
    		try {
-   			tfListener->waitForTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, ros::Duration(2.0));
+   			tfListener->waitForTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, ros::Duration(5.0));
    			tfListener->lookupTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, sensorToWorldTf);
    		}
    		catch(tf::TransformException& ex){
@@ -256,6 +256,7 @@ namespace srs_env_model_percp
 
 	void callbackpcl_rgb(const PointCloud2ConstPtr& cloud, const sensor_msgs::ImageConstPtr& rgb)
 	{
+		ROS_INFO("Data received");
 		pcl_proc(cloud, &rgb);
 	}
 
@@ -305,7 +306,7 @@ namespace srs_env_model_percp
 		// transform to world
 		tf::StampedTransform sensorToWorldTf;
 		try {
-			tfListener->waitForTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, ros::Duration(2.0));
+			tfListener->waitForTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, ros::Duration(5.0));
 			tfListener->lookupTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, sensorToWorldTf);
 		}
 		catch(tf::TransformException& ex){
@@ -469,6 +470,9 @@ int main( int argc, char** argv )
 	std::cerr << "Minimum point count for visualised plane in current point cloud: " << settings.param_visualisation_min_count << std::endl;
 	std::cerr << std::endl;
 
+    ROS_INFO("Plane det. input: %s", settings.param_node_input.c_str());   
+    ROS_INFO("Plane coloring: %s", settings.param_visualisation_color.c_str());   
+
 	// if PCL input
 	if (settings.param_node_input == PARAM_NODE_INPUT_PCL)
 	{
@@ -482,7 +486,7 @@ int main( int argc, char** argv )
 										settings.param_ht_keeptrack);
 
 		// MESSAGES
-		message_filters::Subscriber<PointCloud2 > point_cloud(n, DET_INPUT_POINT_CLOUD_TOPIC, 1);
+		message_filters::Subscriber<PointCloud2 > point_cloud(n, DET_INPUT_POINT_CLOUD_TOPIC, 10);
 
 		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZRGB> > (DET_OUTPUT_POINT_CLOUD_TOPIC, 1);
 		pub2 = n.advertise<visualization_msgs::MarkerArray > (DET_OUTPUT_MARKER_TOPIC, 1);
@@ -492,14 +496,15 @@ int main( int argc, char** argv )
 		{
 			// sync images
 			tfListener = new tf::TransformListener();
-			transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2> (point_cloud, *tfListener, settings.param_output_frame, 1);
+			transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2> (point_cloud, *tfListener, settings.param_output_frame, 10);
 
-			message_filters::Subscriber<Image> sub_rgb(n, DET_INPUT_RGB_IMAGE_TOPIC, 1);
-			//tfListenerRGB = new tf::TransformListener();
-			//transform_filterRGB = new tf::MessageFilter<Image> (sub_rgb, *tfListenerRGB, settings.param_output_frame, 1);
+			message_filters::Subscriber<Image> sub_rgb(n, DET_INPUT_RGB_IMAGE_TOPIC, 10);
 
-			message_filters::TimeSynchronizer<PointCloud2, Image> sync(*transform_filter, sub_rgb, 10);
-
+            // Majkl 2012/11/07: TimeSyncrhonizer doesn't work when playing data from a bag file
+//			message_filters::TimeSynchronizer<PointCloud2, Image> sync(*transform_filter, sub_rgb, 10);
+            typedef sync_policies::ApproximateTime<PointCloud2, Image> tSyncPolicy;
+            Synchronizer<tSyncPolicy> sync(tSyncPolicy(10), *transform_filter, sub_rgb);
+ 
 			// register callback called when everything synchronized arrives
 			sync.registerCallback(boost::bind(&callbackpcl_rgb, _1, _2));
 
@@ -512,7 +517,7 @@ int main( int argc, char** argv )
 		{
 			// sync images
 			tfListener = new tf::TransformListener();
-			transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2> (point_cloud, *tfListener, settings.param_output_frame, 1);
+			transform_filter = new tf::MessageFilter<sensor_msgs::PointCloud2> (point_cloud, *tfListener, settings.param_output_frame, 10);
 			transform_filter->registerCallback(boost::bind(&callbackpcl, _1));
 
 			std::cerr << "Plane detector initialized and listening point clouds..." << std::endl;
@@ -525,7 +530,6 @@ int main( int argc, char** argv )
 	// if kinect input
 	else if (settings.param_node_input == PARAM_NODE_INPUT_KINECT)
 	{
-
 		exporter = new DynModelExporter2(&n,
 										settings.param_original_frame,
 	                                    settings.param_output_frame,
@@ -536,14 +540,14 @@ int main( int argc, char** argv )
 										settings.param_ht_keeptrack);
 
 		// MESSAGES
-		message_filters::Subscriber<Image> depth_sub(n, DET_INPUT_IMAGE_TOPIC, 1);
-		message_filters::Subscriber<CameraInfo> info_sub_depth(n, DET_INPUT_CAM_INFO_TOPIC, 1);
+		message_filters::Subscriber<Image> depth_sub(n, DET_INPUT_IMAGE_TOPIC, 10);
+		message_filters::Subscriber<CameraInfo> info_sub_depth(n, DET_INPUT_CAM_INFO_TOPIC, 10);
 
 		tfListener = new tf::TransformListener();
-		transform_filterDepth = new tf::MessageFilter<Image> (depth_sub, *tfListener, settings.param_output_frame, 1);
+		transform_filterDepth = new tf::MessageFilter<Image> (depth_sub, *tfListener, settings.param_output_frame, 10);
 
 		tfListenerCam = new tf::TransformListener();
-		transform_filterCam = new tf::MessageFilter<CameraInfo> (info_sub_depth, *tfListenerCam, settings.param_output_frame, 1);
+		transform_filterCam = new tf::MessageFilter<CameraInfo> (info_sub_depth, *tfListenerCam, settings.param_output_frame, 10);
 
 		pub1 = n.advertise<pcl::PointCloud<pcl::PointXYZRGB> > (DET_OUTPUT_POINT_CLOUD_TOPIC, 1);
 		pub2 = n.advertise<visualization_msgs::MarkerArray > (DET_OUTPUT_MARKER_TOPIC, 1);
@@ -551,11 +555,15 @@ int main( int argc, char** argv )
 
 		if (settings.param_visualisation_color == "mean_color")
 		{
-			message_filters::Subscriber<Image> sub_rgb(n, DET_INPUT_RGB_IMAGE_TOPIC, 1);
-			tfListenerRGB = new tf::TransformListener();
-			transform_filterRGB = new tf::MessageFilter<Image> (sub_rgb, *tfListenerRGB, settings.param_output_frame, 1);
+			message_filters::Subscriber<Image> sub_rgb(n, DET_INPUT_RGB_IMAGE_TOPIC, 10);
 
-			message_filters::TimeSynchronizer<Image, CameraInfo, Image> sync(*transform_filterDepth, *transform_filterCam, *transform_filterRGB, 10);
+			tfListenerRGB = new tf::TransformListener();
+			transform_filterRGB = new tf::MessageFilter<Image> (sub_rgb, *tfListenerRGB, settings.param_output_frame, 10);
+
+            // Majkl 2012/11/07: TimeSynchronizer doesn't work when playing data from a bag file
+//			message_filters::TimeSynchronizer<Image, CameraInfo, Image> sync(*transform_filterDepth, *transform_filterCam, *transform_filterRGB, 10);
+            typedef sync_policies::ApproximateTime<Image, CameraInfo, Image> tSyncPolicy;
+            Synchronizer<tSyncPolicy> sync(tSyncPolicy(10), *transform_filterDepth, *transform_filterCam, *transform_filterRGB);
 
 			// register callback called when everything synchronized arrives
 			sync.registerCallback(boost::bind(&callbackkinect_rgb, _1, _2, _3));
@@ -567,7 +575,10 @@ int main( int argc, char** argv )
 		}
 		else
 		{
-			message_filters::TimeSynchronizer<Image, CameraInfo> sync(*transform_filterDepth, *transform_filterCam, 10);
+            // Majkl 2012/11/07: TimeSynchronizer doesn't work when playing data from a bag file
+//			message_filters::TimeSynchronizer<Image, CameraInfo> sync(*transform_filterDepth, *transform_filterCam, 10);
+            typedef sync_policies::ApproximateTime<Image, CameraInfo> tSyncPolicy;
+            Synchronizer<tSyncPolicy> sync(tSyncPolicy(10), *transform_filterDepth, *transform_filterCam);
 
 			// register callback called when everything synchronized arrives
 			sync.registerCallback(boost::bind(&callbackkinect, _1, _2));
@@ -579,3 +590,4 @@ int main( int argc, char** argv )
 		}
 	}
 }
+

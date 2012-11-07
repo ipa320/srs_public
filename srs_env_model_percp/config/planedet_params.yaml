@@ -20,7 +20,7 @@ planedet_ht_keep_track: 1
 planedet_ht_maxdepth: 100.0
 
 # Maximum height in meters to be considered
-planedet_ht_max_height: 2.5
+planedet_ht_max_height: 3.0
 
 # Minimum height in meters to be considered
 planedet_ht_min_height: 0.1
@@ -101,4 +101,4 @@ planedet_visualisation_plane_shift_dev: 0.1
 planedet_visualisation_min_count: 2000
 
 # Color creation method (plane_eq / mean_color / centroid / random)
-planedet_visualisation_color : mean_color
+planedet_visualisation_color: mean_color

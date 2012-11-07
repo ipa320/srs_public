@@ -189,6 +189,8 @@ void srs_env_model::CCMapPlugin::newMapDataCB( SMapWithParameters & par )
 
 	m_DataTimeStamp = par.currentTime;
 
+	lock.unlock();
+
 	invalidate();
 }
 

@@ -85,6 +85,7 @@ void srs_env_model::COctoMapPlugin::setDefaults() {
 	m_crawlDepth = 0;
 
 	m_bMapLoaded = false;
+	m_bNotFirst = false;
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
@@ -280,10 +281,11 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 {
 
-//	PERROR("insertCloud: Insert cloud start.");
+//	PERROR("insertCloud: Try lock.");
 
 	// Lock data
 	boost::mutex::scoped_lock lock(m_lockData);
+//	PERROR("insertCloud: Locked.");
 
 	tPointCloud used_cloud;
 	pcl::copyPointCloud( cloud, used_cloud );
@@ -571,15 +573,18 @@ void srs_env_model::COctoMapPlugin::reset(bool clearLoaded)
 /// Crawl octomap
 void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime) {
 	// Lock data
+/*	Already locked in invalidate method
+	PERROR( "crawl: Try lock");
 	boost::mutex::scoped_lock lock(m_lockData);
-
+	PERROR( "crawl: Locked");
+*/
 	// Fill needed structures
 	fillMapParameters(currentTime);
 
 	// Call new data signal
 	m_sigOnNewData( m_mapParameters );
 
-
+//	PERROR( "crawl: Unlocked");
 }
 
 //! Should plugin publish data?
@@ -596,7 +601,10 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 		return;
 
 	// Lock data
+//	PERROR( "publish: Try lock");
 	boost::mutex::scoped_lock lock(m_lockData);
+//	PERROR( "publish: Locked");
+
 	octomap_ros::OctomapBinary map;
 	map.header.frame_id = m_mapParameters.frameId;
 	map.header.stamp = timestamp;
@@ -604,6 +612,8 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 	octomap::octomapMapToMsgData(m_data->octree, map.data);
 
 	m_ocPublisher.publish(map);
+
+//	PERROR( "publish: Unlocked");
 }
 
 /// Fill map parameters
@@ -629,6 +639,8 @@ bool srs_env_model::COctoMapPlugin::resetOctomapCB(
 	reset(true);
 
 	std::cerr << "Reset done..." << std::endl;
+
+	invalidate();
 
 	return true;
 }
@@ -1186,6 +1198,8 @@ bool srs_env_model::COctoMapPlugin::loadOctreeCB( srs_env_model::LoadSaveRequest
 	// reset data
 	reset(true);
 
+	boost::mutex::scoped_lock lock(m_lockData);
+
 	setDefaults();
 
 	assert( m_data != 0 );
@@ -1215,10 +1229,15 @@ bool srs_env_model::COctoMapPlugin::loadOctreeCB( srs_env_model::LoadSaveRequest
 			// Map was loaded
 			m_bMapLoaded = true;
 
+			// Unlock data before invalidation
+			lock.unlock();
+
 			// We have new data
 			invalidate();
 
 			res.all_ok = true;
+
+			m_bNotFirst = m_data->octree.getNumLeafNodes() > 0;
 
 		} else {
 

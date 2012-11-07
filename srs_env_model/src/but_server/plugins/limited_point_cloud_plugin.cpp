@@ -234,6 +234,8 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
 
 	m_DataTimeStamp = par.currentTime;
 
+	lock.unlock();
+
 	invalidate();
 }
 

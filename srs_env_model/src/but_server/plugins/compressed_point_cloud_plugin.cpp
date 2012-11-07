@@ -281,6 +281,8 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
 
 	m_DataTimeStamp = par.currentTime;
 
+	lock.unlock();
+
 	invalidate();
 }
 

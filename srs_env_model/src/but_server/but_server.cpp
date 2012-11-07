@@ -71,7 +71,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 			m_plugInputPointCloud( new CPointCloudPlugin("PCIN", true ) ),
 			m_plugOcMapPointCloud( new CPointCloudPlugin( "PCOC", false )),
 			m_plugVisiblePointCloud( new CLimitedPointCloudPlugin( "PCVIS" ) ),
-			m_plugOctoMap( new COctoMapPlugin("OCM")),
+			m_plugOctoMap( new COctoMapPlugin("OCM", filename)),
 			m_plugCollisionObject( new CCollisionObjectPlugin( "COB" )),
 			m_plugMap2D( new CCollisionGridPlugin( "M2D" )),
 			m_plugIMarkers( ),
@@ -96,7 +96,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	// Is map static (loaded from file)?
 	bool staticMap(filename != "");
 
-	m_latchedTopics = staticMap;
+	m_latchedTopics = false;
 	private_nh.param("latch", m_latchedTopics, m_latchedTopics);
 	private_nh.param<bool>("use_old_im", m_bUseOldIMP, m_bUseOldIMP);
 

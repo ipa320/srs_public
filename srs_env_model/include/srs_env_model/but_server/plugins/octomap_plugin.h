@@ -41,6 +41,8 @@
 #include <srs_env_model/SetCrawlingDepth.h>
 #include <srs_env_model/GetTreeDepth.h>
 
+#include <srs_env_model/LoadSave.h>
+
 // Registration
 #include <srs_env_model/but_server/registration/CPCtoOCRegistration.h>
 
@@ -74,7 +76,7 @@ public:
 	virtual void init(ros::NodeHandle & node_handle);
 
 	//! Reset octomap
-	void reset();
+	void reset(bool clearLoaded);
 
 	//! Get current octomap size
 	unsigned getSize() { return m_data->octree.size(); }
@@ -159,6 +161,12 @@ protected:
 	/// Get octomap tree depth - service callback
 	bool getTreeDepthCB( srs_env_model::GetTreeDepth::Request & req, srs_env_model::GetTreeDepth::Response & res );
 
+	/// Load map service callback
+	bool loadOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+
+	/// Save map service callback
+	bool saveOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+
 protected:
 
     /// Should ground plane be filtered?
@@ -193,6 +201,12 @@ protected:
 
     /// Get octtree depth service
     ros::ServiceServer m_serviceGetTreeDepth;
+
+    /// Load map service
+    ros::ServiceServer m_serviceLoadMap;
+
+    /// Save map service
+    ros::ServiceServer m_serviceSaveMap;
 
     /// Should octomap be published
     bool m_bPublishOctomap;
@@ -266,6 +280,9 @@ protected:
 
     //! First frame is already inserted
     bool m_bNotFirst;
+
+    //! Was map loaded
+    bool m_bMapLoaded;
 
 }; // class COctoMapPlugin;
 

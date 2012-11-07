@@ -65,10 +65,14 @@ int main(int argc, char** argv){
           exit(-1);
   }
 
+  std::cerr << "Number of octomap server parameters: " << argc << std::endl;
+
 
   if (argc == 2)
+  {
+	  std::cerr << "Trying to load input octomap file: " << argv[1] << std::endl;
           mapFilename = std::string(argv[1]);
-
+  }
   try{
 		// Run server
 		srs_env_model::CButServer ms(mapFilename);

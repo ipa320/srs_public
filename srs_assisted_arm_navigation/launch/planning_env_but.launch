@@ -55,9 +55,9 @@
   </node-->
 	
     <!-- self filter Kinect points -->
-    <node pkg="robot_self_filter" type="self_filter" respawn="true" name="stereo_self_filter" output="screen">
+    <node pkg="srs_env_model_utils" type="self_filter" respawn="true" name="kinect_self_filter" output="screen">
       <remap from="cloud_in" to="/cam3d/rgb/points_throttled"/>
-      <remap from="cloud_out" to="/cam3d/depth/points_filtered2"/>
+      <remap from="cloud_out" to="/cam3d/rgb/points_filtered2"/>
       <param name="sensor_frame" type="string" value="/head_cam3d_link"/>
       <param name="subsample_value" type="double" value=".03"/>
       <rosparam command="load" file="$(find cob_manipulation_config)/$(env ROBOT)/self_filter.yaml" />
@@ -82,10 +82,9 @@
       <rosparam file="$(find srs_env_model)/config/environment_server_defaults.yaml" command="load"/>
 	    
       <remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info"/>
-      <remap from="but_server_node/points_in" to="/cam3d/depth/points_filtered2"/>
+      <remap from="but_server_node/points_in" to="/cam3d/rgb/points_filtered2"/>
 		  
-      <param name="registration_mode" type="string" value="icpnl"/>
-      <!--param name="input_has_rgb" type="bool" value="false"/-->
+      <!--param name="registration_mode" type="string" value="icpnl"/-->
 		  
       <!-- Set 3d camera maximal relevant distance in meters -->
       <param name="ocmap_max_range" type="double" value="4.5"/>

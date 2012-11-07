@@ -1,0 +1,113 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b robot_self_filter can either remove points from a pointcloud that
+are on the robot (parts the robot can see of itself) or it can
+annotate the points by adding a channel with a name of choice that
+will have values of 1.0 (point is outside the robot), -1.0 (point is
+on the robot) or 0.0 (point is shadowed by robot)
+
+The set of robot links the robot can see, and the padding and scaling
+for those links can be set using the collision YAML files described in
+<a href="../../planning_environment/html">planning_environment</a>.
+The functionality provided by this node is built around the 
+<a href="../../geometric_shapes/html">geometric_shapes</a> package.
+
+\section rosapi ROS API
+
+<!--
+Names are very important in ROS because they can be remapped on the
+command-line, so it is VERY IMPORTANT THAT YOU LIST NAMES AS THEY
+APPEAR IN THE CODE. You should list names of every topic, service and
+parameter used in your code. There is a template below that you can
+use to document each node separately.
+-->
+
+List of nodes:
+- \b self_filter 
+- \b test_filter
+
+<hr>
+
+\subsection self_filter self_filter
+
+\b self_filter listents to a pointcloud on the 'cloud_in' topic and
+broadcasts a pointcloud on 'cloud_out' topic.  There are two modes of
+using this node: it can either remove points that are on the robot
+from the input cloud and only broadcast the rest, or it can annotate
+the points with another channel with a name of choice. The second mode
+is activated by specifying the '~annotate' ROS parameter.
+
+If the "~sensor_frame" parameter is specified, shadow points off seen
+robot links are removed.  These shadow points are in fact (almost)
+behind the links, so they should not be seen. To decide that a point
+is a shadow, a ray is cast from every point in the pointcloud to the
+sensor frame. If the ray hits a robot link on its way, the point is a
+shadow.
+
+
+\subsubsection Usage
+\verbatim
+$ self_filter [standard ROS params]
+\endverbatim
+
+\par Example
+
+\verbatim
+$ self_filter cloud_in:=tilt_cloud cloud_out:=tilt_cloud_filtered
+\endverbatim
+
+
+\subsubsection topics ROS topics
+
+Subscribes to:
+- \b "cloud_in": [sensor_msgs/PointCloud] 
+
+Publishes to:
+- \b "cloud_out": [sensor_msgs/PointCloud] 
+
+
+\subsubsection parameters ROS parameters
+
+Reads the following parameters from the parameter server
+
+- \b "~annotate" : \b [string] if specified, this channel name will be added to the input pointcloud
+and no points will be removed. The values of this channel will be only -1.0 (point on robot) and 1.0
+(point outside)
+
+- \b "~sensor_frame" : \b [string] if specified, this parameter is
+  interpreted as the frame in which the sensor broadcasting the
+  pointcload is located (need not be the same frame as the
+  pointcloud). This information is the used to remove shadow points:
+  points that lie behind robot links that obstruct the view (we should
+  ne be able to see them, but they may be caused by shiny arms, for
+  example).
+
+A robot description is assumed to be loaded as well, and the \b
+robot_description parameter should resolve to that description..
+
+\subsection test_filter test_filter
+
+test_filter randomly generates points around & inside the robot and
+uses the filter to only keep the ones inside or the ones outside. The
+kept set is then sent as a visualization messages to \b rviz. This
+provides a simple means to test the filter.
+
+\subsubsection Usage
+\verbatim
+$ test_filter [standard ROS params]
+\endverbatim
+
+\par Example
+
+\verbatim
+$ test_filter
+\endverbatim
+
+\subsubsection parameters ROS parameters
+
+A robot description is assumed to be loaded as well, and the \b
+robot_description parameter should resolve to that description..
+
+*/

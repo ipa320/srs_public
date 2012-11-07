@@ -202,7 +202,7 @@ bool estimateBB_callback(srs_env_model_percp::EstimateBB::Request  &req,
         res.pose.orientation.x = 0;
         res.pose.orientation.y = 0;
         res.pose.orientation.z = 0;
-        res.pose.orientation.w = 0;
+        res.pose.orientation.w = 1;
     }
     
     res.scale.x = s.x;
@@ -278,7 +278,7 @@ bool estimateBBAlt_callback(srs_env_model_percp::EstimateBBAlt::Request  &req,
         res.pose.orientation.x = 0;
         res.pose.orientation.y = 0;
         res.pose.orientation.z = 0;
-        res.pose.orientation.w = 0;
+        res.pose.orientation.w = 1;
     }
     
     res.bounding_box_lwh.x = 0.5f * s.x;

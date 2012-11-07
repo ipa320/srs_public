@@ -187,6 +187,8 @@ void srs_env_model::CCMapPlugin::newMapDataCB( SMapWithParameters & par )
 
 	} // Iterate through octree
 
+	m_DataTimeStamp = par.currentTime;
+
 	invalidate();
 }
 

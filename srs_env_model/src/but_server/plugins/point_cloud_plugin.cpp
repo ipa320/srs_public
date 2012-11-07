@@ -214,6 +214,8 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
 	}
 
+	m_DataTimeStamp = par.currentTime;
+
 	invalidate();
 }
 
@@ -262,8 +264,6 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 //	std::cerr << "PCP.iccb start. Time: " << ros::Time::now() << std::endl;
 
-
-	ros::WallTime startTime = ros::WallTime::now();
 
 	m_bAsInput = true;
 
@@ -377,6 +377,9 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	// Modify header
 	m_data->header = cloud->header;
     m_data->header.frame_id = m_pcFrameId;
+
+    // Store timestamp
+    m_DataTimeStamp = cloud->header.stamp;
 
  //   PERROR("Insert cloud CB. Size: " << m_data->size() );
 

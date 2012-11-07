@@ -147,6 +147,8 @@ void srs_env_model::CMarkerArrayPlugin::newMapDataCB(SMapWithParameters & par)
 
 	handlePostNodeTraversal( par );
 
+	m_DataTimeStamp = par.currentTime;
+
 }
 
 void srs_env_model::CMarkerArrayPlugin::handleNode(const srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)

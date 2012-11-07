@@ -320,7 +320,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 		}
 	}
 
-	ros::WallTime startTime = ros::WallTime::now();
+//	ros::WallTime startTime = ros::WallTime::now();
 
 	tPointCloud pc_ground; // segmented ground plane
 	tPointCloud pc_nonground; // everything else
@@ -389,9 +389,9 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 		degradeOutdatedRaycasting(cloud.header, sensor_origin);
 	}
 
-	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
-	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(),
-			pc_nonground.size(), total_elapsed);
+//	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
+	ROS_DEBUG("Point cloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground).)", pc_ground.size(),
+			pc_nonground.size());
 
 //	PERROR("Filtered");
 	if (m_removeTester != 0) {
@@ -824,7 +824,7 @@ void srs_env_model::COctoMapPlugin::computeBBX(
 	// // visualize axis-aligned querying bbx
 	visualization_msgs::Marker bbx;
 	bbx.header.frame_id = m_mapParameters.frameId;
-	bbx.header.stamp = ros::Time::now();
+	bbx.header.stamp = sensor_header.stamp;
 	bbx.ns = "OCM_plugin";
 	bbx.id = 1;
 	bbx.action = visualization_msgs::Marker::ADD;
@@ -843,7 +843,7 @@ void srs_env_model::COctoMapPlugin::computeBBX(
 	// visualize sensor cone
 	visualization_msgs::Marker bbx_points;
 	bbx_points.header.frame_id = m_mapParameters.frameId;
-	bbx_points.header.stamp = ros::Time::now();
+	bbx_points.header.stamp = sensor_header.stamp;
 	bbx_points.ns = "OCM_plugin";
 	bbx_points.id = 2;
 	bbx_points.action = visualization_msgs::Marker::ADD;

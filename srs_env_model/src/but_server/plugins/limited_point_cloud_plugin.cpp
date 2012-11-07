@@ -232,6 +232,8 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
 	}
 
+	m_DataTimeStamp = par.currentTime;
+
 	invalidate();
 }
 

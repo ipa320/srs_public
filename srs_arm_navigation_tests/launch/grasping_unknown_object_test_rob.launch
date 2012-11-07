@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    
+  <!-- BUT assisted arm navigation -->
+  <include file="$(find srs_assisted_arm_navigation)/launch/but_arm_nav_rob.launch"/>
+
+  <!-- grasping action server -->
+  <include file="$(find srs_assisted_grasping)/launch/grasping_node.launch"/>
+
+</launch>

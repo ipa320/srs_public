@@ -7,7 +7,7 @@
     <include file="$(find srs_ui_but)/launch/distance_visualizer.launch" /-->
 
     <!-- Run rviz -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/rviz.vcg" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/nav_test.vcg" />
 
 </launch>
 

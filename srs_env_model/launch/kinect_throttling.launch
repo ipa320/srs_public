@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-	<arg name="max_rate" default="3"/>
+    <!-- default max_rate -->
+    <arg name="max_rate" default="3.0" />
 
     <!-- run the nodelet manager -->
     <node pkg="nodelet" type="nodelet" name="openni_manager2" output="screen" respawn="true" args="manager" />

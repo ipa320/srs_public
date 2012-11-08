@@ -57,6 +57,7 @@
 #include "srs_assisted_arm_navigation_msgs/ArmNavExecute.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavStart.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavCollObj.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavSetAttached.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavMovePalmLink.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavMovePalmLinkRel.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavSwitchAttCO.h"
@@ -302,6 +303,7 @@ public:
   bool ArmNavRepeat(srs_assisted_arm_navigation_msgs::ArmNavRepeat::Request &req, srs_assisted_arm_navigation_msgs::ArmNavRepeat::Response &res);
 
   bool ArmNavCollObj(srs_assisted_arm_navigation_msgs::ArmNavCollObj::Request &req, srs_assisted_arm_navigation_msgs::ArmNavCollObj::Response &res);
+  bool ArmNavSetAttached(srs_assisted_arm_navigation_msgs::ArmNavSetAttached::Request &req, srs_assisted_arm_navigation_msgs::ArmNavSetAttached::Response &res);
   bool ArmNavMovePalmLink(srs_assisted_arm_navigation_msgs::ArmNavMovePalmLink::Request &req, srs_assisted_arm_navigation_msgs::ArmNavMovePalmLink::Response &res);
   bool ArmNavMovePalmLinkRel(srs_assisted_arm_navigation_msgs::ArmNavMovePalmLinkRel::Request &req, srs_assisted_arm_navigation_msgs::ArmNavMovePalmLinkRel::Response &res);
   bool ArmNavSwitchACO(srs_assisted_arm_navigation_msgs::ArmNavSwitchAttCO::Request &req, srs_assisted_arm_navigation_msgs::ArmNavSwitchAttCO::Response &res);
@@ -442,7 +444,7 @@ protected:
    * @bug Fails if it's called multiple times. For one object it works fine.
    */
   std::string add_coll_obj_attached(double x, double y, double z, double scx, double scz);
-  std::string add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll);
+  std::string add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll, bool attached);
 
   std::string collision_objects_frame_id_;
 
@@ -458,6 +460,7 @@ protected:
     geometry_msgs::PoseStamped pose;
     geometry_msgs::Point bb_lwh;
     bool allow_collision;
+    bool attached;
 
   } t_det_obj;
 

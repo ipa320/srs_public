@@ -1,18 +1,20 @@
 <?xml version="1.0"?>
 <launch>
+	<arg name="max_rate" default="3"/>
+
     <!-- run the nodelet manager -->
     <node pkg="nodelet" type="nodelet" name="openni_manager2" output="screen" respawn="true" args="manager" />
 
     <!-- depth points throttling -->
     <node pkg="nodelet" type="nodelet" name="depth_points_throttle" args="load srs_env_model/CloudThrottle openni_manager2" respawn="true">
-        <param name="max_rate" value="3.0"/>
+        <param name="max_rate" value="$(arg max_rate)"/>
         <remap from="cloud_in" to="/cam3d/depth/points"/>
         <remap from="cloud_out" to="/cam3d/depth/points_throttled"/>
     </node>
 
     <!-- rgb points throttling -->
     <node pkg="nodelet" type="nodelet" name="rgb_points_throttle" args="load srs_env_model/CloudThrottle openni_manager2" respawn="true">
-        <param name="max_rate" value="3.0"/>
+        <param name="max_rate" value="$(arg max_rate)"/>
         <remap from="cloud_in" to="/cam3d/rgb/points"/>
         <remap from="cloud_out" to="/cam3d/rgb/points_throttled"/>
     </node>

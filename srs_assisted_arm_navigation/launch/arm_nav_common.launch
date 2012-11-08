@@ -22,19 +22,13 @@
   
   <!-- grasping action server -->
   <!--include file="$(find srs_assisted_arm_navigation)/launch/grasping_node.launch"/-->
-  
-  <!-- BUT cob teleop marker -->
-  <node name="cob_interactive_teleop" pkg="cob_interactive_teleop" type="interactive_teleop">
-    <remap from="/base_controller/command" to="/base_controller/command_safe"/>
-  </node>
-  
-  
+   
   <node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/>
   
   <!-- kinect image flip nodelet - flips kinect images if robot is looking backwards -->
   <node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
     <remap from="pointcloud" to="/cam3d/depth/points"/>
-    <remap from="colorimage" to="/cam3d/rgb/image_raw"/>
+    <remap from="colorimage" to="/cam3d/rgb/image_color"/>
   </node>
   
   

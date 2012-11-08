@@ -1,13 +1,8 @@
 <?xml version="1.0"?>
 <launch>
 
-    <!-- Run BUT GUI nodes (indicators...) -->
-    <!--include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" />
-    <include file="$(find srs_ui_but)/launch/cob_stretch_indicator.launch" />
-    <include file="$(find srs_ui_but)/launch/distance_visualizer.launch" /-->
-
-    <!-- Run rviz -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/nav_test.vcg" />
+	<!-- Run rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/nav_test.vcg" />
 
 </launch>
 

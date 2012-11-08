@@ -101,6 +101,8 @@ void srs_env_model::CCMapPlugin::publishInternal(const ros::Time & timestamp)
 		m_mapTime = timestamp;
 		swap( m_data, m_dataBuffer );
 
+		lock.unlock();
+
 		// Call invalidation
 		invalidate();
 	}

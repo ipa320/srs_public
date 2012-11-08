@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- args -->
+	<arg name="robot" value="cob3-3"/>
+	<arg name="pc1" default="cob3-3-pc1"/>
+	<arg name="pc2" default="cob3-3-pc2"/>
+	<arg name="pc3" default="cob3-3-pc3"/>
+
+	<group>
+		<machine name="pc1" address="$(arg pc1)" default="true"/>
+
+        <!-- navigation -->
+        <include file="$(find cob_navigation_slam)/launch/2dnav_ros_dwa.launch" />
+
+        <!-- Run the interactive teleop -->
+        <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch">
+        </include>
+	</group>
+
+	<group>
+		<machine name="pc2" address="$(arg pc2)" default="true"/>
+
+        <!-- Kinect throttling -->
+        <include file="$(find srs_env_model)/launch/kinect_throttling.launch">
+            <arg name="max_rate" value="3.0" />
+        </include>
+	</group>
+
+	<group>
+		<machine name="pc3" address="$(arg pc3)" default="true"/>
+        
+        <!-- Run BUT dynamic scene model server node -->
+        <include file="$(find srs_env_model)/launch/but_envmodel_robot.launch" />
+	</group>
+
+        <!-- Run BUT plane detection node -->
+        <!--include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" /-->
+	</group>
+
+        <group>
+                <machine name="pc1" address="$(arg pc1)" default="true"/>
+	</group>
+
+</launch>
+

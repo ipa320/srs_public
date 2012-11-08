@@ -83,15 +83,15 @@ class GraspScript(script):
 
 
 		# initialize components (not needed for simulation)
+		"""
 		self.sss.init("tray")
 		self.sss.init("torso")
 		self.sss.init("arm")
 		self.sss.init("sdh")
 		self.sss.init("base")
-		
+		"""
 
 		# move to initial positions
-		"""
 		handle_arm = self.sss.move("arm","folded",False)
 		handle_torso = self.sss.move("torso","home",False)
 		handle_sdh = self.sss.move("sdh","home",False)
@@ -99,7 +99,7 @@ class GraspScript(script):
 		handle_arm.wait()
 		handle_torso.wait()
 		handle_sdh.wait()
-		"""
+		
 		if not self.sss.parse:
 			print "Please localize the robot with rviz"
 		#self.sss.wait_for_input()
@@ -130,12 +130,14 @@ class GraspScript(script):
 
 		index = -1;
 		while (index < 0):
-			index = int(raw_input("Select object to grasp: "))
+			index = 0#int(raw_input("Select object to grasp: "))
 		
 		obj = res.object_list.detections[index].pose
 		obj.header.stamp = self.listener.getLatestCommonTime("/base_link", obj.header.frame_id)
 		obj = self.listener.transformPose("/base_link", obj)
-		print "obj_pose:\n",obj.pose.position
+		print "obj_pose:\n",obj.pose
+
+
 
 		print "Calling get_feasible_grasps service..."
 		get_grasps_from_position = rospy.ServiceProxy('get_feasible_grasps', GetFeasibleGrasps)

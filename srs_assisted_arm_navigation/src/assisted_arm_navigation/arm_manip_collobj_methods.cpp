@@ -32,7 +32,7 @@ using namespace planning_scene_utils;
 using namespace srs_assisted_arm_navigation_msgs;
 
 
-std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll=false) {
+std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll=false, bool attached=false) {
 
   std::string ret = "";
 
@@ -54,6 +54,8 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
   bool transf = false;
 
   geometry_msgs::PoseStamped mpose;
+
+  // TODO BUG -> problem with attached object, after executed trajectory, it stays on original place !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   if (pose.header.frame_id != collision_objects_frame_id_) {
 
@@ -115,7 +117,18 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
   							   (bb_lwh.z)*inflate_bb_,
   							   color);
 
-  		 ROS_INFO("Coll. obj. name=%s, id=%s has been created.",oname.c_str(),ret.c_str());
+
+
+  		 if (attached) {
+
+  			attachCollisionObject(ret, motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].getEndEffectorLink(), links_);
+  			ROS_INFO("Attached coll. obj. name=%s, id=%s has been created.",oname.c_str(),ret.c_str());
+
+  		 } else {
+
+  			ROS_INFO("Coll. obj. name=%s, id=%s has been created.",oname.c_str(),ret.c_str());
+
+  		 }
 
 
   	   } // transf
@@ -132,6 +145,17 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
 	   // TODO
 
    }
+
+
+   /*PlanningSceneData& scene = planning_scene_map_[planning_scene_id];
+
+   for(size_t i = 0; i < scene.getPlanningScene().collision_objects.size(); i++)
+   {
+
+     createSelectableMarkerFromCollisionObject(scene.getPlanningScene().collision_objects[i], scene.getPlanningScene().collision_objects[i].id, scene.getPlanningScene().collision_objects[i].id, color);
+   }*/
+
+   //createSelectableMarkerFromCollisionObject(coll, coll.id, "", color);
 
 
 

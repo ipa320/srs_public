@@ -83,7 +83,7 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
 
     for(tmp = coll_obj_det.begin(); tmp != coll_obj_det.end(); tmp++) {
 
-      (*tmp).id = add_coll_obj_bb((*tmp).name,(*tmp).pose,(*tmp).bb_lwh, (*tmp).allow_collision);
+      (*tmp).id = add_coll_obj_bb((*tmp).name,(*tmp).pose,(*tmp).bb_lwh, (*tmp).allow_collision, (*tmp).attached);
 
       }
 
@@ -208,6 +208,13 @@ bool CArmManipulationEditor::ArmNavExecute(ArmNavExecute::Request &req, ArmNavEx
 
   reset();
 
+  ros::Rate r(10);
+
+  // TODO put some timeout there !!!!
+  while (monitor_status_ == Executing) r.sleep();
+
+  ROS_INFO("Trajectory should be executed.");
+
   res.completed = true;
 
   /// @todo Wait for stop of arm movement (optionally, should be configurable by param).
@@ -284,6 +291,44 @@ bool CArmManipulationEditor::ArmNavRefresh(ArmNavRefresh::Request &req, ArmNavRe
 
 }
 
+bool CArmManipulationEditor::ArmNavSetAttached(ArmNavSetAttached::Request &req, ArmNavSetAttached::Response &res) {
+
+
+	unsigned int idx = 0;
+	bool f = false;
+
+	for (unsigned int i=0; i < coll_obj_det.size(); i++) {
+
+		if (coll_obj_det[i].name == req.object_name) {
+
+			idx = i;
+			f = true;
+			break;
+		}
+
+
+	}
+
+	if (!f) {
+
+		ROS_ERROR("Collision object %s does not exist.",req.object_name.c_str());
+		res.completed = false;
+		return false;
+
+	} else {
+
+		if (req.attached) ROS_INFO("Setting %s object to be attached.",req.object_name.c_str());
+		else ROS_INFO("Setting %s object to NOT be attached.",req.object_name.c_str());
+
+
+		coll_obj_det[idx].attached = req.attached;
+		res.completed = true;
+		return true;
+
+	}
+
+
+}
 
 
 /**
@@ -322,6 +367,7 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
   obj.name = req.object_name;
   obj.bb_lwh = req.bb_lwh;
   obj.pose = opose;
+  obj.attached = false;
 
   obj.allow_collision = req.allow_collision;
 

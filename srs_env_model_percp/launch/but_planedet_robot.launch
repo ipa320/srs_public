@@ -1,18 +1,15 @@
+<?xml version="1.0"?>
 <launch>
-	<!-- Run the plane detection -->
-     <node pkg="srs_env_model_percp" type="but_plane_detector" name="but_plane_detector">
-         <rosparam file="$(find srs_env_model_percp)/config/planedet_params_kinect.yaml" command="load" />
-         <remap from="points_in" to="/cam3d/depth/points" />
-         <remap from="rgb_in" to="/cam3d/rgb/image_raw" />
-         <remap from="depth_image_in" to="/cam3d/depth/image_raw" />
-         <remap from="camera_info_in" to="/cam3d/depth/camera_info" />
-     </node>
+    <!-- Don't forget to run the Kinect throttling nodelete somewhere -->
+    <!-- include file="$(find srs_env_model)/launch/kinect_throttling.launch" /-->
 
-	<!-- There must exist FT between original_frame to global_frame in planedet_params_kinect.yaml. If not, we create artificial static 1:1 transform -->
-	<node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="1 0 0 0 0 0 camera_rgb_optical_frame map 100" />
-
-	<!-- Run rviz -->
- 	<node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_env_model_percp)/config/planedet_rviz_kinect.vcg" />
+    <!-- Run the plane detector -->
+    <node pkg="srs_env_model_percp" type="but_plane_detector" name="but_plane_detector">
+        <rosparam file="$(find srs_env_model_percp)/config/planedet_params_robot.yaml" command="load" />
+        <remap from="points_in" to="/cam3d/rgb/points_throttled" />
+        <remap from="rgb_in" to="/cam3d/rgb/image_raw" />
+        <remap from="camera_info_in" to="/cam3d/rgb/camera_info" />
+    </node>
 
 </launch>
 

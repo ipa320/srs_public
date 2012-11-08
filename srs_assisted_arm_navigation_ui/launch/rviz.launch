@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <launch>
 
-
   <!-- arm manip action server -->
   <include file="$(find srs_assisted_arm_navigation)/launch/arm_manip_node.launch"/>
   

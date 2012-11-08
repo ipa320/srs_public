@@ -6,6 +6,12 @@
     <include file="$(find srs_ui_but)/launch/cob_stretch_indicator.launch" />
     <include file="$(find srs_ui_but)/launch/distance_visualizer.launch" /-->
 
+	<!-- Run node able to reconstruct voxel map from differential frames -->
+	<node pkg="srs_env_model" type="but_cpc_node" name="but_cpc_node" >
+		<remap from="input" to="/but_env_model/octomap_updates" />
+		<remap from="output" to="/but_env_model/cpc_pointcloud_centers" />
+	</node>
+
     <!-- Run rviz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/nav_test.vcg" />
 

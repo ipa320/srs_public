@@ -10,11 +10,17 @@
   <url>http://ros.org/wiki/srs_user_tests</url>
 
   <depend package="cob_navigation_global"/>
+  <depend package="cob_navigation_slam"/>
+  <depend package="cob_interactive_teleop"/>
   <depend package="cob_3d_mapping_msgs"/>
   <depend package="cob_3d_mapping_pipeline_fake"/>
   <depend package="rviz"/>
 
   <depend package="srs_env_model"/>
   <depend package="srs_env_model_percp"/>
+  <depend package="srs_arm_navigation_tests"/>
+  <depend package="spacenav_node"/>
+  <depend package="srs_assisted_arm_navigation"/>
+  <depend package="srs_assisted_grasping"/>
 
 </package>

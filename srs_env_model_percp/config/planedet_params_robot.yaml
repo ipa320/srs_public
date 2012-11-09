@@ -17,10 +17,10 @@ original_frame: /head_cam3d_link
 planedet_ht_keep_track: 1
 
 # Maximum depth in meters to count with (for real data, 3.0 is recommended)
-planedet_ht_maxdepth: 100.0
+planedet_ht_maxdepth: 5.0
 
 # Maximum height in meters to be considered
-planedet_ht_max_height: 3.0
+planedet_ht_max_height: 2.5
 
 # Minimum height in meters to be considered
 planedet_ht_min_height: 0.1
@@ -50,7 +50,8 @@ planedet_ht_gauss_angle_sigma: 0.04
 planedet_ht_gauss_shift_sigma: 0.15
 
 # Merge planes with shift difference less than
-planedet_ht_plane_merge_shift: 0.1
+#planedet_ht_plane_merge_shift: 0.1
+planedet_ht_plane_merge_shift: 0.3
 
 # Merge planes with angle difference less than
 planedet_ht_plane_merge_angle: 0.5
@@ -69,12 +70,14 @@ planedet_ht_lvl1_gauss_shift_sigma: 5.0
 
 # HS minimal point count to be considered for computation (warning, big speed effect) 
 planedet_ht_min_smooth: 10
+#planedet_ht_min_smooth: 30
 
 #-----------------------------------------------------------------------------------
 # PLANE SEARCH PARAMS 
 # 
 # Minimum number of points forming a plane in one frame
-planedet_search_minimum_current_space: 2000.0
+#planedet_search_minimum_current_space: 2000.0
+planedet_search_minimum_current_space: 500.0
 
 # Minimum signature in global HS for detected plane
 planedet_search_minimum_global_space: 1.5
@@ -98,7 +101,8 @@ planedet_visualisation_plane_normal_dev: 0.5
 planedet_visualisation_plane_shift_dev: 0.1
 
 # Minimal point count for visualised plane
-planedet_visualisation_min_count: 2000
+#planedet_visualisation_min_count: 2000
+planedet_visualisation_min_count: 500
 
 # Color creation method (plane_eq / mean_color / centroid / random)
 planedet_visualisation_color: mean_color

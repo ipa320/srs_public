@@ -34,6 +34,11 @@
 
         <!-- Run BUT plane detection node -->
         <!--include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" /-->
+
+    	<!-- Run BUT interactive markers server -->
+    	<include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" />
+	    <include file="$(find srs_ui_but)/launch/cob_stretch_indicator.launch" />
+    	<include file="$(find srs_ui_but)/launch/distance_visualizer.launch" />
 	</group>
 
 	<machine name="pc1" address="$(arg pc1)" default="true"/>

@@ -22,7 +22,7 @@
 
 		<!-- Kinect throttling -->
 		<include file="$(find srs_env_model)/launch/kinect_throttling.launch">
-			<arg name="max_rate" value="1.0" />
+			<arg name="max_rate" value="0.3" />
 		</include>
 	</group>
 

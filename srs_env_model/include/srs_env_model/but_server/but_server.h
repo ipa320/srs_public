@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 1757 2012-10-29 13:41:14Z spanel $
+ * $Id: but_server.h 1860 2012-11-14 12:13:45Z spanel $
  *
  * Modified by dcgm-robotics@FIT group
  *

@@ -259,7 +259,7 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
     m_octomap_updates_msg->pointcloud2.header.stamp = par.currentTime;
 
     // Initialize leaf iterators
-	tButServerOcTree & tree( par.map->octree );
+	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes

@@ -199,7 +199,7 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 	}
 
 	// Initialize leaf iterators
-	tButServerOcTree & tree( par.map->octree );
+	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes

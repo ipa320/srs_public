@@ -21,7 +21,7 @@
 		<machine name="pc2" address="$(arg pc2)" default="true"/>
 
 		<!-- Kinect throttling -->
-		<include file="$(find srs_env_model)/launch/kinect_throttling.launch">
+		<include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
 			<arg name="max_rate" value="1.0" />
 		</include>
 	</group>
@@ -29,11 +29,11 @@
 	<group>
 		<machine name="pc3" address="$(arg pc3)" default="true"/>
         
-        <!-- Run BUT dynamic scene model server node -->
-        <include file="$(find srs_env_model)/launch/but_envmodel_robot.launch" />
+		<!-- Run BUT dynamic scene model server node -->
+		<include file="$(find srs_env_model)/launch/but_envmodel_robot.launch" />
 
-        <!-- Run BUT plane detection node -->
-        <!--include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" /-->
+		<!-- Run BUT plane detection node -->
+		<!--include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" /-->
 	</group>
 
 	<machine name="pc1" address="$(arg pc1)" default="true"/>

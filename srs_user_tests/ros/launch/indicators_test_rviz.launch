@@ -1,25 +1,20 @@
 <?xml version="1.0"?>
 <launch>
 
-    <!-- Run our GUI nodes -->
-    <!--include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" />
-    <include file="$(find srs_ui_but)/launch/cob_stretch_indicator.launch" />
-    <include file="$(find srs_ui_but)/launch/distance_visualizer.launch" /-->
+	<!-- Load predefined URDF model of the environment -->
+	<param name="apartment_description" command="$(find xacro)/xacro.py '$(find cob_gazebo_worlds)/urdf/ipa-apartment/ipa-apartment.urdf.xacro' " />
 
-    <!-- Load predefined URDF model of the environment -->
-    <param name="apartment_description" command="$(find xacro)/xacro.py '$(find cob_gazebo_worlds)/urdf/ipa-apartment/ipa-apartment.urdf.xacro' " />
+	<node pkg="tf" type="static_transform_publisher" name="apartment_tf_publisher" args="0 0 0 0 0 0  /map /dummy_link 10" />
+	<node pkg="robot_state_publisher" type="state_publisher" name="rob_st_pub" >
+		<remap from="robot_description" to="apartment_description" />
+		<remap from="joint_states" to="apartment_joint_states" />
+	</node>
 
-    <node pkg="tf" type="static_transform_publisher" name="apartment_tf_publisher" args="0 0 0 0 0 0  /map /dummy_link 10" />
-    <node pkg="robot_state_publisher" type="state_publisher" name="rob_st_pub" >
-	    <remap from="robot_description" to="apartment_description" />
-	    <remap from="joint_states" to="apartment_joint_states" />
-    </node>
-
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-	    <param name="publish_frequency" type="double" value="10.0" />
-	    <remap from="joint_states" to="apartment_joint_states" />
-	    <remap from="robot_description" to="apartment_description" />
-    </node>
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+		<param name="publish_frequency" type="double" value="10.0" />
+		<remap from="joint_states" to="apartment_joint_states" />
+		<remap from="robot_description" to="apartment_description" />
+	</node>
 
 	<!-- Run env. model voxel map "decompressor" node -->
 	<node pkg="srs_env_model" type="but_cpc_node" name="but_cpc_node" >

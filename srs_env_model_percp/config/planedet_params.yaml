@@ -101,4 +101,4 @@ planedet_visualisation_plane_shift_dev: 0.1
 planedet_visualisation_min_count: 2000
 
 # Color creation method (plane_eq / mean_color / centroid / random)
-planedet_visualisation_color: mean_color
+planedet_visualisation_color : mean_color

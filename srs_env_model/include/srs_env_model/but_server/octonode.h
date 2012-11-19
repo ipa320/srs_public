@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: octonode.h 909 2012-06-15 12:17:40Z spanel $
+ * $Id: octonode.h 1874 2012-11-15 14:45:46Z stancl $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -28,7 +28,7 @@
 #ifndef OCTONODE_H
 #define OCTONODE_H
 
-#include <octomap_ros/OctomapROS.h>
+#include "ButOctomapRos.h"
 #include <octomap/OcTreeStamped.h>
 
 namespace srs_env_model {
@@ -115,6 +115,25 @@ public:
 
 	// set color to average child color
 	void setAverageChildColor();
+
+	/**
+	 * Read node from binary stream (incl. float value),
+	 * recursively continue with all children.
+	 *
+	 * @param s
+	 * @return
+	 */
+	std::istream& readValue(std::istream &s);
+
+	/**
+	 * Write node to binary stream (incl float value),
+	 * recursively continue with all children.
+	 * This preserves the complete state of the node.
+	 *
+	 * @param s
+	 * @return
+	 */
+	std::ostream& writeValue(std::ostream &s) const;
 
 protected:
 	//! Color data
@@ -246,11 +265,12 @@ protected:
 		StaticMemberInitializer() {
 			EMOcTree* tree = new EMOcTree(0.1);
 			AbstractOcTree::registerTreeType(tree);
+			std::cerr << "Registered tree type: " << tree->getTreeType() << std::endl;
 		}
 	};
 
 	/// to ensure static initialization (only once)
-	static StaticMemberInitializer ocTreeMemberInit;
+	static StaticMemberInitializer ocEMOcTreeMemberInit;
 }; // class EMOcTree
 
 }

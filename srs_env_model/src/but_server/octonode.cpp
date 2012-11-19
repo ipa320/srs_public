@@ -33,7 +33,7 @@ using namespace octomap;
  * Constructor
  */
 srs_env_model::EModelTreeNode::EModelTreeNode() :
-	octomap::OcTreeNodeStamped(), m_r(255), m_g(255), m_b(255), m_a(255) {
+	octomap::OcTreeNodeStamped(), m_r(0), m_g(0), m_b(0), m_a(0) {
 
 }
 
@@ -118,6 +118,92 @@ void srs_env_model::EModelTreeNode::setAverageChildColor() {
 				(unsigned char) 255);
 	}
 }
+
+/**
+ * Read node from binary stream (incl. float value),
+ * recursively continue with all children.
+ *
+ * @param s
+ * @return
+ */
+std::istream& srs_env_model::EModelTreeNode::readValue(std::istream &s)
+{
+	// Read common data
+	octomap::OcTreeNodeStamped::readValue( s );
+
+	char children_char;
+
+	// read data:
+	s.read((char*) &m_r, sizeof(m_r));
+	s.read((char*) &m_g, sizeof(m_g));
+	s.read((char*) &m_b, sizeof(m_b));
+	s.read((char*) &m_a, sizeof(m_a));
+
+	s.read((char*)&children_char, sizeof(char));
+	std::bitset<8> children ((unsigned long long) children_char);
+
+	//std::cerr << "Read color: " << int(m_r) << ", " << int(m_g) << ", " << int(m_b) << ", " << int(m_a) << std::endl;
+
+	// std::cout << "read: " << value << " "
+	//           << children.to_string<char,std::char_traits<char>,std::allocator<char> >()
+	//           << std::endl;
+
+	for (unsigned int i=0; i<8; i++) {
+	  if (children[i] == 1){
+		createChild(i);
+		getChild(i)->readValue(s);
+	  }
+	}
+	return s;
+}
+
+/**
+ * Write node to binary stream (incl float value),
+ * recursively continue with all children.
+ * This preserves the complete state of the node.
+ *
+ * @param s
+ * @return
+ */
+std::ostream& srs_env_model::EModelTreeNode::writeValue(std::ostream &s) const
+{
+	// 1 bit for each children; 0: empty, 1: allocated
+	std::bitset<8> children;
+
+	for (unsigned int i=0; i<8; i++) {
+	  if (childExists(i))
+		children[i] = 1;
+	  else
+		children[i] = 0;
+	}
+
+	octomap::OcTreeNodeStamped::writeValue(s);
+
+	char children_char = (char) children.to_ulong();
+
+	// Write node data
+	s.write((const char*) &m_r, sizeof(m_r));
+	s.write((const char*) &m_g, sizeof(m_g));
+	s.write((const char*) &m_b, sizeof(m_b));
+	s.write((const char*) &m_a, sizeof(m_a));
+
+//	std::cerr << "Writing node" << std::endl;
+
+	s.write((char*)&children_char, sizeof(char));
+
+	// std::cout << "wrote: " << value << " "
+	//           << children.to_string<char,std::char_traits<char>,std::allocator<char> >()
+	//           << std::endl;
+
+	// write children's children
+	for (unsigned int i=0; i<8; i++) {
+	  if (children[i] == 1) {
+		this->getChild(i)->writeValue(s);
+	  }
+	}
+	return s;
+}
+
 
 /**
  * Creates a new (empty) OcTree of a given resolution
@@ -287,3 +373,7 @@ void srs_env_model::EMOcTree::insertColoredScan(const typePointCloud& coloredSca
 	}
 
 }
+
+/// to ensure static initialization (only once)
+srs_env_model::EMOcTree::StaticMemberInitializer srs_env_model::EMOcTree::ocEMOcTreeMemberInit;
+

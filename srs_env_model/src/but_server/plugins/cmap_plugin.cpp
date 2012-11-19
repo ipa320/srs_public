@@ -175,7 +175,7 @@ void srs_env_model::CCMapPlugin::newMapDataCB( SMapWithParameters & par )
 	m_robotBasePosition.setY( msg.transform.translation.y );
 	m_robotBasePosition.setZ( msg.transform.translation.z );
 
-	tButServerOcTree & tree( par.map->octree );
+	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes

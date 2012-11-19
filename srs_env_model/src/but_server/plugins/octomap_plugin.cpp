@@ -100,12 +100,12 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
 	assert( m_data != 0 );
 
 	// Set octomap parameters
-	m_data->octree.setProbHit(m_mapParameters.probHit);
-	m_data->octree.setProbMiss(m_mapParameters.probMiss);
-	m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
-	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
-	m_data->octree.setOccupancyThres(m_mapParameters.thresOccupancy);
-	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+	m_data->getTree().setProbHit(m_mapParameters.probHit);
+	m_data->getTree().setProbMiss(m_mapParameters.probMiss);
+	m_data->getTree().setClampingThresMin(m_mapParameters.thresMin);
+	m_data->getTree().setClampingThresMax(m_mapParameters.thresMax);
+	m_data->getTree().setOccupancyThres(m_mapParameters.thresOccupancy);
+	m_mapParameters.treeDepth = m_data->getTree().getTreeDepth();
 	m_mapParameters.map = m_data;
 	m_mapParameters.crawlDepth = m_crawlDepth;
 
@@ -122,26 +122,26 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
 	assert( m_data != 0 );
 
 	// Set octomap parameters
-	m_data->octree.setProbHit(m_mapParameters.probHit);
-	m_data->octree.setProbMiss(m_mapParameters.probMiss);
-	m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
-	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
-	m_data->octree.setOccupancyThres(m_mapParameters.thresOccupancy);
-	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+	m_data->getTree().setProbHit(m_mapParameters.probHit);
+	m_data->getTree().setProbMiss(m_mapParameters.probMiss);
+	m_data->getTree().setClampingThresMin(m_mapParameters.thresMin);
+	m_data->getTree().setClampingThresMax(m_mapParameters.thresMax);
+	m_data->getTree().setOccupancyThres(m_mapParameters.thresOccupancy);
+	m_mapParameters.treeDepth = m_data->getTree().getTreeDepth();
 	m_mapParameters.map = m_data;
 	m_mapParameters.crawlDepth = m_crawlDepth;
 
 	// is filename valid?
 	if (filename.length() > 0) {
 		// Try to load data
-		if (m_data->octree.readBinary(filename)) {
-			ROS_INFO("Octomap file %s loaded (%zu nodes).", filename.c_str(), m_data->octree.size());
+		if (m_data->getTree().readBinary(filename)) {
+			ROS_INFO("Octomap file %s loaded (%zu nodes).", filename.c_str(), m_data->getTree().size());
 
 			// get tree depth
-			m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+			m_mapParameters.treeDepth = m_data->getTree().getTreeDepth();
 
 			// get resolution
-			m_mapParameters.resolution = m_data->octree.getResolution();
+			m_mapParameters.resolution = m_data->getTree().getResolution();
 
 			// Map was loaded
 			m_bMapLoaded = true;
@@ -210,11 +210,11 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 
 	// Set octomap parameters...
 	{
-		m_data->octree.setResolution(m_mapParameters.resolution);
-		m_data->octree.setProbHit(m_mapParameters.probHit);
-		m_data->octree.setProbMiss(m_mapParameters.probMiss);
-		m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
-		m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
+		m_data->getTree().setResolution(m_mapParameters.resolution);
+		m_data->getTree().setProbHit(m_mapParameters.probHit);
+		m_data->getTree().setProbMiss(m_mapParameters.probMiss);
+		m_data->getTree().setClampingThresMin(m_mapParameters.thresMin);
+		m_data->getTree().setClampingThresMax(m_mapParameters.thresMax);
 	}
 
 	// Should ground plane be filtered?
@@ -258,6 +258,12 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 
 	m_serviceSaveMap = node_handle.advertiseService( SaveMap_SRV,
 				&srs_env_model::COctoMapPlugin::saveOctreeCB, this);
+
+	m_serviceLoadFullMap = node_handle.advertiseService( LoadFullMap_SRV,
+				&srs_env_model::COctoMapPlugin::loadFullOctreeCB, this);
+
+	m_serviceSaveFullMap = node_handle.advertiseService( SaveFullMap_SRV,
+				&srs_env_model::COctoMapPlugin::saveFullOctreeCB, this);
 
 	// Create publisher
 	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (
@@ -402,7 +408,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 //		PERROR( "Removed leafs: " << removed);
 
 		if (removed > 0)
-			m_data->octree.prune();
+			m_data->getTree().prune();
 
 		--m_testerLifeCounter;
 
@@ -438,9 +444,9 @@ void srs_env_model::COctoMapPlugin::insertScan(
 	/*
 	 octomap::Pointcloud pcNonground;
 	 octomap::pointcloudPCLToOctomap( nonground, pcNonground );
-	 m_data->octree.insertScan( pcNonground, sensorOrigin, maxRange, true, false );
+	 m_data->getTree().insertScan( pcNonground, sensorOrigin, maxRange, true, false );
 	 */
-	m_data->octree.insertColoredScan(nonground, sensorOrigin, maxRange, true);
+	m_data->getTree().insertColoredScan(nonground, sensorOrigin, maxRange, true);
 
 }
 
@@ -562,7 +568,7 @@ void srs_env_model::COctoMapPlugin::reset(bool clearLoaded)
 
 	// Lock data
 	boost::mutex::scoped_lock lock(m_lockData);
-	m_data->octree.clear();
+	m_data->getTree().clear();
 	setDefaults();
 }
 
@@ -609,7 +615,7 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 	map.header.frame_id = m_mapParameters.frameId;
 	map.header.stamp = timestamp;
 
-	octomap::octomapMapToMsgData(m_data->octree, map.data);
+	octomap::octomapMapToMsgData(m_data->getTree(), map.data);
 
 	m_ocPublisher.publish(map);
 
@@ -620,8 +626,8 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 void srs_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time) {
 
 	m_mapParameters.currentTime = time;
-	m_mapParameters.mapSize = m_data->octree.size();
-	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+	m_mapParameters.mapSize = m_data->getTree().size();
+	m_mapParameters.treeDepth = m_data->getTree().getTreeDepth();
 
 }
 
@@ -678,7 +684,7 @@ void srs_env_model::COctoMapPlugin::degradeOutdatedRaycasting(
 	}
 
 	// Get tree
-	tButServerOcTree & tree(m_data->octree);
+	tButServerOcTree & tree(m_data->getTree());
 
 	tf::StampedTransform trans;
 	m_tfListener.lookupTransform(sensor_header.frame_id,
@@ -723,12 +729,12 @@ void srs_env_model::COctoMapPlugin::degradeOutdatedRaycasting(
  * Remove speckles
  */
 void srs_env_model::COctoMapPlugin::degradeSingleSpeckles() {
-	tButServerOcTree & tree(m_data->octree);
+	tButServerOcTree & tree(m_data->getTree());
 
-	for (tButServerOcTree::leaf_iterator it = m_data->octree.begin_leafs(),
-			end = m_data->octree.end_leafs(); it != end; ++it) {
+	for (tButServerOcTree::leaf_iterator it = m_data->getTree().begin_leafs(),
+			end = m_data->getTree().end_leafs(); it != end; ++it) {
 		// Test if node is occupied
-		if (m_data->octree.isNodeOccupied(*it)) {
+		if (m_data->getTree().isNodeOccupied(*it)) {
 			octomap::OcTreeKey nKey = it.getKey();
 			octomap::OcTreeKey key;
 			bool neighborFound = false;
@@ -755,7 +761,7 @@ void srs_env_model::COctoMapPlugin::degradeSingleSpeckles() {
 				ROS_DEBUG("Degrading single speckle at (%f,%f,%f)", it.getX(), it.getY(), it.getZ());
 
 				// Remove it...
-				m_data->octree.integrateMissNoTime(&*it);
+				m_data->getTree().integrateMissNoTime(&*it);
 			}
 
 		}
@@ -904,7 +910,7 @@ bool srs_env_model::COctoMapPlugin::isOccludedMap(
 	octomap::point3d obstacle;
 	double range = direction.norm() - m_mapParameters.resolution;
 
-	if (m_data->octree.castRay(sensor_origin, direction, obstacle, true, range)) {
+	if (m_data->getTree().castRay(sensor_origin, direction, obstacle, true, range)) {
 		// fprintf(stderr, "<%.2f , %.2f , %.2f> -> <%.2f , %.2f , %.2f> // obs at: <%.2f , %.2f , %.2f>, range: %.2f\n",
 		//         sensor_origin.x(), sensor_origin.y(), sensor_origin.z(),
 		//         p.x(), p.y(), p.z(),
@@ -969,15 +975,15 @@ long int srs_env_model::COctoMapPlugin::doObjectTesting(
 
 	// For all leaves
 	for (srs_env_model::tButServerOcTree::leaf_iterator it =
-			m_data->octree.begin_leafs(), end = m_data->octree.end_leafs(); it
+			m_data->getTree().begin_leafs(), end = m_data->getTree().end_leafs(); it
 			!= end; ++it) {
 		// Node is occupied?
-		if (m_data->octree.isNodeOccupied(*it)) {
+		if (m_data->getTree().isNodeOccupied(*it)) {
 			// Node is in testing object
 			if (object->isIn(it.getX(), it.getY(), it.getZ())) {
 				// "Remove" node
-				m_data->octree.integrateMissNoTime(&*it);
-				//				m_data->octree.updateNodeLogOdds(&*it, -0.8);
+				m_data->getTree().integrateMissNoTime(&*it);
+				//				m_data->getTree().updateNodeLogOdds(&*it, -0.8);
 				++counter;
 			}
 
@@ -1112,7 +1118,7 @@ bool srs_env_model::COctoMapPlugin::addCubeCB(
 				//          std::cout << "querying p=" << p << std::endl;
 				p.z() += m_mapParameters.resolution;
 				++counter;
-				m_data->octree.updateNode(p, true, true);
+				m_data->getTree().updateNode(p, true, true);
 			}
 		}
 	}
@@ -1171,7 +1177,7 @@ bool srs_env_model::COctoMapPlugin::setCrawlingDepthCB( srs_env_model::SetCrawli
 	m_crawlDepth = req.depth;
 
 	// Test maximal value
-	unsigned char td( m_data->octree.getTreeDepth() );
+	unsigned char td( m_data->getTree().getTreeDepth() );
 	if( m_crawlDepth > td)
 		m_crawlDepth = td;
 
@@ -1185,7 +1191,7 @@ bool srs_env_model::COctoMapPlugin::setCrawlingDepthCB( srs_env_model::SetCrawli
  */
 bool srs_env_model::COctoMapPlugin::getTreeDepthCB( srs_env_model::GetTreeDepth::Request & req, srs_env_model::GetTreeDepth::Response & res )
 {
-	res.depth = m_data->octree.getTreeDepth();
+	res.depth = m_data->getTree().getTreeDepth();
 
 	return true;
 }
@@ -1205,26 +1211,26 @@ bool srs_env_model::COctoMapPlugin::loadOctreeCB( srs_env_model::LoadSaveRequest
 	assert( m_data != 0 );
 
 	// Set octomap parameters
-	m_data->octree.setProbHit(m_mapParameters.probHit);
-	m_data->octree.setProbMiss(m_mapParameters.probMiss);
-	m_data->octree.setClampingThresMin(m_mapParameters.thresMin);
-	m_data->octree.setClampingThresMax(m_mapParameters.thresMax);
-	m_data->octree.setOccupancyThres(m_mapParameters.thresOccupancy);
-	m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+	m_data->getTree().setProbHit(m_mapParameters.probHit);
+	m_data->getTree().setProbMiss(m_mapParameters.probMiss);
+	m_data->getTree().setClampingThresMin(m_mapParameters.thresMin);
+	m_data->getTree().setClampingThresMax(m_mapParameters.thresMax);
+	m_data->getTree().setOccupancyThres(m_mapParameters.thresOccupancy);
+	m_mapParameters.treeDepth = m_data->getTree().getTreeDepth();
 	m_mapParameters.map = m_data;
 	m_mapParameters.crawlDepth = m_crawlDepth;
 
 	// is filename valid?
 	if (req.filename.length() > 0) {
 		// Try to load data
-		if (m_data->octree.readBinary(req.filename)) {
-			ROS_INFO("Octomap file %s loaded (%zu nodes).", req.filename.c_str(), m_data->octree.size());
+		if (m_data->getTree().readBinary(req.filename)) {
+			ROS_INFO("Octomap file %s loaded (%zu nodes).", req.filename.c_str(), m_data->getTree().size());
 
 			// get tree depth
-			m_mapParameters.treeDepth = m_data->octree.getTreeDepth();
+			m_mapParameters.treeDepth = m_data->getTree().getTreeDepth();
 
 			// get resolution
-			m_mapParameters.resolution = m_data->octree.getResolution();
+			m_mapParameters.resolution = m_data->getTree().getResolution();
 
 			// Map was loaded
 			m_bMapLoaded = true;
@@ -1237,7 +1243,7 @@ bool srs_env_model::COctoMapPlugin::loadOctreeCB( srs_env_model::LoadSaveRequest
 
 			res.all_ok = true;
 
-			m_bNotFirst = m_data->octree.getNumLeafNodes() > 0;
+			m_bNotFirst = m_data->getTree().getNumLeafNodes() > 0;
 
 		} else {
 
@@ -1264,7 +1270,116 @@ bool srs_env_model::COctoMapPlugin::saveOctreeCB( srs_env_model::LoadSaveRequest
 		return false;
 	}
 
-	bool rv(m_data->octree.writeBinaryConst(req.filename));
+	bool rv(m_data->getTree().writeBinaryConst(req.filename));
+
+	if( !rv )
+	{
+		ROS_ERROR("Could not save file: %s", req.filename.c_str());
+		res.all_ok = false;
+		return false;
+	}
+
+	res.all_ok = true;
+	return true;
+}
+
+/**
+ * Load map service callback
+ */
+bool srs_env_model::COctoMapPlugin::loadFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res )
+{
+	// reset data
+	reset(true);
+
+	boost::mutex::scoped_lock lock(m_lockData);
+
+	setDefaults();
+
+	assert( m_data != 0 );
+
+	// Set octomap parameters
+	m_data->getTree().setProbHit(m_mapParameters.probHit);
+	m_data->getTree().setProbMiss(m_mapParameters.probMiss);
+	m_data->getTree().setClampingThresMin(m_mapParameters.thresMin);
+	m_data->getTree().setClampingThresMax(m_mapParameters.thresMax);
+	m_data->getTree().setOccupancyThres(m_mapParameters.thresOccupancy);
+	m_mapParameters.treeDepth = m_data->getTree().getTreeDepth();
+	m_mapParameters.map = m_data;
+	m_mapParameters.crawlDepth = m_crawlDepth;
+
+	// is filename valid?
+	if (req.filename.length() > 0) {
+		// Try to load data
+		srs_env_model::tButServerOcTree * tree = dynamic_cast<tButServerOcTree *>( tButServerOcTree::read( req.filename ) );
+		if (tree != 0 )
+		{
+			// Remove old, create new
+			m_data->setTree( tree );
+			tree->prune();
+
+			ROS_INFO("Octomap file %s loaded (%zu nodes).", req.filename.c_str(), m_data->getTree().size());
+
+			// get tree depth
+			m_mapParameters.treeDepth = tree->getTreeDepth();
+
+			// get resolution
+			m_mapParameters.resolution = tree->getResolution();
+
+			// Get hit probability
+			m_mapParameters.probHit = tree->getProbHit();
+
+			// Get miss probability
+			m_mapParameters.probMiss = tree->getProbMiss();
+
+			// Clamping minimum threshold
+			m_mapParameters.thresMin = tree->getClampingThresMin();
+
+			// Clamping threshold maximum
+			m_mapParameters.thresMax = tree->getClampingThresMax();
+
+			// Occupancy threshold
+			m_mapParameters.thresOccupancy = tree->getOccupancyThres();
+
+
+			// Map was loaded
+			m_bMapLoaded = true;
+
+			// Unlock data before invalidation
+			lock.unlock();
+
+			// We have new data
+			invalidate();
+
+			res.all_ok = true;
+
+			m_bNotFirst = m_data->getTree().getNumLeafNodes() > 0;
+
+		} else {
+
+			// Something is wrong - cannot load data...
+			ROS_ERROR("Could not open requested file %s, continuing in standard mode.", req.filename.c_str());
+			PERROR( "Transform error.");
+
+			res.all_ok = false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Load map service callback
+ */
+bool srs_env_model::COctoMapPlugin::saveFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res )
+{
+	if(req.filename.length() == 0 )
+	{
+		ROS_ERROR("Wrong filename: Zero length string.");
+		res.all_ok = false;
+		return false;
+	}
+
+	bool rv(m_data->getTree().write(req.filename));
 
 	if( !rv )
 	{

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- Don't forget to run the Kinect throttling nodelete somewhere -->
-    <!-- include file="$(find srs_env_model)/launch/kinect_throttling.launch" /-->
+    <!-- Don't forget to run the Kinect throttling nodelet somewhere -->
+    <!-- include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" /-->
 
     <!-- Run the plane detector -->
     <node pkg="srs_env_model_percp" type="but_plane_detector" name="but_plane_detector">
@@ -10,8 +10,8 @@
         <!--remap from="points_in" to="/cam3d/depth/points" /-->
         <!--remap from="points_in" to="/cam3d/rgb/points" /-->
         <remap from="points_in" to="/cam3d/rgb/points_throttled" />
-        <remap from="rgb_in" to="/cam3d/rgb/image_raw" />
-        <remap from="camera_info_in" to="/cam3d/rgb/camera_info" />
+        <remap from="rgb_in" to="/cam3d/rgb/image_raw_throttled" />
+        <remap from="camera_info_in" to="/cam3d/rgb/camera_info_throttled" />
     </node>
 
 </launch>

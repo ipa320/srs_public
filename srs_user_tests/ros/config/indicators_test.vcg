@@ -3,11 +3,44 @@ Background\ ColorG=0
 Background\ ColorB=0
 Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
+COB\ Stretch\ Indicator.Alpha=0.3
+COB\ Stretch\ Indicator.ColorR=1
+COB\ Stretch\ Indicator.ColorG=0.964706
+COB\ Stretch\ Indicator.ColorB=0
+COB\ Stretch\ Indicator.Correction=0.5
+COB\ Stretch\ Indicator.Enabled=0
+COB\ Stretch\ Indicator.Range=10
+COB\ Stretch\ Indicator.Show\ bounding\ box=1
+COB\ Stretch\ Indicator.Show\ distance=1
+COB\ Stretch\ Indicator.Style=0
+COB\ Stretch\ Indicator.Thickness=1
+Distance\ Circular\ Indicator.Alpha=1
+Distance\ Circular\ Indicator.ColorR=0
+Distance\ Circular\ Indicator.ColorG=0
+Distance\ Circular\ Indicator.ColorB=1
+Distance\ Circular\ Indicator.Enabled=0
+Distance\ Circular\ Indicator.Levels=5
+Distance\ Circular\ Indicator.Link=/torso_pan_link
+Distance\ Circular\ Indicator.OrientationX=0
+Distance\ Circular\ Indicator.OrientationY=0
+Distance\ Circular\ Indicator.OrientationZ=0
+Distance\ Circular\ Indicator.Radius=15
+Distance\ Circular\ Indicator.Show\ distance=1
+Distance\ Circular\ Indicator.Thickness=1
+Distance\ Linear\ Visualizer.Alpha=1
+Distance\ Linear\ Visualizer.ColorR=1
+Distance\ Linear\ Visualizer.ColorG=1
+Distance\ Linear\ Visualizer.ColorB=0
+Distance\ Linear\ Visualizer.Enabled=0
+Distance\ Linear\ Visualizer.Line\ Thickness=0.02
+Distance\ Linear\ Visualizer.Link=/torso_pan_link
+Distance\ Linear\ Visualizer.Show\ distance=1
+Distance\ Linear\ Visualizer.Topic=/cam3d/rgb/points_throttled
 Env\ Model\ BUT.Alpha=1
 Env\ Model\ BUT.Billboard\ Size=0.05
 Env\ Model\ BUT.Color\ Transformer=RGB8
 Env\ Model\ BUT.Decay\ Time=0
-Env\ Model\ BUT.Enabled=0
+Env\ Model\ BUT.Enabled=1
 Env\ Model\ BUT.Position\ Transformer=XYZ
 Env\ Model\ BUT.Selectable=1
 Env\ Model\ BUT.Style=2
@@ -50,8 +83,13 @@ Inflated\ Obstacles.Alpha=1
 Inflated\ Obstacles.ColorR=0
 Inflated\ Obstacles.ColorG=0
 Inflated\ Obstacles.ColorB=1
-Inflated\ Obstacles.Enabled=1
+Inflated\ Obstacles.Enabled=0
 Inflated\ Obstacles.Topic=/move_base/local_costmap/inflated_obstacles
+Interactive\ Markers.Enabled=0
+Interactive\ Markers.Show\ Axes=0
+Interactive\ Markers.Show\ Descriptions=1
+Interactive\ Markers.Show\ Tool\ Tips=1
+Interactive\ Markers.Update\ Topic=/interaction_primitives/update
 Interactive\ Teleop.Enabled=1
 Interactive\ Teleop.Show\ Axes=0
 Interactive\ Teleop.Show\ Descriptions=1
@@ -71,8 +109,8 @@ Laser\ Scan\ Front..AxisAxis=2
 Laser\ Scan\ Front..AxisMax\ Value=10
 Laser\ Scan\ Front..AxisMin\ Value=-10
 Laser\ Scan\ Front..AxisUse\ Fixed\ Frame=1
-Laser\ Scan\ Front..Flat\ ColorColorR=0
-Laser\ Scan\ Front..Flat\ ColorColorG=1
+Laser\ Scan\ Front..Flat\ ColorColorR=1
+Laser\ Scan\ Front..Flat\ ColorColorG=0
 Laser\ Scan\ Front..Flat\ ColorColorB=0
 Laser\ Scan\ Front..IntensityAutocompute\ Intensity\ Bounds=1
 Laser\ Scan\ Front..IntensityChannel\ Name=intensity
@@ -99,8 +137,8 @@ Laser\ Scan\ Rear..AxisAxis=2
 Laser\ Scan\ Rear..AxisMax\ Value=10
 Laser\ Scan\ Rear..AxisMin\ Value=-10
 Laser\ Scan\ Rear..AxisUse\ Fixed\ Frame=1
-Laser\ Scan\ Rear..Flat\ ColorColorR=0
-Laser\ Scan\ Rear..Flat\ ColorColorG=1
+Laser\ Scan\ Rear..Flat\ ColorColorR=1
+Laser\ Scan\ Rear..Flat\ ColorColorG=0
 Laser\ Scan\ Rear..Flat\ ColorColorB=0
 Laser\ Scan\ Rear..IntensityAutocompute\ Intensity\ Bounds=1
 Laser\ Scan\ Rear..IntensityChannel\ Name=intensity
@@ -127,8 +165,8 @@ Laser\ Scan\ Top..AxisAxis=2
 Laser\ Scan\ Top..AxisMax\ Value=10
 Laser\ Scan\ Top..AxisMin\ Value=-10
 Laser\ Scan\ Top..AxisUse\ Fixed\ Frame=1
-Laser\ Scan\ Top..Flat\ ColorColorR=0
-Laser\ Scan\ Top..Flat\ ColorColorG=1
+Laser\ Scan\ Top..Flat\ ColorColorR=1
+Laser\ Scan\ Top..Flat\ ColorColorG=0
 Laser\ Scan\ Top..Flat\ ColorColorB=0
 Laser\ Scan\ Top..IntensityAutocompute\ Intensity\ Bounds=1
 Laser\ Scan\ Top..IntensityChannel\ Name=intensity
@@ -145,8 +183,6 @@ Map.Alpha=0.7
 Map.Draw\ Behind=0
 Map.Enabled=1
 Map.Topic=/map
-Marker\ LED.Enabled=1
-Marker\ LED.Marker\ Topic=/light_controller/marker
 Marker\ Teleop.Enabled=1
 Marker\ Teleop.Marker\ Topic=/collision_velocity_filter/velocity_limited_marker
 Obstacles.Alpha=1
@@ -187,7 +223,7 @@ Point\ Cloud\ Kinect.Enabled=0
 Point\ Cloud\ Kinect.Position\ Transformer=XYZ
 Point\ Cloud\ Kinect.Selectable=1
 Point\ Cloud\ Kinect.Style=1
-Point\ Cloud\ Kinect.Topic=/cam3d/rgb/points
+Point\ Cloud\ Kinect.Topic=/cam3d/rgb/points_throttled
 Point\ Cloud\ Kinect..AxisAutocompute\ Value\ Bounds=1
 Point\ Cloud\ Kinect..AxisAxis=2
 Point\ Cloud\ Kinect..AxisMax\ Value=10
@@ -207,11 +243,6 @@ Point\ Cloud\ Kinect..IntensityMin\ ColorG=0
 Point\ Cloud\ Kinect..IntensityMin\ ColorB=0
 Point\ Cloud\ Kinect..IntensityMin\ Intensity=0
 Point\ Cloud\ Kinect..IntensityUse\ full\ RGB\ spectrum=0
-Pose\ Array.ColorR=1
-Pose\ Array.ColorG=0.1
-Pose\ Array.ColorB=0
-Pose\ Array.Enabled=1
-Pose\ Array.Topic=/particlecloud
 Robot\ Model.Alpha=1
 Robot\ Model.Collision\ Enabled=0
 Robot\ Model.Enabled=1
@@ -322,8 +353,8 @@ Robot\:\ Robot\ Model\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.001 2.52896 7.27541 1.94111 2.22168 -0.34596
-Property\ Grid\ State=selection=Env Model BUT.Enabled;expanded=.Global Options,Marker LED.Enabled.Marker LED.Namespaces,Marker Teleop.Enabled.Marker Teleop.Namespaces;scrollpos=0,0;splitterpos=170,341;ispageselected=1
+Camera\ Config=0.801002 1.93216 6.97099 0.278033 0.374458 -0.180078
+Property\ Grid\ State=selection=Distance Circular Indicator.Enabled;expanded=.Global Options,Marker Teleop.Enabled.Marker Teleop.Namespaces,COB Stretch Indicator.Enabled.COB Stretch Indicator.Rendering options,COB Stretch Indicator.Enabled.COB Stretch Indicator.Color options,COB Stretch Indicator.Enabled.COB Stretch Indicator.Bounding box;scrollpos=0,0;splitterpos=192,385;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -349,50 +380,58 @@ Name=Laser Scan Top
 Package=rviz
 ClassName=rviz::LaserScanDisplay
 [Display6]
-Name=Marker LED
-Package=rviz
-ClassName=rviz::MarkerDisplay
-[Display7]
-Name=Pose Array
-Package=rviz
-ClassName=rviz::PoseArrayDisplay
-[Display8]
 Name=Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay
-[Display9]
+[Display7]
 Name=Inflated Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay
-[Display10]
+[Display8]
 Name=Path dwa global
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display11]
+[Display9]
 Name=Path dwa local
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display12]
+[Display10]
 Name=Path tr global
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display13]
+[Display11]
 Name=Path tr local
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display14]
+[Display12]
 Name=Marker Teleop
 Package=rviz
 ClassName=rviz::MarkerDisplay
-[Display15]
+[Display13]
 Name=Interactive Teleop
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display16]
+[Display14]
 Name=Point Cloud Kinect
 Package=rviz
 ClassName=rviz::PointCloud2Display
-[Display17]
+[Display15]
 Name=Env Model BUT
 Package=rviz
 ClassName=rviz::PointCloud2Display
+[Display16]
+Name=Interactive Markers
+Package=rviz
+ClassName=rviz::InteractiveMarkerDisplay
+[Display17]
+Name=COB Stretch Indicator
+Package=srs_ui_but
+ClassName=CButCOBStretchIndicator
+[Display18]
+Name=Distance Linear Visualizer
+Package=srs_ui_but
+ClassName=CButDistanceLinearVisualizer
+[Display19]
+Name=Distance Circular Indicator
+Package=srs_ui_but
+ClassName=CButDistanceCircularIndicator

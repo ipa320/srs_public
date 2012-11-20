@@ -120,8 +120,8 @@ void srs_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
 	m_ocToMap2DTrans = ocToMap2DTM.block<3, 1> (0, 3);
 
 	double minX, minY, minZ, maxX, maxY, maxZ;
-	map.octree.getMetricMin(minX, minY, minZ);
-	map.octree.getMetricMax(maxX, maxY, maxZ);
+	map.getTree().getMetricMin(minX, minY, minZ);
+	map.getTree().getMetricMax(maxX, maxY, maxZ);
 
 	octomap::point3d minPt(minX, minY, minZ);
 	octomap::point3d maxPt(maxX, maxY, maxZ);
@@ -129,12 +129,12 @@ void srs_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
 	octomap::OcTreeKey minKey, maxKey, curKey;
 
 	// Try to create key
-	if (!map.octree.genKey(minPt, minKey)) {
+	if (!map.getTree().genKey(minPt, minKey)) {
 		ROS_ERROR("Could not create min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
 		return;
 	}
 
-	if (!map.octree.genKey(maxPt, maxKey)) {
+	if (!map.getTree().genKey(maxPt, maxKey)) {
 		ROS_ERROR("Could not create max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
 		return;
 	}
@@ -156,12 +156,12 @@ void srs_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
 
 	octomap::OcTreeKey paddedMaxKey;
 
-	if (!map.octree.genKey(minPt, m_paddedMinKey)) {
+	if (!map.getTree().genKey(minPt, m_paddedMinKey)) {
 		ROS_ERROR("Could not create padded min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
 		return;
 	}
 
-	if (!map.octree.genKey(maxPt, paddedMaxKey)) {
+	if (!map.getTree().genKey(maxPt, paddedMaxKey)) {
 		ROS_ERROR("Could not create padded max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
 		return;
 	}
@@ -181,7 +181,7 @@ void srs_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
 
 	// might not exactly be min / max of octree:
 	octomap::point3d origin;
-	map.octree.genCoords(m_paddedMinKey, par.treeDepth, origin);
+	map.getTree().genCoords(m_paddedMinKey, par.treeDepth, origin);
 
 	m_data->info.origin.position.x = origin.x() - par.resolution* 0.5;
 	m_data->info.origin.position.y = origin.y() - par.resolution * 0.5;
@@ -189,7 +189,7 @@ void srs_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
 	// Allocate space to hold the data (init to unknown)
 	m_data->data.resize(m_data->info.width * m_data->info.height, -1);
 
-	tButServerOcTree & tree( par.map->octree );
+	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes

@@ -73,9 +73,6 @@ rosbuild_add_library( ${SRS_ENV_MODEL_LIB_NAME} ${SERVER_SOURCES} )
 rosbuild_add_executable( but_server_node ${SERVER_SOURCES} src/nodes/server_node.cpp )
 target_link_libraries( but_server_node octomap_ros ${OBJTREE_LIB_NAME} )
 
-# Nodelets
-rosbuild_add_library( cloud_throttle src/nodes/cloud_throttle.cpp )
-
 
 # Add compressed pc subscriber-publisher executable
 rosbuild_add_executable( but_cpc_node ${CPC_SOURCES} )

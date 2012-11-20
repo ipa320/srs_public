@@ -76,10 +76,10 @@ public:
 	virtual void init(ros::NodeHandle & node_handle);
 
 	//! Reset octomap
-	void reset(bool clearLoaded);
+	void reset(bool clearLoaded = true);
 
 	//! Get current octomap size
-	unsigned getSize() { return m_data->octree.size(); }
+	unsigned getSize() { return m_data->getTree().size(); }
 
 	//! Get current tree depth
 	unsigned getTreeDepth() { return m_mapParameters.treeDepth; }
@@ -167,6 +167,12 @@ protected:
 	/// Save map service callback
 	bool saveOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
 
+	/// Load map service callback - full octree
+	bool loadFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+
+	/// Save map service callback - full octree
+	bool saveFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+
 protected:
 
     /// Should ground plane be filtered?
@@ -207,6 +213,12 @@ protected:
 
     /// Save map service
     ros::ServiceServer m_serviceSaveMap;
+
+    /// Load full map service
+	ros::ServiceServer m_serviceLoadFullMap;
+
+	/// Save full map service
+	ros::ServiceServer m_serviceSaveFullMap;
 
     /// Should octomap be published
     bool m_bPublishOctomap;

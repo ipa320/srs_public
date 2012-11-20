@@ -92,23 +92,23 @@ void srs_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 
 	// TODO: move most of this stuff into c'tor and init map only once (adjust if size changes)
 	double minX, minY, minZ, maxX, maxY, maxZ;
-	par.map->octree.getMetricMin(minX, minY, minZ);
-	par.map->octree.getMetricMax(maxX, maxY, maxZ);
+	par.map->getTree().getMetricMin(minX, minY, minZ);
+	par.map->getTree().getMetricMax(maxX, maxY, maxZ);
 
 	octomap::point3d minPt(minX, minY, minZ);
 	octomap::point3d maxPt(maxX, maxY, maxZ);
 	octomap::OcTreeKey minKey, maxKey, curKey;
-	if (!par.map->octree.genKey(minPt, minKey)){
+	if (!par.map->getTree().genKey(minPt, minKey)){
 	  ROS_ERROR("Could not create min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
 	  return;
 	}
 
-	if (!par.map->octree.genKey(maxPt, maxKey)){
+	if (!par.map->getTree().genKey(maxPt, maxKey)){
 	  ROS_ERROR("Could not create max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
 	  return;
 	}
-	par.map->octree.genKeyAtDepth(minKey, par.treeDepth, minKey);
-	par.map->octree.genKeyAtDepth(maxKey, par.treeDepth, maxKey);
+	par.map->getTree().genKeyAtDepth(minKey, par.treeDepth, minKey);
+	par.map->getTree().genKeyAtDepth(maxKey, par.treeDepth, maxKey);
 
 	ROS_DEBUG("MinKey: %d %d %d / MaxKey: %d %d %d", minKey[0], minKey[1], minKey[2], maxKey[0], maxKey[1], maxKey[2]);
 
@@ -123,16 +123,16 @@ void srs_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 	maxPt = octomap::point3d(maxX, maxY, maxZ);
 
 	octomap::OcTreeKey paddedMaxKey;
-	if (!par.map->octree.genKey(minPt, m_paddedMinKey)){
+	if (!par.map->getTree().genKey(minPt, m_paddedMinKey)){
 	  ROS_ERROR("Could not create padded min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
 	  return;
 	}
-	if (!par.map->octree.genKey(maxPt, paddedMaxKey)){
+	if (!par.map->getTree().genKey(maxPt, paddedMaxKey)){
 	  ROS_ERROR("Could not create padded max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
 	  return;
 	}
-	par.map->octree.genKeyAtDepth(m_paddedMinKey, par.treeDepth, m_paddedMinKey);
-	par.map->octree.genKeyAtDepth(paddedMaxKey, par.treeDepth, paddedMaxKey);
+	par.map->getTree().genKeyAtDepth(m_paddedMinKey, par.treeDepth, m_paddedMinKey);
+	par.map->getTree().genKeyAtDepth(paddedMaxKey, par.treeDepth, paddedMaxKey);
 
 	ROS_DEBUG("Padded MinKey: %d %d %d / padded MaxKey: %d %d %d", m_paddedMinKey[0], m_paddedMinKey[1], m_paddedMinKey[2], paddedMaxKey[0], paddedMaxKey[1], paddedMaxKey[2]);
 	assert(paddedMaxKey[0] >= maxKey[0] && paddedMaxKey[1] >= maxKey[1]);
@@ -152,8 +152,8 @@ void srs_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 
 	// might not exactly be min / max of octree:
 	octomap::point3d origin;
-	par.map->octree.genCoords(m_paddedMinKey, m_crawlDepth, origin);
-	double gridRes = par.map->octree.getNodeSize(par.treeDepth);
+	par.map->getTree().genCoords(m_paddedMinKey, m_crawlDepth, origin);
+	double gridRes = par.map->getTree().getNodeSize(par.treeDepth);
 	m_data->info.resolution = gridRes;
 	m_data->info.origin.position.x = origin.x() - gridRes*0.5;
 	m_data->info.origin.position.y = origin.y() - gridRes*0.5;
@@ -172,7 +172,7 @@ void srs_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 	  m_data->data.resize(m_data->info.width * m_data->info.height, -1);
 	}
 
-	tButServerOcTree & tree( par.map->octree );
+	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes

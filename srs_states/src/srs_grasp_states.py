@@ -174,8 +174,8 @@ class srs_grasp(smach.State):
 		#Close SDH based on the grasp configuration to grasp.
 		sdh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)], False)
 		sss.say(["I am grasping the object now!"])
-		rospy.sleep(1);
-		sdh_handle.wait(2)
+		rospy.sleep(3);
+		sdh_handle.wait(4)
 		
 
 		#Confirm the grasp based on force feedback

@@ -764,7 +764,7 @@ public class OntoQueryUtil
 		catTemp.append(",");
 	    }
 	}
-	System.out.println("Object categories <SRS>: " + catTemp.toString());
+	//System.out.println("Object categories <SRS>: " + catTemp.toString());
 	if (asJson)
 	    return SRSJSONParser.encodeObjectCategoryInfo(sset);
 	else {

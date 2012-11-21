@@ -3,8 +3,14 @@
     <!-- Configuration for COB, bringup simulation -->
     <include file="$(find srs_ui_but)/launch/run_sim.launch" />
 
+    <!-- Run depth image publishing node (simulation only) -->
+    <node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node" />
+
+    <!-- Kinect throttling -->
+    <include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" />
+
     <!-- Run our dynamic scene model server node -->
-    <include file="$(find srs_env_model)/launch/but_envmodel_common.launch" />
+    <!--include file="$(find srs_env_model)/launch/but_envmodel_common.launch" /-->
 
     <!-- Run our interactive teleop -->
     <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch">
@@ -13,13 +19,14 @@
 
     <!-- Run our GUI nodes -->
     <include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" />
-    <include file="$(find srs_ui_but)/launch/cob_stretch_indicator.launch" />
-    <include file="$(find srs_ui_but)/launch/distance_visualizer.launch" />
+    <!--include file="$(find srs_ui_but)/launch/cob_stretch_indicator.launch" /-->
+    <!--include file="$(find srs_ui_but)/launch/distance_visualizer.launch" /-->
 
     <!-- Load predefined URDF model of the environment -->
     <include file="$(find srs_ui_but)/launch/$(env ROBOT_ENV)/load_urdf_model.launch" />
 
     <!-- Run rviz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_ui_but)/config/ui_test.vcg" />
+
 </launch>
 

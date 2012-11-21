@@ -290,6 +290,40 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 
   }
 
+
+
+  bool limit_error = false;
+
+  for(unsigned int i=0; i < joints_.joints.size(); i++) {
+
+	  if (joints_.is_static[i]) continue;
+
+	  double g = goal->target_configuration.data[i];
+
+  	  if ( (g < joints_.limits[i].min) || (g > joints_.limits[i].max) ) {
+
+  		  ROS_ERROR("Target configuration for %s joint violates limits!",joints_.joints[i].c_str());
+  		  limit_error = true;
+
+  	  }
+
+    }
+
+  if (limit_error) {
+
+	  server_->setAborted(res,"Target configuration out of limits.");
+	  return;
+
+  }
+
+  if (vel_publisher_.getNumSubscribers() == 0) {
+
+	  ROS_ERROR("No one is listening to our velocity commands!");
+	  server_->setAborted(res,"There is no listener.");
+	  return;
+
+  }
+
   if (!setMode("velocity")) {
 
 	  server_->setAborted(res,"Could not set SDH to velocity mode.");
@@ -297,7 +331,7 @@ void ReactiveGrasping::execute(const ReactiveGraspingGoalConstPtr &goal) {
 
   }
 
-  bool limit_error = false;
+  //limit_error = false;
 
   for(unsigned int i=0; i < joints_.joints.size(); i++) {
 

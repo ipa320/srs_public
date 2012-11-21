@@ -1,0 +1,10 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b srs_env_model_utils package contains patched version of several ROS utilities:
+- patched version of the robot_self_filter by Ioan Sucan (for RGB point clouds)
+- kinect throttling nodelet
+
+*/
+

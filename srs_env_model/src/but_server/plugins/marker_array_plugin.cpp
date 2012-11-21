@@ -97,8 +97,8 @@ void srs_env_model::CMarkerArrayPlugin::newMapDataCB(SMapWithParameters & par)
     m_ocFrameId = par.frameId;
 
     // Get octomap parameters
-    par.map->octree.getMetricMin(m_minX, m_minY, m_minZ);
-    par.map->octree.getMetricMax(m_maxX, m_maxY, m_maxZ);
+    par.map->getTree().getMetricMin(m_minX, m_minY, m_minZ);
+    par.map->getTree().getMetricMax(m_maxX, m_maxY, m_maxZ);
 
     m_bTransform = m_ocFrameId != m_markerArrayFrameId;
 
@@ -136,7 +136,7 @@ void srs_env_model::CMarkerArrayPlugin::newMapDataCB(SMapWithParameters & par)
     m_ocToMarkerArrayTrans = ocToMarkerArrayTM.block<3, 1> (0, 3);
 
 
-    tButServerOcTree & tree( par.map->octree );
+    tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
@@ -146,6 +146,8 @@ void srs_env_model::CMarkerArrayPlugin::newMapDataCB(SMapWithParameters & par)
 	} // Iterate through octree
 
 	handlePostNodeTraversal( par );
+
+	m_DataTimeStamp = par.currentTime;
 
 }
 
@@ -186,7 +188,7 @@ void srs_env_model::CMarkerArrayPlugin::handleNode(const srs_env_model::tButServ
 void srs_env_model::CMarkerArrayPlugin::handlePostNodeTraversal(const SMapWithParameters & mp)
 {
     for (unsigned i= 0; i < m_data->markers.size(); ++i){
-        double size = mp.map->octree.getNodeSize(i);
+        double size = mp.map->getTree().getNodeSize(i);
 
         m_data->markers[i].header.frame_id = m_markerArrayFrameId;
         m_data->markers[i].header.stamp = mp.currentTime;

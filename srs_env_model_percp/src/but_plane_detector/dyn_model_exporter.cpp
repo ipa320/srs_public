@@ -53,7 +53,7 @@ namespace srs_env_model_percp
 	// @param scene_cloud point cloud of the scene
 	// @param sensorToWorldTf Sendor to map transformation matrix
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void DynModelExporter::updateDirect(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf)
+	void DynModelExporter::updateDirect(tPlanes & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf)
 	{
 		// but dynamic model
 		ros::ServiceClient plane = n->serviceClient<srs_interaction_primitives::AddPlane> ("insert_plane2");
@@ -115,7 +115,7 @@ namespace srs_env_model_percp
 	// @param scene_cloud point cloud of the scene
 	// @param sensorToWorldTf Sendor to map transformation matrix
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void DynModelExporter::update(std::vector<Plane<float> > & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf)
+	void DynModelExporter::update(tPlanes & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf)
 	{
 		// but dynamic model
 		ros::ServiceClient plane = n->serviceClient<srs_env_model::InsertPlanes> (DET_SERVICE_INSERT_PLANES);
@@ -197,7 +197,7 @@ namespace srs_env_model_percp
 	// @param planes Vector of found planes
 	// @param scene_cloud point cloud of the scene
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void DynModelExporter::update(std::vector<Plane<float> > & planes, Normals &normals, tf::StampedTransform &sensorToWorldTf)
+	void DynModelExporter::update(tPlanes & planes, Normals &normals, tf::StampedTransform &sensorToWorldTf)
 	{
 		// but dynamic model
 		ros::ServiceClient plane = n->serviceClient<srs_env_model::InsertPlanes> (DET_SERVICE_INSERT_PLANES);
@@ -350,7 +350,7 @@ namespace srs_env_model_percp
 		return true;
 	}
 
-	void DynModelExporter::getCenterSAndScale(std::vector<Plane<float> > & planes, Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags)
+	void DynModelExporter::getCenterSAndScale(tPlanes & planes, Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags)
 	{
 		using namespace cv;
 		centers.resize(planes.size(), Vec3f(0.0, 0.0, 0.0));

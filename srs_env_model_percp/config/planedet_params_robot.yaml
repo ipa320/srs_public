@@ -1,0 +1,108 @@
+#-----------------------------------------------------------------------------------
+# GLOBAL PARAMETERS
+#
+# input data dype (pcl/kinect)
+planedet_input: pcl
+
+# final plane frame (must be global, if keep track)
+global_frame: /map
+
+# original frame id
+original_frame: /head_cam3d_link
+
+#-----------------------------------------------------------------------------------
+# PLANE HOUGH SPACE CONSTRUCTION PARAMS 
+# 
+# if keep track == 1, planes are constructing incrementally. If 0, each frame deletes previous info
+planedet_ht_keep_track: 1
+
+# Maximum depth in meters to count with (for real data, 3.0 is recommended)
+planedet_ht_maxdepth: 5.0
+
+# Maximum height in meters to be considered
+planedet_ht_max_height: 2.5
+
+# Minimum height in meters to be considered
+planedet_ht_min_height: 0.1
+
+# HS minimal shift (d param) axis
+planedet_ht_minshift: -40.0
+
+# HS maximal shift (d param) axis
+planedet_ht_maxshift: 40.0
+
+# HS angle axis resolution
+planedet_ht_angle_res: 512
+
+# HS shift axis resolution
+planedet_ht_shift_res: 4096
+
+# HS Gauss smoothing angle kernel size
+planedet_ht_gauss_angle_res: 11
+
+# HS Gauss smoothing shift kernel size
+planedet_ht_gauss_shift_res: 11
+
+# HS Gauss smoothing angle kernel sigma
+planedet_ht_gauss_angle_sigma: 0.04
+
+# HS Gauss smoothing shift kernel sigma
+planedet_ht_gauss_shift_sigma: 0.15
+
+# Merge planes with shift difference less than
+#planedet_ht_plane_merge_shift: 0.1
+planedet_ht_plane_merge_shift: 0.3
+
+# Merge planes with angle difference less than
+planedet_ht_plane_merge_angle: 0.5
+
+# HS Gauss for global plane representation angle kernel size
+planedet_ht_lvl1_gauss_angle_res: 21
+
+# HS Gauss for global plane representation shift kernel size
+planedet_ht_lvl1_gauss_shift_res: 21
+
+# HS Gauss for global plane representation angle kernel sigma
+planedet_ht_lvl1_gauss_angle_sigma: 5.0
+
+# HS Gauss for global plane representation shift kernel sigma
+planedet_ht_lvl1_gauss_shift_sigma: 5.0
+
+# HS minimal point count to be considered for computation (warning, big speed effect) 
+planedet_ht_min_smooth: 10
+#planedet_ht_min_smooth: 30
+
+#-----------------------------------------------------------------------------------
+# PLANE SEARCH PARAMS 
+# 
+# Minimum number of points forming a plane in one frame
+#planedet_search_minimum_current_space: 2000.0
+planedet_search_minimum_current_space: 500.0
+
+# Minimum signature in global HS for detected plane
+planedet_search_minimum_global_space: 1.5
+
+# Neighborhood for maxima search (not working now)
+planedet_search_maxima_search_neighborhood: 1
+
+# Neighborhood for maxima search blur (not working now)
+planedet_search_maxima_search_blur: 0
+
+#-----------------------------------------------------------------------------------
+# VISUALISATION PARAMS 
+# 
+# Distance plane-point to be considered as a part of a plane
+planedet_visualisation_distance: 0.05
+
+# Point normal difference to visualised plane
+planedet_visualisation_plane_normal_dev: 0.5
+
+# Point shift difference to visualised plane
+planedet_visualisation_plane_shift_dev: 0.1
+
+# Minimal point count for visualised plane
+#planedet_visualisation_min_count: 2000
+planedet_visualisation_min_count: 500
+
+# Color creation method (plane_eq / mean_color / centroid / random)
+planedet_visualisation_color: mean_color

@@ -117,7 +117,7 @@ void srs_env_model::CCollisionObjectPlugin::newMapDataCB( SMapWithParameters & p
 	m_ocToCoTrans = ocToPcTM.block<3, 1> (0, 3);
 
 	// Initialize leaf iterators
-	tButServerOcTree & tree( par.map->octree );
+	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
@@ -130,6 +130,8 @@ void srs_env_model::CCollisionObjectPlugin::newMapDataCB( SMapWithParameters & p
 		}// Node is occupied?
 
 	} // Iterate through octree
+
+	m_DataTimeStamp = par.currentTime;
 
 	invalidate();
 }

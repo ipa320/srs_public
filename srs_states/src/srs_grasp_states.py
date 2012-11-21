@@ -154,7 +154,7 @@ class srs_grasp(smach.State):
 		grasp_trajectory.append(gc);
 
 		#Move arm to pregrasp->grasp position.
-		arm_handle = sss.move("arm", grasp_trajectory, False)# , mode=mode);
+		arm_handle = sss.move("arm", grasp_trajectory, False)
 		rospy.sleep(4)
 		arm_handle.wait(6)
 
@@ -177,6 +177,15 @@ class srs_grasp(smach.State):
 		rospy.sleep(3);
 		sdh_handle.wait(4)
 		
+                r = rospy.Rate(10)
+                preempted = False
+                sdh_state = -1
+                while True:
+			preempted = self.preempt_requested()
+                        sdh_state = sdh_handle.get_state()
+                        if preempted or ( sdh_state == 3) or (sdh_state == 4):
+                        	break # stop waiting  
+                        r.sleep()
 
 		#Confirm the grasp based on force feedback
 		if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
@@ -189,8 +198,8 @@ class srs_grasp(smach.State):
 			print "to:\n", regrasp
 
 			sdh_handle = sss.move("sdh", [regrasp])
-			rospy.sleep(1)
-			sdh_handle.wait(2)
+			rospy.sleep(2)
+			sdh_handle.wait(3)
 
 			if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
 				sss.say(["I can not fix the object correctly!"])

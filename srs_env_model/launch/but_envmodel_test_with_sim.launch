@@ -1,25 +1,27 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- Set to use simulation time -->
-    <param name="/use_sim_time" value="true"/>
-
     <!-- Configuration for COB, bringup simulation -->
-    <include file="$(find cob_default_robot_config)/upload_param.launch" />
-    <include file="$(find cob_default_env_config)/upload_param.launch" />
-    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
-    <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+    <include file="$(find srs_env_model)/launch/run_sim.launch" />
+
+    <!-- Run depth image publishing node (simulation only) -->
+    <node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node" />
 
     <!-- Kinect throttling -->
-    <include file="$(find srs_env_model)/launch/kinect_throttling.launch"/>
+    <include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
+        <arg name="max_rate" value="3.0" />
+    </include>
 
     <!-- Run our dynamic scene model server node -->
-    <include file="$(find srs_env_model)/launch/but_envmodel_common.launch"/>
+    <include file="$(find srs_env_model)/launch/but_envmodel_common.launch" />
+
+    <!-- Run our interactive teleop -->
+    <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch" />
 
     <!-- Run our GUI nodes -->
-    <node pkg="cob_interactive_teleop" type="interactive_teleop" name="cob_interactive_teleop" />
-    <node pkg="srs_interaction_primitives" type="interaction_primitives_service_server" name="interaction_primitives_server" />
+    <include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" />
 
     <!-- Run rviz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model)/config/envmodel_common.vcg" />
+
 </launch>
 

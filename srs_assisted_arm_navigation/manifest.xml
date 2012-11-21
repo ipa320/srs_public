@@ -14,6 +14,7 @@ The package is partially derived from the pr2_arm_navigation package. It modifie
   <url>http://ros.org/wiki/srs_assisted_arm_navigation</url>
 
   <depend package="roscpp"/>
+  <depend package="move_arm"/>
   <depend package="rviz"/>
   <depend package="cob_arm_navigation"/>
   <depend package="cob_default_env_config"/>
@@ -23,12 +24,22 @@ The package is partially derived from the pr2_arm_navigation package. It modifie
   <depend package="actionlib"/>
   <!--depend package="cob_script_server"/-->
   <depend package="cob_interactive_teleop"/>
+  <depend package="srs_env_model"/>
   <depend package="srs_env_model_percp"/>
+  <depend package="srs_env_model_utils"/>
   <depend package="srs_interaction_primitives"/>
   <depend package="srs_assisted_arm_navigation_msgs"/>
   <depend package="cob_image_flip"/> <!-- todo -> move it + RVIZ + int. teleop to ui package ? -->
   <depend package="sensor_msgs"/>
   <depend package="message_filters"/>
+  
+  <depend package="trajectory_filter_server"/>
+  <depend package="cob_script_server"/>
+  <depend package="mongodb"/>
+  <depend package="arm_kinematics_constraint_aware"/>
+  <depend package="planning_environment"/>
+  <depend package="nodelet"/>
+  <depend package="ompl_ros_interface"/>
 
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />

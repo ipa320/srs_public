@@ -3,7 +3,7 @@
     <!-- Stuff needed for visualization of kitchen in RVIZ -->
     <param name="apartment_description" command="$(find xacro)/xacro.py '$(find cob_gazebo_worlds)/urdf/ipa-apartment/ipa-apartment.urdf.xacro' " />
 
-    <node pkg="tf" type="static_transform_publisher" name="apartment_tf_publisher" args="0 0 0 0 0 0  /map /dummy_link 10" />
+    <!--node pkg="tf" type="static_transform_publisher" name="apartment_tf_publisher" args="0 0 0 0 0 0  /map /dummy_link 10" /-->
     <node pkg="robot_state_publisher" type="state_publisher" name="rob_st_pub" >
 	    <remap from="robot_description" to="apartment_description" />
 	    <remap from="joint_states" to="apartment_joint_states" />

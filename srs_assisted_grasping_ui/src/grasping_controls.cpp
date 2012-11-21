@@ -47,10 +47,7 @@ const int ID_SLIDER_FORCE_3(107);
 /*
  * TODO
  *
- *  - subscribe for tactile data and visualize it (all the time)
  *  - add groups "Object grasping", "Force feedback"
- *  - add combobox for presets, hardcode some
- *  - read grasping presets from YAML
  *
  */
 
@@ -64,29 +61,168 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
 
     parent_ = parent;
 
+    ros::NodeHandle nh("~");
+
     ros::param::param<double>("~abs_max_force", abs_max_force_ , ABS_MAX_FORCE);
     ros::param::param<bool>("~wait_for_allow", wait_for_allow_ , WAIT_FOR_ALLOW);
 
-    // TODO read presets from yaml
-    Preset pr;
-    pr.name = "Empty bottle";
-    pr.forces.resize(6);
+    XmlRpc::XmlRpcValue pres;
 
-    for(int i=0; i < 6; i++) pr.forces[i] = 300.0;
+    if (nh.getParam("presets",pres)) {
 
-    pr.target_pos.resize(7);
+    	ROS_ASSERT(pres.getType() == XmlRpc::XmlRpcValue::TypeArray);
 
-    pr.target_pos[0] = 0.0;
-    pr.target_pos[1] = 0.0;
-    pr.target_pos[2] = 1.0472;
-    pr.target_pos[3] = 0.0;
-    pr.target_pos[4] = 1.0472;
-    pr.target_pos[5] = 0.0;
-    pr.target_pos[6] = 1.0472;
+    	ROS_INFO("%d presets for assisted grasping plugin.",pres.size());
 
-    pr.time = ros::Duration(5.0);
+    	for (int i=0; i < pres.size(); i++) {
 
-    presets_.push_back(pr);
+    		Preset pr;
+
+    		XmlRpc::XmlRpcValue xpr = pres[i];
+
+			if (xpr.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
+
+			  ROS_ERROR("Wrong syntax in YAML config.");
+			  continue;
+
+			}
+
+			// read the name
+			if (!xpr.hasMember("name")) {
+
+			  ROS_ERROR("Preset doesn't have 'name' property defined.");
+			  continue;
+
+			} else {
+
+			  XmlRpc::XmlRpcValue name = xpr["name"];
+
+			  std::string tmp = static_cast<std::string>(name);
+
+			  pr.name = tmp;
+
+			  std::cout << tmp << " ";
+
+			}
+
+			// read the time
+			if (!xpr.hasMember("time")) {
+
+			  ROS_ERROR("Preset doesn't have 'time' property defined.");
+			  continue;
+
+			} else {
+
+			  XmlRpc::XmlRpcValue time = xpr["time"];
+
+			  double tmp = static_cast<double>(time);
+
+			  pr.time = ros::Duration(tmp);
+
+			  std::cout << tmp << " ";
+
+			}
+
+			// read the forces
+			if (!xpr.hasMember("forces")) {
+
+			  ROS_ERROR("Preset doesn't have 'forces' property defined.");
+			  continue;
+
+			} else {
+
+			  XmlRpc::XmlRpcValue forces = xpr["forces"];
+
+			  if (forces.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+
+				  for (int i=0; i < forces.size(); i++) {
+
+					  XmlRpc::XmlRpcValue f = forces[i];
+
+					  double tmp = static_cast<double>(f);
+
+					  pr.forces.push_back(tmp);
+
+				  }
+
+
+			  } else {
+
+				  ROS_ERROR("Property 'forces' is defined in bad way.");
+				  continue;
+
+			  }
+
+			} // else forces
+
+
+			// read the positions
+			if (!xpr.hasMember("target_pos")) {
+
+			  ROS_ERROR("Preset doesn't have 'target_pos' property defined.");
+			  continue;
+
+			} else {
+
+			  XmlRpc::XmlRpcValue target_pos = xpr["target_pos"];
+
+			  if (target_pos.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+
+				  for (int i=0; i < target_pos.size(); i++) {
+
+					  XmlRpc::XmlRpcValue p = target_pos[i];
+
+					  double tmp = static_cast<double>(p);
+
+					  pr.target_pos.push_back(tmp);
+
+				  }
+
+
+			  } else {
+
+				  ROS_ERROR("Property 'target_pos' is defined in bad way.");
+				  continue;
+
+			  }
+
+			} // else target_pos
+
+
+			// TODO test number of forces / positions !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+			presets_.push_back(pr);
+
+    	} // for around all presets
+
+
+
+    } else {
+
+    	ROS_ERROR("Could not get presets for grasping, using defaults.");
+
+    	Preset pr;
+		pr.name = "Empty bottle";
+		pr.forces.resize(6);
+
+		for(int i=0; i < 6; i++) pr.forces[i] = 300.0;
+
+		pr.target_pos.resize(7);
+
+		pr.target_pos[0] = 0.0;
+		pr.target_pos[1] = 0.0;
+		pr.target_pos[2] = 1.0472;
+		pr.target_pos[3] = 0.0;
+		pr.target_pos[4] = 1.0472;
+		pr.target_pos[5] = 0.0;
+		pr.target_pos[6] = 1.0472;
+
+		pr.time = ros::Duration(5.0);
+
+		presets_.push_back(pr);
+
+    }
+
 
     wxArrayString prt;
 
@@ -98,18 +234,30 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
     buttons_["grasp"] = new wxButton(this, ID_BUTTON_GRASP, wxT("Grasp"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["stop"] = new wxButton(this, ID_BUTTON_STOP, wxT("Stop"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
+    buttons_["stop"]->SetForegroundColour (wxColour (255, 255, 255));
+    buttons_["stop"]->SetBackgroundColour (wxColour (255, 108, 108));
+
     m_text_status_ = new wxStaticText(this, -1, wxT("status: idle"));
 
     stringstream ss (stringstream::in | stringstream::out);
 
-    ss << "max. force: ";
-    ss << abs_max_force_/2.0;
 
-    string tmp = ss.str();
 
-    m_text_max_force_ = new wxStaticText(this, -1, wxString::FromAscii(tmp.c_str()));
+    std::vector<double> f = presets_[presets_choice_->GetSelection()].forces;
 
-    max_force_slider_ = new wxSlider(this,ID_SLIDER_FORCE,abs_max_force_/2.0,0,abs_max_force_,wxDefaultPosition,wxDefaultSize,wxSL_LABELS);
+    double max_f = 0.0;
+
+    for(unsigned int i=0; i < f.size(); i++) {
+
+    	if (f[i] > max_f) max_f = f[i];
+
+    }
+
+    m_text_max_force_ = new wxStaticText(this, -1, wxT("Maximum force"));
+
+    max_force_slider_ = new wxSlider(this,ID_SLIDER_FORCE,(int)max_f,0,abs_max_force_,wxDefaultPosition,wxDefaultSize,wxSL_LABELS);
+    max_force_slider_->Enable(false);
+
 
     finger1_force_slider_ = new wxSlider(this,ID_SLIDER_FORCE_1,0.0,0,abs_max_force_);
     finger2_force_slider_ = new wxSlider(this,ID_SLIDER_FORCE_2,0.0,0,abs_max_force_);
@@ -119,31 +267,33 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
 
     wxSizer *hsizer_buttons = new wxBoxSizer(wxHORIZONTAL);
 
-
+    wxSizer *vsizer_glob = new wxBoxSizer(wxVERTICAL);
 
     hsizer_buttons->Add(buttons_["grasp"], ID_BUTTON_GRASP);
     hsizer_buttons->Add(buttons_["stop"], ID_BUTTON_STOP);
 
-    wxSizer *vsizer = new wxBoxSizer(wxVERTICAL); // top sizer
+    //wxSizer *vsizer = new wxBoxSizer(wxVERTICAL); // top sizer
+    wxSizer *vsizer_top = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Object grasping"));
 
-    vsizer->Add(hsizer_buttons);
+    vsizer_top->Add(hsizer_buttons,1,wxEXPAND);
 
 
+    vsizer_top->Add(m_text_status_);
+    vsizer_top->Add(presets_choice_);
 
-    vsizer->Add(m_text_status_);
-    vsizer->Add(m_text_max_force_);
+    vsizer_top->Add(m_text_max_force_);
+    vsizer_top->Add(max_force_slider_,1,wxEXPAND);
 
-    vsizer->Add(presets_choice_);
+
 
     wxSizer *vsizer_sliders = new wxStaticBoxSizer(wxVERTICAL,this,wxT("Force feedback"));
 
-    vsizer_sliders->Add(max_force_slider_,1,wxEXPAND);
 
     vsizer_sliders->Add(finger1_force_slider_,1,wxEXPAND);
     vsizer_sliders->Add(finger2_force_slider_,1,wxEXPAND);
     vsizer_sliders->Add(finger3_force_slider_,1,wxEXPAND);
 
-    vsizer->Add(vsizer_sliders,1,wxEXPAND);
+    //vsizer->Add(vsizer_sliders,1,wxEXPAND);
 
 
     finger1_force_slider_->Enable(false);
@@ -163,15 +313,24 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
     	EnableControls();
     }
 
-    Connect(ID_SLIDER_FORCE, wxEVT_SCROLL_THUMBRELEASE,
-              wxCommandEventHandler(CButGraspingControls::OnMaxForceSlider));
+    /*Connect(ID_SLIDER_FORCE, wxEVT_SCROLL_THUMBRELEASE,
+              wxCommandEventHandler(CButGraspingControls::OnMaxForceSlider));*/
 
-    vsizer->SetSizeHints(this);
-    this->SetSizerAndFit(vsizer);
+    Connect(ID_CHOICE, wxEVT_COMMAND_CHOICE_SELECTED,
+                  wxCommandEventHandler(CButGraspingControls::OnChoice));
+
+    vsizer_glob->Add(vsizer_top,1,wxEXPAND|wxHORIZONTAL);
+    vsizer_glob->Add(vsizer_sliders,1,wxEXPAND|wxHORIZONTAL);
+
+
+    //this->SetSizerAndFit(vsizer_top);
+
+    vsizer_glob->SetSizeHints(this);
+    this->SetSizerAndFit(vsizer_glob);
 
     as_client_ = new grasping_action_client(ACT_GRASP,true);
 
-    ros::NodeHandle nh;
+    //ros::NodeHandle nh;
 
     tactile_data_received_ = false;
 
@@ -272,9 +431,13 @@ CButGraspingControls::~CButGraspingControls() {
 
   stop_gui_thread_ = true;
 
-  ros::Rate r(0.1);
+  /*ros::Rate r(0.1);
 
-  while(stop_gui_thread_ == true) r.sleep();
+  while(stop_gui_thread_ == true) r.sleep();*/
+
+  ROS_INFO("Waiting for threads to finish.");
+
+  t_gui_update.join();
 
   ButtonsMap::iterator it;
 
@@ -285,6 +448,7 @@ CButGraspingControls::~CButGraspingControls() {
 
     delete as_client_;
 
+    ROS_INFO("Exiting...");
 
 }
 
@@ -403,10 +567,6 @@ void CButGraspingControls::GraspingDone(const actionlib::SimpleClientGoalState& 
 
 	  setButton("stop",false);
 
-	  /*finger1_force_slider_->SetValue(0);
-	  finger2_force_slider_->SetValue(0);
-	  finger3_force_slider_->SetValue(0);*/
-
 	  wxMutexGuiLeave();
 
 }
@@ -415,13 +575,11 @@ void CButGraspingControls::OnStop(wxCommandEvent& event) {
 
   as_client_->cancelAllGoals();
 
+  DisableControls(false);
+
   if (grasping_allowed_ || !wait_for_allow_) {
 
 	  EnableControls();
-
-  } else {
-
-	  DisableControls();
 
   }
 
@@ -430,7 +588,8 @@ void CButGraspingControls::OnStop(wxCommandEvent& event) {
 void CButGraspingControls::EnableControls() {
 
 	setButton("grasp",true);
-	max_force_slider_->Enable(true);
+	setButton("stop",false);
+	//max_force_slider_->Enable(true);
 
 
 }
@@ -438,8 +597,6 @@ void CButGraspingControls::EnableControls() {
 void CButGraspingControls::DisableControls(bool state_of_stop_button) {
 
 	setButton("grasp",false);
-	max_force_slider_->Enable(false);
-
 	setButton("stop",state_of_stop_button);
 
 
@@ -465,7 +622,7 @@ void CButGraspingControls::OnGrasp(wxCommandEvent& event) {
 
 }
 
-void CButGraspingControls::OnMaxForceSlider(wxCommandEvent& event) {
+/*void CButGraspingControls::OnMaxForceSlider(wxCommandEvent& event) {
 
   stringstream ss (stringstream::in | stringstream::out);
 
@@ -476,6 +633,33 @@ void CButGraspingControls::OnMaxForceSlider(wxCommandEvent& event) {
 
   m_text_max_force_->SetLabel(wxString::FromAscii(tmp.c_str()));
 
+
+}*/
+
+void CButGraspingControls::OnChoice(wxCommandEvent& event) {
+
+  stringstream ss (stringstream::in | stringstream::out);
+
+  int choice = presets_choice_->GetSelection();
+
+  ss << "max. force: ";
+
+  double max_f = 0.0;
+
+  for (unsigned i=0; i < presets_[choice].forces.size();i++) {
+
+	  if (presets_[choice].forces[i] > max_f) max_f = presets_[choice].forces[i];
+
+  }
+
+  //ss << (double)max_force_slider_->GetValue();
+  /*ss << (double)max_f;
+
+  string tmp = ss.str();
+
+  m_text_max_force_->SetLabel(wxString::FromAscii(tmp.c_str()));*/
+
+  max_force_slider_->SetValue((int)max_f);
 
 }
 

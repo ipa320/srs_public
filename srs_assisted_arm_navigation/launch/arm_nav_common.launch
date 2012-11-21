@@ -20,39 +20,16 @@
         <remap from="points_in" to="/cam3d/depth/points_throttled" />
   </node>
   
-  <!--node pkg="srs_env_model_percp" type="bb_estimator_client" name="bb_estimator_client">
-    <remap from="/cam3d/camera_info" to="/cam3d/rgb/camera_info" />
-  </node-->
-  
-  <!-- arm manip action server -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/arm_manip_node.launch"/>
-  
   <!-- grasping action server -->
   <!--include file="$(find srs_assisted_arm_navigation)/launch/grasping_node.launch"/-->
-  
-  <!-- BUT cob teleop marker -->
-  <node name="cob_interactive_teleop" pkg="cob_interactive_teleop" type="interactive_teleop">
-    <remap from="/base_controller/command" to="/base_controller/command_safe"/>
-  </node>
-  
-  <!-- node which is flipping video stream from camera (kinect) -->
-  <!--node name="video_flip_node" pkg="srs_assisted_arm_navigation" type="video_flip_node">
-    <remap from="video_in"  to="/cam3d/rgb/image_raw"/>
-    <remap from="video_out" to="/cam3d/rgb/image_raw_flipped"/>
-  </node-->
-  
-  <!--node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/-->
+   
+  <node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/>
   
   <!-- kinect image flip nodelet - flips kinect images if robot is looking backwards -->
-  <!--node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
-    <remap from="pointcloud" to="/cam3d/depth/points"/>
-    <remap from="colorimage" to="/cam3d/rgb/image_raw"/>
-  </node-->
-  
-  <!--node pkg="spacenav_node" name="spacenav_node" type="spacenav_node" respawn="false"/-->
-  
-
-  <!--node pkg="tf" type="static_transform_publisher" name="sdh_link_2_tf_publisher"
-        args="0 0 0 0 1.57 0  /sdh_palm_link /sdh_palm_link_2 100" /-->
+  <node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
+    <!--remap from="pointcloud" to="/cam3d/depth/points"/-->
+    <remap from="pointcloud" to="/cam3d/depth/points_throttled"/>
+    <remap from="colorimage" to="/cam3d/rgb/image_color"/>
+  </node>
 
 </launch>

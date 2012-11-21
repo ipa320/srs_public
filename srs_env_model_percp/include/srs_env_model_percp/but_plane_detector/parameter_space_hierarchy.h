@@ -45,7 +45,7 @@
 
 // but_scenemodel
 #include <srs_env_model_percp/but_plane_detector/parameter_space.h>
-#include <but_segmentation/normals.h>
+#include <srs_env_model_percp/but_segmentation/normals.h>
 
 
 namespace srs_env_model_percp
@@ -84,6 +84,11 @@ namespace srs_env_model_percp
 	class ParameterSpaceHierarchy
 	{
 		public:
+			typedef but_plane_detector::Plane<float> tPlane;
+			typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
+
+
+		public:
 			/**
 			 * Constructor - creates and allocates a space (angle X angle X shift)
 			 * @param anglemin Minimal angle in space
@@ -105,7 +110,7 @@ namespace srs_env_model_percp
 			 * @param indices Found planes
 			 * @returns index of maximal plane
 			 */
-			int findMaxima(std::vector<but_plane_detector::Plane<float> > &indices, double min_value, int neighborhood, int around);
+			int findMaxima(tPlanes &indices, double min_value, int neighborhood, int around);
 
 			/**
 			 * Adds a second volume to this with offset

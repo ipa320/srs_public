@@ -66,7 +66,7 @@ public:
 	virtual void init(ros::NodeHandle & node_handle);
 
 	//! Get output pointcloud
-	bool computeCloud( const SMapWithParameters & par );
+	bool computeCloud( const SMapWithParameters & par, const ros::Time & time );
 
 	//! Get cloud
 	tCloud & getCloud( ) { return m_cloud; }

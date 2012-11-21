@@ -1,0 +1,35 @@
+<package>
+  <description brief="srs_env_model_utils">
+
+Package contains patched version of several ROS utilities:
+- patched version of the robot_self_filter by Ioan Sucan (for RGB point clouds)
+- kinect throttling nodelet
+
+  </description>
+  <author>Vit Stancl (stancl@fit.vutbr.cz), Michal Spanel (spanel@fit.vutbr.cz)</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_env_model_utils</url>
+
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+  <depend package="filters"/>
+  <depend package="sensor_msgs"/>
+  <depend package="visualization_msgs"/>
+  <depend package="geometric_shapes"/>
+  <depend package="urdf"/>
+  <depend package="resource_retriever"/>
+  <depend package="pcl"/>
+  <depend package="pcl_ros"/>
+  <depend package="assimp"/>
+
+  <depend package="nodelet"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/include `rosboost-cfg --cflags`" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrobot_self_filter" />
+    <nodelet plugin="${prefix}/nodelets.xml" />
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+
+</package>
+

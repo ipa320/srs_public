@@ -48,7 +48,12 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
     // ros::param::param<std::string>("~world_frame",world_frame_,WORLD_FRAME);
 
     ros::param::param<std::string>("~world_frame",collision_objects_frame_id_,WORLD_FRAME);
+
+    // TODO remove collision_objects_frame_id and keep just world_frame
+    world_frame_ =  collision_objects_frame_id_;
+
     ros::param::param<std::string>("~aco_link",aco_link_,"arm_7_link");
+
 
     ROS_INFO("Using %s frame as world frame",collision_objects_frame_id_.c_str());
 
@@ -70,13 +75,19 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
     ros::param::param<double>("~spacenav/max_val",spacenav.max_val_,500.0);
     ros::param::param<double>("~spacenav/step",spacenav.step_,0.1);
     ros::param::param<double>("~spacenav/rot_step",spacenav.rot_step_,0.05);
+    ros::param::param<bool>("~spacenav/use_rviz_cam",spacenav.use_rviz_cam_,true);
+    ros::param::param<std::string>("~spacenav/rviz_cam_link",spacenav.rviz_cam_link_,"/rviz_cam");
 
     ros::param::param<bool>("~joint_controls",joint_controls_,false);
 
     spacenav_timer_ = nh_.createTimer(ros::Duration(0.05),&CArmManipulationEditor::timerCallback,this);
 
+    if (spacenav.use_rviz_cam_) tf_timer_ = nh_.createTimer(ros::Duration(0.01),&CArmManipulationEditor::tfTimerCallback,this);
+
     offset_sub_ = nh_.subscribe("/spacenav/offset",1,&CArmManipulationEditor::spacenavOffsetCallback,this);
     rot_offset_sub_ = nh_.subscribe("/spacenav/rot_offset",1,&CArmManipulationEditor::spacenavRotOffsetCallback,this);
+
+    arm_nav_state_pub_ = nh_.advertise<AssistedArmNavigationState>(TOP_STATE,5);
 
     links_ = clist;
 
@@ -91,11 +102,58 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
 
 }
 
-void CArmManipulationEditor::timerCallback(const ros::TimerEvent& ev) {
 
-	ROS_INFO_ONCE("Spacenav timer callback triggered.");
+bool CArmManipulationEditor::transf(std::string target_frame,geometry_msgs::PoseStamped& pose) {
 
-	if (!inited) return;
+	// transform pose of camera into world
+	try {
+
+			if (tfl_->waitForTransform(target_frame, pose.header.frame_id, pose.header.stamp, ros::Duration(2.0))) {
+
+			  tfl_->transformPose(target_frame,pose,pose);
+
+			} else {
+
+			  ROS_ERROR("Could not get TF transf. from %s into %s.",pose.header.frame_id.c_str(),target_frame.c_str());
+			  return false;
+
+			}
+
+	} catch(tf::TransformException& ex){
+	   std::cerr << "Transform error: " << ex.what() << std::endl;
+
+	   return false;
+	}
+
+	return true;
+
+}
+
+void CArmManipulationEditor::processSpaceNav() {
+
+
+	ROS_INFO_ONCE("Processing spacenav data");
+
+	//boost::mutex::scoped_lock(spacenav.mutex_);
+	spacenav.mutex_.lock();
+	bool ret = false;
+
+	// there is nothing to do
+	if (spacenav.lock_orientation_ && spacenav.lock_position_) ret = true;
+
+	if (!spacenav.offset_received_) ret = true;
+	else spacenav.offset_received_ = false;
+
+	if (!spacenav.rot_offset_received_) ret = true;
+	else spacenav.rot_offset_received_ = false;
+
+	// continue only if the planning was started
+	if (!inited) ret = true;
+
+	spacenav.mutex_.unlock();
+
+	if (ret) return;
+
 
 	unsigned int state = action_server_ptr_->get_state();
 
@@ -107,45 +165,58 @@ void CArmManipulationEditor::timerCallback(const ros::TimerEvent& ev) {
 
 	}
 
-	ROS_INFO_ONCE("Processing spacenav data");
+	//boost::mutex::scoped_lock(im_server_mutex_);
 
-	boost::mutex::scoped_lock(spacenav.mutex_);
-
-	// there is nothing to do
-	if (spacenav.lock_orientation_ && spacenav.lock_position_) return;
-
-	if (!spacenav.offset_received_) return;
-	else spacenav.offset_received_ = false;
-
-	if (!spacenav.rot_offset_received_) return;
-	else spacenav.rot_offset_received_ = false;
-
-	boost::mutex::scoped_lock(im_server_mutex_);
+	im_server_mutex_.lock();
 
 	visualization_msgs::InteractiveMarker marker;
-	geometry_msgs::Pose new_pose;
+	//geometry_msgs::Pose new_pose;
 
 	if (!(interactive_marker_server_->get("MPR 0_end_control",marker))) {
 
-	    ROS_ERROR_ONCE("Can't get gripper IM pose.");
+		ROS_ERROR_ONCE("Can't get gripper IM pose.");
 
-	    return;
+		im_server_mutex_.unlock();
+		return;
 
 	}
 
-	new_pose = marker.pose;
+	im_server_mutex_.unlock();
+
+	ros::Time now = /*ros::Time(0);*/ ros::Time::now();
+
+
+	geometry_msgs::PoseStamped npose;
+
+	if (spacenav.use_rviz_cam_) {
+
+		//std::cout << marker.header.frame_id << std::endl;
+
+		npose.pose = marker.pose;
+		npose.header.stamp = ros::Time(0);
+		npose.header.frame_id = world_frame_;
+
+		if (!transf(spacenav.rviz_cam_link_ + "_add",npose)) return;
+
+	} else {
+
+		npose.pose = marker.pose;
+		npose.header.stamp = now;
+		npose.header.frame_id = world_frame_;
+
+	}
 
 	if (!spacenav.lock_position_) {
 
-		new_pose.position.x += (spacenav.offset.x/spacenav.max_val_)*spacenav.step_;
-		new_pose.position.y += (spacenav.offset.y/spacenav.max_val_)*spacenav.step_;
-		new_pose.position.z += (spacenav.offset.z/spacenav.max_val_)*spacenav.step_;
+		npose.pose.position.x += (spacenav.offset.x/spacenav.max_val_)*spacenav.step_;
+		npose.pose.position.y += (spacenav.offset.y/spacenav.max_val_)*spacenav.step_;
+		npose.pose.position.z += (spacenav.offset.z/spacenav.max_val_)*spacenav.step_;
 
 	}
 
-	geometry_msgs::Vector3 rpy = GetAsEuler(marker.pose.orientation);
+	geometry_msgs::Vector3 rpy = GetAsEuler(npose.pose.orientation);
 
-	ROS_DEBUG("Gripper current RPY: %f, %f, %f (DEG)",rpy.x,rpy.y,rpy.z);
+	//ROS_DEBUG("Gripper current RPY: %f, %f, %f (DEG)",rpy.x,rpy.y,rpy.z);
 
 	if (!spacenav.lock_orientation_) {
 
@@ -155,28 +226,107 @@ void CArmManipulationEditor::timerCallback(const ros::TimerEvent& ev) {
 
 	}
 
-	/*if (rpy.x > 2*M_PI) rpy.x = rpy.x - 2*M_PI;
-	if (rpy.x < 0) rpy.x = 2*M_PI + rpy.x;
-
-	if (rpy.y > 2*M_PI) rpy.y = rpy.y - 2*M_PI;
-	if (rpy.y < 0) rpy.y = 2*M_PI + rpy.y;
-
-	if (rpy.z > 2*M_PI) rpy.z = rpy.z - 2*M_PI;
-	if (rpy.z < 0) rpy.z = 2*M_PI + rpy.z;*/
-
-	ROS_DEBUG("Gripper new RPY: %f, %f, %f (DEG)",rpy.x,rpy.y,rpy.z);
+	//ROS_DEBUG("Gripper new RPY: %f, %f, %f (DEG)",rpy.x,rpy.y,rpy.z);
 
 
-	new_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rpy.x,rpy.y,rpy.z);
+	npose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rpy.x,rpy.y,rpy.z);
 
-	if ((interactive_marker_server_->setPose("MPR 0_end_control",new_pose))) {
+	if (spacenav.use_rviz_cam_) {
+
+		if (!transf(world_frame_,npose)) return;
+
+	}
+
+	im_server_mutex_.lock();
+
+	if ((interactive_marker_server_->setPose("MPR 0_end_control",npose.pose,npose.header))) {
 
 		  interactive_marker_server_->applyChanges();
 
-		  findIK(new_pose);
+		  findIK(npose.pose);
 
 	  }
 
+	im_server_mutex_.unlock();
+
+
+
+}
+
+// timer for publishing TF for additional camera frame
+void CArmManipulationEditor::tfTimerCallback(const ros::TimerEvent& ev) {
+
+	ROS_INFO_ONCE("Publishing TF for additional RVIZ camera.");
+
+	//boost::mutex::scoped_lock(im_server_mutex_);
+	im_server_mutex_.lock();
+
+	visualization_msgs::InteractiveMarker marker;
+	//geometry_msgs::Pose new_pose;
+
+	if (!(interactive_marker_server_->get("MPR 0_end_control",marker))) {
+
+		ROS_ERROR_ONCE("Can't get gripper IM pose.");
+		im_server_mutex_.unlock();
+
+		return;
+
+	}
+
+	im_server_mutex_.unlock();
+
+	ros::Time now = /*ros::Time(0);*/ ros::Time::now();
+
+	// publish TF for additional camera frame
+	geometry_msgs::PoseStamped cam_pose;
+
+	cam_pose.pose.position.x = 0.0;
+	cam_pose.pose.position.y = 0.0;
+	cam_pose.pose.position.z = 0.0;
+
+	cam_pose.pose.orientation.x = 0.0;
+	cam_pose.pose.orientation.y = 0.0;
+	cam_pose.pose.orientation.z = 0.0;
+	cam_pose.pose.orientation.w = 1.0;
+
+	cam_pose.header.stamp = now;
+	cam_pose.header.frame_id = spacenav.rviz_cam_link_;
+
+	if (!transf(world_frame_,cam_pose)) return;
+
+	// set Z of camera to be same as Z of IM
+	cam_pose.pose.position = marker.pose.position;
+
+	// "reset" pitch
+	geometry_msgs::Vector3 rpy = GetAsEuler(cam_pose.pose.orientation);
+
+	rpy.y = 0;
+
+	cam_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rpy.x,rpy.y,rpy.z);
+
+	tf::Transform tr;
+	tr.setOrigin(tf::Vector3(cam_pose.pose.position.x,cam_pose.pose.position.y,cam_pose.pose.position.z));
+	tr.setRotation(tf::Quaternion(cam_pose.pose.orientation.x,cam_pose.pose.orientation.y,cam_pose.pose.orientation.z,cam_pose.pose.orientation.w));
+	br_.sendTransform(tf::StampedTransform(tr, now, world_frame_, spacenav.rviz_cam_link_ + "_add"));
+
+
+
+}
+
+// general timer
+void CArmManipulationEditor::timerCallback(const ros::TimerEvent& ev) {
+
+	ROS_INFO_ONCE("Assisted arm nav timer callback triggered.");
+
+	// publish state of spacenav buttons (and internal state of arm nav. -> TBD)
+	AssistedArmNavigationState msg;
+	msg.orientation_locked = spacenav.lock_orientation_;
+	msg.position_locked = spacenav.lock_position_;
+
+	arm_nav_state_pub_.publish(msg);
+
+	// update position of IM according to spacenav data
+	processSpaceNav();
 
 }
 
@@ -710,6 +860,7 @@ int main(int argc, char** argv)
       ros::ServiceServer service_repeat = n.advertiseService(SRV_REPEAT, &CArmManipulationEditor::ArmNavRepeat,ps_editor);
 
       ros::ServiceServer service_collobj = n.advertiseService(SRV_COLLOBJ, &CArmManipulationEditor::ArmNavCollObj,ps_editor);
+      ros::ServiceServer service_setattached = n.advertiseService(SRV_SET_ATTACHED, &CArmManipulationEditor::ArmNavSetAttached,ps_editor);
       ros::ServiceServer service_movepalmlink = n.advertiseService(SRV_MOVE_PALM_LINK, &CArmManipulationEditor::ArmNavMovePalmLink,ps_editor);
       ros::ServiceServer service_movepalmlinkrel = n.advertiseService(SRV_MOVE_PALM_LINK_REL, &CArmManipulationEditor::ArmNavMovePalmLinkRel,ps_editor);
 

@@ -1,0 +1,12 @@
+<library path="lib/libkinect_throttle">
+  <class name="srs_env_model_utils/CloudThrottle" type="srs_env_model_utils::CloudThrottle" base_class_type="nodelet::Nodelet">
+    <description>
+      Throttle point clouds
+    </description>
+  </class>
+  <class name="srs_env_model_utils/KinectThrottle" type="srs_env_model_utils::KinectThrottle" base_class_type="nodelet::Nodelet">
+    <description>
+      Throttle Kinect images and point clouds
+    </description>
+  </class>
+</library>

@@ -40,6 +40,7 @@ namespace srs_env_model_percp
 	static const std::string DET_OUTPUT_POINT_CLOUD_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/point_cloud");
 	static const std::string DET_OUTPUT_PLANES_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/plane_array");
 	static const std::string DET_OUTPUT_MARKER_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/poly");
+	static const std::string DET_OUTPUT_MARKER_SRS_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/srs_poly_array");
 	static const std::string DET_OUTPUT_IMAGE_TOPIC = PLANE_DETECTOR_PREFIX + std::string("/image");
 
     /**
@@ -48,6 +49,7 @@ namespace srs_env_model_percp
 	static const std::string DET_INPUT_POINT_CLOUD_TOPIC = "points_in";
 	static const std::string DET_INPUT_IMAGE_TOPIC = "depth_image_in";
 	static const std::string DET_INPUT_CAM_INFO_TOPIC = "camera_info_in";
+	static const std::string DET_INPUT_RGB_IMAGE_TOPIC = "rgb_in";
 
     /**
       * but_plane_detector - required env. model services

@@ -259,7 +259,7 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
     m_octomap_updates_msg->pointcloud2.header.stamp = par.currentTime;
 
     // Initialize leaf iterators
-	tButServerOcTree & tree( par.map->octree );
+	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
@@ -278,6 +278,10 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
 		// transform point cloud from octomap frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
 	}
+
+	m_DataTimeStamp = par.currentTime;
+
+	lock.unlock();
 
 	invalidate();
 }

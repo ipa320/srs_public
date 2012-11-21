@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 1586 2012-10-01 15:36:57Z stancl $
+ * $Id: but_server.h 1860 2012-11-14 12:13:45Z spanel $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -115,10 +115,10 @@ public:
 
 protected:
     //! Publish all
-    void publishAll(const ros::Time& rostime = ros::Time::now());
+    void publishAll(const ros::Time& rostime );
 
     //! On octomap data changed
-    void onOcMapDataChanged( const tButServerOcMap & mapdata ){ publishAll(); }
+    void onOcMapDataChanged( const tButServerOcMap & mapdata, const ros::Time & stamp ){ publishAll(stamp); }
 
     /// On reset service call
     bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response){ reset(); return true; }

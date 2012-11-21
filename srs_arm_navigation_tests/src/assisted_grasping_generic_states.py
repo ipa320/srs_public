@@ -101,7 +101,7 @@ class grasp_unknown_object_assisted(smach.State):
       est_result = est(header=header,
                        p1=feedback.p1,
                        p2=feedback.p2,
-                       mode=1)
+                       mode=2)
           
     except Exception, e:
           
@@ -122,6 +122,9 @@ class grasp_unknown_object_assisted(smach.State):
  
         add_object = rospy.ServiceProxy(self.s_add_unknown_object, AddUnknownObject)
         rospy.loginfo('Calling %s service',self.s_add_unknown_object)
+
+        print "POSE of unknown object from BB estimator"
+        print est_result.pose
            
         try:
           
@@ -179,6 +182,9 @@ class grasp_unknown_object_assisted(smach.State):
       except Exception, e:
           
           rospy.logerr('Cannot add IM object to the scene, error: %s',str(e)) 
+
+	  self.object_pose = None
+	  self.object_bb = None
           
       if self.object_pose is not None:
           
@@ -226,6 +232,9 @@ class grasp_unknown_object_assisted(smach.State):
     
     mpose.header.frame_id = '/map'
     mpose.pose = self.object_pose
+
+    print "POSE of object which Im going to add to planning"
+    print mpose
     
     try:
       

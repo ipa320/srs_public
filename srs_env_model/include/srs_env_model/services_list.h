@@ -83,6 +83,8 @@ namespace srs_env_model
     static const std::string SetCrawlDepth_SRV = PACKAGE_NAME_PREFIX + std::string("/set_crawl_depth");
     static const std::string LoadMap_SRV = PACKAGE_NAME_PREFIX + std::string("/load_octomap");
     static const std::string SaveMap_SRV = PACKAGE_NAME_PREFIX + std::string("/save_octomap");
+    static const std::string LoadFullMap_SRV = PACKAGE_NAME_PREFIX + std::string("/load_octomap_full");
+    static const std::string SaveFullMap_SRV = PACKAGE_NAME_PREFIX + std::string("/save_octomap_full");
 
     /**
      * Context server - services

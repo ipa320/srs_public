@@ -1,7 +1,0 @@
-<library path="lib/libcloud_throttle">
-  <class name="srs_env_model/CloudThrottle" type="srs_env_model::CloudThrottle" base_class_type="nodelet::Nodelet">
-    <description>
-      Throttle point clouds
-    </description>
-  </class>
-</library>

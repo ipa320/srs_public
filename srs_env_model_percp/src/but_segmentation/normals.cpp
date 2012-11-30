@@ -279,91 +279,147 @@ Normals::Normals(cv::Mat &points, const CameraInfoConstPtr& cam_info, int normal
 // @param threshold Threshold for depth difference outlier marking (if depth of neighbor is greater than this threshold, point is skipped)
 // @param neighborhood Neighborhood from which normals are computed
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Normals::Normals(pcl::PointCloud<pcl::PointXYZ> &pointcloud, float threshold, int neighborhood):
+Normals::Normals(pcl::PointCloud<pcl::PointXYZ> &pointcloud, int normalType, int neighborhood,
+		 float threshold, float outlierThreshold, int iter):
 													m_points(cvSize(pointcloud.width, pointcloud.height), CV_32FC3),
 													m_planes(cvSize(pointcloud.width, pointcloud.height), CV_32FC4)
 {
+	std::cerr << "Normal computation method " << normalType << std::endl;
 		// ... fill point cloud...
 	Vec3f nullvector(0.0, 0.0, 0.0);
 	Vec4f nullvector4(0.0, 0.0, 0.0, 0.0);
 
-	//pcl::PointCloud<pcl::PointXYZ> cloud2;
-	//pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new cloud2);
-
 	for(int y = 0; y < (int)pointcloud.height; ++y)
 	for(int x = 0; x < (int)pointcloud.width; ++x)
 	{
-//		if (pointcloud.at(x, y).z > 0.001)
-//		{
 				Vec3f realPoint;
 				realPoint[0] = pointcloud.at(x, y).x;
 				realPoint[1] = pointcloud.at(x, y).y;
 				realPoint[2] = pointcloud.at(x, y).z;
 
 				m_points.at<Vec3f>(y, x) = realPoint;
-//			}
-//			else
-//			{
-//				m_points.at<Vec3f>(y, x) = nullvector;
-//				pointcloud.at(x, y).x = 0.0;
-//				pointcloud.at(x, y).y = 0.0;
-//				pointcloud.at(x, y).z = 0.0;
-//			}
 	}
-	///////////////////////////////////////////////////////////////
-//	// estimate normals using LSQ
-//	for (int i = 0; i < m_points.rows; ++i)
-//		for (int j = 0; j < m_points.cols; ++j)
-//		{
-//			Vec3f realPoint = m_points.at<Vec3f>(i, j);
-//			if (realPoint != nullvector)
-//			{
-//				Vec4f normal= getNormalLSQAround(i, j, 4, 0.2);
-//				m_planes.at<Vec4f>(i, j) = normal;
-//			}
-//				else
-//				m_planes.at<Vec4f>(i, j) = nullvector4;
-//		}
-///////////////////////////////////////////////////////////////
+
+	if (normalType == NormalType::PCL)
+	{
 		// Estimate normals
 		pcl::IntegralImageNormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
 		pcl::PointCloud<pcl::Normal> normals;
 
 		ne.setNormalEstimationMethod (ne.COVARIANCE_MATRIX);
 		ne.setDepthDependentSmoothing(true);
-		ne.setMaxDepthChangeFactor(0.5);
-		//ne.setRectSize(10, 10);
-		ne.setNormalSmoothingSize((float)(8*2+1));
+		ne.setMaxDepthChangeFactor(threshold);
+		ne.setNormalSmoothingSize(neighborhood);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = pointcloud.makeShared();
 		ne.setInputCloud(cloud);
 		ne.compute(normals);
 
 		for (int i = 0; i < m_points.rows; ++i)
+			for (int j = 0; j < m_points.cols; ++j)
+			{
+				Vec3f realPoint = m_points.at<Vec3f>(i, j);
+
+				Vec4f normal;
+				if (normals(j, i).normal_x == normals(j, i).normal_x &&
+					normals(j, i).normal_y == normals(j, i).normal_y &&
+					normals(j, i).normal_z == normals(j, i).normal_z)
+				{
+					normal[0] = normals(j, i).normal_x;
+					normal[1] = normals(j, i).normal_y;
+					normal[2] = normals(j, i).normal_z;
+
+					normal[3] = -(normal[0]*realPoint[0]+normal[1]*realPoint[1]+normal[2]*realPoint[2]);
+					m_planes.at<Vec4f>(i, j) = normal;
+				}
+				else
+					m_planes.at<Vec4f>(i, j) = nullvector4;
+			}
+	}
+	else if (normalType == NormalType::LSQAROUND)
+	{
+		for (int i = 0; i < m_points.rows; ++i)
 		for (int j = 0; j < m_points.cols; ++j)
 		{
 			Vec3f realPoint = m_points.at<Vec3f>(i, j);
-
-			Vec4f normal;
-			if (normals(j, i).normal_x == normals(j, i).normal_x &&
-				normals(j, i).normal_y == normals(j, i).normal_y &&
-				normals(j, i).normal_z == normals(j, i).normal_z)
+			if (realPoint != nullvector)
 			{
-				normal[0] = normals(j, i).normal_x;
-				normal[1] = normals(j, i).normal_y;
-				normal[2] = normals(j, i).normal_z;
+				Vec4f normal= getNormalLSQAround(i, j, neighborhood, threshold);
+				m_planes.at<Vec4f>(i, j) = normal;
+			}
+				else
+				m_planes.at<Vec4f>(i, j) = nullvector4;
+		}
+	}
 
-//					if (normal[2] < 0)
-//					{
-//						normal[0] *= -1.0;
-//						normal[1] *= -1.0;
-//						normal[2] *= -1.0;
-//					}
-				normal[3] = -(normal[0]*realPoint[0]+normal[1]*realPoint[1]+normal[2]*realPoint[2]);
+	else if (normalType & NormalType::DIRECT)
+	{
+		for (int i = 0; i < m_points.rows; ++i)
+		for (int j = 0; j < m_points.cols; ++j)
+		{
+			Vec3f realPoint = m_points.at<Vec3f>(i, j);
+			if (realPoint != nullvector)
+			{
+				Vec4f normal = getNormal(i, j, neighborhood, threshold);
 				m_planes.at<Vec4f>(i, j) = normal;
 			}
 			else
+			{
 				m_planes.at<Vec4f>(i, j) = nullvector4;
+			}
 		}
+	}
+	else if (normalType & NormalType::LSQ)
+	{
+		for (int i = 0; i < m_points.rows; ++i)
+		for (int j = 0; j < m_points.cols; ++j)
+		{
+			Vec3f realPoint = m_points.at<Vec3f>(i, j);
+			if (realPoint != nullvector)
+			{
+				Vec4f normal = getNormalLSQ(i, j, neighborhood, threshold);
+				m_planes.at<Vec4f>(i, j) = normal;
+			}
+			else
+			{
+				m_planes.at<Vec4f>(i, j) = nullvector4;
+			}
+		}
+	}
+
+	else if (normalType & NormalType::LTS)
+	{
+		for (int i = 0; i < m_points.rows; ++i)
+		for (int j = 0; j < m_points.cols; ++j)
+		{
+			Vec3f realPoint = m_points.at<Vec3f>(i, j);
+			if (realPoint != nullvector)
+			{
+				Vec4f normal = getNormalLTS(i, j, neighborhood, threshold, outlierThreshold, iter);
+				m_planes.at<Vec4f>(i, j) = normal;
+			}
+			else
+			{
+				m_planes.at<Vec4f>(i, j) = nullvector4;
+			}
+		}
+	}
+	else if (normalType & NormalType::LTSAROUND)
+	{
+		for (int i = 0; i < m_points.rows; ++i)
+		for (int j = 0; j < m_points.cols; ++j)
+		{
+			Vec3f realPoint = m_points.at<Vec3f>(i, j);
+			if (realPoint != nullvector)
+			{
+				Vec4f normal = getNormalLTSAround(i, j, neighborhood, threshold, outlierThreshold, iter);
+				m_planes.at<Vec4f>(i, j) = normal;
+			}
+			else
+			{
+				m_planes.at<Vec4f>(i, j) = nullvector4;
+			}
+		}
+	}
 
 //	for (int i = 0; i < m_points.rows; ++i)
 //	for (int j = 0; j < m_points.cols; ++j)

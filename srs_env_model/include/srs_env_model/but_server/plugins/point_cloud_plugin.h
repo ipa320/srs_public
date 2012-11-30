@@ -67,6 +67,9 @@ namespace srs_env_model
         //! Initialize plugin - called in server constructor, enable or disable subscription.
         virtual void init(ros::NodeHandle & node_handle, bool subscribe){ m_bSubscribe = subscribe; init(node_handle); }
 
+        //! Initialize plugin - use given input topic name
+        virtual void init(ros::NodeHandle & node_handle, const std::string & topic){ m_pcSubscriberName = topic; init(node_handle); }
+
         //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
         virtual void pause( bool bPause, ros::NodeHandle & node_handle );
 

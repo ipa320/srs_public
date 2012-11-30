@@ -294,7 +294,7 @@ int ParameterSpace::findMaxima(tPlanes &indices)
 							aroundy /= 7.0;
 							aroundz /= 7.0;
 							arounds /= 7.0;
-							std::cout << "Found plane size: " << val << " eq: " << aroundx <<" "<< aroundy <<" "<< aroundz <<" "<< arounds <<" "<< std::endl;
+							std::cerr << "Found plane size: " << val << " eq: " << aroundx <<" "<< aroundy <<" "<< aroundz <<" "<< arounds <<" "<< std::endl;
 							indices.push_back(Plane<float>(aroundx, aroundy, aroundz, arounds));
 							if (val > max)
 							{

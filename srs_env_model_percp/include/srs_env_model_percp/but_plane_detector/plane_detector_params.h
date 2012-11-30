@@ -31,7 +31,7 @@
 
 #include <string>
 #include "srs_env_model_percp/topics_list.h"
-
+#include "srs_env_model_percp/but_segmentation/normals.h"
 namespace srs_env_model_percp
 {
     /**
@@ -116,6 +116,9 @@ namespace srs_env_model_percp
 	const std::string PARAM_HT_MIN_SMOOTH						= "planedet_ht_min_smooth";
 	const int 		  PARAM_HT_MIN_SMOOTH_DEFAULT				= 50;
 
+	const std::string PARAM_HT_STEP_SUBSTRACTION				= "planedet_ht_step_substraction";
+	const double 		  PARAM_HT_STEP_SUBSTRACTION_DEFAULT		= 0.2;
+
 
     /**
       * Plane search
@@ -151,6 +154,27 @@ namespace srs_env_model_percp
 	const std::string PARAM_VISUALISATION_COLOR							= "planedet_visualisation_color";
 	const std::string PARAM_VISUALISATION_COLOR_DEFAULT					= "plane_eq";
 
+	const std::string PARAM_VISUALISATION_TTL							= "planedet_visualisation_ttl";
+	const int PARAM_VISUALISATION_TTL_DEFAULT							= 10; // sec
+
+
+	/**
+	 * Normal estimation
+	 */
+	const std::string PARAM_NORMAL_TYPE									= "planedet_normal_type";
+	const int PARAM_NORMAL_TYPE_DEFAULT									= but_plane_detector::NormalType::PCL;
+
+	const std::string PARAM_NORMAL_NEIGHBORHOOD							= "planedet_normal_neighborhood";
+	const int PARAM_NORMAL_NEIGHBORHOOD_DEFAULT							= 5; // sec
+
+	const std::string PARAM_NORMAL_THRESHOLD							= "planedet_normal_threshold";
+	const double PARAM_NORMAL_THRESHOLD_DEFAULT							= 0.2; // sec
+
+	const std::string PARAM_NORMAL_OUTLIERTHRESH						= "planedet_normal_outlierThreshold";
+	const double PARAM_NORMAL_OUTLIERTHRESH_DEFAULT						= 0.02; // sec
+
+	const std::string PARAM_NORMAL_ITER									= "planedet_normal_iter";
+	const int PARAM_NORMAL_ITER_DEFAULT									= 3; // sec
 
 	/**
 	 * Structure encapsulates all parameters of the plane detector.
@@ -177,6 +201,7 @@ namespace srs_env_model_percp
         double param_ht_lvl1_gauss_shift_res;
         double param_ht_lvl1_gauss_angle_sigma;
         double param_ht_lvl1_gauss_shift_sigma;
+        double param_ht_step_substraction;
 
         double param_ht_plane_merge_shift;
         double param_ht_plane_merge_angle;
@@ -191,6 +216,14 @@ namespace srs_env_model_percp
         double param_visualisation_plane_normal_dev;
         double param_visualisation_plane_shift_dev;
         int    param_visualisation_min_count;
+        int    param_visualisation_ttl;
+
+        int    param_normal_type;
+        int    param_normal_neighborhood;
+        double  param_normal_threshold;
+        double  param_normal_outlierThreshold;
+		int    param_normal_iter;
+
         std::string param_visualisation_color;
     };
 }

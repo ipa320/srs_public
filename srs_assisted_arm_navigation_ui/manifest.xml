@@ -18,6 +18,7 @@
   <depend package="cob_script_server"/>
   <depend package="sensor_msgs"/>
   <depend package="image_transport"/>
+  <depend package="visualization_msgs"/>
   
   <export>
     <rviz plugin="${prefix}/lib/but_arm_navigation.yaml"/>

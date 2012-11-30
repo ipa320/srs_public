@@ -23,13 +23,19 @@
   <!-- grasping action server -->
   <!--include file="$(find srs_assisted_arm_navigation)/launch/grasping_node.launch"/-->
    
-  <node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/>
+  <!--node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/-->
   
   <!-- kinect image flip nodelet - flips kinect images if robot is looking backwards -->
-  <node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
-    <!--remap from="pointcloud" to="/cam3d/depth/points"/-->
+  <!--node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
     <remap from="pointcloud" to="/cam3d/depth/points_throttled"/>
-    <remap from="colorimage" to="/cam3d/rgb/image_color"/>
-  </node>
+    <remap from="colorimage" to="/cam3d/rgb/image_raw_throttled"/>
+  </node-->
+  
+
+  <!--node name="kinect_image_flip" pkg="cob_image_flip" ns="/cob_image_flip/kinect_image_flip" type="cob_kinect_image_flip" output="screen">
+    <remap from="pointcloud_in" to="/cam3d/rgb/points_throttled"/>
+    <remap from="pointcloud_out" to="/cam3d/upright/rgb/points_throttled"/>
+    <remap from="colorimage" to="/cam3d/rgb/image_raw_throttled"/>
+  </node-->
 
 </launch>

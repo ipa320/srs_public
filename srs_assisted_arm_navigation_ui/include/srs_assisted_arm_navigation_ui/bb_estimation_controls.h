@@ -118,8 +118,13 @@ protected:
 
     bool action_in_progress_;
 
-    boost::mutex data_mutex_;
+
+
+
     bool some_data_ready_;
+    bool data_ready_;
+
+    boost::mutex data_mutex_;
     int16_t p1_[2];
     int16_t p2_[2];
 
@@ -131,6 +136,16 @@ protected:
 
     int butt_down_x_;
     int butt_down_y_;
+
+    /*cv_bridge::CvImagePtr cv_ptr_; // original image
+    cv_bridge::CvImagePtr cv_ptr_tmp_;*/
+
+    boost::mutex image_mutex_;
+    cv::Mat *image_;
+    cv::Mat *image_tmp_;
+
+    void timerCallback(const ros::TimerEvent& ev);
+    ros::Timer timer_;
 
 private:
 

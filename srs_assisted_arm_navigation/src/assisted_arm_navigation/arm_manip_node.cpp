@@ -52,17 +52,16 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
     // TODO remove collision_objects_frame_id and keep just world_frame
     world_frame_ =  collision_objects_frame_id_;
 
-    ros::param::param<std::string>("~aco_link",aco_link_,"arm_7_link");
+    ros::param::param<std::string>("~aco/link",aco_link_,"/arm_7_link");
+    ros::param::param<bool>("~aco/default_state",aco_,false);
 
+    ros::param::param<std::string>("~end_eff_link",end_eff_link_,"/sdh_palm_link");
 
     ROS_INFO("Using %s frame as world frame",collision_objects_frame_id_.c_str());
 
     //collision_objects_frame_id_ = "/map"; // TODO read from parameter
 
-    // TODO make it configurable through param.
-    aco_ = true;
-
-    joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("/spacenav/joy",10,&CArmManipulationEditor::joyCallback,this);
+    ros::param::param<bool>("~spacenav/enable_spacenav",use_spacenav_,false);
 
     spacenav.offset_received_ = false;
     spacenav.rot_offset_received_ = false;
@@ -72,22 +71,37 @@ CArmManipulationEditor::CArmManipulationEditor(planning_scene_utils::PlanningSce
     spacenav.buttons_.push_back(0);
     spacenav.buttons_.push_back(0);
 
-    ros::param::param<double>("~spacenav/max_val",spacenav.max_val_,500.0);
+    ros::param::param<double>("~spacenav/max_val",spacenav.max_val_,350.0);
+    ros::param::param<double>("~spacenav/min_val_th",spacenav.min_val_th_,0.05);
     ros::param::param<double>("~spacenav/step",spacenav.step_,0.1);
     ros::param::param<double>("~spacenav/rot_step",spacenav.rot_step_,0.05);
     ros::param::param<bool>("~spacenav/use_rviz_cam",spacenav.use_rviz_cam_,true);
     ros::param::param<std::string>("~spacenav/rviz_cam_link",spacenav.rviz_cam_link_,"/rviz_cam");
 
+    // TODO add checks also for other params !!!!!!!!!!!!!
+    if (spacenav.min_val_th_ > 0.5) spacenav.min_val_th_ = 0.5;
+    if (spacenav.min_val_th_ < 0.0) spacenav.min_val_th_ = 0.0;
+
     ros::param::param<bool>("~joint_controls",joint_controls_,false);
 
+    // TODO rename it - it's not just for spacenav
     spacenav_timer_ = nh_.createTimer(ros::Duration(0.05),&CArmManipulationEditor::timerCallback,this);
 
-    if (spacenav.use_rviz_cam_) tf_timer_ = nh_.createTimer(ros::Duration(0.01),&CArmManipulationEditor::tfTimerCallback,this);
+    if (use_spacenav_) {
 
-    offset_sub_ = nh_.subscribe("/spacenav/offset",1,&CArmManipulationEditor::spacenavOffsetCallback,this);
-    rot_offset_sub_ = nh_.subscribe("/spacenav/rot_offset",1,&CArmManipulationEditor::spacenavRotOffsetCallback,this);
+    	ROS_INFO_ONCE("We are going to use spacenav");
+
+    	joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("/spacenav/joy",1,&CArmManipulationEditor::joyCallback,this);
+		offset_sub_ = nh_.subscribe("/spacenav/offset",1,&CArmManipulationEditor::spacenavOffsetCallback,this);
+		rot_offset_sub_ = nh_.subscribe("/spacenav/rot_offset",1,&CArmManipulationEditor::spacenavRotOffsetCallback,this);
+
+		if (spacenav.use_rviz_cam_) tf_timer_ = nh_.createTimer(ros::Duration(0.01),&CArmManipulationEditor::tfTimerCallback,this);
+
+    }
 
     arm_nav_state_pub_ = nh_.advertise<AssistedArmNavigationState>(TOP_STATE,5);
+
+    arm_nav_state_.out_of_limits = false;
 
     links_ = clist;
 
@@ -129,10 +143,32 @@ bool CArmManipulationEditor::transf(std::string target_frame,geometry_msgs::Pose
 
 }
 
+void CArmManipulationEditor::normAngle(double& a) {
+
+	if (a > 2*M_PI) {
+
+		a -= 2*M_PI;
+		return;
+
+	}
+
+	if (a < 0) {
+
+		a = 2*M_PI + a;
+
+	}
+
+	return;
+
+}
+
 void CArmManipulationEditor::processSpaceNav() {
 
 
-	ROS_INFO_ONCE("Processing spacenav data");
+	ROS_INFO_ONCE("Trying to process spacenav data");
+
+	geometry_msgs::Vector3 offset;
+	geometry_msgs::Vector3 rot_offset;
 
 	//boost::mutex::scoped_lock(spacenav.mutex_);
 	spacenav.mutex_.lock();
@@ -142,17 +178,41 @@ void CArmManipulationEditor::processSpaceNav() {
 	if (spacenav.lock_orientation_ && spacenav.lock_position_) ret = true;
 
 	if (!spacenav.offset_received_) ret = true;
-	else spacenav.offset_received_ = false;
+	//else spacenav.offset_received_ = false;
 
 	if (!spacenav.rot_offset_received_) ret = true;
-	else spacenav.rot_offset_received_ = false;
+	//else spacenav.rot_offset_received_ = false;
 
 	// continue only if the planning was started
 	if (!inited) ret = true;
 
+	if (!ret) {
+
+		ROS_INFO_ONCE("Storing local copy of spacenav data");
+
+		offset = spacenav.offset;
+		rot_offset = spacenav.rot_offset;
+
+		spacenav.offset.x = 0;
+		spacenav.offset.y = 0;
+		spacenav.offset.z = 0;
+
+		spacenav.rot_offset.x = 0.0;
+		spacenav.rot_offset.y = 0.0;
+		spacenav.rot_offset.z = 0.0;
+
+		spacenav.offset_received_ = false;
+		spacenav.rot_offset_received_ = false;
+
+	}
+
 	spacenav.mutex_.unlock();
 
+	ROS_INFO_ONCE("We have spacenav data");
+
 	if (ret) return;
+
+	ROS_INFO_ONCE("Getting state of action");
 
 
 	unsigned int state = action_server_ptr_->get_state();
@@ -165,9 +225,11 @@ void CArmManipulationEditor::processSpaceNav() {
 
 	}
 
-	//boost::mutex::scoped_lock(im_server_mutex_);
+	boost::mutex::scoped_lock(im_server_mutex_);
 
-	im_server_mutex_.lock();
+	ROS_INFO_ONCE("Getting gripper IM");
+
+	//im_server_mutex_.lock();
 
 	visualization_msgs::InteractiveMarker marker;
 	//geometry_msgs::Pose new_pose;
@@ -176,12 +238,12 @@ void CArmManipulationEditor::processSpaceNav() {
 
 		ROS_ERROR_ONCE("Can't get gripper IM pose.");
 
-		im_server_mutex_.unlock();
+		//im_server_mutex_.unlock();
 		return;
 
 	}
 
-	im_server_mutex_.unlock();
+	//im_server_mutex_.unlock();
 
 	ros::Time now = /*ros::Time(0);*/ ros::Time::now();
 
@@ -190,6 +252,8 @@ void CArmManipulationEditor::processSpaceNav() {
 
 	if (spacenav.use_rviz_cam_) {
 
+		ROS_INFO_ONCE("Transforming IM pose to RVIZ camera...");
+
 		//std::cout << marker.header.frame_id << std::endl;
 
 		npose.pose = marker.pose;
@@ -197,6 +261,8 @@ void CArmManipulationEditor::processSpaceNav() {
 		npose.header.frame_id = world_frame_;
 
 		if (!transf(spacenav.rviz_cam_link_ + "_add",npose)) return;
+
+		ROS_INFO_ONCE("IM pose is in %s frame",npose.header.frame_id.c_str());
 
 	} else {
 
@@ -208,28 +274,69 @@ void CArmManipulationEditor::processSpaceNav() {
 
 	if (!spacenav.lock_position_) {
 
-		npose.pose.position.x += (spacenav.offset.x/spacenav.max_val_)*spacenav.step_;
-		npose.pose.position.y += (spacenav.offset.y/spacenav.max_val_)*spacenav.step_;
-		npose.pose.position.z += (spacenav.offset.z/spacenav.max_val_)*spacenav.step_;
+		double th = spacenav.max_val_ * spacenav.min_val_th_;
+
+		if (fabs(offset.x) > th) npose.pose.position.x += (offset.x/spacenav.max_val_)*spacenav.step_;
+		if (fabs(offset.y) > th) npose.pose.position.y += (offset.y/spacenav.max_val_)*spacenav.step_;
+		if (fabs(offset.z) > th) npose.pose.position.z += (offset.z/spacenav.max_val_)*spacenav.step_;
 
 	}
 
-	geometry_msgs::Vector3 rpy = GetAsEuler(npose.pose.orientation);
-
-	//ROS_DEBUG("Gripper current RPY: %f, %f, %f (DEG)",rpy.x,rpy.y,rpy.z);
 
 	if (!spacenav.lock_orientation_) {
 
-		rpy.x += (spacenav.rot_offset.x/spacenav.max_val_)*spacenav.rot_step_;
-		rpy.y += (spacenav.rot_offset.y/spacenav.max_val_)*spacenav.rot_step_;
-		rpy.z += (spacenav.rot_offset.z/spacenav.max_val_)*spacenav.rot_step_;
+		double th = spacenav.max_val_ * spacenav.min_val_th_;
+
+		/*geometry_msgs::Vector3 rpy = GetAsEuler(npose.pose.orientation);
+		geometry_msgs::Vector3 old_rpy = rpy;*/
+
+		geometry_msgs::Vector3 rpy;
+
+		rpy.x = 0.0;
+		rpy.y = 0.0;
+		rpy.z = 0.0;
+
+		if (fabs(rot_offset.x) > th)  {
+
+			rpy.x += (rot_offset.x/spacenav.max_val_)*spacenav.rot_step_;
+			normAngle(rpy.x);
+
+			//ROS_DEBUG("Gripper current ROLL (x): %f, new one: %f (DEG)",(old_rpy.x/(2*M_PI))*360,(rpy.x/(2*M_PI))*360);
+
+		}
+
+		if (fabs(rot_offset.y) > th)  {
+
+			rpy.y += (rot_offset.y/spacenav.max_val_)*spacenav.rot_step_;
+			normAngle(rpy.y);
+
+			//ROS_DEBUG("Gripper current PITCH (y): %f, new one: %f (DEG)",(old_rpy.y/(2*M_PI))*360,(rpy.y/(2*M_PI))*360);
+
+		}
+
+		if (fabs(rot_offset.z) > th)  {
+
+			rpy.z += (rot_offset.z/spacenav.max_val_)*spacenav.rot_step_;
+			normAngle(rpy.z);
+
+			//ROS_DEBUG("Gripper current YAW (z): %f, new one: %f (DEG)",(old_rpy.z/(2*M_PI))*360,(rpy.z/(2*M_PI))*360);
+
+		}
+
+
+		// this was not working well... but I'm not 100% sure
+		//npose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rpy.x,rpy.y,rpy.z);
+
+		tf::Quaternion o = tf::createQuaternionFromRPY(rpy.x,rpy.y,rpy.z); // transf. quat
+		tf::Quaternion g; // current IM marker pose
+
+		tf::quaternionMsgToTF(npose.pose.orientation,g);
+		g = o*g;
+		tf::quaternionTFToMsg(g,npose.pose.orientation);
 
 	}
 
-	//ROS_DEBUG("Gripper new RPY: %f, %f, %f (DEG)",rpy.x,rpy.y,rpy.z);
 
-
-	npose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rpy.x,rpy.y,rpy.z);
 
 	if (spacenav.use_rviz_cam_) {
 
@@ -237,7 +344,7 @@ void CArmManipulationEditor::processSpaceNav() {
 
 	}
 
-	im_server_mutex_.lock();
+	//im_server_mutex_.lock();
 
 	if ((interactive_marker_server_->setPose("MPR 0_end_control",npose.pose,npose.header))) {
 
@@ -247,7 +354,7 @@ void CArmManipulationEditor::processSpaceNav() {
 
 	  }
 
-	im_server_mutex_.unlock();
+	//im_server_mutex_.unlock();
 
 
 
@@ -259,7 +366,8 @@ void CArmManipulationEditor::tfTimerCallback(const ros::TimerEvent& ev) {
 	ROS_INFO_ONCE("Publishing TF for additional RVIZ camera.");
 
 	//boost::mutex::scoped_lock(im_server_mutex_);
-	im_server_mutex_.lock();
+	//im_server_mutex_.lock();
+	lockScene();
 
 	visualization_msgs::InteractiveMarker marker;
 	//geometry_msgs::Pose new_pose;
@@ -267,15 +375,17 @@ void CArmManipulationEditor::tfTimerCallback(const ros::TimerEvent& ev) {
 	if (!(interactive_marker_server_->get("MPR 0_end_control",marker))) {
 
 		ROS_ERROR_ONCE("Can't get gripper IM pose.");
-		im_server_mutex_.unlock();
+		//im_server_mutex_.unlock();
+		unlockScene();
 
 		return;
 
 	}
 
-	im_server_mutex_.unlock();
+	//im_server_mutex_.unlock();
+	unlockScene();
 
-	ros::Time now = /*ros::Time(0);*/ ros::Time::now();
+	ros::Time now = /*ros::Time(0);*/ ros::Time::now(); /*marker.header.stamp;*/
 
 	// publish TF for additional camera frame
 	geometry_msgs::PoseStamped cam_pose;
@@ -294,13 +404,16 @@ void CArmManipulationEditor::tfTimerCallback(const ros::TimerEvent& ev) {
 
 	if (!transf(world_frame_,cam_pose)) return;
 
-	// set Z of camera to be same as Z of IM
+	// set pos. of camera to be same as pos. of IM
 	cam_pose.pose.position = marker.pose.position;
 
-	// "reset" pitch
 	geometry_msgs::Vector3 rpy = GetAsEuler(cam_pose.pose.orientation);
 
+	// "reset" pitch
 	rpy.y = 0;
+
+	// "reset" roll
+	rpy.x = 0;
 
 	cam_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rpy.x,rpy.y,rpy.z);
 
@@ -313,20 +426,79 @@ void CArmManipulationEditor::tfTimerCallback(const ros::TimerEvent& ev) {
 
 }
 
-// general timer
+// general timer, 20 Hz
 void CArmManipulationEditor::timerCallback(const ros::TimerEvent& ev) {
 
 	ROS_INFO_ONCE("Assisted arm nav timer callback triggered.");
 
 	// publish state of spacenav buttons (and internal state of arm nav. -> TBD)
 	AssistedArmNavigationState msg;
+
+	spacenav.mutex_.lock();
 	msg.orientation_locked = spacenav.lock_orientation_;
 	msg.position_locked = spacenav.lock_position_;
+	spacenav.mutex_.unlock();
+
+	msg.aco_state = aco_;
+	msg.planning_started = inited;
+
+	//motion_plan_map_[getMotionPlanRequestNameFromId(controller.motion_plan_id_)].setHasGoodIKSolution(false, type);
+	if (inited) {
+
+
+		MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
+
+		msg.position_reachable = data.hasGoodIKSolution(planning_scene_utils::GoalPosition);
+
+		visualization_msgs::MarkerArray arr = data.getCollisionMarkers();
+
+		if (arr.markers.size() == 0) msg.position_in_collision = false;
+		else msg.position_in_collision = true;
+
+		planning_models::KinematicState *robot_state = getRobotState();
+		planning_models::KinematicState::JointStateGroup* jsg = robot_state->getJointStateGroup(data.getGroupName());
+		msg.joints_out_of_limits = !( robot_state->areJointsWithinBounds(jsg->getJointNames()) );
+
+	} else {
+
+		msg.joints_out_of_limits = arm_nav_state_.out_of_limits;
+
+		msg.position_reachable = false;
+		msg.position_in_collision = false;
+
+	}
+
+
+	if (!inited) {
+
+		msg.error_description = "No error.";
+
+
+	} else {
+
+
+		if (arm_nav_state_.plan_error_code.val != arm_nav_state_.plan_error_code.SUCCESS) {
+
+			msg.error_description = arm_nav_state_.plan_desc;
+
+		} else {
+
+			if (arm_nav_state_.filter_error_code.val != arm_nav_state_.filter_error_code.SUCCESS) {
+
+				msg.error_description = "Filtering of trajectory failed.";
+
+			}
+
+		}
+
+	}
+
+
 
 	arm_nav_state_pub_.publish(msg);
 
 	// update position of IM according to spacenav data
-	processSpaceNav();
+	if (use_spacenav_) processSpaceNav();
 
 }
 
@@ -352,6 +524,8 @@ void CArmManipulationEditor::spacenavOffsetCallback(const geometry_msgs::Vector3
 
 	spacenav.mutex_.unlock();
 
+	ROS_INFO_ONCE("Spacenav offset processed.");
+
 }
 
 void CArmManipulationEditor::spacenavRotOffsetCallback(const geometry_msgs::Vector3ConstPtr& rot_offset) {
@@ -376,18 +550,20 @@ void CArmManipulationEditor::spacenavRotOffsetCallback(const geometry_msgs::Vect
 
 	spacenav.mutex_.unlock();
 
+	ROS_INFO_ONCE("Spacenav rot_offset processed");
+
 }
 
 void CArmManipulationEditor::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
 
-	if (joy->buttons.size()==2) {
+	if ((int)joy->buttons.size() == 2) {
 
 		ROS_INFO_ONCE("Spacenav data received!");
 
 		boost::mutex::scoped_lock(spacenav.mutex_);
 
 		// left button pressed
-		if (spacenav.buttons_[0] == 0 && joy->buttons[0] == 1) {
+		if ( (spacenav.buttons_[0] == 0) && (joy->buttons[0] == 1) ) {
 
 			if (spacenav.lock_position_) {
 
@@ -398,14 +574,15 @@ void CArmManipulationEditor::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) 
 
 				ROS_INFO("Spacenav - locking position.");
 				spacenav.lock_position_ = true;
+				spacenav.lock_orientation_ = false;
 
 			}
 
 
 		}
 
-		// right button pressed
-		if (spacenav.buttons_[1] == 0 && joy->buttons[1] == 1) {
+		// right button pressed - we don't care about both button pressed at exactly same time
+		else if ( (spacenav.buttons_[1] == 0) && (joy->buttons[1] == 1) ) {
 
 			if (spacenav.lock_orientation_) {
 
@@ -416,6 +593,7 @@ void CArmManipulationEditor::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) 
 
 				ROS_INFO("Spacenav - locking orientation.");
 				spacenav.lock_orientation_ = true;
+				spacenav.lock_position_ = false;
 
 			}
 
@@ -425,7 +603,7 @@ void CArmManipulationEditor::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) 
 
 		spacenav.buttons_ = joy->buttons;
 
-	}
+	} else ROS_ERROR_ONCE("Spacenav should have 2 buttons, but message has %d.",(int)joy->buttons.size());
 
 
 };
@@ -492,24 +670,33 @@ void CArmManipulationEditor::onPlanningSceneLoaded() {};
 void CArmManipulationEditor::updateState() {};
 void CArmManipulationEditor::planCallback(arm_navigation_msgs::ArmNavigationErrorCodes& errorCode) {
 
-  if(errorCode.val != ArmNavigationErrorCodes::SUCCESS)
-    {
+	ROS_INFO_ONCE("Plan callback received.");
 
-    ROS_ERROR("Planning failed with error: %s (%d)",armNavigationErrorCodeToString(errorCode).c_str(), errorCode.val);
+	  arm_nav_state_.plan_error_code = errorCode;
+	  arm_nav_state_.plan_desc = armNavigationErrorCodeToString(errorCode);
+
+	  if(errorCode.val != ArmNavigationErrorCodes::SUCCESS)
+		{
+
+		ROS_ERROR("Planning failed with error: %s",arm_nav_state_.plan_desc.c_str());
 
 
-    }
+		}
 
 };
 void CArmManipulationEditor::filterCallback(arm_navigation_msgs::ArmNavigationErrorCodes& errorCode) {
 
+  ROS_INFO_ONCE("Filter callback received.");
+
+  arm_nav_state_.filter_error_code = errorCode;
+  arm_nav_state_.filter_desc = armNavigationErrorCodeToString(errorCode);
+
   if(errorCode.val != ArmNavigationErrorCodes::SUCCESS)
-    {
+	{
 
-    ROS_ERROR("Filtering failed with error: %s (%d)",armNavigationErrorCodeToString(errorCode).c_str(),errorCode.val);
+	ROS_ERROR("Filtering failed with error: %s",arm_nav_state_.filter_desc.c_str());
 
-
-    }
+	}
 
 };
 void CArmManipulationEditor::attachObjectCallback(const std::string& name) {};
@@ -591,28 +778,29 @@ void CArmManipulationEditor::findIK(geometry_msgs::Pose new_pose)
   tf::Transform pose = toBulletTransform(new_pose);
 
   motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].getGoalState()->
-          updateKinematicStateWithLinkAt(motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].getEndEffectorLink(),
-                                         pose);
+          updateKinematicStateWithLinkAt(end_eff_link_,pose);
 
-  updateState();
+  //updateState();
 
   PositionType type = GoalPosition;
 
-  if(!solveIKForEndEffectorPose(motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)], type, true))
-    {
-      if(motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].hasGoodIKSolution(type))
+  if(!solveIKForEndEffectorPose(motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)], type, true)) {
+
+	  if(motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].hasGoodIKSolution(type))
       {
         motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].refreshColors();
       }
       motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].setHasGoodIKSolution(false, type);
-    }
-    else
-    {
+
+  } else {
+
       if(!motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].hasGoodIKSolution(type))
       {
         motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].refreshColors();
       }
+
       motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].setHasGoodIKSolution(true, type);
+
     }
 
 
@@ -624,33 +812,33 @@ geometry_msgs::Vector3 CArmManipulationEditor::GetAsEuler(geometry_msgs::Quatern
 {
   geometry_msgs::Vector3 vec;
 
-   double squ;
-   double sqx;
-   double sqy;
-   double sqz;
+  btQuaternion q;
 
-   squ = quat.w * quat.w;
-   sqx = quat.x * quat.x;
-   sqy = quat.y * quat.y;
-   sqz = quat.z * quat.z;
+  btScalar roll, pitch, yaw;
 
-   // Roll
-   vec.x = atan2(2 * (quat.y*quat.z + quat.w*quat.x), squ - sqx - sqy + sqz);
+  tf::quaternionMsgToTF(quat, q);
+  btMatrix3x3(q).getRPY(roll,pitch,yaw);
 
-   // Pitch
-   vec.y = asin(-2 * (quat.x*quat.z - quat.w * quat.y));
+  vec.x = (double)roll;
+  vec.y = (double)pitch;
+  vec.z = (double)yaw;
 
-   // Yaw
-   vec.z = atan2(2 * (quat.x*quat.y + quat.w*quat.z), squ + sqx - sqy - sqz);
+  normAngle(vec.x);
+  normAngle(vec.y);
+  normAngle(vec.z);
 
-   return vec;
+  return vec;
+
 }
 
 void CArmManipulationEditor::GripperPosesClean() {
 
-  boost::mutex::scoped_lock(im_server_mutex_);
+  //boost::mutex::scoped_lock(im_server_mutex_);
+  lockScene();
 
   gripper_poses_->clear();
+
+  unlockScene();
 
 }
 
@@ -668,7 +856,8 @@ void CArmManipulationEditor::GripperPoses()
 
     if (inited==true && disable_gripper_poses_==false) {
 
-      boost::mutex::scoped_lock(im_server_mutex_);
+      //boost::mutex::scoped_lock(im_server_mutex_);
+      lockScene();
 
       if (interactive_marker_server_->get("MPR 0_end_control",marker)) {
 
@@ -692,13 +881,13 @@ void CArmManipulationEditor::GripperPoses()
              geometry_msgs::Vector3 last_angles = GetAsEuler(last_pose.orientation);
              geometry_msgs::Vector3 current_angles = GetAsEuler(marker.pose.orientation);
 
-             std_msgs::Int32MultiArray array;
+             /*std_msgs::Int32MultiArray array;
              array.data.clear();
              array.data.push_back(current_angles.x/M_PI*360);
              array.data.push_back(current_angles.y/M_PI*360);
              array.data.push_back(current_angles.z/M_PI*360);
 
-             gripper_rpy_publisher_.publish(array);
+             gripper_rpy_publisher_.publish(array);*/
 
              /*geometry_msgs::Vector3 last_angles;
              geometry_msgs::Vector3 current_angles;
@@ -709,26 +898,27 @@ void CArmManipulationEditor::GripperPoses()
 
              double tmp;
 
-             // TODO normalize angles!!!
+             // TODO normalize angles ?
 
-             max_change_in_angle = fabs(current_angles.x - last_angles.x)/M_PI*360;
+             max_change_in_angle = (fabs(current_angles.x - last_angles.x)/(2*M_PI))*360;
 
-             tmp = fabs(current_angles.y - last_angles.y)/M_PI*360;
+             tmp = (fabs(current_angles.y - last_angles.y)/(2*M_PI))*360;
              if (tmp>max_change_in_angle) max_change_in_angle = tmp;
 
-             tmp = fabs(current_angles.z - last_angles.z)/M_PI*360;
+             tmp = (fabs(current_angles.z - last_angles.z)/(2*M_PI))*360;
              if (tmp>max_change_in_angle) max_change_in_angle = tmp;
 
 
-             if (distance>0.1 || max_change_in_angle>1) {
+             if (distance>0.1 || max_change_in_angle > 1.0) {
 
                //if (step_used_==false) {
 
-               ROS_DEBUG("Distance is %f",distance);
+               if (distance > 0.0) ROS_DEBUG("Distance is %f",distance);
+
                ROS_DEBUG("Roll: %f, pitch: %f, yaw: %f, max. change: %f ",
-                                     current_angles.x/M_PI*360,
-                                     current_angles.y/M_PI*360,
-                                     current_angles.z/M_PI*360,
+                                     (current_angles.x/(2*M_PI))*360,
+                                     (current_angles.y/(2*M_PI))*360,
+                                     (current_angles.z/(2*M_PI))*360,
                                      max_change_in_angle);
 
                ROS_INFO("Storing another pose of end effector IM (size of list is: %d)",(int)gripper_poses_->size());
@@ -740,6 +930,7 @@ void CArmManipulationEditor::GripperPoses()
 
          }
 
+        unlockScene();
 
       } else ROS_ERROR("Can't get pose of gripper IM");
 
@@ -838,8 +1029,26 @@ int main(int argc, char** argv)
 
       } else {
 
-    	  ROS_ERROR("Could not get param: arm_links");
-    	  return 0;
+    	ROS_ERROR("Could not get param: arm_links. Using defaults...");
+
+    	links.push_back("arm_7_link");
+		links.push_back("sdh_palm_link");
+		links.push_back("sdh_grasp_link");
+		links.push_back("sdh_tip_link");
+
+		links.push_back("sdh_finger_21_link");
+		links.push_back("sdh_finger_22_link");
+		links.push_back("sdh_finger_23_link");
+
+		links.push_back("sdh_finger_11_link");
+		links.push_back("sdh_finger_12_link");
+		links.push_back("sdh_finger_13_link");
+
+		links.push_back("sdh_thumb_1_link");
+		links.push_back("sdh_thumb_2_link");
+		links.push_back("sdh_thumb_3_link");
+
+    	//return 0;
 
       }
 
@@ -869,12 +1078,12 @@ int main(int argc, char** argv)
       ros::ServiceServer service_step = n.advertiseService(SRV_STEP, &CArmManipulationEditor::ArmNavStep,ps_editor);
       ros::ServiceServer service_stop = n.advertiseService(SRV_STOP, &CArmManipulationEditor::ArmNavStop,ps_editor);
 
-      ros::Timer timer1 = n.createTimer(ros::Duration(0.01), &CArmManipulationEditor::spin_callback,ps_editor);
+      ros::Timer timer1 = n.createTimer(ros::Duration(0.5), &CArmManipulationEditor::spin_callback,ps_editor);
 
       ManualArmManipActionServer act_server(ACT_ARM_MANIP);
 
 
-      ps_editor->gripper_rpy_publisher_ = n.advertise<std_msgs::Int32MultiArray>(TOP_GRIPPER_RPY, 10);
+      //ps_editor->gripper_rpy_publisher_ = n.advertise<std_msgs::Int32MultiArray>(TOP_GRIPPER_RPY, 10);
 
       double tmp;
 
@@ -903,10 +1112,10 @@ int main(int argc, char** argv)
 
       ROS_INFO("Spinning");
 
-      ros::spin();
-
-
-      ros::shutdown();
+      //ros::spin();
+      ros::AsyncSpinner spinner(4);
+      spinner.start();
+      ros::waitForShutdown();
 
       delete ps_editor;
 

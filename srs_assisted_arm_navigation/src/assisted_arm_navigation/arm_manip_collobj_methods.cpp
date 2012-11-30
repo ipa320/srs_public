@@ -57,7 +57,18 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
 
   // TODO BUG -> problem with attached object, after executed trajectory, it stays on original place !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  if (pose.header.frame_id != collision_objects_frame_id_) {
+  std::string target = collision_objects_frame_id_;
+
+  /*if (attached) {
+
+	  // attached objects are stored in end effector frame -> we have to deal with them correctly
+	  //MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
+	  target = end_eff_link_;
+
+  }*/
+
+
+  if (pose.header.frame_id != target) {
 
 	  /// We have to transform object to /base_link system
 	  ros::Time now = ros::Time::now();
@@ -65,7 +76,7 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
 
 	  pose.header.stamp = now; /// we need transformation for current time!
 
-	  std::string target = collision_objects_frame_id_;
+	  //std::string target = collision_objects_frame_id_;
 
 	  ROS_INFO("Trying to transform detected object BB from %s to %s frame",pose.header.frame_id.c_str(),target.c_str());
 
@@ -121,7 +132,7 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
 
   		 if (attached) {
 
-  			attachCollisionObject(ret, motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].getEndEffectorLink(), links_);
+  			attachCollisionObject(ret, end_eff_link_, links_);
   			ROS_INFO("Attached coll. obj. name=%s, id=%s has been created.",oname.c_str(),ret.c_str());
 
   		 } else {

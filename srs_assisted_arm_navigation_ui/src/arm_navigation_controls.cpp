@@ -51,7 +51,7 @@ const int ID_BUTTON_SUCCESS(106);
 const int ID_BUTTON_FAILED(107);
 
 
-const int ID_BUTTON_SWITCH(113);
+//const int ID_BUTTON_SWITCH(113);
 const int ID_BUTTON_REPEAT(114);
 
 const int ID_BUTTON_UNDO(115);
@@ -70,6 +70,8 @@ const int ID_BUTTON_MBACK(122);*/
 const int ID_CHECKBOX_POS(125);
 const int ID_CHECKBOX_OR(126);
 
+const int ID_CHECKBOX_ACO(120);
+
 
 const int ID_BUTTON_STOP_TRAJ(123);
 
@@ -87,7 +89,7 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     ros::param::param<bool>("~wait_for_start", wait_for_start_ , WAIT_FOR_START);
 
     buttons_["stop"] = new wxButton(this, ID_BUTTON_STOP_TRAJ, wxT("Stop"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    b_switch_ = new wxToggleButton(this, ID_BUTTON_SWITCH, wxT("Avoid finger collisions"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    //b_switch_ = new wxToggleButton(this, ID_BUTTON_SWITCH, wxT("Avoid finger collisions"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["success"] = new wxButton(this, ID_BUTTON_SUCCESS, wxT("Task completed"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["failed"] = new wxButton(this, ID_BUTTON_FAILED, wxT("Cannot complete task"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["repeat"] = new wxButton(this, ID_BUTTON_REPEAT, wxT("Repeat detection"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
@@ -117,6 +119,12 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
 
     m_pos_lock_ = new wxCheckBox(this,ID_CHECKBOX_POS,wxT("position"),wxDefaultPosition,wxDefaultSize);
     m_or_lock_ = new wxCheckBox(this,ID_CHECKBOX_OR,wxT("orientation"),wxDefaultPosition,wxDefaultSize);
+
+    m_aco_ = new wxCheckBox(this,ID_CHECKBOX_ACO,wxT("Avoid fingers collisions"),wxDefaultPosition,wxDefaultSize);
+    // TODO read initial state of m_aco_ from (state) topic !!!
+
+    m_aco_->Enable(false);
+    m_aco_->Set3StateValue(wxCHK_UNDETERMINED);
 
     m_pos_lock_->Enable(false);
     m_or_lock_->Enable(false);
@@ -192,7 +200,8 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     vsizer_mes->Add(m_text_action_);
 
 
-    vsizer_add->Add(b_switch_);
+    //vsizer_add->Add(b_switch_);
+    vsizer_add->Add(m_aco_);
     vsizer_add->Add(buttons_["undo"]);
     vsizer_add->Add(buttons_["lift"]);
     vsizer_add->Add(buttons_["hold"]);
@@ -206,9 +215,10 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     allow_repeat_ = false;
 
     // TODO make it configurable ? - read same parameter from here and from but_arm_manip_node...
-    aco_ = true;
+    aco_ = false;
 
-    b_switch_->SetValue(aco_);
+    //b_switch_->SetValue(aco_);
+
 
     spacenav_pos_lock_ = false;
     spacenav_or_lock_ = false;
@@ -260,7 +270,8 @@ void CArmManipulationControls::setControlsToDefaultState() {
 	setButton("plan",false);
 	setButton("execute",false);
 	//setButton("switch",true);
-	b_switch_->Enable(true);
+	//b_switch_->Enable(true);
+	m_aco_->Enable(true);
 	setButton("stop",false);
 	setButton("undo",false);
 	setButton("lift",false);
@@ -283,7 +294,7 @@ void CArmManipulationControls::disableControls() {
 	setButton("plan",false);
 	setButton("execute",false);
 	//setButton("switch",false);
-	b_switch_->Enable(false);
+	m_aco_->Enable(false);
 
 	setButton("success",false);
 	setButton("failed",false);
@@ -302,7 +313,13 @@ void CArmManipulationControls::stateCallback(const AssistedArmNavigationState::C
 
 	ROS_INFO_ONCE("State received.");
 
-	if (!state_received_) state_received_ = true;
+	if (!state_received_) {
+
+		state_received_ = true;
+
+		aco_ = msg->aco_state;
+
+	}
 
 	if ( (spacenav_pos_lock_ != msg->position_locked) || (spacenav_or_lock_ != msg->orientation_locked) ) {
 
@@ -324,6 +341,10 @@ void CArmManipulationControls::GuiUpdateThread() {
 		if ( (!initialized_) && state_received_) {
 
 			wxMutexGuiEnter();
+
+			if (aco_) m_aco_->Set3StateValue(wxCHK_CHECKED);
+			else m_aco_->Set3StateValue(wxCHK_UNCHECKED);
+
 			setControlsToDefaultState();
 
 			/*if (wait_for_start_) m_text_status = new wxStaticText(this, -1, wxT("status: waiting for task"));
@@ -390,7 +411,7 @@ CArmManipulationControls::~CArmManipulationControls() {
 
   buttons_.clear();
 
-  delete b_switch_;
+  delete m_aco_;
   delete m_text_status;
   //delete m_text_object;
   //delete m_text_timeout;
@@ -401,6 +422,16 @@ CArmManipulationControls::~CArmManipulationControls() {
 }
 
 void CArmManipulationControls::NewThread() {
+
+
+   // first, let's try to refresh planning scene
+  if (!refresh()) {
+
+	  setControlsToDefaultState();
+
+	  return;
+
+  }
 
   ROS_INFO("Request for new trajectory");
 
@@ -480,11 +511,15 @@ bool CArmManipulationControls::refresh() {
 
 	 if (srv.response.completed) {
 
+	   wxMutexGuiEnter();
 	   m_text_status->SetLabel(wxString::FromAscii("status: Refreshed."));
+	   wxMutexGuiLeave();
 
 	 } else {
 
+	   wxMutexGuiEnter();
 	   m_text_status->SetLabel(wxString::FromAscii("status: Error on refreshing."));
+	   wxMutexGuiLeave();
 	   return false;
 
 	 }
@@ -492,7 +527,9 @@ bool CArmManipulationControls::refresh() {
    } else {
 
 	 ROS_ERROR("failed when calling arm_nav_refresh service");
+	 wxMutexGuiEnter();
 	 m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
+	 wxMutexGuiLeave();
 	 return false;
 
    }
@@ -606,9 +643,6 @@ void CArmManipulationControls::OnNew(wxCommandEvent& event) {
 
 		// planning was not started, so we want to start it
 
-		// first, let's try to refresh planning scene
-		if (!refresh()) return;
-
 		  if (!ros::service::exists(SRV_NEW,true)) {
 
 			m_text_status->SetLabel(wxString::FromAscii("status: communication error"));
@@ -707,8 +741,12 @@ void CArmManipulationControls::PlanThread() {
      setButton("execute",true);
      setButton("plan",true);
 
-     if (allow_repeat_) buttons_["repeat"]->Enable(true);
-     buttons_["failed"]->Enable(true);
+     if (arm_nav_called_) {
+
+		 if (allow_repeat_) buttons_["repeat"]->Enable(true);
+		 buttons_["failed"]->Enable(true);
+
+     }
 
    } else {
 
@@ -807,7 +845,9 @@ void CArmManipulationControls::OnSwitch(wxCommandEvent& event)
      } else {
 
        m_text_status->SetLabel(wxString::FromAscii("Can't switch state of ACO"));
-       b_switch_->SetValue(aco_);
+       //b_switch_->SetValue(aco_);
+       if (aco_) m_aco_->Set3StateValue(wxCHK_CHECKED);
+       else m_aco_->Set3StateValue(wxCHK_UNCHECKED);
 
      }
 
@@ -817,7 +857,9 @@ void CArmManipulationControls::OnSwitch(wxCommandEvent& event)
 
      ROS_ERROR("failed when calling %s service",tmp.c_str());
      m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
-     b_switch_->SetValue(aco_);
+     //b_switch_->SetValue(aco_);
+     if (aco_) m_aco_->Set3StateValue(wxCHK_CHECKED);
+     else m_aco_->Set3StateValue(wxCHK_UNCHECKED);
 
    }
 
@@ -888,7 +930,7 @@ void CArmManipulationControls::ExecuteThread()
    //if (success) {
 
 	 setControlsToDefaultState();
-	 setButton("stop",true);
+	 //setButton("stop",true);
 
 	 if (arm_nav_called_) {
 
@@ -1173,7 +1215,8 @@ BEGIN_EVENT_TABLE(CArmManipulationControls, wxPanel)
     EVT_BUTTON(ID_BUTTON_EXECUTE,  CArmManipulationControls::OnExecute)
     EVT_BUTTON(ID_BUTTON_SUCCESS,  CArmManipulationControls::OnSuccess)
     EVT_BUTTON(ID_BUTTON_FAILED,  CArmManipulationControls::OnFailed)
-    EVT_TOGGLEBUTTON(ID_BUTTON_SWITCH,  CArmManipulationControls::OnSwitch)
+    //EVT_TOGGLEBUTTON(ID_BUTTON_SWITCH,  CArmManipulationControls::OnSwitch)
+    EVT_CHECKBOX(ID_CHECKBOX_ACO,CArmManipulationControls::OnSwitch)
     EVT_BUTTON(ID_BUTTON_REPEAT,  CArmManipulationControls::OnRepeat)
     EVT_BUTTON(ID_BUTTON_UNDO,  CArmManipulationControls::OnStepBack)
     /*EVT_BUTTON(ID_BUTTON_MLEFT,  CArmManipulationControls::OnMoveRel)

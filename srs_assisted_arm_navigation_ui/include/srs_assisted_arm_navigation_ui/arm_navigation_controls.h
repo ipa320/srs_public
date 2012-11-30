@@ -185,6 +185,7 @@ protected:
 
     void stateCallback(const srs_assisted_arm_navigation_msgs::AssistedArmNavigationState::ConstPtr& msg);
 
+
 private:
 
     DECLARE_EVENT_TABLE();
@@ -225,7 +226,9 @@ private:
     wxCheckBox *m_pos_lock_;
     wxCheckBox *m_or_lock_;
 
-    wxToggleButton *b_switch_;
+    wxCheckBox *m_aco_;
+
+    //wxToggleButton *b_switch_;
 
     boost::thread t_gui_update;
     void GuiUpdateThread();

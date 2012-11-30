@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <launch>
  
+  <include file="$(find srs_assisted_arm_navigation)/launch/cob_planning_environment.xml" />
+ 
   <!-- customized copy of cob_arm_navigation.launch and kinect_perception.launch from cob_arm_navigation -->
   <!--group>
   
@@ -74,6 +76,7 @@
 	    
       <remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info"/>
       <remap from="but_server_node/points_in" to="/cam3d/rgb/points_filtered2"/>
+      <remap from="but_server_node/points_filter" to="/cam3d/rgb/points_throttled" />
 		  
       <!--param name="registration_mode" type="string" value="icpnl"/-->
 		  
@@ -86,12 +89,14 @@
       <param name="ocmap_resolution" value="0.03" type="double"/>
       <param name="pointcloud_frame_skip" value="1" type="int"/>
       <param name="collisionmap_frame_id" value="/base_footprint" type="string"/>
+      
+      <remap from="but_server_node/rviz_camera_position" to="/rviz_camera_position" />
 		  
     </node>
 	
 	</group>
 	
-  <include file="$(find srs_assisted_arm_navigation)/launch/planning_scene_warehouse_viewer_cob3_3_robot.launch" />
+  <!--include file="$(find srs_assisted_arm_navigation)/launch/planning_scene_warehouse_viewer_cob3_3_robot.xml" /-->
   
 </launch>
 

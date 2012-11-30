@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <include file="$(find srs_assisted_arm_navigation)/launch/cob_planning_environment.launch" />
+    <include file="$(find srs_assisted_arm_navigation)/launch/cob_planning_environment.xml" />
     
     <node pkg="arm_kinematics_constraint_aware" type="arm_kinematics_constraint_aware" name="cob_arm_kinematics">
         <param name="global_frame" type="string" value="base_footprint" />

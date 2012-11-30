@@ -9,6 +9,7 @@
         <remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info" />
         <!--remap from="but_server_node/points_in" to="/cam3d/rgb/points" /-->
         <remap from="but_server_node/points_in" to="/cam3d/rgb/points_throttled" />
+        <remap from="but_server_node/points_filter" to="/cam3d/rgb/points_throttled" />
         <remap from="but_server_node/rviz_camera_position" to="/rviz_camera_position" />
     </node>
 

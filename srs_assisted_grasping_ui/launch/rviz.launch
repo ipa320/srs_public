@@ -2,10 +2,7 @@
 <launch>
 
 
-  <!-- arm manip action server -->
-  <!--include file="$(find srs_assisted_arm_navigation)/launch/arm_manip_node.launch"/>
-  
-  <node pkg="spacenav_node" name="spacenav_node" type="spacenav_node" respawn="false"/-->
+  <include file="$(find srs_assisted_arm_navigation_ui)/launch/ui_common.xml"/>
 
   <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_assisted_grasping_ui)/config/arm_manip_but.vcg" output="screen">
   

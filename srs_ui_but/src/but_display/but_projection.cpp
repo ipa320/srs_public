@@ -101,6 +101,7 @@ srs_ui_but::CMaterialListener::CMaterialListener( Ogre::Material * material, con
 : m_materialPtr( material )
 , m_schemeName( schemeName )
 , m_bDistanceChanged( true )
+, m_bMatricesChanged( true )
 , m_testingDistance( 1.0 )
 {
 	return;
@@ -144,6 +145,8 @@ Ogre::Technique *srs_ui_but::CMaterialListener::handleSchemeNotFound(unsigned sh
     if (schemeName == m_schemeName)
         {
 
+    	boost::mutex::scoped_lock lock(m_lock);
+
     	// Change shader settings?
     	if( m_bDistanceChanged )
     	{
@@ -163,6 +166,42 @@ Ogre::Technique *srs_ui_but::CMaterialListener::handleSchemeNotFound(unsigned sh
 
     	}
 
+    	if( m_bMatricesChanged )
+    	{
+    		m_bMatricesChanged = false;
+
+    		// Set vertex program parameters
+			Ogre::GpuProgramParametersSharedPtr paramsVP( m_materialPtr->getTechnique(0)->getPass(0)->getVertexProgramParameters() );
+
+
+			if( paramsVP->_findNamedConstantDefinition("texViewProjMatrix"))
+			{
+				paramsVP->setNamedConstant( "texViewProjMatrix", m_projMatrix );
+			}
+			else
+			{
+			std::cerr << "Named constant not found..." << std::endl;
+			}
+
+			if( paramsVP->_findNamedConstantDefinition("cameraPosition"))
+			{
+				paramsVP->setNamedConstant( "cameraPosition", m_camPosition );
+			}
+			else
+			{
+			std::cerr << "Named constant not found: cameraPosition " << std::endl;
+			}
+
+			if( paramsVP->_findNamedConstantDefinition("cameraPlane"))
+			{
+				paramsVP->setNamedConstant( "cameraPlane", m_camPlane );
+			}
+			else
+			{
+				std::cerr << "Named constant not found: cameraPlane " << std::endl;
+			}
+    	}
+
         //LogManager::getSingleton().logMessage(">> adding glow to material: "+mat->getName());
         return m_materialPtr->getBestTechnique();
         }
@@ -174,9 +213,23 @@ Ogre::Technique *srs_ui_but::CMaterialListener::handleSchemeNotFound(unsigned sh
  */
 void srs_ui_but::CMaterialListener::setTestedDistance( float distance )
 {
+	boost::mutex::scoped_lock lock(m_lock);
+
+	ROS_INFO("Setting new projection tested distance: %f", distance );
 	m_bDistanceChanged = true;
 	m_testingDistance = distance;
 }
+
+//! Set camera position parameters
+void srs_ui_but::CMaterialListener::setCameraPosition( const Ogre::Vector4 & position, const Ogre::Vector4 & camPlane, const Ogre::Matrix4 & projMatrix )
+{
+	boost::mutex::scoped_lock lock(m_lock);
+	m_camPosition = position;
+	m_camPlane = camPlane;
+	m_projMatrix = projMatrix;
+	m_bMatricesChanged = true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -189,6 +242,8 @@ srs_ui_but::CProjectionData::CProjectionData( Ogre::SceneManager * manager, cons
 , m_mode( TM_ROS )
 , m_manager( manager )
 {
+	m_materialListener = 0;
+
  //   std::cerr << "CProjectionData constructor" << std::endl;
 
     // Create frustum and projector node
@@ -382,39 +437,13 @@ void srs_ui_but::CProjectionData::updateMatrices()
 	m_textureRosDepth->setMatrix( pm  );
 	//m_textureRosDepth->setCameraModel( m_camera_model );
 
-
-	// Set vertex program parameters
-	Ogre::GpuProgramParametersSharedPtr paramsVP( m_materialPtr->getTechnique(0)->getPass(0)->getVertexProgramParameters() );
-
-	if( paramsVP->_findNamedConstantDefinition("texViewProjMatrix"))
-	{
-		paramsVP->setNamedConstant( "texViewProjMatrix", fm );
-	}
-	else
-	{
-		std::cerr << "Named constant not found..." << std::endl;
-	}
-
-	if( paramsVP->_findNamedConstantDefinition("cameraPosition"))
+	// Set parameters to the material listener
+	if( m_materialListener != 0 )
 	{
 		Ogre::Vector4 position( m_cameraPosition[0], m_cameraPosition[1], m_cameraPosition[2], 1.0 );
-		paramsVP->setNamedConstant( "cameraPosition", position );
+		Ogre::Vector4 plane( m_cameraEquation[0], m_cameraEquation[1], m_cameraEquation[2], m_cameraEquation[3] );
+		m_materialListener->setCameraPosition( position, plane, fm );
 	}
-	else
-	{
-		std::cerr << "Named constant not found: cameraPosition " << std::endl;
-	}
-
-	if( paramsVP->_findNamedConstantDefinition("cameraPlane"))
-		{
-			Ogre::Vector4 position( m_cameraEquation[0], m_cameraEquation[1], m_cameraEquation[2], m_cameraEquation[3] );
-			paramsVP->setNamedConstant( "cameraPlane", position );
-		}
-		else
-		{
-			std::cerr << "Named constant not found: cameraPlane " << std::endl;
-		}
-
 }
 
 
@@ -431,6 +460,7 @@ srs_ui_but::CButProjection::CButProjection(const std::string & name,rviz::Visual
 , m_camera_info_topic( CAMERA_INFO_TOPIC_NAME )
 , m_ml(0)
 , m_bMLConnected( false )
+, m_bCameraInitialized(false)
 {
 //	std::cerr << "CButProjection::CButProjection S" << std::endl;
 
@@ -748,7 +778,7 @@ void srs_ui_but::CButProjection::createMaterials(Ogre::Camera * camera)
 
             // Create material listener
             m_ml = new CMaterialListener( m_projectionData->getMaterialPtr(), "myscheme" );
-
+            m_projectionData->setListenerPtr( m_ml );
             connectML( true );
 
 			}
@@ -1052,7 +1082,9 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
 
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
-    vis_manager_->getFrameManager()->getTransform(cam_info->header, position, orientation);
+    if( ! vis_manager_->getFrameManager()->getTransform(cam_info->header, position, orientation) )
+    	return;
+
   //  const cv::Mat_<double> pm( m_camera_model.projectionMatrix() );
 
     // convert vision (Z-forward) frame to ogre frame (Z-out)
@@ -1075,17 +1107,11 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
 
     double fx = cam_info->P[0];
     double fy = cam_info->P[5];
-/*
-     Ogre::Radian fovy( 2.0*atan(height / (2.0 * fy)) );
 
-    if( fovy != fovy)
-    	return; // NAN
+    // Malformed camera info?
+    if( fx != fx || fy != fy || fx == 0.0 || fy == 0.0 )
+    	return;
 
-    double aspect_ratio = width / height;
-
-    if( aspect_ratio != aspect_ratio )
-    	return; //NaN
-*/
     // Add the camera's translation relative to the left camera (from P[3]);
     // Tx = -1*(P[3] / P[0])
     double tx = -1.0 * (cam_info->P[3] / fx);
@@ -1116,6 +1142,8 @@ void srs_ui_but::CButProjection::cameraInfoCB(const sensor_msgs::CameraInfo::Con
 		m_projectionData->setCameraModel( *cam_info );
 		m_projectionData->setProjectorEquation( equation );
 		m_projectionData->updateMatrices();
+
+		m_bCameraInitialized = true;
     }
 }
 

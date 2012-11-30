@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: dynModelExporter.h 693 2012-04-20 09:22:39Z ihulik $
+ * $Id: DynModelExporter.h 693 2012-04-20 09:22:39Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -31,8 +31,8 @@
  */
 
 #pragma once
-#ifndef BUT_PLANE_DET_DYNMODELEXPORTER_H
-#define BUT_PLANE_DET_DYNMODELEXPORTER_H
+#ifndef BUT_PLANE_DET_DynModelExporter_H
+#define BUT_PLANE_DET_DynModelExporter_H
 
 // ros
 #include <ros/ros.h>
@@ -47,10 +47,16 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <visualization_msgs/Marker.h>
-
+#include <pcl/surface/convex_hull.h>
+#include <pcl/surface/concave_hull.h>
 // but_scenemodel
 #include <srs_env_model_percp/but_segmentation/normals.h>
+#include <srs_env_model_percp/but_plane_detector/plane.h>
 
+#include <cob_3d_mapping_msgs/Shape.h>
+#include <cob_3d_mapping_msgs/ShapeArray.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 namespace srs_env_model_percp
 {
@@ -58,12 +64,42 @@ namespace srs_env_model_percp
 	 * Encapsulates a class of plane exporter (export to but_gui module/interactive markers)
 	 */
 
-	class DynModelExporter
+	class ExportedPlane
 	{
 		public:
-			typedef but_plane_detector::Plane<float> tPlane;
-			typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
+			ExportedPlane(): plane(but_plane_detector::Plane<float>(0.0, 0.0, 0.0, 0.0) ) {}
+			int id;
+			ros::Time update;
+			bool is_deleted;
+			bool to_be_deleted;
+			srs_env_model_percp::PlaneExt plane;
+		public:
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	};
 
+	class PointError
+	{
+		public:
+			PointError(int i_id, double i_error, bool i_deleted)
+			{
+				id = i_id;
+				error = i_error;
+				deleted = i_deleted;
+			}
+			int id;
+			double error;
+			bool deleted;
+		public:
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	};
+
+	class DynModelExporter
+	{
+	public:
+		typedef but_plane_detector::Plane<float> tPlane;
+		typedef std::vector<tPlane, Eigen::aligned_allocator<tPlane> > tPlanes;
+		typedef std::vector<ExportedPlane, Eigen::aligned_allocator<ExportedPlane> > tExportedPlanes;
+	public:
 			/**
 			 * Initialization
 			 */
@@ -73,46 +109,29 @@ namespace srs_env_model_percp
 			                 int minOutputCount,
 			                 double max_distance,
 			                 double max_plane_normal_dev,
-			                 double max_plane_shift_dev
+			                 double max_plane_shift_dev,
+			                 int keep_tracking,
+			                 int ttl
 			                 );
-
-			/**
-			 * Updates sent planes using but environment model server
-			 * @param planes Vector of found planes
-			 * @param scene_cloud point cloud of the scene
-			 * @param sensorToWorldTf Sendor to map transformation matrix
-			 */
-			void update(tPlanes & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
-			
 			/**
 			 * Updates sent planes using but environment model server
 			 * @param planes Vector of found planes
 			 * @param scene_cloud point cloud of the scene
 			 */
-			void update(tPlanes & planes, but_plane_detector::Normals &normals, tf::StampedTransform &sensorToWorldTf);
+			void update(tPlanes & planes, but_plane_detector::Normals &normals, std::string color_method = "plane_eq", cv::Mat rgb = cv::Mat());
 
-			/**
-			 * Updates sent planes using direct but interactive marker server
-			 * @param planes Vector of found planes
-			 * @param scene_cloud point cloud of the scene
-			 * @param sensorToWorldTf Sendor to map transformation matrix
-			 */
-			void updateDirect(tPlanes & planes, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf);
+			void getMarkerArray(visualization_msgs::MarkerArray &message, std::string output_frame_id);
+			void getShapeArray(cob_3d_mapping_msgs::ShapeArray &message, std::string output_frame_id);
 
-			static void createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker);
+			void createMarkerForConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
+			void addMarkerToConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane);
 
+			void xmlFileExport(std::string filename);
+			void xmlFileImport(std::string filename);
+
+
+			tExportedPlanes displayed_planes;
 		private:
-			/**
-			 * Returns center and scale of plane marker
-			 * @param plane Vector of found planes
-			 * @param scene_cloud point cloud of the scene
-			 * @param center Sendor to map transformation matrix
-			 * @param scale Sendor to map transformation matrix
-			 */
-			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, pcl::PointXYZ &center, pcl::PointXYZ &scale);
-
-			bool getCenterAndScale(but_plane_detector::Plane<float> &plane, but_plane_detector::Normals &normals, pcl::PointXYZ &center, pcl::PointXYZ &scale);
-			void getCenterSAndScale(tPlanes & planes, but_plane_detector::Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags);
 
 			/**
 			 * Auxiliary node handle variable
@@ -122,7 +141,8 @@ namespace srs_env_model_percp
 			/**
 			 * Auxiliary index vector for managing modifications
 			 */
-			std::vector<bool> managedInd;
+
+			int m_keep_tracking;
 
 			std::string original_frame_, output_frame_;
 
@@ -130,6 +150,8 @@ namespace srs_env_model_percp
 			double m_max_distance;
 			double m_max_plane_normal_dev;
 			double m_max_plane_shift_dev;
+
+			int m_plane_ttl;
 	};
 }
 

@@ -152,6 +152,7 @@ void PlaneExt::TriangulatePlanePolygon()
 		std::list<TPPLPoly> triangles;
 		triangulation.Triangulate_EC(&triPolygon, &triangles);
 
+
 		// create a message object
 		for (std::list<TPPLPoly>::iterator it = triangles.begin(); it != triangles.end(); ++it)
 		{
@@ -235,6 +236,16 @@ void PlaneExt::setColor(std_msgs::ColorRGBA &new_color)
 		planeTrianglesSRS[i].color = new_color;
 
 	color = new_color;
+}
+
+ClipperLib::ExPolygons &PlaneExt::getPolygons()
+{
+	return planePolygonsClipper;
+}
+
+void PlaneExt::setPolygons(ClipperLib::ExPolygons &polys)
+{
+	planePolygonsClipper = polys;
 }
 
 }

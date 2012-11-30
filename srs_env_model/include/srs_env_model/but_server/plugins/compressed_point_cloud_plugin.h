@@ -163,6 +163,9 @@ protected:
 	//! Create packed info message?
 	bool m_bCreatePackedInfoMsg;
 
+	//! Publish simple cloud too?
+	bool m_bPublishSimpleCloud;
+
 	//! Packed info message data
 	srs_env_model::OctomapUpdatesPtr m_octomap_updates_msg;
 

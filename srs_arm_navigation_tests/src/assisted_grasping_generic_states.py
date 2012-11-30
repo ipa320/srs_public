@@ -155,7 +155,7 @@ class grasp_unknown_object_assisted(smach.State):
           rospy.logerr('Cannot add IM object to the scene, error: %s',str(e))
           
         # allow interaction for this object  
-        self.hlp.set_interaction(self.unknown_object_name,True)
+        #self.hlp.set_interaction(self.unknown_object_name,True)
       
     else:
         
@@ -297,7 +297,7 @@ class grasp_unknown_object_assisted(smach.State):
         
         self.add_bb_to_planning()
         
-        
+    self.hlp.remove_im(self.unknown_object_name)  
     
     # send grasping goal and allow grasping buttons :)
     goal = ManualArmManipGoal()
@@ -328,8 +328,6 @@ class grasp_unknown_object_assisted(smach.State):
     grasping_client.wait_for_result()
   
     result = grasping_client.get_result()
-    
-    self.hlp.remove_im(self.unknown_object_name)    
     
     if result.success:
         

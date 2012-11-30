@@ -50,6 +50,9 @@ ocmap_ground_filter/plane_distance: 0.07
 # Raytrace input and try to delete all cells that should be free
 ocmap_filter_outdated: true
 
+# Should be input cloud used for octomap noise filtering?
+use_input_for_filter: true
+
 ###############################################################################
 # Point cloud plugin
 

@@ -54,6 +54,7 @@ namespace srs_env_model_percp
 	#define DEFAULT_ANGLE_STEP 5
 	#define DEFAULT_SHIFT_STEP 5
 	#define DEFAULT_BIN_SIZE 16
+	#define DEFAULT_BIN_SIZE3 DEFAULT_BIN_SIZE*DEFAULT_BIN_SIZE*DEFAULT_BIN_SIZE
 
 	/**
 	 * Class encapsulating indices in low/high resolution images
@@ -70,11 +71,6 @@ namespace srs_env_model_percp
 			 * Index in high resolution image
 			 */
 			int highResolutionIndex;
-			
-			/**
-			 * Final index in the whole structure
-			 */
-			int CompleteIndex;
 	};
 	
 	/**
@@ -155,7 +151,7 @@ namespace srs_env_model_percp
 			 * Returns a value saved at given index
 			 * @param index Given index
 			 */
-			double get(int index);
+			double get(int bin_index, int inside_index);
 			
 			/**
 			 * Returns a value saved at given values
@@ -179,7 +175,7 @@ namespace srs_env_model_percp
 			 * @param index Given index
 			 * @param val Value to be saved
 			 */
-			void set(int index, double val);
+			void set(int bin_index, int inside_index, double val);
 
 			/**
 			 * Saves a value at given values
@@ -229,7 +225,7 @@ namespace srs_env_model_percp
 			 * @param angle2 Second angle coordinate
 			 * @param z Shift (d param) coordinate
 			 */
-			void fromIndex(int i, int& angle1, int& angle2, int& z);
+			void fromIndex(int bin_index, int inside_index, int& angle1, int& angle2, int& z);
 		
 			/**
 			 * Conversion from Euclidian representation of normal (x, y, z) to parametrized (a1, a2)
@@ -370,10 +366,13 @@ namespace srs_env_model_percp
 			ParameterSpaceHierarchyFullIterator(ParameterSpaceHierarchy *space)
 			{
 				index = space->m_angleSize*space->m_angleSize*space->m_shiftSize;
-				currentI = 0;
+
+				bin_index = 0;
+				inside_index = 0;
+
 				end = false;
 				m_space = space;
-				max_size = space->m_size;
+				max_size = space->m_loSize;
 			}
 
 			/**
@@ -381,7 +380,7 @@ namespace srs_env_model_percp
 			 */
 			double getVal()
 			{
-				return m_space->get(currentI);
+				return m_space->get(bin_index, inside_index);
 			}
 
 			/**
@@ -390,7 +389,7 @@ namespace srs_env_model_percp
 			 */
 			void setVal(double val)
 			{
-				m_space->set(currentI, val);
+				m_space->set(bin_index, inside_index, val);
 			}
 
 			/**
@@ -398,22 +397,35 @@ namespace srs_env_model_percp
 			 */
 			ParameterSpaceHierarchyFullIterator &operator ++()
 			{
-				if (m_space->m_dataLowRes[currentI / m_space->m_hiSize] == NULL)
-					currentI += m_space->m_hiSize;
+				if (m_space->m_dataLowRes[bin_index] == NULL)
+				{
+					inside_index = 0;
+					++bin_index;
+				}
 				else
 				{
-					++currentI;
+					++inside_index;
+					if (inside_index >= DEFAULT_BIN_SIZE3)
+					{
+						inside_index = 0;
+						++bin_index;
+					}
 				}
 
-				if (currentI>=max_size) end = true;
+				if (bin_index>=max_size) end = true;
 				return *this;
 			}
 
 			/**
-			 * Current index
+			 * Current bin index
 			 */
-			int currentI;
+			int bin_index;
 			
+			/**
+			 * Current inside index
+			 */
+			int inside_index;
+
 			/**
 			 * End flag (true if we are out of given array)
 			 */
@@ -435,6 +447,81 @@ namespace srs_env_model_percp
 			 */
 			ParameterSpaceHierarchy *m_space;
 	};
+//	class ParameterSpaceHierarchyFullIterator
+//	{
+//		public:
+//			/**
+//			 * Constructor - initializes iterator and sets an index to the first.
+//			 */
+//			ParameterSpaceHierarchyFullIterator(ParameterSpaceHierarchy *space)
+//			{
+//				index = space->m_angleSize*space->m_angleSize*space->m_shiftSize;
+//				currentI = 0;
+//
+//				end = false;
+//				m_space = space;
+//				max_size = space->m_size;
+//			}
+//
+//			/**
+//			 * Returns a value at the current index
+//			 */
+//			double getVal()
+//			{
+//				return m_space->get(currentI);
+//			}
+//
+//			/**
+//			 * Sets a value at the current index
+//			 * @param val Value to be saved
+//			 */
+//			void setVal(double val)
+//			{
+//				m_space->set(currentI, val);
+//			}
+//
+//			/**
+//			 * Increases an index to the next non null value
+//			 */
+//			ParameterSpaceHierarchyFullIterator &operator ++()
+//			{
+//				if (m_space->m_dataLowRes[currentI / m_space->m_hiSize] == NULL)
+//					currentI += m_space->m_hiSize;
+//				else
+//				{
+//					++currentI;
+//				}
+//
+//				if (currentI>=max_size) end = true;
+//				return *this;
+//			}
+//
+//			/**
+//			 * Current index
+//			 */
+//			int currentI;
+//
+//			/**
+//			 * End flag (true if we are out of given array)
+//			 */
+//			bool end;
+//		private:
+//
+//			/**
+//			 * TODO
+//			 */
+//			int index;
+//
+//			/**
+//			 * Max size of given structure
+//			 */
+//			int max_size;
+//
+//			/**
+//			 * Structure pointer
+//			 */
+//			ParameterSpaceHierarchy *m_space;
+//	};
 } // but_plane_detector
 
 #endif

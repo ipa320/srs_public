@@ -1,45 +1,13 @@
 <?xml version="1.0"?>
 <launch>
 
-
-  <group>
-  
-	  <include file="$(find srs_assisted_arm_navigation)/launch/constraint_aware_kinematics.launch" />
-	  <include file="$(find srs_assisted_arm_navigation)/launch/ompl_planning.launch" />
-	  
-	  <node pkg="trajectory_filter_server" type="trajectory_filter_server" name="trajectory_filter_server">
-		  <rosparam command="load" file="$(find trajectory_filter_server)/config/filters.yaml" />
-		  <rosparam file="$(find cob_manipulation_config)/$(env ROBOT)/joint_limits.yaml"/>
-  	</node>
-	  
-	  <!--node pkg="move_arm" type="move_arm_simple_action" name="cob_move_arm">
-     
-        <param name="group" type="string" value="arm"/>
-        <param name="move_arm_frequency" type="double" value="50.0"/>
-        <param name="trajectory_filter_allowed_time" type="double" value="2.0"/>
-        <param name="ik_allowed_time" type="double" value="2.0"/>
-        <param name="publish_stats" type="bool" value="true"/>
-        <param name="controller_action_name" type="string" value="/arm_controller/follow_joint_trajectory" />
-        
-        <remap from="arm_ik" to="/cob_arm_kinematics/get_constraint_aware_ik" />
-      
-        <remap from="filter_trajectory" to="/trajectory_filter_server/filter_trajectory_with_constraints"/>
-        
-    </node-->
-
-			    
-	</group>
-
-  <!-- arm manip action server -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/arm_manip_node.launch"/>
-  
-  <node pkg="spacenav_node" name="spacenav_node" type="spacenav_node" respawn="false"/>
+  <include file="$(find srs_assisted_arm_navigation_ui)/launch/ui_common.xml"/>
 
   <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_assisted_arm_navigation_ui)/config/arm_manip_but.vcg">
     
     <!--rosparam file="$(find srs_assisted_grasping_ui)/config/presets.yaml" command="load" /-->
     
-    <remap from="bb_video_in" to="/cam3d/rgb/upright/image_color"/>
+    <remap from="bb_video_in" to="/cam3d/rgb/upright/image_raw_throttled"/>
     <remap from="goal" to="/move_base_simple/goal"/>
     <param name="is_video_flipped" type="bool" value="true"/>
     <param name="wait_for_start" type="bool" value="false" />

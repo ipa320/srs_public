@@ -3,9 +3,9 @@
 
   <!--include file="$(find srs_assisted_arm_navigation)/launch/cob_common.launch"/-->
 
-  <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.launch"/>
+  <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.xml"/>
   
   <!-- BUT planning environment -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.launch"/>
+  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.xml"/>
 
 </launch>

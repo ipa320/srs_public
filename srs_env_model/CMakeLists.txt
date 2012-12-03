@@ -44,6 +44,9 @@ set( SERVER_SOURCES src/but_server/but_server.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_oriented_box.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_planes.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_polymesh.cpp
+                    src/but_server/plugins/octomap_plugin_tools/octomap_filter_base.cpp
+                    src/but_server/plugins/octomap_plugin_tools/octomap_filter_raycast.cpp
+                    src/but_server/plugins/octomap_plugin_tools/octomap_filter_ground.cpp
                     src/but_server/registration/CPCtoOCRegistration.cpp
                     )
                     

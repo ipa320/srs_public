@@ -46,6 +46,10 @@
 // Registration
 #include <srs_env_model/but_server/registration/CPCtoOCRegistration.h>
 
+#include "octomap_plugin_tools/octomap_filter_single_specles.h"
+#include "octomap_plugin_tools/octomap_filter_raycast.h"
+#include "octomap_plugin_tools/octomap_filter_ground.h"
+
 //========================
 // Filtering
 
@@ -53,6 +57,14 @@
 
 namespace srs_env_model
 {
+/**
+ * Pointcloud plugin predeclaration
+ */
+class CPointCloudPlugin;
+
+/**
+ * Octomap plugin
+ */
 class COctoMapPlugin : public CServerPluginBase, public CDataHolderBase< tButServerOcMap >
 {
 public:
@@ -110,38 +122,17 @@ protected:
 	 */
 	void insertScan(const tf::Point& sensorOriginTf, const tPointCloud& ground, const tPointCloud& nonground);
 
-	/// label the input cloud "pc" into ground and nonground. Should be in the robot's fixed frame (not world!)
-	void filterGroundPlane(const tPointCloud& pc, tPointCloud& ground, tPointCloud& nonground) const;
-
 	/// Fill map parameters
 	void fillMapParameters(const ros::Time & time);
 
 	/// Reset octomap service callback
 	bool resetOctomapCB(std_srvs::Empty::Request& request,	std_srvs::Empty::Response& response);
 
-	/// Camera info callback
-	void cameraInfoCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
+	/// Use pointcloud to raycast filter map
+	void filterCloud( const tPointCloud& cloud);
 
 	// ------------------------------------------------------------------------
 	// Obstacle cleaning
-
-	/// Remove outdated nodes
-	void degradeOutdatedRaycasting(const std_msgs::Header& sensor_header, const octomap::point3d& sensor_origin);
-
-	/// Remove speckles
-	void degradeSingleSpeckles();
-
-	/// Compute bounding box from the sensor position and cone
-	void computeBBX(const std_msgs::Header& sensor_header, octomap::point3d& bbx_min, octomap::point3d& bbx_max);
-
-	/// Is point in sensor cone?
-	bool inSensorCone(const cv::Point2d& uv) const;
-
-	/// Return true, if occupied cell is between origin and p
-	bool isOccludedMap(const octomap::point3d& sensor_origin, const octomap::point3d& p) const;
-
-	/// Get used sensor origin
-	octomap::point3d getSensorOrigin(const std_msgs::Header& sensor_header);
 
 	/// Do octomap testing by object
 	long int doObjectTesting( CTestingObjectBase * object );
@@ -177,9 +168,6 @@ protected:
 
     /// Should ground plane be filtered?
     bool m_filterGroundPlane;
-    double m_groundFilterDistance;
-    double m_groundFilterAngle;
-    double m_groundFilterPlaneDistance;
 
     /// Temporary storage for ray casting
     octomap::KeyRay m_keyRay;
@@ -239,38 +227,21 @@ protected:
     //=========================================================================
     // Filtering
 
+    COcFilterSingleSpecles m_filterSingleSpecles;
+    COcFilterRaycast m_filterRaycast;
+    COcFilterGround m_filterGround;
+
+    //! Use input cloud to raycast filter data?
+    bool m_bFilterWithInput;
+
+    //! Filter pointcloud plugin
+    boost::shared_ptr< CPointCloudPlugin > m_filterCloudPlugin;
+
     /// Should be outdated nodes be removed?
     bool m_bRemoveOutdated;
 
-    /// Camera model
-    image_geometry::PinholeCameraModel m_camera_model;
-
-    /// Is camera model initialized?
-    bool m_bCamModelInitialized;
-
-    /// Camera size
-    cv::Size m_camera_size;
-
-    /// Camera info topic name
-    std::string m_camera_info_topic;
-
-    //! Camera frame id
-    std::string m_camFrameId;
-
-    /// Camera info subscriber
-    ros::Subscriber m_ciSubscriber;
-
-    /// Should be markers visualized
-    bool m_bVisualizeMarkers;
-
-    /// Markers visualizing publisher
-    ros::Publisher m_markerPublisher;
-
-    /// Markers topic name
-    std::string m_markers_topic_name;
-
-    /// Camera offsets
-    int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
+    /// New input data inserted, do raycast filtering
+    bool m_bNewDataToFilter;
 
     /// Filtering object
     CTestingObjectBase * m_removeTester;
@@ -280,9 +251,6 @@ protected:
 
     /// Tester life counter
     unsigned int m_testerLifeCounter;
-
-    /// Camera info locking
-    boost::mutex m_lockCamera;
 
     /// Maximal depth of tree used when crawling
     unsigned char m_crawlDepth;

@@ -321,7 +321,8 @@ namespace but_plane_detector
 			 * @param neighborhood Neighborhood from which normals are computed
 			 */
 
-			Normals(pcl::PointCloud<pcl::PointXYZ> &pointcloud, float threshold = 0.2, int neighborhood = 4);
+			Normals(pcl::PointCloud<pcl::PointXYZ> &pointcloud, int normalType = NormalType::PCL, int neighborhood = 4,
+					 float threshold = 0.2, float outlierThreshold = 0.02, int iter = 3);
 
 			/**
 			 * Function computes normal for point (i, j) using direct computation (mean of surrounding triangles)

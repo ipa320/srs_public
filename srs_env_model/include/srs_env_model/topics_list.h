@@ -96,6 +96,7 @@ static const std::string MARKERS_TOPIC_NAME = "/visualization_marker";
 static const std::string POINTCLOUD_CENTERS_PUBLISHER_NAME = PACKAGE_NAME_PREFIX + std::string("/pointcloud_centers");
 static const std::string SUBSCRIBER_POINT_CLOUD_NAME = "points_in"; // /cam3d/rgb/points
 static const std::string DEFAULT_FRAME_ID = "/head_cam3d_link";
+static const std::string SUBSCRIBER_FILTERING_CLOUD_NAME="points_filter";
 
 /**
  * limited_point_cloud_plugin
@@ -108,7 +109,7 @@ static const std::string VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME = PACKAGE_NAM
  * compressed_point_cloud_plugin
  */
 static const std::string CPC_CAMERA_INFO_PUBLISHER_NAME = CAMERA_INFO_TOPIC_NAME; // /cam3d/rgb/camera_info
-static const std::string CPC_PC_PUBLISHING_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/compressed_pointcloud_centers");
+static const std::string CPC_SIMPLE_PC_PUBLISHING_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/differential_pointcloud_centers");
 static const std::string CPC_COMPLETE_TOPIC_NAME = PACKAGE_NAME_PREFIX + std::string("/octomap_updates");
 static const int CPC_NUM_DIFFERENTIAL_FRAMES = 5;
 

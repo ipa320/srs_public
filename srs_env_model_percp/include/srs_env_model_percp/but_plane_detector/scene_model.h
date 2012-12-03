@@ -122,7 +122,7 @@ namespace srs_env_model_percp
 		 * @param min_current Minimal value for detected plane in current frame Hough space
 		 * @param min_global Minimal value for detected plane in global frame Hough space
 		 */
-		void recomputePlanes(double min_current, double min_global, int blur, int search_neighborhood);
+		void recomputePlanes(double min_current, double min_global, int blur, int search_neighborhood, double substraction);
 
 		/**
 		 * Point cloud representation of Hough space for visualisation purposes

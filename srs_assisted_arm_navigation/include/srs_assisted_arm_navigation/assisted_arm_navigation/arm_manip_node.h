@@ -276,8 +276,10 @@ public:
    */
   virtual void onPlanningSceneLoaded();
   virtual void updateState();
+
   virtual void planCallback(arm_navigation_msgs::ArmNavigationErrorCodes& errorCode);
   virtual void filterCallback(arm_navigation_msgs::ArmNavigationErrorCodes& errorCode);
+
   virtual void attachObjectCallback(const std::string& name);
   virtual void selectedTrajectoryCurrentPointChanged( unsigned int new_current_point );
 
@@ -374,6 +376,8 @@ protected:
 
   ros::Timer tf_timer_;
 
+  bool use_spacenav_;
+
   struct {
 
 	  boost::mutex mutex_;
@@ -388,17 +392,20 @@ protected:
 	  geometry_msgs::Vector3 rot_offset;
 
 	  double max_val_;
+	  double min_val_th_;
 	  double step_;
 	  double rot_step_;
 	  bool use_rviz_cam_;
 	  std::string rviz_cam_link_;
 
-	  vector<int> buttons_;
+	  vector<int32_t> buttons_;
 
 
   } spacenav;
 
   ros::Publisher arm_nav_state_pub_;
+
+  void normAngle(double& a);
 
   void processSpaceNav();
 
@@ -428,7 +435,7 @@ protected:
 
   bool step_used_;
 
-  boost::mutex im_server_mutex_;
+  //boost::mutex im_server_mutex_;
 
   /**
    * Method which can be used to add attached collision object to planning scene. Added object is cylinder attached to /arm_7_link.
@@ -475,6 +482,23 @@ protected:
 
   bool joint_controls_;
   std::string aco_link_;
+
+  std::string end_eff_link_;
+  //bool aco_state_;
+
+  struct {
+
+	  arm_navigation_msgs::ArmNavigationErrorCodes plan_error_code;
+	  arm_navigation_msgs::ArmNavigationErrorCodes filter_error_code;
+
+	  std::string plan_desc;
+	  std::string filter_desc;
+
+	  bool out_of_limits;
+
+  } arm_nav_state_;
+
+
 
 
 private:

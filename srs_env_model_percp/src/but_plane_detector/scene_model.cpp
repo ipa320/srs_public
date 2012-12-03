@@ -91,12 +91,12 @@ namespace srs_env_model_percp
 		m_depth = max_depth;
 
 		// init of HS
-		std::cout << "Parameter space size: " << space.getSize()*sizeof(double) / 1000000.0 << " MB" << std::endl;
-		std::cout << "Parameter shift step: " << space.m_shiftStep << std::endl;
-		std::cout << "Parameter angle step: " << space.m_angleStep << std::endl;
-		std::cout << "Gauss space size: " << gauss.m_size*sizeof(double) / 1000000.0 << " MB" << std::endl;
-		std::cout << "Gauss shift step: " << gauss.m_shiftStep << std::endl;
-		std::cout << "Gauss angle step: " << gauss.m_angleStep << std::endl;
+		std::cerr << "Parameter space size: " << space.getSize()*sizeof(double) / 1000000.0 << " MB" << std::endl;
+		std::cerr << "Parameter shift step: " << space.m_shiftStep << std::endl;
+		std::cerr << "Parameter angle step: " << space.m_angleStep << std::endl;
+		std::cerr << "Gauss space size: " << gauss.m_size*sizeof(double) / 1000000.0 << " MB" << std::endl;
+		std::cerr << "Gauss shift step: " << gauss.m_shiftStep << std::endl;
+		std::cerr << "Gauss angle step: " << gauss.m_angleStep << std::endl;
 
 		// generate Gauss function in gauss space
 		gauss.generateGaussIn(gauss_angle_sigma, gauss_shift_sigma);
@@ -108,7 +108,7 @@ namespace srs_env_model_percp
 	// @param min_current Minimal value for detected plane in current frame Hough space
 	// @param min_global Minimal value for detected plane in global frame Hough space
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void SceneModel::recomputePlanes(double min_current, double min_global, int blur, int search_neighborhood)
+	void SceneModel::recomputePlanes(double min_current, double min_global, int blur, int search_neighborhood, double substraction)
 	{
 		planes.clear();
 		std::vector<int> counts;
@@ -157,8 +157,20 @@ namespace srs_env_model_percp
 
 			space.addVolume(gauss, ai1, ai2, zi);
 		}
-		std::cout << "Adding into global, size " << (double)space.getSize()*sizeof(double) / 1000000.0 << std::endl;
+		std::cerr << "Adding into global, size " << (double)space.getSize()*sizeof(double) / 1000000.0 << std::endl;
 
+		if (substraction > 0.0)
+		for (ParameterSpaceHierarchyFullIterator it(&space); !it.end; ++it)
+		{
+			double val = it.getVal();
+			if (val > 0.0)
+			{
+				if (val > substraction)
+					it.setVal(val - substraction);
+				else
+					it.setVal(0.0);
+			}
+		}
 		used.resize(planes.size(), false);
 		planes.clear();
 		used.clear();
@@ -199,7 +211,7 @@ namespace srs_env_model_percp
 		}
 ///////////////////////////////////////////////////////////////////////////////
 
-		std::cout << "Found : " << planes.size() << " planes." << std::endl;
+		std::cerr << "Found : " << planes.size() << " planes." << std::endl;
 //		//		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //		//					// Control visualisaation - uncoment to see HT space
 //		//					//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -235,14 +247,14 @@ namespace srs_env_model_percp
 //									//create a new window & display the image
 //									cvNamedWindow("Smile", 1);
 //									cvShowImage("Smile", &IplImage(image));
-//									std::cout << "Viewing shift = " << shiftview << std::endl;
+//									std::cerr << "Viewing shift = " << shiftview << std::endl;
 //									//wait for key to close the window
 //									int key = 0;
 //									while(1)
 //									{
 //									    key = cvWaitKey();
 //									    key &= 0x0000ffff;
-//									    std::cout << key << std::endl;
+//									    std::cerr << key << std::endl;
 //									    if(key==27 || key == 0xffff) break;
 //
 //									    switch(key)
@@ -258,7 +270,7 @@ namespace srs_env_model_percp
 //									        		}
 //									        	}
 //									        	cvShowImage("Smile", &IplImage(image));
-//									        	std::cout << "Viewing shift = " << shiftview << "/" << space.m_shiftSize-1 << std::endl;
+//									        	std::cerr << "Viewing shift = " << shiftview << "/" << space.m_shiftSize-1 << std::endl;
 //									            break;
 //									        case 'z':
 //									        	if (shiftview > 0)
@@ -271,7 +283,7 @@ namespace srs_env_model_percp
 //									        		}
 //									        	}
 //									        	cvShowImage("Smile", &IplImage(image));
-//									        	std::cout << "Viewing shift = " << shiftview << "/" << space.m_shiftSize-1 << std::endl;
+//									        	std::cerr << "Viewing shift = " << shiftview << "/" << space.m_shiftSize-1 << std::endl;
 //									            break;
 //									    }
 //									}
@@ -313,14 +325,14 @@ namespace srs_env_model_percp
 //									//create a new window & display the image
 //									cvNamedWindow("Smile", 1);
 //									cvShowImage("Smile", &IplImage(image));
-//									std::cout << "Viewing shift = " << shiftview << std::endl;
+//									std::cerr << "Viewing shift = " << shiftview << std::endl;
 //									//wait for key to close the window
 //									int key = 0;
 //									while(1)
 //									{
 //									    key = cvWaitKey();
 //									    key &= 0x0000ffff;
-//									    std::cout << key << std::endl;
+//									    std::cerr << key << std::endl;
 //									    if(key==27 || key == 0xffff) break;
 //
 //									    switch(key)
@@ -336,7 +348,7 @@ namespace srs_env_model_percp
 //									        		}
 //									        	}
 //									        	cvShowImage("Smile", &IplImage(image));
-//									        	std::cout << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
+//									        	std::cerr << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
 //									            break;
 //									        case 'z':
 //									        	if (shiftview > 0)
@@ -349,7 +361,7 @@ namespace srs_env_model_percp
 //									        		}
 //									        	}
 //									        	cvShowImage("Smile", &IplImage(image));
-//									        	std::cout << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
+//									        	std::cerr << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
 //									            break;
 //									    }
 //									}
@@ -412,7 +424,7 @@ namespace srs_env_model_percp
 				float a1, a2;
 				ParameterSpace::toAngles(plane[0], plane[1], plane[2], a1, a2);
 //
-//
+
 //				PointXYZRGB rgbpoint(255, 255, 255);
 //				rgbpoint.x = point[0];
 //				rgbpoint.y = point[1];
@@ -424,6 +436,7 @@ namespace srs_env_model_percp
 
 				int i, j, k;
 				cache_space.getIndex(a1, a2, plane[3], i, j, k);
+
 				if (i < cache_space.m_angleSize && j < cache_space.m_angleSize && k < cache_space.m_shiftSize &&
 					i >= 0 && j >= 0 && k >= 0)
 				{
@@ -441,16 +454,15 @@ namespace srs_env_model_percp
 		while (not it.end)
 		{
 			val = it.getVal();
-
 			if (val >= min_current)
 			{
-				current_space.fromIndex(it.currentI, i, j, k);
+				current_space.fromIndex(it.bin_index, it.inside_index, i, j, k);
 				current_space.addVolume(gauss, i, j, k, val);
 			}
 			++it;
 		}
 
-		std::cout << "New parameter space size: " << (double)current_space.getSize()*sizeof(double) / 1000000.0 << " MB" << std::endl;
+		std::cerr << "New parameter space size: " << (double)current_space.getSize()*sizeof(double) / 1000000.0 << " MB" << std::endl;
 
 	}
 
@@ -521,13 +533,13 @@ namespace srs_env_model_percp
 				val = it.getVal();
 				if (val > min_current)
 				{
-					current_space.fromIndex(it.currentI, i, j, k);
+					current_space.fromIndex(it.bin_index, it.inside_index, i, j, k);
 					current_space.addVolume(gauss, i, j, k, val);
 				}
 				++it;
 			}
 
-			std::cout << "New parameter space size: " << (double)current_space.getSize()*sizeof(double) / 1000000.0 << " MB" << std::endl;
+			std::cerr << "New parameter space size: " << (double)current_space.getSize()*sizeof(double) / 1000000.0 << " MB" << std::endl;
 
 //			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //			// Control visualisaation - uncoment to see HT space
@@ -574,14 +586,14 @@ namespace srs_env_model_percp
 //					//create a new window & display the image
 //					cvNamedWindow("Smile", 1);
 //					cvShowImage("Smile", &IplImage(image));
-//					std::cout << "Viewing shift = " << shiftview << std::endl;
+//					std::cerr << "Viewing shift = " << shiftview << std::endl;
 //					//wait for key to close the window
 //					int key = 0;
 //					while(1)
 //					{
 //					    key = cvWaitKey();
 //					    key &= 0x0000ffff;
-//					    std::cout << key << std::endl;
+//					    std::cerr << key << std::endl;
 //					    if(key==27 || key == 0xffff) break;
 //
 //					    switch(key)
@@ -597,7 +609,7 @@ namespace srs_env_model_percp
 //					        		}
 //					        	}
 //					        	cvShowImage("Smile", &IplImage(image));
-//					        	std::cout << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
+//					        	std::cerr << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
 //					            break;
 //					        case 'z':
 //					        	if (shiftview > 0)
@@ -610,7 +622,7 @@ namespace srs_env_model_percp
 //					        		}
 //					        	}
 //					        	cvShowImage("Smile", &IplImage(image));
-//					        	std::cout << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
+//					        	std::cerr << "Viewing shift = " << shiftview << "/" << current_space.m_shiftSize-1 << std::endl;
 //					            break;
 //					    }
 //					}

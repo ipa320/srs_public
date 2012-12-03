@@ -29,17 +29,26 @@ rosbuild_add_library( but_segmentation src/but_segmentation/filtering.cpp
 rosbuild_add_openmp_flags( but_segmentation )
 
 
+# Check for libxml2
+include($ENV{ROS_ROOT}/core/rosbuild/FindPkgConfig.cmake)
+pkg_check_modules( LIBXML2 REQUIRED libxml-2.0 )
+include_directories( ${LIBXML2_INCLUDE_DIRS} )
+link_directories( ${LIBXML2_LIBRARY_DIRS} )
+
+
 # Plane detection node
 set( BUT_PLANE_DETECTOR_SOURCES src/but_plane_detector/plane_detector_node.cpp 
                                 src/but_plane_detector/parameter_space.cpp 
                                 src/but_plane_detector/parameter_space_hierarchy.cpp 
                                 src/but_plane_detector/scene_model.cpp 
-                                src/but_plane_detector/dyn_model_exporter2.cpp
+                                src/but_plane_detector/dyn_model_exporter.cpp
                                 src/but_plane_detector/polypartition.cpp 
                                 src/but_plane_detector/clipper.cpp
-                      			src/but_plane_detector/plane.cpp )
+                                src/but_plane_detector/plane.cpp 
+                                )
 rosbuild_add_executable( but_plane_detector ${BUT_PLANE_DETECTOR_SOURCES} )
 target_link_libraries(but_plane_detector but_segmentation)
+target_link_libraries(but_plane_detector ${LIBXML2_LIBRARIES})
 
 
 # Plane detection node using pcl plane fitting
@@ -47,9 +56,15 @@ set( BUT_PLANE_DETECTOR_RANSAC_SOURCES src/but_plane_detector/plane_detector_ran
                                 src/but_plane_detector/parameter_space.cpp 
                                 src/but_plane_detector/parameter_space_hierarchy.cpp 
                                 src/but_plane_detector/scene_model.cpp 
-                                src/but_plane_detector/dyn_model_exporter.cpp )
+                                src/but_plane_detector/dyn_model_exporter.cpp 
+                                src/but_plane_detector/polypartition.cpp 
+                                src/but_plane_detector/clipper.cpp
+                                src/but_plane_detector/plane.cpp 
+                                )
 rosbuild_add_executable( but_plane_detector_ransac ${BUT_PLANE_DETECTOR_RANSAC_SOURCES} )
 target_link_libraries(but_plane_detector_ransac but_segmentation)
+target_link_libraries(but_plane_detector_ransac ${LIBXML2_LIBRARIES})
+
 
 # Kinect depth map to pcl converter node
 rosbuild_add_executable(but_kin2pcl src/but_seg_utils/kin2pcl_node.cpp)
@@ -72,4 +87,3 @@ rosbuild_add_executable(bb_estimator_client src/bb_estimator/sample_client.cpp)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
-

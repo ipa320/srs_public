@@ -91,6 +91,21 @@ namespace srs_ui_but
         //! Is distance changed
         bool m_bDistanceChanged;
 
+        //! Matrices have changed
+        bool m_bMatricesChanged;
+
+        //! Camera position
+        Ogre::Vector4 m_camPosition;
+
+        //! Projection matrix
+        Ogre::Matrix4 m_projMatrix;
+
+        //! Camera plane
+        Ogre::Vector4 m_camPlane;
+
+        //! Whole data locking mutex
+		boost::mutex m_lock;
+
     public:
         //! Constructor
         //CMaterialListener( const std::string & materialName, const std::string & groupName, const std::string & schemeName );
@@ -106,6 +121,9 @@ namespace srs_ui_but
 
     	//! Set tested distance
     	void setTestedDistance( float distance );
+
+    	//! Set camera position parameters
+    	void setCameraPosition( const Ogre::Vector4 & position, const Ogre::Vector4 & camPlane, const Ogre::Matrix4 & projMatrix );
 
     	//! Get current tested distance
     	float getTestedDistance() { return m_testingDistance; }
@@ -143,6 +161,9 @@ namespace srs_ui_but
 
         //! Get material pointer
         Ogre::Material * getMaterialPtr() { return m_materialPtr.get(); }
+
+        //! Set listener pointer
+        void setListenerPtr(CMaterialListener * ptr ) { m_materialListener = ptr; if( ptr != 0 ) updateMatrices(); }
 
         //! Update frustrum aspect ratio
         void setFrustrumSize( Ogre::Vector2 size );
@@ -190,8 +211,11 @@ namespace srs_ui_but
     	void setCameraModel(const sensor_msgs::CameraInfo& msg) { m_textureRosDepth->setCameraModel(msg); }
 
     protected:
-        //! Used material
-        Ogre::MaterialPtr m_materialPtr;
+        //! Used material listener
+    	CMaterialListener * m_materialListener;
+
+    	//! Material pointer
+    	Ogre::MaterialPtr m_materialPtr;
 
         //! Old frustrum size
         Ogre::Vector2 m_frustrumSize;
@@ -420,6 +444,9 @@ namespace srs_ui_but
 
         //! Is material listener connected
         bool m_bMLConnected;
+
+        //! Is camera initialized
+        bool m_bCameraInitialized;
 
 
 

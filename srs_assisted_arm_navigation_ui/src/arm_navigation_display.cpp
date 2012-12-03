@@ -67,7 +67,7 @@ CButArmNavDisplay::CButArmNavDisplay(const std::string & name,rviz::Visualizatio
         if( m_armmanipulation_window != 0 )
         {
             std::cerr << "Adding to the window manager..." << std::endl;
-            wi->addPane( "Manual arm manipulation", m_armmanipulation_window );
+            wi->addPane( "Assisted arm navigation", m_armmanipulation_window );
             wi->showPane( m_armmanipulation_window );
             std::cerr << "Added..." << std::endl;
         }

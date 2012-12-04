@@ -72,6 +72,7 @@ from simple_script_server import *
 sss = simple_script_server()
 
 from kinematics_msgs.srv import *
+from std_msgs.msg import *
 from sensor_msgs.msg import *
 from move_base_msgs.msg import *
 
@@ -86,7 +87,7 @@ class bag_record():
     def __init__(self):
 
         self.trigger_record_translation = rospy.get_param('trigger_record_translation')
-        self.trigger_record_angle = rospy.get_param('trigger_record_angle')
+        self.trigger_record_rotation = rospy.get_param('trigger_record_rotation')
         self.record_timestep = rospy.get_param('record_timestep')
         self.wanted_tfs = rospy.get_param('wanted_tfs')
         self.wanted_topics = rospy.get_param("wanted_topics")
@@ -114,8 +115,9 @@ class bag_record():
         x = trans[0] - self.current_translation[target_frame][0]
         y = trans[1] - self.current_translation[target_frame][1]
         
-        distance = x*x + y*y
-        distance = math.sqrt(distance)
+        distance_trans = math.sqrt(x*x + y*y)
+        distance_rot = abs(euler_from_quaternion(rot)[2] - euler_from_quaternion(self.current_rotation[target_frame])[2])
+        print "distance_rot = " + str(distance_rot)
         
         
         self.tfposed.header.frame_id = target_frame
@@ -131,12 +133,19 @@ class bag_record():
         
         self.tfMsg = tfMessage([self.tfposed])
         
-        if("trigger_record_translation" in tfs and distance >= tfs["trigger_record_translation"]):
+        if("trigger_record_translation" in tfs and distance_trans >= tfs["trigger_record_translation"]):
+            rospy.loginfo("triggered for translation, trans = " + str(distance_trans))
             self.current_translation[target_frame] = trans
             self.current_rotation[target_frame] = rot
             return "triggered"
-        else:
-            return "not_triggered"
+
+        if("trigger_record_rotation" in tfs and distance_rot >= tfs["trigger_record_rotation"]):
+            rospy.loginfo("triggered for rotation, rot = " + str(distance_rot))
+            self.current_translation[target_frame] = trans
+            self.current_rotation[target_frame] = rot
+            return "triggered"
+        
+        return "not_triggered"
     
     def process_topics(self, tfs):
         
@@ -149,10 +158,14 @@ class bag_record():
         mod = __import__(the_type[0], fromlist=[the_type[1]])
         cls = getattr( mod , the_type[1] )
         
-        msg =  rospy.wait_for_message(tfs, cls)
-        
+        timeout = 1.0
+        try:
+        	msg =  rospy.wait_for_message(tfs, cls, timeout)
+        except rospy.ROSException:
+        	rospy.loginfo("skipping topic: " + str(tfs))
+        	msg = Empty()
         return msg
-    
+
     def bag_processor(self, tfs=None):
         
         print tfs
@@ -162,38 +175,48 @@ class bag_record():
 
 if __name__ == "__main__":
 
-    rospy.init_node('bag_recording')
-    
-    bagR = bag_record()
-    
-    time_step = bagR.record_timestep
-    start_time = rospy.rostime.get_time()
-    
-    with bagR.bag as bagfile:
+	rospy.init_node('bag_recording')
 
-	while not rospy.is_shutdown():
-        
-		for tfs in bagR.wanted_tfs:
-		    triggers = bagR.bag_processor(tfs)
-		    if(triggers == "triggered"):
-		        rospy.loginfo("triggered")
-		        bagfile.write("/tf", bagR.tfMsg)
-		        for tfs in bagR.wanted_topics:
-		            print "triggered topic"
-		            msg = bagR.process_topics(tfs)
-		            bagfile.write(tfs, msg)
-		        start_time = rospy.rostime.get_time()
-		    else:
-		        rospy.loginfo("not triggered")
-		time_msg = "time passed:" + (str)(rospy.rostime.get_time() - start_time)
-		rospy.loginfo(time_msg)
-		if(rospy.rostime.get_time() - start_time > time_step):
-		        rospy.loginfo("triggered by time")
-		        for tfs in bagR.wanted_tfs:
-		            fake_trigger = bagR.bag_processor(tfs)
-		            bagfile.write("/tf", bagR.tfMsg)
-		        for tfs in bagR.wanted_topics:
-		            rospy.loginfo("triggered topic with time")
-		            msg = bagR.process_topics(tfs)
-		            bagfile.write(tfs, msg)
-		        start_time = rospy.rostime.get_time()    
+	bagR = bag_record()
+
+	time_step = rospy.Duration.from_sec(bagR.record_timestep)
+	start_time = rospy.Time.now()
+
+	with bagR.bag as bagfile:
+
+		rate = rospy.Rate(10) #Hz
+		while not rospy.is_shutdown():
+			# listen to tf changes
+			for tfs in bagR.wanted_tfs:
+				triggers = bagR.bag_processor(tfs)
+				if(triggers == "triggered"):
+					rospy.loginfo("triggered")
+					# log tf
+					#bagfile.write("/tf", bagR.tfMsg)
+					# log all topics
+					for tfs in bagR.wanted_topics:
+						print "triggered topic"
+						msg = bagR.process_topics(tfs)
+						bagfile.write(tfs, msg)
+					start_time = rospy.Time.now()
+				else:
+					rospy.loginfo("not triggered")
+			
+			# listen to ellapsed time
+			time_msg = "time passed:" + (str)((rospy.Time.now() - start_time).to_sec())
+			rospy.loginfo(time_msg)
+			if(rospy.Time.now() - start_time > time_step):
+				rospy.loginfo("triggered by time")
+				# log tf
+				for tfs in bagR.wanted_tfs:
+					fake_trigger = bagR.bag_processor(tfs)
+					#bagfile.write("/tf", bagR.tfMsg)
+				# log all topics
+				for tfs in bagR.wanted_topics:
+					rospy.loginfo("triggered topic with time")
+					msg = bagR.process_topics(tfs)
+					bagfile.write(tfs, msg)
+				start_time = rospy.Time.now()
+			
+			# sleep until next check
+			rate.sleep()

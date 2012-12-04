@@ -42,7 +42,7 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 : srs_env_model::CServerPluginBase(name)
 , m_publishPointCloud(true)
 , m_pcPublisherName(POINTCLOUD_CENTERS_PUBLISHER_NAME)
-, m_pcSubscriberName(SUBSCRIBER_POINT_CLOUD_NAME)
+, m_pcSubscriberName("")
 , m_bSubscribe( subscribe )
 , m_latchedTopics( false )
 , m_pcFrameId(DEFAULT_FRAME_ID)
@@ -81,8 +81,11 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	// Point cloud publishing topic name
 	node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, POINTCLOUD_CENTERS_PUBLISHER_NAME );
 
-	// Point cloud subscribing topic name
-	node_handle.param("pointcloud_subscriber", m_pcSubscriberName, SUBSCRIBER_POINT_CLOUD_NAME);
+	// Point cloud subscribing topic name - try to get it from parameter server if not given
+	if( m_pcSubscriberName.length() == 0 )
+		node_handle.param("pointcloud_subscriber", m_pcSubscriberName, SUBSCRIBER_POINT_CLOUD_NAME);
+	else
+		m_bSubscribe = true;
 
 	// Get FID to which will be points transformed when publishing collision map
 	node_handle.param("pointcloud_frame_id", m_pcFrameId, m_pcFrameId ); //
@@ -98,7 +101,7 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	// If should subscribe, create message filter and connect to the topic
 	if( m_bSubscribe )
 	{
-		//PERROR("Subscribing to: " << m_pcSubscriberName );
+//		PERROR("Subscribing to: " << m_pcSubscriberName );
 		// Create subscriber
 		m_pcSubscriber  = new message_filters::Subscriber<tIncommingPointCloud>(node_handle, m_pcSubscriberName, 1);
 
@@ -199,7 +202,7 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 	}
 
 	// Initialize leaf iterators
-	tButServerOcTree & tree( par.map->octree );
+	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes

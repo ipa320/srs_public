@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- Don't forget to run the Kinect throttling nodelete somewhere -->
-    <!-- include file="$(find srs_env_model)/launch/kinect_throttling.launch" /-->
+    <!-- Don't forget to run the Kinect throttling nodelet somewhere -->
+    <!-- include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" /-->
 
     <!-- Run our dynamic scene model server node -->
     <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
@@ -9,6 +9,7 @@
         <remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info" />
         <!--remap from="but_server_node/points_in" to="/cam3d/rgb/points" /-->
         <remap from="but_server_node/points_in" to="/cam3d/rgb/points_throttled" />
+        <remap from="but_server_node/points_filter" to="/cam3d/rgb/points_throttled" />
         <remap from="but_server_node/rviz_camera_position" to="/rviz_camera_position" />
     </node>
 

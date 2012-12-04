@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: dynModelExporter.cpp 814 2012-05-22 14:00:19Z ihulik $
+ * $Id: DynModelExporter.cpp 814 2012-05-22 14:00:19Z ihulik $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -34,441 +34,231 @@
 #include <srs_env_model_percp/topics_list.h>
 #include <srs_env_model_percp/services_list.h>
 
+
 #include <srs_interaction_primitives/AddPlane.h>
 #include <srs_interaction_primitives/RemovePrimitive.h>
 #include <srs_interaction_primitives/plane.h>
 #include <pcl/filters/project_inliers.h>
-#include <pcl/surface/convex_hull.h>
+
 #include <srs_env_model/InsertPlanes.h>
+#include <pcl/point_cloud.h>
+
+#include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/kdtree/kdtree.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/surface/gp3.h>
+#include <pcl_ros/transforms.h>
+
+#include <libxml2/libxml/parser.h>
+#include <libxml2/libxml/tree.h>
 
 using namespace pcl;
 using namespace but_plane_detector;
+using namespace cv;
 
 namespace srs_env_model_percp
 {
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Updates sent planes using direct but interactive marker server
-	// @param planes Vector of found planes
-	// @param scene_cloud point cloud of the scene
-	// @param sensorToWorldTf Sendor to map transformation matrix
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void DynModelExporter::updateDirect(tPlanes & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf)
-	{
-		// but dynamic model
-		ros::ServiceClient plane = n->serviceClient<srs_interaction_primitives::AddPlane> ("insert_plane2");
-
-		// For each plane, call a server...
-		for (unsigned int i = 0; i < planes.size(); ++i)
-		{
-			float x, y, z, w;
-			planes[i].getQuaternionRotation(x, y, z, w);
-
-			PointXYZ center;
-			PointXYZ scale;
-
-			if (getCenterAndScale(planes[i], scene_cloud, center, scale))
-			{
-				// Fill in coords
-				tf::Transformer t;
-				t.setTransform(sensorToWorldTf);
-
-				tf::Stamped<btVector3> pose, pose2;
-				tf::Stamped<btQuaternion> orientation, orientation2;
-				pose.setX(center.x);
-				pose.setY(center.y);
-				pose.setZ(center.z);
-				pose.frame_id_ = original_frame_;
-
-				orientation.setX(x);
-				orientation.setY(y);
-				orientation.setZ(z);
-				orientation.setW(w);
-				orientation.frame_id_ = original_frame_;
-				t.transformPoint(output_frame_, pose, pose2);
-				t.transformQuaternion(output_frame_, orientation, orientation2);
-
-
-				std::cout << "Sending plane: " << planes[i].a << "x + " << planes[i].b << "y + " << planes[i].c << "z + " << planes[i].d << " = 0.0" << std::endl;
-				srs_interaction_primitives::AddPlane planeSrv;
-				planeSrv.request.frame_id = output_frame_;
-				planeSrv.request.pose.position.x = pose2.getX();
-				planeSrv.request.pose.position.y = pose2.getY();
-				planeSrv.request.pose.position.z = pose2.getZ();
-				planeSrv.request.pose.orientation.x = orientation2.getX();
-				planeSrv.request.pose.orientation.y = orientation2.getY();
-				planeSrv.request.pose.orientation.z = orientation2.getZ();
-				planeSrv.request.pose.orientation.w = orientation2.getW();
-				planeSrv.request.scale.x = scale.x;
-				planeSrv.request.scale.y = scale.y;
-				planeSrv.request.scale.z = scale.z;
-
-				// push into array
-				plane.call(planeSrv);
-			}
-		}
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Updates sent planes using but environment model server
-	// @param planes Vector of found planes
-	// @param scene_cloud point cloud of the scene
-	// @param sensorToWorldTf Sendor to map transformation matrix
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void DynModelExporter::update(tPlanes & planes, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, tf::StampedTransform &sensorToWorldTf)
-	{
-		// but dynamic model
-		ros::ServiceClient plane = n->serviceClient<srs_env_model::InsertPlanes> (DET_SERVICE_INSERT_PLANES);
-
-		// Create calls
-		srs_env_model::InsertPlanes planeSrv;
-		srs_env_model_msgs::PlaneArray planeArray;
-
-		// for each plane
-		for (unsigned int i = 0; i < planes.size(); ++i)
-		{
-			float x, y, z, w;
-			planes[i].getQuaternionRotation(x, y, z, w);
-
-			PointXYZ center;
-			PointXYZ scale;
-
-			if (getCenterAndScale(planes[i], scene_cloud, center, scale))
-			{
-				srs_env_model_msgs::PlaneDesc planeDyn;
-
-				// test if we modify or insert
-				if (managedInd.size() > i)
-					planeDyn.flags = srs_env_model_msgs::PlaneDesc::MODIFY;
-				else
-				{
-					planeDyn.flags = srs_env_model_msgs::PlaneDesc::INSERT;
-					managedInd.push_back(true);
-				}
-
-				// Fill in coords
-				tf::Transformer t;
-				t.setTransform(sensorToWorldTf);
-				// point transform
-				// normal inverse transform
-
-
-				tf::Stamped<btVector3> pose, pose2;
-				tf::Stamped<btQuaternion> orientation, orientation2;
-				pose.setX(center.x);
-				pose.setY(center.y);
-				pose.setZ(center.z);
-				pose.frame_id_ = original_frame_;
-
-				orientation.setX(x);
-				orientation.setY(y);
-				orientation.setZ(z);
-				orientation.setW(w);
-				orientation.frame_id_ = original_frame_;
-				t.transformPoint(output_frame_, pose, pose2);
-				t.transformQuaternion(output_frame_, orientation, orientation2);
-
-				std::cout << "Sending plane: " << planes[i].a << "x + " << planes[i].b << "y + " << planes[i].c << "z + " << planes[i].d << " = 0.0" << std::endl;
-				std::cout << "position: " << pose2.getX() << " " << pose2.getY() << " " << pose2.getZ() << std::endl;
-				planeDyn.id = i;
-				planeDyn.pose.position.x = pose2.getX();
-				planeDyn.pose.position.y = pose2.getY();
-				planeDyn.pose.position.z = pose2.getZ();
-				planeDyn.pose.orientation.x = orientation2.getX();
-				planeDyn.pose.orientation.y = orientation2.getY();
-				planeDyn.pose.orientation.z = orientation2.getZ();
-				planeDyn.pose.orientation.w = orientation2.getW();
-				planeDyn.scale.x = scale.x;
-				planeDyn.scale.y = scale.y;
-				planeDyn.scale.z = scale.z;
-
-				// push into array
-				planeSrv.request.plane_array.planes.push_back(planeDyn);
-			}
-		}
-		// fill in header and send
-		planeSrv.request.plane_array.header.frame_id = output_frame_;
-		planeSrv.request.plane_array.header.stamp = ros::Time::now();
-		plane.call(planeSrv);
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Updates sent planes using but environment model server
 	// @param planes Vector of found planes
 	// @param scene_cloud point cloud of the scene
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void DynModelExporter::update(tPlanes & planes, Normals &normals, tf::StampedTransform &sensorToWorldTf)
+	void DynModelExporter::update(tPlanes & planes, Normals &normals, std::string color_method, cv::Mat rgb)
 	{
-		// but dynamic model
-		ros::ServiceClient plane = n->serviceClient<srs_env_model::InsertPlanes> (DET_SERVICE_INSERT_PLANES);
+		if (m_keep_tracking == 0)
+			displayed_planes.clear();
+		std::vector<PointCloud<pcl::PointXYZ>, Eigen::aligned_allocator<PointCloud<pcl::PointXYZ> > > planesInPCloud(planes.size());
+		std::vector<std_msgs::ColorRGBA, Eigen::aligned_allocator<std_msgs::ColorRGBA> > colors(planes.size());
 
-		// Create calls
-		srs_env_model::InsertPlanes planeSrv;
-		srs_env_model_msgs::PlaneArray planeArray;
-
-		std::vector<cv::Vec3f> centers;
-		std::vector<cv::Vec3f> scales;
-		std::vector<bool> flags;
-		getCenterSAndScale(planes, normals, centers, scales, flags);
-		// for each plane
-		for (unsigned int i = 0; i < planes.size(); ++i)
-		{
-			float x, y, z, w;
-
-
-//			tf::Stamped<btVector3> planeorignormal, planeorignormal2;
-//			planeorignormal.setX(0);
-//			planeorignormal.setY(0);
-//			planeorignormal.setZ(0);
-//			planeorignormal.frame_id_ = DET_OUTPUT_PLANE_ORIGINAL_FRAMEID;
-//			tf::Transformer t;
-//			t.setTransform(sensorToWorldTf);
-//			t.transformVector(DET_OUTPUT_PLANE_FRAMEID, planeorignormal, planeorignormal2);
-
-			cv::Vec3f rotate(0, 0, 1);
-			//Plane<float> test(1, 0, 0, 5);
-			//test.getQuaternionRotation(x, y, z, w, rotate);
-			planes[i].getQuaternionRotation(x, y, z, w, rotate);
-
-			PointXYZ center;
-			PointXYZ scale;
-
-			if (flags[i])
-			{
-				srs_env_model_msgs::PlaneDesc planeDyn;
-
-				// test if we modify or insert
-				if (managedInd.size() > i)
-					planeDyn.flags = srs_env_model_msgs::PlaneDesc::MODIFY;
-				else
-				{
-					planeDyn.flags = srs_env_model_msgs::PlaneDesc::INSERT;
-					managedInd.push_back(true);
-				}
-
-				// Fill in coords
-				tf::Stamped<btVector3> pose;
-				tf::Stamped<btQuaternion> orientation;
-				pose.setX(centers[i][0]);
-				pose.setY(centers[i][1]);
-
-				pose.setZ(centers[i][2]);
-				pose.frame_id_ = output_frame_;
-
-				orientation.setX(x);
-				orientation.setY(y);
-				orientation.setZ(z);
-				orientation.setW(w);
-				orientation.frame_id_ = output_frame_;
-
-
-				std::cout << "Sending plane: " << planes[i].a << "x + " << planes[i].b << "y + " << planes[i].c << "z + " << planes[i].d << " = 0.0" << std::endl;
-				planeDyn.id = i;
-				planeDyn.pose.position.x = pose.getX();
-				planeDyn.pose.position.y = pose.getY();
-				planeDyn.pose.position.z = pose.getZ();
-				planeDyn.pose.orientation.x = orientation.getX();
-				planeDyn.pose.orientation.y = orientation.getY();
-				planeDyn.pose.orientation.z = orientation.getZ();
-				planeDyn.pose.orientation.w = orientation.getW();
-				planeDyn.scale.x = scales[i][0];
-				planeDyn.scale.y = scales[i][1];
-				planeDyn.scale.z = scales[i][2];
-
-				// push into array
-				planeSrv.request.plane_array.planes.push_back(planeDyn);
-			}
-		}
-		// fill in header and send
-		planeSrv.request.plane_array.header.frame_id = output_frame_;
-		planeSrv.request.plane_array.header.stamp = ros::Time::now();
-		plane.call(planeSrv);
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Returns center and scale of plane marker
-	// @param plane Vector of found planes
-	// @param scene_cloud point cloud of the scene
-	// @param center Sendor to map transformation matrix
-	// @param scale Sendor to map transformation matrix
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	bool DynModelExporter::getCenterAndScale(Plane<float> &plane, Normals &normals, PointXYZ &center, PointXYZ &scale)
-	{
-		center.x = 0.0;
-		center.y = 0.0;
-		center.z = 0.0;
-
-		float size = 0.0;
-		PointXYZ min(9999999.0, 9999999.0, 9999999.0);
-		PointXYZ max(-9999999.0, -9999999.0, -9999999.0);
-
-		for (unsigned int i = 0; i < normals.m_points.rows; ++i)
-		for (unsigned int j = 0; j < normals.m_points.cols; ++j)
-		{
-			 // 1cm TODO - make as param
-			cv::Vec3f point = normals.m_points.at<cv::Vec3f>(i, j);
-			cv::Vec4f localPlane = normals.m_planes.at<cv::Vec4f>(i, j);
-			Plane<float> aaa(localPlane[0], localPlane[1], localPlane[2], localPlane[3]);
-			 if (plane.distance(point) < m_max_distance && plane.isSimilar(aaa, m_max_plane_normal_dev, m_max_plane_shift_dev))
-			 {
-				 center.x += point[0];
-				 center.y += point[1];
-				 center.z += point[2];
-				 size += 1.0;
-
-				 if (point[0] < min.x) min.x = point[0];
-				 if (point[1] < min.y) min.y = point[1];
-				 if (point[2] < min.z) min.z = point[2];
-
-				 if (point[0] > max.x) max.x = point[0];
-				 if (point[1] > max.y) max.y = point[1];
-				 if (point[2] > max.z) max.z = point[2];
-			 }
-		}
-
-		//std::cout << std::endl << std::endl << min << " " << max << std::endl << std::endl;
-		if (size > m_minOutputCount)
-		{
-			center.x /= size;
-			center.y /= size;
-			center.z /= size;
-			//center.z = -(center.x*plane.a + center.y*plane.b + plane.d)/plane.c;
-		}
-		else return false;
-
-		scale.x = max.x - min.x;
-		if (scale.x > 3)
-			scale.x = 3;
-		scale.y = max.y - min.y;
-		if (scale.y > 3)
-			scale.y = 3;
-		scale.z = max.z - min.z;
-		if (scale.z > 3)
-			scale.z = 3;
-
-		std::cout << size << std::endl;
-		return true;
-	}
-
-	void DynModelExporter::getCenterSAndScale(tPlanes & planes, Normals &normals, std::vector<cv::Vec3f> &centers, std::vector<cv::Vec3f> &scales, std::vector<bool> &flags)
-	{
-		using namespace cv;
-		centers.resize(planes.size(), Vec3f(0.0, 0.0, 0.0));
-		scales.resize(planes.size(), Vec3f(0.0, 0.0, 0.0));
-		flags.resize(planes.size());
-		std::vector<int> sizes(planes.size(), 0);
-		std::vector<Vec3f> mins(planes.size(), Vec3f(FLT_MAX, FLT_MAX, FLT_MAX));
-		std::vector<Vec3f> maxs(planes.size(), Vec3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
-
-		for (unsigned int i = 0; i < normals.m_points.rows; ++i)
-		for (unsigned int j = 0; j < normals.m_points.cols; ++j)
+		for (int i = 0; i < normals.m_points.rows; ++i)
+		for (int j = 0; j < normals.m_points.cols; ++j)
 		{
 			Vec3f point = normals.m_points.at<Vec3f>(i, j);
-			cv::Vec4f localPlane = normals.m_planes.at<cv::Vec4f>(i, j);
-			Plane<float> aaa(localPlane[0], localPlane[1], localPlane[2], localPlane[3]);
-			double dist = DBL_MAX;
-			int chosen = -1;
-			for (unsigned int a = 0; a < planes.size(); ++a)
+			if (point[0] != 0.0 || point[1] != 0.0 || point[2] != 0.0)
 			{
-				if (point[0] == point[0] && point[1] == point[1] && point[2] == point[2] && planes[a].distance(point) < dist && planes[a].distance(point) < m_max_distance && planes[a].isSimilar(aaa, m_max_plane_normal_dev, m_max_plane_shift_dev))
-				{
+				cv::Vec4f localPlane = normals.m_planes.at<cv::Vec4f>(i, j);
+				Plane<float> aaa(localPlane[0], localPlane[1], localPlane[2], localPlane[3]);
 
-					dist = planes[a].distance(point);
-					chosen = a;
+				// find all planes that fit for this point
+				for (unsigned int a = 0; a < planes.size(); ++a)
+				{
+					if (planes[a].distance(point) < m_max_distance && planes[a].isSimilar(aaa, m_max_plane_normal_dev, m_max_plane_shift_dev))
+					{
+						PointXYZ pclpoint(point[0], point[1], point[2]);
+						planesInPCloud[a].push_back(pclpoint);
+
+						if (color_method == "mean_color")
+						{
+							cv::Vec<unsigned char, 3> color = rgb.at<cv::Vec<unsigned char, 3> >(i, j);
+							colors[a].r += (float)color[0]/255.0;
+							colors[a].g += (float)color[1]/255.0;
+							colors[a].b += (float)color[2]/255.0;
+						}
+						else if (color_method == "mean_color")
+						{
+							cv::Vec<unsigned char, 3> color = rgb.at<cv::Vec<unsigned char, 3> >(i, j);
+							colors[a].r += point[0] / 5.0;
+							colors[a].g += point[1] / 5.0;
+							colors[a].b += point[2] / 5.0;
+						}
+					}
 				}
 			}
-			if (chosen > -1)
+		}
+//		for (int i = 0; i < normals.m_points.rows; ++i)
+//		for (int j = 0; j < normals.m_points.cols; ++j)
+//		{
+//			Vec3f point = normals.m_points.at<Vec3f>(i, j);
+//			if (point[0] != 0.0 || point[1] != 0.0 || point[2] != 0.0)
+//			{
+//				cv::Vec4f localPlane = normals.m_planes.at<cv::Vec4f>(i, j);
+//				Plane<float> aaa(localPlane[0], localPlane[1], localPlane[2], localPlane[3]);
+//
+//				double dist = DBL_MAX;
+//
+//				int chosen = -1;
+//				// find the best plane
+//				for (unsigned int a = 0; a < planes.size(); ++a)
+//				{
+//					if (planes[a].distance(point) < dist && planes[a].distance(point) < m_max_distance &&
+//						planes[a].isSimilar(aaa, m_max_plane_normal_dev, m_max_plane_shift_dev))
+//					{
+//						dist = planes[a].distance(point);
+//						chosen = a;
+//					}
+//				}
+//
+//				// if there is good plane, insert point into point cloud
+//				if (chosen > -1)
+//				{
+//					PointXYZ pclpoint(point[0], point[1], point[2]);
+//					planesInPCloud[chosen].push_back(pclpoint);
+//
+//					if (color_method == "mean_color")
+//					{
+//						cv::Vec<unsigned char, 3> color = rgb.at<cv::Vec<unsigned char, 3> >(i, j);
+//						colors[chosen].r += (float)color[0]/255.0;
+//						colors[chosen].g += (float)color[1]/255.0;
+//						colors[chosen].b += (float)color[2]/255.0;
+//						//std::cerr << color[0] << " " << color[1] << " " << color[2] << std::endl;
+//					}
+//					else if (color_method == "mean_color")
+//					{
+//						cv::Vec<unsigned char, 3> color = rgb.at<cv::Vec<unsigned char, 3> >(i, j);
+//						colors[chosen].r += point[0] / 5.0;
+//						colors[chosen].g += point[1] / 5.0;
+//						colors[chosen].b += point[2] / 5.0;
+//											//std::cerr << color[0] << " " << color[1] << " " << color[2] << std::endl;
+//					}
+////					if (point[2] > 0.9 && point[2] < 1.0 && (planes[chosen].d < -0.5 || planes[chosen].d > 0.5) && (planes[chosen].c < -0.5 || planes[chosen].c > 0.5))
+////					{
+////						std::cerr << planes[chosen].a << " " << planes[chosen].b << " " << planes[chosen].c << " " << planes[chosen].d << " --- > ";
+////						std::cerr << point[0] << " " << point[1] << " " << point[2] << std::endl;
+////					}
+//				}
+//			}
+//		}
+
+		if (color_method == "mean_color" || color_method == "centroid")
+		{
+			for (unsigned int i = 0; i < colors.size(); ++i)
+				if(planesInPCloud.size() > 0)
+				{
+					colors[i].r /= planesInPCloud[i].size();
+					colors[i].g /= planesInPCloud[i].size();
+					colors[i].b /= planesInPCloud[i].size();
+					colors[i].a = 1.0;
+				}
+		}
+		// Indexed in point cloud
+		////////////////////////////////////////////////////////////////////////////////////////////////
+
+		for (unsigned int j = 0; j < planesInPCloud.size(); ++j)
+		{
+			if (planesInPCloud[j].size() > 20)
 			{
-				sizes[chosen] += 1;
-				centers[chosen] += point;
+				double maxangle = DBL_MAX;
+				double maxdist = DBL_MAX;
+				int index = -1;
+				for (unsigned int i = 0; i < displayed_planes.size(); ++i)
+				{
+					if (!(displayed_planes[i].is_deleted))
+					{
+						double angle = acos(((planes[j].a * displayed_planes[i].plane.a) + (planes[j].b * displayed_planes[i].plane.b) + (planes[j].c * displayed_planes[i].plane.c)));
+						double xd = planes[j].d - displayed_planes[i].plane.d;
+						xd = (xd > 0 ? xd : - xd);
 
-				if (point[0] < mins[chosen][0]) mins[chosen][0] = point[0];
-				if (point[1] < mins[chosen][1]) mins[chosen][1] = point[1];
-				if (point[2] < mins[chosen][2]) mins[chosen][2] = point[2];
+						// Pretty nasty workaround... todo
+						if (angle != angle) angle = 0.0;
 
-				if (point[0] > maxs[chosen][0]) maxs[chosen][0] = point[0];
-				if (point[1] > maxs[chosen][1]) maxs[chosen][1] = point[1];
-				if (point[2] > maxs[chosen][2]) maxs[chosen][2] = point[2];
+						if (angle <= maxangle  && xd <= maxdist && angle < m_max_plane_normal_dev  && xd < m_max_plane_shift_dev)
+						{
+							maxangle = angle;
+							maxdist = xd;
+							index = i;
+						}
+					}
+				}
+
+				if (index >= 0)
+				{
+					DynModelExporter::addMarkerToConcaveHull(planesInPCloud[j], displayed_planes[index].plane);
+					displayed_planes[index].update = ros::Time::now();
+				}
+				else
+				{
+					ExportedPlane newplane;
+					newplane.update = ros::Time::now();
+					newplane.plane = PlaneExt(planes[j]);
+					newplane.is_deleted = false;
+					newplane.to_be_deleted = false;
+					DynModelExporter::createMarkerForConcaveHull(planesInPCloud[j], newplane.plane);
+
+					newplane.id = displayed_planes.size();
+					newplane.plane.getMeshMarker().id = newplane.id;
+					if (color_method == "mean_color")
+					{
+						std::cerr << "setting color: " << colors[j].r << " " << colors[j].g << " " << colors[j].b << std::endl;
+						newplane.plane.setColor(colors[j]);
+					}
+					else if (color_method == "random")
+					{
+						colors[j].r = (float)rand()/INT_MAX * 0.5 + 0.2;
+						colors[j].g = (float)rand()/INT_MAX * 0.5 + 0.2;
+						colors[j].b = (float)rand()/INT_MAX * 0.5 + 0.2;
+						colors[j].a = 1.0;
+						newplane.plane.setColor(colors[j]);
+					}
+					//newplane.plane.getShapeMarker().id = newplane.id;
+					displayed_planes.push_back(newplane);
+				}
 			}
 		}
 
-		for (unsigned int i = 0; i < planes.size(); ++i)
+		// TTL fix
+		if (m_plane_ttl > 0)
 		{
-			if (sizes[i] < m_minOutputCount) flags[i] = false;
-			else flags[i] = true;
-
-			centers[i][0] /= sizes[i];
-			centers[i][1] /= sizes[i];
-			centers[i][2] /= sizes[i];
-
-			tf::Transform planeInverseTransform;
-			planeInverseTransform.setOrigin(btVector3(0,0,0));
-			float x, y, z, w;
-			planes[i].getInverseQuaternionRotation(x, y, z, w);
-			planeInverseTransform.setRotation(btQuaternion(x, y, z, w));
-			btVector3 max(maxs[i][0], maxs[i][1], maxs[i][2]);
-			btVector3 min(mins[i][0], mins[i][1], mins[i][2]);
-
-			max = planeInverseTransform * max;
-			min = planeInverseTransform * min;
-
-			scales[i][0] = max.x() - min.x();
-			scales[i][1] = max.y() - min.y();
-			scales[i][2] = max.z() - min.z();
+			for (unsigned int i = 0; i < displayed_planes.size(); ++i)
+			{
+				if (!displayed_planes[i].is_deleted && !displayed_planes[i].to_be_deleted && (ros::Time::now() - displayed_planes[i].update).sec > m_plane_ttl)
+				{
+					std::cerr << (ros::Time::now() - displayed_planes[i].update).sec << " ";
+					displayed_planes[i].is_deleted = true;
+					displayed_planes[i].to_be_deleted = true;
+				}
+				else if (displayed_planes[i].is_deleted && displayed_planes[i].to_be_deleted)
+				{
+					displayed_planes[i].to_be_deleted = false;
+				}
+			}
 		}
 	}
-	bool DynModelExporter::getCenterAndScale(Plane<float> &plane, pcl::PointCloud<PointXYZRGB>::Ptr scene_cloud, PointXYZ &center, PointXYZ &scale)
-		{
-			center.x = 0.0;
-			center.y = 0.0;
-			center.z = 0.0;
 
-			float size = 0.0;
-			PointXYZ min(9999999.0, 9999999.0, 9999999.0);
-			PointXYZ max(-9999999.0, -9999999.0, -9999999.0);
 
-			for (pcl::PointCloud<PointXYZRGB>::iterator it = scene_cloud->begin(); it != scene_cloud->end(); ++it)
-			{
-				 // 1cm TODO - make as param
-				 if (plane.distance(cv::Vec3f(it->x, it->y, it->z)) < m_max_distance)
-				 {
-					 center.x += it->x;
-					 center.y += it->y;
-					 center.z += it->z;
-					 size += 1.0;
 
-					 if (it->x < min.x) min.x = it->x;
-					 if (it->y < min.y) min.y = it->y;
-					 if (it->z < min.z) min.z = it->z;
-
-					 if (it->x > max.x) max.x = it->x;
-					 if (it->y > max.y) max.y = it->y;
-					 if (it->z > max.z) max.z = it->z;
-				 }
-			}
-
-			//std::cout << std::endl << std::endl << min << " " << max << std::endl << std::endl;
-			if (size > 10)
-			{
-				center.x /= size;
-				center.y /= size;
-				center.z /= size;
-				//center.z = -(center.x*plane.a + center.y*plane.b + plane.d)/plane.c;
-			}
-			else return false;
-
-			scale.x = max.x - min.x;
-			if (scale.x > 3)
-				scale.x = 3;
-			scale.y = max.y - min.y;
-			if (scale.y > 3)
-				scale.y = 3;
-			scale.z = max.z - min.z;
-			if (scale.z > 3)
-				scale.z = 3;
-
-			return true;
-		}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
@@ -479,7 +269,9 @@ namespace srs_env_model_percp
 	                                   int minOutputCount,
 	                                   double max_distance,
 	                                   double max_plane_normal_dev,
-	                                   double max_plane_shift_dev
+	                                   double max_plane_shift_dev,
+	                                   int keep_tracking,
+	                                   int ttl
 	                                   )
 	    : original_frame_(original_frame)
 	    , output_frame_(output_frame)
@@ -489,59 +281,425 @@ namespace srs_env_model_percp
 		m_max_distance = max_distance;
 		m_max_plane_normal_dev = max_plane_normal_dev;
 		m_max_plane_shift_dev = max_plane_shift_dev;
+		m_keep_tracking = keep_tracking;
+		m_plane_ttl = ttl;
 	}
 
-	void DynModelExporter::createMarkerForConvexHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, pcl::ModelCoefficients::Ptr& plane_coefficients, visualization_msgs::Marker& marker)
+	void DynModelExporter::createMarkerForConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane)
 	{
-		// init marker
-	    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
-	    marker.action = visualization_msgs::Marker::ADD;
+		plane.NewPlanePoints(plane_cloud.makeShared());
+	    plane.getMeshMarker().type = visualization_msgs::Marker::TRIANGLE_LIST;
+	    plane.getMeshMarker().action = visualization_msgs::Marker::ADD;
 
-	    // project the points of the plane on the plane
-	    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_projected (new pcl::PointCloud<pcl::PointXYZ> ());
-	    pcl::ProjectInliers<pcl::PointXYZ> proj;
-	    proj.setModelType (pcl::SACMODEL_PLANE);
-	    proj.setInputCloud (plane_cloud.makeShared());
-	    proj.setModelCoefficients (plane_coefficients);
-	    proj.filter(*cloud_projected);
-
-	    // create the convex hull in the plane
-	    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull (new pcl::PointCloud<pcl::PointXYZ> ());
-	    pcl::ConvexHull<pcl::PointXYZ > chull;
-	    chull.setInputCloud (cloud_projected);
-	    chull.reconstruct(*cloud_hull);
-
-	    // work around known bug in ROS Diamondback perception_pcl: convex hull is centered around centroid of input cloud (fixed in pcl svn revision 443)
-	    // thus: we shift the mean of cloud_hull to the mean of cloud_projected (fill dx, dy, dz and apply when creating the marker points)
-	    Eigen::Vector4f meanPointCH, meanPointCP;
-	    pcl::compute3DCentroid(*cloud_projected, meanPointCP);
-	    pcl::compute3DCentroid(*cloud_hull, meanPointCH);
-	    float dx = meanPointCP[0]-meanPointCH[0];
-	    float dy = meanPointCP[1]-meanPointCH[1];
-	    float dz = meanPointCP[2]-meanPointCH[2];
-
-	    // create colored part of plane by creating marker for each triangle between neighbored points on contour of convex hull an midpoint
-	    marker.points.clear();
-	    for (unsigned int j = 0; j < cloud_hull->points.size(); ++j)
-	    {
-	    	geometry_msgs::Point p;
-
-	        p.x = cloud_hull->points[j].x+dx; p.y = cloud_hull->points[j].y+dy; p.z = cloud_hull->points[j].z+dz;
-	        marker.points.push_back( p );
-
-	        p.x = cloud_hull->points[(j+1)%cloud_hull->points.size() ].x+dx; p.y = cloud_hull->points[(j+1)%cloud_hull->points.size()].y+dy; p.z = cloud_hull->points[(j+1)%cloud_hull->points.size()].z+dz;
-	        marker.points.push_back( p );
-
-	        p.x = meanPointCP[0]; p.y = meanPointCP[1]; p.z = meanPointCP[2];
-	        marker.points.push_back( p );
-
-	    }
-
-	// scale of the marker
-	marker.scale.x = 1;
-	marker.scale.y = 1;
-	marker.scale.z = 1;
+	    plane.getMeshMarker().ns = "Normals";
+	    plane.getMeshMarker().pose.position.x = 0.0;
+	    plane.getMeshMarker().pose.position.y = 0.0;
+	    plane.getMeshMarker().pose.position.z = 0.0;
+	    plane.getMeshMarker().pose.orientation.x = 0.0;
+	    plane.getMeshMarker().pose.orientation.y = 0.0;
+	    plane.getMeshMarker().pose.orientation.z = 0.0;
+	    plane.getMeshMarker().pose.orientation.w = 1.0;
+	    plane.getMeshMarker().scale.x = 1.00;
+	    plane.getMeshMarker().scale.y = 1.00;
+	    plane.getMeshMarker().scale.z = 1.00;
+//
 
 	}
+
+	void DynModelExporter::addMarkerToConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane)
+	{
+		plane.AddPlanePoints(plane_cloud.makeShared());
+	}
+
+	void DynModelExporter::xmlFileExport(std::string filename)
+	{
+		xmlDocPtr document = NULL;
+		xmlNodePtr root_node = NULL;
+		xmlNodePtr plane_node = NULL;
+		xmlNodePtr polys_node = NULL;
+		xmlNodePtr poly_node = NULL;
+		xmlNodePtr outer_node = NULL;
+		xmlNodePtr holes_node = NULL;
+		xmlNodePtr hole_node = NULL;
+		xmlNodePtr points_node = NULL;
+		xmlNodePtr node = NULL;
+
+		/////////////////////////////////////////////////////
+		// XML structure
+		//
+		// <planes>
+		//	 <plane id=... poly_number=...>
+		//	   <equation a=... b=... c=... d=... />
+		//     <polygons>
+		//	     <polygon>
+		//	       <outer>
+		//		     <points>
+		//		       <point x=.. y=..>
+		//		     </points>
+		//	       </outer>
+		//	       <holes>
+		//  	     <hole>
+		//		       <points>
+		//		         <point x=.. y=..>
+		//		       </points>
+		//  	     </hole>
+		//			 .......
+		//	       </holes>
+		//	     </polygon>
+		//       ......
+		//     </polygons>
+		//	 </plane>
+		//   ......
+		// </planes>
+		/////////////////////////////////////////////////////
+		// Create a new XML document
+		document = xmlNewDoc(BAD_CAST "1.0");
+		root_node = xmlNewNode(NULL, BAD_CAST "planes");
+		xmlDocSetRootElement(document, root_node);
+
+		for (unsigned int i = 0; i < displayed_planes.size(); ++i)
+		{
+			if (!displayed_planes[i].is_deleted)
+			{
+				ClipperLib::ExPolygons polygons = displayed_planes[i].plane.getPolygons();
+
+				// save plane global info
+				plane_node = xmlNewChild(root_node, NULL, BAD_CAST "plane", NULL);
+
+				std::stringstream str;
+				str << i;
+				xmlNewProp(plane_node, BAD_CAST "id", BAD_CAST str.str().c_str());
+
+				str.str("");
+				str << polygons.size();
+				xmlNewProp(plane_node, BAD_CAST "poly_number", BAD_CAST str.str().c_str());
+
+				// plane equation
+				node = xmlNewChild(plane_node, NULL, BAD_CAST "equation", NULL);
+
+				str.str("");
+				str << displayed_planes[i].plane.a;
+				xmlNewProp(node, BAD_CAST "a", BAD_CAST str.str().c_str());
+
+				str.str("");
+				str << displayed_planes[i].plane.b;
+				xmlNewProp(node, BAD_CAST "b", BAD_CAST str.str().c_str());
+
+				str.str("");
+				str << displayed_planes[i].plane.c;
+				xmlNewProp(node, BAD_CAST "c", BAD_CAST str.str().c_str());
+
+				str.str("");
+				str << displayed_planes[i].plane.d;
+				xmlNewProp(node, BAD_CAST "d", BAD_CAST str.str().c_str());
+
+				// color
+				node = xmlNewChild(plane_node, NULL, BAD_CAST "color", NULL);
+
+				str.str("");
+				str << displayed_planes[i].plane.color.r;
+				xmlNewProp(node, BAD_CAST "r", BAD_CAST str.str().c_str());
+
+				str.str("");
+				str << displayed_planes[i].plane.color.g;
+				xmlNewProp(node, BAD_CAST "g", BAD_CAST str.str().c_str());
+
+				str.str("");
+				str << displayed_planes[i].plane.color.b;
+				xmlNewProp(node, BAD_CAST "b", BAD_CAST str.str().c_str());
+
+				str.str("");
+				str << displayed_planes[i].plane.color.a;
+				xmlNewProp(node, BAD_CAST "a", BAD_CAST str.str().c_str());
+
+				// save polygons
+				polys_node = xmlNewChild(plane_node, NULL, BAD_CAST "polygons", NULL);
+				for (unsigned int j = 0; j < polygons.size(); ++j)
+				{
+					poly_node = xmlNewChild(polys_node, NULL, BAD_CAST "polygon", NULL);
+
+					str.str("");
+					str << j;
+					xmlNewProp(poly_node, BAD_CAST "id", BAD_CAST str.str().c_str());
+
+					// outer body
+					outer_node = xmlNewChild(poly_node, NULL, BAD_CAST "outer", NULL);
+					points_node = xmlNewChild(outer_node, NULL, BAD_CAST "points", NULL);
+					for (unsigned int k = 0; k < polygons[j].outer.size(); ++k)
+					{
+						node = xmlNewChild(points_node, NULL, BAD_CAST "point", NULL);
+
+						str.str("");
+						str << polygons[j].outer[k].X;
+						xmlNewProp(node, BAD_CAST "x", BAD_CAST str.str().c_str());
+
+						str.str("");
+						str << polygons[j].outer[k].Y;
+						xmlNewProp(node, BAD_CAST "y", BAD_CAST str.str().c_str());
+					}
+
+	//				// export holes
+	//				holes_node = xmlNewChild(poly_node, NULL, BAD_CAST "holes", NULL);
+	//				for (unsigned int k = 0; k < polygons[j].holes.size(); ++k)
+	//				{
+	//					hole_node = xmlNewChild(holes_node, NULL, BAD_CAST "hole", NULL);
+	//					points_node = xmlNewChild(hole_node, NULL, BAD_CAST "points", NULL);
+	//					for (unsigned int l = 0; l < polygons[j].holes[k].size(); ++l)
+	//					{
+	//						node = xmlNewChild(points_node, NULL, BAD_CAST "point", NULL);
+	//
+	//						str.str("");
+	//						str <<  polygons[j].holes[k][l].X;
+	//						xmlNewProp(node, BAD_CAST "x", BAD_CAST str.str().c_str());
+	//
+	//						str.str("");
+	//						str <<  polygons[j].holes[k][l].Y;
+	//						xmlNewProp(node, BAD_CAST "y", BAD_CAST str.str().c_str());
+	//					}
+	//				}
+
+				}
+			}
+		}
+
+		xmlSaveFormatFileEnc(filename.c_str(), document, "UTF-8", 1);
+	    xmlFreeDoc(document);
+	    xmlCleanupParser();
+	}
+
+	void DynModelExporter::xmlFileImport(std::string filename)
+	{
+		/////////////////////////////////////////////////////
+		// XML structure
+		//
+		// <planes>
+		//	 <plane id=... poly_number=...>
+		//	   <equation a=... b=... c=... d=... />
+		//     <polygons>
+		//	     <polygon>
+		//	       <outer>
+		//		     <points>
+		//		       <point x=.. y=..>
+		//		     </points>
+		//	       </outer>
+		//	       <holes>
+		//  	     <hole>
+		//		       <points>
+		//		         <point x=.. y=..>
+		//		       </points>
+		//  	     </hole>
+		//			 .......
+		//	       </holes>
+		//	     </polygon>
+		//       ......
+		//     </polygons>
+		//	 </plane>
+		//   ......
+		// </planes>
+		/////////////////////////////////////////////////////
+		xmlDocPtr document = xmlParseFile(filename.c_str());
+
+		if (document->children && xmlStrEqual(document->children->name, (const xmlChar *)"planes"))
+		{
+			// pass each node
+			for (xmlNodePtr plane = document->children->children; plane; plane = plane->next)
+			{
+
+				if (xmlStrEqual(plane->name, (const xmlChar *)"plane"))
+				{
+					float a = 0.0;
+					float b = 0.0;
+					float c = 0.0;
+					float d = 0.0;
+					std_msgs::ColorRGBA color;
+					color.r = 0.0;
+					color.g = 0.0;
+					color.b = 0.0;
+					color.a = 0.0;
+					int id = 0;
+					for (xmlAttrPtr attribute = plane->properties; attribute; attribute = attribute->next)
+					{
+						// get id
+						if (xmlStrEqual(attribute->name, (const xmlChar *)"id"))
+						{
+							id = atoi(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+						}
+					}
+
+					ClipperLib::ExPolygons polygons;
+					for (xmlNodePtr plane_child = plane->children; plane_child; plane_child = plane_child->next)
+					{
+						// get equation
+						if (xmlStrEqual(plane_child->name, (const xmlChar *)"equation"))
+							for (xmlAttrPtr attribute = plane_child->properties; attribute; attribute = attribute->next)
+							{
+								if (xmlStrEqual(attribute->name, (const xmlChar *)"a"))
+									a = atof(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+
+								if (xmlStrEqual(attribute->name, (const xmlChar *)"b"))
+									b = atof(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+
+								if (xmlStrEqual(attribute->name, (const xmlChar *)"c"))
+									c = atof(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+
+								if (xmlStrEqual(attribute->name, (const xmlChar *)"d"))
+									d = atof(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+							}
+
+						// get color
+						if (xmlStrEqual(plane_child->name, (const xmlChar *)"color"))
+							for (xmlAttrPtr attribute = plane_child->properties; attribute; attribute = attribute->next)
+							{
+								if (xmlStrEqual(attribute->name, (const xmlChar *)"r"))
+									color.r = atof(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+
+								if (xmlStrEqual(attribute->name, (const xmlChar *)"g"))
+									color.g = atof(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+
+								if (xmlStrEqual(attribute->name, (const xmlChar *)"b"))
+									color.b = atof(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+
+								if (xmlStrEqual(attribute->name, (const xmlChar *)"a"))
+									color.a = atof(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+							}
+
+						// <POLYGONS>
+						if (xmlStrEqual(plane_child->name, (const xmlChar *)"polygons"))
+						for (xmlNodePtr polygon = plane_child->children; polygon; polygon = polygon->next)
+						{
+							// <POLYGON>
+							if (xmlStrEqual(polygon->name, (const xmlChar *)"polygon") )
+							{
+								polygons.push_back(ClipperLib::ExPolygon());
+								for (xmlNodePtr node = polygon->children; node; node = node->next)
+								{
+									// <OUTER>
+									if (xmlStrEqual(node->name, (const xmlChar *)"outer"))
+									{
+										// <POINTS>
+										for (xmlNodePtr points = node->children; points; points = points->next)
+										if (xmlStrEqual(points->name, (const xmlChar *)"points"))
+										{
+											// <POINT>
+											for (xmlNodePtr point = points->children; point; point = point->next)
+											if (xmlStrEqual(point->name, (const xmlChar *)"point"))
+											{
+												int x, y;
+												for (xmlAttrPtr attribute = point->properties; attribute; attribute = attribute->next)
+												{
+													if (xmlStrEqual(attribute->name, (const xmlChar *)"x"))
+														x = atoi(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+													if (xmlStrEqual(attribute->name, (const xmlChar *)"y"))
+														y = atoi(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+												}
+												polygons.back().outer.push_back(ClipperLib::IntPoint(x, y));
+											} // point
+										} // points
+									} // outer
+//									//<HOLES>
+//									else if (xmlStrEqual(node->name, (const xmlChar *)"holes"))
+//									{
+//										// <HOLE>
+//										for (xmlNodePtr hole = node->children; hole; hole = node->next)
+//										if (xmlStrEqual(hole->name, (const xmlChar *)"hole"))
+//										{
+//											polygons.back().holes.push_back(ClipperLib::Polygon());
+//											// <POINTS>
+//											for (xmlNodePtr points = hole->children; points; points = points->next)
+//											if (xmlStrEqual(points->name, (const xmlChar *)"points"))
+//											{
+//												// <POINT>
+//												for (xmlNodePtr point = points->children; point; point = point->next)
+//												{
+//													int x, y;
+//													for (xmlAttrPtr attribute = point->properties; attribute; attribute = attribute->next)
+//													{
+//														if (xmlStrEqual(attribute->name, (const xmlChar *)"x"))
+//															x = atoi(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+//														if (xmlStrEqual(attribute->name, (const xmlChar *)"y"))
+//															y = atoi(reinterpret_cast<const char*>(xmlNodeListGetString(document, attribute->children, 1)));
+//													}
+//													polygons.back().holes.back().push_back(ClipperLib::IntPoint(x, y));
+//												} // point
+//											} // points
+//										} // hole
+//									} // holes
+								} // polygon children
+							} // polygon
+						} // polygons
+					} // plane
+
+					// save new plane
+					displayed_planes.push_back(ExportedPlane());
+					displayed_planes.back().id = id;
+					displayed_planes.back().plane = PlaneExt(Plane<float>(a, b, c, d));
+					displayed_planes.back().plane.setColor(color);
+					displayed_planes.back().is_deleted = false;
+					displayed_planes.back().to_be_deleted = false;
+					displayed_planes.back().update = ros::Time::now();
+
+					displayed_planes.back().plane.setPolygons(polygons);
+					displayed_planes.back().plane.TriangulatePlanePolygon();
+
+					displayed_planes.back().plane.getMeshMarker().type = visualization_msgs::Marker::TRIANGLE_LIST;
+					displayed_planes.back().plane.getMeshMarker().action = visualization_msgs::Marker::ADD;
+
+					displayed_planes.back().plane.getMeshMarker().ns = "Normals";
+					displayed_planes.back().plane.getMeshMarker().pose.position.x = 0.0;
+					displayed_planes.back().plane.getMeshMarker().pose.position.y = 0.0;
+					displayed_planes.back().plane.getMeshMarker().pose.position.z = 0.0;
+					displayed_planes.back().plane.getMeshMarker().pose.orientation.x = 0.0;
+					displayed_planes.back().plane.getMeshMarker().pose.orientation.y = 0.0;
+					displayed_planes.back().plane.getMeshMarker().pose.orientation.z = 0.0;
+					displayed_planes.back().plane.getMeshMarker().pose.orientation.w = 1.0;
+					displayed_planes.back().plane.getMeshMarker().scale.x = 1.00;
+					displayed_planes.back().plane.getMeshMarker().scale.y = 1.00;
+					displayed_planes.back().plane.getMeshMarker().scale.z = 1.00;
+					displayed_planes.back().plane.getMeshMarker().id = id;
+
+				} // planes
+			}
+		}
+	}
+
+	void DynModelExporter::getMarkerArray(visualization_msgs::MarkerArray &message, std::string output_frame_id)
+	{
+       	for (unsigned int i = 0; i < displayed_planes.size(); ++i)
+    	{
+       		if (!displayed_planes[i].is_deleted)
+       		{
+       			message.markers.push_back(displayed_planes[i].plane.getMeshMarker());
+       			message.markers.back().header.frame_id = output_frame_id;
+       			message.markers.back().header.stamp = ros::Time::now();
+       		}
+       		else if (displayed_planes[i].to_be_deleted)
+       		{
+       			message.markers.push_back(displayed_planes[i].plane.getMeshMarker());
+       			message.markers.back().header.frame_id = output_frame_id;
+       			message.markers.back().header.stamp = ros::Time::now();
+       			message.markers.back().action = visualization_msgs::Marker::DELETE;
+       		}
+    	}
+	}
+
+	void DynModelExporter::getShapeArray(cob_3d_mapping_msgs::ShapeArray &message, std::string output_frame_id)
+	{
+    	message.header.frame_id = output_frame_id;
+
+    	for (unsigned int i = 0; i < displayed_planes.size(); ++i)
+    	{
+    		if (!displayed_planes[i].is_deleted)
+    		{
+    			PlaneExt::tShapeMarker shapes = displayed_planes[i].plane.getShapeMarker();
+    			for (unsigned int j = 0; j < shapes.size(); ++j)
+    			{
+    				message.shapes.push_back(shapes[j]);
+    				message.shapes.back().header.frame_id=output_frame_id;
+    				message.shapes.back().id = i * 100 + j;
+    			}
+    		}
+    	}
+	}
+
 
 }// but_scenemodel

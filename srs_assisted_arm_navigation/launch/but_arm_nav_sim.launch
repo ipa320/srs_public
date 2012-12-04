@@ -4,14 +4,14 @@
   <param name="/use_sim_time" value="true" />
   <include file="$(find cob_bringup_sim)/launch/robot.launch" />
   
-  <include file="$(find srs_assisted_arm_navigation)/launch/cob_common.launch"/>
+  <include file="$(find srs_assisted_arm_navigation)/launch/cob_common.xml"/>
   
-  <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.launch"/>
+  <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.xml"/>
   
-  <include file="$(find srs_env_model)/launch/kinect_throttling.launch"/>
+  <include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch"/>
   
   <!-- BUT planning environment -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.launch"/>
+  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.xml"/>
   
   <!-- RVIZ with proper configuration -->
   <!--include file="$(find srs_assisted_arm_navigation_ui)/launch/rviz.launch"/-->

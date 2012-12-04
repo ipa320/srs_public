@@ -14,9 +14,10 @@ Apartment.Robot\ Description=apartment_description
 Apartment.TF\ Prefix=
 Apartment.Update\ Interval=0
 Apartment.Visual\ Enabled=1
-ButProjectionTest.Depth\ image\ Topic=/srs_ui_but/depth/image
+ButProjectionTest.Depth\ image\ Topic=/cam3d/depth/image_raw_throttled
 ButProjectionTest.Enabled=1
-ButProjectionTest.RGB\ image\ Topic=/cam3d/rgb/image_raw
+ButProjectionTest.RGB\ image\ Topic=/cam3d/rgb/image_raw_throttled
+ButProjectionTest.Tested\ distance=1
 Distance\ Visualizer.Alpha=1
 Distance\ Visualizer.ColorR=1
 Distance\ Visualizer.ColorG=1
@@ -26,6 +27,34 @@ Distance\ Visualizer.Line\ Thickness=0.01
 Distance\ Visualizer.Link=/sdh_palm_link
 Distance\ Visualizer.Show\ distance=1
 Distance\ Visualizer.Topic=
+Global\ 3D\ Voxel\ Map.Alpha=0.5
+Global\ 3D\ Voxel\ Map.Billboard\ Size=0.03
+Global\ 3D\ Voxel\ Map.Color\ Transformer=RGB8
+Global\ 3D\ Voxel\ Map.Decay\ Time=0
+Global\ 3D\ Voxel\ Map.Enabled=0
+Global\ 3D\ Voxel\ Map.Position\ Transformer=XYZ
+Global\ 3D\ Voxel\ Map.Selectable=0
+Global\ 3D\ Voxel\ Map.Style=2
+Global\ 3D\ Voxel\ Map.Topic=/but_env_model/pointcloud_centers
+Global\ 3D\ Voxel\ Map..AxisAutocompute\ Value\ Bounds=1
+Global\ 3D\ Voxel\ Map..AxisAxis=2
+Global\ 3D\ Voxel\ Map..AxisMax\ Value=10
+Global\ 3D\ Voxel\ Map..AxisMin\ Value=-10
+Global\ 3D\ Voxel\ Map..AxisUse\ Fixed\ Frame=1
+Global\ 3D\ Voxel\ Map..Flat\ ColorColorR=1
+Global\ 3D\ Voxel\ Map..Flat\ ColorColorG=1
+Global\ 3D\ Voxel\ Map..Flat\ ColorColorB=1
+Global\ 3D\ Voxel\ Map..IntensityAutocompute\ Intensity\ Bounds=1
+Global\ 3D\ Voxel\ Map..IntensityChannel\ Name=z
+Global\ 3D\ Voxel\ Map..IntensityMax\ ColorR=1
+Global\ 3D\ Voxel\ Map..IntensityMax\ ColorG=1
+Global\ 3D\ Voxel\ Map..IntensityMax\ ColorB=1
+Global\ 3D\ Voxel\ Map..IntensityMax\ Intensity=4096
+Global\ 3D\ Voxel\ Map..IntensityMin\ ColorR=0
+Global\ 3D\ Voxel\ Map..IntensityMin\ ColorG=0
+Global\ 3D\ Voxel\ Map..IntensityMin\ ColorB=0
+Global\ 3D\ Voxel\ Map..IntensityMin\ Intensity=0
+Global\ 3D\ Voxel\ Map..IntensityUse\ full\ RGB\ spectrum=1
 Interactive\ Markers.Enabled=1
 Interactive\ Markers.Show\ Axes=0
 Interactive\ Markers.Show\ Descriptions=1
@@ -311,22 +340,11 @@ Robot\:\ Robot\ Model\ Link\ tray_phidgets_4_linkShow\ Axes=0
 Robot\:\ Robot\ Model\ Link\ tray_phidgets_4_linkShow\ Trail=0
 Robot\:\ Robot\ Model\ Link\ tray_right_linkShow\ Axes=0
 Robot\:\ Robot\ Model\ Link\ tray_right_linkShow\ Trail=0
-Stretch\ Indicator.Alpha=0.5
-Stretch\ Indicator.ColorR=1
-Stretch\ Indicator.ColorG=0.980392
-Stretch\ Indicator.ColorB=0
-Stretch\ Indicator.Correction=0.5
-Stretch\ Indicator.Enabled=0
-Stretch\ Indicator.Range=20
-Stretch\ Indicator.Show\ bounding\ box=1
-Stretch\ Indicator.Show\ distance=0
-Stretch\ Indicator.Style=0
-Stretch\ Indicator.Thickness=0.5
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.011 5.38359 8.61255 -0.22168 0.541248 0.936886
-Property\ Grid\ State=selection=;expanded=;scrollpos=0,0;splitterpos=145,291;ispageselected=1
+Camera\ Config=0.941001 5.02358 12.2436 -0.22168 0.541248 0.936886
+Property\ Grid\ State=selection=Live Point Cloud.Enabled;expanded=Global 3D Voxel Map.Enabled.Global 3D Voxel Map.StatusTopStatus;scrollpos=0,0;splitterpos=163,327;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz
@@ -336,33 +354,33 @@ Name=2D Map
 Package=rviz
 ClassName=rviz::MapDisplay
 [Display2]
+Name=Global 3D Voxel Map
+Package=srs_ui_but
+ClassName=CButPointCloud
+[Display3]
 Name=Robot Interactive Teleop
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display3]
+[Display4]
 Name=Interactive Markers
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display4]
+[Display5]
 Name=Live Point Cloud
 Package=rviz
 ClassName=rviz::PointCloud2Display
-[Display5]
+[Display6]
 Name=Laser Scan Front
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display6]
+[Display7]
 Name=Laser Scan Rear
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display7]
+[Display8]
 Name=Apartment
 Package=rviz
 ClassName=rviz::RobotModelDisplay
-[Display8]
-Name=Stretch Indicator
-Package=srs_ui_but
-ClassName=CButCOBStretchIndicator
 [Display9]
 Name=Distance Visualizer
 Package=srs_ui_but

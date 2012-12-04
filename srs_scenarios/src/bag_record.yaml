@@ -1,16 +1,10 @@
-bag_name: bag_srs.bag
-record_timestep: 10
+bag_name: test1.bag
+record_timestep: 100
 trigger_record_translation: 0.1
-trigger_record_angle: 0.2
-wanted_topics: [/joint_states ,/stereo/left/image_color,/stereo/right/image_color, /stereo/left/camera_info, /stereo/right/camera_info, /arm_controller/state]
+trigger_record_rotation: 0.2
+wanted_topics: [/tf, /joint_states, /stereo/left/image_color, /stereo/right/image_color, /stereo/left/camera_info, /stereo/right/camera_info, /cam3d/rgb/points]
 wanted_tfs:
  - reference_frame: /map
    target_frame: /base_link
    trigger_record_translation: 0.1
-   trigger_record_angle: 0.2 
- - reference_frame: /base_link
-   target_frame: /sdh_grasp_link
-   trigger_record_translation: 0.1
-   trigger_record_angle: 0.2
-
-
+   trigger_record_rotation: 0.2

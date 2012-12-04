@@ -212,7 +212,7 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
     m_d = m_dBuf;
     m_normal = m_normalBuf;
 
-    tButServerOcTree & tree( par.map->octree );
+    tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes

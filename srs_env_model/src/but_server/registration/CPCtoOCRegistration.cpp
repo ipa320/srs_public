@@ -207,7 +207,7 @@ bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par,
 	}
 
 	// Initialize leaf iterators
-	tButServerOcTree & tree( par.map->octree );
+	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Compute fraction matrix

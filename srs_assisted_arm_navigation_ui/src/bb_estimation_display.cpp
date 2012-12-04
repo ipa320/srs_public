@@ -58,7 +58,7 @@ CButBBEstimationDisplay::CButBBEstimationDisplay(const std::string & name,rviz::
         if( m_bb_estimation_window != 0 )
         {
             std::cerr << "Adding to the window manager..." << std::endl;
-            wi->addPane( "BB estimator plugin", m_bb_estimation_window );
+            wi->addPane( "Assisted object detection", m_bb_estimation_window );
             wi->showPane( m_bb_estimation_window );
             std::cerr << "Added..." << std::endl;
         }

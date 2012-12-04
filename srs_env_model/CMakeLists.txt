@@ -44,6 +44,9 @@ set( SERVER_SOURCES src/but_server/but_server.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_oriented_box.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_planes.cpp
                     src/but_server/plugins/octomap_plugin_tools/testing_polymesh.cpp
+                    src/but_server/plugins/octomap_plugin_tools/octomap_filter_base.cpp
+                    src/but_server/plugins/octomap_plugin_tools/octomap_filter_raycast.cpp
+                    src/but_server/plugins/octomap_plugin_tools/octomap_filter_ground.cpp
                     src/but_server/registration/CPCtoOCRegistration.cpp
                     )
                     
@@ -72,9 +75,6 @@ rosbuild_add_library( ${SRS_ENV_MODEL_LIB_NAME} ${SERVER_SOURCES} )
 # Add servernode executable
 rosbuild_add_executable( but_server_node ${SERVER_SOURCES} src/nodes/server_node.cpp )
 target_link_libraries( but_server_node octomap_ros ${OBJTREE_LIB_NAME} )
-
-# Nodelets
-rosbuild_add_library( cloud_throttle src/nodes/cloud_throttle.cpp )
 
 
 # Add compressed pc subscriber-publisher executable

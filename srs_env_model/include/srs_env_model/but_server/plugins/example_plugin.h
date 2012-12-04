@@ -104,7 +104,7 @@ protected:
 		m_time_stamp = par.currentTime;
 
 		// Initialize leaf iterators
-		tButServerOcTree & tree( par.map->octree );
+		tButServerOcTree & tree( par.map->getTree() );
 		srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 		// Crawl through nodes

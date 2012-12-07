@@ -1,5 +1,5 @@
 bag_name: test1.bag
-record_timestep: 100
+record_timestep: 10
 trigger_record_translation: 0.1
 trigger_record_rotation: 0.2
 wanted_topics: [/tf, /joint_states, /stereo/left/image_color, /stereo/right/image_color, /stereo/left/camera_info, /stereo/right/camera_info, /cam3d/rgb/points]

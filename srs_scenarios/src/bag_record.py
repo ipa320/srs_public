@@ -82,6 +82,9 @@ import rostopic
 import os
 import sys, subprocess
 
+import joint_states_aggregator
+import tf_aggregator
+
 class bag_record():
 
     def __init__(self):
@@ -103,6 +106,9 @@ class bag_record():
         
         self.current_translation = {}
         self.current_rotation = {}
+        
+        self.ja = joint_states_aggregator.joint_state_aggregator()
+        self.tfa = tf_aggregator.tf_aggregator()
         
         for frame in self.wanted_tfs:
             self.current_translation[frame["target_frame"]] = [0,0,0]
@@ -146,6 +152,31 @@ class bag_record():
             return "triggered"
         
         return "not_triggered"
+        
+    def tf_write(self, transf):
+    
+        rospy.loginfo("Tf_writer")
+        
+        for t in transf:
+            for j in transf[t]:
+                rospy.loginfo(t)
+                rospy.loginfo(j)
+                trans, rot = self.tfL.lookupTransform(t, j, rospy.Time(0))
+                
+                self.tfposed.header.frame_id = t
+                self.tfposed.header.stamp = rospy.Time.now()
+                self.tfposed.child_frame_id = j
+                self.tfposed.transform.translation.x = trans[0]
+                self.tfposed.transform.translation.y = trans[1]
+                self.tfposed.transform.translation.z = trans[2]
+                self.tfposed.transform.rotation.x = rot[0]
+                self.tfposed.transform.rotation.y = rot[1]
+                self.tfposed.transform.rotation.z = rot[2]
+                self.tfposed.transform.rotation.w = rot[3]
+                
+                tfMsg = tfMessage([self.tfposed])
+
+                bagfile.write("/tf", tfMsg)
     
     def process_topics(self, tfs):
         
@@ -160,10 +191,22 @@ class bag_record():
         
         timeout = 1.0
         try:
-        	msg =  rospy.wait_for_message(tfs, cls, timeout)
+            if (tfs == "/joint_states"):
+                msg = self.ja.process_joints()
+            
+            elif(tfs=="/tf"):
+                self.tfa.process_tfs()
+                transf = self.tfa.transforms
+                self.tf_write(transf)
+                    
+                msg = Empty()
+                
+            else:
+                msg =  rospy.wait_for_message(tfs, cls, timeout)
         except rospy.ROSException:
         	rospy.loginfo("skipping topic: " + str(tfs))
         	msg = Empty()
+        	
         return msg
 
     def bag_processor(self, tfs=None):
@@ -180,6 +223,8 @@ if __name__ == "__main__":
 	bagR = bag_record()
 
 	time_step = rospy.Duration.from_sec(bagR.record_timestep)
+	time_step2 = rospy.Duration.from_sec(1)
+	start_time2 = rospy.Time.now()
 	start_time = rospy.Time.now()
 
 	with bagR.bag as bagfile:
@@ -197,7 +242,8 @@ if __name__ == "__main__":
 					for tfs in bagR.wanted_topics:
 						print "triggered topic"
 						msg = bagR.process_topics(tfs)
-						bagfile.write(tfs, msg)
+						if(tfs != "/tf"):
+						    bagfile.write(tfs, msg)
 					start_time = rospy.Time.now()
 				else:
 					rospy.loginfo("not triggered")
@@ -215,8 +261,15 @@ if __name__ == "__main__":
 				for tfs in bagR.wanted_topics:
 					rospy.loginfo("triggered topic with time")
 					msg = bagR.process_topics(tfs)
-					bagfile.write(tfs, msg)
+					if(tfs!="/tf"):
+					    bagfile.write(tfs, msg)
 				start_time = rospy.Time.now()
 			
 			# sleep until next check
+			if(rospy.Time.now() - start_time2 > time_step2):
+			    rospy.loginfo("Forcing tf record")
+			    bagR.process_topics("/tf")
+			    #msg =  rospy.wait_for_message("/tf", tfMessage)
+			    #bagfile.write("/tf", msg)
+			    start_time2 = rospy.Time.now()
 			rate.sleep()

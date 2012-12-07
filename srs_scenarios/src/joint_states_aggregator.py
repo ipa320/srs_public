@@ -1,5 +1,61 @@
 #!/usr/bin/env python
 
+#################################################################
+##\file
+#
+# \note
+# Copyright (c) 2012 \n
+# Fraunhofer Institute for Manufacturing Engineering
+# and Automation (IPA) \n\n
+#
+#################################################################
+#
+# \note
+# Project name: Care-O-bot Research
+# \note
+# ROS package name: 
+#
+# \author
+# Author: Thiago de Freitas Oliveira Araujo, 
+# email:thiago.de.freitas.oliveira.araujo@ipa.fhg.de
+# \author
+# Supervised by: Florian Weisshardt, email:florian.weisshardt@ipa.fhg.de
+#
+# \date Date of creation: December 2012
+#
+# \brief
+# This module aggregates joint states
+#
+#################################################################
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# - Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer. \n
+# - Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution. \n
+# - Neither the name of the Fraunhofer Institute for Manufacturing
+# Engineering and Automation (IPA) nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission. \n
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License LGPL as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License LGPL for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License LGPL along with this program.
+# If not, see < http://www.gnu.org/licenses/>.
+#
+#################################################################
 import roslib
 roslib.load_manifest('srs_scenarios')
 import rospy
@@ -31,16 +87,23 @@ class joint_state_aggregator():
 
     def __init__(self):
         
-#        self.effort = []
+        self.effort = []
         self.position = []
         self.velocity = []
         self.names = []
         self.jointsMsg = rospy.wait_for_message("/joint_states", sensor_msgs.msg.JointState, 10)
         
-        for a,b,c in itertools.izip(self.jointsMsg.name, self.jointsMsg.position,self.jointsMsg.velocity):
+        if(len(self.jointsMsg.name) == len(self.jointsMsg.position) == len(self.jointsMsg.velocity) == len(self.jointsMsg.effort)):
+            rospy.loginfo("Dimensions are ok!")
+        else:
+            excep = "Joint_states dimensions are not correct:" + "Names_dim " + (str)(len(self.jointsMsg.name)) + "," + "Pos_dim " + (str)(len(self.jointsMsg.position)) + "," + "Vel_dim " + (str)(len(self.jointsMsg.velocity)) + "," + "Eff_dim " + (str)(len(self.jointsMsg.effort))
+            raise Exception(excep)
+            
+        for a,b,c, d in itertools.izip(self.jointsMsg.name, self.jointsMsg.position,self.jointsMsg.velocity, self.jointsMsg.effort):
             self.names.append(a)
             self.velocity.append(b)
             self.position.append(c)
+            self.effort.append(d)
         
     def process_joints(self):
     
@@ -48,19 +111,30 @@ class joint_state_aggregator():
         self.temp_name = self.jointsMsg.name
         self.temp_vel = self.jointsMsg.velocity
         self.temp_pos = self.jointsMsg.position
+        self.temp_ef = self.jointsMsg.effort
         
-        for a,b,c in itertools.izip(self.jointsMsg.name, self.jointsMsg.position,self.jointsMsg.velocity):
+        if(len(self.jointsMsg.name) == len(self.jointsMsg.position) == len(self.jointsMsg.velocity) == len(self.jointsMsg.effort)):
+            rospy.loginfo("Dimensions are ok!")
+        else:
+            excep = "Joint_states dimensions are not correct:" + "Names_dim " + (str)(len(self.jointsMsg.name)) + "," + "Pos_dim " + (str)(len(self.jointsMsg.position)) + "," + "Vel_dim " + (str)(len(self.jointsMsg.velocity)) + "," + "Eff_dim " + (str)(len(self.jointsMsg.effort))
+            raise Exception(excep)
+        
+        for a,b,c, d in itertools.izip(self.jointsMsg.name, self.jointsMsg.position,self.jointsMsg.velocity, self.jointsMsg.effort):
         
             if(a) not in self.names:
                 self.names.append(a)
                 self.position.append(b)
                 self.velocity.append(c)
+                self.effort.append(d)
                 
             self.position[self.names.index(a)] = self.temp_pos[self.temp_name.index(a)]
+            self.velocity[self.names.index(a)] = self.temp_vel[self.temp_name.index(a)]
+            self.effort[self.names.index(a)] = self.temp_ef[self.temp_name.index(a)]
         
         self.jointsMsg.name = self.names
         self.jointsMsg.position = self.position
         self.jointsMsg.velocity = self.velocity
+        self.jointsMsg.effort = self.effort
         
         return self.jointsMsg
         

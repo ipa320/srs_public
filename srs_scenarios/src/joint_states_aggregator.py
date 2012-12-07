@@ -83,10 +83,12 @@ import sys, subprocess
 
 import itertools
 
+import threading
+
 class joint_state_aggregator():
 
     def __init__(self):
-        
+        self.lock = threading.Lock()
         self.effort = []
         self.position = []
         self.velocity = []
@@ -104,29 +106,38 @@ class joint_state_aggregator():
             self.velocity.append(b)
             self.position.append(c)
             self.effort.append(d)
+            
+        rospy.Subscriber('/joint_states', sensor_msgs.msg.JointState, self.process_joints)
+        self.thread = threading.Thread(target=self.joint_states_listener)
+        self.thread.start()
         
-    def process_joints(self):
-    
-        self.jointsMsg = rospy.wait_for_message("/joint_states", sensor_msgs.msg.JointState, 10)
-        self.temp_name = self.jointsMsg.name
-        self.temp_vel = self.jointsMsg.velocity
-        self.temp_pos = self.jointsMsg.position
-        self.temp_ef = self.jointsMsg.effort
+    def joint_states_listener(self):
+        rospy.Subscriber('/joint_states', JointState, self.joint_states_callback)
+        rospy.spin()
         
-        if(len(self.jointsMsg.name) == len(self.jointsMsg.position) == len(self.jointsMsg.velocity) == len(self.jointsMsg.effort)):
-            rospy.loginfo("Dimensions are ok!")
+    def process_joints(self, msg):
+        self.lock.acquire()
+        jMsg = msg#rospy.wait_for_message("/joint_states", sensor_msgs.msg.JointState, 10)
+        self.temp_name = jMsg.name
+        self.temp_vel = jMsg.velocity
+        self.temp_pos = jMsg.position
+        self.temp_ef = jMsg.effort
+        
+        if(len(jMsg.name) == len(jMsg.position) == len(jMsg.velocity) == len(jMsg.effort)):
+            pass
         else:
-            excep = "Joint_states dimensions are not correct:" + "Names_dim " + (str)(len(self.jointsMsg.name)) + "," + "Pos_dim " + (str)(len(self.jointsMsg.position)) + "," + "Vel_dim " + (str)(len(self.jointsMsg.velocity)) + "," + "Eff_dim " + (str)(len(self.jointsMsg.effort))
+            excep = "Joint_states dimensions are not correct:" + "Names_dim " + (str)(len(jMsg.name)) + "," + "Pos_dim " + (str)(len(jMsg.position)) + "," + "Vel_dim " + (str)(len(jMsg.velocity)) + "," + "Eff_dim " + (str)(len(jMsg.effort))
             raise Exception(excep)
         
-        for a,b,c, d in itertools.izip(self.jointsMsg.name, self.jointsMsg.position,self.jointsMsg.velocity, self.jointsMsg.effort):
+        for a,b,c, d in itertools.izip(jMsg.name, jMsg.position,jMsg.velocity, jMsg.effort):
         
             if(a) not in self.names:
                 self.names.append(a)
                 self.position.append(b)
                 self.velocity.append(c)
                 self.effort.append(d)
-                
+            
+   
             self.position[self.names.index(a)] = self.temp_pos[self.temp_name.index(a)]
             self.velocity[self.names.index(a)] = self.temp_vel[self.temp_name.index(a)]
             self.effort[self.names.index(a)] = self.temp_ef[self.temp_name.index(a)]
@@ -136,16 +147,18 @@ class joint_state_aggregator():
         self.jointsMsg.velocity = self.velocity
         self.jointsMsg.effort = self.effort
         
-        return self.jointsMsg
+        self.lock.release()
+        #return self.jointsMsg
         
 if __name__=="__main__":
 
     rospy.init_node('joint_test')
     ja = joint_state_aggregator()
+    rate = rospy.Rate(10) #Hz
     
     while not rospy.is_shutdown():
         
-        ja.process_joints()
+        #ja.process_joints()
         
         rospy.loginfo("Current message:")
         rospy.loginfo(ja.jointsMsg)
@@ -154,4 +167,4 @@ if __name__=="__main__":
         rospy.loginfo(ja.position)
         rospy.loginfo(ja.velocity)
         
-        rospy.sleep(2)
+        rate.sleep()

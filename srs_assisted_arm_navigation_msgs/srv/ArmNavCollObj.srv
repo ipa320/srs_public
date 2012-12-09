@@ -4,6 +4,7 @@ geometry_msgs/Point bb_lwh
 bool allow_collision # true allows collisions with gripper
 bool attached # not implemented yet
 string attach_to_frame_id
+bool allow_pregrasps
 ---
 bool completed
 string msg

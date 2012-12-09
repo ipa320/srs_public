@@ -964,19 +964,19 @@ PlanningSceneEditor::PlanningSceneEditor(PlanningSceneParameters& params)
   MenuHandler::EntryHandle shrink = menu_handler_map_["Collision Object"].insert(resize_mode_entry, "Shrink", collision_object_movement_feedback_ptr_);
   menu_handler_map_["Collision Object"].setCheckState(shrink, MenuHandler::UNCHECKED);
   menu_entry_maps_["Collision Object"]["Shrink"] = shrink;
-  registerMenuEntry("IK Control", "Map to Robot State", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Map from Robot State", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Map to Other Orientation", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Go To Last Good State", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Randomly Perturb", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Plan New Trajectory", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Filter Last Trajectory", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Delete Request", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Map to Robot State", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Map from Robot State", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Map to Other Orientation", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Go To Last Good State", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Randomly Perturb", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Plan New Trajectory", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Filter Last Trajectory", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Delete Request", ik_control_feedback_ptr_);
 
-  if(params_.use_robot_data_)
+  /*if(params_.use_robot_data_)
   {
     registerMenuEntry("IK Control", "Execute Last Trajectory", ik_control_feedback_ptr_);
-  }
+  }*/
 
   /////
   /// Connection with sim data
@@ -1548,6 +1548,7 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
         if(data.hasGoodIKSolution(StartPosition))
         {
           col = data.getStartColor();
+          ROS_DEBUG("We have good IK, publish markers with normal color.");
         } else {
           col = fail_color;
         }
@@ -1562,6 +1563,8 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
           cm_->getAttachedCollisionObjectMarkers(*(data.getStartState()), arr, it->first + "_start",
                                                  col, ros::Duration(MARKER_REFRESH_TIME), false, &lnames);
           
+          ROS_DEBUG("using VisualMesh");
+
           break;
         case CollisionMesh:
           cm_->getRobotMarkersGivenState(*(data.getStartState()), arr, col,
@@ -1602,6 +1605,7 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
         if(data.hasGoodIKSolution(GoalPosition))
         {
           col = data.getGoalColor();
+          ROS_DEBUG("We have good IK, publish (goal pos) markers with normal color.");
         } else {
           col = fail_color;
         }
@@ -1612,6 +1616,8 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
           cm_->getRobotMarkersGivenState(*(data.getGoalState()), arr, col,
                                          it->first + "_Goal", ros::Duration(MARKER_REFRESH_TIME),
                                          &lnames, 1.0, false);
+
+          ROS_DEBUG("Using VisualMesh.");
 
           // Bodies held by robot
           cm_->getAttachedCollisionObjectMarkers(*(data.getGoalState()), arr, it->first + "_Goal",
@@ -1924,7 +1930,7 @@ bool PlanningSceneEditor::filterTrajectory(MotionPlanRequestData& requestData, T
   /*std::vector<std::string> joint_names = trajectory.getTrajectory().joint_names;
 
   // altering joint limits here doesn't make sense -> trajectory filter ignores this...
-  /*for (unsigned int i = 0; i < joint_names.size(); i++) {
+  for (unsigned int i = 0; i < joint_names.size(); i++) {
 
 	  JointLimits lim;
 
@@ -2047,6 +2053,7 @@ void PlanningSceneEditor::sendMarkers()
   marker_dt_ = (ros::Time::now() - last_marker_start_time_);
   last_marker_start_time_ = ros::Time::now();
   lockScene();
+
   sendTransformsAndClock();
   visualization_msgs::MarkerArray arr;
 
@@ -2056,6 +2063,9 @@ void PlanningSceneEditor::sendMarkers()
   vis_marker_array_publisher_.publish(arr);
   vis_marker_array_publisher_.publish(collision_markers_);
   collision_markers_.markers.clear();
+
+  ROS_DEBUG("markers are published (%u)",(unsigned int)arr.markers.size());
+
   unlockScene();
 }
 
@@ -3573,7 +3583,8 @@ std::string PlanningSceneEditor::createMeshObject(const std::string& name,
 
 std::string PlanningSceneEditor::createCollisionObject(const std::string& name,
                                                        geometry_msgs::Pose pose, PlanningSceneEditor::GeneratedShape shape,
-                                                       float scaleX, float scaleY, float scaleZ, std_msgs::ColorRGBA color)
+                                                       float scaleX, float scaleY, float scaleZ, std_msgs::ColorRGBA color,
+                                                       bool selectable=false)
 {
   lockScene();
   arm_navigation_msgs::CollisionObject collision_object;
@@ -3622,7 +3633,7 @@ std::string PlanningSceneEditor::createCollisionObject(const std::string& name,
   collision_object.shapes.push_back(object);
   collision_object.poses.push_back(pose);
 
-  createSelectableMarkerFromCollisionObject(collision_object, collision_object.id, collision_object.id, color);
+  createSelectableMarkerFromCollisionObject(collision_object, collision_object.id, collision_object.id, color,selectable);
 
   ROS_INFO("Created collision object.");
   ROS_INFO("Sending planning scene %s", current_planning_scene_name_.c_str());
@@ -3727,7 +3738,7 @@ bool PlanningSceneEditor::solveIKForEndEffectorPose(MotionPlanRequestData& data,
       ik_req.constraints = mpr.goal_constraints;
     }
     ik_req.ik_request = ik_request;
-    ik_req.timeout = ros::Duration(2.0); // TODO make it configurable
+    ik_req.timeout = ros::Duration(0.8); // TODO make it configurable
     if(!(*collision_aware_ik_services_)[data.getEndEffectorLink()]->call(ik_req, ik_res))
     {
       ROS_INFO("Problem with ik service call");

@@ -1,4 +1,4 @@
-presets:
+grasping_presets:
  -
   name: Empty bottle
   forces: [300.0, 300.0, 300.0, 300.0, 300.0, 300.0]

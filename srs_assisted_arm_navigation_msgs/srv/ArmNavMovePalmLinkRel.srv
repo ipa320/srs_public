@@ -1,5 +1,6 @@
-geometry_msgs/Point relative_shift
-geometry_msgs/Point relative_rotation # x=R, y=P, z=Y
+#geometry_msgs/Point relative_shift
+#geometry_msgs/Point relative_rotation # x=R, y=P, z=Y
+geometry_msgs/Pose relative_movement
 ---
 bool completed
 string msg

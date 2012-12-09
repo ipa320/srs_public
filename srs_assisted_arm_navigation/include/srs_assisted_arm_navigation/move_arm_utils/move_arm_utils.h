@@ -1800,7 +1800,8 @@ public:
   /// @return the unique id of the collision object
   /////
   std::string createCollisionObject(const std::string& name, geometry_msgs::Pose pose, GeneratedShape shape, float scaleX, float scaleY,
-                                    float scaleZ, std_msgs::ColorRGBA color);
+                                    float scaleZ, std_msgs::ColorRGBA color,
+                                    bool selectable);
 
   std::string createMeshObject(const std::string& name, 
                                geometry_msgs::Pose pose,

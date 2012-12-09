@@ -4,4 +4,5 @@ string description                  # Unknown Object name description
 uint8 pose_type                     # way to set the pose
 geometry_msgs/Pose pose             # position and orientation of the Unknown Object name 
 geometry_msgs/Vector3 scale         # scale of the Unknown Object name
+bool disable_material               # usage of predefined material (or just color)
 --- 

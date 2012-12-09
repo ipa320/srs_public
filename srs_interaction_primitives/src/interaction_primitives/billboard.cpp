@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -165,7 +165,7 @@ void Billboard::addTrajectoryControls()
   }
 
   ostringstream velocityText;
-  velocityText << velocity_ << "m/s";
+  velocityText << setprecision(2) << fixed << velocity_ << "m/s";
   Marker trajectoryText;
   trajectoryText.type = Marker::TEXT_VIEW_FACING;
   trajectoryText.text = velocityText.str();
@@ -302,7 +302,7 @@ void Billboard::create()
 
   object_.header.frame_id = frame_id_;
   object_.name = name_;
-  object_.description = name_ + " billboard";
+//  object_.description = name_ + " billboard";
   object_.pose.position.x = pose_.position.x;
   object_.pose.position.y = pose_.position.y;
   object_.pose.position.z = pose_.position.z;

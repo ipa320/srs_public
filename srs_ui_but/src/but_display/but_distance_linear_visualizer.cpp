@@ -124,12 +124,14 @@ void CButDistanceLinearVisualizer::destroyGeometry()
 
 void CButDistanceLinearVisualizer::onEnable()
 {
-  m_sceneNode_->setVisible(true);
+  if (m_sceneNode_ != 0)
+    m_sceneNode_->setVisible(true);
 }
 
 void CButDistanceLinearVisualizer::onDisable()
 {
-  m_sceneNode_->setVisible(false);
+  if (m_sceneNode_ != 0)
+    m_sceneNode_->setVisible(false);
 }
 
 void CButDistanceLinearVisualizer::createProperties()
@@ -261,6 +263,7 @@ void CButDistanceLinearVisualizer::update(float wall_dt, float ros_dt)
       text->setTextAlignment(ogre_tools::MovableText::H_CENTER, ogre_tools::MovableText::V_CENTER);
       text->setCharacterHeight(0.1);
       text->setLocalTranslation(Ogre::Vector3(0.25, 0.25, 0));
+//      text->setLocalTranslation(Ogre::Vector3(pointData_.position.x, pointData_.position.y, pointData_.position.z));
       text->setColor(Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_));
       m_sceneNode_->attachObject(text);
     }

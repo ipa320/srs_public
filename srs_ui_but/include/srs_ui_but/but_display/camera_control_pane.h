@@ -52,11 +52,8 @@ namespace Ogre
 namespace srs_ui_but
 {
 
-
 class CCameraControlPane : public wxPanel
 {
-
-
 public:
 	//!Constructor
 	CCameraControlPane(wxWindow *parent, const wxString& title, rviz::WindowManagerInterface * wmi );
@@ -118,6 +115,7 @@ private:
     DECLARE_EVENT_TABLE()
 
 }; // class CCameraControlPane
+
 
 } // namespace srs_ui_but
 

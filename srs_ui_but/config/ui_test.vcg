@@ -22,35 +22,39 @@ Distance\ Visualizer.Enabled=1
 Distance\ Visualizer.Line\ Thickness=0.01
 Distance\ Visualizer.Link=/sdh_palm_link
 Distance\ Visualizer.Show\ distance=1
-Distance\ Visualizer.Topic=
-Global\ 3D\ Voxel\ Map.Alpha=0.5
-Global\ 3D\ Voxel\ Map.Billboard\ Size=0.03
-Global\ 3D\ Voxel\ Map.Color\ Transformer=RGB8
-Global\ 3D\ Voxel\ Map.Decay\ Time=0
-Global\ 3D\ Voxel\ Map.Enabled=0
-Global\ 3D\ Voxel\ Map.Position\ Transformer=XYZ
-Global\ 3D\ Voxel\ Map.Selectable=0
-Global\ 3D\ Voxel\ Map.Style=2
-Global\ 3D\ Voxel\ Map.Topic=/but_env_model/pointcloud_centers
-Global\ 3D\ Voxel\ Map..AxisAutocompute\ Value\ Bounds=1
-Global\ 3D\ Voxel\ Map..AxisAxis=2
-Global\ 3D\ Voxel\ Map..AxisMax\ Value=10
-Global\ 3D\ Voxel\ Map..AxisMin\ Value=-10
-Global\ 3D\ Voxel\ Map..AxisUse\ Fixed\ Frame=1
-Global\ 3D\ Voxel\ Map..Flat\ ColorColorR=1
-Global\ 3D\ Voxel\ Map..Flat\ ColorColorG=1
-Global\ 3D\ Voxel\ Map..Flat\ ColorColorB=1
-Global\ 3D\ Voxel\ Map..IntensityAutocompute\ Intensity\ Bounds=1
-Global\ 3D\ Voxel\ Map..IntensityChannel\ Name=z
-Global\ 3D\ Voxel\ Map..IntensityMax\ ColorR=1
-Global\ 3D\ Voxel\ Map..IntensityMax\ ColorG=1
-Global\ 3D\ Voxel\ Map..IntensityMax\ ColorB=1
-Global\ 3D\ Voxel\ Map..IntensityMax\ Intensity=4096
-Global\ 3D\ Voxel\ Map..IntensityMin\ ColorR=0
-Global\ 3D\ Voxel\ Map..IntensityMin\ ColorG=0
-Global\ 3D\ Voxel\ Map..IntensityMin\ ColorB=0
-Global\ 3D\ Voxel\ Map..IntensityMin\ Intensity=0
-Global\ 3D\ Voxel\ Map..IntensityUse\ full\ RGB\ spectrum=1
+Distance\ Visualizer.Topic=/cam3d/rgb/points_throttled
+Global\ voxel\ map.Alpha=1
+Global\ voxel\ map.Billboard\ Size=0.03
+Global\ voxel\ map.Camera\ Info\ Topic=
+Global\ voxel\ map.Color\ Transformer=RGB8
+Global\ voxel\ map.Cull\ View\ Frustum=0
+Global\ voxel\ map.Decay\ Time=0
+Global\ voxel\ map.Enabled=1
+Global\ voxel\ map.Position\ Transformer=XYZ
+Global\ voxel\ map.Selectable=1
+Global\ voxel\ map.Show\ View\ Frustum=0
+Global\ voxel\ map.Style=2
+Global\ voxel\ map.Topic=/but_env_model/pointcloud_centers
+Global\ voxel\ map.View\ Frustum\ Depth=3
+Global\ voxel\ map..AxisAutocompute\ Value\ Bounds=1
+Global\ voxel\ map..AxisAxis=2
+Global\ voxel\ map..AxisMax\ Value=10
+Global\ voxel\ map..AxisMin\ Value=-10
+Global\ voxel\ map..AxisUse\ Fixed\ Frame=1
+Global\ voxel\ map..Flat\ ColorColorR=1
+Global\ voxel\ map..Flat\ ColorColorG=1
+Global\ voxel\ map..Flat\ ColorColorB=1
+Global\ voxel\ map..IntensityAutocompute\ Intensity\ Bounds=1
+Global\ voxel\ map..IntensityChannel\ Name=intensity
+Global\ voxel\ map..IntensityMax\ ColorR=1
+Global\ voxel\ map..IntensityMax\ ColorG=1
+Global\ voxel\ map..IntensityMax\ ColorB=1
+Global\ voxel\ map..IntensityMax\ Intensity=4096
+Global\ voxel\ map..IntensityMin\ ColorR=0
+Global\ voxel\ map..IntensityMin\ ColorG=0
+Global\ voxel\ map..IntensityMin\ ColorB=0
+Global\ voxel\ map..IntensityMin\ Intensity=0
+Global\ voxel\ map..IntensityUse\ full\ RGB\ spectrum=0
 Interactive\ Markers.Enabled=1
 Interactive\ Markers.Show\ Axes=0
 Interactive\ Markers.Show\ Descriptions=1
@@ -116,7 +120,7 @@ Live\ Point\ Cloud.Alpha=1
 Live\ Point\ Cloud.Billboard\ Size=0.01
 Live\ Point\ Cloud.Color\ Transformer=RGB8
 Live\ Point\ Cloud.Decay\ Time=0
-Live\ Point\ Cloud.Enabled=1
+Live\ Point\ Cloud.Enabled=0
 Live\ Point\ Cloud.Position\ Transformer=XYZ
 Live\ Point\ Cloud.Selectable=1
 Live\ Point\ Cloud.Style=0
@@ -396,8 +400,8 @@ Stretch\ Indicator.Thickness=0.5
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.921001 4.75858 8.61255 -0.22168 0.541248 0.936886
-Property\ Grid\ State=selection=;expanded=Global 3D Voxel Map.Enabled.Global 3D Voxel Map.StatusTopStatus,Marker.Enabled.Marker.Namespaces;scrollpos=0,0;splitterpos=163,327;ispageselected=1
+Camera\ Config=1.091 5.64856 7.96677 -0.22168 0.541248 0.936886
+Property\ Grid\ State=selection=Robot Interactive Teleop.Enabled;expanded=Distance Visualizer.Enabled.Distance Visualizer.Options,Marker.Enabled.Marker.Namespaces;scrollpos=0,0;splitterpos=277,555;ispageselected=1
 [Display0]
 Name=Robot Model
 Package=rviz
@@ -407,21 +411,21 @@ Name=2D Map
 Package=rviz
 ClassName=rviz::MapDisplay
 [Display2]
-Name=Global 3D Voxel Map
-Package=srs_ui_but
-ClassName=CButPointCloud
-[Display3]
 Name=Robot Interactive Teleop
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display4]
+[Display3]
 Name=Interactive Markers
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display5]
+[Display4]
 Name=Live Point Cloud
 Package=rviz
 ClassName=rviz::PointCloud2Display
+[Display5]
+Name=Global voxel map
+Package=srs_env_model_ui
+ClassName=CButPointCloud
 [Display6]
 Name=Laser Scan Front
 Package=rviz

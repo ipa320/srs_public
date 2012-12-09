@@ -1,0 +1,40 @@
+<package>
+  <description brief="srs_env_model_ui">
+
+Rviz plugins for srs_env_model developed by Robo@FIT group.
+
+  </description>
+  <author>Michal Spanel (spanel@fit.vutbr.cz), Vit Stancl (stancl@fit.vutbr.cz)</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/srs_env_model_ui</url>
+
+
+  <depend package="roscpp"/>
+  <depend package="visualization_msgs"/>
+  <depend package="interactive_markers"/>
+  <depend package="std_msgs"/>
+  <depend package="rviz"/>
+  <depend package="ogre"/>
+  <depend package="srs_env_model"/>
+  <depend package="ogre_tools"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="message_filters"/>
+
+  <depend package="srs_env_model_msgs"/>
+  <depend package="srs_interaction_primitives"/>
+
+<!--  <depend package="actionlib"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="cv_bridge"/>
+  <depend package="srs_object_database_msgs"/>
+-->
+
+  <export>
+    <rviz plugin="${prefix}/lib/but_env_model_gui.yaml"/> 
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+
+</package>

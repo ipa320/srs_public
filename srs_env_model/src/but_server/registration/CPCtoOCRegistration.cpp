@@ -211,7 +211,7 @@ bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par,
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Compute fraction matrix
-	m_fracMatrix = btMatrix3x3::getIdentity().scaled( tf::Point( 1.0 / m_fracX, 1.0 / m_fracY, 1.0 ) );
+    m_fracMatrix = btMatrix3x3::getIdentity().scaled( tf::Point( 1.0 / m_fracX, 1.0 / m_fracY, 1.0 ) );
 
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(par.treeDepth); it != itEnd; ++it)

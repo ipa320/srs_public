@@ -24,6 +24,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 #ifndef but_octomap_control_pane_H_included
 #define but_octomap_control_pane_H_included
@@ -38,10 +39,12 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/signals.hpp>
+
 #include <interactive_markers/interactive_marker_server.h>
 #include <srs_interaction_primitives/services_list.h>
 #include <srs_interaction_primitives/PoseChanged.h>
 #include <srs_interaction_primitives/ScaleChanged.h>
+
 #include <ros/ros.h>
 #include <rviz/displays_panel.h>
 
@@ -50,7 +53,7 @@ namespace rviz
     class WindowManagerInterface;
 }
 
-namespace srs_ui_but
+namespace srs_env_model_ui
 {
 
 
@@ -201,14 +204,13 @@ protected:
     //! Target frame id
     std::string m_targetFrameId;
 
-
 private:
     DECLARE_EVENT_TABLE()
 
 }; // class COctomapControlPane
 
-} // namespace srs_ui_but
+
+} // namespace
 
 // but_octomap_control_pane_H_included
 #endif
-

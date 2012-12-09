@@ -6,7 +6,7 @@
 #
 # Copyright (C) Brno University of Technology
 #
-# This file is part of software developed by dcgm-robotics@FIT group.
+# This file is part of software developed by Robo@FIT group.
 # 
 # Author: Tomas Lokaj
 # Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     rospy.wait_for_service('but_interaction_primitives/add_unknown_object')
     add_unknown_object = rospy.ServiceProxy('but_interaction_primitives/add_unknown_object', AddUnknownObject)
-    add_unknown_object('map','narrow_door', 'Narrow door', Pose(Vector3(-0.6,2.2,1),Quaternion()),Vector3(1.0,0.01,2))
+    add_unknown_object('map','narrow_door', 'Narrow door', Pose(Vector3(-0.6,2.2,1),Quaternion()),Vector3(1.0,0.01,2),False)
     
     rospy.wait_for_service('but_interaction_primitives/add_plane')
     add_plane = rospy.ServiceProxy('but_interaction_primitives/add_plane', AddPlane)

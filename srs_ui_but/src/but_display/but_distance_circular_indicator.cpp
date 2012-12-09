@@ -235,7 +235,7 @@ void CButDistanceCircularIndicator::update(float wall_dt, float ros_dt)
       {
         float radius = radius_ * level;
         ostringstream radius_str;
-        radius_str << fabs(radius) << "cm";
+        radius_str << setprecision(2) << fixed << fabs(radius) << "cm";
         Ogre::Vector3 trans;
         trans.x = -char_height / 2 * radius_str.str().length();
         trans.y = radius / 100 - char_height / 2;

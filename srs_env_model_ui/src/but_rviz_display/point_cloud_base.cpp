@@ -2,9 +2,10 @@
  * \file
  * $Id: point_cloud_base.cpp 810 2012-05-19 21:47:51Z stancl $
  *
- * Modified by dcgm-robotics@FIT group.
+ * Modified by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
+ * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd.mm.2011
  *
  * This code is based on the original one provided by Willow Garage, Inc.
@@ -41,7 +42,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "point_cloud_base.h"
+#include <srs_env_model_ui/but_rviz_display/point_cloud_base.h>
+
 #include "rviz/default_plugin/point_cloud_transformer.h"
 #include "rviz/default_plugin/point_cloud_transformers.h"
 #include "rviz/visualization_manager.h"

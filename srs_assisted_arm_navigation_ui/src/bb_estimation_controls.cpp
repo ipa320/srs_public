@@ -357,7 +357,7 @@ void CButBBEstimationControls::actionGoalCallback() {
 
 	sub_image_ = it_.subscribe("bb_video_in", 1, &CButBBEstimationControls::imageCallback,this);
 
-	wxMessageBox(wxString::FromAscii("Please select ROI of unknown object in image"), wxString::FromAscii("BB estimation"), wxOK, parent_,-1,-1);
+	wxMessageBox(wxString::FromAscii("Please select unknown object in image. You can select object in image several times. After selecting, it will appear as interactive marker in RVIZ and you can tune it. When it will fit real object, please click on \"Detection is fine\" button."), wxString::FromAscii("Assisted object detection"), wxOK, parent_,-1,-1);
 
 	max_time_ = ros::Time::now() + ros::Duration(30);
 

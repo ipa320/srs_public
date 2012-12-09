@@ -12,11 +12,6 @@ displays:
     description: |
       Show octomap controls.    
   -
-    class_name: CButPointCloud
-    display_name: CButPointCloud
-    description: |
-      Show pointclouds display
-  -
     class_name: CButDistanceLinearVisualizer
     display_name: Distance Linear Visualizer
     description: |
@@ -55,4 +50,5 @@ displays:
     class_name: CButObjectManager
     display_name: Object Manager
     description: |
-      This display allows to add object from SRS Object Database.  
+      This display allows to add object from SRS Object Database.
+

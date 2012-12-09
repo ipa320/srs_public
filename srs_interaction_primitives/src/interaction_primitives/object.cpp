@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -58,6 +58,29 @@ Object::Object(InteractiveMarkerServerPtr server, string frame_id, string name) 
   {
     pose_.position.z += scale_.z * 0.5;
   }
+}
+
+void Object::setAllowObjectInteraction(bool allow)
+{
+  allow_object_interaction_ = allow;
+  if (allow_object_interaction_)
+  {
+    menu_handler_.setVisible(menu_handler_interaction_, true);
+    menu_handler_.setVisible(menu_handler_interaction_movement_, true);
+    menu_handler_.setVisible(menu_handler_interaction_rotation_, true);
+  }
+  else
+  {
+    menu_handler_.setVisible(menu_handler_interaction_, false);
+    menu_handler_.setVisible(menu_handler_interaction_movement_, false);
+    menu_handler_.setVisible(menu_handler_interaction_rotation_, false);
+    removeMovementControls();
+    removeRotationControls();
+    server_->insert(object_);
+  }
+
+  menu_handler_.reApply(*server_);
+  server_->applyChanges();
 }
 
 void Object::objectCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
@@ -175,7 +198,28 @@ void Object::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
         menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
       }
       break;
+
+
     case 7:
+      /*
+       * Enable all interaction controls
+       */
+      addMovementControls();
+      addRotationControls();
+      menu_handler_.setCheckState(menu_handler_interaction_movement_, MenuHandler::CHECKED);
+      menu_handler_.setCheckState(menu_handler_interaction_rotation_, MenuHandler::CHECKED);
+      break;
+    case 8:
+      /*
+       * Disable all interaction controls
+       */
+      removeMovementControls();
+      removeRotationControls();
+      menu_handler_.setCheckState(menu_handler_interaction_movement_, MenuHandler::UNCHECKED);
+      menu_handler_.setCheckState(menu_handler_interaction_rotation_, MenuHandler::UNCHECKED);
+      break;
+
+    case 9:
       /*
        * Movement controls
        */
@@ -190,7 +234,7 @@ void Object::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
         menu_handler_.setCheckState(handle, MenuHandler::CHECKED);
       }
       break;
-    case 8:
+    case 10:
       /*
        * Rotation controls
        */
@@ -247,17 +291,14 @@ void Object::createMenu()
     /*    if (ros::param::has (AllowInteraction_PARAM))
      ros::param::get(AllowInteraction_PARAM, allow_interation_);*/
 
-    /* if (allow_object_interaction_)
-     {
-     MenuHandler::EntryHandle menu_handler_interaction_ = menu_handler_.insert("Interaction");
-     menu_handler_.setCheckState(
-     menu_handler_.insert(menu_handler_interaction_, "Movement", boost::bind(&Object::menuCallback, this, _1)),
-     MenuHandler::UNCHECKED);
-     menu_handler_.setCheckState(
-     menu_handler_.insert(menu_handler_interaction_, "Rotation", boost::bind(&Object::menuCallback, this, _1)),
-     MenuHandler::UNCHECKED);
-     }*/
     menu_handler_interaction_ = menu_handler_.insert("Interaction");
+    menu_handler_.setCheckState(
+        menu_handler_.insert(menu_handler_interaction_, "Enable All", boost::bind(&Object::menuCallback, this, _1)),
+        MenuHandler::NO_CHECKBOX);
+    menu_handler_.setCheckState(
+        menu_handler_.insert(menu_handler_interaction_, "Disable All", boost::bind(&Object::menuCallback, this, _1)),
+        MenuHandler::NO_CHECKBOX);
+
     menu_handler_interaction_movement_ = menu_handler_.insert(menu_handler_interaction_, "Movement",
                                                               boost::bind(&Object::menuCallback, this, _1));
     menu_handler_interaction_rotation_ = menu_handler_.insert(menu_handler_interaction_, "Rotation",
@@ -563,7 +604,7 @@ void Object::create()
 
   object_.header.frame_id = frame_id_;
   object_.name = name_;
-  //object_.description = description_;
+//  object_.description = description_;
   object_.pose = pose_;
   object_.scale = maxScale(scale_);
 

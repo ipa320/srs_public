@@ -68,7 +68,7 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
 
     XmlRpc::XmlRpcValue pres;
 
-    if (nh.getParam("presets",pres)) {
+    if (nh.getParam("grasping_presets",pres)) {
 
     	ROS_ASSERT(pres.getType() == XmlRpc::XmlRpcValue::TypeArray);
 

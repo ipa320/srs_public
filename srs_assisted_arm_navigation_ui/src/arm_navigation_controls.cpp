@@ -56,8 +56,8 @@ const int ID_BUTTON_REPEAT(114);
 
 const int ID_BUTTON_UNDO(115);
 
-const int ID_BUTTON_LIFT(118);
-const int ID_BUTTON_MOVE_TO_HOLD(119);
+//const int ID_BUTTON_LIFT(118);
+//const int ID_BUTTON_MOVE_TO_HOLD(119);
 
 
 /*const int ID_BUTTON_MLEFT(117);
@@ -75,6 +75,8 @@ const int ID_CHECKBOX_ACO(120);
 
 const int ID_BUTTON_STOP_TRAJ(123);
 
+const int ID_CHOICE(175);
+
 /**
  Constructor
  */
@@ -86,7 +88,209 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
 
     parent_ = parent;
     
+    traj_executed_ = 0;
+
     ros::param::param<bool>("~wait_for_start", wait_for_start_ , WAIT_FOR_START);
+
+    ros::NodeHandle nh("~");
+
+    XmlRpc::XmlRpcValue pres;
+
+        if (nh.getParam("arm_nav_presets",pres)) {
+
+        	ROS_ASSERT(pres.getType() == XmlRpc::XmlRpcValue::TypeArray);
+
+        	ROS_INFO("%d presets for assisted arm navigation plugin.",pres.size());
+
+        	for (int i=0; i < pres.size(); i++) {
+
+        		Preset pr;
+
+        		XmlRpc::XmlRpcValue xpr = pres[i];
+
+    			if (xpr.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
+
+    			  ROS_ERROR("Wrong syntax in YAML config.");
+    			  continue;
+
+    			}
+
+    			// read the name
+    			if (!xpr.hasMember("name")) {
+
+    			  ROS_ERROR("Preset doesn't have 'name' property defined.");
+    			  continue;
+
+    			} else {
+
+    			  XmlRpc::XmlRpcValue name = xpr["name"];
+
+    			  std::string tmp = static_cast<std::string>(name);
+
+    			  pr.name = tmp;
+
+    			}
+
+    			// read the positions
+    			if (!xpr.hasMember("position")) {
+
+    			  ROS_ERROR("Preset doesn't have 'position' property defined.");
+    			  continue;
+
+    			} else {
+
+    			  XmlRpc::XmlRpcValue pos = xpr["position"];
+
+    			  if (pos.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+
+    				  if (pos.size() != 3) {
+
+    					  ROS_ERROR("Strange number of positions (%d)",pos.size());
+    					  continue;
+
+    				  }
+
+
+					  XmlRpc::XmlRpcValue p = pos[0];
+					  double tmp = static_cast<double>(p);
+					  pr.pose.position.x = tmp;
+
+					  p = pos[1];
+					  tmp = static_cast<double>(p);
+					  pr.pose.position.y = tmp;
+
+					  p = pos[2];
+					  tmp = static_cast<double>(p);
+					  pr.pose.position.z = tmp;
+
+    			  } else {
+
+    				  ROS_ERROR("Property 'forces' is defined in bad way.");
+    				  continue;
+
+    			  }
+
+    			} // else forces
+
+
+    			// read the orientation
+    			if (!xpr.hasMember("orientation")) {
+
+    			  ROS_ERROR("Preset doesn't have 'orientation' property defined.");
+    			  continue;
+
+    			} else {
+
+    			  XmlRpc::XmlRpcValue ori = xpr["orientation"];
+
+    			  if (ori.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+
+    				  // RPY
+    				  if (ori.size() == 3) {
+
+    					  geometry_msgs::Vector3 rpy;
+
+						  XmlRpc::XmlRpcValue p = ori[0];
+						  double tmp = static_cast<double>(p);
+
+						  rpy.x = tmp;
+
+						  p = ori[1];
+						  tmp = static_cast<double>(p);
+						  rpy.y = tmp;
+
+						  p = ori[2];
+						  tmp = static_cast<double>(p);
+						  rpy.z = tmp;
+
+    					  pr.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rpy.x,rpy.y,rpy.z);
+
+
+    				  } else if (ori.size() == 4) {
+
+
+
+						  XmlRpc::XmlRpcValue p = ori[0];
+						  double tmp = static_cast<double>(p);
+						  pr.pose.orientation.x = tmp;
+
+						  p = ori[1];
+						  tmp = static_cast<double>(p);
+						  pr.pose.orientation.y = tmp;
+
+						  p = ori[2];
+						  tmp = static_cast<double>(p);
+						  pr.pose.orientation.z = tmp;
+
+						  p = ori[3];
+						  tmp = static_cast<double>(p);
+						  pr.pose.orientation.w = tmp;
+
+    				  } else {
+
+    					  ROS_ERROR("Prop 'orientation' should have 3 or 4 values (%d).",ori.size());
+    					  continue;
+
+    				  }
+
+
+
+
+
+    			  } else {
+
+    				  ROS_ERROR("Property 'target_pos' is defined in bad way.");
+    				  continue;
+
+    			  }
+
+    			} // else target_pos
+
+    			// read the name
+				if (!xpr.hasMember("relative")) {
+
+				  ROS_ERROR("Preset doesn't have 'relative' property defined.");
+				  continue;
+
+				} else {
+
+				  XmlRpc::XmlRpcValue rel = xpr["relative"];
+
+				  bool tmp = static_cast<bool>(rel);
+
+				  pr.relative = tmp;
+
+				}
+
+
+    			presets_.push_back(pr);
+
+        	} // for around all presets
+
+        } else {
+
+			ROS_ERROR("Can't get presets for predefined IM positions.");
+
+		}
+
+	wxArrayString prt;
+
+	prt.Add(wxString::FromAscii("none"));
+
+	for(unsigned int i=0; i < presets_.size(); i++) {
+
+		std::string tmp;
+
+		tmp = presets_[i].name;
+
+		if (presets_[i].relative) tmp += " (R)";
+		else tmp += " (A)";
+
+		prt.Add(wxString::FromAscii(tmp.c_str()));
+
+	}
+
+	presets_choice_ = new wxChoice(this, ID_CHOICE,wxDefaultPosition,wxDefaultSize,prt);
 
     buttons_["stop"] = new wxButton(this, ID_BUTTON_STOP_TRAJ, wxT("Stop"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     //b_switch_ = new wxToggleButton(this, ID_BUTTON_SWITCH, wxT("Avoid finger collisions"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
@@ -108,11 +312,11 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     buttons_["plan"] = new wxButton(this, ID_BUTTON_PLAN, wxT("Simulate movement"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
     buttons_["execute"] = new wxButton(this, ID_BUTTON_EXECUTE, wxT("Execute"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
-    buttons_["lift"] = new wxButton(this, ID_BUTTON_LIFT, wxT("Lift the object"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    setButton("lift",false);
+    //buttons_["lift"] = new wxButton(this, ID_BUTTON_LIFT, wxT("Lift the object"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    //setButton("lift",false);
 
-    buttons_["hold"] = new wxButton(this, ID_BUTTON_MOVE_TO_HOLD, wxT("Move to hold pos."),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
-    setButton("hold",false);
+    //buttons_["hold"] = new wxButton(this, ID_BUTTON_MOVE_TO_HOLD, wxT("Move to hold pos."),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    //setButton("hold",false);
 
     buttons_["stop"]->SetForegroundColour (wxColour (255, 255, 255));
     buttons_["stop"]->SetBackgroundColour (wxColour (255, 108, 108));
@@ -157,8 +361,14 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
 
     m_text_status = new wxStaticText(this, -1, wxT("status: not initialized yet."));
 
+    m_text_predef_pos_ = new wxStaticText(this, -1, wxT("Move to predefined position"));
+
     //m_text_object = new wxStaticText(this, -1, wxT("object: none"));
-    m_text_action_ = new wxStaticText(this, -1, wxT("action: none"));
+    m_text_action_ = new wxStaticText(this, -1, wxT("Current task:"));
+    m_text_task_ = new wxTextCtrl(this,-1,wxT("None."),wxDefaultPosition,wxDefaultSize,wxTE_MULTILINE|wxTE_READONLY);
+    m_text_task_->SetSizeHints(200,100);
+
+
     //m_text_timeout = new wxStaticText(this, -1, wxT("timeout: none"));
 
     disableControls();
@@ -198,13 +408,15 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     vsizer_mes->Add(buttons_["repeat"]);
     vsizer_mes->Add(buttons_["failed"]);
     vsizer_mes->Add(m_text_action_);
-
+    vsizer_mes->Add(m_text_task_);
 
     //vsizer_add->Add(b_switch_);
     vsizer_add->Add(m_aco_);
     vsizer_add->Add(buttons_["undo"]);
-    vsizer_add->Add(buttons_["lift"]);
-    vsizer_add->Add(buttons_["hold"]);
+    /*vsizer_add->Add(buttons_["lift"]);
+    vsizer_add->Add(buttons_["hold"]);*/
+    vsizer_add->Add(m_text_predef_pos_);
+    vsizer_add->Add(presets_choice_);
 
 
     vsizer->Add(vsizer_top,0,wxEXPAND|wxHORIZONTAL);
@@ -230,7 +442,7 @@ CArmManipulationControls::CArmManipulationControls(wxWindow *parent, const wxStr
     vsizer->SetSizeHints(this);
     this->SetSizerAndFit(vsizer);
 
-    ros::NodeHandle nh;
+    //ros::NodeHandle nh;
 
     arm_nav_state_sub_ = nh.subscribe("/but_arm_manip/state",10, &CArmManipulationControls::stateCallback,this);
 
@@ -267,23 +479,33 @@ void CArmManipulationControls::setControlsToDefaultState() {
 	if (wait_for_start_) setButton("new",false);
 	else setButton("new",true);
 
-	setButton("plan",false);
-	setButton("execute",false);
-	//setButton("switch",true);
-	//b_switch_->Enable(true);
-	m_aco_->Enable(true);
-	setButton("stop",false);
-	setButton("undo",false);
-	setButton("lift",false);
-	setButton("hold",false);
+	if (arm_nav_called_) {
 
-	if (!arm_nav_called_) {
+		setButton("new",true); // if action was called, we should allow new try
+
+		if (allow_repeat_) setButton("repeat",true);
+		else setButton("repeat",false);
+
+		if (traj_executed_ > 0) {
+
+			setButton("success",true); // allow success only if at least one trajectory was executed
+		}
+
+	} else {
 
 		setButton("success",false);
 		setButton("failed",false);
 		setButton("repeat",false);
 
 	}
+
+	setButton("plan",false);
+	setButton("execute",false);
+	m_aco_->Enable(true);
+	setButton("stop",false);
+	setButton("undo",false);
+	presets_choice_->Enable(false);
+	presets_choice_->Select(0);
 
 }
 
@@ -303,8 +525,9 @@ void CArmManipulationControls::disableControls() {
 	setButton("undo",false);
 
 	setButton("stop",false);
-	setButton("lift",false);
-	setButton("hold",false);
+	/*setButton("lift",false);
+	setButton("hold",false);*/
+	presets_choice_->Enable(false);
 
 }
 
@@ -477,8 +700,9 @@ void CArmManipulationControls::NewThread() {
 	 setButton("new",true);
 	 setButton("plan",true);
      setButton("undo",true);
-     setButton("lift",true);
-     setButton("hold",true);
+     /*setButton("lift",true);
+     setButton("hold",true);*/
+     presets_choice_->Enable(true);
 
 
      if (arm_nav_called_) {
@@ -512,7 +736,7 @@ bool CArmManipulationControls::refresh() {
 	 if (srv.response.completed) {
 
 	   wxMutexGuiEnter();
-	   m_text_status->SetLabel(wxString::FromAscii("status: Refreshed."));
+	   m_text_status->SetLabel(wxString::FromAscii("status: Refreshed. Please wait."));
 	   wxMutexGuiLeave();
 
 	 } else {
@@ -538,102 +762,6 @@ bool CArmManipulationControls::refresh() {
 
 }
 
-void CArmManipulationControls::OnHold(wxCommandEvent& event) {
-
-	ROS_INFO("We will try to lift gripper a bit.");
-
-	disableControls();
-
-	geometry_msgs::PoseStamped npose;
-
-	npose.header.stamp = ros::Time::now();
-	npose.header.frame_id = "/base_link";
-
-	// TODO read it from some parameter
-  npose.pose.position.x = -0.223;
-  npose.pose.position.y = 0.046;
-  npose.pose.position.z = 0.920;
-
-  npose.pose.orientation.x = 0.020;
-  npose.pose.orientation.y = 0.707;
-  npose.pose.orientation.z = -0.706;
-  npose.pose.orientation.w = 0.033;
-
-  ArmNavMovePalmLink srv;
-
-  //srv.request.relative_shift = move;
-  srv.request.sdh_palm_link_pose = npose;
-
-  if ( ros::service::exists(SRV_MOVE_PALM_LINK,true) && ros::service::call(SRV_MOVE_PALM_LINK,srv) ) {
-
-	  if (!srv.response.completed) {
-
-		m_text_status->SetLabel(wxString::FromAscii("status: Error on moving to home pos."));
-		setControlsToDefaultState();
-		return;
-
-	  }
-
-	} else {
-
-	  ROS_ERROR("failed when calling %s service",SRV_MOVE_PALM_LINK.c_str());
-	  m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
-
-	  setControlsToDefaultState();
-	  return;
-
-	}
-
-  wxCommandEvent ev;
-
-  // plan trajectory
-  OnPlan(ev);
-
-
-}
-
-void CArmManipulationControls::OnLift(wxCommandEvent& event) {
-
-	ROS_INFO("We will try to lift gripper a bit.");
-
-	disableControls();
-
-	geometry_msgs::Point move;
-
-	move.x = 0.0;
-	move.y = 0.0;
-	move.z = 0.15;
-
-  ArmNavMovePalmLinkRel srv;
-
-  srv.request.relative_shift = move;
-
-  if ( ros::service::exists(SRV_MOVE_PALM_LINK_REL,true) && ros::service::call(SRV_MOVE_PALM_LINK_REL,srv) ) {
-
-	  if (!srv.response.completed) {
-
-		m_text_status->SetLabel(wxString::FromAscii("status: Error on lift."));
-		setControlsToDefaultState();
-		return;
-
-	  }
-
-	} else {
-
-	  ROS_ERROR("failed when calling %s service",SRV_MOVE_PALM_LINK_REL.c_str());
-	  m_text_status->SetLabel(wxString::FromAscii("status: Communication error"));
-
-	  setControlsToDefaultState();
-	  return;
-
-	}
-
-  wxCommandEvent ev;
-
-  // plan trajectory
-  OnPlan(ev);
-
-}
 
 void CArmManipulationControls::OnNew(wxCommandEvent& event) {
 
@@ -786,7 +914,8 @@ void CArmManipulationControls::OnPlan(wxCommandEvent& event)
 	  if (t_plan.timed_join(td)) {
 
 		m_text_status->SetLabel(wxString::FromAscii("status: Planning. Please wait..."));
-		buttons_["plan"]->Enable(false);
+
+		disableControls();
 
 		t_plan = boost::thread(&CArmManipulationControls::PlanThread,this);
 
@@ -907,6 +1036,7 @@ void CArmManipulationControls::ExecuteThread()
 
        success = true;
        status = "status: Trajectory was executed.";
+       traj_executed_++;
 
      } else {
 
@@ -975,10 +1105,19 @@ void CArmManipulationControls::OnSuccess(wxCommandEvent& event)
 
 
    //m_text_object->SetLabel(wxString::FromAscii("object: none"));
-   m_text_action_->SetLabel(wxString::FromAscii("action: none"));
+   //m_text_action_->SetLabel(wxString::FromAscii("action: none"));
+   setTask("None.");
+
 
    arm_nav_called_ = false;
    setControlsToDefaultState();
+
+}
+
+void CArmManipulationControls::setTask(std::string text) {
+
+	m_text_task_->Clear();
+	m_text_task_->AppendText(wxString::FromAscii(text.c_str()));
 
 }
 
@@ -992,12 +1131,14 @@ void CArmManipulationControls::OnFailed(wxCommandEvent& event)
 
        m_text_status->SetLabel(wxString::FromAscii("status: Failed :-("));
        //m_text_object->SetLabel(wxString::FromAscii("object: none"));
-       m_text_action_->SetLabel(wxString::FromAscii("action: none"));
+       //m_text_action_->SetLabel(wxString::FromAscii("action: none"));
+       setTask("None.");
 
    } else {
 
      ROS_ERROR("failed when calling arm_nav_failed service");
      m_text_status->SetLabel(wxString::FromAscii("Communication error"));
+
 
    }
 
@@ -1016,7 +1157,8 @@ void CArmManipulationControls::OnRepeat(wxCommandEvent& event)
 
        m_text_status->SetLabel(wxString::FromAscii("status: Repeating action..."));
        //m_text_object->SetLabel(wxString::FromAscii("object: none"));
-       m_text_action_->SetLabel(wxString::FromAscii("action: none"));
+       //m_text_action_->SetLabel(wxString::FromAscii("action: none"));
+       setTask("None.");
 
    } else {
 
@@ -1038,6 +1180,7 @@ bool CArmManipulationControls::nav_start(ArmNavStart::Request &req, ArmNavStart:
   action_ = req.action;
   object_name_ = req.object_name;
   allow_repeat_ = req.allow_repeat;
+  traj_executed_ = 0;
 
   if (allow_repeat_) ROS_INFO("Received request for action. Repeated detection is allowed.");
   else ROS_INFO("Received request for action. Repeated detection is NOT allowed.");
@@ -1063,10 +1206,11 @@ bool CArmManipulationControls::nav_start(ArmNavStart::Request &req, ArmNavStart:
 
   std::string tmp;
   tmp = std::string("action: ") + req.action;
-  m_text_action_->SetLabel(wxString::FromAscii(tmp.c_str()));
+  //m_text_action_->SetLabel(wxString::FromAscii(tmp.c_str()));
+  setTask(req.action);
 
 
-  wxMessageBox(wxString::FromAscii(str), wxString::FromAscii("Manual arm navigation"), wxOK, parent_,-1,-1);
+  wxMessageBox(wxString::FromAscii(str), wxString::FromAscii("Assisted arm navigation"), wxOK, parent_,-1,-1);
 
   setButton("new",true);
   arm_nav_called_ = true;
@@ -1200,8 +1344,237 @@ void CArmManipulationControls::OnStopTraj(wxCommandEvent& event) {
 
 }
 
+// to be called from GUI callbacks only
+bool CArmManipulationControls::checkService(std::string srv) {
+
+	if (!ros::service::exists(srv,true)) {
+
+		ROS_ERROR("Service %s is not ready.",srv.c_str());
+		m_text_status->SetLabel(wxString::FromAscii("status: communication error"));
+		setControlsToDefaultState();
+		return false;
+
+	} else return true;
+
+}
+
+void CArmManipulationControls::OnChoice(wxCommandEvent& event) {
+
+	unsigned int choice;
+	if (presets_choice_->GetSelection() > 0) choice = (presets_choice_->GetSelection()) - 1;
+	else return;
+
+	if (presets_[choice].relative) {
+
+		if (!checkService(SRV_MOVE_PALM_LINK_REL)) return;
+
+		boost::posix_time::time_duration td = boost::posix_time::milliseconds(100);
+
+		  /// wait for some time
+		  if (t_move_rel.timed_join(td)) {
+
+		    disableControls();
+		    m_text_status->SetLabel(wxT("status: Moving to predefined position."));
+
+		    t_move_rel = boost::thread(&CArmManipulationControls::MoveRel,this);
+
+		  } else ROS_DEBUG("We have to wait until MOVE_REL thread finishes.");
+
+		//MoveRel(choice);
+
+	} else {
 
 
+		if (!checkService(SRV_MOVE_PALM_LINK)) return;
+
+		boost::posix_time::time_duration td = boost::posix_time::milliseconds(100);
+
+		  /// wait for some time
+		  if (t_move_abs.timed_join(td)) {
+
+			disableControls();
+			m_text_status->SetLabel(wxT("status: Moving to predefined position."));
+
+			t_move_abs = boost::thread(&CArmManipulationControls::MoveAbs,this);
+
+		  } else ROS_DEBUG("We have to wait until MOVE_ABS thread finishes.");
+
+		//MoveAbs(choice);
+
+	}
+
+
+}
+
+void CArmManipulationControls::MoveAbs() {
+
+
+	unsigned int choice;
+	wxMutexGuiEnter();
+	if (presets_choice_->GetSelection() > 0) choice = (presets_choice_->GetSelection()) - 1;
+	else {
+
+		wxMutexGuiLeave();
+		return;
+	}
+	wxMutexGuiLeave();
+
+	geometry_msgs::PoseStamped npose;
+
+	npose.header.stamp = ros::Time::now();
+	npose.header.frame_id = "/base_link"; // TODO read it from param !!!!!!!!!!!!!!!!!!!!
+
+	npose.pose = presets_[choice].pose;
+
+  ArmNavMovePalmLink srv;
+
+  srv.request.sdh_palm_link_pose = npose;
+
+  bool ret = false;;
+
+  if ( ros::service::call(SRV_MOVE_PALM_LINK,srv) ) {
+
+	  if (!srv.response.completed) ret = false;
+	  else ret = true;
+
+	} else {
+
+		ROS_ERROR("failed when called %s service",SRV_MOVE_PALM_LINK.c_str());
+		ret = false;
+
+	}
+
+
+  if (!ret) {
+
+	  wxMutexGuiEnter();
+	  m_text_status->SetLabel(wxString::FromAscii("status: Error on moving IM to new position."));
+	  setControlsToDefaultState();
+	  wxMutexGuiLeave();
+	  return;
+
+  } else {
+
+	  wxMutexGuiEnter();
+	  m_text_status->SetLabel(wxString::FromAscii("status: Gripper is at new position."));
+
+	  setButton("new",true); // cancel
+	  setButton("plan",true);
+	  setButton("undo",true);
+
+	  presets_choice_->Enable(true);
+	  presets_choice_->Select(0);
+
+	  if (arm_nav_called_) {
+
+		 if (allow_repeat_) buttons_["repeat"]->Enable(true);
+		 buttons_["failed"]->Enable(true);
+
+	   }
+
+	  wxMutexGuiLeave();
+	  return;
+
+
+  }
+
+}
+
+void CArmManipulationControls::MoveRel() {
+
+	unsigned int choice;
+	wxMutexGuiEnter();
+	if (presets_choice_->GetSelection() > 0) choice = (presets_choice_->GetSelection()) - 1;
+	else {
+
+		wxMutexGuiLeave();
+		return;
+	}
+	wxMutexGuiLeave();
+
+  geometry_msgs::Pose move;
+  move = presets_[choice].pose;
+
+  ArmNavMovePalmLinkRel srv;
+
+  srv.request.relative_movement = move;
+
+  bool ret = false;
+  bool err = false;
+
+  if ( ros::service::call(SRV_MOVE_PALM_LINK_REL,srv) ) {
+
+	  if (srv.response.completed) ret = true;
+	  else ret = false;
+
+  } else {
+
+	  ROS_ERROR("failed when called %s service",SRV_MOVE_PALM_LINK_REL.c_str());
+	  err = true;
+
+	}
+
+
+  if (!ret || err) {
+
+	  wxMutexGuiEnter();
+
+	  if (err) {
+
+		  m_text_status->SetLabel(wxString::FromAscii("status: Comunnication error."));
+		  setControlsToDefaultState();
+
+	  }
+
+	  if (!ret) {
+
+		  m_text_status->SetLabel(wxString::FromAscii("status: Error on moving IM to new position."));
+
+		  setButton("new",true); // cancel
+		  setButton("plan",true);
+		  setButton("undo",true);
+
+		  presets_choice_->Enable(true);
+		  presets_choice_->Select(0);
+
+		  if (arm_nav_called_) {
+
+			 if (allow_repeat_) buttons_["repeat"]->Enable(true);
+			 buttons_["failed"]->Enable(true);
+
+		   }
+
+	  }
+
+	  wxMutexGuiLeave();
+	  return;
+
+  } else {
+
+	  wxMutexGuiEnter();
+	  m_text_status->SetLabel(wxString::FromAscii("status: Gripper is at new position."));
+
+	  setButton("new",true); // cancel
+	  setButton("plan",true);
+	  setButton("undo",true);
+
+	  presets_choice_->Enable(true);
+	  presets_choice_->Select(0);
+
+	  if (arm_nav_called_) {
+
+		 if (allow_repeat_) buttons_["repeat"]->Enable(true);
+		 buttons_["failed"]->Enable(true);
+
+	   }
+
+	  wxMutexGuiLeave();
+	  return;
+
+  }
+
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1226,7 +1599,8 @@ BEGIN_EVENT_TABLE(CArmManipulationControls, wxPanel)
     EVT_BUTTON(ID_BUTTON_MFORW,  CArmManipulationControls::OnMoveRel)
     EVT_BUTTON(ID_BUTTON_MBACK,  CArmManipulationControls::OnMoveRel)*/
     EVT_BUTTON(ID_BUTTON_STOP_TRAJ,  CArmManipulationControls::OnStopTraj)
-    EVT_BUTTON(ID_BUTTON_LIFT,  CArmManipulationControls::OnLift)
-    EVT_BUTTON(ID_BUTTON_MOVE_TO_HOLD,  CArmManipulationControls::OnHold)
+    /*EVT_BUTTON(ID_BUTTON_LIFT,  CArmManipulationControls::OnLift)
+    EVT_BUTTON(ID_BUTTON_MOVE_TO_HOLD,  CArmManipulationControls::OnHold)*/
+    EVT_CHOICE(ID_CHOICE,CArmManipulationControls::OnChoice)
 END_EVENT_TABLE()
 

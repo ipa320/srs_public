@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -37,7 +37,8 @@ namespace srs_interaction_primitives
 {
 
 // Container with primitives
-std::map<std::string, Primitive*> primitives;
+typedef std::map<std::string, Primitive*> tPrimitives;
+tPrimitives primitives;
 
 // Interactive Marker server
 InteractiveMarkerServerPtr imServer;
@@ -198,6 +199,7 @@ bool addUnknownObject(AddUnknownObject::Request &req, AddUnknownObject::Response
   unknownObject->setPose(req.pose);
   unknownObject->setScale(req.scale);
   unknownObject->setDescription(req.description);
+  unknownObject->useMaterial((req.disable_material != 0) ? false : true);
   unknownObject->insert();
   imServer->applyChanges();
 
@@ -252,10 +254,12 @@ bool removePrimitive(RemovePrimitive::Request &req, RemovePrimitive::Response &r
     return false;
   }
 
-  if (primitives.count(req.name) > 0)
-    primitives.erase(primitives.find(req.name));
-
-  imServer->erase(req.name);
+  tPrimitives::iterator it = primitives.find(req.name);
+  if (it != primitives.end())
+  {
+    delete it->second;
+    primitives.erase(it);
+  }
   imServer->applyChanges();
 
   ROS_INFO("..... DONE");

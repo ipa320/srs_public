@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>
+  <!-- sensor message gateway node (forwards sensor messages in a desired rate) -->
+  <rosparam command="load" ns="/cob_image_flip/kinect_image_flip" file="$(find srs_assisted_arm_navigation_ui)/config/image_flip_params.yaml"/>
+  <node name="kinect_image_flip" pkg="cob_image_flip" ns="/cob_image_flip/kinect_image_flip" type="kinect_image_flip" output="screen"> <!--launch-prefix="valgrind"-->
+    <!--remap from="pointcloud_in" to="/cam3d/rgb/points"/>
+    <remap from="pointcloud_out" to="/cam3d/upright/rgb/points"/-->
+    <remap from="colorimage_in" to="/cam3d/rgb/image_raw_throttled"/>
+    <remap from="colorimage_out" to="/cam3d/rgb/upright/image_raw_throttled"/>
+  </node>
+
+</launch>

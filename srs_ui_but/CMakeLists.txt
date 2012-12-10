@@ -49,10 +49,7 @@ target_link_libraries(but_gui_service_server ${BUT_SERVICES_PROJECT_NAME})
 
 # BUT rviz display
 set( DISPLAY_SOURCE_FILES src/but_display/but_display.cpp
-                          src/but_display/but_point_cloud.cpp
-                          src/but_display/point_cloud_base.cpp
                           src/but_display/example_pane.cpp
-                          src/but_display/octomap_control_pane.cpp
                           src/but_display/camera_control_pane.cpp
                           src/but_display/but_distance_linear_visualizer.cpp
                           src/but_display/but_distance_circular_indicator.cpp
@@ -61,11 +58,11 @@ set( DISPLAY_SOURCE_FILES src/but_display/but_display.cpp
                           src/but_display/but_camcast.cpp
                           src/but_display/ros_rtt_texture.cpp
                           src/but_display/but_projection.cpp
-						  src/but_display/but_rostexture.cpp
-						  src/but_display/but_context_manager.cpp
-						  src/but_display/but_object_manager.cpp
-						  src/but_display/object_control_pane.cpp
-						  src/but_display/but_depthtexture.cpp
+                          src/but_display/but_rostexture.cpp
+                          src/but_display/but_context_manager.cpp
+                          src/but_display/but_object_manager.cpp
+                          src/but_display/object_control_pane.cpp
+                          src/but_display/but_depthtexture.cpp
                           src/but_display/init.cpp 
                           )
 

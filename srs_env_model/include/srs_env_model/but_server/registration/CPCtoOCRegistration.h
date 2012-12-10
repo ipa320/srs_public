@@ -164,7 +164,12 @@ protected:
 
 	//! View fraction computation matrix
 	btMatrix3x3 m_fracMatrix;
+
+public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 }; // class COcToPcl
+
 
 /**
  * Registrates incomming point cloud to the octomap
@@ -194,8 +199,6 @@ public:
 	//! Is some registering mode set
 	bool isRegistering(){ return m_registration.isRegistering(); }
 
-
-
 protected:
 	//! Patch maker
 	COcPatchMaker m_patchMaker;
@@ -212,7 +215,8 @@ protected:
 	//! Transform listener
 	tf::TransformListener m_tfListener;
 
-
+public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CPcToOcRegistration
 

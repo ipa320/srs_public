@@ -1,0 +1,13 @@
+name: but_env_model_gui
+library: but_env_model_gui
+displays:
+  -
+    class_name: COctomapDisplay
+    display_name: BUT Octomap Control Panel
+    description: |
+      Shows display and control panel to work with the BUT environment model
+  -
+    class_name: CButPointCloud
+    display_name: BUT Point Cloud
+    description: |
+      Shows a modified point cloud display

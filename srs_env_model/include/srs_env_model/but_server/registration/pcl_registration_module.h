@@ -61,8 +61,8 @@ public:
 
 	// String mode names
 	static const std::string m_mode_names[];
-public:
 
+public:
 	//! Constructor
 	CPclRegistration() : m_mode(PCL_REGISTRATION_MODE_NONE), m_registrationPtr(0) { }
 
@@ -162,6 +162,9 @@ protected:
 
 	//! Number of neighbors to use when selecting a random feature correspondence
 	int m_scaCorrespondenceRamdomness;
+
+public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // CPclRegistration
 

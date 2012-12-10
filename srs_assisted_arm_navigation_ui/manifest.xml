@@ -19,6 +19,9 @@
   <depend package="sensor_msgs"/>
   <depend package="image_transport"/>
   <depend package="visualization_msgs"/>
+  <depend package="cob_image_flip"/>
+  <depend package="cob_interactive_teleop"/>
+  <depend package="cob_spacenav_teleop"/>
   
   <export>
     <rviz plugin="${prefix}/lib/but_arm_navigation.yaml"/>

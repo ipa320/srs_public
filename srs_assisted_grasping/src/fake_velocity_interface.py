@@ -73,6 +73,7 @@ class fake_velocity_interface():
             
             if self.req_pos is None:
                 
+                r.sleep()
                 continue
             
             self.lock.acquire()
@@ -87,6 +88,7 @@ class fake_velocity_interface():
             if last_vel_command is None:
                 
                 self.lock.release()
+                r.sleep()
                 continue
                 
             
@@ -97,6 +99,7 @@ class fake_velocity_interface():
                 self.last_vel_command = None
                 
                 self.lock.release()
+                r.sleep()
                 continue
             
             

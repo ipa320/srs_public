@@ -26,7 +26,7 @@
     <include file="$(find srs_ui_but)/launch/$(env ROBOT_ENV)/load_urdf_model.launch" />
 
     <!-- Run rviz -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_ui_but)/config/ui_test.vcg" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_ui_but)/config/projection_test.vcg" />
 
 </launch>
 

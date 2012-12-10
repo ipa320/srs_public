@@ -71,7 +71,7 @@ void publishButDisplay(const CameraInfoConstPtr cam_info, float display_depth);
 void updateCameraTopic(ros::NodeHandle& nh);
 
 // Camera parameters
-float elev_d, steer_r, elev_u, steer_l = 0;
+float elev_d = 0.0f, steer_r = 0.0f, elev_u = 0.0f, steer_l = 0.0f;
 
 // TF transformation listener for camera info message
 tf::TransformListener *tf_cam_info_Listener;

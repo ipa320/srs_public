@@ -109,7 +109,7 @@ class bag_record():
         
         # waits for a tf transform before starting. This is important to check if
         # the system is fully functional.
-        self.tfL.waitForTransform(self.wanted_tfs[0]["reference_frame"], self.wanted_tfs[0]["target_frame"], rospy.Time(), rospy.Duration(20.0))
+        self.tfL.waitForTransform(self.wanted_tfs[0]["reference_frame"], self.wanted_tfs[0]["target_frame"], rospy.Time(), rospy.Duration(3.0))
         
         # dictionaries for storing current translation and rotation for the specific
         # frames
@@ -169,7 +169,7 @@ class bag_record():
     def tf_write(self, transf):
         # writes tf messages on the bagfile
         rospy.loginfo("Tf_writer")
-        
+        self.tfa.lock()
         # loops through the transforms dictionaries and get the current transforms
         # for the specific frames and further records the messages on the bagfile
         for t in transf:
@@ -192,6 +192,7 @@ class bag_record():
                 tfMsg = tfMessage([self.tfposed])
 
                 bagfile.write("/tf", tfMsg)
+        self.tfa.unlock()
     
     def process_topics(self, tfs):
         # process the topics
@@ -214,7 +215,7 @@ class bag_record():
                 rospy.loginfo(msg)
             
             elif(tfs=="/tf"):
-                self.tfa.process_tfs()
+                #self.tfa.process_tfs()
                 transf = self.tfa.transforms
                 self.tf_write(transf)
                     

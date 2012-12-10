@@ -116,11 +116,11 @@ class joint_state_aggregator():
         # establishes a subscriber and a callback to the joint_states
         rospy.Subscriber('/joint_states', sensor_msgs.msg.JointState, self.process_joints)
         # creates a thread for managing the joint_states messages listener
-        self.thread = threading.Thread(target=self.joint_states_listener)
-        self.thread.start()
+        #self.thread = threading.Thread(target=self.joint_states_listener)
+        #self.thread.start()
         
     def joint_states_listener(self):
-        rospy.Subscriber('/joint_states', JointState, self.joint_states_callback)
+        rospy.Subscriber('/joint_states', JointState, self.process_joints)
         rospy.spin()
         
     def process_joints(self, msg):
@@ -134,7 +134,7 @@ class joint_state_aggregator():
         if(len(jMsg.name) == len(jMsg.position) == len(jMsg.velocity) == len(jMsg.effort)):
             pass
         else:
-            excep = "Joint_states dimensions are not correct:" + "Names_dim " + (str)(len(jMsg.name)) + "," + "Pos_dim " + (str)(len(jMsg.position)) + "," + "Vel_dim " + (str)(len(jMsg.velocity)) + "," + "Eff_dim " + (str)(len(jMsg.effort))
+            excep = "Joint_states dimensions are not correct:" + "Names_dim " + (str)(len(jMsg.name)) + "," + "Pos_dim " + (str)(len(jMsg.position)) + "," + "Vel_dim " + (str)(len(jMsg.velocity)) + "," + "Eff_dim " + (str)(len(jMsg.effort)) + "joint_names = " + str(jMsg.name)
             raise Exception(excep)
         # iterates through the message items to update the corresponding lists
         for a,b,c, d in itertools.izip(jMsg.name, jMsg.position,jMsg.velocity, jMsg.effort):

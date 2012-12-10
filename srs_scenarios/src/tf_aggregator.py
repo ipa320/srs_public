@@ -89,20 +89,28 @@ class tf_aggregator():
     def __init__(self):
         
         self.transforms = {}
+        rospy.Subscriber('/tf', tfMessage, self.process_tfs)
+        self.locked = False
+    def lock(self):
+        self.locked = True
         
-    def process_tfs(self):
-        
-        msg =  rospy.wait_for_message("/tf", tfMessage)
+    def unlock(self):
+        self.locked = False 
+    
+    def process_tfs(self,msg):
+        timeout = 1.0
+        #msg =  rospy.wait_for_message("/tf", tfMessage, timeout)
         # iterates through the message items to update the transforms dictionary
         # with the specified reference and child frame
-        for trans in msg.transforms:
-            frame_id = trans.header.frame_id
-            child_frame_id = trans.child_frame_id
-            
-            if(frame_id not in self.transforms): 
-                self.transforms[frame_id] = {}
-            if(child_frame_id not in self.transforms[frame_id]):
-                self.transforms[frame_id][child_frame_id] = True
+        if not self.locked:
+		    for trans in msg.transforms:
+		        frame_id = trans.header.frame_id
+		        child_frame_id = trans.child_frame_id
+		    
+		        if(frame_id not in self.transforms): 
+		            self.transforms[frame_id] = {}
+		        if(child_frame_id not in self.transforms[frame_id]):
+		            self.transforms[frame_id][child_frame_id] = True
         
 if __name__=="__main__":
 

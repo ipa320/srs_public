@@ -88,26 +88,34 @@ import threading
 class joint_state_aggregator():
 
     def __init__(self):
+        # lock object is necessary to prevent interruption on the joint_states message
+        # update process
         self.lock = threading.Lock()
+        # the following lists store the components of the joint_states message
         self.effort = []
         self.position = []
         self.velocity = []
         self.names = []
+        # joint_states message
         self.jointsMsg = rospy.wait_for_message("/joint_states", sensor_msgs.msg.JointState, 10)
-        
+        # this checks for the dimensions of the message to inform if there is a 
+        # malformed joint_states message for the developer to be able to correct
+        # the related controller code
         if(len(self.jointsMsg.name) == len(self.jointsMsg.position) == len(self.jointsMsg.velocity) == len(self.jointsMsg.effort)):
             rospy.loginfo("Dimensions are ok!")
         else:
             excep = "Joint_states dimensions are not correct:" + "Names_dim " + (str)(len(self.jointsMsg.name)) + "," + "Pos_dim " + (str)(len(self.jointsMsg.position)) + "," + "Vel_dim " + (str)(len(self.jointsMsg.velocity)) + "," + "Eff_dim " + (str)(len(self.jointsMsg.effort))
             raise Exception(excep)
-            
+        # iterates simultaneously through all the message lists to update the correspondent
+        # values according to the new joint_states message
         for a,b,c, d in itertools.izip(self.jointsMsg.name, self.jointsMsg.position,self.jointsMsg.velocity, self.jointsMsg.effort):
             self.names.append(a)
             self.velocity.append(b)
             self.position.append(c)
             self.effort.append(d)
-            
+        # establishes a subscriber and a callback to the joint_states
         rospy.Subscriber('/joint_states', sensor_msgs.msg.JointState, self.process_joints)
+        # creates a thread for managing the joint_states messages listener
         self.thread = threading.Thread(target=self.joint_states_listener)
         self.thread.start()
         
@@ -122,13 +130,13 @@ class joint_state_aggregator():
         self.temp_vel = jMsg.velocity
         self.temp_pos = jMsg.position
         self.temp_ef = jMsg.effort
-        
+        # dimensions check
         if(len(jMsg.name) == len(jMsg.position) == len(jMsg.velocity) == len(jMsg.effort)):
             pass
         else:
             excep = "Joint_states dimensions are not correct:" + "Names_dim " + (str)(len(jMsg.name)) + "," + "Pos_dim " + (str)(len(jMsg.position)) + "," + "Vel_dim " + (str)(len(jMsg.velocity)) + "," + "Eff_dim " + (str)(len(jMsg.effort))
             raise Exception(excep)
-        
+        # iterates through the message items to update the corresponding lists
         for a,b,c, d in itertools.izip(jMsg.name, jMsg.position,jMsg.velocity, jMsg.effort):
         
             if(a) not in self.names:
@@ -137,11 +145,13 @@ class joint_state_aggregator():
                 self.velocity.append(c)
                 self.effort.append(d)
             
-   
+            # this is important for updating the current items that are already
+            # on the lists
             self.position[self.names.index(a)] = self.temp_pos[self.temp_name.index(a)]
             self.velocity[self.names.index(a)] = self.temp_vel[self.temp_name.index(a)]
             self.effort[self.names.index(a)] = self.temp_ef[self.temp_name.index(a)]
-        
+        # this creates the aggregated joint_states message and makes it available
+        # when requested
         self.jointsMsg.name = self.names
         self.jointsMsg.position = self.position
         self.jointsMsg.velocity = self.velocity

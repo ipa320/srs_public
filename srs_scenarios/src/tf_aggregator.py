@@ -93,7 +93,8 @@ class tf_aggregator():
     def process_tfs(self):
         
         msg =  rospy.wait_for_message("/tf", tfMessage)
-
+        # iterates through the message items to update the transforms dictionary
+        # with the specified reference and child frame
         for trans in msg.transforms:
             frame_id = trans.header.frame_id
             child_frame_id = trans.child_frame_id

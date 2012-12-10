@@ -74,6 +74,7 @@ struct SpacenavData {
 	boost::signals2::mutex mutex;
 
 	ros::Time last_data;
+	ros::Time last_nonzero_data;
 
 };
 

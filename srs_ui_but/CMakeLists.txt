@@ -85,3 +85,10 @@ rosbuild_add_executable(but_depthtoimage_node src/but_display/but_depthpctoimage
 # BUT data fusion
 rosbuild_add_executable(data_fusion_view src/but_data_fusion/view.cpp)
 
+
+# Add footprint_marker_node executable
+rosbuild_add_executable(footprint_marker_node
+                        src/nodes/footprint_marker.cpp
+                        src/nodes/footprint_marker_node.cpp
+                        )
+

@@ -1,0 +1,11 @@
+arm_nav_presets:
+ -
+  name: Lift object
+  position: [0.0, 0.0, 0.15]
+  orientation: [0.0, 0.0, 0.0] # 3 values -> RPY
+  relative: true
+ -
+  name: Hold position
+  position: [-0.223, 0.046, 0.920]
+  orientation: [0.020, 0.707, -0.706, 0.033] # 4 values -> Quaternion
+  relative: false

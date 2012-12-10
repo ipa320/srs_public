@@ -48,6 +48,7 @@ namespace srs_assisted_arm_navigation
     static const std::string SRV_FAILED = PACKAGE_NAME_PREFIX + std::string("/arm_nav_failed");
     static const std::string SRV_REFRESH = PACKAGE_NAME_PREFIX + std::string("/arm_nav_refresh");
     static const std::string SRV_COLLOBJ = PACKAGE_NAME_PREFIX + std::string("/arm_nav_coll_obj");
+    static const std::string SRV_COLLOBJ_REM = PACKAGE_NAME_PREFIX + std::string("/arm_rem_coll_obj");
     static const std::string SRV_SET_ATTACHED = PACKAGE_NAME_PREFIX + std::string("/arm_nav_set_attached");
     static const std::string SRV_MOVE_PALM_LINK = PACKAGE_NAME_PREFIX + std::string("/arm_nav_move_palm_link");
     static const std::string SRV_MOVE_PALM_LINK_REL = PACKAGE_NAME_PREFIX + std::string("/arm_nav_move_palm_link_rel");

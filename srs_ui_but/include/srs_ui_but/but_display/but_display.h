@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_display.h 1798 2012-11-02 18:39:23Z stancl $
+ * $Id: but_display.h 2050 2012-12-03 15:38:13Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -42,93 +42,31 @@
 #include <string>
 
 #include "example_pane.h"
-#include "octomap_control_pane.h"
 #include "camera_control_pane.h"
-#include "srs_env_model_msgs/RVIZCameraPosition.h"
+
 
 namespace srs_ui_but
 {
 
-
 class CButDisplay:public rviz::Display
 {
 public:
-    class CNotifyCameraListener : public Ogre::Camera::Listener
-    {
-    public:
-        //! Constructor
-        CNotifyCameraListener( CButDisplay * display );
+    //! Constructor
+    CButDisplay(const std::string & name, rviz::VisualizationManager * manager);
 
-        //! Destructor
-        ~CNotifyCameraListener();
-
-        //! Pre render notification
-        virtual void 	cameraPreRenderScene (Ogre::Camera *cam);
-
-        //! Connect to the camera
-        void connect( Ogre::Camera * camera );
-
-        //! Disconnect
-        void disconnect();
-
-        //! Get current camera position
-        const Ogre::Vector3 & getCameraPosition(){ return m_position; }
-
-        Ogre::Camera & getCamera() { return *m_camera; }
-
-        //! Set used camera frame id
-        void setCamFrameId( const std::string & fid ) { m_camFrameId = fid; }
-
-    protected:
-        //! Test if camera position and orientation has changed
-        bool hasMoved( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation );
-
-        //! Do what is needed when orientation or position has changed
-        virtual void changedCB( const Ogre::Vector3 & position, const Ogre::Quaternion & orientation );
-
-
-    protected:
-        //! Old camera position
-        Ogre::Vector3 m_position;
-
-        //! Old camera orientation
-        Ogre::Quaternion m_orientation;
-
-        //! Old camera
-        Ogre::Camera * m_camera;
-
-        //! Owner display
-        CButDisplay * m_display;
-
-        //! Publishing timer
-        ros::Timer m_timer;
-
-        //! Camera frame id
-        std::string m_camFrameId;
-    };
-
-public:
-    //!Constructor
-    CButDisplay(const std::string & name,rviz::VisualizationManager * manager);
-
-    //!Destructor
+    //! Destructor
     ~CButDisplay();
 
-    //OverridesfromDisplay
-    virtual void targetFrameChanged() { m_ocmap_window->targetFrameChanged( target_frame_ );  }
-    virtual void fixedFrameChanged()
-    {
-    	m_ocmap_window->fixedFrameChanged( fixed_frame_ );
-    	m_listener.setCamFrameId( target_frame_ );
-    	std::cerr << "Target frame: " << target_frame_ << std::endl;
-    }
+    // Overrides from Display
+    virtual void targetFrameChanged();
+    virtual void fixedFrameChanged();
     virtual void createProperties();
 
     //! Update display
-    virtual void update (float wall_dt, float ros_dt);
+    virtual void update(float wall_dt, float ros_dt);
 
 protected:
-    //overridesfromDisplay
+    // Overrides from Display
     virtual void onEnable();
     virtual void onDisable();
 
@@ -141,30 +79,12 @@ protected:
     //! View controller has changed signal slot
     void onViewControllerChange( rviz::ViewController * c );
 
-    //! Connect listener
-    void connectListener();
-
-    //! Property has changed
-    void propertyPositionChanged();
-
-    //! Get property string - camera position
-    const std::string getCameraPositionString();
-
-    //! Set property string - camera position
-    void setCameraPositionString( const std::string & str );
-
 protected:
     //! Scene node
     Ogre::SceneNode * m_sceneNode;
 
     //! Geometry manual object
     Ogre::ManualObject * m_manualObject;
-
-    //! Camera listener
-    CNotifyCameraListener m_listener;
-
-    //! Position display property
-    rviz::StringPropertyWPtr m_property_position;
 
     //! Simple window example
     CExamplePanel * m_child_window;
@@ -175,30 +95,12 @@ protected:
     //! Controls window example
     CExamplePanelControls * m_controls_window;
     
-    //! Octomap controls window
-    COctomapControlPane * m_ocmap_window;
-
     //! Rviz camera control pane
     CCameraControlPane * m_camera_window;
 
-    //! Camera position publisher name
-    std::string m_cameraPositionPublisherName;
-
-    //! Camera position message
-    srs_env_model_msgs::RVIZCameraPosition m_cameraPositionMsg;
-
-    //! Camera position publisher
-    ros::Publisher m_cameraPositionPub;
-
-    //! Enable/disable publishing
-    bool m_latchedTopics;
-
-
-    friend class CNotifyCameraListener;
-
 };//classCBasicPlugin
+
 
 } // namespace srs_ui_but
 
 #endif // BUT_DISPLAY_H
-

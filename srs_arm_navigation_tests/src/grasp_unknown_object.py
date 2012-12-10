@@ -46,11 +46,17 @@ def main():
   
   with sm:
     
+    smach.StateMachine.add('detect',detect_unknown_object_assisted(),
+                           transitions={'completed':'grasp',
+                                        'not_completed':'fdm_not_completed',
+                                        'pre-empted':'fdm_pre-empted',
+                                        'failed':'fdm_failed'})
     smach.StateMachine.add('grasp',grasp_unknown_object_assisted(),
                            transitions={'completed':'fdm_completed',
                                         'not_completed':'fdm_not_completed',
                                         'pre-empted':'fdm_pre-empted',
-                                        'failed':'fdm_failed'})
+                                        'failed':'fdm_failed',
+                                        'repeat_detection' : 'detect'})
     
   rospy.loginfo('Executing state machine...') 
   output = sm.execute()

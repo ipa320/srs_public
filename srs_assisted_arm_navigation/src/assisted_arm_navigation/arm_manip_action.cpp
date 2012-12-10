@@ -70,6 +70,7 @@ void ManualArmManipActionServer::executeCB(const ManualArmManipGoalConstPtr &goa
 
     }*/
 
+  srv_start.request.allow_repeat = goal->allow_repeat;
   srv_start.request.action = goal->action;
   srv_start.request.object_name = goal->object_name;
 

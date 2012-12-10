@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -222,6 +222,9 @@ void Primitive::insert()
 void Primitive::erase()
 {
   server_->erase(name_);
+
+  // Scale controls are managed as separate interactive markers...
+  removeScaleControls();
 }
 
 void Primitive::addMovementControls()
@@ -355,9 +358,9 @@ void Primitive::addMeasureControl()
 
   Marker measureText;
   ostringstream text_x, text_y, text_z;
-  text_x << scale_.x << "m";
-  text_y << scale_.y << "m";
-  text_z << scale_.z << "m";
+  text_x << setprecision(2) << fixed << scale_.x << "m";
+  text_y << setprecision(2) << fixed << scale_.y << "m";
+  text_z << setprecision(2) << fixed << scale_.z << "m";
   measureText.type = Marker::TEXT_VIEW_FACING;
   measureText.color = measureMarker.color;
   // Z
@@ -423,12 +426,17 @@ void Primitive::addDescriptionControl()
   Marker descriptionMarker;
   descriptionMarker.type = Marker::TEXT_VIEW_FACING;
   descriptionMarker.text = description_;
-  descriptionMarker.scale.z = 0.2;
-  descriptionMarker.color.r = color_.b;
-  descriptionMarker.color.g = color_.r;
-  descriptionMarker.color.b = color_.g;
+//  descriptionMarker.scale.z = 0.2;
+//  descriptionMarker.color.r = color_.b;
+//  descriptionMarker.color.g = color_.r;
+//  descriptionMarker.color.b = color_.g;
+//  descriptionMarker.pose.position.z = object_.scale / 2 + 0.2;
+  descriptionMarker.scale.z = object_.scale * 0.2;
+  descriptionMarker.color.r = 1.0;
+  descriptionMarker.color.g = 1.0;
+  descriptionMarker.color.b = 1.0;
   descriptionMarker.color.a = 1.0;
-  descriptionMarker.pose.position.z = object_.scale / 2 + 0.2;
+  descriptionMarker.pose.position.z = object_.scale * 0.8 + 0.2;
 
   descriptionControl_.name = "description_control";
   descriptionControl_.markers.push_back(descriptionMarker);
@@ -467,7 +475,8 @@ void Primitive::addScaleControls()
     {
       InteractiveMarker int_marker;
       int_marker.header.frame_id = frame_id_;
-      int_marker.scale = 1.0;
+//      int_marker.scale = 1.0;
+      int_marker.scale = 0.5 * srs_interaction_primitives::maxScale(scale_);
       int_marker.pose = pose_;
 
       InteractiveMarkerControl control;
@@ -506,6 +515,7 @@ void Primitive::addScaleControls()
       }
 
       makeArrow(int_marker, control, 0.5 * sign);
+      makeArrow(int_marker, control, 0.75 * sign);
 
       int_marker.controls.push_back(control);
       server_->insert(int_marker, boost::bind(&Primitive::scaleFeedback, this, _1));

@@ -3,7 +3,7 @@
  *
  * $Id: point_cloud_base.h 810 2012-05-19 21:47:51Z stancl $
  *
- * Modified by dcgm-robotics@FIT group.
+ * Modified by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -56,8 +56,8 @@
 
 #include <message_filters/time_sequencer.h>
 
-#include "sensor_msgs/PointCloud.h"
-#include "sensor_msgs/PointCloud2.h"
+#include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud2.h>
 
 #include <ros/spinner.h>
 #include <ros/callback_queue.h>
@@ -71,6 +71,7 @@
 #include <queue>
 #include <vector>
 
+
 namespace rviz
 {
 
@@ -80,6 +81,7 @@ class PluginStatus;
 
 class PointCloudSelectionHandler;
 typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
+
 class PointCloudTransformer;
 typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
 
@@ -91,6 +93,7 @@ typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
  * all being 8 bits.
  */
+
 class PointCloudBase : public Display, public boost::signals::trackable
 {
 private:
@@ -278,7 +281,7 @@ protected:
   friend class PointCloudSelectionHandler;
 };
 
+
 } // namespace rviz
 
 #endif // RVIZ_POINT_CLOUD_BASE_H
-

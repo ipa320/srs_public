@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -362,7 +362,7 @@ void BoundingBox::create()
 
   object_.header.frame_id = frame_id_;
   object_.name = name_;
-  object_.description = description_;
+//  object_.description = description_;
   object_.pose = pose_;
   object_.scale = srs_interaction_primitives::maxScale(scale_);
 

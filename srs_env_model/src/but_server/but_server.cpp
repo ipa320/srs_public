@@ -77,7 +77,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 			m_plugIMarkers( ),
 			m_plugMarkerArray( new CMarkerArrayPlugin( "MA" ) ),
 			m_plugObjTree( new CObjTreePlugin( "OT" ) ),
-			m_plugOldIMarkers(),
+			m_plugOldIMarkers( ),
 			m_plugCompressedPointCloud( new CCompressedPointCloudPlugin( "CPC" ) ),
 			m_bUseOldIMP( false )
 #ifdef _EXAMPLES_

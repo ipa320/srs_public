@@ -73,6 +73,9 @@ SpaceNavTeleop::SpaceNavTeleop() {
 	bp_.pose.orientation.z = 0.0;
 	bp_.pose.orientation.w = 1.0;
 
+	sn_data_.last_data = ros::Time(0);
+	sn_data_.last_nonzero_data = ros::Time(0);
+
 	ros::NodeHandle nh("~");
 
 	offset_sub_ = nh.subscribe("/spacenav/offset",1,&SpaceNavTeleop::spacenavOffsetCallback,this);
@@ -208,8 +211,9 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 	sn_data_.mutex.unlock();
 
 	// instant STOP
-	if ( (ros::Time::now() - last_data) > ros::Duration(0.5)) {
+	if ( ((ros::Time::now() - last_data) > ros::Duration(0.5)) && (last_data != ros::Time(0)) ) {
 
+		// spacenav node probably crashed ?
 		ROS_WARN("Old data");
 		twist_publisher_.publish(tw);
 
@@ -234,7 +238,7 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 
 	} else {
 
-		if ((ros::Time::now() - time_of_stop_) > ros::Duration(2.0)) {
+		if ((ros::Time::now() - time_of_stop_) > ros::Duration(5.0)) {
 
 			stop_detected_ = false;
 			ROS_INFO("Releasing instant stop.");
@@ -248,12 +252,19 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 
 	}
 
+	if ( (ros::Time::now() - sn_data_.last_nonzero_data ) > ros::Duration(1.0)) {
+
+		// we have nothing to publish
+		return;
+
+	}
+
 	// allow different ways of control
 	if (fabs(rot_offset.y) > fabs(offset.x)) offset.x = rot_offset.y;
 	if (fabs(rot_offset.x) > fabs(offset.y)) offset.y = -rot_offset.x;
 
 
-	bool rot = false;
+	/*bool rot = false;
 
 	// let's try to decide if we will travel around or turn in place
 	if (fabs(rot_offset.z) > params_.sn_min_val_th) {
@@ -267,10 +278,10 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 		// "effort" for rotation is bigger than for (any) linear movement
 		if (fabs(rot_offset.z) > fabs(max)) rot = true;
 
-	}
+	}*/
 
 	// well, we will turn the robot
-	if (rot) {
+	/*if (rot) {
 
 		offset.x = 0.0;
 		offset.y = 0.0;
@@ -299,7 +310,12 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 		rot_offset.y = 0.0;
 		rot_offset.z = 0.0;
 
-	}
+	}*/
+
+	// filter out too small values
+	if (fabs(offset.x) < params_.sn_min_val_th ) offset.x = 0;
+	if (fabs(offset.y) < params_.sn_min_val_th ) offset.y = 0;
+	if (fabs(rot_offset.z) < params_.sn_min_val_th ) rot_offset.z = 0;
 
 
 	if (!params_.use_rviz_cam) {
@@ -308,18 +324,20 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 		offset.x *= params_.max_vel_x;
 		offset.y *= params_.max_vel_y;
 
+		rot_offset.z *= params_.max_vel_th;
+
 		tw.linear = offset;
 		tw.angular = rot_offset;
 
 		ROS_INFO_ONCE("Started in mode without using RVIZ camera position.");
-		twist_publisher_.publish(tw);
-		return;
+		/*twist_publisher_.publish(tw);
+		return;*/
 
-	}
+	} else {
 
 
 	// transformation of velocities vector is not needed for turning in place
-	if (!rot) {
+	//if (!rot) {
 
 		ROS_INFO_ONCE("Started in mode with using RVIZ camera position.");
 
@@ -349,6 +367,8 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 		offset.x *= params_.max_vel_x;
 		offset.y *= params_.max_vel_y;
 		offset.z = 0.0;
+
+		rot_offset.z *= params_.max_vel_th;
 
 		tw.linear = offset;
 		tw.angular = rot_offset;
@@ -411,6 +431,8 @@ void SpaceNavTeleop::spacenavOffsetCallback(const geometry_msgs::Vector3ConstPtr
 
 	sn_data_.last_data = ros::Time::now();
 
+	if (sn_data_.offset.x != 0.0 || sn_data_.offset.y != 0.0) sn_data_.last_nonzero_data = ros::Time::now();
+
 	sn_data_.mutex.unlock();
 
 	if (!sn_data_.offset_received) {
@@ -443,6 +465,8 @@ void SpaceNavTeleop::spacenavRotOffsetCallback(const geometry_msgs::Vector3Const
 	sn_data_.rot_offset.y /= params_.sn_max_val;
 	sn_data_.rot_offset.z /= params_.sn_max_val;
 
+	if (sn_data_.rot_offset.z != 0.0) sn_data_.last_nonzero_data = ros::Time::now();
+
 	sn_data_.mutex.unlock();
 
 	if (!sn_data_.rot_offset_received) {
@@ -462,10 +486,10 @@ int main(int argc, char** argv)
   ROS_INFO("Starting COB SpaceNav Teleop...");
   SpaceNavTeleop sp;
 
-  /*ros::AsyncSpinner spinner(2);
+  ros::AsyncSpinner spinner(3);
   spinner.start();
-  ros::waitForShutdown();*/
+  ros::waitForShutdown();
 
-  ros::spin();
+  //ros::spin();
 
 }

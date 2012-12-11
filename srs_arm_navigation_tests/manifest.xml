@@ -25,6 +25,7 @@ This package contains scripts for testing srs_arm_manipulation.
   <depend package="arm_navigation_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="tf"/>
+  <depend package="gazebo"/>
   <depend package="srs_env_model"/>
   <depend package="srs_env_model_percp"/>
   <depend package="std_msgs"/>

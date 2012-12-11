@@ -36,8 +36,8 @@ class LoaderSaver():
     
     def __init__(self):
         
-        self.loader = rospy.ServiceProxy("/but_plane_detection/load_planes", LoadSave)
-        self.saver = rospy.ServiceProxy("/but_plane_detection/save_planes", LoadSave)
+        self.loader = rospy.ServiceProxy("/but_plane_detector/load_planes", LoadSave)
+        self.saver = rospy.ServiceProxy("/but_plane_detector/save_planes", LoadSave)
         
     def load(self,fname):
         
@@ -47,7 +47,7 @@ class LoaderSaver():
     
         try:
             
-            rospy.wait_for_service("/but_plane_detection/load_octomap_full",timeout=60)
+            rospy.wait_for_service("/but_plane_detector/load_planes",timeout=60)
             available = True
             
         except ROSException, e:
@@ -80,7 +80,7 @@ class LoaderSaver():
     
         try:
             
-            rospy.wait_for_service("/but_env_model/save_octomap_full",timeout=60)
+            rospy.wait_for_service("/but_plane_detector/save_planes",timeout=60)
             available = True
             
         except ROSException, e:

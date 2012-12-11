@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -104,7 +104,7 @@ public:
    */
   virtual ~Primitive()
   {
-    server_->erase(name_);
+    this->erase();
     server_->applyChanges();
   }
 
@@ -116,7 +116,7 @@ public:
   /**
    * @brief Erase primitive from Interactive Marker Server
    */
-  void erase();
+  virtual void erase();
 
   /**
    * @brief Change primitive's color
@@ -436,7 +436,8 @@ protected:
        show_description_control_,  show_trajectory_control_;
   bool menu_created_;
 
-}
-;
+};
+
+
 }
 #endif /* PRIMITIVE_H_ */

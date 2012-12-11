@@ -6,11 +6,12 @@
   <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_arm_navigation_tests)/config/arm_manip_but.vcg">
   
     <rosparam file="$(find srs_assisted_grasping_ui)/config/presets.yaml" command="load" />
+    <rosparam file="$(find srs_assisted_arm_navigation_ui)/config/presets.yaml" command="load" />
   
-    <param name="wait_for_start" type="bool" value="false" />
-    <!--remap from="bb_video_in" to="/cam3d/rgb/upright/image_color"/-->
-    <remap from="bb_video_in" to="/cam3d/rgb/image_raw_throttled"/>
+    <param name="wait_for_start" type="bool" value="true" />
+    <remap from="bb_video_in" to="/cam3d/rgb/upright/image_raw_throttled"/>
+    <!--remap from="bb_video_in" to="/cam3d/rgb/image_raw_throttled"/-->
     <remap from="goal" to="/move_base_simple/goal"/>
-    <param name="is_video_flipped" type="bool" value="false"/>
+    <param name="is_video_flipped" type="bool" value="true"/>
   </node>
 </launch>

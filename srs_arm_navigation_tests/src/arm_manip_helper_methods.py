@@ -83,6 +83,8 @@ class common_helper_methods():
     
    def remove_im(self,object_name):
 
+    rospy.loginfo('Removing %s object',object_name)
+
     remove_object = rospy.ServiceProxy(self.s_remove_object, RemovePrimitive)
     
     removed = False

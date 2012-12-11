@@ -12,6 +12,13 @@
 
   <!-- object db - for grasping -->
   <include file="$(find srs_object_database)/launch/srs_db.launch"/>
+  
+    <!-- srs interaction primitives -->
+  <node name="interaction_primitives" pkg="srs_interaction_primitives" type="interaction_primitives_service_server">
+    <param name="allow_object_interaction" type="bool" value="false"/>
+    <param name="show_object_pregrasp" type="bool" value="true"/>
+    <param name="move_arm_to_pregrasp_on_click" type="bool" value="true" />
+  </node>
 
   <!-- srs_grasping -->
   <node pkg="srs_grasping" type="get_db_grasps.py" name="get_db_grasps" ns="get_db_grasps" cwd="node" respawn="false" output="screen" />
@@ -19,6 +26,8 @@
 
   <!-- start object detection -->
   <include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
+  
+  <include file="$(find cob_spacenav_teleop)/launch/spacenav_teleop.launch" />
   
   <!-- RVIZ with proper configuration (assisted arm navigation + grasping) -->
   <include file="$(find srs_arm_navigation_tests)/launch/rviz.launch"/>

@@ -79,8 +79,14 @@ protected:
 	//! Callback function
 	void depthCb(const sensor_msgs::ImageConstPtr& raw_msg);
 
-	//! Convert image to the internal representation
+	//! Convert depth image - just call appropriate method
 	virtual bool convertDepth(const sensor_msgs::ImageConstPtr& raw_msg);
+
+	//! Convert 16bit image to the internal representation
+	virtual bool convertDepth16(const sensor_msgs::ImageConstPtr& raw_msg);
+
+	//! COnvert 8bit image to the interna representation
+	virtual bool convertDepth8(const sensor_msgs::ImageConstPtr& raw_msg);
 
 	//! Convert image from depth to the visible version
 	bool toVisible(int coord = 2);

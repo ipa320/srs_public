@@ -235,8 +235,8 @@ Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
 [Display9]
 Name=Octomap control
-Package=srs_ui_but
-ClassName=CButDisplay
+Package=srs_env_model_ui
+ClassName=COctomapDisplay
 [Display10]
 Name=Arm interactive markers
 Package=rviz

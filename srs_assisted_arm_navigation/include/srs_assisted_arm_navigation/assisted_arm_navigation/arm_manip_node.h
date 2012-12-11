@@ -66,7 +66,11 @@
 #include "srs_assisted_arm_navigation_msgs/ArmNavSuccess.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavFailed.h"
 #include "srs_assisted_arm_navigation_msgs/ArmNavRepeat.h"
+#include "srs_assisted_arm_navigation_msgs/ArmNavRemoveCollObjects.h"
 #include "srs_assisted_arm_navigation_msgs/AssistedArmNavigationState.h"
+
+#include "srs_interaction_primitives/ClickablePositions.h"
+#include "srs_interaction_primitives/PositionClicked.h"
 
 #include "srs_assisted_arm_navigation_msgs/ManualArmManipAction.h"
 
@@ -79,6 +83,7 @@
 #include "std_msgs/MultiArrayDimension.h"
 #include "std_msgs/Int32MultiArray.h"
 #include "sensor_msgs/Joy.h"
+#include "std_srvs/Empty.h"
 
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
@@ -214,6 +219,7 @@ public:
 
     ros::NodeHandle nh_;
 
+
     ///Actionlib server
     actionlib::SimpleActionServer<srs_assisted_arm_navigation_msgs::ManualArmManipAction> server_;
     std::string action_name_;
@@ -248,6 +254,24 @@ public:
 
 
 };
+
+
+/**
+ * Struct to store data of detected object - in /map coord. system. It's recalculated to /base_link on each creation of planning scene.
+ */
+typedef struct {
+
+  std::string name;
+  std::string id;
+  geometry_msgs::PoseStamped pose;
+  geometry_msgs::Point bb_lwh;
+  bool allow_collision;
+  bool attached;
+  bool allow_pregrasps;
+
+  std::string topic_name;
+
+} t_det_obj;
 
 /*!
  * CArmManipulationEditor
@@ -310,6 +334,7 @@ public:
   bool ArmNavMovePalmLinkRel(srs_assisted_arm_navigation_msgs::ArmNavMovePalmLinkRel::Request &req, srs_assisted_arm_navigation_msgs::ArmNavMovePalmLinkRel::Response &res);
   bool ArmNavSwitchACO(srs_assisted_arm_navigation_msgs::ArmNavSwitchAttCO::Request &req, srs_assisted_arm_navigation_msgs::ArmNavSwitchAttCO::Response &res);
   bool ArmNavStep(srs_assisted_arm_navigation_msgs::ArmNavStep::Request &req, srs_assisted_arm_navigation_msgs::ArmNavStep::Response &res);
+  bool ArmNavRemoveCollObjects(srs_assisted_arm_navigation_msgs::ArmNavRemoveCollObjects::Request &req, srs_assisted_arm_navigation_msgs::ArmNavRemoveCollObjects::Response &res);
   
   bool ArmNavStop(srs_assisted_arm_navigation_msgs::ArmNavStop::Request &req, srs_assisted_arm_navigation_msgs::ArmNavStop::Response &res);
 
@@ -366,15 +391,23 @@ public:
 
 protected:
 
+  ros::Subscriber sub_click_;
+
+  void subClick(const srs_interaction_primitives::PositionClickedConstPtr &msg);
+
+  void tfTimerCallback(const ros::TimerEvent& ev);
+
   tf::TransformBroadcaster br_;
 
   void timerCallback(const ros::TimerEvent& ev);
 
-  void tfTimerCallback(const ros::TimerEvent& ev);
-
-  ros::Timer spacenav_timer_;
+  void spacenavCallback(const ros::TimerEvent& ev);
 
   ros::Timer tf_timer_;
+
+  ros::Timer state_timer_;
+
+  ros::Timer spacenav_timer_;
 
   bool use_spacenav_;
 
@@ -451,32 +484,21 @@ protected:
    * @bug Fails if it's called multiple times. For one object it works fine.
    */
   std::string add_coll_obj_attached(double x, double y, double z, double scx, double scz);
-  std::string add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll, bool attached);
+  //std::string add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll, bool attached);
+  std::string add_coll_obj_bb(t_det_obj &obj);
 
   std::string collision_objects_frame_id_;
+  bool coll_objects_selectable_;
 
   //void armHasStoppedMoving();
 
-  /**
-   * Struct to store data of detected object - in /map coord. system. It's recalculated to /base_link on each creation of planning scene.
-   */
-  typedef struct {
-
-    std::string name;
-    std::string id;
-    geometry_msgs::PoseStamped pose;
-    geometry_msgs::Point bb_lwh;
-    bool allow_collision;
-    bool attached;
-
-  } t_det_obj;
 
   /**
    * List of detected objects which should be in added in collision map.
    */
   std::vector<t_det_obj> coll_obj_det;
 
-  void findIK(geometry_msgs::Pose new_pose);
+  bool findIK(geometry_msgs::Pose new_pose);
 
   bool checkPose(geometry_msgs::PoseStamped &p, std::string frame);
 

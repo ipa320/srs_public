@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,10 +25,10 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "octomap_control_pane.h"
+#include <srs_env_model_ui/but_rviz_display/octomap_control_pane.h>
+
 #include <rviz/window_manager_interface.h>
 #include <rviz/visualization_manager.h>
-#include <srs_env_model/ResetOctomap.h>
 #include <ros/service.h>
 
 // Services
@@ -39,11 +39,12 @@
 #include <srs_env_model/LockCollisionMap.h>
 #include <srs_env_model/LockServer.h>
 #include <srs_env_model/ButServerPause.h>
+#include <srs_env_model/ResetOctomap.h>
 
 #define GIZMO_NAME "OctomapControlPaneBoxGizmo"
 #define GIZMO_POSE_TOPIC "/interaction_primitives/OctomapControlPaneBoxGizmo/update/pose_changed"
 #define GIZMO_SCALE_TOPIC "/interaction_primitives/OctomapControlPaneBoxGizmo/update/scale_changed"
-
+#define GIZMO_DESC "Selection Box"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,10 +61,11 @@ const int ID_LOCK_OCTOMAP_CHECKBOX(109);
 const int ID_LOCK_CMAP_CHECKBOX(110);
 const int ID_ADD_BOX_ON_CLICK_BUTTON(111);
 
+
 /**
  Constructor
  */
-srs_ui_but::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxString& title, rviz::WindowManagerInterface * wmi )
+srs_env_model_ui::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxString& title, rviz::WindowManagerInterface * wmi )
     : wxPanel( parent, wxID_ANY, wxDefaultPosition, wxSize(280, 180), wxCLOSE_BOX|wxTAB_TRAVERSAL | wxVSCROLL, title)
     , m_wmi( wmi )
 	, m_bGizmoAdded( false )
@@ -164,6 +166,7 @@ srs_ui_but::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxS
     // Set gizmo name and defaults
     m_uoGizmo.request.name = GIZMO_NAME;
     m_uoGizmo.request.frame_id = m_fixedFrameId;
+    m_uoGizmo.request.description = GIZMO_DESC;
 
     // Set default values - pose and scale
     m_gizmoPose.position.x = 0.0;
@@ -195,7 +198,7 @@ srs_ui_but::COctomapControlPane::COctomapControlPane(wxWindow *parent, const wxS
 /**
  * On quit command event handler
  */
-void srs_ui_but::COctomapControlPane::OnReset(wxCommandEvent& event)
+void srs_env_model_ui::COctomapControlPane::OnReset(wxCommandEvent& event)
 {
     srs_env_model::ResetOctomap reset;
 
@@ -208,7 +211,7 @@ void srs_ui_but::COctomapControlPane::OnReset(wxCommandEvent& event)
 /**
  * On create clearing box event handler
  */
-void srs_ui_but::COctomapControlPane::OnAddBoxGizmo(wxCommandEvent &event)
+void srs_env_model_ui::COctomapControlPane::OnAddBoxGizmo(wxCommandEvent &event)
 {
 //	std::cerr << "Adding box to the scene." << std::endl;
 
@@ -226,7 +229,7 @@ void srs_ui_but::COctomapControlPane::OnAddBoxGizmo(wxCommandEvent &event)
  * On clear map event handler
  */
 
-void srs_ui_but::COctomapControlPane::OnClearBoxOctomap( wxCommandEvent &event )
+void srs_env_model_ui::COctomapControlPane::OnClearBoxOctomap( wxCommandEvent &event )
 {
 	// Create message
 	srs_env_model::RemoveCube rc;
@@ -246,7 +249,7 @@ void srs_ui_but::COctomapControlPane::OnClearBoxOctomap( wxCommandEvent &event )
 /*
  * On clear collision map event handler
  */
-void srs_ui_but::COctomapControlPane::OnClearBoxCMap( wxCommandEvent &event )
+void srs_env_model_ui::COctomapControlPane::OnClearBoxCMap( wxCommandEvent &event )
 {
 	// Create message
 	srs_env_model::RemoveCube rc;
@@ -268,7 +271,7 @@ void srs_ui_but::COctomapControlPane::OnClearBoxCMap( wxCommandEvent &event )
  * On add box obstacle to octomap event handler
  */
 
-void srs_ui_but::COctomapControlPane::OnAddObstacleOctomap( wxCommandEvent &event )
+void srs_env_model_ui::COctomapControlPane::OnAddObstacleOctomap( wxCommandEvent &event )
 {
 	// Create message
 	srs_env_model::RemoveCube rc;
@@ -289,7 +292,7 @@ void srs_ui_but::COctomapControlPane::OnAddObstacleOctomap( wxCommandEvent &even
  * On add box obstacle to collision map event handler
  */
 
-void srs_ui_but::COctomapControlPane::OnAddObstacleCMap( wxCommandEvent &event )
+void srs_env_model_ui::COctomapControlPane::OnAddObstacleCMap( wxCommandEvent &event )
 {
 	// Create message
 	srs_env_model::RemoveCube rc;
@@ -309,7 +312,7 @@ void srs_ui_but::COctomapControlPane::OnAddObstacleCMap( wxCommandEvent &event )
 /**
  * On octomap lock event handler
  */
-void srs_ui_but::COctomapControlPane::OnLockOctomap( wxCommandEvent & event )
+void srs_env_model_ui::COctomapControlPane::OnLockOctomap( wxCommandEvent & event )
 {
 	// Get checkbox state
 	bool locked( m_cbLockOctomap->GetValue() );
@@ -328,7 +331,7 @@ void srs_ui_but::COctomapControlPane::OnLockOctomap( wxCommandEvent & event )
 /**
  * On collision map lock event handler
  */
-void srs_ui_but::COctomapControlPane::OnLockCMap( wxCommandEvent & event )
+void srs_env_model_ui::COctomapControlPane::OnLockCMap( wxCommandEvent & event )
 {
 	// Get checkbox state
 	m_cmapLocked  = m_cbLockCMap->GetValue();
@@ -352,7 +355,7 @@ void srs_ui_but::COctomapControlPane::OnLockCMap( wxCommandEvent & event )
 /**
  *On cancel box gizmo map
  */
-void srs_ui_but::COctomapControlPane::OnCancelBoxGizmo( wxCommandEvent &event )
+void srs_env_model_ui::COctomapControlPane::OnCancelBoxGizmo( wxCommandEvent &event )
 {
 	// remove gizmo
 	removeGizmo();
@@ -370,7 +373,7 @@ void srs_ui_but::COctomapControlPane::OnCancelBoxGizmo( wxCommandEvent &event )
 /**
  * Add gizmo to the scene
  */
-void srs_ui_but::COctomapControlPane::addGizmo()
+void srs_env_model_ui::COctomapControlPane::addGizmo()
 {
 //	std::cerr << "remove old gizmo..." << std::endl;
 	// Remove old gizmo
@@ -391,7 +394,7 @@ void srs_ui_but::COctomapControlPane::addGizmo()
 /**
  * Remove gizmo from server
  */
-void srs_ui_but::COctomapControlPane::removeGizmo()
+void srs_env_model_ui::COctomapControlPane::removeGizmo()
 {
 	if( ! m_bGizmoAdded )
 		return;
@@ -410,7 +413,7 @@ void srs_ui_but::COctomapControlPane::removeGizmo()
 /**
  * Gizmo pose topic callback
  */
-void srs_ui_but::COctomapControlPane::gizmoPoseCB( const srs_interaction_primitives::PoseChangedConstPtr &marker_update )
+void srs_env_model_ui::COctomapControlPane::gizmoPoseCB( const srs_interaction_primitives::PoseChangedConstPtr &marker_update )
 {
 //	std::cerr << "Gizmo pose: " << marker_update->new_pose << std::endl;
 
@@ -425,7 +428,7 @@ void srs_ui_but::COctomapControlPane::gizmoPoseCB( const srs_interaction_primiti
 /**
  * Gizmo pose topic callback
  */
-void srs_ui_but::COctomapControlPane::gizmoScaleCB( const srs_interaction_primitives::ScaleChangedConstPtr &marker_update )
+void srs_env_model_ui::COctomapControlPane::gizmoScaleCB( const srs_interaction_primitives::ScaleChangedConstPtr &marker_update )
 {
 //	std::cerr << "Gizmo scale" << marker_update->new_scale << std::endl;
 
@@ -443,7 +446,7 @@ void srs_ui_but::COctomapControlPane::gizmoScaleCB( const srs_interaction_primit
 /**
  * Set gizmo pose and scale from the local copy of the data
  */
-void srs_ui_but::COctomapControlPane::setGizmoPoseScale()
+void srs_env_model_ui::COctomapControlPane::setGizmoPoseScale()
 {
 	m_uoGizmo.request.pose.position.x = m_gizmoPose.position.x;
 	m_uoGizmo.request.pose.position.y = m_gizmoPose.position.y;
@@ -459,10 +462,12 @@ void srs_ui_but::COctomapControlPane::setGizmoPoseScale()
 	m_uoGizmo.request.scale.z = m_gizmoScale.z;
 
 	m_uoGizmo.request.frame_id = m_fixedFrameId;
+
+	m_uoGizmo.request.disable_material = false;
 }
 
 //! Create gizmo status string
-wxString srs_ui_but::COctomapControlPane::getGizmoStatusStr()
+wxString srs_env_model_ui::COctomapControlPane::getGizmoStatusStr()
 {
 	wxString s;
 
@@ -476,15 +481,15 @@ wxString srs_ui_but::COctomapControlPane::getGizmoStatusStr()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-BEGIN_EVENT_TABLE(srs_ui_but::COctomapControlPane, wxPanel)
-    EVT_BUTTON(ID_RESET_OCTOMAP_BUTTON,  srs_ui_but::COctomapControlPane::OnReset)
-    EVT_BUTTON(ID_ADD_BOX_BUTTON,  srs_ui_but::COctomapControlPane::OnAddBoxGizmo)
-    EVT_BUTTON(ID_OCTOMAP_CLEAR_BUTTON,  srs_ui_but::COctomapControlPane::OnClearBoxOctomap)
-    EVT_BUTTON(ID_CMAP_CLEAR_BUTTON,  srs_ui_but::COctomapControlPane::OnClearBoxCMap)
-    EVT_BUTTON(ID_OBSTACLE_OCTOMAP_BUTTON,  srs_ui_but::COctomapControlPane::OnAddObstacleOctomap)
-	EVT_BUTTON(ID_OBSTACLE_CMAP_BUTTON,  srs_ui_but::COctomapControlPane::OnAddObstacleCMap)
-	EVT_CHECKBOX(ID_LOCK_OCTOMAP_CHECKBOX, srs_ui_but::COctomapControlPane::OnLockOctomap)
-	EVT_CHECKBOX(ID_LOCK_CMAP_CHECKBOX, srs_ui_but::COctomapControlPane::OnLockCMap)
-    EVT_BUTTON(ID_CANCEL_BUTTON,  srs_ui_but::COctomapControlPane::OnCancelBoxGizmo)
+BEGIN_EVENT_TABLE(srs_env_model_ui::COctomapControlPane, wxPanel)
+    EVT_BUTTON(ID_RESET_OCTOMAP_BUTTON,  srs_env_model_ui::COctomapControlPane::OnReset)
+    EVT_BUTTON(ID_ADD_BOX_BUTTON,  srs_env_model_ui::COctomapControlPane::OnAddBoxGizmo)
+    EVT_BUTTON(ID_OCTOMAP_CLEAR_BUTTON,  srs_env_model_ui::COctomapControlPane::OnClearBoxOctomap)
+    EVT_BUTTON(ID_CMAP_CLEAR_BUTTON,  srs_env_model_ui::COctomapControlPane::OnClearBoxCMap)
+    EVT_BUTTON(ID_OBSTACLE_OCTOMAP_BUTTON,  srs_env_model_ui::COctomapControlPane::OnAddObstacleOctomap)
+	EVT_BUTTON(ID_OBSTACLE_CMAP_BUTTON,  srs_env_model_ui::COctomapControlPane::OnAddObstacleCMap)
+	EVT_CHECKBOX(ID_LOCK_OCTOMAP_CHECKBOX, srs_env_model_ui::COctomapControlPane::OnLockOctomap)
+	EVT_CHECKBOX(ID_LOCK_CMAP_CHECKBOX, srs_env_model_ui::COctomapControlPane::OnLockCMap)
+    EVT_BUTTON(ID_CANCEL_BUTTON,  srs_env_model_ui::COctomapControlPane::OnCancelBoxGizmo)
 END_EVENT_TABLE()
 

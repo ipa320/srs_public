@@ -5,8 +5,8 @@
 # Octomap plugin
 
 # Octomap resolution
-ocmap_resolution: .05
-#ocmap_resolution: .025
+#ocmap_resolution: .05
+ocmap_resolution: .025
 
 # Tree depth used for crawling. Zero means full tree
 ocmap_treedepth: 0

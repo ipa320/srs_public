@@ -1,11 +1,8 @@
 <?xml version="1.0"?>
 <launch>
     <!-- Don't forget to run the Kinect throttling nodelete somewhere -->
-    <include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" />
+    <!-- include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" /-->
 
-	<!-- There must exist FT between original_frame to global_frame in planedet_params_kinect.yaml. If not, we create artificial static 1:1 transform -->
-	<node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="1 0 0 0 0 0 camera_rgb_optical_frame map 100" />
-	
     <!-- Run the plane detector -->
     <node pkg="srs_env_model_percp" type="but_plane_detector" name="but_plane_detector">
         <rosparam file="$(find srs_env_model_percp)/config/planedet_params_robot.yaml" command="load" />

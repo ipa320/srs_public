@@ -17,7 +17,7 @@ original_frame: /head_cam3d_link
 planedet_ht_keep_track: 1
 
 # Maximum depth in meters to count with (for real data, 3.0 is recommended)
-planedet_ht_maxdepth: 100.0
+planedet_ht_maxdepth: 10.0
 
 # Maximum height in meters to be considered
 planedet_ht_max_height: 3.0

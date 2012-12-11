@@ -36,18 +36,18 @@ class LoaderSaver():
     
     def __init__(self):
         
-        self.loader = rospy.ServiceProxy("/but_env_model/load_octomap_full", LoadSave)
-        self.saver = rospy.ServiceProxy("/but_env_model/save_octomap_full", LoadSave)
+        self.loader = rospy.ServiceProxy("/but_plane_detection/load_planes", LoadSave)
+        self.saver = rospy.ServiceProxy("/but_plane_detection/save_planes", LoadSave)
         
     def load(self,fname):
         
-        rospy.loginfo("Trying to load octomap (from %s)",str(fname))
+        rospy.loginfo("Trying to load geometric map (from %s)",str(fname))
         
         available = False
     
         try:
             
-            rospy.wait_for_service("/but_env_model/load_octomap_full",timeout=60)
+            rospy.wait_for_service("/but_plane_detection/load_octomap_full",timeout=60)
             available = True
             
         except ROSException, e:
@@ -65,16 +65,16 @@ class LoaderSaver():
             
         except Exception, e:
         
-            rospy.logerr('Cannot load the octomap, error: %s',str(e))
+            rospy.logerr('Cannot load geometric map, error: %s',str(e))
             
         if res.all_ok:
             
-            rospy.loginfo("The octomap has been loaded.")
+            rospy.loginfo("Geometric map has been loaded.")
         
         
     def save(self,fname):
         
-        rospy.loginfo("Trying to save octomap (to %s)",str(fname))
+        rospy.loginfo("Trying to save geometric map (to %s)",str(fname))
         
         available = False
     
@@ -98,11 +98,11 @@ class LoaderSaver():
             
         except Exception, e:
         
-            rospy.logerr('Cannot save the octomap, error: %s',str(e))
+            rospy.logerr('Cannot save the geometric map, error: %s',str(e))
             
         if res.all_ok:
             
-            rospy.loginfo("The octomap has been saved.")
+            rospy.loginfo("The geometric map has been saved.")
         
         
         
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
   try:
       
-    rospy.init_node('octomap_loader')
+    rospy.init_node('geommap_loader')
       
     l = LoaderSaver()
     

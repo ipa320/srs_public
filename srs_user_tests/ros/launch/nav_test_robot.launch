@@ -14,7 +14,12 @@
 		<include file="$(find cob_navigation_slam)/launch/2dnav_ros_dwa.launch" />
 
 		<!-- Run the interactive teleop -->
-		<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
+		<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch">
+			<arg name="param_file" value="$(find srs_user_tests)/ros/config/interactive_teleop.yaml" />
+		</include>
+
+		<!-- Run the footprint marker visualization -->
+		<include file="$(find srs_ui_but)/launch/footprint_marker.launch" />
 	</group>
 
 	<group>
@@ -34,6 +39,12 @@
 
 		<!-- Run BUT plane detection node -->
 		<!--include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" /-->
+
+		<!-- Load predefined voxel map -->
+		<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch" />
+
+		<!-- Load predefined geometric map -->
+		<!--include file="$(find srs_user_tests)/ros/launch/load_geommap.launch" /-->
 	</group>
 
 	<machine name="pc1" address="$(arg pc1)" default="true"/>

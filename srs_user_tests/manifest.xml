@@ -25,5 +25,6 @@
   <depend package="spacenav_node"/>
   <depend package="srs_assisted_arm_navigation"/>
   <depend package="srs_assisted_grasping"/>
+  <depend package="srs_assisted_arm_navigation_ui"/>
 
 </package>

@@ -131,22 +131,24 @@ class bag_record():
         
         # subscribers
         rospy.Subscriber('/collision_velocity_filter/velocity_limited_marker', Marker, self.velocity_limited_marker_callback)
+        self.base_velocity_limited_marker = Marker()
+        self.new_base_velocity_limited_marker = False
         
         for frame in self.wanted_tfs:
             self.current_translation[frame["target_frame"]] = [0,0,0]
             self.current_rotation[frame["target_frame"]] = [0,0,0,0]
 
     def velocity_limited_marker_callback(self,msg):
-        log_msg = Float32()
-        log_msg.data = msg.color.a
-        if msg.id == 0 or msg.id == 1:
-            self.bag.write("/logger/base_collision_x", log_msg)
-        elif msg.id == 2 or msg.id == 3:
-            self.bag.write("/logger/base_collision_y", log_msg)
-        elif msg.id == 4 or msg.id == 5:
-            self.bag.write("/logger/base_collision_yaw", log_msg)
-        else:
-            rospy.logerror("invalid marker id, check ids in cob_collision_velocity_filter")
+        self.base_velocity_limited_marker = msg
+        self.new_base_velocity_limited_marker = True
+#        if msg.id == 0 or msg.id == 1:
+#            self.bag.write("/logger/base_collision_x", log_msg)
+#        elif msg.id == 2 or msg.id == 3:
+#            self.bag.write("/logger/base_collision_y", log_msg)
+#        elif msg.id == 4 or msg.id == 5:
+#            self.bag.write("/logger/base_collision_yaw", log_msg)
+#        else:
+#            rospy.logerror("invalid marker id, check ids in cob_collision_velocity_filter")
         
     def tf_trigger(self, reference_frame, target_frame, tfs):
         #  this function is responsible for setting up the triggers for recording
@@ -288,7 +290,7 @@ if __name__ == "__main__":
 						#print "triggered topic"
 						msg = bagR.process_topics(tfs)
 						if(tfs != "/tf"):
-						    bagfile.write(tfs, msg)
+							bagfile.write(tfs, msg)
 				else:
 					rospy.logdebug("not triggered")
 			
@@ -307,8 +309,12 @@ if __name__ == "__main__":
 					#rospy.loginfo("triggered topic with time")
 					msg = bagR.process_topics(tfs)
 					if(tfs!="/tf"):
-					    bagfile.write(tfs, msg)
+						bagfile.write(tfs, msg)
 
+			# log base collision velocity limited marker
+			if bagR.new_base_velocity_limited_marker:
+				bagfile.write("/collision_velocity_filter/velocity_limited_marker", bagR.base_velocity_limited_marker)
+				bagR.new_base_velocity_limited_marker = False
 			
 			# sleep until next check
 			if(rospy.Time.now() - start_time_tf > time_step_tf):

@@ -1,4 +1,4 @@
-/******************************************************************************
+B/******************************************************************************
  * \file
  *
  * $Id: but_point_cloud.cpp 825 2012-05-23 14:29:07Z spanel $
@@ -56,10 +56,12 @@ CButPointCloud::CButPointCloud( const std::string& name, rviz::VisualizationMana
     , caminfo_subscribed_( false )
     , vf_scene_node_( 0 )
     , vf_manual_object_( 0 )
-    , tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
-    , caminfo_tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
+//    , tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
+    , tf_filter_(*manager->getTFClient(), "", 1, threaded_nh_)
+//    , caminfo_tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
+    , caminfo_tf_filter_(*manager->getTFClient(), "", 1, threaded_nh_)
     , draw_view_frustum_( false )
-    , view_frustum_depth_( 3.0 )
+    , view_frustum_depth_( 4.0 )
     , cull_view_frustum_( false )
 {
     // Connect to the input - point cloud advertiser

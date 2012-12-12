@@ -20,11 +20,12 @@ This package contains scripts for testing srs_arm_manipulation.
   <depend package="smach"/>
   <depend package="smach_ros"/>
   <depend package="cob_object_detection_msgs"/>
-  <depend package="srs_grasping"/>
+  <!--depend package="srs_grasping"/-->
   <depend package="srs_object_database_msgs"/>
   <depend package="arm_navigation_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="tf"/>
+  <depend package="gazebo"/>
   <depend package="srs_env_model"/>
   <depend package="srs_env_model_percp"/>
   <depend package="std_msgs"/>

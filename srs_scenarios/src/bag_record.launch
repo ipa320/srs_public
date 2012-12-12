@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-
-	<rosparam file="$(find srs_scenarios)/src/bag_record.yaml" command="load" />
-	
-	<node name="shutdown" pkg="srs_scenarios" type="bag_record.py" output="screen" cwd="node"/>
-
-</launch>

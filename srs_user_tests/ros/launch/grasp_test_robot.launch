@@ -11,20 +11,24 @@
 		<machine name="pc1" address="$(arg pc1)" default="true"/>
 
 		<!-- navigation -->
+		<!--include file="$(find cob_navigation_slam)/launch/2dnav_ros_dwa.launch" /-->
 		<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
 
 		<!-- Run the interactive teleop -->
 		<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
+
+		<!-- Run the footprint marker visualization -->
+		<include file="$(find srs_ui_but)/launch/footprint_marker.launch" />
 	</group>
 
 	<group>
 		<machine name="pc2" address="$(arg pc2)" default="true"/>
 
 		<!-- Kinect throttling -->
-		<include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
+		<!-- This is no more needed, IPA's new kinect throttling is used -->
+		<!--include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
 			<arg name="max_rate" value="0.3" />
-			<!--arg name="max_rate" value="1.0" /-->
-		</include>
+		</include-->
 	</group>
 
 	<group>

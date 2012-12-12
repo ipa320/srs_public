@@ -30,7 +30,7 @@
 		<machine name="pc2" address="$(arg pc2)" default="true"/>
 
 		<!-- Kinect throttling -->
-		<!-- This is not needed any more, IPA's new kinect throttling is used -->
+		<!-- This is no more needed, IPA's new kinect throttling is used -->
 		<!--include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
 			<arg name="max_rate" value="1.0" />
 		</include-->

@@ -372,7 +372,7 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
 
                 Eigen::Vector3f cam(float(camera.point.x), float(camera.point.y), float(camera.point.z));
 
-                for( int i = 0; i < 3; ++i )
+                for( int i = 0; i < 4; ++i )
                 {
                     int i2 = (i + 1) % 4;
                     Eigen::Vector3f v1(points[i] - cam);
@@ -404,7 +404,7 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
                 float e2 = n[1].dot(p) + d[1];
                 float e3 = n[2].dot(p) + d[2];
                 float e4 = n[3].dot(p) + d[3];
-                if( e1 > 0.0f && e2 > 0.0f && e3 > 0.0f /*&& e4 < 0.0f*/ )
+                if( e1 > 0.0f && e2 > 0.0f && e3 > 0.0f && e4 > 0.0f )
                 {
                     continue;
                 }

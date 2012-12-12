@@ -27,11 +27,13 @@
 
 #include "rviz/plugin/type_registry.h"
 
+#include <srs_env_model_ui/but_rviz_display/cam_publisher_display.h>
 #include <srs_env_model_ui/but_rviz_display/octomap_display.h>
 #include <srs_env_model_ui/but_rviz_display/point_cloud_display.h>
 
 extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
 {
+  reg->registerDisplay<srs_env_model_ui::CCameraPublisherDisplay>("CCameraPublisherDisplay");
   reg->registerDisplay<srs_env_model_ui::COctomapDisplay>("COctomapDisplay");
   reg->registerDisplay<srs_env_model_ui::CButPointCloud>("CButPointCloud");
 }

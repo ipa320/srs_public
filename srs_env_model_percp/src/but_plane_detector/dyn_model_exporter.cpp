@@ -73,6 +73,9 @@ namespace srs_env_model_percp
 		std::vector<PointCloud<pcl::PointXYZ>, Eigen::aligned_allocator<PointCloud<pcl::PointXYZ> > > planesInPCloud(planes.size());
 		std::vector<std_msgs::ColorRGBA, Eigen::aligned_allocator<std_msgs::ColorRGBA> > colors(planes.size());
 
+
+		std::cerr << "updating..." << std::endl;
+
 		for (int i = 0; i < normals.m_points.rows; ++i)
 		for (int j = 0; j < normals.m_points.cols; ++j)
 		{
@@ -205,6 +208,7 @@ namespace srs_env_model_percp
 
 				if (index >= 0)
 				{
+					std::cerr << "adding marker to concave hull..." << std::endl;
 					DynModelExporter::addMarkerToConcaveHull(planesInPCloud[j], displayed_planes[index].plane);
 					displayed_planes[index].update = ros::Time::now();
 				}

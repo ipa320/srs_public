@@ -1,4 +1,4 @@
-bag_name: test13
+#bag_name: test # to be set in lauch file through an argument
 record_timestep: 10
 record_timestep_tf: 1
 trigger_record_translation: 0.1

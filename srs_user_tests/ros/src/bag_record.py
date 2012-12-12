@@ -76,6 +76,7 @@ from kinematics_msgs.srv import *
 from std_msgs.msg import *
 from sensor_msgs.msg import *
 from move_base_msgs.msg import *
+from visualization_msgs.msg import *
 
 import math
 import rostopic
@@ -104,8 +105,9 @@ class bag_record():
     
         # this creates the bagfile
         localtime = time.localtime(time.time())
-        filename = self.bag_name + "_" + str(localtime[0]) + str(localtime[1]) + str(localtime[2]) + "_" + str(localtime[3]) + str(localtime[4]) + str(localtime[5]) + ".bag"
+        filename = self.bag_name + "_" + str(localtime[0]) + "-" + str(localtime[1]) + "-" + str(localtime[2]) + "_" + str(localtime[3]) + "-" + str(localtime[4]) + "-" + str(localtime[5]) + ".bag"
         filelocation = str(roslib.packages.get_pkg_dir(PKG) + "/data/" )
+        rospy.loginfo("Logging to " + filelocation + filename)
         self.bag = rosbag.Bag(filelocation + filename, 'w')
         
         # necessary tf elements 
@@ -127,9 +129,24 @@ class bag_record():
         self.ja = joint_states_aggregator.joint_state_aggregator()
         self.tfa = tf_aggregator.tf_aggregator()
         
+        # subscribers
+        rospy.Subscriber('/collision_velocity_filter/velocity_limited_marker', Marker, self.velocity_limited_marker_callback)
+        
         for frame in self.wanted_tfs:
             self.current_translation[frame["target_frame"]] = [0,0,0]
             self.current_rotation[frame["target_frame"]] = [0,0,0,0]
+
+    def velocity_limited_marker_callback(self,msg):
+        log_msg = Float32()
+        log_msg.data = msg.color.a
+        if msg.id == 0 or msg.id == 1:
+            self.bag.write("/logger/base_collision_x", log_msg)
+        elif msg.id == 2 or msg.id == 3:
+            self.bag.write("/logger/base_collision_y", log_msg)
+        elif msg.id == 4 or msg.id == 5:
+            self.bag.write("/logger/base_collision_yaw", log_msg)
+        else:
+            rospy.logerror("invalid marker id, check ids in cob_collision_velocity_filter")
         
     def tf_trigger(self, reference_frame, target_frame, tfs):
         #  this function is responsible for setting up the triggers for recording
@@ -147,7 +164,7 @@ class bag_record():
         
         self.tfposed.header.frame_id = target_frame
         self.tfposed.header.stamp = rospy.Time.now()
-        self.tfposed.child_frame_id = reference_frame          
+        self.tfposed.child_frame_id = reference_frame
         self.tfposed.transform.translation.x = trans[0]
         self.tfposed.transform.translation.y = trans[1]
         self.tfposed.transform.translation.z = trans[2]
@@ -209,7 +226,7 @@ class bag_record():
         the_type = the_type.split("/")
         the_type[0] += ".msg"
         
-        # this imports the necessary modules and instantiates the necessary object        
+        # this imports the necessary modules and instantiates the necessary object
         mod = __import__(the_type[0], fromlist=[the_type[1]])
         cls = getattr( mod , the_type[1] )
         
@@ -268,7 +285,7 @@ if __name__ == "__main__":
 					#bagfile.write("/tf", bagR.tfMsg)
 					# log all topics
 					for tfs in bagR.wanted_topics:
-						print "triggered topic"
+						#print "triggered topic"
 						msg = bagR.process_topics(tfs)
 						if(tfs != "/tf"):
 						    bagfile.write(tfs, msg)
@@ -301,3 +318,6 @@ if __name__ == "__main__":
 				#msg =  rospy.wait_for_message("/tf", tfMessage)
 				#bagfile.write("/tf", msg)
 			rate.sleep()
+	# closing bag file
+	rospy.loginfo("Closing bag file")
+	bagR.bag.close()

@@ -102,7 +102,7 @@ class joint_state_aggregator():
         # malformed joint_states message for the developer to be able to correct
         # the related controller code
         if(len(self.jointsMsg.name) == len(self.jointsMsg.position) == len(self.jointsMsg.velocity) == len(self.jointsMsg.effort)):
-            rospy.loginfo("Dimensions are ok!")
+            rospy.logdebug("Dimensions of joint_state message are ok!")
         else:
             excep = "Joint_states dimensions are not correct:" + "Names_dim " + (str)(len(self.jointsMsg.name)) + "," + "Pos_dim " + (str)(len(self.jointsMsg.position)) + "," + "Vel_dim " + (str)(len(self.jointsMsg.velocity)) + "," + "Eff_dim " + (str)(len(self.jointsMsg.effort))
             raise Exception(excep)

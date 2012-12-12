@@ -2,7 +2,8 @@
 <launch>
 
 	<!-- args -->
-	<arg name="robot" value="cob3-3"/>
+	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
 	<arg name="pc1" default="cob3-3-pc1"/>
 	<arg name="pc2" default="cob3-3-pc2"/>
 	<arg name="pc3" default="cob3-3-pc3"/>
@@ -11,7 +12,10 @@
 		<machine name="pc1" address="$(arg pc1)" default="true"/>
 
 		<!-- navigation -->
-		<include file="$(find cob_navigation_slam)/launch/2dnav_ros_dwa.launch" />
+		<!--include file="$(find cob_navigation_slam)/launch/2dnav_ros_dwa.launch" /-->
+		<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" >
+			<arg name="map" value="$(find srs_user_tests)/ros/config/$(arg robot_env)/map.yaml"/>
+		</include>
 
 		<!-- Run the interactive teleop -->
 		<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>

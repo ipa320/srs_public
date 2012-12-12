@@ -307,8 +307,8 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
 
     // VIEW FRUSTUM filtering
     bool culling_enabled = false;
-    Eigen::Vector3f n[4];
-    float d[4];
+    Eigen::Vector3f n[4], cam;
+    float d[4], max_depth = 10.0f;
     if( caminfo_ && cull_view_frustum_ )
     {
         boost::mutex::scoped_lock lock(caminfo_mutex_);
@@ -316,6 +316,7 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
         if( caminfo_ && cull_view_frustum_ )
         {
             culling_enabled = true;
+            max_depth = view_frustum_depth_;
 
             // Transform points defining the view frustum into the correct frame
             geometry_msgs::PointStamped point, tl, tr, bl, br, camera;
@@ -370,7 +371,7 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
                 points[2] = Eigen::Vector3f(float(tr.point.x), float(tr.point.y), float(tr.point.z));
                 points[3] = Eigen::Vector3f(float(br.point.x), float(br.point.y), float(br.point.z));
 
-                Eigen::Vector3f cam(float(camera.point.x), float(camera.point.y), float(camera.point.z));
+                cam = Eigen::Vector3f(float(camera.point.x), float(camera.point.y), float(camera.point.z));
 
                 for( int i = 0; i < 4; ++i )
                 {
@@ -406,7 +407,11 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
                 float e4 = n[3].dot(p) + d[3];
                 if( e1 > 0.0f && e2 > 0.0f && e3 > 0.0f && e4 > 0.0f )
                 {
-                    continue;
+                    p -= cam;
+                    if( p.norm() < max_depth )
+                    {
+                        continue;
+                    }
                 }
             }
 

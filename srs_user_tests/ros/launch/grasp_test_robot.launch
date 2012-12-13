@@ -6,7 +6,6 @@
         <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
 
 	<!-- args -->
-	<arg name="robot" value="cob3-3"/>
 	<arg name="pc1" default="cob3-3-pc1"/>
 	<arg name="pc2" default="cob3-3-pc2"/>
 	<arg name="pc3" default="cob3-3-pc3"/>

@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <launch>
 
+        <!-- args -->
+	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+        <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
+
 	<!-- args -->
 	<arg name="robot" value="cob3-3"/>
 	<arg name="pc1" default="cob3-3-pc1"/>
@@ -12,10 +16,14 @@
 
 		<!-- navigation -->
 		<!--include file="$(find cob_navigation_slam)/launch/2dnav_ros_dwa.launch" /-->
-		<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" />
+		<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch">
+		  <arg name="map" value="$(find srs_user_tests)/ros/config/$(arg robot_env)/map.yaml"/>
+		</include>
 
 		<!-- Run the interactive teleop -->
-		<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
+		<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch">
+			<arg name="param_file" value="$(find srs_user_tests)/ros/config/interactive_teleop.yaml" />
+		</include>
 
 		<!-- Run the footprint marker visualization -->
 		<include file="$(find srs_ui_but)/launch/footprint_marker.launch" />

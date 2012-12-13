@@ -46,7 +46,7 @@
 		<!--include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" /-->
 
 		<!-- Load predefined voxel map -->
-		<!--include file="$(find srs_user_tests)/ros/launch/load_octomap.launch" /-->
+		<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch" />
 
 		<!-- Load predefined geometric map -->
 		<!--include file="$(find srs_user_tests)/ros/launch/load_geommap.launch" /-->

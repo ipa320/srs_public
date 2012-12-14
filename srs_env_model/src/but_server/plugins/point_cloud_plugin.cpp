@@ -223,8 +223,7 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
 	}
 
-	// 2012/12/13 Majkl: This shouldn't be there as the plugin gets the timestamp from the incoming data...
-//	m_DataTimeStamp = par.currentTime;
+	m_DataTimeStamp = par.currentTime;
 
 	lock.unlock();
 //	PERROR( "New map: Unlocked");

@@ -379,9 +379,9 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	pc_nonground.header = cloud.header;
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
 
-    // 2012/12/14: Majkl (trying to solve problem with missing time stamps in all message headers)
-    m_DataTimeStamp = cloud.header.stamp;
-    ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud.header.stamp.toSec());
+    	// 2012/12/14: Majkl (trying to solve problem with missing time stamps in all message headers)
+	m_DataTimeStamp = cloud.header.stamp;
+	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud.header.stamp.toSec());
 
 	insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
 

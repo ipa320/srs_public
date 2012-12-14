@@ -57,7 +57,8 @@ ocmap_filter_outdated: true
 pointcloud_frame_skip: 1
 
 # Internal and published pointcloud frame id
-pointcloud_frame_id: "/head_cam3d_link"
+#pointcloud_frame_id: "/head_cam3d_link"
+pointcloud_frame_id: "/map"
 
 # Point cloud limits in z-axis - minimum
 pointcloud_min_z: 0.1 

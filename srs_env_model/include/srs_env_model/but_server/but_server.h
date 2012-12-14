@@ -116,10 +116,17 @@ protected:
     void publishAll(const ros::Time& rostime );
 
     //! On octomap data changed
-    void onOcMapDataChanged( const tButServerOcMap & mapdata, const ros::Time & stamp ){ publishAll(stamp); }
+    void onOcMapDataChanged( const tButServerOcMap & mapdata, const ros::Time & stamp )
+    {
+        publishAll(stamp);
+    }
 
     /// On reset service call
-    bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response){ reset(); return true; }
+    bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
+    {
+        reset();
+        return true;
+    }
 
     /// On pause service call
     bool onPause( ButServerPause::Request & request, ButServerPause::Response & response );
@@ -128,7 +135,6 @@ protected:
     void publishPlugins(const ros::Time& rostime);
 
 protected:
-
     //! Is server running now
     bool m_bIsPaused;
 

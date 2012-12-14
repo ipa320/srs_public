@@ -95,7 +95,7 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
 
 	// Create publisher
-	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
 
 
 	// If should subscribe, create message filter and connect to the topic
@@ -223,7 +223,8 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
 	}
 
-	m_DataTimeStamp = par.currentTime;
+	// 2012/12/13 Majkl: This shouldn't be there as the plugin gets the timestamp from the incoming data...
+//	m_DataTimeStamp = par.currentTime;
 
 	lock.unlock();
 //	PERROR( "New map: Unlocked");
@@ -396,6 +397,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
     // Store timestamp
     m_DataTimeStamp = cloud->header.stamp;
+    ROS_DEBUG("CPointCloudPlugin::insertCloudCallback(): stampe = %f", cloud->header.stamp.toSec());
 
  //   PERROR("Insert cloud CB. Size: " << m_data->size() );
 
@@ -408,7 +410,6 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
  //	std::cerr << "PCP.iccb end. Time: " << ros::Time::now() << std::endl;
 
 // 	PERROR("Unlock");
-
 }
 
 //! Should plugin publish data?
@@ -467,7 +468,7 @@ void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nod
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
 
 		if( m_bSubscribe )
 		{

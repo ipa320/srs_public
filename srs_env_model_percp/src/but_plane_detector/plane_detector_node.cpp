@@ -540,9 +540,10 @@ namespace srs_env_model_percp
 
 void spin() {
 
-	ros::AsyncSpinner spinner(4);
-	spinner.start();
-	ros::waitForShutdown();
+//	ros::AsyncSpinner spinner(4);
+//	spinner.start();
+//	ros::waitForShutdown();
+    ros::spin();
 
 }
 

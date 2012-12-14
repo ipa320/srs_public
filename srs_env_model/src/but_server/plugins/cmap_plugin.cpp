@@ -377,7 +377,7 @@ void srs_env_model::CCMapPlugin::pause( bool bPause, ros::NodeHandle & node_hand
 	if( bPause )
 		m_cmapPublisher.shutdown();
 	else
-		m_cmapPublisher = node_handle.advertise<arm_navigation_msgs::CollisionMap> ( m_cmapPublisherName, 100, m_latchedTopics);
+		m_cmapPublisher = node_handle.advertise<arm_navigation_msgs::CollisionMap> ( m_cmapPublisherName, 1, m_latchedTopics);
 }
 
 /**

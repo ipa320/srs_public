@@ -65,7 +65,9 @@ srs_env_model_ui::CCameraPublisherDisplay::CCameraPublisherDisplay(const std::st
 
     // Create publisher
     this->m_cameraPositionPub = private_nh.advertise< srs_env_model_msgs::RVIZCameraPosition >(
-    		m_cameraPositionPublisherName, 100, m_latchedTopics);
+    		m_cameraPositionPublisherName, 1, m_latchedTopics);
+//    this->m_cameraPositionPub = private_nh.advertise< srs_env_model_msgs::RVIZCameraPosition >(
+//    		m_cameraPositionPublisherName, 100, m_latchedTopics);
 }
 
 /*
@@ -290,7 +292,9 @@ srs_env_model_ui::CNotifyCameraListener::CNotifyCameraListener( srs_env_model_ui
     , m_orientation( 0.0, 0.0, 0.0, 0.0 )
     , m_camera( 0 )
     , m_display( display )
-	, m_camFrameId( "/map" )
+// Majkl: changed to test if it is better to publish TF transf. to the /map or /base_link
+//    , m_camFrameId( "/map" )
+    , m_camFrameId( "/base_link" )
 {
 
 }

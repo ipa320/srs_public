@@ -63,7 +63,7 @@
 #include <but_segmentation/normals.h>
 
 #include <srs_env_model_percp/but_plane_detector/scene_model.h>
-#include <srs_env_model_percp/but_plane_detector/dyn_model_exporter2.h>
+#include <srs_env_model_percp/but_plane_detector/dyn_model_exporter.h>
 #include <srs_env_model_percp/but_plane_detector/plane_detector_params.h>
 
 #include <srs_env_model_percp/topics_list.h>
@@ -115,7 +115,7 @@ namespace srs_env_model_percp
     ros::Publisher pub1;
     ros::Publisher pub2;
     ros::Publisher pub3;
-    DynModelExporter2 *exporter = NULL;
+    DynModelExporter *exporter = NULL;
 
     sensor_msgs::CameraInfo cam_info_legacy;
     sensor_msgs::CameraInfoConstPtr cam_info_aux (&cam_info_legacy);
@@ -400,7 +400,7 @@ int main( int argc, char** argv )
 	std::cerr << "Minimum point count for visualised plane in current point cloud: " << settings.param_visualisation_min_count << std::endl;
 	std::cerr << std::endl;
 
-	exporter = new DynModelExporter2(&n,
+	exporter = new DynModelExporter(&n,
 					settings.param_original_frame,
 					settings.param_output_frame,
 					settings.param_visualisation_min_count,

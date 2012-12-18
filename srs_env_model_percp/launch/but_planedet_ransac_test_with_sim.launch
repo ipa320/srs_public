@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Run our dynamic scene model server node + simulation -->
+	<!--include file="$(find srs_env_model)/launch/but_envmodel_test_with_sim.launch" /-->
+    
+    <!-- Run the simulation -->
+	<include file="$(find srs_env_model_percp)/launch/run_sim.launch" />
+
+     <!-- Kinect throttling -->
+    <include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
+        <arg name="max_rate" value="3.0" />
+    </include>
+
+    <!-- Run our GUI nodes -->
+    <!--include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" /-->
+
+
+    <!-- Run the plane detection -->
+    <include file="$(find srs_env_model_percp)/launch/but_planedet_ransac_common.launch" />
+
+    <!-- Run rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model_percp)/config/planedet_rviz_bag.vcg" />    
+
+</launch>
+

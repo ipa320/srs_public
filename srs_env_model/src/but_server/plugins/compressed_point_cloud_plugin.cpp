@@ -95,19 +95,25 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 	{
 		// Where to get camera position information
 		node_handle.param("compressed_pc_camera_info_topic_name", m_cameraInfoTopic, CPC_CAMERA_INFO_PUBLISHER_NAME );
+		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_camera_info_topic_name: %s", m_cameraInfoTopic.c_str() );
 
 		// Point cloud publishing topic name
-		node_handle.param("compressed_pc_pointcloud_centers_publisher", m_pcPublisherName, CPC_PC_PUBLISHING_TOPIC_NAME );
+		node_handle.param("compressed_pc_pointcloud_centers_publisher", m_pcPublisherName, CPC_SIMPLE_PC_PUBLISHING_TOPIC_NAME);
+		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_pointcloud_centers_publisher: %s", m_pcPublisherName.c_str() );
+
+		// Should simple pointcloud be published too?
+		node_handle.param("publish_simple_cloud", m_bPublishSimpleCloud, false );
 
 		// How many uncomplete frames should be published before complete one
 		int uf;
 		node_handle.param("compressed_pc_differential_frames_count", uf, CPC_NUM_DIFFERENTIAL_FRAMES );
 		m_uncomplete_frames = uf;
 
-		std::cerr << "Num dif frames: " << m_uncomplete_frames << std::endl;
+		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_update_data_topic_name: %i", uf );
 
 		// Complete data topic name
 		node_handle.param( "compressed_pc_update_data_topic_name", m_ocUpdatePublisherName, CPC_COMPLETE_TOPIC_NAME );
+		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_update_data_topic_name: %s", m_ocUpdatePublisherName.c_str() );
 	}
 
 	// Services
@@ -117,7 +123,8 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 	}
 
     // Create publisher - simple point cloud
-    m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+	if( m_bPublishSimpleCloud)
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
 
     // Create publisher - packed info - cam position and update pointcloud
     m_ocUpdatePublisher = node_handle.advertise< srs_env_model::OctomapUpdates > ( m_ocUpdatePublisherName, 100, m_latchedTopics );
@@ -363,17 +370,20 @@ void srs_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time
 
 		if( m_bPublishComplete )
 		{
-//			std::cerr << "Publishing complete cloud." << std::endl;
+//			std::cerr << "Publishing complete cloud. Size: " << m_data->points.size() << std::endl;
 			m_octomap_updates_msg->isPartial = 0;
 		}
 		else
 		{
-//			std::cerr << "Publishing only differential cloud." << std::endl;
+//			std::cerr << "Publishing only differential cloud. Size: " << m_data->points.size() << std::endl;
 			m_octomap_updates_msg->isPartial = 1;
 		}
 
 		// Publish data
 		m_ocUpdatePublisher.publish( m_octomap_updates_msg );
+
+		if( m_bPublishSimpleCloud )
+			m_pcPublisher.publish( m_octomap_updates_msg->pointcloud2 );
     }
 }
 

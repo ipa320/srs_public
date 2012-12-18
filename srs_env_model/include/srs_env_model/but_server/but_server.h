@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 1860 2012-11-14 12:13:45Z spanel $
+ * $Id: but_server.h 2100 2012-12-06 16:42:15Z spanel $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -92,10 +92,8 @@ namespace srs_env_model
 /**
   BUT dynamic scene server class.
   */
-class CButServer{
-public:
-
-
+class CButServer
+{
 public:
     //! Type of the used pointcloud
     typedef pcl::PointCloud<pcl::PointXYZ> tPCLPointCloud;
@@ -210,12 +208,10 @@ protected:
 
     /// Create crawler plugin holder
     boost::shared_ptr< CExampleCrawlerPlugin > m_plugExampleCrawler;
-
 #endif
 };
 
+
 } // namespace srs_env_model
-
-
 
 #endif // SERVER_H

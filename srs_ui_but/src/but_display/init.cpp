@@ -28,7 +28,6 @@
 #include "rviz/plugin/type_registry.h"
 
 #include "but_display.h"
-#include "but_point_cloud.h"
 #include "but_distance_linear_visualizer.h"
 #include "but_distance_circular_indicator.h"
 #include "but_cob_stretch_indicator.h"
@@ -42,7 +41,6 @@
 extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
 {
   reg->registerDisplay<srs_ui_but::CButDisplay>("CButDisplay");
-  reg->registerDisplay<srs_ui_but::CButPointCloud>("CButPointCloud");
   reg->registerDisplay<srs_ui_but::CButDistanceLinearVisualizer>("CButDistanceLinearVisualizer");
   reg->registerDisplay<srs_ui_but::CButDistanceCircularIndicator>("CButDistanceCircularIndicator");
   reg->registerDisplay<srs_ui_but::CButCOBStretchIndicator>("CButCOBStretchIndicator");

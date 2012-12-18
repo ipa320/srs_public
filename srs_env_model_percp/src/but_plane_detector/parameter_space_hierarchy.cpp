@@ -71,6 +71,7 @@ ParameterSpaceHierarchy::ParameterSpaceHierarchy(double anglemin, double anglema
 	m_shiftmax = zmax;
 	m_anglemin = anglemin;
 	m_anglemax = anglemax;
+
 	m_size = m_angleSize2 * m_shiftSize;
 	m_loSize = m_angleLoSize2 * m_shiftLoSize;
 
@@ -175,12 +176,12 @@ void ParameterSpaceHierarchy::set(int angle1, int angle2, int z, double val)
 // Returns a value saved at given index
 // @param index Given index
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-double ParameterSpaceHierarchy::get(int index)
+double ParameterSpaceHierarchy::get(int bin_index, int inside_index)
 {
-	if (m_dataLowRes[index / m_hiSize] == NULL)
+	if (m_dataLowRes[bin_index] == NULL)
 		return 0.0;
 	else
-		return m_dataLowRes[index / m_hiSize][index % m_hiSize];
+		return m_dataLowRes[bin_index][inside_index];
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,14 +189,14 @@ double ParameterSpaceHierarchy::get(int index)
 // @param index Given index
 // @param val Value to be saved
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ParameterSpaceHierarchy::set(int index, double val)
+void ParameterSpaceHierarchy::set(int bin_index, int inside_index, double val)
 {
-	if (m_dataLowRes[index / m_hiSize] == NULL)
+	if (m_dataLowRes[bin_index] == NULL)
 	{
-		m_dataLowRes[index / m_hiSize] = (double *)malloc(sizeof(double) *m_hiSize);
-		memset(m_dataLowRes[index / m_hiSize], 0, m_hiSize * sizeof(double));
+		m_dataLowRes[bin_index] = (double *)malloc(sizeof(double) *m_hiSize);
+		memset(m_dataLowRes[bin_index], 0, m_hiSize * sizeof(double));
 	}
-	m_dataLowRes[index / m_hiSize][index % m_hiSize] = val;
+	m_dataLowRes[bin_index][inside_index] = val;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +213,6 @@ IndexStruct ParameterSpaceHierarchy::getIndex(double angle1, double angle2, doub
 	int zz = (z-m_shiftmin) / m_shiftStep;
 	index.highResolutionIndex = zz%DEFAULT_BIN_SIZE * m_hiSize2 + a2%DEFAULT_BIN_SIZE * DEFAULT_BIN_SIZE + a1%DEFAULT_BIN_SIZE;
 	index.lowResolutionIndex = zz/DEFAULT_BIN_SIZE * m_angleLoSize2 + a2/DEFAULT_BIN_SIZE * m_angleLoSize + a1/DEFAULT_BIN_SIZE;
-	index.CompleteIndex = index.lowResolutionIndex * m_hiSize + index.highResolutionIndex;
 
 	return index;
 }
@@ -224,20 +224,20 @@ IndexStruct ParameterSpaceHierarchy::getIndex(double angle1, double angle2, doub
 // @param angle2 Second angle coordinate
 // @param z Shift (d param) coordinate
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ParameterSpaceHierarchy::fromIndex(int i, int& angle1, int& angle2, int& z)
+void ParameterSpaceHierarchy::fromIndex(int bin_index, int inside_index, int& angle1, int& angle2, int& z)
 {
-	int iLo = i / m_hiSize;
-	int iHi = i % m_hiSize;
+	//int iLo = i / m_hiSize;
+	//int iHi = i % m_hiSize;
 	int loZ, loA1, loA2;
 
-	z = (iLo / (m_angleLoSize2));
-	loZ = iHi / (m_hiSize2);
+	z = (bin_index / (m_angleLoSize2));
+	loZ = inside_index / (m_hiSize2);
 
-	angle2 = ((iLo - z * m_angleLoSize2) / m_angleLoSize);
-	loA2 = (iHi - loZ * m_hiSize2) / DEFAULT_BIN_SIZE;
+	angle2 = ((bin_index - z * m_angleLoSize2) / m_angleLoSize);
+	loA2 = (inside_index - loZ * m_hiSize2) / DEFAULT_BIN_SIZE;
 
-	angle1 = (iLo - (z * m_angleLoSize2) - angle2 * m_angleLoSize);
-	loA1 =   iHi - (loZ * m_hiSize2) - loA2 * DEFAULT_BIN_SIZE;
+	angle1 = (bin_index - (z * m_angleLoSize2) - angle2 * m_angleLoSize);
+	loA1 =   inside_index - (loZ * m_hiSize2) - loA2 * DEFAULT_BIN_SIZE;
 
 	z = z*DEFAULT_BIN_SIZE + loZ;
 	angle2 = angle2*DEFAULT_BIN_SIZE + loA2;
@@ -256,7 +256,6 @@ IndexStruct ParameterSpaceHierarchy::getIndex(int angle1, int angle2, int z)
 
 	index.highResolutionIndex = z%DEFAULT_BIN_SIZE * m_hiSize2 + angle2%DEFAULT_BIN_SIZE * DEFAULT_BIN_SIZE + angle1%DEFAULT_BIN_SIZE;
 	index.lowResolutionIndex = z/DEFAULT_BIN_SIZE * m_angleLoSize2 + angle2/DEFAULT_BIN_SIZE * m_angleLoSize + angle1/DEFAULT_BIN_SIZE;
-	index.CompleteIndex = index.lowResolutionIndex * m_hiSize + index.highResolutionIndex;
 
 	return index;
 }
@@ -358,7 +357,7 @@ int ParameterSpaceHierarchy::findMaxima(tPlanes &indices, double min_value, int 
 		// if value is greater than min_value
 		if (val > min_value)
 		{
-			this->fromIndex(it.currentI, angle1, angle2, shift);
+			this->fromIndex(it.bin_index, it.inside_index, angle1, angle2, shift);
 
 			// if we are in bounds due to search neighborhood
 			if (angle1 >= neighborhood+around && angle1 < m_angleSize-(neighborhood+around) &&

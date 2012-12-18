@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Tomas Lokaj (xlokaj03@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -61,6 +61,11 @@ public:
    */
   void insert();
 
+   /**
+    * @brief Sets whether the predefined material ("red cross") should be used.
+    */
+  void useMaterial(bool value) { use_material_ = value; }
+
   /**
    * Callback for menu
    */
@@ -72,12 +77,21 @@ public:
   void uboxCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
 
 private:
-  visualization_msgs::Marker box_;
-
   void createUnknownBox();
   void createBox();
+  void createColorBox();
   void create();
   void createMenu();
+
+private:
+  visualization_msgs::Marker box_, wire_;
+
+  // Menu handlers
+  interactive_markers::MenuHandler::EntryHandle menu_handler_interaction_, menu_handler_interaction_movement_,
+                                                menu_handler_interaction_rotation_, menu_handler_interaction_scale_;
+
+  // Enables visualization of a predefined model including "red cross"
+  bool use_material_;
 };
 
 }

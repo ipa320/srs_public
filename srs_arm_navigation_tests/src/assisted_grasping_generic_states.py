@@ -40,7 +40,7 @@ from geometry_msgs.msg import Vector3, PoseStamped, Pose
 from std_msgs.msg import ColorRGBA
 
 from srs_assisted_arm_navigation_msgs.msg import *
-from srs_assisted_arm_navigation_msgs.srv import ArmNavCollObj, ArmNavMovePalmLink
+from srs_assisted_arm_navigation_msgs.srv import ArmNavCollObj, ArmNavMovePalmLink, ArmNavRemoveCollObjects, ArmNavSetAttached
 from srs_assisted_grasping_msgs.srv import GraspingAllow
 
 from srs_interaction_primitives.srv import AddObject, RemovePrimitive, SetPreGraspPosition, RemovePreGraspPosition, GetUnknownObject, SetAllowObjectInteraction, AddUnknownObject
@@ -50,40 +50,88 @@ from srs_object_database_msgs.srv import GetMesh, GetObjectId
 
 from shared_state_information import *
 from arm_manip_helper_methods import *
-    
+from simple_script_server import *
+#from cob_script_server.msg import *
 
-class grasp_unknown_object_assisted(smach.State):
-  def __init__(self):
-    smach.State.__init__(self,outcomes=['completed','not_completed','failed','pre-empted'],
-                         input_keys=[''],
-                         output_keys=[''])
+sss = simple_script_server()
+
+
+class detect_unknown_object_assisted(smach.State):
+ def __init__(self):
+     
+   smach.State.__init__(self,outcomes=['completed','not_completed','failed','pre-empted'],
+                        input_keys=[''],
+                        output_keys=['object_name','object_description','object_bb_pose','object_bb'])
+   
+   global listener
     
-    global listener
+   self.hlp = common_helper_methods()
     
-    self.hlp = common_helper_methods()
+   self.object_added = False
     
-    self.object_added = False
+   self.object_pose = None
+   self.object_bb = None
     
-    self.object_pose = None
-    self.object_bb = None
+   but_gui_ns = '/interaction_primitives'
+   
+   arm_manip_ns = '/but_arm_manip'
+   self.s_allow_interaction = but_gui_ns + '/set_allow_object_interaction'
+   
+   self.s_bb_est = '/bb_estimator/estimate_bb_alt'
+   self.s_add_unknown_object = but_gui_ns + '/add_unknown_object'
+   self.s_get_object = but_gui_ns + '/get_unknown_object'
     
-    but_gui_ns = '/interaction_primitives'
+   self.s_coll_obj = arm_manip_ns + '/arm_nav_coll_obj';
     
-    arm_manip_ns = '/but_arm_manip'
-    self.arm_action_name = arm_manip_ns + '/manual_arm_manip_action'
-    self.s_grasping_allow = arm_manip_ns + '/grasping_allow'
-    self.s_allow_interaction = but_gui_ns + '/set_allow_object_interaction'
+   self.unknown_object_name='unknown_object'
+   self.unknown_object_description='Unknown object to grasp'  
+   
+ def execute(self,userdata):
+       
+   rospy.loginfo('Assisted detection of unknown object')
+   
+   if self.hlp.wait_for_srv(self.s_allow_interaction) is False:
+    return 'failed'
     
-    self.s_bb_est = '/bb_estimator/estimate_bb_alt'
-    self.s_add_unknown_object = but_gui_ns + '/add_unknown_object'
-    self.s_get_object = but_gui_ns + '/get_unknown_object'
+   if self.hlp.wait_for_srv(self.s_bb_est) is False:
+       return 'failed'
     
-    self.s_coll_obj = arm_manip_ns + '/arm_nav_coll_obj';
+   if self.hlp.wait_for_srv(self.s_add_unknown_object) is False:
+       return 'failed'
     
-    self.unknown_object_name='unknown_object'
-    self.unknown_object_description='Unknown object to grasp'  
-  
-  def bb_est_feedback(self,feedback):
+   if self.hlp.wait_for_srv(self.s_get_object) is False:
+       return 'failed'
+    
+   self.object_added = False
+   self.object_pose = None
+   self.object_bb = None
+    
+   # ask user to select and tune IM for unknown object
+   self.add_im_for_object()
+    
+   if not self.get_im_pose():
+        
+       rospy.logerr('Could not get position of unknown object.')
+       self.hlp.remove_im(self.unknown_object_name)  
+       userdata.object_name = self.unknown_object_name
+       userdata.object_description = self.unknown_object_description
+       userdata.object_bb_pose = None
+       userdata.object_bb = None
+       self.object_added = False
+       return 'not_completed'
+        
+   self.hlp.remove_im(self.unknown_object_name)  
+   
+   userdata.object_name = self.unknown_object_name
+   userdata.object_description = self.unknown_object_description
+   userdata.object_bb_pose = self.object_pose
+   userdata.object_bb = self.object_bb
+   
+   rospy.loginfo('We have manually detected object.')
+   
+   return 'completed'
+    
+ def bb_est_feedback(self,feedback):
     
     rospy.loginfo('Feedback received')
     
@@ -117,6 +165,11 @@ class grasp_unknown_object_assisted(smach.State):
             
             self.object_added = False
             
+        else:
+            
+            rospy.logerr("Error on removing IM. Grrr.")
+            self.object_added = False
+            
  
     if self.object_added == False:
  
@@ -143,7 +196,8 @@ class grasp_unknown_object_assisted(smach.State):
                        description=self.unknown_object_description,
                        pose_type= PoseType.POSE_BASE,
                        pose = est_result.pose,
-                       scale = est_result.bounding_box_lwh)
+                       scale = est_result.bounding_box_lwh,
+                       disable_material=True)
             
             self.object_added = True
             
@@ -155,7 +209,7 @@ class grasp_unknown_object_assisted(smach.State):
           rospy.logerr('Cannot add IM object to the scene, error: %s',str(e))
           
         # allow interaction for this object  
-        self.hlp.set_interaction(self.unknown_object_name,True)
+        #self.hlp.set_interaction(self.unknown_object_name,True)
       
     else:
         
@@ -164,7 +218,7 @@ class grasp_unknown_object_assisted(smach.State):
     return
   
   
-  def get_im_pose(self):
+ def get_im_pose(self):
       
       get_object = rospy.ServiceProxy(self.s_get_object, GetUnknownObject)
       
@@ -172,9 +226,9 @@ class grasp_unknown_object_assisted(smach.State):
              
              res = get_object(name=self.unknown_object_name)
              
-             if res.frame_id is not ('map' or '/map'):
+             #if res.frame_id is not ('map' or '/map'):
                  
-                rospy.logwarn('TODO: Transformation of IM pose needed! Frame_id: %s',res.frame_id)
+             #   rospy.logwarn('TODO: Transformation of IM pose needed! Frame_id: %s',res.frame_id)
              
              self.object_pose = res.pose
              self.object_bb = res.scale        
@@ -183,8 +237,8 @@ class grasp_unknown_object_assisted(smach.State):
           
           rospy.logerr('Cannot add IM object to the scene, error: %s',str(e)) 
 
-	  self.object_pose = None
-	  self.object_bb = None
+          self.object_pose = None
+          self.object_bb = None
           
       if self.object_pose is not None:
           
@@ -200,7 +254,7 @@ class grasp_unknown_object_assisted(smach.State):
       
       
   
-  def add_im_for_object(self):
+ def add_im_for_object(self):
    
    # /but_arm_manip/manual_bb_estimation_action
    roi_client = actionlib.SimpleActionClient('/but_arm_manip/manual_bb_estimation_action',ManualBBEstimationAction)
@@ -222,7 +276,30 @@ class grasp_unknown_object_assisted(smach.State):
    
    # not let's suppose that IM is already on its position.... 
       
-   rospy.loginfo('Action finished')
+   rospy.loginfo('Action finished')   
+
+
+    
+
+class grasp_unknown_object_assisted(smach.State):
+  def __init__(self):
+    smach.State.__init__(self,outcomes=['completed','not_completed','failed','repeat_detection','pre-empted'],
+                         input_keys=['object_name','object_description','object_bb_pose','object_bb'],
+                         output_keys=[''])
+    
+    global listener
+    
+    self.hlp = common_helper_methods()
+    
+    but_gui_ns = '/interaction_primitives'
+    
+    arm_manip_ns = '/but_arm_manip'
+    self.arm_action_name = arm_manip_ns + '/manual_arm_manip_action'
+    self.s_grasping_allow = arm_manip_ns + '/grasping_allow'
+    
+    self.s_coll_obj = arm_manip_ns + '/arm_nav_coll_obj'
+    self.s_rem_coll_obj = arm_manip_ns + '/arm_rem_coll_obj'
+    self.s_set_attached = arm_manip_ns + '/arm_nav_set_attached'
    
   def add_bb_to_planning(self):
       
@@ -243,110 +320,192 @@ class grasp_unknown_object_assisted(smach.State):
                bb_lwh = self.object_bb,
                allow_collision=True,
                attached=False,
-               attach_to_frame_id='');
+               attach_to_frame_id='',
+               allow_pregrasps=True);
       
     except Exception, e:
       
       rospy.logerr('Cannot add unknown object to the planning scene, error: %s',str(e))
       
-  def change_bb_to_attached(self):
+  def change_bb_state(self,is_attached):
       
-      rospy.loginfo('Setting object bb to be attached (not implemented)')
+      if is_attached:
+          
+          rospy.loginfo('Setting object bb to be attached')
+          
+      else:
+         
+         rospy.loginfo('Setting object bb to be NOT attached')
       
+      att = rospy.ServiceProxy(self.s_set_attached,ArmNavSetAttached)
+      
+      try:
+          
+        res = att(object_name=self.userdata.object_name,
+                  attached = is_attached)
+          
+      except Exception, e:
+          
+        rospy.logerr("Error on calling service: %s",str(e))
+      
+      
+  def set_grasping_state(self,enabled):
+      
+      grasping_allow = rospy.ServiceProxy('/but_arm_manip/grasping_allow',GraspingAllow)
+      
+      try:
+          
+          gr = grasping_allow(allow=enabled)
+          
+      except Exception, e:
+          
+          rospy.logerr("Error on calling service: %s",str(e))
     
   def execute(self,userdata):
       
     global listener
     
+    self.object_pose = userdata.object_bb_pose
+    self.object_bb = userdata.object_bb
+    self.unknown_object_name = userdata.object_name
+    self.unknown_object_description = userdata.object_description
+    
     rospy.loginfo('Waiting for needed services and topics...')
     
     if self.hlp.wait_for_srv(self.s_grasping_allow) is False:
          return 'failed'
-     
-    if self.hlp.wait_for_srv(self.s_allow_interaction) is False:
-        return 'failed'
-    
-    if self.hlp.wait_for_srv(self.s_bb_est) is False:
-        return 'failed'
-    
-    if self.hlp.wait_for_srv(self.s_add_unknown_object) is False:
-        return 'failed'
-    
-    if self.hlp.wait_for_srv(self.s_get_object) is False:
-        return 'failed'
     
     if self.hlp.wait_for_srv(self.s_coll_obj) is False:
         return 'failed'
     
+    if self.hlp.wait_for_srv(self.s_rem_coll_obj) is False:
+        return 'failed'
     
-    self.s_coll_obj
+    if self.hlp.wait_for_srv(self.s_set_attached) is False:
+        return 'failed'
     
-    grasping_client = actionlib.SimpleActionClient('/but_arm_manip/manual_arm_manip_action',ManualArmManipAction)
+    self.userdata = userdata
+    
+    # open gripper to cylopen
+    #script_server = actionlib.SimpleActionClient('',ScriptAction)
+    rospy.loginfo('Opening gripper')
+    sss.move('sdh', 'cylopen', True)
+    
+    # first, try to add BB to planning
+    self.add_bb_to_planning()
+    
+    # call allow grasping service
+    #rospy.wait_for_service('/but_arm_manip/grasping_allow')
+        
+    
+    arm_nav_client = actionlib.SimpleActionClient('/but_arm_manip/manual_arm_manip_action',ManualArmManipAction)
   
     rospy.loginfo("Waiting for grasping action server...")
-    grasping_client.wait_for_server()
-     
-    # ask user to select and tune IM for unknown object
-    self.add_im_for_object()
-    
-    if not self.get_im_pose():
-        
-        rospy.logerr('Could not get position of unknown object. Lets try to continue without it...')
-        
-    else:
-        
-        self.add_bb_to_planning()
-        
-        
+    arm_nav_client.wait_for_server()
     
     # send grasping goal and allow grasping buttons :)
-    goal = ManualArmManipGoal()
+    grasp_goal = ManualArmManipGoal()
       
-    goal.allow_repeat = False
-    goal.action = "Grasp object and put it on tray"
-    goal.object_name = self.unknown_object_name
+    grasp_goal.allow_repeat = True
+    grasp_goal.action = "Move arm to suitable position and then try to grasp object."
+    grasp_goal.object_name = self.unknown_object_name
       
-    grasping_client.send_goal(goal)
+    arm_nav_client.send_goal(grasp_goal)
+    
+    self.set_grasping_state(True)
+    
+    rospy.loginfo("Waiting for result")
+    arm_nav_client.wait_for_result()
       
-    # call allow grasping service
-    rospy.wait_for_service('/but_arm_manip/grasping_allow')
+ 
+    result = arm_nav_client.get_result()
+    
+    if result.failed:
+    
+     rospy.logwarn('Operator was not able to grasp object.')
+     self.set_grasping_state(False)
+     return 'failed' 
+
+    if result.repeat:
+        
+      rospy.loginfo('Operator wants new detection of object.')
+      self.set_grasping_state(False)
+      return 'repeat_detection'
+    
+    
+    if not result.success:
+        
+      rospy.logerr('Weird state...')
+      self.set_grasping_state(False)
+      return 'failed'
+    
+    # object should be grasped, so we can attach it to gripper
+    self.change_bb_state(is_attached=True)
+    
+    m_goal = ManualArmManipGoal()
+    m_goal.allow_repeat = False
+    m_goal.action = "Navigate arm and place object on tray. Object will be attached to the arm. When finished, gripper will be opened."
+    m_goal.object_name = self.unknown_object_name
+    
+    arm_nav_client.send_goal(m_goal)
+    arm_nav_client.wait_for_result()
+    
+    m_result = arm_nav_client.get_result()
+    
+    self.set_grasping_state(False)
       
-          
-    grasping_allow = rospy.ServiceProxy('/but_arm_manip/grasping_allow',GraspingAllow)
+    # object should be grasped, so we can attach it to gripper
+    self.change_bb_state(is_attached=False)
       
+    if m_result.failed:
+        
+        rospy.loginfo('Operator failed to place object on the tray.')
+        return 'failed'
+    
+    if not m_result.success:
+        
+        rospy.loginfo('Weird state. Again...')
+        return 'failed'
+    
+
+    # object is on tray and we should navigate arm to some "home" position
+    # but first, we will open the gripper
+    rospy.loginfo('Opening gripper')
+    sss.move('sdh', 'cylopen', True)
+
+    a_goal = ManualArmManipGoal()
+    a_goal.allow_repeat = False
+    a_goal.action = "Navigate arm from object."
+    a_goal.object_name = self.unknown_object_name
+    
+    arm_nav_client.send_goal(a_goal)
+    arm_nav_client.wait_for_result()
+    
+    a_result = arm_nav_client.get_result()
+    
+    if a_result.failed:
+        
+        rospy.loginfo('Operator was not able to navigate arm from object...')
+        return 'failed'
+    
+    if not a_result.success:
+        
+        rospy.logerr('Again... This should not happen.')
+        return 'failed'
+
+
+    remove_coll_objects = rospy.ServiceProxy(self.s_rem_coll_obj,ArmNavRemoveCollObjects)
+    
     try:
           
-      gr = grasping_allow(allow=True)
+      rr = remove_coll_objects()
           
     except Exception, e:
           
       rospy.logerr("Error on calling service: %s",str(e))
-      return 'failed'
-  
- 
-    rospy.loginfo("Waiting for result")
-    grasping_client.wait_for_result()
-  
-    result = grasping_client.get_result()
-    
-    self.hlp.remove_im(self.unknown_object_name)    
-    
-    if result.success:
-        
-        rospy.loginfo('Object should be on tray.')
-        return 'completed'
-    
-    if result.failed:
-        
-        rospy.logwarn('Operator was not able to grasp object and put it on tray')
-        return 'failed'
-    
-    if result.timeout:
-        
-        rospy.logwarn('Action was too long')
-        return 'not_completed'
-    
-    
-    rospy.logerr('This should never happen!')
-    return 'failed'  
+      
+      
+    # arm is away and object is cleared... we can end
+    rospy.loginfo('State is finishing.')
+    return 'completed'
     

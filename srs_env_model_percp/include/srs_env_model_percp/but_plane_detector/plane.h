@@ -72,7 +72,9 @@ namespace srs_env_model_percp
 			/**
 			 * Get polygon
 			 */
-			ClipperLib::ExPolygon 	   &getPolygon();
+			ClipperLib::ExPolygons 	   &getPolygons();
+
+			void setPolygons(ClipperLib::ExPolygons &polys);
 
 			/**
 			 * Get Mesh structure
@@ -91,6 +93,10 @@ namespace srs_env_model_percp
 
 			void setColor(std_msgs::ColorRGBA &new_color);
 
+			// Triangulates plane polygon
+			void TriangulatePlanePolygon();
+
+			std_msgs::ColorRGBA color;
 		protected:
 			// Computes concave hull of set of points
 			tVertices ComputeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull);
@@ -104,18 +110,15 @@ namespace srs_env_model_percp
 			// Polygonizes current hull
 			ClipperLib::ExPolygons PolygonizeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
 
-			// Triangulates plane polygon
-			void TriangulatePlanePolygon();
-
-
-			ClipperLib::ExPolygons  	planePolygonsClipper;
 			Eigen::Affine3f				planeTransXY;
 			double planeShift;
 			pcl::ModelCoefficients::Ptr planeCoefficients;
+
+			ClipperLib::ExPolygons  	planePolygonsClipper;
 			visualization_msgs::Marker 	planeTriangles;
 			tShapeMarker  planeTrianglesSRS;
 			Eigen::Quaternion<float> rotationQuaternion;
-			std_msgs::ColorRGBA color;
+
 		public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	};

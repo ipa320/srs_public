@@ -32,17 +32,17 @@ using namespace planning_scene_utils;
 using namespace srs_assisted_arm_navigation_msgs;
 
 
-std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_msgs::PoseStamped pose, geometry_msgs::Point bb_lwh, bool coll=false, bool attached=false) {
+std::string CArmManipulationEditor::add_coll_obj_bb(t_det_obj &obj) {
 
   std::string ret = "";
 
-  ROS_INFO("Trying to add BB of detected object (%s) to collision map",name.c_str());
+  ROS_INFO("Trying to add BB of detected object (%s) to collision map",obj.name.c_str());
 
   stringstream ss;
 
   ss << coll_obj_det.size();
 
-  std::string oname = name + "_" + ss.str();
+  std::string oname = obj.name + "_" + ss.str();
 
   std_msgs::ColorRGBA color;
 
@@ -57,30 +57,41 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
 
   // TODO BUG -> problem with attached object, after executed trajectory, it stays on original place !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  if (pose.header.frame_id != collision_objects_frame_id_) {
+  std::string target = collision_objects_frame_id_;
+
+  /*if (attached) {
+
+	  // attached objects are stored in end effector frame -> we have to deal with them correctly
+	  //MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
+	  target = end_eff_link_;
+
+  }*/
+
+
+  if (obj.pose.header.frame_id != target) {
 
 	  /// We have to transform object to /base_link system
 	  ros::Time now = ros::Time::now();
 	  //geometry_msgs::PoseStamped pose_transf;
 
-	  pose.header.stamp = now; /// we need transformation for current time!
+	  obj.pose.header.stamp = now; /// we need transformation for current time!
 
-	  std::string target = collision_objects_frame_id_;
+	  //std::string target = collision_objects_frame_id_;
 
-	  ROS_INFO("Trying to transform detected object BB from %s to %s frame",pose.header.frame_id.c_str(),target.c_str());
+	  ROS_INFO("Trying to transform detected object BB from %s to %s frame",obj.pose.header.frame_id.c_str(),target.c_str());
 
-	  ROS_INFO("Waiting for transformation between %s and %s",pose.header.frame_id.c_str(),target.c_str());
+	  ROS_INFO("Waiting for transformation between %s and %s",obj.pose.header.frame_id.c_str(),target.c_str());
 
 	  try {
 
-			  if (tfl_->waitForTransform(target, pose.header.frame_id, now, ros::Duration(2.0))) {
+			  if (tfl_->waitForTransform(target, obj.pose.header.frame_id, now, ros::Duration(2.0))) {
 
-				tfl_->transformPose(target,pose,mpose);
+				tfl_->transformPose(target,obj.pose,mpose);
 
 			  } else {
 
-				pose.header.stamp = ros::Time(0);
-				tfl_->transformPose(target,pose,mpose);
+				  obj.pose.header.stamp = ros::Time(0);
+				tfl_->transformPose(target,obj.pose,mpose);
 				ROS_WARN("Using latest transform available, may be wrong.");
 
 			  }
@@ -99,29 +110,30 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
 
   } else {
 
-	  ROS_INFO("BB of detected object is already in correct frame_id (%s). No need to transform.",pose.header.frame_id.c_str());
-	  mpose = pose;
+	  ROS_INFO("BB of detected object is already in correct frame_id (%s). No need to transform.",obj.pose.header.frame_id.c_str());
+	  mpose = obj.pose;
 	  transf=true;
 
   }
 
   if (transf) {
 
-  		 mpose.pose.position.z +=  bb_lwh.z/2;
+  		 mpose.pose.position.z +=  obj.bb_lwh.z/2;
 
   		 ret = createCollisionObject(oname,
   							   mpose.pose,
   							   PlanningSceneEditor::Box,
-  							   (bb_lwh.x)*inflate_bb_,
-  							   (bb_lwh.y)*inflate_bb_,
-  							   (bb_lwh.z)*inflate_bb_,
-  							   color);
+  							   (obj.bb_lwh.x)*inflate_bb_,
+  							   (obj.bb_lwh.y)*inflate_bb_,
+  							   (obj.bb_lwh.z)*inflate_bb_,
+  							   color,
+  							   coll_objects_selectable_);
 
 
 
-  		 if (attached) {
+  		 if (obj.attached) {
 
-  			attachCollisionObject(ret, motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)].getEndEffectorLink(), links_);
+  			attachCollisionObject(ret, end_eff_link_, links_);
   			ROS_INFO("Attached coll. obj. name=%s, id=%s has been created.",oname.c_str(),ret.c_str());
 
   		 } else {
@@ -139,27 +151,117 @@ std::string CArmManipulationEditor::add_coll_obj_bb(std::string name, geometry_m
   	   }
 
 
-   if (coll) {
+   if (obj.allow_collision) {
 
-	   ROS_INFO("Allowing collisions of gripper with object: %s (NOT IMPLEMENTED YET)", name.c_str());
+	   ROS_INFO("Allowing collisions of gripper with object: %s (NOT IMPLEMENTED YET)", obj.name.c_str());
 	   // TODO
 
    }
 
+   // TODO handle somehow situation for more objects !!!!!
+   // pregrasps are not allowed for attached objects (no sense there...)
+   if (obj.allow_pregrasps && (!obj.attached) && ros::service::exists("/interaction_primitives/clickable_positions",true)) {
 
-   /*PlanningSceneData& scene = planning_scene_map_[planning_scene_id];
+	   srs_interaction_primitives::ClickablePositions srv;
 
-   for(size_t i = 0; i < scene.getPlanningScene().collision_objects.size(); i++)
-   {
+	   std_msgs::ColorRGBA c;
+	   c.r = 1.0;
+	   c.g = 0.0;
+	   c.b = 0.0;
+	   c.a = 0.5;
 
-     createSelectableMarkerFromCollisionObject(scene.getPlanningScene().collision_objects[i], scene.getPlanningScene().collision_objects[i].id, scene.getPlanningScene().collision_objects[i].id, color);
-   }*/
+	   srv.request.color = c;
+	   srv.request.frame_id = world_frame_;
 
-   //createSelectableMarkerFromCollisionObject(coll, coll.id, "", color);
+	   std::vector<geometry_msgs::Point> points;
 
+	   double offset = 0.3;
+
+	   geometry_msgs::Point tmp;
+
+	   tmp.x = mpose.pose.position.x + offset;
+	   tmp.y = mpose.pose.position.y;
+	   tmp.z = mpose.pose.position.z;
+
+	   points.push_back(tmp);
+
+	   tmp.x = mpose.pose.position.x - offset;
+	   tmp.y = mpose.pose.position.y;
+	   tmp.z = mpose.pose.position.z;
+
+	   points.push_back(tmp);
+
+	   tmp.x = mpose.pose.position.x;
+	   tmp.y = mpose.pose.position.y + offset;
+	   tmp.z = mpose.pose.position.z;
+
+	   points.push_back(tmp);
+
+	   tmp.x = mpose.pose.position.x;
+	   tmp.y = mpose.pose.position.y - offset;
+	   tmp.z = mpose.pose.position.z;
+
+	   points.push_back(tmp);
+
+
+	   srv.request.positions = points;
+	   srv.request.radius = 0.05;
+	   srv.request.topic_suffix = obj.name;
+
+	   if (ros::service::call("/interaction_primitives/clickable_positions",srv)) {
+
+		   obj.topic_name = srv.response.topic;
+
+		   sub_click_ = nh_.subscribe(obj.topic_name,1,&CArmManipulationEditor::subClick,this);
+
+
+	   } else {
+
+		   ROS_ERROR("Can't add clickable positions for object (%s).",obj.name.c_str());
+		   obj.topic_name = "";
+
+	   }
+
+
+   }
 
 
   return ret;
+
+}
+
+void CArmManipulationEditor::subClick(const srs_interaction_primitives::PositionClickedConstPtr &msg) {
+
+	// TODO extract object name from topic to get object position...
+	std::string topic = sub_click_.getTopic();
+
+	sub_click_.shutdown();
+
+	if (inited && !planned_) {
+
+
+		ArmNavMovePalmLink::Request req;
+		ArmNavMovePalmLink::Response resp;
+
+		req.sdh_palm_link_pose.pose.position.x = msg->position.x;
+		req.sdh_palm_link_pose.pose.position.y = msg->position.y;
+		req.sdh_palm_link_pose.pose.position.z = msg->position.z;
+
+
+
+		// TODO consider position of robot and position of point somehow...
+		req.sdh_palm_link_pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(-M_PI/2.0,0.0,M_PI/2.0);
+
+		req.sdh_palm_link_pose.header.frame_id = world_frame_;
+		req.sdh_palm_link_pose.header.stamp = ros::Time::now();
+
+		ArmNavMovePalmLink(req,resp);
+
+	} else {
+
+		ROS_WARN("Ops... We can't move gripper IM right now.");
+
+	}
 
 }
 
@@ -236,7 +338,8 @@ std::string CArmManipulationEditor::add_coll_obj_attached(double x, double y, do
                             scx,
                             0,
                             scz,
-                            color);
+                            color,
+                            coll_objects_selectable_);
 
       ROS_INFO("Coll. obj. name=%s, id=%s",name.c_str(),ret.c_str());
 

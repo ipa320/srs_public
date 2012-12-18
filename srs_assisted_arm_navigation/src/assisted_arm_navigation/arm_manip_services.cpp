@@ -58,9 +58,48 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
 
    MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
 
-   ROS_INFO("Performing planning for %s end effector link.",data.getEndEffectorLink().c_str());
+   if (data.getEndEffectorLink() != end_eff_link_) {
+
+	   ROS_ERROR("End effector configuration mismatch. Setting end_eff_link to be %s",data.getEndEffectorLink().c_str());
+
+	   end_eff_link_ = data.getEndEffectorLink();
+
+   }
+
+   planning_models::KinematicState *robot_state = getRobotState();
+   planning_models::KinematicState::JointStateGroup* jsg = robot_state->getJointStateGroup(data.getGroupName());
+   if ( !(robot_state->areJointsWithinBounds(jsg->getJointNames())) ) {
+
+	   // TODO print which one !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	   //ROS_FATAL("Some joint is out of limits! Can't start planning.");
+
+	   arm_nav_state_.out_of_limits = true;
+
+	   std::vector<std::string> joints = jsg->getJointNames();
+
+	   for (unsigned int i=0; i < joints.size(); i++) {
+
+		   if ( !robot_state->isJointWithinBounds(joints[i]) ) {
+
+			   ROS_FATAL("Joint %s is out of limits! Can't start planning.",joints[i].c_str());
+
+		   }
+
+	   }
+
+	   reset();
+
+	   res.error = "Some joint is out of limits.";
+	   res.completed = false;
+	   return true;
+
+   } else arm_nav_state_.out_of_limits = false;
+
+
+   ROS_INFO("Performing planning for %s end effector link.",end_eff_link_.c_str());
 
    data.setStartVisible(false);
+   data.setEndVisible(true);
    data.setJointControlsVisible(joint_controls_,this);
 
    #define TR 0.1
@@ -83,7 +122,7 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
 
     for(tmp = coll_obj_det.begin(); tmp != coll_obj_det.end(); tmp++) {
 
-      (*tmp).id = add_coll_obj_bb((*tmp).name,(*tmp).pose,(*tmp).bb_lwh, (*tmp).allow_collision, (*tmp).attached);
+      (*tmp).id = add_coll_obj_bb(*tmp);
 
       }
 
@@ -97,6 +136,13 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
 
    GripperPosesClean();
 
+   if (ros::service::exists("sn_teleop_srv_dis",true)) {
+
+	   std_srvs::Empty srv;
+	   ros::service::call("sn_teleop_srv_dis",srv);
+
+   }
+
    inited = true;
    disable_gripper_poses_ = false;
 
@@ -107,15 +153,48 @@ bool CArmManipulationEditor::ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Re
 
   planned_ = false;
 
+  MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
+
+  visualization_msgs::MarkerArray arr = data.getCollisionMarkers();
+
+  if (arr.markers.size() != 0) {
+
+	  ROS_ERROR("Goal position is in collision. Can't plan.");
+	  res.completed = false;
+	  res.error = "Goal position is in collision.";
+	  return true;
+
+  }
+
+
+  if (!data.hasGoodIKSolution(planning_scene_utils::GoalPosition)) {
+
+	  ROS_ERROR("There is no IK solution for goal position. Can't plan.");
+	  res.completed = false;
+	  res.error = "Goal position is not reachable.";
+	  return true;
+
+  }
+
+
   ROS_DEBUG("Planning trajectory...");
 
-  MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
+  //MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
 
   if (planToRequest(data,traj_id)) {
 
-    ROS_INFO("Trajectory successfully planned");
+	TrajectoryData& trajectory = trajectory_map_[getMotionPlanRequestNameFromId(mpr_id)][getTrajectoryNameFromId(traj_id)];
 
-    TrajectoryData& trajectory = trajectory_map_[getMotionPlanRequestNameFromId(mpr_id)][getTrajectoryNameFromId(traj_id)];
+	if (trajectory.getTrajectorySize() < 3) {
+
+		ROS_ERROR("Strange trajectory with only %d points.",(int)trajectory.getTrajectorySize());
+		res.completed = false;
+	    res.error = "Planning failed.";
+	    return true;
+
+	}
+
+    ROS_INFO("Trajectory successfully planned");
 
     unsigned int filterID;
 
@@ -131,7 +210,8 @@ bool CArmManipulationEditor::ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Re
 
       res.completed = true;
 
-      boost::mutex::scoped_lock(im_server_mutex_);
+      //boost::mutex::scoped_lock(im_server_mutex_);
+      lockScene();
 
       planned_ = true;
       disable_gripper_poses_ = true;
@@ -141,16 +221,18 @@ bool CArmManipulationEditor::ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Re
 
       if (!interactive_marker_server_->erase("MPR 0_end_control")) {
 
-        ROS_WARN("Cannot remove IM.");
+        ROS_WARN("Cannot remove gripper IM.");
 
       } else interactive_marker_server_->applyChanges();
 
+      unlockScene();
 
     } else {
 
 
       res.completed = false;
       res.error = "Error on filtering";
+      return true;
 
 
     }
@@ -161,6 +243,7 @@ bool CArmManipulationEditor::ArmNavPlan(ArmNavPlan::Request &req, ArmNavPlan::Re
 
     res.completed = false;
     res.error = "Error on planning";
+    return false;
 
   }
 
@@ -198,6 +281,7 @@ bool CArmManipulationEditor::ArmNavExecute(ArmNavExecute::Request &req, ArmNavEx
 
     ROS_ERROR("Nothing to execute!");
     res.completed = false;
+    reset();
     return false;
 
   }
@@ -237,11 +321,38 @@ bool CArmManipulationEditor::ArmNavReset(ArmNavReset::Request &req, ArmNavReset:
   return true;
 }
 
+bool CArmManipulationEditor::ArmNavRemoveCollObjects(ArmNavRemoveCollObjects::Request &req, ArmNavRemoveCollObjects::Response &res) {
+
+	std::vector<CollisionObject> objects;
+
+	for (unsigned int i=0; i < coll_obj_det.size(); i++) {
+
+		CollisionObject tmp;
+
+		tmp.allow_collision = coll_obj_det[i].allow_collision;
+		tmp.allow_pregrasps = coll_obj_det[i].allow_pregrasps;
+		tmp.attached = coll_obj_det[i].attached;
+		tmp.bb_lwh = coll_obj_det[i].bb_lwh;
+		tmp.id = coll_obj_det[i].id;
+		tmp.name = coll_obj_det[i].name;
+		tmp.pose = coll_obj_det[i].pose;
+
+		objects.push_back(tmp);
+
+	}
+
+	res.objects = objects;
+
+	remove_coll_objects();
+	return true;
+
+}
+
 bool CArmManipulationEditor::ArmNavSuccess(ArmNavSuccess::Request &req, ArmNavSuccess::Response &res) {
 
   reset();
 
-  remove_coll_objects();
+  //remove_coll_objects();
 
   if (action_server_ptr_!=NULL)
       action_server_ptr_->srv_set_state(ManualArmManipActionServer::S_SUCCESS);
@@ -253,7 +364,7 @@ bool CArmManipulationEditor::ArmNavFailed(ArmNavFailed::Request &req, ArmNavFail
 
   reset();
 
-  remove_coll_objects();
+  //remove_coll_objects();
 
   if (action_server_ptr_!=NULL)
       action_server_ptr_->srv_set_state(ManualArmManipActionServer::S_FAILED);
@@ -265,7 +376,7 @@ bool CArmManipulationEditor::ArmNavRepeat(ArmNavRepeat::Request &req, ArmNavRepe
 
   reset();
 
-  remove_coll_objects();
+  //remove_coll_objects();
 
   if (action_server_ptr_!=NULL)
       action_server_ptr_->srv_set_state(ManualArmManipActionServer::S_REPEAT);
@@ -313,15 +424,52 @@ bool CArmManipulationEditor::ArmNavSetAttached(ArmNavSetAttached::Request &req, 
 
 		ROS_ERROR("Collision object %s does not exist.",req.object_name.c_str());
 		res.completed = false;
-		return false;
+		return true;
 
 	} else {
 
 		if (req.attached) ROS_INFO("Setting %s object to be attached.",req.object_name.c_str());
 		else ROS_INFO("Setting %s object to NOT be attached.",req.object_name.c_str());
 
+		//MotionPlanRequestData& data = motion_plan_map_[getMotionPlanRequestNameFromId(mpr_id)];
+		std::string target = end_eff_link_;
+
+		if (req.attached) {
+
+			// attaching -> we are going to transform object to end effector link
+
+			coll_obj_det[idx].pose.header.stamp = ros::Time::now();
+
+			if (!transf(target,coll_obj_det[idx].pose)) {
+
+				ROS_ERROR("Failed to attach collision object (TF error).");
+				res.completed = false;
+				return true;
+
+			}
+
+		} else {
+
+			coll_obj_det[idx].pose.header.stamp = ros::Time::now();
+
+			// dis-attaching -> transform it back to world frame id
+			if (coll_obj_det[idx].pose.header.frame_id != world_frame_) {
+
+				if (!transf(world_frame_,coll_obj_det[idx].pose)) {
+
+					ROS_ERROR("Failed to dis-attach collision object (TF error).");
+					res.completed = false;
+					return true;
+
+				}
+
+
+			}
+
+		}
 
 		coll_obj_det[idx].attached = req.attached;
+
 		res.completed = true;
 		return true;
 
@@ -370,6 +518,7 @@ bool CArmManipulationEditor::ArmNavCollObj(ArmNavCollObj::Request &req, ArmNavCo
   obj.attached = false;
 
   obj.allow_collision = req.allow_collision;
+  obj.allow_pregrasps = req.allow_pregrasps;
 
   coll_obj_det.push_back(obj);
 
@@ -390,23 +539,36 @@ bool CArmManipulationEditor::ArmNavMovePalmLink(ArmNavMovePalmLink::Request &req
 
 	ROS_INFO("Setting position of end eff. to x: %f, y: %f, z: %f (in %s frame)",ps.pose.position.x,ps.pose.position.y,ps.pose.position.z,ps.header.frame_id.c_str());
 
-    boost::mutex::scoped_lock(im_server_mutex_);
+    //boost::mutex::scoped_lock(im_server_mutex_);
 
-    std_msgs::Header h;
+
+    /*std_msgs::Header h;
 
     h.frame_id = "map";
-    h.stamp = ros::Time::now();
+    h.stamp = ros::Time::now();*/
 
-    if (interactive_marker_server_->setPose("MPR 0_end_control",ps.pose,h)) {
+    lockScene();
+
+    if (interactive_marker_server_->setPose("MPR 0_end_control",ps.pose/*,h*/)) {
 
       interactive_marker_server_->applyChanges();
 
-      findIK(ps.pose);
+      unlockScene();
+
+      if (!findIK(ps.pose)) {
+
+    	  ros::Duration(0.25).sleep();
+
+    	  // try it for second time... just for sure...
+    	  findIK(ps.pose);
+
+      }
 
       res.completed = true;
       return true;
 
-    }
+    } else unlockScene();
+
 
     res.completed = false;
     return true;
@@ -417,6 +579,7 @@ bool CArmManipulationEditor::ArmNavMovePalmLink(ArmNavMovePalmLink::Request &req
 
     ROS_ERROR("Cannot move arm to specified position. Call %s service first.",str.c_str());
     res.completed = false;
+    reset();
     return false;
 
   }
@@ -433,39 +596,69 @@ bool CArmManipulationEditor::ArmNavMovePalmLinkRel(ArmNavMovePalmLinkRel::Reques
 
     ROS_ERROR("Cannot move arm to specified position. Call %s service first.",str.c_str());
     res.completed = false;
+    reset();
     return false;
 
   }
 
-  boost::mutex::scoped_lock(im_server_mutex_);
+  //boost::mutex::scoped_lock(im_server_mutex_);
+
+  lockScene();
 
   visualization_msgs::InteractiveMarker marker;
   geometry_msgs::Pose new_pose;
 
   if (!(interactive_marker_server_->get("MPR 0_end_control",marker))) {
 
+	unlockScene();
+
     ROS_ERROR("Can´t get gripper IM pose.");
     res.completed = false;
-    return true;
+    reset();
+    return false;
   }
 
   new_pose = marker.pose;
 
-  new_pose.position.x += req.relative_shift.x;
-  new_pose.position.y += req.relative_shift.y;
-  new_pose.position.z += req.relative_shift.z;
+  //new_pose.position = req.relative_movement.position;
+  new_pose.position.x += req.relative_movement.position.x;
+  new_pose.position.y += req.relative_movement.position.y;
+  new_pose.position.z += req.relative_movement.position.z;
+
+  tf::Quaternion o;
+  tf::quaternionMsgToTF(req.relative_movement.orientation,o);
+
+  tf::Quaternion g;
+  tf::quaternionMsgToTF(new_pose.orientation,g);
+
+  tf::quaternionTFToMsg(o*g,new_pose.orientation);
+
 
 
   if (!(interactive_marker_server_->setPose("MPR 0_end_control",new_pose))) {
 
+	ROS_ERROR("Can't set new pose for MPR 0_end_control");
+
+	unlockScene();
+
     res.completed = false;
-    return true;
+    reset();
+    return false;
 
   }
 
   interactive_marker_server_->applyChanges();
 
-  findIK(new_pose);
+  unlockScene();
+
+  if (!findIK(new_pose)) {
+
+	  ros::Duration(0.25).sleep();
+
+	  // try it for second time... just for sure
+	  findIK(new_pose);
+
+  }
 
   res.completed = true;
   return true;
@@ -478,13 +671,15 @@ bool CArmManipulationEditor::ArmNavStep(ArmNavStep::Request &req, ArmNavStep::Re
 
     res.completed = false;
     res.msg = "Start planning first!";
+    reset();
     return true;
 
   }
 
     if (req.undo) {
 
-      boost::mutex::scoped_lock(im_server_mutex_);
+      //boost::mutex::scoped_lock(im_server_mutex_);
+      lockScene();
 
       if (gripper_poses_->size()<=1) {
 
@@ -505,14 +700,19 @@ bool CArmManipulationEditor::ArmNavStep(ArmNavStep::Request &req, ArmNavStep::Re
 
       if (!(interactive_marker_server_->setPose("MPR 0_end_control",p))) {
 
+    	 unlockScene();
+
          ROS_ERROR("Error on changing IM pose");
          res.msg = "Error on changing IM pose";
          res.completed = false;
-         return true;
+         reset();
+         return false;
 
      }
 
      interactive_marker_server_->applyChanges();
+
+     unlockScene();
 
      findIK(p);
 
@@ -538,6 +738,13 @@ bool CArmManipulationEditor::ArmNavSwitchACO(ArmNavSwitchAttCO::Request &req, Ar
 
   // TODO allow the change only if inited=false
 
+  if (inited == true) {
+
+	  ROS_ERROR("ACO can bee switched on/off only before start of planning.");
+	  return false;
+
+  }
+
   aco_ = req.state;
 
   if (aco_ ) ROS_INFO("ACO set to true");
@@ -552,6 +759,8 @@ bool CArmManipulationEditor::ArmNavStop(ArmNavStop::Request &req, ArmNavStop::Re
 
   ROS_INFO("Canceling all goals.");
   this->arm_controller_map_[params_.left_arm_group_]->cancelAllGoals();
+
+  reset();
 
   return true;
 

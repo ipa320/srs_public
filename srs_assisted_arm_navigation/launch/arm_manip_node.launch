@@ -6,17 +6,28 @@
   
     <rosparam command="load" file="$(find srs_assisted_arm_navigation)/config/arm_links.yaml" />
   
-    <param name="start_timeout" type="double" value="60.0"/>
-    <param name="solve_timeout" type="double" value="300.0"/>
-    <param name="inflate_bb" type="double" value="1.1"/>
-    <param name="world_frame" type="string" value="/base_link"/>
-    <param name="joint_controls" type="bool" value="false"/>
-    <param name="aco_link" type="string" value="arm_7_link"/>
+    <remap from="sn_teleop_srv_en"  to="/cob_spacenav_teleop/enable"/>
+    <remap from="sn_teleop_srv_dis" to="/cob_spacenav_teleop/disable"/>
+  
+    <param name="action/start_timeout" type="double" value="0.0"/> <!-- 0.0 == timeout is disabled -->
+    <param name="action/solve_timeout" type="double" value="0.0"/>
+    
+    <param name="arm_planning/arm_planning/inflate_bb" type="double" value="1.1"/>
+    <param name="arm_planning/world_frame" type="string" value="/base_link"/>
+    <param name="arm_planning/end_eff_link" type="string" value="sdh_palm_link"/>
+    <param name="arm_planning/joint_controls" type="bool" value="false"/>
+    <param name="arm_planning/make_collision_objects_selectable" type="bool" value="false"/>
+    <param name="arm_planning/aco/link" type="string" value="arm_7_link"/>
+    <param name="arm_planning/aco/default_state" type="bool" value="false"/>
+    
+    <param name="spacenav/enable_spacenav" type="bool" value="true"/>    
     <param name="spacenav/use_rviz_cam" type="bool" value="true"/>
     <param name="spacenav/rviz_cam_link" type="string" value="/rviz_cam"/>
-    <param name="spacenav/max_val" type="double" value="500.0"/>
-    <param name="spacenav/step" type="double" value="0.1"/>
-    <param name="spacenav/rot_step" type="double" value="0.2"/>
+    <param name="spacenav/max_val" type="double" value="350.0"/>
+    <param name="spacenav/min_val_th" type="double" value="0.05"/> <!-- from 0 to 0.5x of max_val  -->
+    <param name="spacenav/step" type="double" value="0.05"/>
+    <param name="spacenav/rot_step" type="double" value="0.1"/>
+    
   </node>
   
 </launch>

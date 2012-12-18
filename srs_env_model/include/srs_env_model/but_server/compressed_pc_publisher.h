@@ -84,9 +84,6 @@ protected:
     /// Test if point is in sensor cone
     bool inSensorCone(const cv::Point2d& uv) const;
 
-    public:
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
 protected:
 	//! Published topic name
 	std::string m_publishedTopicName;
@@ -126,6 +123,9 @@ protected:
 
 	//! Transform listener
 	tf::TransformListener m_tfListener;
+
+public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 

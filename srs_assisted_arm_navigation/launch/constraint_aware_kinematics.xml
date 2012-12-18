@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find srs_assisted_arm_navigation)/launch/cob_planning_environment.xml" />
+    
+    <node pkg="arm_kinematics_constraint_aware" type="arm_kinematics_constraint_aware" name="cob_arm_kinematics">
+        <param name="global_frame" type="string" value="base_footprint" />
+        <param name="use_collision_map" type="bool" value="true" />
+        <param name="group" type="string" value="arm" />
+        <param name="arm/root_name" type="string" value="base_footprint" />
+        <param name="arm/tip_name" type="string" value="sdh_palm_link" />
+        <param name="arm/robot" type="string" value="$(env ROBOT)" />
+        <!--param name="kinematics_solver" type="string" value="cob3_arm_kinematics/KDLArmKinematicsPlugin" /-->
+        <param name="kinematics_solver" type="string" value="arm_kinematics_constraint_aware/KDLArmKinematicsPlugin" />
+        <!--param name="kinematics_solver" type="string" value="cob3_arm_kinematics/IKFastKinematicsPlugin" /-->
+    </node>
+    
+    <!--node pkg="cob_kinematics" type="ik_wrapper_node" name="cob_ik_wrapper" ns="/cob_ik_wrapper/arm/"/-->
+    
+</launch>

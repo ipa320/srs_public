@@ -1,5 +1,6 @@
 # goal
 string action # description what to do
+string post_action # string which will be displayed after user finished task
 bool allow_repeat
 string object_name
 ---

@@ -38,6 +38,7 @@
 #include <wx/sizer.h>
 #include <wx/tglbtn.h>
 #include <wx/checkbox.h>
+#include <wx/choice.h>
 
 #include <ros/ros.h>
 #include <string.h>
@@ -61,7 +62,7 @@
 
 //#include "srs_env_model/LockCollisionMap.h"
 
-#include "cob_script_server/ScriptAction.h"
+//#include "cob_script_server/ScriptAction.h"
 #include <actionlib/client/simple_action_client.h>
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -69,6 +70,8 @@
 
 #include "srs_assisted_arm_navigation/services_list.h"
 #include "srs_env_model/services_list.h"
+#include <tf/transform_broadcaster.h>
+#include <wx/textctrl.h>
 
 namespace rviz
 {
@@ -86,8 +89,16 @@ static const bool WAIT_FOR_START = true;
 /**
  * Actionlib client for communication with cob script server (used to move torso, open/close gripper).
  */
-typedef actionlib::SimpleActionClient<cob_script_server::ScriptAction> cob_client;
+//typedef actionlib::SimpleActionClient<cob_script_server::ScriptAction> cob_client;
 
+
+struct Preset {
+
+	std::string name;
+	geometry_msgs::Pose pose;
+	bool relative;
+
+};
 
 class CArmManipulationControls : public wxPanel
 {
@@ -112,6 +123,11 @@ public:
 
 
     void OnStepBack(wxCommandEvent& event);
+
+    void OnChoice(wxCommandEvent& event);
+
+    void MoveAbs();
+    void MoveRel();
 
     void OnMoveRel(wxCommandEvent& event);
 
@@ -151,10 +167,17 @@ protected:
     wxSlider * m_slider_yaw;*/
 
 
+    wxChoice *presets_choice_;
+
     wxButton * m_button_switch;
 
     wxStaticText *m_text_status;
     wxStaticText *m_text_action_;
+    wxTextCtrl *m_text_task_;
+
+    void setTask(std::string text);
+
+    wxStaticText *m_text_predef_pos_;
     //wxStaticText *m_text_object;
     //wxStaticText *m_text_timeout;
     //wxStaticText *m_text_dist; // distance to closest pregrasp position
@@ -171,6 +194,8 @@ protected:
 
     bool wait_for_start_;
 
+    uint8_t traj_executed_;
+
     bool allow_repeat_;
     //bool cmap_locked_;
 
@@ -184,6 +209,9 @@ protected:
     void setButton(std::string but, bool state);
 
     void stateCallback(const srs_assisted_arm_navigation_msgs::AssistedArmNavigationState::ConstPtr& msg);
+
+    std::vector<Preset> presets_;
+
 
 private:
 
@@ -209,6 +237,11 @@ private:
     boost::thread t_execute;
     //boost::thread t_look;
 
+    boost::thread t_move_rel;
+    boost::thread t_move_abs;
+
+    bool checkService(std::string srv);
+
     //bool cob_script_inited;
 
     bool aco_;
@@ -225,7 +258,9 @@ private:
     wxCheckBox *m_pos_lock_;
     wxCheckBox *m_or_lock_;
 
-    wxToggleButton *b_switch_;
+    wxCheckBox *m_aco_;
+
+    //wxToggleButton *b_switch_;
 
     boost::thread t_gui_update;
     void GuiUpdateThread();

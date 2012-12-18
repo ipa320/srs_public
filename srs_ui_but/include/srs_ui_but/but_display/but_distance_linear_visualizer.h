@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_distance_linear_visualizer.h 1002 2012-07-18 14:45:22Z xlokaj03 $
+ * $Id: but_distance_linear_visualizer.h 2085 2012-12-06 11:58:19Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *
@@ -128,7 +128,7 @@ protected:
   const std::string getDistance()
   {
     std::ostringstream text_d;
-    text_d << fabs(distance_) << " m";
+    text_d << std::setprecision(2) << std::fixed << fabs(distance_) << " m";
     return text_d.str();
   }
 

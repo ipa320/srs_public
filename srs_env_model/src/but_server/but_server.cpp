@@ -151,7 +151,6 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	// Connect octomap data changed signal with server publish
 	m_plugOctoMap->getSigDataChanged().connect( boost::bind( &CButServer::onOcMapDataChanged, *this, _1, _2 ));
 
-
 } // Constructor
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -198,7 +197,6 @@ void srs_env_model::CButServer::publishAll(const ros::Time& rostime)
 	// Compute and show elapsed time
 //	double total_elapsed = (ros::WallTime::now() - startTime).toSec();
 //	ROS_DEBUG("Map publishing in CButServer took %f sec", total_elapsed);
-
 }
 
 

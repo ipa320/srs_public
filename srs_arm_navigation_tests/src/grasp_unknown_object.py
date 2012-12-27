@@ -32,7 +32,11 @@ import smach
 import smach_ros
 from arm_manip_generic_states import *
 from assisted_grasping_generic_states import *
-from simulate_dm import *
+#from simulate_dm import *
+#import actionlib
+#from geometry_msgs.msg import Pose
+#from geometry_msgs.msg import PoseStamped
+#from shared_state_information import *
 
 def main():
   

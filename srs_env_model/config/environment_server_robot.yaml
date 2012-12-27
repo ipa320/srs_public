@@ -5,8 +5,8 @@
 # Octomap plugin
 
 # Octomap resolution
-ocmap_resolution: .05
-#ocmap_resolution: .025
+#ocmap_resolution: .05
+ocmap_resolution: .025
 
 # Tree depth used for crawling. Zero means full tree
 ocmap_treedepth: 0
@@ -50,9 +50,6 @@ ocmap_ground_filter/plane_distance: 0.07
 # Raytrace input and try to delete all cells that should be free
 ocmap_filter_outdated: true
 
-# Should be input cloud used for octomap noise filtering?
-use_input_for_filter: true
-
 ###############################################################################
 # Point cloud plugin
 
@@ -60,13 +57,14 @@ use_input_for_filter: true
 pointcloud_frame_skip: 1
 
 # Internal and published pointcloud frame id
-pointcloud_frame_id: "/head_cam3d_link"
+#pointcloud_frame_id: "/head_cam3d_link"
+pointcloud_frame_id: "/map"
 
 # Point cloud limits in z-axis - minimum
 pointcloud_min_z: 0.1 
 
 # Point cloud limits in z-axis - maximum
-pointcloud_max_z: 2.5
+pointcloud_max_z: 4.0
 
 
 ###############################################################################
@@ -84,12 +82,15 @@ registration_mode: "none"
 
 # Maximum iterations
 registration_maximum_iterations: 20
+#registration_maximum_iterations: 50
 
 # RANSAC outlier threshold
 registration_ransac_outlier_rejection_threshold: .02
+#registration_ransac_outlier_rejection_threshold: .005
 
 # Maximal correspondence distance
 registration_maximal_correspondence_distance: 5.0
+#registration_maximal_correspondence_distance: 50.0
 
 # Transformation epsilon
 registration_transformation_epsilon: 0.1
@@ -137,6 +138,15 @@ collision_object_frame_id: "/map"
 # Compressed point cloud plugin 
 # - the same parameters as point cloud plugin and:
 
+# Camera info topic
+compressed_pc_camera_info_topic_name: "camera_info"
+
+# Simple dfferential pointcloud topic name 
+compressed_pc_pointcloud_centers_publisher: "/but_env_model/differential_pointcloud_centers"
+
+# Should simple cloud (without camera position) be published too?
+publish_simple_cloud: false
+
 # How many differential frames should be published before full cloud
 compressed_pc_differential_frames_count: 5
 
@@ -145,6 +155,7 @@ compressed_pc_camera_stereo_offset_left: 0
 
 # Stereo camera parameters - right camera offset
 compressed_pc_camera_stereo_offset_right: 0
+
 
 ###############################################################################
 # Interactive markers plugin

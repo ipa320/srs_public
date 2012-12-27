@@ -78,9 +78,9 @@ FootprintMarker::FootprintMarker()
     marker_.pose.position.y = 0;
     marker_.pose.position.z = z_pos_;
     marker_.scale.x = 0.01;
-    marker_.color.r = 0.0;
-    marker_.color.g = 0.0;
-    marker_.color.b = 1.0;
+    marker_.color.r = 1.0;
+    marker_.color.g = 1.0;
+    marker_.color.b = 0.0;
     marker_.color.a = 1.0;
 
     // Create the disc like geometry for the markers

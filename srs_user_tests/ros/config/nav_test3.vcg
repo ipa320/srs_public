@@ -3,44 +3,16 @@ Background\ ColorG=0
 Background\ ColorB=0
 Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
-COB\ Stretch\ Indicator.Alpha=0.3
-COB\ Stretch\ Indicator.ColorR=1
-COB\ Stretch\ Indicator.ColorG=0.964706
-COB\ Stretch\ Indicator.ColorB=0
-COB\ Stretch\ Indicator.Correction=0.5
-COB\ Stretch\ Indicator.Enabled=0
-COB\ Stretch\ Indicator.Range=10
-COB\ Stretch\ Indicator.Show\ bounding\ box=1
-COB\ Stretch\ Indicator.Show\ distance=1
-COB\ Stretch\ Indicator.Style=0
-COB\ Stretch\ Indicator.Thickness=1
-Distance\ Circular\ Indicator.Alpha=1
-Distance\ Circular\ Indicator.ColorR=0
-Distance\ Circular\ Indicator.ColorG=0
-Distance\ Circular\ Indicator.ColorB=1
-Distance\ Circular\ Indicator.Enabled=0
-Distance\ Circular\ Indicator.Levels=5
-Distance\ Circular\ Indicator.Link=/torso_pan_link
-Distance\ Circular\ Indicator.OrientationX=0
-Distance\ Circular\ Indicator.OrientationY=0
-Distance\ Circular\ Indicator.OrientationZ=0
-Distance\ Circular\ Indicator.Radius=15
-Distance\ Circular\ Indicator.Show\ distance=1
-Distance\ Circular\ Indicator.Thickness=1
-Distance\ Linear\ Visualizer.Alpha=1
-Distance\ Linear\ Visualizer.ColorR=1
-Distance\ Linear\ Visualizer.ColorG=1
-Distance\ Linear\ Visualizer.ColorB=0
-Distance\ Linear\ Visualizer.Enabled=0
-Distance\ Linear\ Visualizer.Line\ Thickness=0.02
-Distance\ Linear\ Visualizer.Link=/torso_pan_link
-Distance\ Linear\ Visualizer.Show\ distance=1
-Distance\ Linear\ Visualizer.Topic=/cam3d/rgb/points_throttled
+Collision\ Marker.Enabled=1
+Collision\ Marker.Marker\ Topic=/collision_velocity_filter/velocity_limited_marker
+Footprint\ Marker.Enabled=1
+Footprint\ Marker.Marker\ Topic=/local_costmap_node/costmap/robot_footprint_marker
+Footprint\ Marker.cob_footprint_marker=1
 Global\ Voxel\ Map.Alpha=1
 Global\ Voxel\ Map.Billboard\ Size=0.03
 Global\ Voxel\ Map.Camera\ Info\ Topic=/cam3d/rgb/camera_info_throttled
 Global\ Voxel\ Map.Color\ Transformer=RGB8
-Global\ Voxel\ Map.Cull\ View\ Frustum=0
+Global\ Voxel\ Map.Cull\ View\ Frustum=1
 Global\ Voxel\ Map.Decay\ Time=0
 Global\ Voxel\ Map.Enabled=1
 Global\ Voxel\ Map.Position\ Transformer=XYZ
@@ -83,17 +55,15 @@ Grid.OffsetZ=0
 Grid.Plane=0
 Grid.Plane\ Cell\ Count=10
 Grid.Reference\ Frame=<Fixed Frame>
+Image.Enabled=1
+Image.Image\ Topic=/cam3d/rgb/image_color
+Image.Transport\ Hint=theora
 Inflated\ Obstacles.Alpha=1
 Inflated\ Obstacles.ColorR=0
 Inflated\ Obstacles.ColorG=0
 Inflated\ Obstacles.ColorB=1
 Inflated\ Obstacles.Enabled=0
 Inflated\ Obstacles.Topic=/move_base/local_costmap/inflated_obstacles
-Interactive\ Markers.Enabled=0
-Interactive\ Markers.Show\ Axes=0
-Interactive\ Markers.Show\ Descriptions=1
-Interactive\ Markers.Show\ Tool\ Tips=1
-Interactive\ Markers.Update\ Topic=/interaction_primitives/update
 Interactive\ Teleop.Enabled=0
 Interactive\ Teleop.Show\ Axes=0
 Interactive\ Teleop.Show\ Descriptions=1
@@ -113,8 +83,8 @@ Laser\ Scan\ Front..AxisAxis=2
 Laser\ Scan\ Front..AxisMax\ Value=10
 Laser\ Scan\ Front..AxisMin\ Value=-10
 Laser\ Scan\ Front..AxisUse\ Fixed\ Frame=1
-Laser\ Scan\ Front..Flat\ ColorColorR=1
-Laser\ Scan\ Front..Flat\ ColorColorG=0
+Laser\ Scan\ Front..Flat\ ColorColorR=0
+Laser\ Scan\ Front..Flat\ ColorColorG=1
 Laser\ Scan\ Front..Flat\ ColorColorB=0
 Laser\ Scan\ Front..IntensityAutocompute\ Intensity\ Bounds=1
 Laser\ Scan\ Front..IntensityChannel\ Name=intensity
@@ -141,8 +111,8 @@ Laser\ Scan\ Rear..AxisAxis=2
 Laser\ Scan\ Rear..AxisMax\ Value=10
 Laser\ Scan\ Rear..AxisMin\ Value=-10
 Laser\ Scan\ Rear..AxisUse\ Fixed\ Frame=1
-Laser\ Scan\ Rear..Flat\ ColorColorR=1
-Laser\ Scan\ Rear..Flat\ ColorColorG=0
+Laser\ Scan\ Rear..Flat\ ColorColorR=0
+Laser\ Scan\ Rear..Flat\ ColorColorG=1
 Laser\ Scan\ Rear..Flat\ ColorColorB=0
 Laser\ Scan\ Rear..IntensityAutocompute\ Intensity\ Bounds=1
 Laser\ Scan\ Rear..IntensityChannel\ Name=intensity
@@ -169,8 +139,8 @@ Laser\ Scan\ Top..AxisAxis=2
 Laser\ Scan\ Top..AxisMax\ Value=10
 Laser\ Scan\ Top..AxisMin\ Value=-10
 Laser\ Scan\ Top..AxisUse\ Fixed\ Frame=1
-Laser\ Scan\ Top..Flat\ ColorColorR=1
-Laser\ Scan\ Top..Flat\ ColorColorG=0
+Laser\ Scan\ Top..Flat\ ColorColorR=0
+Laser\ Scan\ Top..Flat\ ColorColorG=1
 Laser\ Scan\ Top..Flat\ ColorColorB=0
 Laser\ Scan\ Top..IntensityAutocompute\ Intensity\ Bounds=1
 Laser\ Scan\ Top..IntensityChannel\ Name=intensity
@@ -187,9 +157,8 @@ Map.Alpha=0.7
 Map.Draw\ Behind=0
 Map.Enabled=1
 Map.Topic=/map
-Marker\ Teleop.Enabled=1
-Marker\ Teleop.Marker\ Topic=/collision_velocity_filter/velocity_limited_marker
-Marker\ Teleop.cob_velocity_limited_marker=1
+Marker\ LED.Enabled=1
+Marker\ LED.Marker\ Topic=/light_controller/marker
 Obstacles.Alpha=1
 Obstacles.ColorR=1
 Obstacles.ColorG=0
@@ -227,7 +196,7 @@ Point\ Cloud\ Kinect.Decay\ Time=0
 Point\ Cloud\ Kinect.Enabled=1
 Point\ Cloud\ Kinect.Position\ Transformer=XYZ
 Point\ Cloud\ Kinect.Selectable=1
-Point\ Cloud\ Kinect.Style=1
+Point\ Cloud\ Kinect.Style=0
 Point\ Cloud\ Kinect.Topic=/cam3d/rgb/points_throttled
 Point\ Cloud\ Kinect..AxisAutocompute\ Value\ Bounds=1
 Point\ Cloud\ Kinect..AxisAxis=2
@@ -248,6 +217,11 @@ Point\ Cloud\ Kinect..IntensityMin\ ColorG=0
 Point\ Cloud\ Kinect..IntensityMin\ ColorB=0
 Point\ Cloud\ Kinect..IntensityMin\ Intensity=0
 Point\ Cloud\ Kinect..IntensityUse\ full\ RGB\ spectrum=0
+Pose\ Array.ColorR=1
+Pose\ Array.ColorG=0.1
+Pose\ Array.ColorB=0
+Pose\ Array.Enabled=0
+Pose\ Array.Topic=/particlecloud
 RViz\ Camera\ Pose\ Publisher.Enabled=1
 Robot\ Model.Alpha=1
 Robot\ Model.Collision\ Enabled=0
@@ -359,8 +333,8 @@ Robot\:\ Robot\ Model\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.066 4.48716 4.57015 0.186906 1.13835 0.392831
-Property\ Grid\ State=selection=Interactive Teleop.Enabled;expanded=.Global Options,Marker Teleop.Enabled.Marker Teleop.Namespaces,Distance Circular Indicator.Enabled.Distance Circular Indicator.StatusTopStatus,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus;scrollpos=0,0;splitterpos=228,457;ispageselected=1
+Camera\ Config=1.116 2.25258 3.22098 3.30277 1.50025 -5.40778
+Property\ Grid\ State=selection=Image.Enabled;expanded=.Global Options,Marker LED.Enabled.Marker LED.Namespaces,Collision Marker.Enabled.Collision Marker.Namespaces,Footprint Marker.Enabled.Footprint Marker.Namespaces,Interactive Teleop.Enabled.Interactive Teleop.StatusTopStatus,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus;scrollpos=0,0;splitterpos=193,387;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -386,62 +360,62 @@ Name=Laser Scan Top
 Package=rviz
 ClassName=rviz::LaserScanDisplay
 [Display6]
+Name=Marker LED
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display7]
+Name=Pose Array
+Package=rviz
+ClassName=rviz::PoseArrayDisplay
+[Display8]
 Name=Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay
-[Display7]
+[Display9]
 Name=Inflated Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay
-[Display8]
+[Display10]
 Name=Path dwa global
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display9]
+[Display11]
 Name=Path dwa local
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display10]
+[Display12]
 Name=Path tr global
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display11]
+[Display13]
 Name=Path tr local
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display12]
-Name=Marker Teleop
+[Display14]
+Name=Collision Marker
 Package=rviz
 ClassName=rviz::MarkerDisplay
-[Display13]
+[Display15]
+Name=Footprint Marker
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display16]
 Name=Interactive Teleop
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display14]
+[Display17]
 Name=Point Cloud Kinect
 Package=rviz
 ClassName=rviz::PointCloud2Display
-[Display15]
+[Display18]
 Name=Global Voxel Map
 Package=srs_env_model_ui
 ClassName=CButPointCloud
-[Display16]
-Name=Interactive Markers
-Package=rviz
-ClassName=rviz::InteractiveMarkerDisplay
-[Display17]
-Name=COB Stretch Indicator
-Package=srs_ui_but
-ClassName=CButCOBStretchIndicator
-[Display18]
-Name=Distance Linear Visualizer
-Package=srs_ui_but
-ClassName=CButDistanceLinearVisualizer
 [Display19]
-Name=Distance Circular Indicator
-Package=srs_ui_but
-ClassName=CButDistanceCircularIndicator
-[Display20]
 Name=RViz Camera Pose Publisher
 Package=srs_env_model_ui
 ClassName=CCameraPublisherDisplay
+[Display20]
+Name=Image
+Package=rviz
+ClassName=rviz::ImageDisplay

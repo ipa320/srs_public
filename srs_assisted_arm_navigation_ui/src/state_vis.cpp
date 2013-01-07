@@ -31,7 +31,7 @@ using namespace srs_assisted_arm_navigation_ui;
 
 StateVis::StateVis() {
 
-	// TODO show "Set goal position" at beginning and after first interaction "Position is ok"
+	// TODO show "Set goal position" at beginning and after first interaction "Position is ok" ???
 
 	ros::NodeHandle nh;
 
@@ -61,7 +61,7 @@ StateVis::StateVis() {
 	m_.scale.z = 0.10; // specifies the height of an uppercase "A".
 	m_.color = color_def_;
 	m_.text = "";
-	m_.lifetime = ros::Duration(0.5);
+	m_.lifetime = ros::Duration(1.0);
 
 	j_.header.frame_id = "/sdh_palm_link";
 	j_.header.stamp = ros::Time::now();
@@ -79,7 +79,7 @@ StateVis::StateVis() {
 	j_.scale.z = 0.10; // specifies the height of an uppercase "A".
 	j_.color = color_err_;
 	j_.text = "Joints out of limits!";
-	j_.lifetime = ros::Duration(0.5);
+	j_.lifetime = ros::Duration(1.0);
 
 	marker_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/but_arm_manip/state_vis",1);
 
@@ -117,6 +117,8 @@ void StateVis::stateCallback(const srs_assisted_arm_navigation_msgs::AssistedArm
 
 	if (msg->joints_out_of_limits) {
 
+			j_.header.stamp = ros::Time::now();
+
 			arr.markers.push_back(j_);
 			marker_pub_.publish(arr);
 			return;
@@ -124,6 +126,8 @@ void StateVis::stateCallback(const srs_assisted_arm_navigation_msgs::AssistedArm
 
 
 	if (msg->planning_started) {
+
+		m_.header.stamp = ros::Time::now();
 
 		m_.text = "Position is fine";
 		m_.color = color_def_;

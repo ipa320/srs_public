@@ -124,10 +124,10 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 
     // Create publisher - simple point cloud
 	if( m_bPublishSimpleCloud)
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
 
     // Create publisher - packed info - cam position and update pointcloud
-    m_ocUpdatePublisher = node_handle.advertise< srs_env_model::OctomapUpdates > ( m_ocUpdatePublisherName, 100, m_latchedTopics );
+    m_ocUpdatePublisher = node_handle.advertise< srs_env_model::OctomapUpdates > ( m_ocUpdatePublisherName, 1, m_latchedTopics );
 
     // Subscribe to position topic
     // Create subscriber
@@ -402,7 +402,7 @@ void srs_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHa
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
 
 		// Subscribe to position topic
 		// Create subscriber

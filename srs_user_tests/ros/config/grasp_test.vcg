@@ -11,8 +11,8 @@ Arm\ interactive\ markers.Update\ Topic=/interaction_primitives/update
 Assisted\ Grasping.Enabled=0
 CButBBEstimationDisplay.Enabled=1
 Camera.Enabled=1
-Camera.Image\ Topic=/cam3d/rgb/upright/image_color
-Camera.Transport\ Hint=theora
+Camera.Image\ Topic=/cam3d/rgb/upright/image_color_throttled
+Camera.Transport\ Hint=raw
 CollisionMap.Alpha=1
 CollisionMap.ColorR=0
 CollisionMap.ColorG=1
@@ -34,6 +34,38 @@ Distance\ Circular\ Indicator.OrientationZ=0
 Distance\ Circular\ Indicator.Radius=25
 Distance\ Circular\ Indicator.Show\ distance=1
 Distance\ Circular\ Indicator.Thickness=0.5
+Global\ Voxel\ Map.Alpha=1
+Global\ Voxel\ Map.Billboard\ Size=0.02
+Global\ Voxel\ Map.Camera\ Info\ Topic=/cam3d/rgb/camera_info_throttled
+Global\ Voxel\ Map.Color\ Transformer=RGB8
+Global\ Voxel\ Map.Cull\ View\ Frustum=1
+Global\ Voxel\ Map.Decay\ Time=0
+Global\ Voxel\ Map.Enabled=1
+Global\ Voxel\ Map.Position\ Transformer=XYZ
+Global\ Voxel\ Map.Selectable=1
+Global\ Voxel\ Map.Show\ View\ Frustum=1
+Global\ Voxel\ Map.Style=2
+Global\ Voxel\ Map.Topic=/but_env_model/pointcloud_centers
+Global\ Voxel\ Map.View\ Frustum\ Depth=3
+Global\ Voxel\ Map..AxisAutocompute\ Value\ Bounds=1
+Global\ Voxel\ Map..AxisAxis=2
+Global\ Voxel\ Map..AxisMax\ Value=10
+Global\ Voxel\ Map..AxisMin\ Value=-10
+Global\ Voxel\ Map..AxisUse\ Fixed\ Frame=1
+Global\ Voxel\ Map..Flat\ ColorColorR=1
+Global\ Voxel\ Map..Flat\ ColorColorG=1
+Global\ Voxel\ Map..Flat\ ColorColorB=1
+Global\ Voxel\ Map..IntensityAutocompute\ Intensity\ Bounds=1
+Global\ Voxel\ Map..IntensityChannel\ Name=intensity
+Global\ Voxel\ Map..IntensityMax\ ColorR=1
+Global\ Voxel\ Map..IntensityMax\ ColorG=1
+Global\ Voxel\ Map..IntensityMax\ ColorB=1
+Global\ Voxel\ Map..IntensityMax\ Intensity=4096
+Global\ Voxel\ Map..IntensityMin\ ColorR=0
+Global\ Voxel\ Map..IntensityMin\ ColorG=0
+Global\ Voxel\ Map..IntensityMin\ ColorB=0
+Global\ Voxel\ Map..IntensityMin\ Intensity=0
+Global\ Voxel\ Map..IntensityUse\ full\ RGB\ spectrum=0
 Grid.Alpha=0.5
 Grid.Cell\ Size=1
 Grid.ColorR=0.5
@@ -61,7 +93,7 @@ Kinect\ Point\ Cloud.Decay\ Time=0
 Kinect\ Point\ Cloud.Enabled=1
 Kinect\ Point\ Cloud.Position\ Transformer=XYZ
 Kinect\ Point\ Cloud.Selectable=1
-Kinect\ Point\ Cloud.Style=1
+Kinect\ Point\ Cloud.Style=0
 Kinect\ Point\ Cloud.Topic=/cam3d/rgb/points_throttled
 Kinect\ Point\ Cloud..AxisAutocompute\ Value\ Bounds=1
 Kinect\ Point\ Cloud..AxisAxis=2
@@ -84,9 +116,9 @@ Kinect\ Point\ Cloud..IntensityMin\ Intensity=0
 Kinect\ Point\ Cloud..IntensityUse\ full\ RGB\ spectrum=0
 Laser\ Scan.Alpha=1
 Laser\ Scan.Billboard\ Size=0.01
-Laser\ Scan.Color\ Transformer=Intensity
+Laser\ Scan.Color\ Transformer=Flat Color
 Laser\ Scan.Decay\ Time=0
-Laser\ Scan.Enabled=1
+Laser\ Scan.Enabled=0
 Laser\ Scan.Position\ Transformer=XYZ
 Laser\ Scan.Selectable=1
 Laser\ Scan.Style=0
@@ -97,8 +129,8 @@ Laser\ Scan..AxisMax\ Value=10
 Laser\ Scan..AxisMin\ Value=-10
 Laser\ Scan..AxisUse\ Fixed\ Frame=1
 Laser\ Scan..Flat\ ColorColorR=1
-Laser\ Scan..Flat\ ColorColorG=1
-Laser\ Scan..Flat\ ColorColorB=1
+Laser\ Scan..Flat\ ColorColorG=0
+Laser\ Scan..Flat\ ColorColorB=0
 Laser\ Scan..IntensityAutocompute\ Intensity\ Bounds=1
 Laser\ Scan..IntensityChannel\ Name=intensity
 Laser\ Scan..IntensityMax\ ColorR=1
@@ -116,39 +148,10 @@ Map.Draw\ Behind=0
 Map.Enabled=1
 Map.Topic=/map
 Octomap\ control.Enabled=1
-Octomap\ control.Position\:\ =5.99154, 4.10652, -2.84273
 PSV\ Markers.Enabled=1
 PSV\ Markers.Marker\ Topic=/planning_scene_visualizer_markers
 Plannning\ Scene.Enabled=1
 Plannning\ Scene.Marker\ Topic=/planning_scene_markers
-Pointcloud.Alpha=1
-Pointcloud.Billboard\ Size=0.01
-Pointcloud.Color\ Transformer=RGB8
-Pointcloud.Decay\ Time=0
-Pointcloud.Enabled=1
-Pointcloud.Position\ Transformer=XYZ
-Pointcloud.Selectable=1
-Pointcloud.Style=1
-Pointcloud.Topic=/but_env_model/pointcloud_centers
-Pointcloud..AxisAutocompute\ Value\ Bounds=1
-Pointcloud..AxisAxis=2
-Pointcloud..AxisMax\ Value=10
-Pointcloud..AxisMin\ Value=-10
-Pointcloud..AxisUse\ Fixed\ Frame=1
-Pointcloud..Flat\ ColorColorR=1
-Pointcloud..Flat\ ColorColorG=1
-Pointcloud..Flat\ ColorColorB=1
-Pointcloud..IntensityAutocompute\ Intensity\ Bounds=1
-Pointcloud..IntensityChannel\ Name=z
-Pointcloud..IntensityMax\ ColorR=1
-Pointcloud..IntensityMax\ ColorG=1
-Pointcloud..IntensityMax\ ColorB=1
-Pointcloud..IntensityMax\ Intensity=2.22125
-Pointcloud..IntensityMin\ ColorR=0
-Pointcloud..IntensityMin\ ColorG=0
-Pointcloud..IntensityMin\ ColorB=0
-Pointcloud..IntensityMin\ Intensity=1.47516
-Pointcloud..IntensityUse\ full\ RGB\ spectrum=0
 Robot\ Model.Alpha=1
 Robot\ Model.Collision\ Enabled=0
 Robot\ Model.Enabled=1
@@ -264,8 +267,8 @@ Robot\:\ Robot\ Model\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.206 5.67193 7.05196 0.987551 1.49214 1.38282
-Property\ Grid\ State=selection=;expanded=PSV Markers.Enabled.PSV Markers.Namespaces,Plannning Scene.Enabled.Plannning Scene.Namespaces,CollisionMap.Enabled.CollisionMap.StatusTopStatus,Manual arm manipulation.Enabled.Manual arm manipulation.StatusTopStatus,Octomap control.Enabled.Octomap control.StatusTopStatus,Octomap control.Enabled.Octomap control.Camera position,Assisted Grasping.Enabled.Assisted Grasping.StatusTopStatus,CButBBEstimationDisplay.Enabled.CButBBEstimationDisplay.StatusTopStatus;scrollpos=0,0;splitterpos=133,266;ispageselected=1
+Camera\ Config=0.776 5.84875 5.16809 2.78803 1.15812 1.1911
+Property\ Grid\ State=selection=Octomap control.Enabled;expanded=PSV Markers.Enabled.PSV Markers.Namespaces,Plannning Scene.Enabled.Plannning Scene.Namespaces,CollisionMap.Enabled.CollisionMap.StatusTopStatus,Manual arm manipulation.Enabled.Manual arm manipulation.StatusTopStatus,Octomap control.Enabled.Octomap control.StatusTopStatus,Camera.Enabled.Camera.StatusTopStatus,Assisted Grasping.Enabled.Assisted Grasping.StatusTopStatus,CButBBEstimationDisplay.Enabled.CButBBEstimationDisplay.StatusTopStatus;scrollpos=0,4;splitterpos=177,301;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -287,53 +290,53 @@ Name=Plannning Scene
 Package=rviz
 ClassName=rviz::MarkerDisplay
 [Display5]
-Name=Pointcloud
-Package=rviz
-ClassName=rviz::PointCloud2Display
-[Display6]
 Name=CollisionMap
 Package=mapping_rviz_plugin
 ClassName=mapping_rviz_plugin::CollisionMapDisplay
-[Display7]
+[Display6]
 Name=Manual arm manipulation
 Package=srs_assisted_arm_navigation_ui
 ClassName=CButArmNavDisplay
-[Display8]
+[Display7]
 Name=Robot teleop marker
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display9]
+[Display8]
 Name=Octomap control
 Package=srs_ui_but
 ClassName=CButDisplay
-[Display10]
+[Display9]
 Name=Arm interactive markers
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display11]
+[Display10]
 Name=Camera
 Package=rviz
 ClassName=rviz::ImageDisplay
-[Display12]
+[Display11]
 Name=Assisted Grasping
 Package=srs_assisted_grasping_ui
 ClassName=CButGraspingDisplay
-[Display13]
+[Display12]
 Name=Map
 Package=rviz
 ClassName=rviz::MapDisplay
-[Display14]
+[Display13]
 Name=Distance Circular Indicator
 Package=srs_ui_but
 ClassName=CButDistanceCircularIndicator
-[Display15]
+[Display14]
 Name=Laser Scan
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display16]
+[Display15]
 Name=Kinect Point Cloud
 Package=rviz
 ClassName=rviz::PointCloud2Display
+[Display16]
+Name=Global Voxel Map
+Package=srs_env_model_ui
+ClassName=CButPointCloud
 [Display17]
 Name=CButBBEstimationDisplay
 Package=srs_assisted_arm_navigation_ui

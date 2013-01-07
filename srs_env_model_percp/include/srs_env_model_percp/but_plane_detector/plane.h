@@ -102,7 +102,7 @@ namespace srs_env_model_percp
 			tVertices ComputeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull);
 
 			// Computes hull U current polygon
-			void ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
+			bool ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
 
 			// Rewrites current plane with this hull
 			void ConcaveHullRewrite(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);

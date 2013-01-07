@@ -59,7 +59,7 @@ namespace srs_env_model
         virtual ~CPointCloudPlugin();
 
         //! Enable or disable publishing
-        void enable( bool enabled ){ m_publishPointCloud = enabled; }
+        void enable( bool enabled ) { m_publishPointCloud = enabled; }
 
         //! Initialize plugin - called in server constructor
         virtual void init(ros::NodeHandle & node_handle);

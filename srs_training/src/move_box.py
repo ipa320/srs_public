@@ -6,6 +6,9 @@ import tf
 
 def callback(msg):
     print msg
+    # get TF
+    # add step based on velocity and time
+    # publish TF
     
     
 

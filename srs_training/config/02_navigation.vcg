@@ -3,6 +3,10 @@ Background\ ColorG=0
 Background\ ColorB=0
 Fixed\ Frame=/base_link
 Target\ Frame=<Fixed Frame>
+Axes.Enabled=1
+Axes.Length=1
+Axes.Radius=0.1
+Axes.Reference\ Frame=/box1
 Grid.Alpha=0.5
 Grid.Cell\ Size=1
 Grid.ColorR=0.5
@@ -112,8 +116,8 @@ TF.Update\ Interval=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.06279 4.50212 30.283 0.754183 -0.231867 0.0276338
-Property\ Grid\ State=selection=Fixed Frame;expanded=.Global Options,TF./base_link/base_link,TF./box1/box1,TF.Enabled.TF.Tree,TF./base_linkTree/base_link,TF./box1Tree/box1;scrollpos=0,0;splitterpos=153,307;ispageselected=1
+Camera\ Config=0.001 5.24714 10.5794 0.754183 -0.231867 0.0276338
+Property\ Grid\ State=selection=Axes.Enabled.Axes.Reference Frame;expanded=.Global Options,TF./base_link/base_link,TF./box1/box1,TF.Enabled.TF.Tree,TF./base_linkTree/base_link,TF./box1Tree/box1,Axes.Enabled;scrollpos=0,0;splitterpos=153,307;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -146,6 +150,10 @@ ClassName=rviz::GridCellsDisplay
 Name=Inflated Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay
+[Display8]
+Name=Axes
+Package=rviz
+ClassName=rviz::AxesDisplay
 [TF.]
 base_linkEnabled=1
 box1Enabled=1

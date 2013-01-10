@@ -12,7 +12,7 @@
 	</node>
 
 	<!-- Run rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/nav_test.vcg" />
+	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/nav_gmap_test.vcg" />
 
 </launch>
 

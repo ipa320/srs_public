@@ -46,7 +46,8 @@
 
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/exact_time.h>
+//#include <message_filters/sync_policies/exact_time.h>
+#include <message_filters/sync_policies/approximate_time.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl_ros/point_cloud.h>
@@ -60,7 +61,11 @@ namespace srs_env_model_utils
 typedef sensor_msgs::PointCloud2 tPointCloud;
 typedef sensor_msgs::Image tImage;
 typedef sensor_msgs::CameraInfo tCameraInfo;
-typedef message_filters::sync_policies::ExactTime<tPointCloud, tImage, tCameraInfo, tImage, tPointCloud> tSyncPolicy;
+//typedef message_filters::sync_policies::ExactTime<tPointCloud, tImage, tCameraInfo, tImage, tPointCloud> tSyncPolicy;
+typedef message_filters::sync_policies::ApproximateTime<tPointCloud, tImage, tCameraInfo, tImage, tPointCloud> tSyncPolicy;
+
+//const int QUEUE_SIZE = 10;
+const int QUEUE_SIZE = 1;
 
 class KinectThrottle : public nodelet::Nodelet
 {
@@ -80,17 +85,17 @@ private:
     
     private_nh.getParam("max_rate", max_update_rate_);
 
-    rgb_cloud_pub_ = nh.advertise<tPointCloud>("rgb_cloud_out", 10);
-    rgb_image_pub_ = nh.advertise<tImage>("rgb_image_out", 10);
-    rgb_caminfo_pub_ = nh.advertise<tCameraInfo>("rgb_caminfo_out", 10);
-    depth_image_pub_ = nh.advertise<tImage>("depth_image_out", 10);
-    cloud_pub_ = nh.advertise<tPointCloud>("cloud_out", 10);
+    rgb_cloud_pub_ = nh.advertise<tPointCloud>("rgb_cloud_out", QUEUE_SIZE);
+    rgb_image_pub_ = nh.advertise<tImage>("rgb_image_out", QUEUE_SIZE);
+    rgb_caminfo_pub_ = nh.advertise<tCameraInfo>("rgb_caminfo_out", QUEUE_SIZE);
+    depth_image_pub_ = nh.advertise<tImage>("depth_image_out", QUEUE_SIZE);
+    cloud_pub_ = nh.advertise<tPointCloud>("cloud_out", QUEUE_SIZE);
 
-    rgb_cloud_sub_.subscribe(nh, "rgb_cloud_in", 10);
-    rgb_image_sub_.subscribe(nh, "rgb_image_in", 10);
-    rgb_caminfo_sub_.subscribe(nh, "rgb_caminfo_in", 10);
-    depth_image_sub_.subscribe(nh, "depth_image_in", 10);
-    cloud_sub_.subscribe(nh, "cloud_in", 10);
+    rgb_cloud_sub_.subscribe(nh, "rgb_cloud_in", QUEUE_SIZE);
+    rgb_image_sub_.subscribe(nh, "rgb_image_in", QUEUE_SIZE);
+    rgb_caminfo_sub_.subscribe(nh, "rgb_caminfo_in", QUEUE_SIZE);
+    depth_image_sub_.subscribe(nh, "depth_image_in", QUEUE_SIZE);
+    cloud_sub_.subscribe(nh, "cloud_in", QUEUE_SIZE);
 
     sync_.connectInput(rgb_cloud_sub_, rgb_image_sub_, rgb_caminfo_sub_, depth_image_sub_, cloud_sub_);
     sync_.registerCallback(boost::bind(&srs_env_model_utils::KinectThrottle::callback, this, _1, _2, _3, _4, _5));

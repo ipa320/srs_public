@@ -107,9 +107,116 @@ bool srs_ui_but::CDepthImageConvertor::convertDepth(const sensor_msgs::ImageCons
 		return convertDepth8(raw_msg);
 	}
 
-	std::cerr << "... CDepthImageConvertor: Expected data of type " << enc::TYPE_16UC1.c_str() << ", got " << raw_msg->encoding.c_str() << std::endl;
-	ROS_ERROR("Expected data of type [%s], got [%s]", enc::TYPE_16UC1.c_str(),raw_msg->encoding.c_str());
+	if( raw_msg->encoding ==  enc::TYPE_16UC1)
+	{
+		return convertDepth16UC1(raw_msg);
+	}
+
+	std::cerr << "... CDepthImageConvertor: Expected data these types: " << enc::MONO8.c_str() << ", " << enc::MONO16.c_str() << ", " <<  enc::TYPE_16UC1.c_str() << std::endl;
+	std::cerr << "Input type: " << raw_msg->encoding.c_str() << std::endl;
+	ROS_ERROR("Unexpected input data of type [%s]", raw_msg->encoding.c_str());
 	return false;
+}
+
+/**
+ *  Convert 16bit image to the internal representation
+ */
+bool srs_ui_but::CDepthImageConvertor::convertDepth16UC1(const sensor_msgs::ImageConstPtr& raw_msg)
+{
+
+	typedef uint16_t tIPixel;
+	typedef float tOPixel;
+
+	m_depth_msg->header   = raw_msg->header;
+	m_depth_msg->encoding = m_msg_encoding;
+	m_depth_msg->height   = raw_msg->height;
+	m_depth_msg->width    = raw_msg->width;
+	m_depth_msg->step     = raw_msg->width * 4 * sizeof (tOPixel);
+	m_depth_msg->data.resize( m_depth_msg->height * m_depth_msg->step);
+
+	float bad_point = std::numeric_limits<float>::quiet_NaN ();
+
+	// Compute image centers
+	float center_x( m_camera_model.cx() ), center_y( m_camera_model.cy() );
+
+//	std::cerr << m_camera_model.fx() << ", " << m_camera_model.fy() << std::endl;
+
+	// Scaling
+	float constant_x( 0.001 / m_camera_model.fx() ), constant_y( 0.001 / m_camera_model.fy() );
+
+	// Fill in the depth image data, converting mm to m
+	const tIPixel* raw_data = reinterpret_cast<const tIPixel*>(&raw_msg->data[0]);
+	tOPixel* depth_data = reinterpret_cast<tOPixel*>(&m_depth_msg->data[0]);
+
+	// Clear ranges
+	for( int i = 0; i < 4; ++i )
+	{
+		m_max_range[i] = -1000000000.0;
+		m_min_range[i] =  1000000000.0;
+	}
+
+	Ogre::Vector4 v;
+	v[3] = 0.0;
+
+	float x( 0.0 ), y( 0.0 ), depth;
+//	long counter(0);
+
+	for (unsigned index = 0; index < m_depth_msg->height * m_depth_msg->width; ++index )
+	{
+		tIPixel raw = raw_data[index ];
+
+		// Distance cut-off
+//		if( raw > 70000 )
+//			raw = 70000;
+
+		if( raw == 0 )
+		{
+			v[0] = v[1] = v[2] = v[3] = bad_point;
+		}
+		else
+		{
+			depth = float(raw);
+
+			v[0] = (x - center_x) * depth * constant_x;
+			v[1] = (y - center_y) * depth * constant_y;
+			v[2] = depth * 0.001;
+			v[3] = sqrt( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
+		}
+
+
+//		v = v * m_projectionMatrix;
+/*
+		if( v[3] == 0.0 )
+			++counter;
+		else
+			v /= v[3];
+//*/
+
+		depth_data[4*index] = v[0]; //(tOPixel)value;
+		depth_data[4*index + 1] = v[1]; //(tOPixel)value;
+		depth_data[4*index + 2] = v[2]; //(tOPixel)value;
+		depth_data[4*index + 3] = v[3];
+
+		for( int i = 0; i < 4; ++i )
+		{
+			if( v[i] > m_max_range[i] )
+				m_max_range[i] = v[i];
+
+			if( v[i] < m_min_range[i] )
+				m_min_range[i] = v[i];
+		}
+
+		++x;
+		if( x > raw_msg->width )
+		{
+			x -= raw_msg->width;
+			++y;
+		}
+	}
+
+	++m_counter;
+
+	return true;
 }
 
 

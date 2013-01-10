@@ -61,6 +61,11 @@ struct Params {
 
     double publish_rate;
 
+    bool instant_stop_enabled;
+
+    double ignore_th_high;
+    double ignore_th_low;
+
 };
 
 struct SpacenavData {
@@ -128,6 +133,13 @@ protected:
 
 	geometry_msgs::Vector3 GetAsEuler(geometry_msgs::Quaternion quat);
 	void normAngle(double& a);
+
+	//bool some_dir_limited_;
+	bool x_pref_;
+	bool y_pref_;
+	bool z_pref_;
+
+	ros::Time pref_time_;
 
 private:
 

@@ -122,6 +122,12 @@ public:
     bool getCullViewFrustum() { return cull_view_frustum_; }
 
     /**
+     * @brief property setter
+     */
+    void setMaxDistance(float value);
+    float getMaxDistance() { return max_distance_; }
+
+    /**
      * @brief position property getter
      */
     Ogre::Vector3 getPosition() { return position_; }
@@ -243,6 +249,10 @@ protected:
     // cull point cloud in the view frustum property
     bool cull_view_frustum_;
     rviz::BoolPropertyWPtr cull_view_frustum_property_;
+
+    // cull point cloud too far from the camera property
+    float max_distance_;
+    rviz::FloatPropertyWPtr max_distance_property_;
 
 }; // class CButPointCloud
 

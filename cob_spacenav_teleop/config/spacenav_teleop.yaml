@@ -1,9 +1,18 @@
-max_vel_x: 0.3
-max_vel_y: 0.2
-max_vel_th: 0.3
+max_vel_x: 0.15
+max_vel_y: 0.15
+max_vel_th: 0.15
 
 use_rviz_cam: true
 rviz_cam_link: /rviz_cam
 
 spacenav/max_val: 350.0
-spacenav/min_val_th: 0.05 # threshold for filtering small values, should be in range <0,0.5>
+
+# threshold for filtering small values, should be in range <0,0.5>
+# values < than min_val_th*100 % will be ignored
+spacenav/min_val_th: 0.05
+
+# if "effort" in one direction will be higher than ignore_th_high and
+# at the same time "effort" for another will be lower than ignore_th_low,
+# the lower value will be completely ignored
+spacenav/ignore_th_high: 0.8 
+spacenav/ignore_th_low: 0.2

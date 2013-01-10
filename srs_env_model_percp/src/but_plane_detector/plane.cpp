@@ -94,22 +94,65 @@ void PlaneExt::ConcaveHullRewrite(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hul
 	planePolygonsClipper = PolygonizeConcaveHull(plane_hull, polygon_indices);
 }
 
-void PlaneExt::ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices)
+bool PlaneExt::ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices)
 {
 	// Join new polygon with current
 	ClipperLib::ExPolygons newPoly = PolygonizeConcaveHull(plane_hull, polygon_indices);
 
+	std::cerr << "polygonized" << std::endl;
+
+	if (newPoly.size() > 200) {
+
+		std::cerr << "too big (new) polygon" << std::endl;
+		return false;
+
+	}
+
+	if (planePolygonsClipper.size() > 200) {
+
+		std::cerr << "too big (exist) polygon" << std::endl;
+		return false;
+
+	}
+
 	ClipperLib::Clipper clipper;
 	// insert all existing polygons
-	for (unsigned int i = 0; i < planePolygonsClipper.size(); ++i)
-		clipper.AddPolygon(planePolygonsClipper[i].outer, ClipperLib::ptSubject);
+	std::cerr << "add existing pol " << planePolygonsClipper.size() << std::endl;
+	for (unsigned int i = 0; i < planePolygonsClipper.size(); ++i) {
+		try {
+
+			clipper.AddPolygon(planePolygonsClipper[i].outer, ClipperLib::ptSubject);
+
+		} catch (const char* Message) {
+
+			std::cerr << "excp" << std::endl;
+
+		}
+
+	}
 
 	// insert all new polygons
-	for (unsigned int i = 0; i < newPoly.size(); ++i)
+	std::cerr << "add new pol " << newPoly.size() << std::endl;
+	for (unsigned int i = 0; i < newPoly.size(); ++i) {
+
+		try {
+
 		clipper.AddPolygon(newPoly[i].outer, ClipperLib::ptClip);
 
+		} catch  (const char* Message) {
+
+			std::cerr << "excp" << std::endl;
+
+		}
+
+	}
+
 	// execute join operation
+	std::cerr << "executing join... polygons: " << planePolygonsClipper.size() + newPoly.size() << std::endl;
 	clipper.Execute(ClipperLib::ctUnion, planePolygonsClipper);
+	std::cerr << "executed join!" << std::endl;
+
+	return true;
 }
 
 void PlaneExt::TriangulatePlanePolygon()
@@ -208,12 +251,15 @@ visualization_msgs::Marker PlaneExt::AddPlanePoints(pcl::PointCloud<pcl::PointXY
 {
 	// Add new plane hull
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull (new pcl::PointCloud<pcl::PointXYZ>());
+	std::cerr << "computing concave hull" << std::endl;
 	tVertices polygons = ComputeConcaveHull(plane_cloud, cloud_hull);
 
 	// Join with current
+	std::cerr << "concave hull join" << std::endl;
 	ConcaveHullJoinCurrent(cloud_hull, polygons);
 
 	// Triangulate
+	std::cerr << "triangulating polygon" << std::endl;
 	TriangulatePlanePolygon();
 
 	return planeTriangles;

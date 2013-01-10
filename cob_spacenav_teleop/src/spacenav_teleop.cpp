@@ -44,6 +44,11 @@ SpaceNavTeleop::SpaceNavTeleop() {
 	ros::param::param<double>("~spacenav/max_val",params_.sn_max_val,350.0);
 	ros::param::param<double>("~spacenav/min_val_th",params_.sn_min_val_th,0.05);
 
+	ros::param::param<double>("~spacenav/ignore_th_high",params_.ignore_th_high,0.9);
+	ros::param::param<double>("~spacenav/ignore_th_low",params_.ignore_th_low,0.1);
+
+	ros::param::param<bool>("~spacenav/instant_stop_enabled",params_.instant_stop_enabled,false);
+
 	ros::param::param<bool>("~use_rviz_cam",params_.use_rviz_cam,false);
 	ros::param::param<std::string>("~rviz_cam_link",params_.rviz_cam_link,"/rviz_cam");
 
@@ -62,6 +67,12 @@ SpaceNavTeleop::SpaceNavTeleop() {
 
 
 	stop_detected_ = false;
+	//some_dir_limited_ = false;
+	x_pref_ = false;
+	y_pref_ = false;
+	z_pref_ = false;
+
+	pref_time_ = ros::Time(0);
 
 	bp_.header.frame_id = params_.rviz_cam_link;
 	bp_.header.stamp = ros::Time(0);
@@ -89,7 +100,11 @@ SpaceNavTeleop::SpaceNavTeleop() {
 	service_en_ = nh.advertiseService("enable", &SpaceNavTeleop::Enable,this);
 	service_dis_ = nh.advertiseService("disable", &SpaceNavTeleop::Disable,this);
 
+	if (params_.instant_stop_enabled) ROS_INFO("Instant stop feature enabled.");
+	else ROS_INFO("Instant stop feature disabled.");
+
 	ROS_INFO("Initiated...");
+
 
 }
 
@@ -224,7 +239,7 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 
 	if (!stop_detected_) {
 
-		if ( offset.z < -0.85) {
+		if ( (offset.z < -0.85) && params_.instant_stop_enabled) {
 
 			stop_detected_ = true;
 			ROS_WARN("Instant stop!");
@@ -320,15 +335,6 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 
 	if (!params_.use_rviz_cam) {
 
-		// scale to velocities for COB
-		offset.x *= params_.max_vel_x;
-		offset.y *= params_.max_vel_y;
-
-		rot_offset.z *= params_.max_vel_th;
-
-		tw.linear = offset;
-		tw.angular = rot_offset;
-
 		ROS_INFO_ONCE("Started in mode without using RVIZ camera position.");
 		/*twist_publisher_.publish(tw);
 		return;*/
@@ -363,18 +369,101 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 		offset.y = (double)vec(1);
 		offset.z = (double)vec(2);
 
-		// scale to velocities for COB
-		offset.x *= params_.max_vel_x;
-		offset.y *= params_.max_vel_y;
-		offset.z = 0.0;
+	}
 
-		rot_offset.z *= params_.max_vel_th;
 
-		tw.linear = offset;
-		tw.angular = rot_offset;
+	// will we prefer some direction?
+	if ( (fabs(offset.x) > params_.ignore_th_high) && (fabs(offset.y) < params_.ignore_th_low) && (fabs(rot_offset.z) < params_.ignore_th_low)) {
+
+		if (!x_pref_) {
+
+			x_pref_ = true;
+			y_pref_ = false;
+			z_pref_ = false;
+			pref_time_ = ros::Time::now();
+			ROS_INFO("Preferring x dir");
+
+		}
+
+	} else
+
+	if ( (fabs(offset.y) > params_.ignore_th_high) && (fabs(offset.x) < params_.ignore_th_low) && (fabs(rot_offset.z) < params_.ignore_th_low) ) {
+
+		if (!y_pref_) {
+
+			x_pref_ = false;
+			y_pref_ = true;
+			z_pref_ = false;
+			pref_time_ = ros::Time::now();
+			ROS_INFO("Preferring y dir");
+
+		}
+
+	} else
+
+	if ( (fabs(offset.z) > params_.ignore_th_high) && (fabs(offset.x) < params_.ignore_th_low) && (fabs(rot_offset.y) < params_.ignore_th_low) ) {
+
+		if (!z_pref_) {
+
+			x_pref_ = false;
+			y_pref_ = false;
+			z_pref_ = true;
+			pref_time_ = ros::Time::now();
+			ROS_INFO("Preferring z rot");
+
+		}
+
+	} else {
+
+
+		if (x_pref_ || y_pref_ || z_pref_) {
+
+			if ( (ros::Time::now() - pref_time_) > ros::Duration(0.5) ) {
+
+				x_pref_ = false;
+				y_pref_ = false;
+				z_pref_ = false;
+
+				ROS_INFO("No dir preferred.");
+
+			}
+
+		}
 
 	}
 
+	if (x_pref_) {
+
+		offset.y = 0.0;
+		rot_offset.z = 0.0;
+
+	}
+
+
+	if (y_pref_) {
+
+		offset.x = 0.0;
+		rot_offset.z = 0.0;
+
+	}
+
+	if (z_pref_) {
+
+		offset.x = 0.0;
+		rot_offset.y = 0.0;
+
+	}
+
+
+	// scale to velocities for COB
+	offset.x *= params_.max_vel_x;
+	offset.y *= params_.max_vel_y;
+
+	rot_offset.z *= params_.max_vel_th;
+
+
+	tw.linear = offset;
+	tw.angular = rot_offset;
 
 	twist_publisher_.publish(tw);
 	return;

@@ -32,7 +32,8 @@ rosbuild_add_boost_directories()
 
 
 # BUT rviz display
-set( BUT_DISPLAY_SOURCE_FILES src/but_rviz_display/octomap_display.cpp
+set( BUT_DISPLAY_SOURCE_FILES src/but_rviz_display/cam_publisher_display.cpp
+                              src/but_rviz_display/octomap_display.cpp
                               src/but_rviz_display/octomap_control_pane.cpp
                               src/but_rviz_display/point_cloud_display.cpp
                               src/but_rviz_display/point_cloud_base.cpp

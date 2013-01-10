@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+
+	<param name="robot_description" command="$(find xacro)/xacro.py '$(find srs_training)/urdf/box_world.urdf.xacro'" />
+
+	<!-- start robot_state_publisher -->
+	<node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher"/>
+
+	<!-- Run rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find srs_training)/config/02_navigation.vcg" />
+
+</launch>
+

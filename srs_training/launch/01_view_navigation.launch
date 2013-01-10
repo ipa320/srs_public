@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- upload urdf description -->
+	<!--param name="robot_description" command="$(find xacro)/xacro.py '$(find srs_training)/urdf/box_world.urdf.xacro'" /-->
+
+	<!-- start robot_state_publisher -->
+	<!--node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher"/-->
+
+	<!-- upload robot description -->
+	<include file="$(find cob_hardware_config)/common/upload_robot.launch" >
+		<arg name="robot" value="cob3-3" />
+	</include>
+
+	<!-- upload robot description -->
+	<node pkg="rosbag" type="play" name="rosbag_play" args="-l $(find srs_training)/bags/01_view_navigation.bag" />
+
+	<!-- Run rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_training)/config/01_view_navigation.vcg" />
+
+</launch>
+

@@ -195,27 +195,41 @@ if __name__ == "__main__":
             for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
                 if(tops_c.msg!=None):
                     bagfile.write(tfm, tops_c.msg)
-			# listen to tf changes
+                    
+            # listen to tf changes
             for tfs in bagR.wanted_tfs:
-				triggers = bagR.bag_processor(tfs)
-				if(triggers == "triggered"):
-					rospy.loginfo("triggered")
-					start_time = rospy.Time.now()
-					for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
-					    if(tops_c.msg!=None):
-    						bagfile.write(tfm, tops_c.msg)
-				else:
-					rospy.logdebug("not triggered")
+                triggers = bagR.bag_processor(tfs)
+                if(triggers == "triggered"):
+                    rospy.loginfo("triggered")
+                    start_time = rospy.Time.now()
+                    #Records the triggered topics
+                    for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
+                        if(tops_c.msg!=None):
+                            bagfile.write(tfm, tops_c.msg)
+                    #Records again the continuous topics
+                    for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
+                        if(tops_c.msg!=None):
+                            bagfile.write(tfm, tops_c.msg)
+
+
+            else:
+                rospy.logdebug("not triggered")
 			
 			# listen to ellapsed time
             time_msg = "time passed:" + (str)((rospy.Time.now() - start_time).to_sec())
             rospy.logdebug(time_msg)
+            
             if(rospy.Time.now() - start_time > time_step):
-				rospy.loginfo("triggered by time")
-				start_time = rospy.Time.now()
-				for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
-				        if(tops_c.msg!=None):
-    						bagfile.write(tfm, tops_c.msg)
+                rospy.loginfo("triggered by time")
+                start_time = rospy.Time.now()
+                for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
+                    if(tops_c.msg!=None):
+                        bagfile.write(tfm, tops_c.msg)
+
+                #Records again the continuous topics
+                for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
+                    if(tops_c.msg!=None):
+                        bagfile.write(tfm, tops_c.msg)
 			
 			# sleep until next check
             rate.sleep()

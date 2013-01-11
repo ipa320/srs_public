@@ -28,8 +28,8 @@
 		</visual>
 	</link>
 	
-	<joint name="box1_joint" type="fixed">
-		<origin xyz="0 0 1" rpy="0 0 3.1416"/>
+	<joint name="box1_joint" type="planar">
+		<origin xyz="0 0 0.5" rpy="0 0 3.1416"/>
 		<parent link="base_link"/>
 		<child link="box1"/>
 	</joint>	

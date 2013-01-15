@@ -28,7 +28,7 @@
 		</visual>
 	</link>
 	
-	<joint name="box1_joint" type="planar">
+	<joint name="box1_joint" type="floating">
 		<origin xyz="0 0 0.5" rpy="0 0 3.1416"/>
 		<parent link="base_link"/>
 		<child link="box1"/>

@@ -24,7 +24,7 @@
 # \date Date of creation: January 2013
 #
 # \brief
-# This is part of the SRS training package
+# This module records topics according to triggering events
 #
 #################################################################
 #
@@ -56,68 +56,74 @@
 # If not, see < http://www.gnu.org/licenses/>.
 #
 #################################################################
-import roslib; roslib.load_manifest('srs_training')
+
+import roslib
+PKG = "srs_user_tests"
+roslib.load_manifest(PKG)
 import rospy
-from geometry_msgs.msg import Twist
+
+import rosbag
+from std_msgs.msg import Int32, String
+
 import tf
-from math import *
+from tf.msg import *
+from tf.transformations import euler_from_quaternion
 
+from simple_script_server import *
+sss = simple_script_server()
 
-class move_box():
+from kinematics_msgs.srv import *
+from std_msgs.msg import *
+from sensor_msgs.msg import *
+from move_base_msgs.msg import *
+from visualization_msgs.msg import *
 
-    def __init__(self):
-        self.tf_broadcaster = tf.TransformBroadcaster()
-        self.tf_listener = tf.TransformListener()
-        self.reference_frame = "box1"
-        self.target_frame = "base_link"
-        rospy.Subscriber("/base_controller/command", Twist, self.callback)
+import math
+import rostopic
+import time
+
+import os
+import sys, subprocess
+
+import joint_states_aggregator
+import tf_aggregator
+
+class record_topic():
+
+    def __init__(self, tfs):
+          # this gets the topics type using the roslib
+        the_type = rostopic.get_topic_type(tfs, blocking=True)[0]
+
+        the_type = the_type.split("/")
+        the_type[0] += ".msg"
         
-        self.x = 0.
-        self.y = 0.
-        self.z = 0.2
-        self.r = 0.
-        self.p = 0.
-        self.t = 0.
+        # this imports the necessary modules and instantiates the necessary object
+        mod = __import__(the_type[0], fromlist=[the_type[1]])
+        cls = getattr( mod , the_type[1] )
         
-        rospy.sleep(2)
-        self.tf_broadcaster.sendTransform((self.x, self.y, self.z),
-            tf.transformations.quaternion_from_euler(self.r, self.p, self.t),
-            rospy.Time.now(),
-            self.reference_frame,
-            self.target_frame)
+        self.msg = None
 
-        self.current_time = rospy.get_time()
-        self.last_time = rospy.get_time()
+        # this creates the subscriber for the specific topic        
+        rospy.Subscriber(tfs, cls, self.callback)
+
+    def callback(self, msg):
     
-    def callback(self,msg):
-   
-        dt = self.current_time - self.last_time
+        self.msg = msg
         
-        self.x += msg.linear.x*cos(self.t)-msg.linear.y*sin(self.t)
-        self.y += msg.linear.x*sin(self.t)+msg.linear.y*cos(self.t)
-        self.t += msg.angular.z
-        
-        self.tf_broadcaster.sendTransform((self.x, self.y, self.z),
-            tf.transformations.quaternion_from_euler(self.r, self.p, self.t),
-            rospy.Time.now(),
-            self.reference_frame,
-            self.target_frame)
+if __name__ == "__main__":
 
-        
-        self.last_time = self.current_time
-        
-
-if __name__ == '__main__':
-    rospy.init_node('move_box')
-    mb = move_box()
-    rate = rospy.Rate(50) 
-    while not rospy.is_shutdown():
-        mb.current_time = rospy.get_time()
-        mb.tf_broadcaster.sendTransform((mb.x, mb.y, mb.z),
-            tf.transformations.quaternion_from_euler(mb.r, mb.p, mb.t),
-            rospy.Time.now(),
-            mb.reference_frame,
-            mb.target_frame)
-        mb.last_time = mb.current_time
-        rate.sleep()
-    
+	rospy.init_node('record_topic')
+	topics_list = ["/tf", "/collision_velocity_filter/velocity_limited_marker", "/joint_states"]
+	topics_c = []
+	
+	for top in topics_list:
+	    topic_r = record_topic(top)
+	    
+	    topics_c.append(topic_r)
+	
+	while not rospy.is_shutdown():
+	
+	    for tops_c in topics_c:
+	        rospy.loginfo(tops_c.msg)
+	    rospy.sleep(2)
+	

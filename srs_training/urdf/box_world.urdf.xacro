@@ -10,26 +10,27 @@
 
 	<link name="map">
 		<visual>
-		 <origin xyz="0 0 0" rpy="0 0 0" />
-		 <geometry>
-		   <box size="10 10 0.1" />
-		 </geometry>
-		 <material name="Blue"/>
+			<origin xyz="0 0 -0.05" rpy="0 0 0" />
+			<geometry>
+				<box size="10 10 0.1" />
+			</geometry>
+			<material name="IPA/LightGrey"/>
 		</visual>
 	</link>
 
 	<link name="base_link">
 		<visual>
-		 <origin xyz="0 0 0" rpy="0 0 0" />
-		 <geometry>
-		   <box size="1 0.5 0.5" />
-		 </geometry>
-		 <material name="Red"/>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://cob_description/meshes/base/base.stl"/>
+				<!--box size="1 0.5 0.5" /-->
+			</geometry>
+			<material name="IPA/DarkGrey"/>
 		</visual>
 	</link>
 	
 	<joint name="base_joint" type="floating">
-		<origin xyz="0 0 0.5" rpy="0 0 3.1416"/>
+		<origin xyz="0 0 0" rpy="0 0 0"/>
 		<parent link="map"/>
 		<child link="base_link"/>
 	</joint>	

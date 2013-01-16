@@ -68,10 +68,10 @@ class move_box():
     def __init__(self):
         self.tf_broadcaster = tf.TransformBroadcaster()
         self.tf_listener = tf.TransformListener()
-        self.reference_frame = "base_link"
-        self.target_frame = "map"
+        self.reference_frame = "/base_link"
+        self.target_frame = "/map"
         rospy.Subscriber("/base_controller/command", Twist, self.callback)
-        
+
         self.x = 0.
         self.y = 0.
         self.z = 0.2
@@ -79,7 +79,7 @@ class move_box():
         self.p = 0.
         self.t = 0.
         self.twist = Twist()
-        
+
         rospy.sleep(2)
         self.tf_broadcaster.sendTransform((self.x, self.y, self.z),
             tf.transformations.quaternion_from_euler(self.r, self.p, self.t),
@@ -89,24 +89,9 @@ class move_box():
 
         self.current_time = rospy.get_time()
         self.last_time = rospy.get_time()
-    
+
     def callback(self,msg):
         self.twist = msg
-#        dt = self.current_time - self.last_time
-        
-#        self.x += msg.linear.x*cos(self.t)-msg.linear.y*sin(self.t)
-#        self.y += msg.linear.x*sin(self.t)+msg.linear.y*cos(self.t)
-#        self.t += msg.angular.z
-        
-#        self.tf_broadcaster.sendTransform((self.x, self.y, self.z),
-#            tf.transformations.quaternion_from_euler(self.r, self.p, self.t),
-#            rospy.Time.now(),
-#            self.reference_frame,
-#            self.target_frame)
-
-        
-#        self.last_time = self.current_time
-        
 
 if __name__ == '__main__':
     rospy.init_node('move_box')
@@ -117,11 +102,9 @@ if __name__ == '__main__':
 
         try:
             (trans,rot) = mb.tf_listener.lookupTransform('/map', '/base_link', rospy.Time(0))
+            euler = tf.transformations.euler_from_quaternion(rot)
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             continue
-
-        euler = tf.transformations.euler_from_quaternion(rot)
-        print "euler = ", euler[2]
 
         x = (mb.current_time - mb.last_time) * (mb.twist.linear.x * cos(euler[2]) - mb.twist.linear.y * sin(euler[2])) + trans[0]
         y = (mb.current_time - mb.last_time) * (mb.twist.linear.x * sin(euler[2]) + mb.twist.linear.y * cos(euler[2])) + trans[1]
@@ -134,4 +117,3 @@ if __name__ == '__main__':
             mb.target_frame)
         mb.last_time = mb.current_time
         rate.sleep()
-    

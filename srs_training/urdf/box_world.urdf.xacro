@@ -8,7 +8,7 @@
 	<!-- common stuff -->
 	<include filename="$(find cob_description)/urdf/materials.urdf.xacro" />
 
-	<link name="base_link">
+	<link name="map">
 		<visual>
 		 <origin xyz="0 0 0" rpy="0 0 0" />
 		 <geometry>
@@ -18,20 +18,20 @@
 		</visual>
 	</link>
 
-	<link name="box1">
+	<link name="base_link">
 		<visual>
 		 <origin xyz="0 0 0" rpy="0 0 0" />
 		 <geometry>
-		   <box size="1 0.5 1" />
+		   <box size="1 0.5 0.5" />
 		 </geometry>
 		 <material name="Red"/>
 		</visual>
 	</link>
 	
-	<joint name="box1_joint" type="floating">
+	<joint name="base_joint" type="floating">
 		<origin xyz="0 0 0.5" rpy="0 0 3.1416"/>
-		<parent link="base_link"/>
-		<child link="box1"/>
+		<parent link="map"/>
+		<child link="base_link"/>
 	</joint>	
 
 </robot>

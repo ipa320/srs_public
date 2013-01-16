@@ -68,8 +68,8 @@ class move_box():
     def __init__(self):
         self.tf_broadcaster = tf.TransformBroadcaster()
         self.tf_listener = tf.TransformListener()
-        self.reference_frame = "box1"
-        self.target_frame = "base_link"
+        self.reference_frame = "base_link"
+        self.target_frame = "map"
         rospy.Subscriber("/base_controller/command", Twist, self.callback)
         
         self.x = 0.
@@ -78,6 +78,7 @@ class move_box():
         self.r = 0.
         self.p = 0.
         self.t = 0.
+        self.twist = Twist()
         
         rospy.sleep(2)
         self.tf_broadcaster.sendTransform((self.x, self.y, self.z),
@@ -90,31 +91,44 @@ class move_box():
         self.last_time = rospy.get_time()
     
     def callback(self,msg):
-   
-        dt = self.current_time - self.last_time
+        self.twist = msg
+#        dt = self.current_time - self.last_time
         
-        self.x += msg.linear.x*cos(self.t)-msg.linear.y*sin(self.t)
-        self.y += msg.linear.x*sin(self.t)+msg.linear.y*cos(self.t)
-        self.t += msg.angular.z
+#        self.x += msg.linear.x*cos(self.t)-msg.linear.y*sin(self.t)
+#        self.y += msg.linear.x*sin(self.t)+msg.linear.y*cos(self.t)
+#        self.t += msg.angular.z
         
-        self.tf_broadcaster.sendTransform((self.x, self.y, self.z),
-            tf.transformations.quaternion_from_euler(self.r, self.p, self.t),
-            rospy.Time.now(),
-            self.reference_frame,
-            self.target_frame)
+#        self.tf_broadcaster.sendTransform((self.x, self.y, self.z),
+#            tf.transformations.quaternion_from_euler(self.r, self.p, self.t),
+#            rospy.Time.now(),
+#            self.reference_frame,
+#            self.target_frame)
 
         
-        self.last_time = self.current_time
+#        self.last_time = self.current_time
         
 
 if __name__ == '__main__':
     rospy.init_node('move_box')
     mb = move_box()
-    rate = rospy.Rate(50) 
+    rate = rospy.Rate(100) 
     while not rospy.is_shutdown():
         mb.current_time = rospy.get_time()
-        mb.tf_broadcaster.sendTransform((mb.x, mb.y, mb.z),
-            tf.transformations.quaternion_from_euler(mb.r, mb.p, mb.t),
+
+        try:
+            (trans,rot) = mb.tf_listener.lookupTransform('/map', '/base_link', rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            continue
+
+        euler = tf.transformations.euler_from_quaternion(rot)
+        print "euler = ", euler[2]
+
+        x = (mb.current_time - mb.last_time) * (mb.twist.linear.x * cos(euler[2]) - mb.twist.linear.y * sin(euler[2])) + trans[0]
+        y = (mb.current_time - mb.last_time) * (mb.twist.linear.x * sin(euler[2]) + mb.twist.linear.y * cos(euler[2])) + trans[1]
+        t = mb.twist.angular.z*(mb.current_time - mb.last_time) + euler[2]
+
+        mb.tf_broadcaster.sendTransform((x , y, 0),
+            tf.transformations.quaternion_from_euler(0, 0, t),
             rospy.Time.now(),
             mb.reference_frame,
             mb.target_frame)

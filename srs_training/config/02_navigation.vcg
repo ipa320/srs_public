@@ -1,7 +1,7 @@
 Background\ ColorR=0
 Background\ ColorG=0
 Background\ ColorB=0
-Fixed\ Frame=/base_link
+Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
 Axes.Enabled=1
 Axes.Length=1
@@ -28,6 +28,11 @@ Inflated\ Obstacles.ColorG=0
 Inflated\ Obstacles.ColorB=1
 Inflated\ Obstacles.Enabled=1
 Inflated\ Obstacles.Topic=/move_base/local_costmap/inflated_obstacles
+Interactive\ Markers.Enabled=1
+Interactive\ Markers.Show\ Axes=0
+Interactive\ Markers.Show\ Descriptions=1
+Interactive\ Markers.Show\ Tool\ Tips=1
+Interactive\ Markers.Update\ Topic=/cob_interactive_teleop/update
 Laser\ Scan\ Front.Alpha=1
 Laser\ Scan\ Front.Billboard\ Size=0.01
 Laser\ Scan\ Front.Color\ Transformer=Intensity
@@ -103,8 +108,8 @@ Robot\ Model.Update\ Interval=0
 Robot\ Model.Visual\ Enabled=1
 Robot\:\ Robot\ Model\ Link\ base_linkShow\ Axes=0
 Robot\:\ Robot\ Model\ Link\ base_linkShow\ Trail=0
-Robot\:\ Robot\ Model\ Link\ box1Show\ Axes=0
-Robot\:\ Robot\ Model\ Link\ box1Show\ Trail=0
+Robot\:\ Robot\ Model\ Link\ mapShow\ Axes=0
+Robot\:\ Robot\ Model\ Link\ mapShow\ Trail=0
 TF.All\ Enabled=1
 TF.Enabled=1
 TF.Frame\ Timeout=15
@@ -116,8 +121,8 @@ TF.Update\ Interval=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.001 5.24714 10.5794 0.754183 -0.231867 0.0276338
-Property\ Grid\ State=selection=Axes.Enabled.Axes.Reference Frame;expanded=.Global Options,TF./base_link/base_link,TF./box1/box1,TF.Enabled.TF.Tree,TF./base_linkTree/base_link,TF./box1Tree/box1,Axes.Enabled;scrollpos=0,0;splitterpos=153,307;ispageselected=1
+Camera\ Config=0.531001 2.29393 10.5794 0.294017 -0.137142 -0.308726
+Property\ Grid\ State=selection=Robot Model.Enabled;expanded=.Global Options,TF./base_link/base_link,TF./map/map,TF.Enabled.TF.Tree,TF./mapTree/map,TF./base_linkTree/base_link;scrollpos=0,0;splitterpos=153,307;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -154,6 +159,10 @@ ClassName=rviz::GridCellsDisplay
 Name=Axes
 Package=rviz
 ClassName=rviz::AxesDisplay
+[Display9]
+Name=Interactive Markers
+Package=rviz
+ClassName=rviz::InteractiveMarkerDisplay
 [TF.]
 base_linkEnabled=1
-box1Enabled=1
+mapEnabled=1

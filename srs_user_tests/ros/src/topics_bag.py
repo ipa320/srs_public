@@ -183,39 +183,37 @@ if __name__ == "__main__":
         topics_t = []
         topics_c = []	
         for tfs in bagR.trigger_topics:
-		    topic_r = record_topic.record_topic(tfs)
-		    topics_t.append(topic_r)
+            topic_r = record_topic.record_topic(tfs)
+            topics_t.append(topic_r)
         for tfc in bagR.continuous_topics:
-		    topic_r = record_topic.record_topic(tfc)
-		    topics_c.append(topic_r)
+            topic_r = record_topic.record_topic(tfc, continuous=True) --> FMW: mark all continuous topics as continuous
+            topics_c.append(topic_r)
         
         while not rospy.is_shutdown():
 		
-		    #Records the continuous topics
-            for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
-                if(tops_c.msg!=None):
-                    bagfile.write(tfm, tops_c.msg)
+            # records the continuous topics --> FMW: this shouldn't be done inside the wile loop, otherwise we only record every 10hz which could miss some messages. especially on the robot we need to get __every__ message because each component publishes joint states in a different message. See record_topic.py
+            #for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
+            #    if(tops_c.msg!=None):
+            #        bagfile.write(tfm, tops_c.msg)
                     
             # listen to tf changes
             for tfs in bagR.wanted_tfs:
                 triggers = bagR.bag_processor(tfs)
                 if(triggers == "triggered"):
-                    rospy.loginfo("triggered")
+                    rospy.loginfo("triggered by tf")
                     start_time = rospy.Time.now()
                     #Records the triggered topics
                     for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
                         if(tops_c.msg!=None):
-                            bagfile.write(tfm, tops_c.msg)
-                    #Records again the continuous topics
-                    for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
-                        if(tops_c.msg!=None):
-                            bagfile.write(tfm, tops_c.msg)
-
-
-            else:
-                rospy.logdebug("not triggered")
+                            bagfile.write(tfm, tops_c.msg) --> FMW: should be changed to record_topic.record(), see record_topic.py
+                    #Records again the continuous topics --> FMW: we don't need to record them again, it's done above
+                    #for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
+                    #    if(tops_c.msg!=None):
+                    #        bagfile.write(tfm, tops_c.msg)
+                else:
+                    rospy.logdebug("not triggered")
 			
-			# listen to ellapsed time
+            # listen to ellapsed time
             time_msg = "time passed:" + (str)((rospy.Time.now() - start_time).to_sec())
             rospy.logdebug(time_msg)
             
@@ -224,12 +222,12 @@ if __name__ == "__main__":
                 start_time = rospy.Time.now()
                 for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
                     if(tops_c.msg!=None):
-                        bagfile.write(tfm, tops_c.msg)
+                        bagfile.write(tfm, tops_c.msg) --> FMW: should be changed to record_topic.record(), see record_topic.py
 
-                #Records again the continuous topics
-                for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
-                    if(tops_c.msg!=None):
-                        bagfile.write(tfm, tops_c.msg)
+                #Records again the continuous topics --> FMW: we don't need to record them again, it's done above
+                #for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
+                #    if(tops_c.msg!=None):
+                #        bagfile.write(tfm, tops_c.msg)
 			
 			# sleep until next check
             rate.sleep()

@@ -109,14 +109,16 @@ class record_topic():
 
         # this creates the subscriber for the specific topic
         rospy.Subscriber(self.topic_name, self.topic_type, self.callback)
-
+        
+        
     def callback(self, msg):
         self.msg = msg
-        if self.continuous:
-            self.record()
+       # if self.continuous:
+         #   self.record()
     
     def record(self):
-        self.bagfile.write(self.topic_name, self.msg)
+        if(self.msg!=None):
+            self.bagfile.write(self.topic_name, self.msg)
         
 if __name__ == "__main__":
 

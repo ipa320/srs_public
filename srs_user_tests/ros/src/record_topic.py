@@ -90,7 +90,7 @@ import tf_aggregator
 
 class record_topic():
 
-    def __init__(self, topic_name, continuous=False):
+    def __init__(self, topic_name, bagfile, continuous=False):
           # this gets the topics type using the roslib
         the_type = rostopic.get_topic_type(topic_name, blocking=True)[0]
 
@@ -105,6 +105,7 @@ class record_topic():
         self.topic_name = topic_name 
         self.topic_type = cls
         self.continuous = continuous
+        self.bagfile = bagfile
 
         # this creates the subscriber for the specific topic
         rospy.Subscriber(self.topic_name, self.topic_type, self.callback)
@@ -115,7 +116,7 @@ class record_topic():
             self.record()
     
     def record(self):
-        bagfile.write(self.topic_name, self.msg)
+        self.bagfile.write(self.topic_name, self.msg)
         
 if __name__ == "__main__":
 

@@ -180,10 +180,10 @@ if __name__ == "__main__":
         topics_t = []
         topics_c = []	
         for tfs in bagR.trigger_topics:
-            topic_r = record_topic.record_topic(tfs)
+            topic_r = record_topic.record_topic(tfs, bagfile)
             topics_t.append(topic_r)
         for tfc in bagR.continuous_topics:
-            topic_r = record_topic.record_topic(tfc, continuous=True)
+            topic_r = record_topic.record_topic(tfc, bagfile, continuous=True)
             topics_c.append(topic_r)
         
         while not rospy.is_shutdown():

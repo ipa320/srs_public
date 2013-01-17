@@ -92,7 +92,7 @@ import record_topic
 class topics_bag():
 
     def __init__(self):
-
+    
         # this defines the variables according to the ones specified at the yaml
         # file. The triggers, the wanted tfs, the wanted topics and where they are going
         # to be written, more specifically at the file named as self.bag.
@@ -103,7 +103,7 @@ class topics_bag():
         self.trigger_topics = rospy.get_param("~trigger_topics")
         self.continuous_topics = rospy.get_param("~continuous_topics")
         self.bag_name = rospy.get_param("~bag_name")
-    
+        
         # this creates the bagfile
         localtime = time.localtime(time.time())
         filename = self.bag_name + "_" + str(localtime[0]) + "-" + str(localtime[1]) + "-" + str(localtime[2]) + "_" + str(localtime[3]) + "-" + str(localtime[4]) + "-" + str(localtime[5]) + ".bag"
@@ -119,7 +119,7 @@ class topics_bag():
         rospy.sleep(2)
         # waits for a tf transform before starting. This is important to check if
         # the system is fully functional.
-
+        
         self.tfL.waitForTransform(self.wanted_tfs[0]["reference_frame"], self.wanted_tfs[0]["target_frame"], rospy.Time(0), rospy.Duration(4.0))
         
         # dictionaries for storing current translation and rotation for the specific
@@ -130,7 +130,7 @@ class topics_bag():
         for frame in self.wanted_tfs:
             self.current_translation[frame["target_frame"]] = [0,0,0]
             self.current_rotation[frame["target_frame"]] = [0,0,0,0]
-
+            
         
     def tf_trigger(self, reference_frame, target_frame, tfs):
         #  this function is responsible for setting up the triggers for recording
@@ -138,7 +138,7 @@ class topics_bag():
         
         # sequence for calculating distance and yaw rotation for defining if a 
         # recording trigger is set according to the trigger value on the yaml file
-
+        
         self.tfL.waitForTransform(reference_frame, target_frame, rospy.Time(0), rospy.Duration(3.0))
         trans, rot = self.tfL.lookupTransform(reference_frame, target_frame, rospy.Time(0))
         
@@ -153,7 +153,7 @@ class topics_bag():
             self.current_translation[target_frame] = trans
             self.current_rotation[target_frame] = rot
             return "triggered"
-
+            
         if("trigger_record_rotation" in tfs and distance_rot >= tfs["trigger_record_rotation"]):
             rospy.loginfo("triggered for rotation, rot = " + str(distance_rot))
             self.current_translation[target_frame] = trans
@@ -162,21 +162,18 @@ class topics_bag():
         
         return "not_triggered"
         
-
     def bag_processor(self, tfs=None):
         
         trigger_position = self.tf_trigger(tfs["reference_frame"], tfs["target_frame"], tfs)
         
         return trigger_position
-
+        
 if __name__ == "__main__":
-
     rospy.init_node('topics_bag')
     bagR = topics_bag()
     rospy.sleep(2)
     time_step = rospy.Duration.from_sec(bagR.trigger_timestep)
     start_time = rospy.Time.now()
-
     with bagR.bag as bagfile:
         bagfile.write("/tf", bagR.tfMsg) # necessary, undiscovered bug
         rate = rospy.Rate(10) #Hz
@@ -186,16 +183,11 @@ if __name__ == "__main__":
             topic_r = record_topic.record_topic(tfs)
             topics_t.append(topic_r)
         for tfc in bagR.continuous_topics:
-            topic_r = record_topic.record_topic(tfc, continuous=True) --> FMW: mark all continuous topics as continuous
+            topic_r = record_topic.record_topic(tfc, continuous=True)
             topics_c.append(topic_r)
         
         while not rospy.is_shutdown():
-		
-            # records the continuous topics --> FMW: this shouldn't be done inside the wile loop, otherwise we only record every 10hz which could miss some messages. especially on the robot we need to get __every__ message because each component publishes joint states in a different message. See record_topic.py
-            #for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
-            #    if(tops_c.msg!=None):
-            #        bagfile.write(tfm, tops_c.msg)
-                    
+        
             # listen to tf changes
             for tfs in bagR.wanted_tfs:
                 triggers = bagR.bag_processor(tfs)
@@ -205,14 +197,9 @@ if __name__ == "__main__":
                     #Records the triggered topics
                     for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
                         if(tops_c.msg!=None):
-                            bagfile.write(tfm, tops_c.msg) --> FMW: should be changed to record_topic.record(), see record_topic.py
-                    #Records again the continuous topics --> FMW: we don't need to record them again, it's done above
-                    #for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
-                    #    if(tops_c.msg!=None):
-                    #        bagfile.write(tfm, tops_c.msg)
+                            tops_c.record_topic()
                 else:
                     rospy.logdebug("not triggered")
-			
             # listen to ellapsed time
             time_msg = "time passed:" + (str)((rospy.Time.now() - start_time).to_sec())
             rospy.logdebug(time_msg)
@@ -222,16 +209,10 @@ if __name__ == "__main__":
                 start_time = rospy.Time.now()
                 for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
                     if(tops_c.msg!=None):
-                        bagfile.write(tfm, tops_c.msg) --> FMW: should be changed to record_topic.record(), see record_topic.py
-
-                #Records again the continuous topics --> FMW: we don't need to record them again, it's done above
-                #for tops_c, tfm in itertools.izip(topics_c, bagR.continuous_topics):
-                #    if(tops_c.msg!=None):
-                #        bagfile.write(tfm, tops_c.msg)
-			
-			# sleep until next check
+                        tops_c.record_topic()
+            # sleep until next check
             rate.sleep()
 			
 	# closing bag file
-	rospy.loginfo("Closing bag file")
-	bagR.bag.close()
+    rospy.loginfo("Closing bag file")
+    bagR.bag.close()

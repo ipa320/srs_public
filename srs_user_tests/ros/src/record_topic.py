@@ -90,9 +90,9 @@ import tf_aggregator
 
 class record_topic():
 
-    def __init__(self, continuous=False):
+    def __init__(self, topic_name, continuous=False):
           # this gets the topics type using the roslib
-        the_type = rostopic.get_topic_type(tfs, blocking=True)[0]
+        the_type = rostopic.get_topic_type(topic_name, blocking=True)[0]
 
         the_type = the_type.split("/")
         the_type[0] += ".msg"
@@ -102,7 +102,7 @@ class record_topic():
         cls = getattr( mod , the_type[1] )
         
         self.msg = None
-        self.topic_name = tfs 
+        self.topic_name = topic_name 
         self.topic_type = cls
         self.continuous = continuous
 
@@ -111,11 +111,11 @@ class record_topic():
 
     def callback(self, msg):
         self.msg = msg
-        if self.continuous: --> FMW: if this topic is set to be continuous, we'll have to record __every__ callback
+        if self.continuous:
             self.record()
     
     def record(self):
-        # bagfile.write(self.topic_name, self.msg) --> FMW: this is not correct syntax, but should record one message to the bagfile
+        bagfile.write(self.topic_name, self.msg)
         
 if __name__ == "__main__":
 

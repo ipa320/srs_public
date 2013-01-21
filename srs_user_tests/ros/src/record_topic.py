@@ -88,6 +88,8 @@ import sys, subprocess
 import joint_states_aggregator
 import tf_aggregator
 
+import global_lock
+
 class record_topic():
 
     def __init__(self, topic_name, bagfile, continuous=False):
@@ -109,16 +111,28 @@ class record_topic():
 
         # this creates the subscriber for the specific topic
         rospy.Subscriber(self.topic_name, self.topic_type, self.callback)
+        global_lock.locked = False
         
+    def lock(self):
+        global_lock.locked = True
+        
+    def unlock(self):
+        global_lock.locked = False     
         
     def callback(self, msg):
         self.msg = msg
-       # if self.continuous:
-         #   self.record()
+        if self.continuous:
+            self.record()
     
     def record(self):
         if(self.msg!=None):
-            self.bagfile.write(self.topic_name, self.msg)
+            if not global_lock.locked:
+                try:
+                    self.lock()
+                    self.bagfile.write(self.topic_name, self.msg)
+                    self.unlock()
+                except KeyError, e:
+                    rospy.loginfo(self.msg)
         
 if __name__ == "__main__":
 

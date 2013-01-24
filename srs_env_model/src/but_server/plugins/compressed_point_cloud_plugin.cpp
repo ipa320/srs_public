@@ -81,6 +81,10 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 {
 	ROS_DEBUG("Initializing CCompressedPointCloudPlugin");
 
+	// Majkl 2013/01/24: What about to call parents class init()?
+	// Get FID to which will be points transformed when publishing collision map
+	node_handle.param("pointcloud_frame_id", m_pcFrameId, DEFAULT_FRAME_ID );
+
 	if ( m_bSpinThread )
 	{
 		// if we're spinning our own thread, we'll also need our own callback queue
@@ -265,6 +269,9 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
     m_octomap_updates_msg->camera_info = m_camera_info_buffer;
     m_octomap_updates_msg->pointcloud2.header.stamp = par.currentTime;
 
+    // Majkl 2013/01/24: missing frame id in the message header
+    m_octomap_updates_msg->pointcloud2.header.frame_id = m_pcFrameId;
+
     // Initialize leaf iterators
 	tButServerOcTree & tree( par.map->getTree() );
 	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
@@ -361,12 +368,19 @@ void srs_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time
     	// Fill header information
     	m_octomap_updates_msg->header = m_data->header;
 
+		// Majkl 2013/1/24: trying to solve empty header of the output
+    	m_octomap_updates_msg->header.stamp = m_DataTimeStamp;
+    	m_octomap_updates_msg->header.frame_id = m_pcFrameId;
+
     	// Convert data
 		pcl::toROSMsg< tPclPoint >(*m_data, m_octomap_updates_msg->pointcloud2);
 
 		// Set message parameters and publish
 		m_octomap_updates_msg->pointcloud2.header.frame_id = m_pcFrameId;
 	//	m_octomap_updates_msg->pointcloud2.header.stamp = timestamp;
+
+		// Majkl 2013/1/24: trying to solve empty header of the output
+		m_octomap_updates_msg->pointcloud2.header.stamp = m_DataTimeStamp;
 
 		if( m_bPublishComplete )
 		{

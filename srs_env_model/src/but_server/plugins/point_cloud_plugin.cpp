@@ -88,7 +88,7 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 		m_bSubscribe = true;
 
 	// Get FID to which will be points transformed when publishing collision map
-	node_handle.param("pointcloud_frame_id", m_pcFrameId, m_pcFrameId ); //
+	node_handle.param("pointcloud_frame_id", m_pcFrameId, DEFAULT_FRAME_ID );
 
 	// Point cloud limits
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);

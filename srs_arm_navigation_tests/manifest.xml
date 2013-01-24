@@ -30,7 +30,7 @@ This package contains scripts for testing srs_arm_manipulation.
   <depend package="srs_env_model_percp"/>
   <depend package="std_msgs"/>
   <depend package="srs_interaction_primitives"/>
-  <!--depend package="srs_states"/-->
+  <depend package="srs_states"/>
   <depend package="cob_spacenav_teleop"/>
   
   <export>

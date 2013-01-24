@@ -321,11 +321,11 @@ namespace srs_env_model_percp
 		pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
 		pcl::transformPointCloud(pointcloud, pointcloud, sensorToWorld);
 
-		for (unsigned int i = 0; i < pointcloud.points.size(); ++i)
-		{
-			if (pointcloud.points[i].z > settings.param_ht_maxheight || pointcloud.points[i].z < settings.param_ht_minheight)
-				zero_indices.push_back(i);
-		}
+//		for (unsigned int i = 0; i < pointcloud.points.size(); ++i)
+//		{
+//			if (pointcloud.points[i].z > settings.param_ht_maxheight || pointcloud.points[i].z < settings.param_ht_minheight)
+//				zero_indices.push_back(i);
+//		}
 
 		// set all zero indices to point(0,0,0)
 		for (unsigned int i = 0; i < zero_indices.size(); ++i)
@@ -395,7 +395,7 @@ namespace srs_env_model_percp
         nh.param(PARAM_VISUALISATION_MIN_COUNT, settings.param_visualisation_min_count, PARAM_VISUALISATION_MIN_COUNT_DEFAULT);
         nh.param(PARAM_VISUALISATION_COLOR, settings.param_visualisation_color, PARAM_VISUALISATION_COLOR_DEFAULT);
         nh.param(PARAM_VISUALISATION_TTL, settings.param_visualisation_ttl, PARAM_VISUALISATION_TTL_DEFAULT);
-
+        nh.param(PARAM_VISUALISATION_MAX_POLY_SIZE, settings.param_visualisation_max_poly_size, PARAM_VISUALISATION_MAX_POLY_SIZE_DEFAULT);
 
 		nh.param(PARAM_SEARCH_MINIMUM_CURRENT_SPACE, settings.param_search_minimum_current_space, PARAM_SEARCH_MINIMUM_CURRENT_SPACE_DEFAULT);
 		nh.param(PARAM_SEARCH_MINIMUM_GLOBAL_SPACE, settings.param_search_minimum_global_space, PARAM_SEARCH_MINIMUM_GLOBAL_SPACE_DEFAULT);
@@ -453,7 +453,8 @@ namespace srs_env_model_percp
 									   settings.param_visualisation_plane_normal_dev,
 									   settings.param_visualisation_plane_shift_dev,
 									   settings.param_ht_keeptrack,
-									   settings.param_visualisation_ttl);
+									   settings.param_visualisation_ttl,
+									   settings.param_visualisation_max_poly_size);
 
 		res.message = "Hough space successfully reset.\n";
 		std::cout << "Hough space successfully reset." << std::endl;
@@ -516,7 +517,8 @@ namespace srs_env_model_percp
 										   settings.param_visualisation_plane_normal_dev,
 										   settings.param_visualisation_plane_shift_dev,
 										   settings.param_ht_keeptrack,
-										   settings.param_visualisation_ttl);
+										   settings.param_visualisation_ttl,
+										   settings.param_visualisation_max_poly_size);
 
 			exporter->xmlFileImport(req.filename);
 
@@ -625,7 +627,8 @@ int main( int argc, char** argv )
 										settings.param_visualisation_plane_normal_dev,
 										settings.param_visualisation_plane_shift_dev,
 										settings.param_ht_keeptrack,
-										settings.param_visualisation_ttl);
+										settings.param_visualisation_ttl,
+										settings.param_visualisation_max_poly_size);
 
 		// MESSAGES
 		message_filters::Subscriber<PointCloud2 > point_cloud(*n, DET_INPUT_POINT_CLOUD_TOPIC, 10);
@@ -680,7 +683,8 @@ int main( int argc, char** argv )
 										settings.param_visualisation_plane_normal_dev,
 										settings.param_visualisation_plane_shift_dev,
 										settings.param_ht_keeptrack,
-										settings.param_visualisation_ttl);
+										settings.param_visualisation_ttl,
+										settings.param_visualisation_max_poly_size);
 
 		// MESSAGES
 		message_filters::Subscriber<Image> depth_sub(*n, DET_INPUT_IMAGE_TOPIC, 10);

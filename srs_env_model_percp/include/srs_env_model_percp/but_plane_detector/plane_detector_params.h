@@ -157,6 +157,9 @@ namespace srs_env_model_percp
 	const std::string PARAM_VISUALISATION_TTL							= "planedet_visualisation_ttl";
 	const int PARAM_VISUALISATION_TTL_DEFAULT							= 10; // sec
 
+	const std::string PARAM_VISUALISATION_MAX_POLY_SIZE					= "planedet_max_poly_size";
+	const int PARAM_VISUALISATION_MAX_POLY_SIZE_DEFAULT					= 2000; // sec
+
 
 	/**
 	 * Normal estimation
@@ -217,6 +220,7 @@ namespace srs_env_model_percp
         double param_visualisation_plane_shift_dev;
         int    param_visualisation_min_count;
         int    param_visualisation_ttl;
+        int    param_visualisation_max_poly_size;
 
         int    param_normal_type;
         int    param_normal_neighborhood;

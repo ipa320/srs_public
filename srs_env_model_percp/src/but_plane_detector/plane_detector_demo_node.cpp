@@ -332,6 +332,7 @@ namespace srs_env_model_percp
 		nh.param(PARAM_VISUALISATION_PLANE_NORMAL_DEV, settings.param_visualisation_plane_normal_dev, PARAM_VISUALISATION_PLANE_NORMAL_DEV_DEFAULT);
 		nh.param(PARAM_VISUALISATION_PLANE_SHIFT_DEV, settings.param_visualisation_plane_shift_dev, PARAM_VISUALISATION_PLANE_SHIFT_DEV_DEFAULT);
 		nh.param(PARAM_VISUALISATION_MIN_COUNT, settings.param_visualisation_min_count, PARAM_VISUALISATION_MIN_COUNT_DEFAULT);
+		nh.param(PARAM_VISUALISATION_MAX_POLY_SIZE, settings.param_visualisation_max_poly_size, PARAM_VISUALISATION_MAX_POLY_SIZE_DEFAULT);
 
 		nh.param(PARAM_SEARCH_MINIMUM_CURRENT_SPACE, settings.param_search_minimum_current_space, PARAM_SEARCH_MINIMUM_CURRENT_SPACE_DEFAULT);
 		nh.param(PARAM_SEARCH_MINIMUM_GLOBAL_SPACE, settings.param_search_minimum_global_space, PARAM_SEARCH_MINIMUM_GLOBAL_SPACE_DEFAULT);
@@ -407,7 +408,8 @@ int main( int argc, char** argv )
 					settings.param_visualisation_distance,
 					settings.param_visualisation_plane_normal_dev,
 					settings.param_visualisation_plane_shift_dev,
-					settings.param_ht_keeptrack);
+					settings.param_ht_keeptrack,
+					settings.param_visualisation_max_poly_size);
 
 	// MESSAGES
 	//message_filters::Subscriber<PointCloud2 > point_cloud(n, DET_INPUT_POINT_CLOUD_TOPIC, 1);

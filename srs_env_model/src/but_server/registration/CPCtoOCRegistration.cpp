@@ -96,7 +96,7 @@ void srs_env_model::COcPatchMaker::init(ros::NodeHandle & node_handle)
 
 	if( m_bPublishCloud )
 		// Create publisher - simple point cloud
-		m_pubConstrainedPC = node_handle.advertise<sensor_msgs::PointCloud2> (REGISTRATION_CONSTRAINED_CLOUD_PUBLISHER_NAME, 100, false);
+		m_pubConstrainedPC = node_handle.advertise<sensor_msgs::PointCloud2> (REGISTRATION_CONSTRAINED_CLOUD_PUBLISHER_NAME, 5, false);
 
 }
 

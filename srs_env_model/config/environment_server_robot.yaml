@@ -30,7 +30,8 @@ ocmap_sensor_model/max: .97
 
 # Maximum range for raycasting (-1: unlimited, but it leads to out of memory 
 # because octomap is trying to be too much precise)
-ocmap_max_range: 4.5
+#ocmap_max_range: 4.5
+ocmap_max_range: 7.0
 
 # Debugging information - visualize visible cone marker
 ocmap_visualize_markers: false

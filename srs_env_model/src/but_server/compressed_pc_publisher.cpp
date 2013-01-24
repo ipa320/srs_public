@@ -47,12 +47,12 @@ srs_env_model::CCompressedPCPublisher::CCompressedPCPublisher(ros::NodeHandle & 
 	nh.param("output_topic_name", m_publishedTopicName, CPC_OUTPUT_TOPIC_NAME);
 
 	// Create publisher
-//	m_pub = nh.advertise<sensor_msgs::PointCloud2> (m_publishedTopicName, 100);
-	m_pub = nh.advertise<sensor_msgs::PointCloud2> (m_publishedTopicName, 1);
+	m_pub = nh.advertise<sensor_msgs::PointCloud2> (m_publishedTopicName, 5);
+//	m_pub = nh.advertise<sensor_msgs::PointCloud2> (m_publishedTopicName, 1);
 
 	// Create subscriber
-//	m_sub  = nh.subscribe(m_subscribedTopicName, 5, &CCompressedPCPublisher::incommingDataCB, this );
-	m_sub  = nh.subscribe(m_subscribedTopicName, 1, &CCompressedPCPublisher::incommingDataCB, this );
+	m_sub  = nh.subscribe(m_subscribedTopicName, 5, &CCompressedPCPublisher::incommingDataCB, this );
+//	m_sub  = nh.subscribe(m_subscribedTopicName, 1, &CCompressedPCPublisher::incommingDataCB, this );
 
 	if (!m_sub)
 	{

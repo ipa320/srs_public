@@ -88,7 +88,7 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
     node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME );
 
     // Create publisher
-    m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
+    m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
     // Subscribe to position topic
     // Create subscriber
@@ -333,7 +333,7 @@ void srs_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandl
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 		// Subscribe to position topic
 		// Create subscriber

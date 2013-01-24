@@ -81,7 +81,7 @@ void CObjTreePlugin::init(ros::NodeHandle &node_handle)
     m_clientAddBoundingBox = node_handle.serviceClient<srs_interaction_primitives::AddBoundingBox>(srs_interaction_primitives::AddBoundingBox_SRV);
     m_clientRemovePrimitive = node_handle.serviceClient<srs_interaction_primitives::RemovePrimitive>(srs_interaction_primitives::RemovePrimitive_SRV);
 
-    m_markerPub = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 100);
+    m_markerPub = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 5);
 
     printf("ObjTree plugin initialized!\n");
 }
@@ -704,7 +704,7 @@ void CObjTreePlugin::pause( bool bPause, ros::NodeHandle & node_handle )
 	if( bPause )
 		m_markerPub.shutdown();
 	else
-		m_markerPub = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 100);
+		m_markerPub = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 5);
 }
 
 }

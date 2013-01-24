@@ -28,6 +28,11 @@
 
 	<group>
 		<machine name="pc2" address="$(arg pc2)" default="true"/>
+		
+		<!-- logging -->
+		<include file="$(find srs_user_tests)/ros/launch/bag_record.launch" >
+			<arg name="bag_name" value="nav_test"/>
+		</include>
 
 		<!-- Kinect throttling -->
 		<!-- This is no more needed, IPA's new kinect throttling is used -->

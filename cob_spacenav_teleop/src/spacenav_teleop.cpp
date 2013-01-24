@@ -91,8 +91,13 @@ SpaceNavTeleop::SpaceNavTeleop() {
 
 	offset_sub_ = nh.subscribe("/spacenav/offset",1,&SpaceNavTeleop::spacenavOffsetCallback,this);
 	rot_offset_sub_ = nh.subscribe("/spacenav/rot_offset",1,&SpaceNavTeleop::spacenavRotOffsetCallback,this);
+	joy_sub_ = nh.subscribe<sensor_msgs::Joy>("/spacenav/joy",1,&SpaceNavTeleop::joyCallback,this);
 
-	twist_publisher_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel",1);
+	twist_publisher_safe_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel_safe",1);
+	twist_publisher_unsafe_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel_unsafe",1);
+
+	publishing_to_unsafe_ = false;
+	robot_centric_mode_ = false;
 
 	// 50 Hz
 	timer_ = nh.createTimer(ros::Duration(0.02),&SpaceNavTeleop::timerCallback,this);
@@ -112,6 +117,19 @@ SpaceNavTeleop::~SpaceNavTeleop() {
 
 	delete tfl_;
 
+
+}
+
+void SpaceNavTeleop::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
+
+	if ((int)(joy->buttons.size()) != 2) return;
+
+	btns_.mutex.lock();
+
+	btns_.left = joy->buttons[0];
+	btns_.right = joy->buttons[1];
+
+	btns_.mutex.unlock();
 
 }
 
@@ -191,9 +209,10 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 
 	if (!enabled_) return;
 
-	if (twist_publisher_.getNumSubscribers() == 0) {
+	if (twist_publisher_safe_.getNumSubscribers() == 0) {
 
-		ROS_WARN_ONCE("We have no subscribers...");
+		ROS_WARN_ONCE("We have no subscriber on main (safe) topic.");
+
 		return;
 
 	} else {
@@ -230,7 +249,7 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 
 		// spacenav node probably crashed ?
 		ROS_WARN("Old data");
-		twist_publisher_.publish(tw);
+		twist_publisher_safe_.publish(tw);
 
 		return;
 
@@ -245,7 +264,7 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 			ROS_WARN("Instant stop!");
 			time_of_stop_ = ros::Time::now();
 
-			twist_publisher_.publish(tw);
+			twist_publisher_safe_.publish(tw);
 			return;
 
 		}
@@ -260,7 +279,7 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 
 		} else {
 
-			twist_publisher_.publish(tw);
+			twist_publisher_safe_.publish(tw);
 			return;
 
 		}
@@ -332,15 +351,38 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 	if (fabs(offset.y) < params_.sn_min_val_th ) offset.y = 0;
 	if (fabs(rot_offset.z) < params_.sn_min_val_th ) rot_offset.z = 0;
 
+	bool unsafe = false;
+	bool robot_cetric_mode = false;
 
-	if (!params_.use_rviz_cam) {
+	btns_.mutex.lock();
+	unsafe = btns_.left;
+	robot_cetric_mode = btns_.right;
+	btns_.mutex.unlock();
 
-		ROS_INFO_ONCE("Started in mode without using RVIZ camera position.");
-		/*twist_publisher_.publish(tw);
-		return;*/
+	if (!params_.use_rviz_cam || robot_cetric_mode) {
+
+		if (!params_.use_rviz_cam) ROS_INFO_ONCE("Started in mode without using RVIZ camera position.");
+		else {
+
+			if (!robot_centric_mode_) {
+
+						robot_centric_mode_ = true;
+						ROS_INFO("Switching to robot centric mode.");
+
+					}
+
+		}
+
+
 
 	} else {
 
+		if (robot_centric_mode_) {
+
+			ROS_INFO("Switching back to user centric mode.");
+			robot_centric_mode_ = false;
+
+		}
 
 	// transformation of velocities vector is not needed for turning in place
 	//if (!rot) {
@@ -465,7 +507,32 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 	tw.linear = offset;
 	tw.angular = rot_offset;
 
-	twist_publisher_.publish(tw);
+
+	if (unsafe) {
+
+		if (!publishing_to_unsafe_) {
+
+			publishing_to_unsafe_ = true;
+			ROS_WARN("Publishing to unsafe topic!");
+
+		}
+
+		twist_publisher_unsafe_.publish(tw);
+
+	} else {
+
+		if (publishing_to_unsafe_) {
+
+			ROS_INFO("Publishing to safe topic again.");
+			publishing_to_unsafe_ = false;
+
+		}
+
+		twist_publisher_safe_.publish(tw);
+
+	}
+
+
 	return;
 
 }

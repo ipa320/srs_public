@@ -38,26 +38,41 @@
 srs_env_model::CCompressedPCPublisher::CCompressedPCPublisher(ros::NodeHandle & nh)
 : m_camera_stereo_offset_left(0)
 , m_camera_stereo_offset_right(0)
-, m_publishFID("/map")
+, m_publishFID(CPC_WORLD_FRAME)
+, m_cameraFID(CPC_CAMERA_FRAME)
+, m_tfListener()
+, m_tfListener2()
 {
-	// Point cloud publishing topic name
-	nh.param("octomap_updates_publisher", m_subscribedTopicName, CPC_INPUT_TOPIC_NAME );
+	// Read input parameters via the private node handle
+	ros::NodeHandle pnh("~");
 
 	// Point cloud subscribing topic name
-	nh.param("output_topic_name", m_publishedTopicName, CPC_OUTPUT_TOPIC_NAME);
+//	pnh.param("octomap_updates_publisher", m_subscribedTopicName, CPC_INPUT_TOPIC_NAME );
+	m_subscribedTopicName = CPC_INPUT_TOPIC_NAME;
+
+	// Point cloud publishing topic name
+//	pnh.param("output_topic_name", m_publishedTopicName, CPC_OUTPUT_TOPIC_NAME);
+	m_publishedTopicName = CPC_OUTPUT_TOPIC_NAME;
+
+	// TF frames
+	pnh.param("world_frame", m_publishFID, CPC_WORLD_FRAME);
+	pnh.param("camera_frame", m_cameraFID, CPC_CAMERA_FRAME);
 
 	// Create publisher
-//	m_pub = nh.advertise<sensor_msgs::PointCloud2> (m_publishedTopicName, 100);
-	m_pub = nh.advertise<sensor_msgs::PointCloud2> (m_publishedTopicName, 1);
+	m_pub = nh.advertise<sensor_msgs::PointCloud2> (m_publishedTopicName, 5);
+//	m_pub = nh.advertise<sensor_msgs::PointCloud2> (m_publishedTopicName, 1);
 
 	// Create subscriber
 //	m_sub  = nh.subscribe(m_subscribedTopicName, 5, &CCompressedPCPublisher::incommingDataCB, this );
-	m_sub  = nh.subscribe(m_subscribedTopicName, 1, &CCompressedPCPublisher::incommingDataCB, this );
+//	m_sub  = nh.subscribe(m_subscribedTopicName, 1, &CCompressedPCPublisher::incommingDataCB, this );
+	m_sub.subscribe(nh, m_subscribedTopicName, 5);
+	m_tf_filter = new tf::MessageFilter<tInputData>(m_sub, m_tfListener, m_publishFID, 5);
+	m_tf_filter->registerCallback( boost::bind(&CCompressedPCPublisher::incommingDataCB, this, _1) );
 
-	if (!m_sub)
+/*	if (!m_sub)
 	{
 		ROS_ERROR("Not subscribed...");
-	}
+	}*/
 }
 
 /**
@@ -65,6 +80,8 @@ srs_env_model::CCompressedPCPublisher::CCompressedPCPublisher(ros::NodeHandle & 
  */
 void srs_env_model::CCompressedPCPublisher::incommingDataCB( const tInputData::ConstPtr & data )
 {
+	ROS_DEBUG_ONCE("CCompressedPCPublisher::incommingDataCB: message received");
+
 	// Get transform
 	{
 		// Some transforms
@@ -73,8 +90,8 @@ void srs_env_model::CCompressedPCPublisher::incommingDataCB( const tInputData::C
 		// Get transforms
 		try {
 			// Transformation - to, from, time, waiting time
-			m_tfListener.waitForTransform(m_publishFID, data->pointcloud2.header.frame_id,
-					data->pointcloud2.header.stamp, ros::Duration(5));
+//			m_tfListener.waitForTransform(m_publishFID, data->pointcloud2.header.frame_id,
+//					data->pointcloud2.header.stamp, ros::Duration(5));
 
 			m_tfListener.lookupTransform( m_publishFID, data->pointcloud2.header.frame_id,
 					data->pointcloud2.header.stamp, pcToPubTf );
@@ -83,7 +100,6 @@ void srs_env_model::CCompressedPCPublisher::incommingDataCB( const tInputData::C
 			ROS_ERROR_STREAM( "CCompressedPCPublisher::incommingDataCB" << ": Transform error - " << ex.what() << ", quitting callback");
 			return;
 		}
-
 
 		m_to_pfid = pcToPubTf;
 	}
@@ -223,11 +239,10 @@ long srs_env_model::CCompressedPCPublisher::removeFrustumFromCloud( const tInput
 		// Set camera position frame id
 		m_cameraFrameId = data->camera_info.header.frame_id;
 
-		ROS_DEBUG("OctMapPlugin: Set camera info: %d x %d\n", data->camera_info.height, data->camera_info.width);
+		ROS_DEBUG("CCompressedPCPublisher::removeFrustumFromCloud: Set camera info: %d x %d\n", data->camera_info.height, data->camera_info.width);
 
 		m_camera_model.fromCameraInfo(data->camera_info);
 		m_camera_size = m_camera_model.fullResolution();
-
 	}
 
 	// Get transformation from m_publishFID frame id to the camera frame id
@@ -239,7 +254,6 @@ long srs_env_model::CCompressedPCPublisher::removeFrustumFromCloud( const tInput
 	    // If different frame id
 	    if( m_cameraFrameId != m_publishFID )
 	    {
-
 	        // Some transforms
 	        tf::StampedTransform ocToCamTf;
 
@@ -247,14 +261,14 @@ long srs_env_model::CCompressedPCPublisher::removeFrustumFromCloud( const tInput
 	        // Get transforms
 	        try {
 	            // Transformation - to, from, time, waiting time
-	            m_tfListener.waitForTransform(m_cameraFrameId, m_publishFID,
+	            m_tfListener2.waitForTransform(m_cameraFrameId, m_publishFID,
 	                    stamp, ros::Duration(5));
 
-	            m_tfListener.lookupTransform( m_cameraFrameId, m_publishFID,
+	            m_tfListener2.lookupTransform( m_cameraFrameId, m_publishFID,
 	            		stamp, ocToCamTf );
 
 	        } catch (tf::TransformException& ex) {
-	            ROS_ERROR_STREAM( "CCompressedPCPublisher: Transform error - " << ex.what() << ", quitting callback");
+	            ROS_ERROR_STREAM( "CCompressedPCPublisher::removeFrustumFromCloud: Transform error - " << ex.what() << ", quitting callback");
 	            return 0;
 	        }
 

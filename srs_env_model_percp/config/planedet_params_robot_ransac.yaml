@@ -17,7 +17,7 @@ original_frame: /head_cam3d_link
 planedet_ht_keep_track: 1
 
 # Maximum depth in meters to count with (for real data, 3.0 is recommended)
-planedet_ht_maxdepth: 100.0
+planedet_ht_maxdepth: 10.0
 
 # Maximum height in meters to be considered
 planedet_ht_max_height: 3.0
@@ -92,7 +92,7 @@ planedet_search_maxima_search_blur: 0
 # VISUALISATION PARAMS 
 # 
 # Distance plane-point to be considered as a part of a plane
-planedet_visualisation_distance: 0.05
+planedet_visualisation_distance: 0.02
 
 # Point normal difference to visualised plane
 planedet_visualisation_plane_normal_dev: 0.5
@@ -101,7 +101,7 @@ planedet_visualisation_plane_normal_dev: 0.5
 planedet_visualisation_plane_shift_dev: 0.1
 
 # Minimal point count for visualised plane
-planedet_visualisation_min_count: 2000
+planedet_visualisation_min_count: 5000
 
 # Color creation method (plane_eq / mean_color / centroid / random)
 planedet_visualisation_color : mean_color
@@ -125,7 +125,7 @@ planedet_normal_neighborhood: 15
 planedet_normal_threshold:  0.2
 
 # Outlier threshold for LTS method
-planedet_normal_outlierThreshold: 0.02
+planedet_normal_outlierThreshold: 0.05
 
 # Max iteration count form LTS method 
 planedet_normal_iter: 3

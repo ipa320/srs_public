@@ -3,7 +3,7 @@
     <!-- Configuration for COB, bringup simulation -->
     <include file="$(find srs_ui_but)/launch/run_sim.launch" />
 
-    <include file="$(find srs_env_model)/launch/only_butserver.launch"/>
+    <include file="$(find srs_env_model)/launch/but_envmodel_common.launch"/>
     <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
 
     <include file="$(find srs_ui_but)/launch/distance_visualizer.launch"/>

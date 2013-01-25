@@ -3,7 +3,7 @@
 
   <include file="$(find srs_assisted_arm_navigation_ui)/launch/ui_common.xml"/>
 
-  <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_user_tests)/ros/config/grasp_test_bb_placement.vcg">
+  <node pkg="rviz" type="rviz" name='rviz_warehouse_viewer' args="-d $(find srs_user_tests)/ros/config/grasp_test.vcg">
   
     <rosparam file="$(find srs_assisted_grasping_ui)/config/presets.yaml" command="load" />
     <rosparam file="$(find srs_assisted_arm_navigation_ui)/config/presets.yaml" command="load" />

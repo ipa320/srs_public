@@ -76,7 +76,7 @@ void srs_env_model::CMarkerArrayPlugin::init(ros::NodeHandle & node_handle)
     m_color.a = a;
 
     // Create publisher
-    m_markerArrayPublisher = node_handle.advertise<visualization_msgs::MarkerArray> (m_markerArrayPublisherName, 100, m_latchedTopics);
+    m_markerArrayPublisher = node_handle.advertise<visualization_msgs::MarkerArray> (m_markerArrayPublisherName, 5, m_latchedTopics);
 }
 
 
@@ -267,5 +267,5 @@ void srs_env_model::CMarkerArrayPlugin::pause( bool bPause, ros::NodeHandle & no
 	if( bPause )
 		m_markerArrayPublisher.shutdown();
 	else
-		m_markerArrayPublisher = node_handle.advertise<visualization_msgs::MarkerArray> (m_markerArrayPublisherName, 100, m_latchedTopics);
+		m_markerArrayPublisher = node_handle.advertise<visualization_msgs::MarkerArray> (m_markerArrayPublisherName, 5, m_latchedTopics);
 }

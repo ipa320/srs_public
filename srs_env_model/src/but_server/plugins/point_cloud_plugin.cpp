@@ -88,14 +88,14 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 		m_bSubscribe = true;
 
 	// Get FID to which will be points transformed when publishing collision map
-	node_handle.param("pointcloud_frame_id", m_pcFrameId, m_pcFrameId ); //
+	node_handle.param("pointcloud_frame_id", m_pcFrameId, DEFAULT_FRAME_ID );
 
 	// Point cloud limits
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
 	node_handle.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
 
 	// Create publisher
-	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
+	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 
 	// If should subscribe, create message filter and connect to the topic
@@ -467,7 +467,7 @@ void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nod
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 		if( m_bSubscribe )
 		{

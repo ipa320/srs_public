@@ -111,7 +111,8 @@ namespace srs_env_model_percp
 			                 double max_plane_normal_dev,
 			                 double max_plane_shift_dev,
 			                 int keep_tracking,
-			                 int ttl
+			                 int ttl,
+			                 int max_poly_size
 			                 );
 			/**
 			 * Updates sent planes using but environment model server
@@ -150,6 +151,7 @@ namespace srs_env_model_percp
 			double m_max_distance;
 			double m_max_plane_normal_dev;
 			double m_max_plane_shift_dev;
+			int m_max_poly_size;
 
 			int m_plane_ttl;
 	};

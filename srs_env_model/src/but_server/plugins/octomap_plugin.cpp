@@ -243,7 +243,7 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 
 	// Create publisher
 	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (
-			m_ocPublisherName, 1, m_latchedTopics);
+			m_ocPublisherName, 5, m_latchedTopics);
 
 	m_registration.init( node_handle );
 
@@ -379,7 +379,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	pc_nonground.header = cloud.header;
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
 
-    	// 2012/12/14: Majkl (trying to solve problem with missing time stamps in all message headers)
+    // 2012/12/14: Majkl (trying to solve problem with missing time stamps in all message headers)
 	m_DataTimeStamp = cloud.header.stamp;
 	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud.header.stamp.toSec());
 
@@ -765,7 +765,7 @@ void srs_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_h
 	}
 	else
 	{
-		m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (	m_ocPublisherName, 1, m_latchedTopics);
+		m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (	m_ocPublisherName, 5, m_latchedTopics);
 
 		// Add camera info subscriber
 //		m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10, &srs_env_model::COctoMapPlugin::cameraInfoCB, this);

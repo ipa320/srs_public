@@ -118,7 +118,7 @@ protected:
 
     bool action_in_progress_;
 
-
+    bool disable_video_;
 
 
     bool some_data_ready_;

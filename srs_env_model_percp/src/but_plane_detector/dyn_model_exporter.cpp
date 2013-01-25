@@ -275,7 +275,8 @@ namespace srs_env_model_percp
 	                                   double max_plane_normal_dev,
 	                                   double max_plane_shift_dev,
 	                                   int keep_tracking,
-	                                   int ttl
+	                                   int ttl,
+	                                   int max_poly_size
 	                                   )
 	    : original_frame_(original_frame)
 	    , output_frame_(output_frame)
@@ -287,6 +288,7 @@ namespace srs_env_model_percp
 		m_max_plane_shift_dev = max_plane_shift_dev;
 		m_keep_tracking = keep_tracking;
 		m_plane_ttl = ttl;
+		m_max_poly_size = max_poly_size;
 	}
 
 	void DynModelExporter::createMarkerForConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane)
@@ -312,7 +314,7 @@ namespace srs_env_model_percp
 
 	void DynModelExporter::addMarkerToConcaveHull(pcl::PointCloud<pcl::PointXYZ>& plane_cloud, srs_env_model_percp::PlaneExt& plane)
 	{
-		plane.AddPlanePoints(plane_cloud.makeShared());
+		plane.AddPlanePoints(plane_cloud.makeShared(), m_max_poly_size);
 	}
 
 	void DynModelExporter::xmlFileExport(std::string filename)
@@ -668,15 +670,17 @@ namespace srs_env_model_percp
 
 	void DynModelExporter::getMarkerArray(visualization_msgs::MarkerArray &message, std::string output_frame_id)
 	{
+		std::ofstream file;
+		file.open("/home/rosta/out.csv", std::ios_base::app);
        	for (unsigned int i = 0; i < displayed_planes.size(); ++i)
     	{
-       		if (!displayed_planes[i].is_deleted)
+       		if (!displayed_planes[i].is_deleted && displayed_planes[i].plane.getMeshMarker().points.size() > 0)
        		{
        			message.markers.push_back(displayed_planes[i].plane.getMeshMarker());
        			message.markers.back().header.frame_id = output_frame_id;
        			message.markers.back().header.stamp = ros::Time::now();
        		}
-       		else if (displayed_planes[i].to_be_deleted)
+       		else if (displayed_planes[i].to_be_deleted && displayed_planes[i].plane.getMeshMarker().points.size() > 0)
        		{
        			message.markers.push_back(displayed_planes[i].plane.getMeshMarker());
        			message.markers.back().header.frame_id = output_frame_id;
@@ -684,6 +688,7 @@ namespace srs_env_model_percp
        			message.markers.back().action = visualization_msgs::Marker::DELETE;
        		}
     	}
+       	file.close();
 	}
 
 	void DynModelExporter::getShapeArray(cob_3d_mapping_msgs::ShapeArray &message, std::string output_frame_id)

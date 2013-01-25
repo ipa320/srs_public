@@ -36,6 +36,9 @@
 #include <pcl/point_cloud.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <tf/transform_listener.h>
+#include <tf/message_filter.h>
+#include <message_filters/subscriber.h>
+
 
 namespace srs_env_model
 {
@@ -95,7 +98,9 @@ protected:
 	std::string m_subscribedTopicName;
 
 	//! Subscriber
-	ros::Subscriber m_sub;
+//	ros::Subscriber m_sub;
+	message_filters::Subscriber<tInputData> m_sub;
+	tf::MessageFilter<tInputData> * m_tf_filter;
 
 	//! Stored point cloud
 	tPointCloudInternal m_cloud;
@@ -119,10 +124,10 @@ protected:
 	tf::Transform m_to_pfid;
 
 	/// Publishing frame id
-	std::string m_publishFID;
+	std::string m_publishFID, m_cameraFID;
 
 	//! Transform listener
-	tf::TransformListener m_tfListener;
+	tf::TransformListener m_tfListener, m_tfListener2;
 
 public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW

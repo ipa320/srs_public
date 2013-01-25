@@ -351,8 +351,25 @@ MotionPlanRequestData::MotionPlanRequestData(const unsigned int& id, const strin
   setEndEffectorLink(end_effector_name);
   setMotionPlanRequest(request);
 
-  setStartColor(makeRandomColor(0.3f, 0.6f));
-  setGoalColor(makeRandomColor(0.3f, 0.6f));
+  //setStartColor(makeRandomColor(0.3f, 0.6f));
+  //setGoalColor(makeRandomColor(0.3f, 0.6f));
+
+  std_msgs::ColorRGBA c;
+
+  c.r = 205.0/255;
+  c.g = c.r;
+  c.b = 0.0;
+  c.a = 0.6;
+
+  setStartColor(c);
+
+  c.r = 238.0/255;
+  c.g = c.r;
+  c.b = 0.0;
+  c.a = 0.6;
+
+  setGoalColor(c);
+
   setStartEditable(true);
   setGoalEditable(true);
   setHasGoodIKSolution(true, StartPosition);
@@ -1520,11 +1537,18 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
     }
     else
     {
-      std_msgs::ColorRGBA fail_color;
-      fail_color.a = 0.9;
-      fail_color.r = 1.0;
-      fail_color.g = 0.0;
-      fail_color.b = 0.0;
+      std_msgs::ColorRGBA fail_color_c; // collision
+      std_msgs::ColorRGBA fail_color_o; // out of reach
+
+      fail_color_c.a = 0.9;
+      fail_color_c.r = 1.0;
+      fail_color_c.g = 0.0;
+      fail_color_c.b = 0.0;
+
+      fail_color_o.a = 0.9;
+	  fail_color_o.r = 139.0/255.0;
+	  fail_color_o.g = 0.0;
+	  fail_color_o.b = 0.0;
 
       /////
       /// Get markers for the start
@@ -1548,11 +1572,20 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
         if(data.hasGoodIKSolution(StartPosition))
         {
           col = data.getStartColor();
+          //data.getCollisionMarkers().markers.clear(); // TODO check if it works as expected (it will probably work only for collision aware ik??)
           ROS_DEBUG("We have good IK, publish markers with normal color.");
         } else {
-          col = fail_color;
+          col = fail_color_o;
+
         }
         
+        if (data.getCollisionMarkers().markers.size() != 0) {
+
+        	// in collision, set different color
+        	col = fail_color_c;
+
+        }
+
         switch(data.getRenderType())
         {
         case VisualMesh:
@@ -1605,11 +1638,19 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
         if(data.hasGoodIKSolution(GoalPosition))
         {
           col = data.getGoalColor();
+          //data.getCollisionMarkers().markers.clear(); // TODO check if it works as expected (it will probably work only for collision aware ik??)
           ROS_DEBUG("We have good IK, publish (goal pos) markers with normal color.");
         } else {
-          col = fail_color;
+          col = fail_color_o;
         }
         
+        if (data.getCollisionMarkers().markers.size() != 0) {
+
+			// in collision, set different color
+			col = fail_color_c;
+
+		}
+
         switch(data.getRenderType())
         {
         case VisualMesh:

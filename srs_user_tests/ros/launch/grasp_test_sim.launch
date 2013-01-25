@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<launch>
+
+        <!-- args -->
+	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+  <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
+
+  <include file="$(find cob_default_robot_config)/upload_param.launch" />
+  <include file="$(find cob_default_env_config)/upload_param.launch" />
+
+  <param name="/use_sim_time" value="true" />
+  <include file="$(find cob_bringup_sim)/launch/robot.launch" />
+
+
+	<group>
+
+		<!-- navigation -->
+		<!--include file="$(find cob_navigation_slam)/launch/2dnav_ros_dwa.launch" /-->
+		<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch">
+		  <arg name="map" value="$(find srs_user_tests)/ros/config/$(arg robot_env)/map.yaml"/>
+		</include>
+
+		<!-- Run the interactive teleop -->
+		<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch">
+			<arg name="param_file" value="$(find srs_user_tests)/ros/config/interactive_teleop.yaml" />
+		</include>
+
+		<!-- Run the footprint marker visualization -->
+		<!--include file="$(find srs_ui_but)/launch/footprint_marker.launch" /-->
+	</group>
+
+	<group>
+
+		<!-- Kinect throttling -->
+		<!-- This is no more needed, IPA's new kinect throttling is used -->
+		<!--include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
+			<arg name="max_rate" value="0.3" />
+		</include-->
+	</group>
+
+	<group>
+
+		<!-- Run our dynamic scene model server node -->
+		<include file="$(find srs_arm_navigation_tests)/launch/grasping_unknown_object_test_rob.launch" />
+	</group>
+	
+	<node pkg="srs_user_tests" type="prepare_robot_manip_sim.py" name="prepare_robot_manip_sim" output="screen"/>
+
+</launch>
+

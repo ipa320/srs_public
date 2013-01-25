@@ -63,7 +63,7 @@ void srs_env_model::CCollisionObjectPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("collision_object_frame_id", m_coFrameId, COLLISION_OBJECT_FRAME_ID );
 
 	// Create publisher
-	m_coPublisher = node_handle.advertise<arm_navigation_msgs::CollisionObject> (m_coPublisherName, 100, m_latchedTopics);
+	m_coPublisher = node_handle.advertise<arm_navigation_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
 }
 
 
@@ -170,5 +170,5 @@ void srs_env_model::CCollisionObjectPlugin::pause( bool bPause, ros::NodeHandle 
 	if( bPause )
 		m_coPublisher.shutdown();
 	else
-		m_coPublisher = node_handle.advertise<arm_navigation_msgs::CollisionObject> (m_coPublisherName, 100, m_latchedTopics);
+		m_coPublisher = node_handle.advertise<arm_navigation_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
 }

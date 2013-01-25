@@ -13,7 +13,7 @@
 
     <!-- Run the plane detection -->
     <!--include file="$(find srs_env_model_percp)/launch/but_planedet_ransac_common.launch" /-->
-    <include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" />
+    <include file="$(find srs_env_model_percp)/launch/but_planedet_robot_ransac.launch" />
 
     <!-- Run rviz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_env_model_percp)/config/planedet_rviz_bag.vcg" />

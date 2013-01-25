@@ -12,11 +12,8 @@
 	<!-- Run our dynamic scene model server node -->
     	<include file="$(find srs_env_model)/launch/but_envmodel_common.launch" />
 
-	<!-- Run compressed pointcloud decompressor node -->
-	<node pkg="srs_env_model" type="but_cpc_node" name="but_cpc_node" >
-		<remap from="input" to="/but_env_model/octomap_updates"/>
-		<remap from="output" to="/but_env_model/cpc_pointcloud_centers" />
-	</node>
+	<!-- Run differential point cloud decompressor node -->
+    	<include file="$(find srs_env_model)/launch/but_envmodel_diff_pcl_client.launch" />
 
 	<!-- Run rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_env_model)/config/cpc_test1.vcg"/>

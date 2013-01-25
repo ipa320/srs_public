@@ -30,7 +30,7 @@
 int main(int argc, char **argv)
 {
 	// Do initial ros stuff
-	ros::init(argc, argv, "talker");
+	ros::init(argc, argv, "but_cpc_node");
 	ros::NodeHandle n;
 
 	// Create object
@@ -42,7 +42,6 @@ int main(int argc, char **argv)
 
 	while (ros::ok())
 	{
-
 		ros::spinOnce();
 
 		loop_rate.sleep();

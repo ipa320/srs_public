@@ -7,9 +7,9 @@
 	<include file="$(find srs_env_model_percp)/launch/run_sim.launch" />
 
      <!-- Kinect throttling -->
-    <include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
+    <!--include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
         <arg name="max_rate" value="3.0" />
-    </include>
+    </include-->
 
     <!-- Run our GUI nodes -->
     <!--include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" /-->

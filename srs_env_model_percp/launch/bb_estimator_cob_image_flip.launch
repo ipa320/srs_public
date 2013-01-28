@@ -1,8 +1,9 @@
+<?xml version="1.0"?>
 <launch>
     <!-- Run BB estimator server -->
     <node pkg="srs_env_model_percp" type="bb_estimator_server" name="bb_estimator">
         <rosparam file="$(find srs_env_model_percp)/config/bb_estimator_params.yaml" command="load" />
-        <remap from="camera_info_in" to="/cam3d/rgb/camera_info" />
-        <remap from="points_in" to="/cam3d/depth/upright/points" />
+        <remap from="camera_info_in" to="/cam3d_throttled/rgb/camera_info" />
+        <remap from="points_in" to="/cam3d_throttled/upright/depth_registered/points" />
     </node>
 </launch>

@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <launch>
  
+  <arg name="rgb_cloud" default="/cam3d_throttled/depth_registered/points"/>
+ 
+ 
   <include file="$(find srs_assisted_arm_navigation)/launch/cob_planning_environment.xml" />
  
   <!-- customized copy of cob_arm_navigation.launch and kinect_perception.launch from cob_arm_navigation -->
@@ -49,8 +52,8 @@
 	
     <!-- self filter Kinect points -->
     <node pkg="srs_env_model_utils" type="self_filter" respawn="true" name="kinect_self_filter" output="screen">
-      <remap from="cloud_in" to="/cam3d/rgb/points_throttled"/>
-      <remap from="cloud_out" to="/cam3d/rgb/points_filtered2"/>
+      <remap from="cloud_in" to="$(arg rgb_cloud)"/>
+      <remap from="cloud_out" to="/cam3d_throttled/depth_registered/points_filtered"/>
       <param name="sensor_frame" type="string" value="/head_cam3d_link"/>
       <param name="subsample_value" type="double" value=".03"/>
       <rosparam command="load" file="$(find cob_manipulation_config)/$(env ROBOT)/self_filter.yaml" />
@@ -74,9 +77,9 @@
       <!-- Node parameters -->
       <rosparam file="$(find srs_env_model)/config/environment_server_defaults.yaml" command="load"/>
 	    
-      <remap from="but_server_node/camera_info" to="/cam3d/rgb/camera_info"/>
-      <remap from="but_server_node/points_in" to="/cam3d/rgb/points_filtered2"/>
-      <remap from="but_server_node/points_filter" to="/cam3d/rgb/points_throttled" />
+      <remap from="but_server_node/camera_info" to="/cam3d_throttled/rgb/camera_info"/>
+      <remap from="but_server_node/points_in" to="/cam3d_throttled/depth_registered/points_filtered"/>
+      <remap from="but_server_node/points_filter" to="/cam3d_throttled/depth_registered/points" />
 		  
       <!--param name="registration_mode" type="string" value="icpnl"/-->
 		  

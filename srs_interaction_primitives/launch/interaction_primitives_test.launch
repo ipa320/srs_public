@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <!-- Configuration for COB, bringup simulation -->
     <include file="$(find cob_default_robot_config)/upload_param.launch" /> 

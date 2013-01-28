@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <!-- Set to use simulation time -->
     <param name="/use_sim_time" value="true"/>
@@ -11,10 +12,12 @@
     <node pkg="nodelet" type="nodelet" name="nodelet_manager_image_flip"  args="manager" output="screen"/>
 
     <!-- kinect image flip nodelet - flips kinect images if robot is looking backwards -->
-    <node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
+    <!--node pkg="nodelet" ns="cam3d" type="nodelet" name="CobKinectImageFlipNodelet" args="load ipa_CameraSensors/CobKinectImageFlipNodelet /nodelet_manager_image_flip" output="screen">
 	<remap from="pointcloud" to="/cam3d/depth/points"/>
 	<remap from="colorimage" to="/cam3d/rgb/image_raw"/>
-    </node>
+    </node-->
+    
+    <include file="$(find srs_env_model_utils)/launch/image_flip.launch" />
 
     <!-- Run our GUI nodes -->
     <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch" />

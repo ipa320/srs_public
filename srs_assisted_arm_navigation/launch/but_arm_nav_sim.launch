@@ -4,14 +4,21 @@
   <param name="/use_sim_time" value="true" />
   <include file="$(find cob_bringup_sim)/launch/robot.launch" />
   
+  <include file="$(find srs_env_model_utils)/launch/kinect_noise_generator.launch">
+    <arg name="input_topic" value="/cam3d_throttled/depth_registered/points"/>
+    <arg name="output_topic" value="/cam3d_throttled/depth_registered/points_noised"/>
+  </include>
+  
   <include file="$(find srs_assisted_arm_navigation)/launch/cob_common.xml"/>
   
   <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.xml"/>
   
-  <include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch"/>
+  <!--include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch"/-->
   
   <!-- BUT planning environment -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.xml"/>
+  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.xml">
+    <arg name="rgb_cloud" value="/cam3d_throttled/depth_registered/points_noised"/>
+  </include>
   
   <!-- RVIZ with proper configuration -->
   <!--include file="$(find srs_assisted_arm_navigation_ui)/launch/rviz.launch"/-->

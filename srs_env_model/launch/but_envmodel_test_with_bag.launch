@@ -7,9 +7,9 @@
     <!--node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node" /-->
 
     <!-- Kinect throttling -->
-    <include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
+    <!--include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
         <arg name="max_rate" value="3.0" />
-    </include>
+    </include-->
 
     <!-- Run our dynamic scene model server node -->
     <include file="$(find srs_env_model)/launch/but_envmodel_common.launch" />

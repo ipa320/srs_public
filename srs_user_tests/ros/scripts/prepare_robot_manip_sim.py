@@ -35,6 +35,7 @@ sss = simple_script_server()
 def main():
     
     rospy.init_node('prepare_robot_for_manip_test_node')
+    rospy.sleep(2)
     
     sss.init('head', True)
     sss.init('tray', True)

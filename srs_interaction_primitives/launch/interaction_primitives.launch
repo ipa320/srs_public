@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <!-- Run srs_interaction_primitives service server -->
     <node name="interaction_primitives_service_server" pkg="srs_interaction_primitives" type="interaction_primitives_service_server" />

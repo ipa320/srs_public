@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 	<!-- Run the plane detection -->
      <node pkg="srs_env_model_percp" type="but_plane_detector_ransac" name="but_plane_detector_ransac">

@@ -67,12 +67,14 @@ namespace srs_env_model_percp
 			/**
 			 * Update marker and polygonized hull
 			 */
-			visualization_msgs::Marker AddPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud);
+			visualization_msgs::Marker AddPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud, int max_poly_size);
 
 			/**
 			 * Get polygon
 			 */
-			ClipperLib::ExPolygon 	   &getPolygon();
+			ClipperLib::ExPolygons 	   &getPolygons();
+
+			void setPolygons(ClipperLib::ExPolygons &polys);
 
 			/**
 			 * Get Mesh structure
@@ -91,12 +93,16 @@ namespace srs_env_model_percp
 
 			void setColor(std_msgs::ColorRGBA &new_color);
 
+			// Triangulates plane polygon
+			void TriangulatePlanePolygon();
+
+			std_msgs::ColorRGBA color;
 		protected:
 			// Computes concave hull of set of points
 			tVertices ComputeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull);
 
 			// Computes hull U current polygon
-			void ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
+			bool ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices, int max_poly_size);
 
 			// Rewrites current plane with this hull
 			void ConcaveHullRewrite(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
@@ -104,18 +110,17 @@ namespace srs_env_model_percp
 			// Polygonizes current hull
 			ClipperLib::ExPolygons PolygonizeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
 
-			// Triangulates plane polygon
-			void TriangulatePlanePolygon();
-
-
-			ClipperLib::ExPolygons  	planePolygonsClipper;
 			Eigen::Affine3f				planeTransXY;
 			double planeShift;
 			pcl::ModelCoefficients::Ptr planeCoefficients;
+
+			ClipperLib::ExPolygons  	planePolygonsClipper;
 			visualization_msgs::Marker 	planeTriangles;
 			tShapeMarker  planeTrianglesSRS;
 			Eigen::Quaternion<float> rotationQuaternion;
-			std_msgs::ColorRGBA color;
+
+			static const int MAX_POLYS = 1000;
+
 		public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	};

@@ -3,8 +3,17 @@
     
   <!-- BUT assisted arm navigation -->
   <include file="$(find srs_assisted_arm_navigation)/launch/but_arm_nav_rob.launch"/>
+  
+    <!-- srs interaction primitives -->
+  <node name="interaction_primitives" pkg="srs_interaction_primitives" type="interaction_primitives_service_server">
+    <param name="allow_object_interaction" type="bool" value="false"/>
+    <param name="show_object_pregrasp" type="bool" value="true"/>
+    <param name="move_arm_to_pregrasp_on_click" type="bool" value="true" />
+  </node>
 
   <!-- grasping action server -->
   <include file="$(find srs_assisted_grasping)/launch/grasping_node.launch"/>
+  
+  <include file="$(find cob_spacenav_teleop)/launch/spacenav_teleop.launch" />
 
 </launch>

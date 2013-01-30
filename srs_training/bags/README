@@ -1,0 +1,8 @@
+Bag file was recorded with
+
+for 01_view_navigation
+	roscd srs_tutorials/bags
+	rosbag record -O 01_view_navigation.bag /tf /joint_states /scan_front /scan_rear /move_base/local_costmap/obstacles /move_base/local_costmap/inflated_obstacles /map
+	
+
+

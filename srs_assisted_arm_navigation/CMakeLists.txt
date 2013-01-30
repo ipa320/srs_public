@@ -52,5 +52,5 @@ rosbuild_add_executable( ${ARM_NAV_PROJECT_NAME} ${ARM_NAV_SOURCE_FILES} ${MOVE_
 #rosbuild_add_executable( video_flip_node src/assisted_grasping/video_flip.cpp )
 
 # some checks of launch files
-rosbuild_add_roslaunch_check(launch)
+rosbuild_add_roslaunch_check(launch ROBOT:=cob3-3)
 

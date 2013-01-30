@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 1860 2012-11-14 12:13:45Z spanel $
+ * $Id: but_server.h 2155 2012-12-27 17:45:59Z spanel $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -92,10 +92,8 @@ namespace srs_env_model
 /**
   BUT dynamic scene server class.
   */
-class CButServer{
-public:
-
-
+class CButServer
+{
 public:
     //! Type of the used pointcloud
     typedef pcl::PointCloud<pcl::PointXYZ> tPCLPointCloud;
@@ -118,10 +116,17 @@ protected:
     void publishAll(const ros::Time& rostime );
 
     //! On octomap data changed
-    void onOcMapDataChanged( const tButServerOcMap & mapdata, const ros::Time & stamp ){ publishAll(stamp); }
+    void onOcMapDataChanged( const tButServerOcMap & mapdata, const ros::Time & stamp )
+    {
+        publishAll(stamp);
+    }
 
     /// On reset service call
-    bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response){ reset(); return true; }
+    bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
+    {
+        reset();
+        return true;
+    }
 
     /// On pause service call
     bool onPause( ButServerPause::Request & request, ButServerPause::Response & response );
@@ -130,7 +135,6 @@ protected:
     void publishPlugins(const ros::Time& rostime);
 
 protected:
-
     //! Is server running now
     bool m_bIsPaused;
 
@@ -210,12 +214,10 @@ protected:
 
     /// Create crawler plugin holder
     boost::shared_ptr< CExampleCrawlerPlugin > m_plugExampleCrawler;
-
 #endif
 };
 
+
 } // namespace srs_env_model
-
-
 
 #endif // SERVER_H

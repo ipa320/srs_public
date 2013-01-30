@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- run the footprint marker publishing node -->
+  <node pkg="srs_ui_but" type="footprint_marker_node" name="cob_footprint_marker" output="screen">
+    <remap from="polygon_in" to="/local_costmap_node/costmap/robot_footprint" />
+    <remap from="marker_out" to="/local_costmap_node/costmap/robot_footprint_marker" />
+  </node>
+  
+</launch>

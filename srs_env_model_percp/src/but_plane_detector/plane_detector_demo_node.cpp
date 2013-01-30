@@ -63,7 +63,7 @@
 #include <but_segmentation/normals.h>
 
 #include <srs_env_model_percp/but_plane_detector/scene_model.h>
-#include <srs_env_model_percp/but_plane_detector/dyn_model_exporter2.h>
+#include <srs_env_model_percp/but_plane_detector/dyn_model_exporter.h>
 #include <srs_env_model_percp/but_plane_detector/plane_detector_params.h>
 
 #include <srs_env_model_percp/topics_list.h>
@@ -115,7 +115,7 @@ namespace srs_env_model_percp
     ros::Publisher pub1;
     ros::Publisher pub2;
     ros::Publisher pub3;
-    DynModelExporter2 *exporter = NULL;
+    DynModelExporter *exporter = NULL;
 
     sensor_msgs::CameraInfo cam_info_legacy;
     sensor_msgs::CameraInfoConstPtr cam_info_aux (&cam_info_legacy);
@@ -332,6 +332,7 @@ namespace srs_env_model_percp
 		nh.param(PARAM_VISUALISATION_PLANE_NORMAL_DEV, settings.param_visualisation_plane_normal_dev, PARAM_VISUALISATION_PLANE_NORMAL_DEV_DEFAULT);
 		nh.param(PARAM_VISUALISATION_PLANE_SHIFT_DEV, settings.param_visualisation_plane_shift_dev, PARAM_VISUALISATION_PLANE_SHIFT_DEV_DEFAULT);
 		nh.param(PARAM_VISUALISATION_MIN_COUNT, settings.param_visualisation_min_count, PARAM_VISUALISATION_MIN_COUNT_DEFAULT);
+		nh.param(PARAM_VISUALISATION_MAX_POLY_SIZE, settings.param_visualisation_max_poly_size, PARAM_VISUALISATION_MAX_POLY_SIZE_DEFAULT);
 
 		nh.param(PARAM_SEARCH_MINIMUM_CURRENT_SPACE, settings.param_search_minimum_current_space, PARAM_SEARCH_MINIMUM_CURRENT_SPACE_DEFAULT);
 		nh.param(PARAM_SEARCH_MINIMUM_GLOBAL_SPACE, settings.param_search_minimum_global_space, PARAM_SEARCH_MINIMUM_GLOBAL_SPACE_DEFAULT);
@@ -400,14 +401,15 @@ int main( int argc, char** argv )
 	std::cerr << "Minimum point count for visualised plane in current point cloud: " << settings.param_visualisation_min_count << std::endl;
 	std::cerr << std::endl;
 
-	exporter = new DynModelExporter2(&n,
+	exporter = new DynModelExporter(&n,
 					settings.param_original_frame,
 					settings.param_output_frame,
 					settings.param_visualisation_min_count,
 					settings.param_visualisation_distance,
 					settings.param_visualisation_plane_normal_dev,
 					settings.param_visualisation_plane_shift_dev,
-					settings.param_ht_keeptrack);
+					settings.param_ht_keeptrack,
+					settings.param_visualisation_max_poly_size);
 
 	// MESSAGES
 	//message_filters::Subscriber<PointCloud2 > point_cloud(n, DET_INPUT_POINT_CLOUD_TOPIC, 1);

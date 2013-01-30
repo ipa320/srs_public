@@ -9,9 +9,12 @@ Arm\ interactive\ markers.Show\ Descriptions=1
 Arm\ interactive\ markers.Show\ Tool\ Tips=1
 Arm\ interactive\ markers.Update\ Topic=/interaction_primitives/update
 Assisted\ Grasping.Enabled=0
+Assisted\ arm\ navigation\ state.Enabled=1
+Assisted\ arm\ navigation\ state.Marker\ Array\ Topic=/but_arm_manip/state_vis
+Assisted\ arm\ navigation\ state.state_vis=1
 CButBBEstimationDisplay.Enabled=1
 Camera.Enabled=1
-Camera.Image\ Topic=/cam3d/rgb/upright/image_color
+Camera.Image\ Topic=/cam3d/rgb/upright/image_raw_throttled
 Camera.Transport\ Hint=raw
 CollisionMap.Alpha=1
 CollisionMap.ColorR=0
@@ -21,19 +24,6 @@ CollisionMap.Enabled=0
 CollisionMap.Override\ Color=0
 CollisionMap.Render\ Operation=1
 CollisionMap.Topic=/but_env_model/collision_map
-Distance\ Circular\ Indicator.Alpha=1
-Distance\ Circular\ Indicator.ColorR=0
-Distance\ Circular\ Indicator.ColorG=0
-Distance\ Circular\ Indicator.ColorB=1
-Distance\ Circular\ Indicator.Enabled=1
-Distance\ Circular\ Indicator.Levels=5
-Distance\ Circular\ Indicator.Link=/base_link
-Distance\ Circular\ Indicator.OrientationX=0
-Distance\ Circular\ Indicator.OrientationY=0
-Distance\ Circular\ Indicator.OrientationZ=0
-Distance\ Circular\ Indicator.Radius=25
-Distance\ Circular\ Indicator.Show\ distance=1
-Distance\ Circular\ Indicator.Thickness=0.5
 Grid.Alpha=0.5
 Grid.Cell\ Size=1
 Grid.ColorR=0.5
@@ -116,11 +106,12 @@ Map.Draw\ Behind=0
 Map.Enabled=1
 Map.Topic=/map
 Octomap\ control.Enabled=1
-Octomap\ control.Position\:\ =-2.60987, 3.98964, -2.28752
 PSV\ Markers.Enabled=1
+PSV\ Markers.MPR\ 0_Goal=1
 PSV\ Markers.Marker\ Topic=/planning_scene_visualizer_markers
 Plannning\ Scene.Enabled=1
 Plannning\ Scene.Marker\ Topic=/planning_scene_markers
+Plannning\ Scene.collision_map_markers=1
 Pointcloud.Alpha=1
 Pointcloud.Billboard\ Size=0.01
 Pointcloud.Color\ Transformer=RGB8
@@ -143,12 +134,13 @@ Pointcloud..IntensityChannel\ Name=z
 Pointcloud..IntensityMax\ ColorR=1
 Pointcloud..IntensityMax\ ColorG=1
 Pointcloud..IntensityMax\ ColorB=1
-Pointcloud..IntensityMax\ Intensity=2.22125
+Pointcloud..IntensityMax\ Intensity=4096
 Pointcloud..IntensityMin\ ColorR=0
 Pointcloud..IntensityMin\ ColorG=0
 Pointcloud..IntensityMin\ ColorB=0
-Pointcloud..IntensityMin\ Intensity=1.47516
+Pointcloud..IntensityMin\ Intensity=0
 Pointcloud..IntensityUse\ full\ RGB\ spectrum=0
+RViz\ Camera\ Pose\ Publisher.Enabled=1
 Robot\ Model.Alpha=1
 Robot\ Model.Collision\ Enabled=0
 Robot\ Model.Enabled=1
@@ -156,7 +148,7 @@ Robot\ Model.Robot\ Description=robot_description
 Robot\ Model.TF\ Prefix=
 Robot\ Model.Update\ Interval=0
 Robot\ Model.Visual\ Enabled=1
-Robot\ teleop\ marker.Enabled=1
+Robot\ teleop\ marker.Enabled=0
 Robot\ teleop\ marker.Show\ Axes=0
 Robot\ teleop\ marker.Show\ Descriptions=1
 Robot\ teleop\ marker.Show\ Tool\ Tips=1
@@ -261,11 +253,13 @@ Robot\:\ Robot\ Model\ Link\ tray_phidgets_4_linkShow\ Axes=0
 Robot\:\ Robot\ Model\ Link\ tray_phidgets_4_linkShow\ Trail=0
 Robot\:\ Robot\ Model\ Link\ tray_right_linkShow\ Axes=0
 Robot\:\ Robot\ Model\ Link\ tray_right_linkShow\ Trail=0
+Velocity\ Limits.Enabled=1
+Velocity\ Limits.Marker\ Topic=/collision_velocity_filter/velocity_limited_marker
 Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.991 3.94193 5.66765 0.987551 1.49214 1.38282
-Property\ Grid\ State=selection=;expanded=PSV Markers.Enabled.PSV Markers.Namespaces,Plannning Scene.Enabled.Plannning Scene.Namespaces,CollisionMap.Enabled.CollisionMap.StatusTopStatus,Manual arm manipulation.Enabled.Manual arm manipulation.StatusTopStatus,Octomap control.Enabled.Octomap control.StatusTopStatus,Octomap control.Enabled.Octomap control.Camera position,Assisted Grasping.Enabled.Assisted Grasping.StatusTopStatus,CButBBEstimationDisplay.Enabled.CButBBEstimationDisplay.StatusTopStatus;scrollpos=0,0;splitterpos=133,266;ispageselected=1
+Camera\ Config=0.976 3.13193 4.4094 -0.110932 1.22295 0.676052
+Property\ Grid\ State=selection=RViz Camera Pose Publisher.Enabled;expanded=PSV Markers.Enabled.PSV Markers.Namespaces,Plannning Scene.Enabled.Plannning Scene.Namespaces,CollisionMap.Enabled.CollisionMap.StatusTopStatus,Manual arm manipulation.Enabled.Manual arm manipulation.StatusTopStatus,Robot teleop marker.Enabled.Robot teleop marker.StatusTopStatus,Octomap control.Enabled.Octomap control.StatusTopStatus,Assisted Grasping.Enabled.Assisted Grasping.StatusTopStatus,CButBBEstimationDisplay.Enabled.CButBBEstimationDisplay.StatusTopStatus,Assisted arm navigation state.Enabled.Assisted arm navigation state.Namespaces,Velocity Limits.Enabled.Velocity Limits.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus;scrollpos=0,12;splitterpos=150,301;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -304,8 +298,8 @@ Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
 [Display9]
 Name=Octomap control
-Package=srs_ui_but
-ClassName=CButDisplay
+Package=srs_env_model_ui
+ClassName=COctomapDisplay
 [Display10]
 Name=Arm interactive markers
 Package=rviz
@@ -323,18 +317,26 @@ Name=Map
 Package=rviz
 ClassName=rviz::MapDisplay
 [Display14]
-Name=Distance Circular Indicator
-Package=srs_ui_but
-ClassName=CButDistanceCircularIndicator
-[Display15]
 Name=Laser Scan
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display16]
+[Display15]
 Name=Kinect Point Cloud
 Package=rviz
 ClassName=rviz::PointCloud2Display
-[Display17]
+[Display16]
 Name=CButBBEstimationDisplay
 Package=srs_assisted_arm_navigation_ui
 ClassName=CButBBEstimationDisplay
+[Display17]
+Name=Assisted arm navigation state
+Package=rviz
+ClassName=rviz::MarkerArrayDisplay
+[Display18]
+Name=Velocity Limits
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display19]
+Name=RViz Camera Pose Publisher
+Package=srs_env_model_ui
+ClassName=CCameraPublisherDisplay

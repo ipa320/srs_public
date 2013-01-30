@@ -7,7 +7,7 @@
     <node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node" />
 
     <!-- Kinect throttling -->
-    <include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" />
+    <!--include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" /-->
 
     <!-- Run our dynamic scene model server node -->
     <!--include file="$(find srs_env_model)/launch/but_envmodel_common.launch" /-->
@@ -26,7 +26,7 @@
     <include file="$(find srs_ui_but)/launch/$(env ROBOT_ENV)/load_urdf_model.launch" />
 
     <!-- Run rviz -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_ui_but)/config/ui_test.vcg" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_ui_but)/config/projection_test.vcg" />
 
 </launch>
 

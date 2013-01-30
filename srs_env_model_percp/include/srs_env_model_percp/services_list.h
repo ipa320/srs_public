@@ -43,7 +43,17 @@ namespace srs_env_model_percp
     /**
      * but_plane_detector - services
      */
-	static const std::string DET_SERVICE_CLEAR_PLANES = PLANE_DETECTOR_PREFIX + std::string("/clear_planes");
+	static const std::string DET_SERVICE_RESET_PLANES = PLANE_DETECTOR_PREFIX + std::string("/reset_planes");
+
+	/**
+	 * but_plane_detector - services
+	 */
+	static const std::string DET_SERVICE_LOAD_PLANES = PLANE_DETECTOR_PREFIX + std::string("/load_planes");
+
+	/**
+	 * but_plane_detector - services
+	 */
+	static const std::string DET_SERVICE_SAVE_PLANES = PLANE_DETECTOR_PREFIX + std::string("/save_planes");
 
 
     /**************************************************************************

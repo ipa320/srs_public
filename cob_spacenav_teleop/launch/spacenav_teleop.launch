@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!--node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" output="screen"/-->
+
+  <!-- default command topic to move the robot base -->
+  <arg name="base_topic" default="/base_controller/command_safe" />
+  <arg name="base_topic_raw" default="/base_controller/command" />
+
+  <!-- parameter file -->
+  <arg name="param_file" default="$(find cob_spacenav_teleop)/config/spacenav_teleop.yaml" />
+
+  <node pkg="cob_spacenav_teleop" type="spacenav_teleop" name="cob_spacenav_teleop" output="screen">
+    <rosparam file="$(arg param_file)" command="load" />
+    <remap from="cmd_vel_safe" to="$(arg base_topic)" />
+    <remap from="cmd_vel_unsafe" to="$(arg base_topic_raw)" />
+  </node>
+  
+</launch>
+

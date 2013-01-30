@@ -42,7 +42,7 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 : srs_env_model::CServerPluginBase(name)
 , m_publishPointCloud(true)
 , m_pcPublisherName(POINTCLOUD_CENTERS_PUBLISHER_NAME)
-, m_pcSubscriberName(SUBSCRIBER_POINT_CLOUD_NAME)
+, m_pcSubscriberName("")
 , m_bSubscribe( subscribe )
 , m_latchedTopics( false )
 , m_pcFrameId(DEFAULT_FRAME_ID)
@@ -81,24 +81,27 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	// Point cloud publishing topic name
 	node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, POINTCLOUD_CENTERS_PUBLISHER_NAME );
 
-	// Point cloud subscribing topic name
-	node_handle.param("pointcloud_subscriber", m_pcSubscriberName, SUBSCRIBER_POINT_CLOUD_NAME);
+	// Point cloud subscribing topic name - try to get it from parameter server if not given
+	if( m_pcSubscriberName.length() == 0 )
+		node_handle.param("pointcloud_subscriber", m_pcSubscriberName, SUBSCRIBER_POINT_CLOUD_NAME);
+	else
+		m_bSubscribe = true;
 
 	// Get FID to which will be points transformed when publishing collision map
-	node_handle.param("pointcloud_frame_id", m_pcFrameId, m_pcFrameId ); //
+	node_handle.param("pointcloud_frame_id", m_pcFrameId, DEFAULT_FRAME_ID );
 
 	// Point cloud limits
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
 	node_handle.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
 
 	// Create publisher
-	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 
 	// If should subscribe, create message filter and connect to the topic
 	if( m_bSubscribe )
 	{
-		//PERROR("Subscribing to: " << m_pcSubscriberName );
+//		PERROR("Subscribing to: " << m_pcSubscriberName );
 		// Create subscriber
 		m_pcSubscriber  = new message_filters::Subscriber<tIncommingPointCloud>(node_handle, m_pcSubscriberName, 1);
 
@@ -393,6 +396,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
     // Store timestamp
     m_DataTimeStamp = cloud->header.stamp;
+    ROS_DEBUG("CPointCloudPlugin::insertCloudCallback(): stampe = %f", cloud->header.stamp.toSec());
 
  //   PERROR("Insert cloud CB. Size: " << m_data->size() );
 
@@ -405,7 +409,6 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
  //	std::cerr << "PCP.iccb end. Time: " << ros::Time::now() << std::endl;
 
 // 	PERROR("Unlock");
-
 }
 
 //! Should plugin publish data?
@@ -464,7 +467,7 @@ void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nod
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 		if( m_bSubscribe )
 		{

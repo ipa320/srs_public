@@ -89,7 +89,7 @@ std_msgs::ColorRGBA makeRandomColor(float brightness, float alpha)
 PlanningSceneData::PlanningSceneData()
 {
   setId(0);
-  setTimeStamp(ros::Time(ros::WallTime::now().toSec()));
+  setTimeStamp(ros::Time(ros::/*WallTime*/Time::now().toSec()));
 }
 
 PlanningSceneData::PlanningSceneData(unsigned int id, const ros::Time& timestamp, const PlanningScene& scene)
@@ -289,7 +289,7 @@ void TrajectoryData::updateCollisionMarkers(CollisionModels* cm_, MotionPlanRequ
     cm_->setAlteredAllowedCollisionMatrix(acm);
     GetStateValidity::Request val_req;
     GetStateValidity::Response val_res;
-    convertKinematicStateToRobotState(*state, ros::Time(ros::WallTime::now().toSec()), cm_->getWorldFrameId(),
+    convertKinematicStateToRobotState(*state, ros::Time(ros::/*WallTime*/Time::now().toSec()), cm_->getWorldFrameId(),
                                       val_req.robot_state);
 
     if(distance_state_validity_service_client_ != NULL) {
@@ -351,8 +351,25 @@ MotionPlanRequestData::MotionPlanRequestData(const unsigned int& id, const strin
   setEndEffectorLink(end_effector_name);
   setMotionPlanRequest(request);
 
-  setStartColor(makeRandomColor(0.3f, 0.6f));
-  setGoalColor(makeRandomColor(0.3f, 0.6f));
+  //setStartColor(makeRandomColor(0.3f, 0.6f));
+  //setGoalColor(makeRandomColor(0.3f, 0.6f));
+
+  std_msgs::ColorRGBA c;
+
+  c.r = 205.0/255;
+  c.g = c.r;
+  c.b = 0.0;
+  c.a = 0.6;
+
+  setStartColor(c);
+
+  c.r = 238.0/255;
+  c.g = c.r;
+  c.b = 0.0;
+  c.a = 0.6;
+
+  setGoalColor(c);
+
   setStartEditable(true);
   setGoalEditable(true);
   setHasGoodIKSolution(true, StartPosition);
@@ -555,7 +572,7 @@ void MotionPlanRequestData::setGoalAndPathPositionOrientationConstraints(arm_nav
   //tfScalar roll, pitch, yaw;
   //cur.getBasis().getRPY(roll,pitch,yaw);
   goal_constraint.header.frame_id = world_frame;
-  goal_constraint.header.stamp = ros::Time(ros::WallTime::now().toSec());
+  goal_constraint.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
   goal_constraint.link_name = end_effector_link_;
   tf::quaternionTFToMsg(cur.getRotation(), goal_constraint.orientation);
   goal_constraint.absolute_roll_tolerance = 0.04;
@@ -563,7 +580,7 @@ void MotionPlanRequestData::setGoalAndPathPositionOrientationConstraints(arm_nav
   goal_constraint.absolute_yaw_tolerance = 0.04;
 
   path_constraint.header.frame_id = world_frame;
-  path_constraint.header.stamp = ros::Time(ros::WallTime::now().toSec());
+  path_constraint.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
   path_constraint.link_name = end_effector_link_;
   tf::quaternionTFToMsg(cur.getRotation(), path_constraint.orientation);
   path_constraint.type = path_constraint.HEADER_FRAME;
@@ -622,7 +639,7 @@ void MotionPlanRequestData::updateCollisionMarkers(CollisionModels* cm_,
       
       GetStateValidity::Request val_req;
       GetStateValidity::Response val_res;
-      convertKinematicStateToRobotState(*state, ros::Time(ros::WallTime::now().toSec()), cm_->getWorldFrameId(),
+      convertKinematicStateToRobotState(*state, ros::Time(ros::/*WallTime*/Time::now().toSec()), cm_->getWorldFrameId(),
                                         val_req.robot_state);
       
       if(distance_state_validity_service_client_ != NULL) {
@@ -654,7 +671,7 @@ void MotionPlanRequestData::updateCollisionMarkers(CollisionModels* cm_,
 
       GetStateValidity::Request val_req;
       GetStateValidity::Response val_res;
-      convertKinematicStateToRobotState(*state, ros::Time(ros::WallTime::now().toSec()), cm_->getWorldFrameId(),
+      convertKinematicStateToRobotState(*state, ros::Time(ros::/*WallTime*/Time::now().toSec()), cm_->getWorldFrameId(),
                                         val_req.robot_state);
 
       if(distance_state_validity_service_client_ != NULL) {
@@ -964,19 +981,19 @@ PlanningSceneEditor::PlanningSceneEditor(PlanningSceneParameters& params)
   MenuHandler::EntryHandle shrink = menu_handler_map_["Collision Object"].insert(resize_mode_entry, "Shrink", collision_object_movement_feedback_ptr_);
   menu_handler_map_["Collision Object"].setCheckState(shrink, MenuHandler::UNCHECKED);
   menu_entry_maps_["Collision Object"]["Shrink"] = shrink;
-  registerMenuEntry("IK Control", "Map to Robot State", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Map from Robot State", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Map to Other Orientation", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Go To Last Good State", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Randomly Perturb", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Plan New Trajectory", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Filter Last Trajectory", ik_control_feedback_ptr_);
-  registerMenuEntry("IK Control", "Delete Request", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Map to Robot State", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Map from Robot State", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Map to Other Orientation", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Go To Last Good State", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Randomly Perturb", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Plan New Trajectory", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Filter Last Trajectory", ik_control_feedback_ptr_);
+  //registerMenuEntry("IK Control", "Delete Request", ik_control_feedback_ptr_);
 
-  if(params_.use_robot_data_)
+  /*if(params_.use_robot_data_)
   {
     registerMenuEntry("IK Control", "Execute Last Trajectory", ik_control_feedback_ptr_);
-  }
+  }*/
 
   /////
   /// Connection with sim data
@@ -1001,13 +1018,22 @@ void PlanningSceneEditor::jointStateCallback(const sensor_msgs::JointStateConstP
 
   std::map<std::string, double> joint_state_map;
   std::map<std::string, double> joint_velocity_map;
-  
+
+  if (joint_state->position.size() != joint_state->velocity.size() ) {
+
+	  ROS_WARN_ONCE("Problem with joint states! Position field size is %d, velocity %d. This warning will appear once.",(int)joint_state->position.size(),(int)joint_state->velocity.size());
+
+	  return;
+
+  }
+
   //message already been validated in kmsm
   for(unsigned int i = 0; i < joint_state->position.size(); ++i)
   {
-    joint_state_map[joint_state->name[i]] = joint_state->position[i];
-    joint_velocity_map[joint_state->name[i]] = joint_state->velocity[i];
+	joint_state_map[joint_state->name[i]] = joint_state->position[i];
+	joint_velocity_map[joint_state->name[i]] = joint_state->velocity[i];
   }
+
   //getting base transform
   lockScene();
   std::vector<planning_models::KinematicState::JointState*>& joint_state_vector = robot_state_->getJointStateVector();  
@@ -1511,11 +1537,18 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
     }
     else
     {
-      std_msgs::ColorRGBA fail_color;
-      fail_color.a = 0.9;
-      fail_color.r = 1.0;
-      fail_color.g = 0.0;
-      fail_color.b = 0.0;
+      std_msgs::ColorRGBA fail_color_c; // collision
+      std_msgs::ColorRGBA fail_color_o; // out of reach
+
+      fail_color_c.a = 0.9;
+      fail_color_c.r = 1.0;
+      fail_color_c.g = 0.0;
+      fail_color_c.b = 0.0;
+
+      fail_color_o.a = 0.9;
+	  fail_color_o.r = 139.0/255.0;
+	  fail_color_o.g = 0.0;
+	  fail_color_o.b = 0.0;
 
       /////
       /// Get markers for the start
@@ -1539,10 +1572,20 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
         if(data.hasGoodIKSolution(StartPosition))
         {
           col = data.getStartColor();
+          //data.getCollisionMarkers().markers.clear(); // TODO check if it works as expected (it will probably work only for collision aware ik??)
+          ROS_DEBUG("We have good IK, publish markers with normal color.");
         } else {
-          col = fail_color;
+          col = fail_color_o;
+
         }
         
+        if (data.getCollisionMarkers().markers.size() != 0) {
+
+        	// in collision, set different color
+        	col = fail_color_c;
+
+        }
+
         switch(data.getRenderType())
         {
         case VisualMesh:
@@ -1553,6 +1596,8 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
           cm_->getAttachedCollisionObjectMarkers(*(data.getStartState()), arr, it->first + "_start",
                                                  col, ros::Duration(MARKER_REFRESH_TIME), false, &lnames);
           
+          ROS_DEBUG("using VisualMesh");
+
           break;
         case CollisionMesh:
           cm_->getRobotMarkersGivenState(*(data.getStartState()), arr, col,
@@ -1593,16 +1638,27 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
         if(data.hasGoodIKSolution(GoalPosition))
         {
           col = data.getGoalColor();
+          //data.getCollisionMarkers().markers.clear(); // TODO check if it works as expected (it will probably work only for collision aware ik??)
+          ROS_DEBUG("We have good IK, publish (goal pos) markers with normal color.");
         } else {
-          col = fail_color;
+          col = fail_color_o;
         }
         
+        if (data.getCollisionMarkers().markers.size() != 0) {
+
+			// in collision, set different color
+			col = fail_color_c;
+
+		}
+
         switch(data.getRenderType())
         {
         case VisualMesh:
           cm_->getRobotMarkersGivenState(*(data.getGoalState()), arr, col,
                                          it->first + "_Goal", ros::Duration(MARKER_REFRESH_TIME),
                                          &lnames, 1.0, false);
+
+          ROS_DEBUG("Using VisualMesh.");
 
           // Bodies held by robot
           cm_->getAttachedCollisionObjectMarkers(*(data.getGoalState()), arr, it->first + "_Goal",
@@ -1676,8 +1732,8 @@ void PlanningSceneEditor::createMotionPlanRequest(const planning_models::Kinemat
 {
   MotionPlanRequest motion_plan_request;
   motion_plan_request.group_name = group_name;
-  motion_plan_request.num_planning_attempts = 1;
-  motion_plan_request.allowed_planning_time = ros::Duration(1);
+  motion_plan_request.num_planning_attempts = 3; // TODO make it configurable
+  motion_plan_request.allowed_planning_time = ros::Duration(5.0); // TODO make it configurable
   const KinematicState::JointStateGroup* jsg = end_state.getJointStateGroup(group_name);
   motion_plan_request.goal_constraints.joint_constraints.resize(jsg->getJointNames().size());
 
@@ -1695,13 +1751,13 @@ void PlanningSceneEditor::createMotionPlanRequest(const planning_models::Kinemat
   // Create start state from kinematic state passed in if robot data is being used
   if(!from_robot_state)
   {
-    convertKinematicStateToRobotState(start_state, ros::Time(ros::WallTime::now().toSec()), cm_->getWorldFrameId(),
+    convertKinematicStateToRobotState(start_state, ros::Time(ros::/*WallTime*/Time::now().toSec()), cm_->getWorldFrameId(),
                                       motion_plan_request.start_state);
   }
   // Otherwise, use the current robot state.
   else
   {
-    convertKinematicStateToRobotState(*robot_state_, ros::Time(ros::WallTime::now().toSec()), cm_->getWorldFrameId(),
+    convertKinematicStateToRobotState(*robot_state_, ros::Time(ros::/*WallTime*/Time::now().toSec()), cm_->getWorldFrameId(),
                                       motion_plan_request.start_state);
   }
 
@@ -1859,7 +1915,7 @@ bool PlanningSceneEditor::planToRequest(MotionPlanRequestData& data, unsigned in
 //   //tfScalar roll, pitch, yaw;
 //   //cur.getBasis().getRPY(roll,pitch,yaw);
 //   goal_constraint.header.frame_id = cm_->getWorldFrameId();
-//   goal_constraint.header.stamp = ros::Time(ros::WallTime::now().toSec());
+//   goal_constraint.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
 //   goal_constraint.link_name = mpr.getEndEffectorLink();
 //   tf::quaternionTFToMsg(cur.getRotation(), goal_constraint.orientation);
 //   goal_constraint.absolute_roll_tolerance = 0.04;
@@ -1867,7 +1923,7 @@ bool PlanningSceneEditor::planToRequest(MotionPlanRequestData& data, unsigned in
 //   goal_constraint.absolute_yaw_tolerance = 0.04;
 
 //   path_constraint.header.frame_id = cm_->getWorldFrameId();
-//   path_constraint.header.stamp = ros::Time(ros::WallTime::now().toSec());
+//   path_constraint.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
 //   path_constraint.link_name = mpr.getEndEffectorLink();
 //   tf::quaternionTFToMsg(cur.getRotation(), path_constraint.orientation);
 //   path_constraint.type = path_constraint.HEADER_FRAME;
@@ -1903,14 +1959,47 @@ bool PlanningSceneEditor::filterTrajectory(MotionPlanRequestData& requestData, T
   FilterJointTrajectoryWithConstraints::Response filter_res;
 
   // Filter request has to have robot state message filled
-  convertKinematicStateToRobotState(*robot_state_, ros::Time(ros::WallTime::now().toSec()), cm_->getWorldFrameId(),
+  convertKinematicStateToRobotState(*robot_state_, ros::Time(ros::/*WallTime*/Time::now().toSec()), cm_->getWorldFrameId(),
                                     filter_req.start_state);
 
   filter_req.trajectory = trajectory.getTrajectory();
   filter_req.group_name = trajectory.getGroupName();
   filter_req.goal_constraints = requestData.getMotionPlanRequest().goal_constraints;
   filter_req.path_constraints = requestData.getMotionPlanRequest().path_constraints;
-  filter_req.allowed_time = ros::Duration(2.0);
+  filter_req.allowed_time = ros::Duration(5.0); // TODO make it configurable
+
+  /*std::vector<std::string> joint_names = trajectory.getTrajectory().joint_names;
+
+  // altering joint limits here doesn't make sense -> trajectory filter ignores this...
+  for (unsigned int i = 0; i < joint_names.size(); i++) {
+
+	  JointLimits lim;
+
+	  ROS_INFO("Tuning filter joint limits for %s joint.",joint_names[i].c_str());
+
+	  bool tmp;
+
+	  ros::param::param<bool>("/trajectory_filter_server/joint_limits/" + joint_names[i] + "/has_acceleration_limits",tmp,true);
+	  lim.has_acceleration_limits = (uint8_t)tmp;
+	  ros::param::param<bool>("/trajectory_filter_server/joint_limits/" + joint_names[i] + "/has_position_limits",tmp,true);
+	  lim.has_position_limits = (uint8_t)tmp;
+	  ros::param::param<bool>("/trajectory_filter_server/joint_limits/" + joint_names[i] + "/has_velocity_limits",tmp,true);
+	  lim.has_velocity_limits = (uint8_t)tmp;
+
+	  ros::param::param<double>("/trajectory_filter_server/joint_limits/" + joint_names[i] + "/min_position",lim.min_position,0.0);
+	  ros::param::param<double>("/trajectory_filter_server/joint_limits/" + joint_names[i] + "/max_position",lim.max_position,0.0);
+
+	  ros::param::param<double>("/trajectory_filter_server/joint_limits/" + joint_names[i] + "/max_velocity",lim.max_velocity,0.0);
+	  ros::param::param<double>("/trajectory_filter_server/joint_limits/" + joint_names[i] + "/max_acceleration",lim.max_acceleration,0.0);
+
+	  lim.min_position += 0.05;
+	  lim.max_position -= 0.05;
+
+	  lim.joint_name = joint_names[i];
+
+	  filter_req.limits.push_back(lim);
+
+  }*/
 
   // Select the filter
   ros::ServiceClient* trajectory_filter_service_client;
@@ -1924,7 +2013,7 @@ bool PlanningSceneEditor::filterTrajectory(MotionPlanRequestData& requestData, T
   }
 
   // Time the filtering
-  ros::Time startTime = ros::Time(ros::WallTime::now().toSec());
+  ros::Time startTime = ros::Time(ros::/*WallTime*/Time::now().toSec());
   if(!trajectory_filter_service_client->call(filter_req, filter_res))
   {
     ROS_INFO("Problem with trajectory filter");
@@ -1939,7 +2028,7 @@ bool PlanningSceneEditor::filterTrajectory(MotionPlanRequestData& requestData, T
                       filter_res.trajectory);
   data.setPlanningSceneId(requestData.getPlanningSceneId());
   data.setMotionPlanRequestId(requestData.getId());
-  data.setDuration(ros::Time(ros::WallTime::now().toSec()) - startTime);
+  data.setDuration(ros::Time(ros::/*WallTime*/Time::now().toSec()) - startTime);
   data.setTrajectoryRenderType(Temporal);
   requestData.addTrajectoryId(id);
 
@@ -1972,7 +2061,7 @@ void PlanningSceneEditor::updateJointStates()
 
   sensor_msgs::JointState msg;
   msg.header.frame_id = cm_->getWorldFrameId();
-  msg.header.stamp = ros::Time(ros::WallTime::now().toSec());
+  msg.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
 
   vector<KinematicState::JointState*> jointStates = getRobotState()->getJointStateVector();
 
@@ -2005,6 +2094,7 @@ void PlanningSceneEditor::sendMarkers()
   marker_dt_ = (ros::Time::now() - last_marker_start_time_);
   last_marker_start_time_ = ros::Time::now();
   lockScene();
+
   sendTransformsAndClock();
   visualization_msgs::MarkerArray arr;
 
@@ -2014,6 +2104,9 @@ void PlanningSceneEditor::sendMarkers()
   vis_marker_array_publisher_.publish(arr);
   vis_marker_array_publisher_.publish(collision_markers_);
   collision_markers_.markers.clear();
+
+  ROS_DEBUG("markers are published (%u)",(unsigned int)arr.markers.size());
+
   unlockScene();
 }
 
@@ -2054,7 +2147,7 @@ std::string PlanningSceneEditor::createNewPlanningScene()
   
   PlanningSceneData data;
   data.setId(generateNewPlanningSceneId());
-  data.setTimeStamp(ros::Time(ros::WallTime::now().toSec()));
+  data.setTimeStamp(ros::Time(ros::/*WallTime*/Time::now().toSec()));
 
   convertKinematicStateToRobotState(*robot_state_, data.getTimeStamp(), cm_->getWorldFrameId(),
                                     data.getPlanningScene().robot_state);
@@ -2129,7 +2222,7 @@ void PlanningSceneEditor::savePlanningScene(PlanningSceneData& data, bool copy)
   warehouse_data_loaded_once_ = false;
   
   //overwriting timestamp
-  data.setTimeStamp(ros::Time(ros::WallTime::now().toSec()));
+  data.setTimeStamp(ros::Time(ros::/*WallTime*/Time::now().toSec()));
 
   // Have to do this in case robot state was corrupted by sim time.
   if(!copy) {
@@ -2708,11 +2801,11 @@ void PlanningSceneEditor::createSelectableMarkerFromCollisionObject(CollisionObj
   selectable.collision_object_ = object;
   selectable.control_marker_.pose = object.poses[0];
   selectable.control_marker_.header.frame_id = "/" + cm_->getWorldFrameId();
-  selectable.control_marker_.header.stamp = ros::Time(ros::WallTime::now().toSec());
+  selectable.control_marker_.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
 
   selectable.selection_marker_.pose = object.poses[0];
   selectable.selection_marker_.header.frame_id = "/" + cm_->getWorldFrameId();
-  selectable.selection_marker_.header.stamp = ros::Time(ros::WallTime::now().toSec());
+  selectable.selection_marker_.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
 
   selectable.color_ = color;
 
@@ -2927,7 +3020,7 @@ void PlanningSceneEditor::IKControllerCallback(const InteractiveMarkerFeedbackCo
       {
         data.setStartStateValues(vals);
         state = data.getStartState();
-        convertKinematicStateToRobotState(*state, ros::Time(ros::WallTime::now().toSec()), cm_->getWorldFrameId(),
+        convertKinematicStateToRobotState(*state, ros::Time(ros::/*WallTime*/Time::now().toSec()), cm_->getWorldFrameId(),
                                           data.getMotionPlanRequest().start_state);
         data.setLastGoodStartPose((state->getLinkState(data.getEndEffectorLink())->getGlobalLinkTransform()));
       }
@@ -3117,7 +3210,7 @@ void PlanningSceneEditor::createIKController(MotionPlanRequestData& data, Positi
   marker.pose.orientation.z = transform.getRotation().z();
   marker.scale = 0.225f;
   marker.name = data.getName() + nametag;
-  marker.description = data.getName() + nametag;
+  marker.description = /*data.getName() + nametag;*/ ""; // TODO check !!!!!!! if it's fine to not fill anything ;)
 
 
   InteractiveMarkerControl control;
@@ -3293,7 +3386,7 @@ void PlanningSceneEditor::collisionObjectSelectionCallback(const InteractiveMark
   {
     interactive_marker_server_->erase((*selectable_objects_)[name].selection_marker_.name);
     (*selectable_objects_)[name].control_marker_.pose = feedback->pose;
-    (*selectable_objects_)[name].control_marker_.header.stamp = ros::Time(ros::WallTime::now().toSec());
+    (*selectable_objects_)[name].control_marker_.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
 
     interactive_marker_server_->insert((*selectable_objects_)[name].control_marker_,
                                        collision_object_movement_feedback_ptr_);
@@ -3372,7 +3465,7 @@ void PlanningSceneEditor::collisionObjectMovementCallback(const InteractiveMarke
         tf::poseTFToMsg(orig*nt, coll.poses[0]);
         
         createSelectableMarkerFromCollisionObject(coll, coll.id, coll.id, (*selectable_objects_)[name].color_, false);
-        (*selectable_objects_)[name].control_marker_.header.stamp = ros::Time(ros::WallTime::now().toSec());
+        (*selectable_objects_)[name].control_marker_.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
         
         interactive_marker_server_->insert((*selectable_objects_)[name].control_marker_,
                                            collision_object_movement_feedback_ptr_);
@@ -3386,7 +3479,7 @@ void PlanningSceneEditor::collisionObjectMovementCallback(const InteractiveMarke
       if(feedback->control_name == "button") {
         interactive_marker_server_->erase((*selectable_objects_)[name].control_marker_.name);
         (*selectable_objects_)[name].selection_marker_.pose = feedback->pose;
-        (*selectable_objects_)[name].selection_marker_.header.stamp = ros::Time(ros::WallTime::now().toSec());
+        (*selectable_objects_)[name].selection_marker_.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
         interactive_marker_server_->insert((*selectable_objects_)[name].selection_marker_,
                                            collision_object_selection_feedback_ptr_);
         menu_handler_map_["Collision Object Selection"].apply(*interactive_marker_server_,
@@ -3404,7 +3497,7 @@ void PlanningSceneEditor::collisionObjectMovementCallback(const InteractiveMarke
       {
         interactive_marker_server_->erase((*selectable_objects_)[name].control_marker_.name);
         (*selectable_objects_)[name].selection_marker_.pose = feedback->pose;
-        (*selectable_objects_)[name].selection_marker_.header.stamp = ros::Time(ros::WallTime::now().toSec());
+        (*selectable_objects_)[name].selection_marker_.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
         interactive_marker_server_->insert((*selectable_objects_)[name].selection_marker_,
                                            collision_object_selection_feedback_ptr_);
         menu_handler_map_["Collision Object Selection"].apply(*interactive_marker_server_,
@@ -3434,7 +3527,7 @@ void PlanningSceneEditor::changeToAttached(const std::string& name)
   (*selectable_objects_)[name].selection_marker_.pose = (*selectable_objects_)[name].control_marker_.pose;
   (*selectable_objects_)[name].selection_marker_.description = "attached_"+name;
   interactive_marker_server_->erase((*selectable_objects_)[name].control_marker_.name);
-  (*selectable_objects_)[name].selection_marker_.header.stamp = ros::Time(ros::WallTime::now().toSec());
+  (*selectable_objects_)[name].selection_marker_.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
   interactive_marker_server_->insert((*selectable_objects_)[name].selection_marker_,
                                      attached_collision_object_feedback_ptr_);
   menu_handler_map_["Attached Collision Object"].apply(*interactive_marker_server_,
@@ -3507,7 +3600,7 @@ std::string PlanningSceneEditor::createMeshObject(const std::string& name,
   delete mesh;
   arm_navigation_msgs::CollisionObject collision_object;
   collision_object.operation.operation = arm_navigation_msgs::CollisionObjectOperation::ADD;
-  collision_object.header.stamp = ros::Time(ros::WallTime::now().toSec());
+  collision_object.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
   collision_object.header.frame_id = cm_->getWorldFrameId();
   if(name.empty()) {
     collision_object.id = generateNewCollisionObjectId();
@@ -3531,7 +3624,8 @@ std::string PlanningSceneEditor::createMeshObject(const std::string& name,
 
 std::string PlanningSceneEditor::createCollisionObject(const std::string& name,
                                                        geometry_msgs::Pose pose, PlanningSceneEditor::GeneratedShape shape,
-                                                       float scaleX, float scaleY, float scaleZ, std_msgs::ColorRGBA color)
+                                                       float scaleX, float scaleY, float scaleZ, std_msgs::ColorRGBA color,
+                                                       bool selectable=false)
 {
   lockScene();
   arm_navigation_msgs::CollisionObject collision_object;
@@ -3580,7 +3674,7 @@ std::string PlanningSceneEditor::createCollisionObject(const std::string& name,
   collision_object.shapes.push_back(object);
   collision_object.poses.push_back(pose);
 
-  createSelectableMarkerFromCollisionObject(collision_object, collision_object.id, collision_object.id, color);
+  createSelectableMarkerFromCollisionObject(collision_object, collision_object.id, collision_object.id, color,selectable);
 
   ROS_INFO("Created collision object.");
   ROS_INFO("Sending planning scene %s", current_planning_scene_name_.c_str());
@@ -3634,7 +3728,7 @@ bool PlanningSceneEditor::solveIKForEndEffectorPose(MotionPlanRequestData& data,
   kinematics_msgs::PositionIKRequest ik_request;
   ik_request.ik_link_name = data.getEndEffectorLink();
   ik_request.pose_stamped.header.frame_id = cm_->getWorldFrameId();
-  ik_request.pose_stamped.header.stamp = ros::Time(ros::WallTime::now().toSec());
+  ik_request.pose_stamped.header.stamp = ros::Time(ros::/*WallTime*/Time::now().toSec());
   
   ROS_DEBUG("Solving IK for %s link in %s world frame id.",ik_request.ik_link_name.c_str(),cm_->getWorldFrameId().c_str());
 
@@ -3650,7 +3744,7 @@ bool PlanningSceneEditor::solveIKForEndEffectorPose(MotionPlanRequestData& data,
 
   tf::poseTFToMsg(state->getLinkState(data.getEndEffectorLink())->getGlobalLinkTransform(), ik_request.pose_stamped.pose);
 
-  convertKinematicStateToRobotState(*state, ros::Time(ros::WallTime::now().toSec()), cm_->getWorldFrameId(),
+  convertKinematicStateToRobotState(*state, ros::Time(ros::/*WallTime*/Time::now().toSec()), cm_->getWorldFrameId(),
                                     ik_request.robot_state);
   ik_request.ik_seed_state = ik_request.robot_state;
 
@@ -3685,7 +3779,7 @@ bool PlanningSceneEditor::solveIKForEndEffectorPose(MotionPlanRequestData& data,
       ik_req.constraints = mpr.goal_constraints;
     }
     ik_req.ik_request = ik_request;
-    ik_req.timeout = ros::Duration(0.2);
+    ik_req.timeout = ros::Duration(0.8); // TODO make it configurable
     if(!(*collision_aware_ik_services_)[data.getEndEffectorLink()]->call(ik_req, ik_res))
     {
       ROS_INFO("Problem with ik service call");
@@ -3709,7 +3803,7 @@ bool PlanningSceneEditor::solveIKForEndEffectorPose(MotionPlanRequestData& data,
     kinematics_msgs::GetPositionIK::Request ik_req;
     kinematics_msgs::GetPositionIK::Response ik_res;
     ik_req.ik_request = ik_request;
-    ik_req.timeout = ros::Duration(0.2);
+    ik_req.timeout = ros::Duration(0.8); // TODO make it configurable
     if(!(*non_collision_aware_ik_services_)[data.getEndEffectorLink()]->call(ik_req, ik_res))
     {
       ROS_INFO("Problem with ik service call");
@@ -3751,7 +3845,7 @@ bool PlanningSceneEditor::solveIKForEndEffectorPose(MotionPlanRequestData& data,
   if(type == StartPosition)
   {
     data.setStartStateValues(joint_values);
-    convertKinematicStateToRobotState(*state, ros::Time(ros::WallTime::now().toSec()), cm_->getWorldFrameId(),
+    convertKinematicStateToRobotState(*state, ros::Time(ros::/*WallTime*/Time::now().toSec()), cm_->getWorldFrameId(),
                                       data.getMotionPlanRequest().start_state);
     data.setLastGoodStartPose((state->getLinkState(data.getEndEffectorLink())->getGlobalLinkTransform()));
   }
@@ -4354,7 +4448,7 @@ void PlanningSceneEditor::sendTransformsAndClock()
 
   if(!params_.use_robot_data_)
   {
-    ros::WallTime cur_time = ros::WallTime::now();
+    ros::/*WallTime*/Time cur_time = ros::/*WallTime*/Time::now();
     rosgraph_msgs::Clock c;
     c.clock.nsec = cur_time.nsec;
     c.clock.sec = cur_time.sec;

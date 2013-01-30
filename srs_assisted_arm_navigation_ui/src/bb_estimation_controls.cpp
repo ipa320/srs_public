@@ -33,7 +33,7 @@ using namespace srs_assisted_arm_navigation_ui;
 using namespace srs_assisted_arm_navigation;
 using namespace srs_assisted_arm_navigation_msgs;
 
-static const string cv_win = "Image window";
+static const string cv_win = "Assisted object detection";
 
 const int ID_BUTTON_OK(101);
 
@@ -49,22 +49,42 @@ CButBBEstimationControls::CButBBEstimationControls(wxWindow *parent, const wxStr
     it_(nh_)
 {
 
+	ros::NodeHandle nh;
 
 	ros::param::param<bool>("~is_video_flipped", is_video_flipped_ , true);
+	//ros::param::param<bool>("~disable_video", disable_video_ , false);
 
 	class_ptr = this;
 
     parent_ = parent;
 
-    m_button_ok_ = new wxButton(this, ID_BUTTON_OK, wxT("Ok"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    m_button_ok_ = new wxButton(this, ID_BUTTON_OK, wxT("Positioning completed"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
     m_button_ok_->Enable(false);
+
+    //sub_image_ = it_.subscribe("bb_video_in", 1, &CButBBEstimationControls::imageCallback,this);
 
     as_.registerGoalCallback(    boost::bind(&CButBBEstimationControls::actionGoalCallback, this));
     as_.registerPreemptCallback( boost::bind(&CButBBEstimationControls::actionPreemptCallback, this));
 
+    image_ = NULL;
+    image_tmp_ = NULL;
+
     image_width_ = 0;
     image_height_ = 0;
+
+    butt_down_x_ = -1;
+    butt_down_y_ = -1;
+
+    disable_video_  = false;
+
+    data_ready_ = false;
+    some_data_ready_ = false;
+    action_in_progress_ = false;
+
+    // 20 Hz timer
+    /*if (!disable_video_)*/ timer_ = nh.createTimer(ros::Duration(0.04),&CButBBEstimationControls::timerCallback,this);
+    //else ROS_INFO("Started in (almost) useless mode (video disabled).");
 
     as_.start();
 
@@ -81,15 +101,150 @@ CButBBEstimationControls::~CButBBEstimationControls() {
 
 }
 
+void CButBBEstimationControls::timerCallback(const ros::TimerEvent& ev) {
+
+	ROS_INFO_ONCE("Timer triggered.");
+
+	if (action_in_progress_ && !disable_video_) {
+
+
+		image_mutex_.lock();
+
+		if (image_ == NULL) {
+
+			image_mutex_.unlock();
+			return;
+
+		}
+
+		if (image_tmp_ != NULL) {
+
+			image_tmp_->release();
+			delete image_tmp_;
+
+		}
+
+		//image_tmp_ = new cv::Mat(*image_);
+
+		image_tmp_ = new cv::Mat();
+
+		image_->copyTo(*image_tmp_);
+
+		image_mutex_.unlock();
+
+		std::string text_line1 = "Please select object.";
+		std::string text_line2 = "Press left button, drag and then release.";
+
+		int fontFace = cv::FONT_HERSHEY_COMPLEX_SMALL;
+		double fontScale = 0.8;
+		int thickness = 1;
+
+		int baseline=0;
+
+		cv::Size size_line1 = cv::getTextSize(text_line1, fontFace, fontScale, thickness, &baseline);
+		cv::Size size_line2 = cv::getTextSize(text_line2, fontFace, fontScale, thickness, &baseline);
+
+		int bigger_w = 0;
+
+		if (size_line1.width > size_line2.width) bigger_w = size_line1.width;
+		else bigger_w = size_line2.width;
+
+		cv::rectangle(*image_tmp_,                    /* the dest image */
+								  cv::Point(0,0),        /* top left point */
+								  cv::Point(bigger_w + 20,size_line1.height + size_line2.height + 40),       /* bottom right point */
+								  cv::Scalar(250, 250, 250, 125),
+								  CV_FILLED,
+								  CV_AA,
+								  0);
+
+		cv::putText(*image_tmp_, "Please select object.", cvPoint(10,20), fontFace, fontScale, cvScalar(0,0,0), thickness, CV_AA);
+		cv::putText(*image_tmp_, "Press left button, drag and then release.", cvPoint(10,50), fontFace, fontScale, cvScalar(0,0,0), thickness, CV_AA);
+
+
+
+		if (data_ready_ || some_data_ready_) {
+
+			cv::Point tl,br;
+
+			data_mutex_.lock();
+
+			if (p1_[0] < p2_[0]) {
+
+				tl.x = p1_[0];
+				tl.y = p1_[1];
+
+				br.x = p2_[0];
+				br.y = p2_[1];
+
+			} else {
+
+				tl.x = p2_[0];
+				tl.y = p2_[1];
+
+				br.x = p1_[0];
+				br.y = p1_[1];
+
+			}
+
+			data_mutex_.unlock();
+
+			cv::Scalar color;
+
+			if (some_data_ready_) color = cv::Scalar(255, 0, 0, 0); // blue - while selecting
+			else color = cv::Scalar(0, 0, 255, 0); // red - when selected
+
+			cv::rectangle(*image_tmp_,                    /* the dest image */
+						  tl,        /* top left point */
+						  br,       /* bottom right point */
+						  color, /* the color; blue */
+						1, 8, 0);               /* thickness, line type, shift */
+
+
+		}
+
+		cv::imshow(cv_win.c_str(), *image_tmp_);
+		//cv::waitKey(1);
+
+
+	}
+
+
+}
+
 void CButBBEstimationControls::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 	ROS_INFO_ONCE("Received image");
 
-	cv_bridge::CvImagePtr cv_ptr;
+	if (disable_video_) return;
+
+	//cv_bridge::CvImagePtr cv_ptr;
+
 
 	try {
 
+		/*if (cv_ptr_ == NULL) cv_ptr_ = cv_bridge::toCvCopy(msg,msg->encoding);
+		else {
+
+			cv_ptr_.reset();
+			cv_ptr_ = cv_bridge::toCvCopy(msg,msg->encoding);
+
+		}*/
+
+		cv_bridge::CvImagePtr cv_ptr;
 		cv_ptr = cv_bridge::toCvCopy(msg,msg->encoding);
+
+		image_mutex_.lock();
+
+		if (image_ != NULL) {
+
+			image_->release();
+			delete image_;
+
+		}
+
+		image_ = new cv::Mat(cv_ptr->image);
+
+		image_mutex_.unlock();
 
 	} catch (cv_bridge::Exception& e) {
 
@@ -106,44 +261,6 @@ void CButBBEstimationControls::imageCallback(const sensor_msgs::ImageConstPtr& m
 
 	}
 
-	if (some_data_ready_) {
-
-		cv::Point tl,br;
-
-		// TODO add mutex here???????
-
-		if (p1_[0] < p2_[0]) {
-
-			tl.x = p1_[0];
-			tl.y = p1_[1];
-
-			br.x = p2_[0];
-			br.y = p2_[1];
-
-		} else {
-
-			tl.x = p2_[0];
-			tl.y = p2_[1];
-
-			br.x = p1_[0];
-			br.y = p1_[1];
-
-		}
-
-		/* draw a blue box */
-		cv::rectangle(cv_ptr->image,                    /* the dest image */
-					  tl,        /* top left point */
-					  br,       /* bottom right point */
-					  cv::Scalar(255, 0, 0, 0), /* the color; blue */
-					1, 8, 0);               /* thickness, line type, shift */
-
-
-	}
-
-
-	cv::imshow(cv_win.c_str(), cv_ptr->image);
-	cv::waitKey(3);
-
 }
 
 void CButBBEstimationControls::newData(int event, int x, int y) {
@@ -159,18 +276,44 @@ void CButBBEstimationControls::newData(int event, int x, int y) {
 
 		   } break;
 
+
+		case CV_EVENT_MOUSEMOVE: {
+
+			if (butt_down_x_ != -1) {
+
+				some_data_ready_ = true;
+
+				data_mutex_.lock();
+				p1_[0] = butt_down_x_;
+				p1_[1] = butt_down_y_;
+
+				p2_[0] = x;
+				p2_[1] = y;
+				data_mutex_.unlock();
+
+			}
+
+
+		} break;
+
 		   // Mouse UP (end-point of the ROI)
 		case CV_EVENT_LBUTTONUP: {
+
+			data_mutex_.lock();
 
 			p1_[0] = butt_down_x_;
 		    p1_[1] = butt_down_y_;
 
+		    butt_down_x_ = -1;
+		    butt_down_y_ = -1;
+
 		    p2_[0] = x;
 		    p2_[1] = y;
 
-		    some_data_ready_ = true;
+		    data_mutex_.unlock();
 
-			// TODO: handle flipped video
+		    some_data_ready_ = false;
+		    data_ready_ = true;
 
 			if (!is_video_flipped_) {
 
@@ -218,20 +361,31 @@ void CButBBEstimationControls::actionGoalCallback() {
 
 	goal_ = as_.acceptNewGoal();
 
-	some_data_ready_ = false;
+	disable_video_ = goal_->disable_video;
 
-	wxMessageBox(wxString::FromAscii("Please select ROI of unknown object in image"), wxString::FromAscii("BB estimation"), wxOK, parent_,-1,-1);
+	if (!disable_video_) {
 
-	max_time_ = ros::Time::now() + ros::Duration(30);
+		sub_image_ = it_.subscribe("bb_video_in", 1, &CButBBEstimationControls::imageCallback,this);
+
+		wxMessageBox(wxString::FromAscii("Please select unknown object in image. You can select object in image several times. After selecting, it will appear as interactive marker in RVIZ and you can tune it. When it will fit real object, please click on \"Positioning finished\" button."), wxString::FromAscii("Assisted object detection"), wxOK, parent_,-1,-1);
+
+		cv::namedWindow(cv_win.c_str());
+		cv::setMouseCallback(cv_win,onMouse,NULL);
+
+	} else {
+
+		wxMessageBox(wxString::FromAscii("Please tune position and orientation of interactive marker to fit the object. When finished, please click on \"Positioning finished\" button."), wxString::FromAscii("Assisted object detection"), wxOK, parent_,-1,-1);
+		m_button_ok_->Enable(true);
+
+	}
+
+	//max_time_ = ros::Time::now() + ros::Duration(30);
 
 
-	cv::namedWindow(cv_win.c_str());
 
-	cv::setMouseCallback(cv_win,onMouse,NULL);
 
-	sub_image_ = it_.subscribe("bb_video_in", 1, &CButBBEstimationControls::imageCallback,this);
 
-	//action_in_progress_ = true;
+	action_in_progress_ = true;
 
 }
 
@@ -242,10 +396,19 @@ void CButBBEstimationControls::actionPreemptCallback() {
 	ROS_INFO("%s: Preempted",ACT_BB_SELECT.c_str());
 	as_.setPreempted();
 
-	//action_in_progress_ = false;
+	action_in_progress_ = false;
+	disable_video_ = false;
 
-	cv::destroyWindow(cv_win.c_str());
-	sub_image_.shutdown();
+	if (!disable_video_) {
+
+		cv::destroyWindow(cv_win.c_str());
+		sub_image_.shutdown();
+		some_data_ready_ = false;
+		data_ready_ = false;
+		image_width_ = 0;
+		image_height_ = 0;
+
+	}
 
 }
 
@@ -256,19 +419,30 @@ void CButBBEstimationControls::OnOk(wxCommandEvent& event) {
 
 	ManualBBEstimationResult result;
 
-	if (!is_video_flipped_) {
+	if (!disable_video_) {
 
-		result.p1[0] = p1_[0];
-		result.p1[1] = p1_[1];
-		result.p2[0] = p2_[0];
-		result.p2[1] = p2_[1];
+		if (!is_video_flipped_) {
+
+			result.p1[0] = p1_[0];
+			result.p1[1] = p1_[1];
+			result.p2[0] = p2_[0];
+			result.p2[1] = p2_[1];
+
+		} else {
+
+			result.p1[0] = image_width_  - p1_[0];
+			result.p1[1] = image_height_ - p1_[1];
+			result.p2[0] = image_width_  - p2_[0];
+			result.p2[1] = image_height_ - p2_[1];
+
+		}
 
 	} else {
 
-		result.p1[0] = image_width_  - p1_[0];
-		result.p1[1] = image_height_ - p1_[1];
-		result.p2[0] = image_width_  - p2_[0];
-		result.p2[1] = image_height_ - p2_[1];
+		result.p1[0] = 0.0;
+		result.p1[1] = 0.0;
+		result.p2[0] = 0.0;
+		result.p2[1] = 0.0;
 
 	}
 
@@ -276,12 +450,22 @@ void CButBBEstimationControls::OnOk(wxCommandEvent& event) {
 
 	as_.setSucceeded(result, "Go on...");
 
-	cv::destroyWindow(cv_win.c_str());
-	sub_image_.shutdown();
-
 	m_button_ok_->Enable(false);
 
-	some_data_ready_ = false;
+	if (disable_video_) {
+
+		cv::destroyWindow(cv_win.c_str());
+		sub_image_.shutdown();
+
+		some_data_ready_ = false;
+		data_ready_ = false;
+		action_in_progress_ = false;
+		image_width_ = 0;
+		image_height_ = 0;
+
+	}
+
+	disable_video_ = false;
 
 }
 

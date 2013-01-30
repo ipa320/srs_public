@@ -67,7 +67,7 @@ void srs_env_model::CCollisionGridPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("map2d_min_y_size", m_minSizeY, m_minSizeY);
 
 	// Create publisher
-	m_gridPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_gridPublisherName, 100, m_latchedTopics);
+	m_gridPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_gridPublisherName, 5, m_latchedTopics);
 }
 
 
@@ -261,6 +261,6 @@ void srs_env_model::CCollisionGridPlugin::pause( bool bPause, ros::NodeHandle & 
 	else
 	{
 		// Create publisher
-		m_gridPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_gridPublisherName, 100, m_latchedTopics);
+		m_gridPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_gridPublisherName, 5, m_latchedTopics);
 	}
 }

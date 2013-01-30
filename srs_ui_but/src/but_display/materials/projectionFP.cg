@@ -21,6 +21,13 @@ void testedProjection_fp(
 		uniform float testedDistance
 )
 {
+	// Test if texture coordinate lays in the texture bounds
+	if( texCoord[0]/texCoord[3] < 0.0 || texCoord[0]/texCoord[3] >= 1.0 || texCoord[1]/texCoord[3] < 0.0 || texCoord[1]/texCoord[3] >= 1.0 )
+	{
+		outCol = inColor;
+		return;
+	}
+
 	// Get projected depth
 	float4 proj_depth = tex2Dproj( depthMap, texCoord );
 	float proj_z = proj_depth[2];

@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: octonode.h 1874 2012-11-15 14:45:46Z stancl $
+ * $Id: octonode.h 2155 2012-12-27 17:45:59Z spanel $
  *
  * Copyright (C) Brno University of Technology
  *

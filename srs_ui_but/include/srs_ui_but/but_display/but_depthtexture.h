@@ -51,9 +51,6 @@ public:
 	//! Destructor
 	~CDepthImageConvertor();
 
-	//! Get cv image access
-	cv_bridge::CvImage * getBridgeImage() { return m_bridge_image.get(); }
-
 	//! Get converted msg image
 	sensor_msgs::ImagePtr & getSensorMsgsImage() { return m_depth_msg; }
 
@@ -79,8 +76,17 @@ protected:
 	//! Callback function
 	void depthCb(const sensor_msgs::ImageConstPtr& raw_msg);
 
-	//! Convert image to the internal representation
+	//! Convert depth image - just call appropriate method
 	virtual bool convertDepth(const sensor_msgs::ImageConstPtr& raw_msg);
+
+	//! Convert 16bit image to the internal representation
+	virtual bool convertDepth16(const sensor_msgs::ImageConstPtr& raw_msg);
+
+	//! Convert 16bit image to the internal representation
+	virtual bool convertDepth16UC1(const sensor_msgs::ImageConstPtr& raw_msg);
+
+	//! COnvert 8bit image to the interna representation
+	virtual bool convertDepth8(const sensor_msgs::ImageConstPtr& raw_msg);
 
 	//! Convert image from depth to the visible version
 	bool toVisible(int coord = 2);
@@ -98,9 +104,6 @@ protected:
 
 	//! Converted message
 	sensor_msgs::ImagePtr m_depth_msg, m_visible_msg, m_float_msg;
-
-	//! Cv image
-	cv_bridge::CvImagePtr m_bridge_image;
 
 	//! Sizes range
 	Ogre::Vector4 m_min_range, m_max_range;
@@ -140,10 +143,6 @@ public:
 
 	//! Get current texture pointer
 	const Ogre::TexturePtr& getTexture() { return m_texture_converter.getOgreTexture(); }
-
-
-	//! Update content of texture from message
-	//bool update();
 
 	//! Clear
 	void clear();

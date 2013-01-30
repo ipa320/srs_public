@@ -1,0 +1,22 @@
+<package>
+  <description brief="cob_spacenav_teleop">
+
+     cob_spacenav_teleop
+
+  </description>
+  <author>Zdenek Materna</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/cob_spacenav_teleop</url>
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="spacenav_node"/>
+  <depend package="std_srvs"/>
+  <depend package="eigen"/>
+  <depend package="srs_env_model_ui"/>
+
+</package>
+
+

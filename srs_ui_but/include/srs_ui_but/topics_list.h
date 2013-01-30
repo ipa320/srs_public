@@ -69,11 +69,9 @@ static const std::string DEFAULT_CAMERA_IMAGE = std::string("default_camera_imag
 static const std::string DEFAULT_GRIPPER_LINK = "/sdh_palm_link";
 static const std::string DEFAULT_ROBOT_LINK = "/sdh_palm_link";
 static const std::string DEFAULT_COB_BASE_LINK = "/base_link";
-static const std::string CAMERA_POSITION_TOPIC_NAME = "/rviz_camera_position";
-static const std::string RVIZ_TF_NAME = "rviz_cam";
 
 /**
- * but-servcies - published topics
+ * but-services - published topics
  */
 static const std::string COBStretch_TOPIC = BUT_SERVICES_PREFIX + std::string("/cob_stretch");
 
@@ -83,10 +81,7 @@ static const std::string COBStretch_TOPIC = BUT_SERVICES_PREFIX + std::string("/
 //static const std::string CAMERA_TOPIC = "/cam3d/depth/points";
 static const std::string CAMERA_TOPIC = "/but_env_model/pointcloud_centers";
 static const std::string CAMERA_LINK = "/head_cam3d_link";
+
 }
 
 #endif // BUT_GUI_TOPICS_LIST_H
-
-
-
-

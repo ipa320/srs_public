@@ -17,10 +17,10 @@ original_frame: /camera_rgb_optical_frame
 planedet_ht_keep_track: 1
 
 # Maximum depth in meters to count with (for real data, 3.0 is recommended)
-planedet_ht_maxdepth: 3.0
+planedet_ht_maxdepth: 7.0
 
 # Maximum height in meters to be considered
-planedet_ht_max_height: 3.0
+planedet_ht_max_height: 5.0
 
 # Minimum height in meters to be considered
 planedet_ht_min_height: 0.1
@@ -32,28 +32,28 @@ planedet_ht_minshift: -40.0
 planedet_ht_maxshift: 40.0
 
 # HS angle axis resolution
-planedet_ht_angle_res: 512
+planedet_ht_angle_res: 1024
 
 # HS shift axis resolution
-planedet_ht_shift_res: 4096
+planedet_ht_shift_res: 2048
 
 # HS Gauss smoothing angle kernel size
-planedet_ht_gauss_angle_res: 11
+planedet_ht_gauss_angle_res: 21
 
 # HS Gauss smoothing shift kernel size
-planedet_ht_gauss_shift_res: 11
+planedet_ht_gauss_shift_res: 21
 
 # HS Gauss smoothing angle kernel sigma
-planedet_ht_gauss_angle_sigma: 0.04
+planedet_ht_gauss_angle_sigma: 0.12
 
 # HS Gauss smoothing shift kernel sigma
-planedet_ht_gauss_shift_sigma: 0.15
+planedet_ht_gauss_shift_sigma: 0.50
 
 # Merge planes with shift difference less than
-planedet_ht_plane_merge_shift: 0.1
+planedet_ht_plane_merge_shift: 0.02
 
 # Merge planes with angle difference less than
-planedet_ht_plane_merge_angle: 0.5
+planedet_ht_plane_merge_angle: 0.2
 
 # HS Gauss for global plane representation angle kernel size
 planedet_ht_lvl1_gauss_angle_res: 21
@@ -69,6 +69,9 @@ planedet_ht_lvl1_gauss_shift_sigma: 5.0
 
 # HS minimal point count to be considered for computation (warning, big speed effect) 
 planedet_ht_min_smooth: 10
+
+# Number of HS node substraction after each step
+planedet_ht_step_substraction: 0.0
 
 #-----------------------------------------------------------------------------------
 # PLANE SEARCH PARAMS 
@@ -92,13 +95,37 @@ planedet_search_maxima_search_blur: 0
 planedet_visualisation_distance: 0.05
 
 # Point normal difference to visualised plane
-planedet_visualisation_plane_normal_dev: 0.5
+planedet_visualisation_plane_normal_dev: 0.2
 
 # Point shift difference to visualised plane
-planedet_visualisation_plane_shift_dev: 0.1
+planedet_visualisation_plane_shift_dev: 0.05
 
 # Minimal point count for visualised plane
 planedet_visualisation_min_count: 2000
 
 # Color creation method (plane_eq / mean_color / centroid / random)
-planedet_visualisation_color : random
+planedet_visualisation_color : mean_color
+
+# Plane visualisation time-to-live (sec), if 0, planes are permanent
+planedet_visualisation_ttl : 10
+
+# Plane polygonization maximum polygon size
+planedet_max_poly_size: 2000
+
+#-----------------------------------------------------------------------------------
+# NORMAL ESTIMATION PARAMS 
+# 
+# Normal estimation type (1 - direct, 2 - LSQ, 4 - LSQ only around, 8 - LTS, 16 - LTS around, 32 - PCL) 
+planedet_normal_type: 32
+
+# Neighborhood to be considered with (half of the window)
+planedet_normal_neighborhood: 15
+
+# Depth threshold to not consider the point 
+planedet_normal_threshold:  0.2
+
+# Outlier threshold for LTS method
+planedet_normal_outlierThreshold: 0.02
+
+# Max iteration count form LTS method 
+planedet_normal_iter: 3

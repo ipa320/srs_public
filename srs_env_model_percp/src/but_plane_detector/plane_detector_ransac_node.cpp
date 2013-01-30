@@ -207,6 +207,7 @@ namespace srs_env_model_percp
     		// Mandatory
     		seg.setModelType (pcl::SACMODEL_PLANE);
     		seg.setMethodType (pcl::SAC_RANSAC);
+
     		seg.setDistanceThreshold (settings.param_visualisation_distance);
 
     		seg.setInputCloud (cloudPtr);
@@ -329,6 +330,7 @@ namespace srs_env_model_percp
 		nh.param(PARAM_VISUALISATION_MIN_COUNT, settings.param_visualisation_min_count, PARAM_VISUALISATION_MIN_COUNT_DEFAULT);
 		nh.param(PARAM_VISUALISATION_COLOR, settings.param_visualisation_color, PARAM_VISUALISATION_COLOR_DEFAULT);
         nh.param(PARAM_VISUALISATION_TTL, settings.param_visualisation_ttl, PARAM_VISUALISATION_TTL_DEFAULT);
+        nh.param(PARAM_VISUALISATION_MAX_POLY_SIZE, settings.param_visualisation_max_poly_size, PARAM_VISUALISATION_MAX_POLY_SIZE_DEFAULT);
 
 		nh.param(PARAM_SEARCH_MINIMUM_CURRENT_SPACE, settings.param_search_minimum_current_space, PARAM_SEARCH_MINIMUM_CURRENT_SPACE_DEFAULT);
 		nh.param(PARAM_SEARCH_MINIMUM_GLOBAL_SPACE, settings.param_search_minimum_global_space, PARAM_SEARCH_MINIMUM_GLOBAL_SPACE_DEFAULT);
@@ -360,7 +362,8 @@ namespace srs_env_model_percp
 									   settings.param_visualisation_plane_normal_dev,
 									   settings.param_visualisation_plane_shift_dev,
 									   settings.param_ht_keeptrack,
-									   settings.param_visualisation_ttl);
+									   settings.param_visualisation_ttl,
+									   settings.param_visualisation_max_poly_size);
 
 		res.message = "Hough space successfully reset.\n";
 		std::cout << "Hough space successfully reset." << std::endl;
@@ -400,7 +403,8 @@ namespace srs_env_model_percp
 									   settings.param_visualisation_plane_normal_dev,
 									   settings.param_visualisation_plane_shift_dev,
 									   settings.param_ht_keeptrack,
-									   settings.param_visualisation_ttl);
+									   settings.param_visualisation_ttl,
+									   settings.param_visualisation_max_poly_size);
 
 		exporter->xmlFileImport(req.filename);
 
@@ -478,7 +482,8 @@ int main( int argc, char** argv )
 										settings.param_visualisation_plane_normal_dev,
 										settings.param_visualisation_plane_shift_dev,
 										settings.param_ht_keeptrack,
-										settings.param_visualisation_ttl);
+										settings.param_visualisation_ttl,
+										settings.param_visualisation_max_poly_size);
 
 		message_filters::Subscriber<PointCloud2 > point_cloud(*n, DET_INPUT_POINT_CLOUD_TOPIC, 10);
 
@@ -535,7 +540,8 @@ int main( int argc, char** argv )
 										settings.param_visualisation_plane_normal_dev,
 										settings.param_visualisation_plane_shift_dev,
 										settings.param_ht_keeptrack,
-										settings.param_visualisation_ttl);
+										settings.param_visualisation_ttl,
+										settings.param_visualisation_max_poly_size);
 
 		// MESSAGES
 		message_filters::Subscriber<Image> depth_sub(*n, DET_INPUT_IMAGE_TOPIC, 1);

@@ -56,11 +56,14 @@ CButPointCloud::CButPointCloud( const std::string& name, rviz::VisualizationMana
     , caminfo_subscribed_( false )
     , vf_scene_node_( 0 )
     , vf_manual_object_( 0 )
-    , tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
-    , caminfo_tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
+    , tf_filter_(*manager->getTFClient(), "", 1, threaded_nh_)
+//    , tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
+    , caminfo_tf_filter_(*manager->getTFClient(), "", 1, threaded_nh_)
+//    , caminfo_tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
     , draw_view_frustum_( false )
-    , view_frustum_depth_( 3.0 )
+    , view_frustum_depth_( 4 )
     , cull_view_frustum_( false )
+	, max_distance_( 10 )
 {
     // Connect to the input - point cloud advertiser
     tf_filter_.connectInput(sub_);
@@ -307,8 +310,8 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
 
     // VIEW FRUSTUM filtering
     bool culling_enabled = false;
-    Eigen::Vector3f n[4];
-    float d[4];
+    Eigen::Vector3f n[4], cam;
+    float d[4], max_depth = 10.0f, max_distance = 10.0f;
     if( caminfo_ && cull_view_frustum_ )
     {
         boost::mutex::scoped_lock lock(caminfo_mutex_);
@@ -316,6 +319,8 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
         if( caminfo_ && cull_view_frustum_ )
         {
             culling_enabled = true;
+            max_depth = view_frustum_depth_;
+            max_distance = max_distance_;
 
             // Transform points defining the view frustum into the correct frame
             geometry_msgs::PointStamped point, tl, tr, bl, br, camera;
@@ -370,9 +375,9 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
                 points[2] = Eigen::Vector3f(float(tr.point.x), float(tr.point.y), float(tr.point.z));
                 points[3] = Eigen::Vector3f(float(br.point.x), float(br.point.y), float(br.point.z));
 
-                Eigen::Vector3f cam(float(camera.point.x), float(camera.point.y), float(camera.point.z));
+                cam = Eigen::Vector3f(float(camera.point.x), float(camera.point.y), float(camera.point.z));
 
-                for( int i = 0; i < 3; ++i )
+                for( int i = 0; i < 4; ++i )
                 {
                     int i2 = (i + 1) % 4;
                     Eigen::Vector3f v1(points[i] - cam);
@@ -399,14 +404,24 @@ void CButPointCloud::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPt
         {
             if( culling_enabled )
             {
-                Eigen::Vector3f p(x, y, z);
+            	Eigen::Vector3f p(x, y, z);
+            	Eigen::Vector3f aux = p - cam;
+                float dist = aux.norm();
+                if( dist > max_distance )
+                {
+                    continue;
+                }
+
                 float e1 = n[0].dot(p) + d[0];
                 float e2 = n[1].dot(p) + d[1];
                 float e3 = n[2].dot(p) + d[2];
                 float e4 = n[3].dot(p) + d[3];
-                if( e1 > 0.0f && e2 > 0.0f && e3 > 0.0f /*&& e4 < 0.0f*/ )
+                if( e1 > 0.0f && e2 > 0.0f && e3 > 0.0f && e4 > 0.0f )
                 {
-                    continue;
+                    if( dist < max_depth )
+                    {
+                        continue;
+                    }
                 }
             }
 
@@ -673,6 +688,16 @@ void CButPointCloud::createProperties()
             "Controls weather the points inside the view frustum are removed or not.");
 
 
+    max_distance_property_ = property_manager_->createProperty<rviz::FloatProperty> (
+            "Max Distance", property_prefix_, boost::bind(
+            &CButPointCloud::getMaxDistance, this), boost::bind(
+            &CButPointCloud::setMaxDistance, this, _1), parent_category_,
+            this);
+    setPropertyHelpText(
+            max_distance_property_,
+            "Maximal allowed distance of points from the robot.");
+
+
     // Polygon position
     position_property_ = property_manager_->createProperty<rviz::Vector3Property> (
             "Position", property_prefix_, boost::bind(
@@ -729,6 +754,17 @@ void CButPointCloud::setCullViewFrustum(bool value)
     cull_view_frustum_ = value;
 
     propertyChanged(cull_view_frustum_property_);
+
+    causeRender();
+}
+
+
+void CButPointCloud::setMaxDistance(float value)
+{
+    // set internal variable
+    max_distance_ = value;
+
+    propertyChanged(max_distance_property_);
 
     causeRender();
 }

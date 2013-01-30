@@ -87,7 +87,7 @@ void ManualArmManipActionServer::executeCB(const ManualArmManipGoalConstPtr &goa
       state_ = new_state_;
 
       // test for sleeping user
-      if (state_==S_NONE && ((ros::Time::now()-start_time_) > start_timeout_) && (start_timeout_.toSec() > 0.0)) {
+      if ( (state_==S_NONE) && ((ros::Time::now()-start_time_) > start_timeout_) && (start_timeout_.toSec() > 0.0) ) {
 
         ROS_ERROR("%s: Canceled. Start timeout reached.", action_name_.c_str());
 

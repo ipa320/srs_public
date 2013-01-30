@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="srs_user_tests" name="geommap_loader" type="geom_map_loader.py" output="screen" respawn="false">
+    <param name="action" type="string" value="load"/>
+    <param name="file" type="string" value="$(find srs_user_tests)/data/geommap.planes"/>
+  </node>
+
+</launch>
+

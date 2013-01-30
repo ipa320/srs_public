@@ -87,8 +87,11 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
     // Point cloud publishing topic name
     node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME );
 
+	// Get FID to which will be points transformed when publishing collision map
+	node_handle.param("pointcloud_frame_id", m_pcFrameId, DEFAULT_FRAME_ID );
+
     // Create publisher
-    m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+    m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
     // Subscribe to position topic
     // Create subscriber
@@ -107,8 +110,6 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
 */
     // Clear old pointcloud data
     m_data->clear();
-
-
 }
 
 /**
@@ -333,7 +334,7 @@ void srs_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandl
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 		// Subscribe to position topic
 		// Create subscriber

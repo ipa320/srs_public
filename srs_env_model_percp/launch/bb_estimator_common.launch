@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <!-- Run BB estimator server -->
     <node pkg="srs_env_model_percp" type="bb_estimator_server" name="bb_estimator">

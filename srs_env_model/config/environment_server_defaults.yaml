@@ -5,8 +5,8 @@
 # Octomap plugin
 
 # Octomap resolution
-ocmap_resolution: .05
-#ocmap_resolution: .025
+#ocmap_resolution: .05
+ocmap_resolution: .025
 
 # Tree depth used for crawling. Zero means full tree
 ocmap_treedepth: 0
@@ -30,7 +30,8 @@ ocmap_sensor_model/max: .97
 
 # Maximum range for raycasting (-1: unlimited, but it leads to out of memory 
 # because octomap is trying to be too much precise)
-ocmap_max_range: 4.5
+#ocmap_max_range: 4.5
+ocmap_max_range: 7.0
 
 # Debugging information - visualize visible cone marker
 ocmap_visualize_markers: false
@@ -57,13 +58,14 @@ ocmap_filter_outdated: true
 pointcloud_frame_skip: 1
 
 # Internal and published pointcloud frame id
-pointcloud_frame_id: "/head_cam3d_link"
+#pointcloud_frame_id: "/head_cam3d_link"
+pointcloud_frame_id: "/map"
 
 # Point cloud limits in z-axis - minimum
-pointcloud_min_z: 0.1 
+pointcloud_min_z: 0.1
 
 # Point cloud limits in z-axis - maximum
-pointcloud_max_z: 3.0
+pointcloud_max_z: 4.0
 
 
 ###############################################################################

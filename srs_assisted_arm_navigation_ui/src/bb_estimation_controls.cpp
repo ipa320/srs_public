@@ -52,12 +52,13 @@ CButBBEstimationControls::CButBBEstimationControls(wxWindow *parent, const wxStr
 	ros::NodeHandle nh;
 
 	ros::param::param<bool>("~is_video_flipped", is_video_flipped_ , true);
+	//ros::param::param<bool>("~disable_video", disable_video_ , false);
 
 	class_ptr = this;
 
     parent_ = parent;
 
-    m_button_ok_ = new wxButton(this, ID_BUTTON_OK, wxT("Detection is fine"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
+    m_button_ok_ = new wxButton(this, ID_BUTTON_OK, wxT("Positioning completed"),wxDefaultPosition,wxDefaultSize,wxBU_EXACTFIT);
 
     m_button_ok_->Enable(false);
 
@@ -75,12 +76,15 @@ CButBBEstimationControls::CButBBEstimationControls(wxWindow *parent, const wxStr
     butt_down_x_ = -1;
     butt_down_y_ = -1;
 
+    disable_video_  = false;
+
     data_ready_ = false;
     some_data_ready_ = false;
     action_in_progress_ = false;
 
     // 20 Hz timer
-    timer_ = nh.createTimer(ros::Duration(0.04),&CButBBEstimationControls::timerCallback,this);
+    /*if (!disable_video_)*/ timer_ = nh.createTimer(ros::Duration(0.04),&CButBBEstimationControls::timerCallback,this);
+    //else ROS_INFO("Started in (almost) useless mode (video disabled).");
 
     as_.start();
 
@@ -101,7 +105,7 @@ void CButBBEstimationControls::timerCallback(const ros::TimerEvent& ev) {
 
 	ROS_INFO_ONCE("Timer triggered.");
 
-	if (action_in_progress_) {
+	if (action_in_progress_ && !disable_video_) {
 
 
 		image_mutex_.lock();
@@ -210,6 +214,8 @@ void CButBBEstimationControls::timerCallback(const ros::TimerEvent& ev) {
 void CButBBEstimationControls::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 	ROS_INFO_ONCE("Received image");
+
+	if (disable_video_) return;
 
 	//cv_bridge::CvImagePtr cv_ptr;
 
@@ -355,16 +361,28 @@ void CButBBEstimationControls::actionGoalCallback() {
 
 	goal_ = as_.acceptNewGoal();
 
-	sub_image_ = it_.subscribe("bb_video_in", 1, &CButBBEstimationControls::imageCallback,this);
+	disable_video_ = goal_->disable_video;
 
-	wxMessageBox(wxString::FromAscii("Please select unknown object in image. You can select object in image several times. After selecting, it will appear as interactive marker in RVIZ and you can tune it. When it will fit real object, please click on \"Detection is fine\" button."), wxString::FromAscii("Assisted object detection"), wxOK, parent_,-1,-1);
+	if (!disable_video_) {
 
-	max_time_ = ros::Time::now() + ros::Duration(30);
+		sub_image_ = it_.subscribe("bb_video_in", 1, &CButBBEstimationControls::imageCallback,this);
+
+		wxMessageBox(wxString::FromAscii("Please select unknown object in image. You can select object in image several times. After selecting, it will appear as interactive marker in RVIZ and you can tune it. When it will fit real object, please click on \"Positioning finished\" button."), wxString::FromAscii("Assisted object detection"), wxOK, parent_,-1,-1);
+
+		cv::namedWindow(cv_win.c_str());
+		cv::setMouseCallback(cv_win,onMouse,NULL);
+
+	} else {
+
+		wxMessageBox(wxString::FromAscii("Please tune position and orientation of interactive marker to fit the object. When finished, please click on \"Positioning finished\" button."), wxString::FromAscii("Assisted object detection"), wxOK, parent_,-1,-1);
+		m_button_ok_->Enable(true);
+
+	}
+
+	//max_time_ = ros::Time::now() + ros::Duration(30);
 
 
-	cv::namedWindow(cv_win.c_str());
 
-	cv::setMouseCallback(cv_win,onMouse,NULL);
 
 
 	action_in_progress_ = true;
@@ -378,15 +396,19 @@ void CButBBEstimationControls::actionPreemptCallback() {
 	ROS_INFO("%s: Preempted",ACT_BB_SELECT.c_str());
 	as_.setPreempted();
 
-	//action_in_progress_ = false;
-
-	cv::destroyWindow(cv_win.c_str());
-	sub_image_.shutdown();
 	action_in_progress_ = false;
-	some_data_ready_ = false;
-	data_ready_ = false;
-	image_width_ = 0;
-	image_height_ = 0;
+	disable_video_ = false;
+
+	if (!disable_video_) {
+
+		cv::destroyWindow(cv_win.c_str());
+		sub_image_.shutdown();
+		some_data_ready_ = false;
+		data_ready_ = false;
+		image_width_ = 0;
+		image_height_ = 0;
+
+	}
 
 }
 
@@ -397,19 +419,30 @@ void CButBBEstimationControls::OnOk(wxCommandEvent& event) {
 
 	ManualBBEstimationResult result;
 
-	if (!is_video_flipped_) {
+	if (!disable_video_) {
 
-		result.p1[0] = p1_[0];
-		result.p1[1] = p1_[1];
-		result.p2[0] = p2_[0];
-		result.p2[1] = p2_[1];
+		if (!is_video_flipped_) {
+
+			result.p1[0] = p1_[0];
+			result.p1[1] = p1_[1];
+			result.p2[0] = p2_[0];
+			result.p2[1] = p2_[1];
+
+		} else {
+
+			result.p1[0] = image_width_  - p1_[0];
+			result.p1[1] = image_height_ - p1_[1];
+			result.p2[0] = image_width_  - p2_[0];
+			result.p2[1] = image_height_ - p2_[1];
+
+		}
 
 	} else {
 
-		result.p1[0] = image_width_  - p1_[0];
-		result.p1[1] = image_height_ - p1_[1];
-		result.p2[0] = image_width_  - p2_[0];
-		result.p2[1] = image_height_ - p2_[1];
+		result.p1[0] = 0.0;
+		result.p1[1] = 0.0;
+		result.p2[0] = 0.0;
+		result.p2[1] = 0.0;
 
 	}
 
@@ -417,16 +450,22 @@ void CButBBEstimationControls::OnOk(wxCommandEvent& event) {
 
 	as_.setSucceeded(result, "Go on...");
 
-	cv::destroyWindow(cv_win.c_str());
-	sub_image_.shutdown();
-
 	m_button_ok_->Enable(false);
 
-	some_data_ready_ = false;
-	data_ready_ = false;
-	action_in_progress_ = false;
-	image_width_ = 0;
-	image_height_ = 0;
+	if (disable_video_) {
+
+		cv::destroyWindow(cv_win.c_str());
+		sub_image_.shutdown();
+
+		some_data_ready_ = false;
+		data_ready_ = false;
+		action_in_progress_ = false;
+		image_width_ = 0;
+		image_height_ = 0;
+
+	}
+
+	disable_video_ = false;
 
 }
 

@@ -1,0 +1,38 @@
+Background\ ColorR=0
+Background\ ColorG=0
+Background\ ColorB=0
+Fixed\ Frame=/base_link
+Target\ Frame=<Fixed Frame>
+Grid.Alpha=0,5
+Grid.Cell\ Size=1
+Grid.ColorR=0,5
+Grid.ColorG=0,5
+Grid.ColorB=0,5
+Grid.Enabled=1
+Grid.Line\ Style=0
+Grid.Line\ Width=0,03
+Grid.Normal\ Cell\ Count=0
+Grid.OffsetX=0
+Grid.OffsetY=0
+Grid.OffsetZ=0
+Grid.Plane=0
+Grid.Plane\ Cell\ Count=10
+Grid.Reference\ Frame=<Fixed Frame>
+Interactive\ Markers.Enabled=1
+Interactive\ Markers.Show\ Axes=0
+Interactive\ Markers.Show\ Descriptions=1
+Interactive\ Markers.Show\ Tool\ Tips=1
+Interactive\ Markers.Update\ Topic=/interaction_primitives/update
+Tool\ 2D\ Nav\ GoalTopic=goal
+Tool\ 2D\ Pose\ EstimateTopic=initialpose
+Camera\ Type=rviz::OrbitViewController
+Camera\ Config=1.01779 1.9458 13.4883 0 -1.90735e-06 1.90735e-06
+Property\ Grid\ State=selection=;expanded=;scrollpos=0,0;splitterpos=150,301;ispageselected=1
+[Display0]
+Name=Grid
+Package=rviz
+ClassName=rviz::GridDisplay
+[Display1]
+Name=Interactive Markers
+Package=rviz
+ClassName=rviz::InteractiveMarkerDisplay

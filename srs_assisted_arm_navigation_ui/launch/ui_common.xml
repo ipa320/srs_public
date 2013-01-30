@@ -36,6 +36,6 @@
   
   <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch" />
   
-  <include file="$(find srs_assisted_arm_navigation_ui)/launch/image_flip.xml" />
+  <include file="$(find srs_env_model_utils)/launch/image_flip.launch" />
   
 </launch>

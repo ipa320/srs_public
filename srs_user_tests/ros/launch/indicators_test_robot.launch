@@ -16,18 +16,21 @@
 
 		<!-- Run the interactive teleop -->
 		<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
+
+		<!-- Run the footprint marker visualization -->
+		<include file="$(find srs_ui_but)/launch/footprint_marker.launch" />
 	</group>
 
 	<group>
 		<machine name="pc2" address="$(arg pc2)" default="true"/>
 
 		<!-- Kinect throttling -->
-		<include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
+		<!--include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch">
 			<arg name="max_rate" value="1.0" />
-		</include>
+		</include-->
 
-        	<!-- Run depth image publishing node (simulation only) -->
-	        <!--node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node" /-->
+		<!-- Run depth image publishing node (simulation only) -->
+		<!--node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node" /-->
 	</group>
 
 	<group>

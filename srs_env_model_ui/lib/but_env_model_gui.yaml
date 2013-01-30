@@ -2,6 +2,11 @@ name: but_env_model_gui
 library: but_env_model_gui
 displays:
   -
+    class_name: CCameraPublisherDisplay
+    display_name: RViz Camera Pose Publisher
+    description: |
+      Publishes pose of the RViz camera as a topic and TF frame
+  -
     class_name: COctomapDisplay
     display_name: BUT Octomap Control Panel
     description: |

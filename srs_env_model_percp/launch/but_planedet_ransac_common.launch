@@ -9,9 +9,9 @@
         <!--remap from="depth_image_in" to="/cam3d/depth/image_raw" /-->
         <!--remap from="points_in" to="/cam3d/depth/points" /-->
         <!--remap from="points_in" to="/cam3d/rgb/points" /-->
-        <remap from="points_in" to="/cam3d/rgb/points_throttled" />
-        <remap from="rgb_in" to="/cam3d/rgb/image_raw" />
-        <remap from="camera_info_in" to="/cam3d/rgb/camera_info" />
+        <remap from="points_in" to="/cam3d_throttled/depth_registered/points" />
+        <remap from="rgb_in" to="/cam3d_throttled/rgb/image_raw" />
+        <remap from="camera_info_in" to="/cam3d_throttled/rgb/camera_info" />
     </node>
 
 </launch>

@@ -35,6 +35,8 @@ rosbuild_add_executable( self_filter src/self_filter.cpp )
 rosbuild_add_openmp_flags( self_filter )
 target_link_libraries( self_filter robot_self_filter )
 
+rosbuild_add_executable ( kinect_noise_generator src/kinect_noise_generator.cpp )
+
 # Kinect throttling nodelets
 rosbuild_add_library( kinect_throttle 
                       src/cloud_throttle.cpp 

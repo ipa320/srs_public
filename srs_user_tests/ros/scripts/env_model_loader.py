@@ -65,11 +65,11 @@ class LoaderSaver():
             
         except Exception, e:
         
-            rospy.logerr('Cannot load octomap, error: %s',str(e))
+            rospy.logerr('Cannot load the octomap, error: %s',str(e))
             
         if res.all_ok:
             
-            rospy.loginfo("Octomap has been loaded.")
+            rospy.loginfo("The octomap has been loaded.")
         
         
     def save(self,fname):
@@ -98,11 +98,11 @@ class LoaderSaver():
             
         except Exception, e:
         
-            rospy.logerr('Cannot save octomap, error: %s',str(e))
+            rospy.logerr('Cannot save the octomap, error: %s',str(e))
             
         if res.all_ok:
             
-            rospy.loginfo("Octomap has been saved.")
+            rospy.loginfo("The octomap has been saved.")
         
         
         

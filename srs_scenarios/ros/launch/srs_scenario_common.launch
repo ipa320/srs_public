@@ -13,7 +13,7 @@
 	<!-- start navigation omini-->
 	<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch"/>
 	<!-- start navigation linear-->
-	<include file="$(find cob_navigation_global)/launch/2dnav_linear.xml"/>
+	<!--include file="$(find cob_navigation_global)/launch/2dnav_linear.xml"/-->
 
 	<!--start navigation linear-->
 	<!--include file="$(find cob_navigation_linear)/ros/launch/2dnav_linear_include.launch"/-->
@@ -38,7 +38,7 @@
 	<include file="$(find srs_scenarios)/ros/launch/srs_arm_kinematics.launch"/>
 	
 	<!-- cob arm navigation -->
-	<arg name="use_cob_arm_nav" default="1"/>
+	<arg name="use_cob_arm_nav" default="0"/>
 	<include file="$(find cob_arm_navigation)/launch/start_planning_environment.launch" if="$(arg use_cob_arm_nav)"/>
 
 </launch>

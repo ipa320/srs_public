@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="points_in" default="/cam3d_throttled/depth_registered/points"/>
+
+  <!-- Voxel condition - start env. server -->
+  <include file="$(find srs_env_model)/launch/but_envmodel_robot.launch">
+    <arg name="points_in" value="$(arg points_in)"/>
+  </include>
+
+  <!-- Load predefined voxel map -->
+	<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch" />
+
+</launch>

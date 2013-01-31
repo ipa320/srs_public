@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="move_robot_sim" pkg="srs_user_tests" type="move_robot.py" respawn="false" output="screen">
+    <param name="position_x" value="-0.00706398084655"/>
+    <param name="position_y" value="-0.801150152659"/>
+    <param name="position_z" value="-0.00165735770315"/>
+    <param name="orientation_x" value="0.000349432115978"/>
+    <param name="orientation_y" value="5.6009824811e-05"/>
+    <param name="orientation_z" value="-0.0188720514779"/>
+    <param name="orientation_w" value="0.999821844347"/>
+  </node>
+
+</launch>

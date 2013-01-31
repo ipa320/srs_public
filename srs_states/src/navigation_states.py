@@ -8,7 +8,8 @@ from simple_script_server import *
 sss = simple_script_server()
 
 from shared_state_information import *
-
+import random
+from nav_msgs.msg import Odometry
 
 ## Approach pose state (without retry)
 #
@@ -26,6 +27,11 @@ class approach_pose_without_retry(smach.State):
 
         self.pose = pose
         self.counter =0
+        self.timeout = 30
+        self.is_moving = False
+        self.warnings = ["I can not reach my target position because my path or target is blocked.","My path is blocked.", "I can not reach my target position."]
+        # Subscriber to base_odometry
+        rospy.Subscriber("/base_controller/odometry", Odometry, self.callback)
         
         self.mode = "omni" 
         try:
@@ -33,6 +39,18 @@ class approach_pose_without_retry(smach.State):
         except Exception, e:
             rospy.loginfo("Parameter Server not ready, use default value for navigation") 
         
+
+    #Callback for the /base_controller/odometry subscriber
+    def callback(self,msg):
+        r = 0.01 # error range in m/s or rad/s
+        if (abs(msg.twist.twist.linear.x) > r) or (abs(msg.twist.twist.linear.y) > r) or (abs(msg.twist.twist.angular.z) > r):
+            self.is_moving = True
+        else:
+            self.is_moving = False
+        return
+
+
+
 
     def execute(self, userdata):
         
@@ -59,73 +77,70 @@ class approach_pose_without_retry(smach.State):
             return 'failed'
 
         # try reaching pose
-        handle_base = sss.move("base", pose, False, self.mode)
+        handle_base = sss.move("base", pose, mode=self.mode, blocking=False)
         #move_second = False
         
+        # init variables
+        stopping_time = 0.0
+        announce_time = 0.0
+        freq = 2.0 # Hz
+        yellow = False
 
-
-        timeout = 0
-        while not self.preempt_requested():
-            try:
-                #print "base_state = ", handle_base.get_state()
-                #if (handle_base.get_state() == 3) and (not move_second):
-                    # do a second movement to place the robot more exactly
-                    #handle_base = sss.move("base", pose, False, self.mode)
-                    #move_second = True
-                if (handle_base.get_state() == 3): #and (move_second):
-                    return 'succeeded'        
-                elif (handle_base.get_state() == 2 or handle_base.get_state() == 4):  #error or paused
-                    rospy.logerr("base not arrived on target yet")
-                    return 'not_completed'
-            except rospy.ROSException, e:
-                error_message = "%s"%e
-                rospy.logerr("unable to check hdl_base state, error: %s", error_message)
-                rospy.sleep(0.5)
-
-            # check if service is available
-            service_full_name = '/base_controller/is_moving'
-            try:
-                #rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
-                rospy.wait_for_service(service_full_name,3)
-            except rospy.ROSException, e:
-                error_message = "%s"%e
-                rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+        
+        # check for goal status
+        while not rospy.is_shutdown():
+            # stopped or paused due to intervention
+            if self.preempt_requested():
+                self.service_preempt()
+                #handle_base.set_failed(4)
+                handle_base.client.cancel_goal()
+                return 'preempted'
+            
+            # finished with succeeded
+            if (handle_base.get_state() == 3):
+                sss.set_light('green')
+                return 'succeeded'
+            # finished with aborted
+            elif (handle_base.get_state() == 4):
+                sss.set_light('green')
+                return 'not_completed'
+            # finished with preempted or canceled
+            elif (handle_base.get_state() == 2) or (handle_base.get_state() == 8):
+                sss.set_light('green')
+                return 'not_completed'
+            # return with error
+            elif (handle_base.get_error_code() > 0):
+                print "error_code = " + str(handle_base.get_error_code())
+                sss.set_light('red')
                 return 'failed'
-        
-            # check if service is callable
-            try:
-                is_moving = rospy.ServiceProxy(service_full_name,Trigger)
-                resp = is_moving()
-            except rospy.ServiceException, e:
-                error_message = "%s"%e
-                rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                return 'failed'
-        
-            # evaluate service response
-            if not resp.success.data: # robot stands still
-                print "timer:",timeout
-                if timeout > 10:
-                    sss.say(["I can not reach my target position because my path or target is blocked, I will abort."],False)
-        
-                    #try:
-                    sss.stop('base')#rospy.wait_for_service('base_controller/stop',10)
-                        #stop = rospy.ServiceProxy('base_controller/stop',Trigger)
-                    """resp = stop()
-                    except rospy.ServiceException, e:
-                        error_message = "%s"%e
-                        rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
-                    except rospy.ROSException, e:
-                        error_message = "%s"%e
-                        rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)        """
+
+            # check if the base is moving
+            loop_rate = rospy.Rate(freq) # hz
+            if not self.is_moving: # robot stands still
+                # increase timers
+                stopping_time += 1.0/freq
+                announce_time += 1.0/freq
+
+                # abort after timeout is reached
+                if stopping_time >= self.timeout:
+                    sss.stop("base")
+                    sss.set_light('green')
                     return 'not_completed'
+
+                # announce warning after every 10 sec
+                if announce_time >= 10.0:
+                    sss.say([self.warnings[random.randint(0,len(self.warnings)-1)]],False)
+                    announce_time = 0.0
+
+                # set light to "thinking" after not moving for 2 sec
+                if round(stopping_time) >= 2.0:
+                    sss.set_light("blue")
+                    yellow = False
                 else:
-                    timeout = timeout + 1
-                    rospy.sleep(1)
-            else:
-                timeout = 0
-        if self.preempt_requested():
-            self.service_preempt()
-            #handle_base.set_failed(4)
-            handle_base.client.cancel_goal()
-            return 'preempted'
-        return 'failed'
+                    # robot is moving
+                    if not yellow:
+                        sss.set_light("yellow")
+                        yellow = True
+
+                # sleep
+                loop_rate.sleep()

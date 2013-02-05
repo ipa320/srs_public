@@ -94,6 +94,7 @@ class approach_pose_without_retry(smach.State):
                 self.service_preempt()
                 #handle_base.set_failed(4)
                 handle_base.client.cancel_goal()
+                sss.stop("base")
                 return 'preempted'
             
             # finished with succeeded

@@ -130,6 +130,7 @@ class detect_object_assited(smach.State):
             self.object_list=res.object_list
             
             
+          
 
             outcome_detectObjectSrv = 'succeeded'
         except rospy.ServiceException, e:
@@ -148,6 +149,10 @@ class detect_object_assited(smach.State):
         assisted_detection_service_called=True
         s.shutdown()
         
+        for item in detector_response.object_list.detections:
+            item.pose.header.stamp = rospy.Time.now()
+        
+        
         
         self.object_list=detector_response.object_list
         #return service answer
@@ -165,7 +170,7 @@ class detect_object_assited(smach.State):
 class user_intervention_on_detection(smach.State):
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded', 'bb_move', 'give_up', 'failed', 'preempted'],
+                             outcomes=['succeeded', 'bb_move', 'give_up', 'failed', 'preempted', 'retry'],
                              input_keys = ['target_object_name', 'target_object_list'],
                              output_keys=['object','object_pose','bb_pose'])
         
@@ -198,11 +203,27 @@ class user_intervention_on_detection(smach.State):
             #userdata.object=self.object
             #userdata.object_pose=self.object_pose
             #userdata.bb_pose=self.bbpose
+            
+            #this part code should be replaced by the user selection
+            # select nearest object in x-y-plane in head_camera_left_link
+            min_dist = 2 # start value in m
+            obj = Detection()
+            for item in userdata.target_object_list.detections:
+                dist = sqrt(item.pose.pose.position.x*item.pose.pose.position.x+item.pose.pose.position.y*item.pose.pose.position.y)
+                if dist < min_dist:
+                    min_dist = dist
+                    obj = copy.deepcopy(item)
+            
+            
             global listener
             try:
-            #transform object_pose into base_link
-                object_pose_in = self.object.pose
-                object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
+                #transform object_pose into base_link
+                object_pose_in = obj
+                
+                print object_pose_in
+                
+                #object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
+                object_pose_in.header.stamp = rospy.Time.now()
                 object_pose_map = listener.transformPose("/map", object_pose_in)
             except rospy.ROSException, e:
                 print "Transformation not possible: %s"%e
@@ -229,47 +250,40 @@ class user_intervention_on_detection(smach.State):
         rospy.loginfo("Get Object information")
         answer=UiAnswerResponse()
         
+        rospy.loginfo("%s", req.action)
+        
         if(req.action=='give up'):
             outcome_user_intervention = 'give up'
-            answer.message.data='process stopped'
-            return answer
-            
-            
+            answer.message.data='give up, process stopped'
 
         #save
+        elif(req.action=='succeeded'):
+            #get position from good object
+            pose=Pose()
+            pose.position.x=self.object_list.detections[req.id].pose.pose.position.x
+            pose.position.y=self.object_list.detections[req.id].pose.pose.position.y
+            pose.position.z=self.object_list.detections[req.id].pose.pose.position.z
+            pose.orientation.x=self.object_list.detections[req.id].pose.pose.orientation.x
+            pose.orientation.y=self.object_list.detections[req.id].pose.pose.orientation.y
+            pose.orientation.z=self.object_list.detections[req.id].pose.pose.orientation.z
+            pose.orientation.w=self.object_list.detections[req.id].pose.pose.orientation.w
         
+            print pose
+            self.object_pose=pose
+            self.object=self.object_list.detections[req.id]
             
-       
-        #get position from good object
-        pose=Pose()
-        pose.position.x=self.object_list.detections[req.id].pose.pose.position.x
-        pose.position.y=self.object_list.detections[req.id].pose.pose.position.y
-        pose.position.z=self.object_list.detections[req.id].pose.pose.position.z
-        pose.orientation.x=self.object_list.detections[req.id].pose.pose.orientation.x
-        pose.orientation.y=self.object_list.detections[req.id].pose.pose.orientation.y
-        pose.orientation.z=self.object_list.detections[req.id].pose.pose.orientation.z
-        pose.orientation.w=self.object_list.detections[req.id].pose.pose.orientation.w
+            outcome_user_intervention = 'succeeded'
+            answer.message.data='succeeded, go to next step'
         
-        print pose
-        self.object_pose=pose
-        self.object=self.object_list.detections[req.id]
-        
-       
-        #global action
-        #default for user
-        #action='grasp'
-    
-    
+        else: #retry detection
+            outcome_user_intervention = 'retry'
+            answer.message.data='retry, re-detect the object'
+ 
+
         #shutdown both service
         s.shutdown()
         s2.shutdown()
-
-        outcome_user_intervention = 'succeeded'
-        answer.message.data='Action is running'
         return answer
-    
-            
-        
         
     def moveBBSrv(self,req):
         rospy.loginfo("Get BB information")

@@ -29,5 +29,9 @@
   <depend package="gazebo_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="std_srvs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="cv_bridge"/>
+  <depend package="opencv2"/>
+  <depend package="image_transport"/>
 
 </package>

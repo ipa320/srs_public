@@ -126,8 +126,13 @@ void SpaceNavTeleop::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
 
 	btns_.mutex.lock();
 
+	btns_.right_last = btns_.right;
+
 	btns_.left = joy->buttons[0];
 	btns_.right = joy->buttons[1];
+
+	// activate "triger" only if teleop is enabled
+	if (enabled_ && !btns_.right_last && btns_.right) btns_.right_trigger = true;
 
 	btns_.mutex.unlock();
 
@@ -298,91 +303,51 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 	if (fabs(rot_offset.x) > fabs(offset.y)) offset.y = -rot_offset.x;
 
 
-	/*bool rot = false;
-
-	// let's try to decide if we will travel around or turn in place
-	if (fabs(rot_offset.z) > params_.sn_min_val_th) {
-
-		// find maximum of linear values
-		double max = fabs(offset.x);
-
-		if (fabs(offset.y) > fabs(max)) max = offset.y;
-		if (fabs(offset.z) > fabs(max)) max = offset.z;
-
-		// "effort" for rotation is bigger than for (any) linear movement
-		if (fabs(rot_offset.z) > fabs(max)) rot = true;
-
-	}*/
-
-	// well, we will turn the robot
-	/*if (rot) {
-
-		offset.x = 0.0;
-		offset.y = 0.0;
-		offset.z = 0.0;
-
-		rot_offset.x = 0;
-		rot_offset.y = 0;
-		rot_offset.z *= params_.max_vel_th; // scale it properly
-
-
-		tw.linear = offset;
-		tw.angular = rot_offset;
-
-		twist_publisher_.publish(tw);
-		return;
-
-	} else {
-
-		// filter out very small values
-		if (fabs(offset.x) < params_.sn_min_val_th ) offset.x = 0;
-		if (fabs(offset.y) < params_.sn_min_val_th ) offset.y = 0;
-
-		offset.z = 0;
-
-		rot_offset.x = 0.0;
-		rot_offset.y = 0.0;
-		rot_offset.z = 0.0;
-
-	}*/
-
 	// filter out too small values
 	if (fabs(offset.x) < params_.sn_min_val_th ) offset.x = 0;
 	if (fabs(offset.y) < params_.sn_min_val_th ) offset.y = 0;
 	if (fabs(rot_offset.z) < params_.sn_min_val_th ) rot_offset.z = 0;
 
 	bool unsafe = false;
-	bool robot_cetric_mode = false;
+	bool mode_trigger = false;
 
 	btns_.mutex.lock();
 	unsafe = btns_.left;
-	robot_cetric_mode = btns_.right;
+	mode_trigger = btns_.right_trigger;
+	btns_.right_trigger = false;
+
 	btns_.mutex.unlock();
 
-	if (!params_.use_rviz_cam || robot_cetric_mode) {
+	if (!params_.use_rviz_cam) {
 
-		if (!params_.use_rviz_cam) ROS_INFO_ONCE("Started in mode without using RVIZ camera position.");
-		else {
-
-			if (!robot_centric_mode_) {
-
-						robot_centric_mode_ = true;
-						ROS_INFO("Switching to robot centric mode.");
-
-					}
-
-		}
-
-
+		ROS_INFO_ONCE("Started in mode without using RVIZ camera position.");
+		robot_centric_mode_ = true;
 
 	} else {
 
 		if (robot_centric_mode_) {
 
-			ROS_INFO("Switching back to user centric mode.");
-			robot_centric_mode_ = false;
+			if (mode_trigger) {
+
+				ROS_INFO("Switching back to user centric mode.");
+				robot_centric_mode_ = false;
+
+			}
+
+		} else {
+
+			if (mode_trigger) {
+
+				robot_centric_mode_ = true;
+				ROS_INFO("Switching to robot centric mode.");
+
+			}
 
 		}
+
+	}
+
+	if (!robot_centric_mode_) {
 
 	// transformation of velocities vector is not needed for turning in place
 	//if (!rot) {

@@ -451,13 +451,24 @@ bool setAllowObjectInteraction(SetAllowObjectInteraction::Request &req, SetAllow
     ROS_ERROR("Primitive with that name doesn't exist!");
     return false;
   }
-  if (primitives[req.name]->getPrimitiveType() != PrimitiveType::OBJECT)
+  if ( (primitives[req.name]->getPrimitiveType() != PrimitiveType::OBJECT) && (primitives[req.name]->getPrimitiveType() != PrimitiveType::UNKNOWN_OBJECT) )
   {
     ROS_ERROR("Primitive is not of type Object");
     return false;
   }
 
-  ((Object*)primitives[req.name])->setAllowObjectInteraction(req.allow);
+
+  if (primitives[req.name]->getPrimitiveType() != PrimitiveType::OBJECT) {
+
+    ((Object*)primitives[req.name])->setAllowObjectInteraction(req.allow);
+  
+  } else 
+   
+  if (primitives[req.name]->getPrimitiveType() != PrimitiveType::UNKNOWN_OBJECT) {
+
+    ((UnknownObject*)primitives[req.name])->setAllowObjectInteraction(req.allow);
+  
+  }
 
   ROS_INFO("..... DONE");
   return true;

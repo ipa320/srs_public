@@ -9,6 +9,6 @@
   </include>
 
   <!-- Load predefined voxel map -->
-	<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch" />
+	<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch"/>
 
 </launch>

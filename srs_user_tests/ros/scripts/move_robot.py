@@ -42,7 +42,7 @@ def main():
     g_unpause = rospy.ServiceProxy("/gazebo/unpause_physics", Empty)
     g_set_state = rospy.ServiceProxy("/gazebo/set_model_state",SetModelState)
     pub = rospy.Publisher("/initialpose", PoseWithCovarianceStamped,latch=True)
-    rospy.sleep(25)
+    rospy.sleep(26)
     
     rospy.wait_for_service("/gazebo/pause_physics")
     

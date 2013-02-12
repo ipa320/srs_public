@@ -24,7 +24,6 @@
       
   </node-->
 
-
   <include file="$(find srs_assisted_arm_navigation)/launch/planning_scene_warehouse_viewer_cob3_3_robot.xml" />
   
   <node pkg="srs_assisted_arm_navigation_ui" name="assisted_arm_nav_statevis" type="statevis" respawn="false"/>

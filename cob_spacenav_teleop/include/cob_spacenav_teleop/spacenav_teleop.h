@@ -89,7 +89,8 @@ struct Buttons {
 
 	bool left;
 	bool right;
-
+	bool right_last;
+	bool right_trigger;
 };
 
 

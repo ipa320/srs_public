@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node ns="geometry_map" pkg="cob_3d_mapping_geometry_map" type="set_geometry_map" name="set_geometry_map" output="screen">
+    <param name="file_path" type="string" value="$(find srs_user_tests)/data/geomap.bag"/>
+  </node>
+
+</launch>

@@ -11,6 +11,7 @@
         <rosparam file="$(find srs_env_model)/config/environment_server_robot.yaml" command="load"/>
         <remap from="but_server_node/camera_info" to="$(arg camera_info)" />
         <remap from="but_server_node/points_in" to="$(arg points_in)" />
+        <remap from="but_server_node/points_filter" to="$(arg points_in)"/>
         <remap from="but_server_node/rviz_camera_position" to="/rviz_camera_position" />
     </node>
 

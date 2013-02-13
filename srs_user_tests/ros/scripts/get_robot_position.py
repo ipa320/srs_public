@@ -27,34 +27,28 @@
 #
 import roslib; roslib.load_manifest('srs_user_tests')
 import rospy
-from simple_script_server import *
-
-sss = simple_script_server()
-
+from std_srvs.srv import Empty
+from gazebo_msgs.srv import GetModelState
 
 def main():
     
-    rospy.init_node('prepare_robot_for_nav_test_node')
+    rospy.init_node('get_robot_position')
     
-    sss.init('head', True)
-    sss.init('tray', True)
-    sss.init('arm', True)
-    sss.init('torso', True)
+    g_get_state = rospy.ServiceProxy("/gazebo/get_model_state", GetModelState)
     
-    rospy.loginfo('Moving camera...')
-    sss.move('head', 'front', True)
+    rospy.wait_for_service("/gazebo/get_model_state")
     
-    rospy.loginfo('Moving tray...')
-    sss.move('tray', 'down', True)
-    
-    rospy.loginfo('Moving arm...')
-    sss.move('arm', 'folded', True)
-    
-    rospy.loginfo('Moving torso...')
-    sss.move('torso', 'front_extreme', True)
-    
-    rospy.loginfo('Ready!')
-
+    try:
+            
+      state = g_get_state(model_name="robot")
+            
+    except Exception, e:
+        
+      rospy.logerr('Error on calling service: %s',str(e))
+      return
+  
+    print state.pose
+  
 
 if __name__ == '__main__':
   try:

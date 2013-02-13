@@ -47,7 +47,45 @@ UnknownObject::UnknownObject(InteractiveMarkerServerPtr server, string frame_id,
   color_.a = 0.5;
   show_movement_control_ = show_scale_control_ = show_rotation_control_ = show_measure_control_ = show_description_control_ = false;
   use_material_ = true;
+  allow_object_interaction_ = false;
 }
+
+
+void UnknownObject::setAllowObjectInteraction(bool allow)
+{
+  
+  ROS_INFO("Interaction allowed");
+
+  allow_object_interaction_ = allow;
+  if (allow_object_interaction_)
+  {
+  
+    addMovementControls();
+    addRotationControls();
+    addScaleControls();
+
+    menu_handler_.setCheckState(menu_handler_interaction_movement_, MenuHandler::CHECKED);
+    menu_handler_.setCheckState(menu_handler_interaction_rotation_, MenuHandler::CHECKED);
+    menu_handler_.setCheckState(menu_handler_interaction_scale_, MenuHandler::CHECKED);
+  }
+  else
+  {
+  
+    removeMovementControls();
+    removeRotationControls();
+    removeScaleControls();
+  
+    menu_handler_.setCheckState(menu_handler_interaction_movement_, MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_interaction_rotation_, MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_interaction_scale_, MenuHandler::UNCHECKED);
+  }
+
+  server_->insert(object_);
+  menu_handler_.reApply(*server_);
+  server_->applyChanges();
+}
+
+
 
 void UnknownObject::uboxCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {

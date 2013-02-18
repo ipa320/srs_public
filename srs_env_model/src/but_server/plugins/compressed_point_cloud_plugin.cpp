@@ -81,6 +81,12 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 {
 	ROS_DEBUG("Initializing CCompressedPointCloudPlugin");
 
+	// 2013/01/31 Majkl: Get FID to which will be points transformed when receiving the point cloud
+	node_handle.param("pointcloud_frame_id", m_pcFrameId, DEFAULT_FRAME_ID);
+
+	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
+	node_handle.param("ocmap_frame_id", m_ocFrameId, m_ocFrameId);
+
 	if ( m_bSpinThread )
 	{
 		// if we're spinning our own thread, we'll also need our own callback queue
@@ -124,10 +130,10 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 
     // Create publisher - simple point cloud
 	if( m_bPublishSimpleCloud)
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
     // Create publisher - packed info - cam position and update pointcloud
-    m_ocUpdatePublisher = node_handle.advertise< srs_env_model::OctomapUpdates > ( m_ocUpdatePublisherName, 100, m_latchedTopics );
+    m_ocUpdatePublisher = node_handle.advertise< srs_env_model::OctomapUpdates > ( m_ocUpdatePublisherName, 5, m_latchedTopics );
 
     // Subscribe to position topic
     // Create subscriber
@@ -192,7 +198,8 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
 	// Pointcloud is used as output for octomap...
 	m_bAsInput = false;
 
-  	m_bTransformOutput = m_ocFrameId != m_pcFrameId;
+	// 2013/02/01 Majkl: Commented out as the output frame id is derived from the octomap frame id
+/*  	m_bTransformOutput = m_ocFrameId != m_pcFrameId;
 	// If different frame id
 	if( m_bTransformOutput )
 	{
@@ -213,27 +220,25 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
 			return;
 		}
 
-
 		// Get transformation matrix
 		pcl_ros::transformAsMatrix(ocToPcTf, m_pcOutTM);	// Sensor TF to defined base TF
-
-	}
+	}*/
 
     if( m_cameraFrameId.size() == 0 )
     {
-        PERROR("Wrong camera frame id...");
-        m_bTransformCamera = false;
+        ROS_DEBUG("CCompressedPointCloudPlugin::newMapDataCB: Wrong camera frame id...");
+//        m_bTransformCamera = false;
         return;
     }
 
-    m_bTransformCamera = m_cameraFrameId != m_pcFrameId;
+//    m_bTransformCamera = m_cameraFrameId != m_pcFrameId;
+    bool m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
 
     m_to_sensor = tf::StampedTransform::getIdentity();
 
     // If different frame id
     if( m_bTransformCamera )
     {
-
         // Some transforms
         tf::StampedTransform camToOcTf, ocToCamTf;
 
@@ -252,18 +257,19 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
             return;
         }
 
-
         m_to_sensor = ocToCamTf;
 
 //        PERROR( "Camera position: " << m_camToOcTrans );
     }
-
 
     // Store camera information
     m_camera_size = m_camera_size_buffer;
     m_camera_model.fromCameraInfo( m_camera_info_buffer);
     m_octomap_updates_msg->camera_info = m_camera_info_buffer;
     m_octomap_updates_msg->pointcloud2.header.stamp = par.currentTime;
+
+    // Majkl 2013/01/24: missing frame id in the message header
+    m_octomap_updates_msg->pointcloud2.header.frame_id = par.frameId;
 
     // Initialize leaf iterators
 	tButServerOcTree & tree( par.map->getTree() );
@@ -280,11 +286,20 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
 
 	} // Iterate through octree
 
-	if( m_bTransformOutput )
+	// 2013/02/01 Majkl: Commented out as the output frame id is derived from the octomap frame id
+/*	if( m_bTransformOutput )
 	{
 		// transform point cloud from octomap frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
-	}
+
+		// 2013/01/31 Majkl
+		m_data->header.frame_id = par.frameId;
+		m_data->header.stamp = par.currentTime;
+	}*/
+
+	// 2013/01/31 Majkl
+	m_data->header.frame_id = par.frameId;
+	m_data->header.stamp = par.currentTime;
 
 	m_DataTimeStamp = par.currentTime;
 
@@ -336,7 +351,6 @@ void srs_env_model::CCompressedPointCloudPlugin::onCameraChangedCB(const sensor_
     // Set camera position frame id
     m_cameraFrameId = cam_info->header.frame_id;
 
-
     ROS_DEBUG("OctMapPlugin: Set camera info: %d x %d\n", cam_info->height, cam_info->width);
 	m_camera_model_buffer.fromCameraInfo(*cam_info);
 	m_camera_size_buffer = m_camera_model_buffer.fullResolution();
@@ -361,12 +375,19 @@ void srs_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time
     	// Fill header information
     	m_octomap_updates_msg->header = m_data->header;
 
+		// Majkl 2013/1/24: trying to solve empty header of the output
+    	m_octomap_updates_msg->header.stamp = m_DataTimeStamp;
+    	m_octomap_updates_msg->header.frame_id = m_ocFrameId;
+
     	// Convert data
 		pcl::toROSMsg< tPclPoint >(*m_data, m_octomap_updates_msg->pointcloud2);
 
 		// Set message parameters and publish
-		m_octomap_updates_msg->pointcloud2.header.frame_id = m_pcFrameId;
+		m_octomap_updates_msg->pointcloud2.header.frame_id = m_ocFrameId;
 	//	m_octomap_updates_msg->pointcloud2.header.stamp = timestamp;
+
+		// Majkl 2013/1/24: trying to solve empty header of the output
+		m_octomap_updates_msg->pointcloud2.header.stamp = m_DataTimeStamp;
 
 		if( m_bPublishComplete )
 		{
@@ -402,7 +423,7 @@ void srs_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHa
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 		// Subscribe to position topic
 		// Create subscriber

@@ -42,8 +42,8 @@
 
 #define DEFAULT_RESOLUTION 0.1
 
-void srs_env_model::COctoMapPlugin::setDefaults() {
-
+void srs_env_model::COctoMapPlugin::setDefaults()
+{
 	// Set octomap parameters
 	m_mapParameters.resolution = DEFAULT_RESOLUTION;
 	m_mapParameters.treeDepth = 0;
@@ -56,23 +56,17 @@ void srs_env_model::COctoMapPlugin::setDefaults() {
 
 	// Set ground filtering parameters
 	m_filterGroundPlane = false;
-
 	m_removeSpecles = false;
-
 	m_mapParameters.frameId = "/map";
-
 	m_bPublishOctomap = true;
 
 	// Filtering
 	m_bRemoveOutdated = true;
-
 	m_removeTester = 0; //new CTestingPolymesh(CTestingPolymesh::tPoint( 1.0, 1.0, 0.5 ), quat, CTestingPolymesh::tPoint( 1.0, 1.5, 2.0 ));
-
 	m_testerLife = 10;
 
 	// Set maximal tree depth used when crawling. Zero means maximal possible depth.
 	m_crawlDepth = 0;
-
 	m_bMapLoaded = false;
 	m_bNotFirst = false;
 }
@@ -102,11 +96,9 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
 	m_mapParameters.treeDepth = m_data->getTree().getTreeDepth();
 	m_mapParameters.map = m_data;
 	m_mapParameters.crawlDepth = m_crawlDepth;
-
 }
 
-srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
-		const std::string & filename)
+srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const std::string & filename)
 :	srs_env_model::CServerPluginBase(name)
 , CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
 , m_filterSingleSpecles("/map")
@@ -161,14 +153,16 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name,
 /**
  * Destructor
  */
-srs_env_model::COctoMapPlugin::~COctoMapPlugin() {
+srs_env_model::COctoMapPlugin::~COctoMapPlugin()\
+{
 	// Remove tester
 	if (m_removeTester != 0)
 		delete m_removeTester;
 }
 
 //! Initialize plugin - called in server constructor
-void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
+void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
+{
 	PERROR( "Initializing OctoMapPlugin" );
 
 	reset(false);
@@ -243,7 +237,7 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 
 	// Create publisher
 	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (
-			m_ocPublisherName, 100, m_latchedTopics);
+			m_ocPublisherName, 5, m_latchedTopics);
 
 	m_registration.init( node_handle );
 
@@ -278,7 +272,6 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle) {
 
 void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 {
-
 //	PERROR("insertCloud: Try lock.");
 
 	// Lock data
@@ -293,8 +286,6 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 
 	// Registration
 	{
-
-
 		if( m_registration.isRegistering() && cloud.size() > 0 && m_bNotFirst )
 		{
 //			pcl::copyPointCloud( *m_data, *m_bufferCloud );
@@ -360,7 +351,8 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	}
 
 	// transform clouds to world frame for insertion
-	if (m_mapParameters.frameId != cloud.header.frame_id) {
+	if (m_mapParameters.frameId != cloud.header.frame_id)
+	{
 		Eigen::Matrix4f c2mTM;
 
 //		PERROR("Transforming.");
@@ -368,7 +360,6 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 		pcl_ros::transformAsMatrix(cloudToMapTf, c2mTM);
 		pcl::transformPointCloud(pc_ground, pc_ground, c2mTM);
 		pcl::transformPointCloud(pc_nonground, pc_nonground, c2mTM);
-
 	}
 
 	// Use registration transform
@@ -379,6 +370,10 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 
 	pc_nonground.header = cloud.header;
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
+
+    // 2012/12/14: Majkl (trying to solve problem with missing time stamps in all message headers)
+	m_DataTimeStamp = cloud.header.stamp;
+	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud.header.stamp.toSec());
 
 	insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
 
@@ -407,7 +402,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	if (m_removeTester != 0) {
 		long removed = doObjectTesting(m_removeTester);
 
-//		PERROR( "Removed leafs: " << removed);
+		PERROR( "Removed leafs: " << removed);
 
 		if (removed > 0)
 			m_data->getTree().prune();
@@ -436,10 +431,10 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 /**
  * Insert pointcloud scan TODO: Modify to add ground
  */
-void srs_env_model::COctoMapPlugin::insertScan(
-		const tf::Point & sensorOriginTf, const tPointCloud & ground,
-		const tPointCloud & nonground) {
-
+void srs_env_model::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf,
+		                                       const tPointCloud & ground,
+		                                       const tPointCloud & nonground)
+{
 	octomap::point3d sensorOrigin = octomap::pointTfToOctomap(sensorOriginTf);
 
 	double maxRange(m_mapParameters.maxRange);
@@ -449,7 +444,6 @@ void srs_env_model::COctoMapPlugin::insertScan(
 	 m_data->getTree().insertScan( pcNonground, sensorOrigin, maxRange, true, false );
 	 */
 	m_data->getTree().insertColoredScan(nonground, sensorOrigin, maxRange, true);
-
 }
 
 void srs_env_model::COctoMapPlugin::reset(bool clearLoaded)
@@ -486,7 +480,8 @@ void srs_env_model::COctoMapPlugin::filterCloud( const tPointCloud& cloud)
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Crawl octomap
-void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime) {
+void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime)
+{
 	// Lock data
 /*	Already locked in invalidate method
 	PERROR( "crawl: Try lock");
@@ -503,7 +498,8 @@ void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime) {
 }
 
 //! Should plugin publish data?
-bool srs_env_model::COctoMapPlugin::shouldPublish() {
+bool srs_env_model::COctoMapPlugin::shouldPublish()
+{
 	return (m_bPublishOctomap && m_ocPublisher.getNumSubscribers() > 0);
 }
 
@@ -532,12 +528,11 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 }
 
 /// Fill map parameters
-void srs_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time) {
-
+void srs_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time)
+{
 	m_mapParameters.currentTime = time;
 	m_mapParameters.mapSize = m_data->getTree().size();
 	m_mapParameters.treeDepth = m_data->getTree().getTreeDepth();
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -546,8 +541,8 @@ void srs_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time) {
  * @brief Reset octomap - service callback
  *
  */
-bool srs_env_model::COctoMapPlugin::resetOctomapCB(
-		std_srvs::Empty::Request& request, std_srvs::Empty::Response& response) {
+bool srs_env_model::COctoMapPlugin::resetOctomapCB(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
+{
 	std::cerr << "Reset octomap service called..." << std::endl;
 
 	// When reseting, loaded octomap should be cleared
@@ -563,12 +558,11 @@ bool srs_env_model::COctoMapPlugin::resetOctomapCB(
 // ============================================================================
 // Filtering
 
-
 /**
  * Do octomap testing by object
  */
-long int srs_env_model::COctoMapPlugin::doObjectTesting(
-		srs_env_model::CTestingObjectBase * object) {
+long int srs_env_model::COctoMapPlugin::doObjectTesting(srs_env_model::CTestingObjectBase * object)
+{
 	if (object == 0) {
 		PERROR( "Wrong testing object - NULL. ");
 		return 0;
@@ -605,7 +599,7 @@ bool srs_env_model::COctoMapPlugin::removeCubeCB(
 		srs_env_model::RemoveCube::Request & req,
 		srs_env_model::RemoveCube::Response & res) {
 
-	//	PERROR( "Remove cube from octomap: " << req.pose << " --- " << req.size );
+		PERROR( "Remove cube from octomap: " << req.pose << " --- " << req.size );
 
 	// Debug - show cube position
 	//addCubeGizmo( req.pose, req.size );
@@ -633,13 +627,16 @@ bool srs_env_model::COctoMapPlugin::removeCubeCB(
 		m_tfListener.transformPoint(m_mapParameters.frameId, vs, vsout);
 		req.size = vsout.point;
 
-		//		PERROR( "Transformed cube from octomap: " << req.pose << " --- " << req.size );
+				PERROR( "Transformed cube from octomap: " << req.pose << " --- " << req.size );
 	}
+
+	// Add bit of size
+	double d(m_mapParameters.resolution * 0.6);
 
 	// Create new tester
 	m_removeTester = new srs_env_model::CTestingPolymesh(
 			G2EPOINT( req.pose.position ), G2EQUAT( req.pose.orientation ),
-			G2EPOINT( req.size ) );
+			G2EPOINT( req.size ) + Eigen::Vector3f(d, d, d));
 
 	// Set it to life
 	m_testerLifeCounter = m_testerLife;
@@ -762,7 +759,7 @@ void srs_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_h
 	}
 	else
 	{
-		m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (	m_ocPublisherName, 100, m_latchedTopics);
+		m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (	m_ocPublisherName, 5, m_latchedTopics);
 
 		// Add camera info subscriber
 //		m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10, &srs_env_model::COctoMapPlugin::cameraInfoCB, this);

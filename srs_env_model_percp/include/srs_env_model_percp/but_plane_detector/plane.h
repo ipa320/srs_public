@@ -67,7 +67,7 @@ namespace srs_env_model_percp
 			/**
 			 * Update marker and polygonized hull
 			 */
-			visualization_msgs::Marker AddPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud);
+			visualization_msgs::Marker AddPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud, int max_poly_size);
 
 			/**
 			 * Get polygon
@@ -102,7 +102,7 @@ namespace srs_env_model_percp
 			tVertices ComputeConcaveHull(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull);
 
 			// Computes hull U current polygon
-			void ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
+			bool ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices, int max_poly_size);
 
 			// Rewrites current plane with this hull
 			void ConcaveHullRewrite(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices);
@@ -118,6 +118,8 @@ namespace srs_env_model_percp
 			visualization_msgs::Marker 	planeTriangles;
 			tShapeMarker  planeTrianglesSRS;
 			Eigen::Quaternion<float> rotationQuaternion;
+
+			static const int MAX_POLYS = 1000;
 
 		public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW

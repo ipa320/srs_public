@@ -1,0 +1,17 @@
+
+# parameters for assisted detection
+bb: 
+  
+  # False -> RVIZ plugin will display image for ROI selection
+  # True -> IM for BB will be place on specified position
+  disable_video: True
+
+  # initial position of BB in robot coordinates
+  pos_x: -0.5
+  pos_y:   0.0
+  pos_z: 1.3
+
+  # initial scale of BB
+  lwh_x: 0.15
+  lwh_y: 0.15
+  lwh_z: 0.15

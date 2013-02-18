@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- default topics (for COB) -->
+  <arg name="input_topic" default="/cam3d_throttled/depth_registered/points" />
+  <arg name="output_topic" default="/cam3d_throttled/depth_registered/points_noised" />
+    
+  <!-- node for adding real-like noise to simulated Kinect pointclouds -->
+  <node pkg="srs_env_model_utils" type="kinect_noise_generator" name="kinect_noise_generator" respawn="false" output="screen">
+    <remap from="points_in"  to="$(arg input_topic)"/>
+    <remap from="points_out" to="$(arg output_topic)"/>
+  </node>
+    
+</launch>

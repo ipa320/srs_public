@@ -118,7 +118,6 @@ namespace srs_env_model
 	//! Server plugin base class
 	class CServerPluginBase
 	{
-
 	#define PERROR( x ) std::cerr << "Plugin "<< this->m_name << ": " << x << std::endl;
 
 	public:
@@ -133,11 +132,13 @@ namespace srs_env_model
 		//! Initialize plugin - called in server constructor
 		virtual void init(ros::NodeHandle & node_handle)
 		{
-
 		}
 
 		//! Called when new scan was inserted and now all can be published
-		void publish(const ros::Time & timestamp){ if( shouldPublish() ) publishInternal( timestamp ); }
+		void publish(const ros::Time & timestamp)
+		{
+		    if( shouldPublish() ) publishInternal( timestamp );
+		}
 
 		//! Reset plugin content when reseting whole server
 		virtual void reset() {}
@@ -162,8 +163,8 @@ namespace srs_env_model
 
 		//! Locking mutex
 		boost::mutex m_lockMutex;
-
 	};
+
 
 	//! Octomap node crawler policy interface -
 	template< class tpNodeType >
@@ -177,7 +178,10 @@ namespace srs_env_model
 		virtual ~COctomapCrawlerBase() {}
 
 		//! Handle new octomap data
-		void handleNewMapData( SMapWithParameters & par ){ if( wantsMap() ) newMapDataCB( par ); }
+		void handleNewMapData( SMapWithParameters & par )
+		{
+		    if( wantsMap() ) newMapDataCB( par );
+		}
 
 		//! Wants plugin new map data?
 		virtual bool wantsMap() { return true; }
@@ -195,8 +199,8 @@ namespace srs_env_model
 
 		/// Maximal depth of tree used when crawling
 		unsigned char m_crawlDepth;
-
 	};
+
 
 	/**
 	 * @brief Data holder policy
@@ -215,10 +219,15 @@ namespace srs_env_model
 		typedef boost::signal< void (const tData &, const ros::Time & ) > tSigDataHasChanged;
 
 		/// Constructor
-		CDataHolderBase() : m_data( new tData ) {}
+		// 2012/12/14 Majkl: Trying to solve problem with missing time stamps
+//        CDataHolderBase() : m_data(new tData) {}
+//        CDataHolderBase() : m_data(new tData), m_DataTimeStamp(ros::Time(0)) {}
+        CDataHolderBase() : m_data(new tData), m_DataTimeStamp(ros::Time::now()) {}
 
 		/// Constructor
-		CDataHolderBase( tData * data ) : m_data( data ) { }
+//        CDataHolderBase( tData * data ) : m_data(data) {}
+//        CDataHolderBase( tData * data ) : m_data(data), m_DataTimeStamp(ros::Time(0)) {}
+        CDataHolderBase( tData * data ) : m_data(data), m_DataTimeStamp(ros::Time::now()) {}
 
 	public:
 		//! Virtual destructor
@@ -247,7 +256,6 @@ namespace srs_env_model
 	//			std::cerr << "invalidate: Unlocked." << std::endl;
 			}
 		}
-
 
 	protected:
 		/// Data

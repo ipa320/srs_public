@@ -86,6 +86,16 @@ class detect_unknown_object_assisted(smach.State):
    self.unknown_object_name='unknown_object'
    self.unknown_object_description='Unknown object to grasp'  
    
+   self.disable_bb_video = rospy.get_param('~bb/disable_video',False) # TDDO set this to False after testing and preparation of launch file
+   
+   self.bb_pos_x = rospy.get_param('~bb/pos_x',-0.5)
+   self.bb_pos_y = rospy.get_param('~bb/pos_y',0.0)
+   self.bb_pos_z = rospy.get_param('~bb/pos_z',1.3)
+   
+   self.bb_lwh_x = rospy.get_param('~bb/lwh_x',0.1)
+   self.bb_lwh_y = rospy.get_param('~bb/lwh_y',0.1)
+   self.bb_lwh_z = rospy.get_param('~bb/lwh_z',0.1)
+   
  def execute(self,userdata):
        
    rospy.loginfo('Assisted detection of unknown object')
@@ -209,7 +219,7 @@ class detect_unknown_object_assisted(smach.State):
           rospy.logerr('Cannot add IM object to the scene, error: %s',str(e))
           
         # allow interaction for this object  
-        #self.hlp.set_interaction(self.unknown_object_name,True)
+        self.hlp.set_interaction(self.unknown_object_name,True)
       
     else:
         
@@ -255,6 +265,8 @@ class detect_unknown_object_assisted(smach.State):
       
   
  def add_im_for_object(self):
+     
+   global listener
    
    # /but_arm_manip/manual_bb_estimation_action
    roi_client = actionlib.SimpleActionClient('/but_arm_manip/manual_bb_estimation_action',ManualBBEstimationAction)
@@ -264,8 +276,61 @@ class detect_unknown_object_assisted(smach.State):
   
    goal = ManualBBEstimationGoal()
    goal.object_name = self.unknown_object_name
+   goal.disable_video = self.disable_bb_video
    
    roi_client.send_goal(goal,feedback_cb=self.bb_est_feedback)
+   
+   if self.disable_bb_video:
+       
+       # normally, object is inserted in feedback, now we have to do it manually
+       add_object = rospy.ServiceProxy(self.s_add_unknown_object, AddUnknownObject)
+       rospy.loginfo('Calling %s service',self.s_add_unknown_object)
+    
+       bb_pose = PoseStamped()
+       
+       bb_pose.header.frame_id = '/base_link'
+       bb_pose.header.stamp = rospy.Time(0)
+       
+       bb_pose.pose.position.x = self.bb_pos_x
+       bb_pose.pose.position.y = self.bb_pos_y
+       bb_pose.pose.position.z = self.bb_pos_z
+       
+       bb_pose.pose.orientation.x = 0.0
+       bb_pose.pose.orientation.y = 0.0
+       bb_pose.pose.orientation.z = 0.0
+       bb_pose.pose.orientation.w = 1.0
+       
+       listener.waitForTransform('/map',bb_pose.header.frame_id,bb_pose.header.stamp,rospy.Duration(10))
+       
+       bb_pose = listener.transformPose('/map',bb_pose)
+       
+       bb_lwh = Vector3()
+       
+       bb_lwh.x = self.bb_lwh_x
+       bb_lwh.y = self.bb_lwh_y
+       bb_lwh.z = self.bb_lwh_z
+    
+       try:
+            
+            add_object(frame_id='/map',
+                       name=self.unknown_object_name,
+                       description=self.unknown_object_description,
+                       pose_type= PoseType.POSE_BASE,
+                       pose = bb_pose.pose,
+                       scale = bb_lwh,
+                       disable_material=True)
+            
+            self.object_added = True
+            
+            rospy.loginfo('IM added')
+          
+          
+       except Exception, e:
+          
+          rospy.logerr('Cannot add IM object to the scene, error: %s',str(e))
+          
+          
+       self.hlp.set_interaction(self.unknown_object_name,True)
   
    rospy.loginfo("Waiting for result...")
    roi_client.wait_for_result()

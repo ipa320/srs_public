@@ -161,6 +161,8 @@ namespace srs_env_model_percp
 			exporter->update(model->planes, normal, settings.param_visualisation_color);
 		}
 
+		std::cerr << "Going to publish markers..." << std::endl;
+
 		visualization_msgs::MarkerArray marker_array;
     	cob_3d_mapping_msgs::ShapeArray shape_array;
     	exporter->getMarkerArray(marker_array, settings.param_output_frame);
@@ -196,8 +198,15 @@ namespace srs_env_model_percp
    		// transform to world
    		tf::StampedTransform sensorToWorldTf;
    		try {
-   			tfListener->waitForTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, ros::Duration(5.0));
-   			tfListener->lookupTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, sensorToWorldTf);
+   			if( tfListener->waitForTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, ros::Duration(5.0)) )
+   			{
+   				tfListener->lookupTransform(settings.param_output_frame, pointcloud.header.frame_id, pointcloud.header.stamp, sensorToWorldTf);
+   			}
+   			else
+   			{
+   	   			std::cerr << "Cannot lookup transform: quitting callback" << std::endl;
+   	   			return;
+   			}
    		}
    		catch(tf::TransformException& ex){
    			std::cerr << "Transform error: " << ex.what() << ", quitting callback" << std::endl;
@@ -312,11 +321,11 @@ namespace srs_env_model_percp
 		pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
 		pcl::transformPointCloud(pointcloud, pointcloud, sensorToWorld);
 
-		for (unsigned int i = 0; i < pointcloud.points.size(); ++i)
-		{
-			if (pointcloud.points[i].z > settings.param_ht_maxheight || pointcloud.points[i].z < settings.param_ht_minheight)
-				zero_indices.push_back(i);
-		}
+//		for (unsigned int i = 0; i < pointcloud.points.size(); ++i)
+//		{
+//			if (pointcloud.points[i].z > settings.param_ht_maxheight || pointcloud.points[i].z < settings.param_ht_minheight)
+//				zero_indices.push_back(i);
+//		}
 
 		// set all zero indices to point(0,0,0)
 		for (unsigned int i = 0; i < zero_indices.size(); ++i)
@@ -386,7 +395,7 @@ namespace srs_env_model_percp
         nh.param(PARAM_VISUALISATION_MIN_COUNT, settings.param_visualisation_min_count, PARAM_VISUALISATION_MIN_COUNT_DEFAULT);
         nh.param(PARAM_VISUALISATION_COLOR, settings.param_visualisation_color, PARAM_VISUALISATION_COLOR_DEFAULT);
         nh.param(PARAM_VISUALISATION_TTL, settings.param_visualisation_ttl, PARAM_VISUALISATION_TTL_DEFAULT);
-
+        nh.param(PARAM_VISUALISATION_MAX_POLY_SIZE, settings.param_visualisation_max_poly_size, PARAM_VISUALISATION_MAX_POLY_SIZE_DEFAULT);
 
 		nh.param(PARAM_SEARCH_MINIMUM_CURRENT_SPACE, settings.param_search_minimum_current_space, PARAM_SEARCH_MINIMUM_CURRENT_SPACE_DEFAULT);
 		nh.param(PARAM_SEARCH_MINIMUM_GLOBAL_SPACE, settings.param_search_minimum_global_space, PARAM_SEARCH_MINIMUM_GLOBAL_SPACE_DEFAULT);
@@ -444,7 +453,8 @@ namespace srs_env_model_percp
 									   settings.param_visualisation_plane_normal_dev,
 									   settings.param_visualisation_plane_shift_dev,
 									   settings.param_ht_keeptrack,
-									   settings.param_visualisation_ttl);
+									   settings.param_visualisation_ttl,
+									   settings.param_visualisation_max_poly_size);
 
 		res.message = "Hough space successfully reset.\n";
 		std::cout << "Hough space successfully reset." << std::endl;
@@ -453,74 +463,91 @@ namespace srs_env_model_percp
 
 	bool onSave(srs_env_model_percp::LoadSave::Request &req, srs_env_model_percp::LoadSave::Response &res)
 	{
-		std::cerr << "Saving planes...." << std::endl;
-		exporter->xmlFileExport(req.filename);
+		std::cerr << "Trying to save planes..." << std::endl;
 
+		if( exporter )
+		{
+			exporter->xmlFileExport(req.filename);
+			res.all_ok = 1;
+			std::cerr << "Environment model successfuly saved into " << req.filename << "." << std::endl;
+			return true;
+		}
 
-		res.all_ok = 1;
-		std::cerr << "Environment model successfuly saved into " << req.filename << "." << std::endl;
-		return true;
+		return false;
 	}
 
 	bool onLoad(srs_env_model_percp::LoadSave::Request &req, srs_env_model_percp::LoadSave::Response &res)
 	{
-		std::cerr << "Loading planes...." << std::endl;
+		std::cerr << "Trying to load planes..." << std::endl;
 
-		visualization_msgs::MarkerArray marker_array;
-		exporter->getMarkerArray(marker_array, settings.param_output_frame);
+		if( exporter )
+		{
+			visualization_msgs::MarkerArray marker_array;
+			exporter->getMarkerArray(marker_array, settings.param_output_frame);
 
-		for (unsigned int i = 0; i < marker_array.markers.size(); ++i)
-			marker_array.markers[i].action = visualization_msgs::Marker::DELETE;
+			for (unsigned int i = 0; i < marker_array.markers.size(); ++i)
+				marker_array.markers[i].action = visualization_msgs::Marker::DELETE;
 
-		std::cerr << "Total no of deleted planes:  " << marker_array.markers.size() << std::endl;
-		pub2.publish(marker_array);
+			std::cerr << "Total no of deleted planes:  " << marker_array.markers.size() << std::endl;
+			pub2.publish(marker_array);
 
-		delete model;
-		model = new SceneModel(	settings.param_ht_maxdepth,
-						settings.param_ht_minshift,
-						settings.param_ht_maxshift,
-						settings.param_ht_angle_res,
-						settings.param_ht_shift_res,
-						settings.param_ht_gauss_angle_res,
-						settings.param_ht_gauss_shift_res,
-						settings.param_ht_gauss_angle_sigma,
-						settings.param_ht_gauss_shift_sigma,
-						settings.param_ht_lvl1_gauss_angle_res,
-						settings.param_ht_lvl1_gauss_shift_res,
-						settings.param_ht_lvl1_gauss_angle_sigma,
-						settings.param_ht_lvl1_gauss_shift_sigma,
-						settings.param_ht_plane_merge_angle,
-						settings.param_ht_plane_merge_shift);
+			delete model;
+			model = new SceneModel(	settings.param_ht_maxdepth,
+							settings.param_ht_minshift,
+							settings.param_ht_maxshift,
+							settings.param_ht_angle_res,
+							settings.param_ht_shift_res,
+							settings.param_ht_gauss_angle_res,
+							settings.param_ht_gauss_shift_res,
+							settings.param_ht_gauss_angle_sigma,
+							settings.param_ht_gauss_shift_sigma,
+							settings.param_ht_lvl1_gauss_angle_res,
+							settings.param_ht_lvl1_gauss_shift_res,
+							settings.param_ht_lvl1_gauss_angle_sigma,
+							settings.param_ht_lvl1_gauss_shift_sigma,
+							settings.param_ht_plane_merge_angle,
+							settings.param_ht_plane_merge_shift);
 
-		delete exporter;
-		exporter = new DynModelExporter(n,
-									   settings.param_original_frame,
-			                           settings.param_output_frame,
-			                           settings.param_visualisation_min_count,
-			                           settings.param_visualisation_distance,
-									   settings.param_visualisation_plane_normal_dev,
-									   settings.param_visualisation_plane_shift_dev,
-									   settings.param_ht_keeptrack,
-									   settings.param_visualisation_ttl);
+			delete exporter;
+			exporter = new DynModelExporter(n,
+										   settings.param_original_frame,
+										   settings.param_output_frame,
+										   settings.param_visualisation_min_count,
+										   settings.param_visualisation_distance,
+										   settings.param_visualisation_plane_normal_dev,
+										   settings.param_visualisation_plane_shift_dev,
+										   settings.param_ht_keeptrack,
+										   settings.param_visualisation_ttl,
+										   settings.param_visualisation_max_poly_size);
 
-		exporter->xmlFileImport(req.filename);
+			exporter->xmlFileImport(req.filename);
 
-		marker_array.markers.clear();
-		cob_3d_mapping_msgs::ShapeArray shape_array;
-		exporter->getMarkerArray(marker_array, settings.param_output_frame);
-		exporter->getShapeArray(shape_array, settings.param_output_frame);
-		std::cerr << "Total no of sent planes:  " << marker_array.markers.size() << std::endl;
-		pub2.publish(marker_array);
-		pub3.publish(shape_array);
+			marker_array.markers.clear();
+			cob_3d_mapping_msgs::ShapeArray shape_array;
+			exporter->getMarkerArray(marker_array, settings.param_output_frame);
+			exporter->getShapeArray(shape_array, settings.param_output_frame);
+			std::cerr << "Total no of sent planes:  " << marker_array.markers.size() << std::endl;
+			pub2.publish(marker_array);
+			pub3.publish(shape_array);
 
+			res.all_ok = 1;
+			std::cerr << "Environment model successfuly loaded from " << req.filename << "." << std::endl;
+			return true;
+		}
 
-		res.all_ok = 1;
-		std::cerr << "Environment model successfuly loaded from " << req.filename << "." << std::endl;
-		return true;
+		return false;
 	}
 
 }
 
+void spin() {
+
+//	ros::AsyncSpinner spinner(4);
+//	spinner.start();
+//	ros::waitForShutdown();
+    ros::spin();
+
+}
 
 /**
  * Main detector module body
@@ -585,6 +612,10 @@ int main( int argc, char** argv )
     ROS_INFO("Plane det. input: %s", settings.param_node_input.c_str());   
     ROS_INFO("Plane coloring: %s", settings.param_visualisation_color.c_str());   
 
+	ros::ServiceServer service1 = n->advertiseService(DET_SERVICE_RESET_PLANES, onReset);
+	ros::ServiceServer service2 = n->advertiseService(DET_SERVICE_SAVE_PLANES, onSave);
+	ros::ServiceServer service3 = n->advertiseService(DET_SERVICE_LOAD_PLANES, onLoad);
+
 	// if PCL input
 	if (settings.param_node_input == PARAM_NODE_INPUT_PCL)
 	{
@@ -596,7 +627,8 @@ int main( int argc, char** argv )
 										settings.param_visualisation_plane_normal_dev,
 										settings.param_visualisation_plane_shift_dev,
 										settings.param_ht_keeptrack,
-										settings.param_visualisation_ttl);
+										settings.param_visualisation_ttl,
+										settings.param_visualisation_max_poly_size);
 
 		// MESSAGES
 		message_filters::Subscriber<PointCloud2 > point_cloud(*n, DET_INPUT_POINT_CLOUD_TOPIC, 10);
@@ -604,10 +636,6 @@ int main( int argc, char** argv )
 		pub1 = n->advertise<pcl::PointCloud<pcl::PointXYZRGB> > (DET_OUTPUT_POINT_CLOUD_TOPIC, 1);
 		pub2 = n->advertise<visualization_msgs::MarkerArray > (DET_OUTPUT_MARKER_TOPIC, 1);
 		pub3 = n->advertise<cob_3d_mapping_msgs::ShapeArray > (DET_OUTPUT_MARKER_SRS_TOPIC, 1);
-
-		ros::ServiceServer service1 = n->advertiseService(DET_SERVICE_RESET_PLANES, onReset);
-		ros::ServiceServer service2 = n->advertiseService(DET_SERVICE_SAVE_PLANES, onSave);
-		ros::ServiceServer service3 = n->advertiseService(DET_SERVICE_LOAD_PLANES, onLoad);
 
 		if (settings.param_visualisation_color == "mean_color")
 		{
@@ -626,7 +654,7 @@ int main( int argc, char** argv )
 			sync.registerCallback(boost::bind(&callbackpcl_rgb, _1, _2));
 
 			std::cerr << "Plane detector initialized and listening point clouds..." << std::endl;
-			ros::spin();
+			spin();
 
 			return 1;
 		}
@@ -638,7 +666,7 @@ int main( int argc, char** argv )
 			transform_filter->registerCallback(boost::bind(&callbackpcl, _1));
 
 			std::cerr << "Plane detector initialized and listening point clouds..." << std::endl;
-			ros::spin();
+			spin();
 
 			return 1;
 		}
@@ -655,7 +683,8 @@ int main( int argc, char** argv )
 										settings.param_visualisation_plane_normal_dev,
 										settings.param_visualisation_plane_shift_dev,
 										settings.param_ht_keeptrack,
-										settings.param_visualisation_ttl);
+										settings.param_visualisation_ttl,
+										settings.param_visualisation_max_poly_size);
 
 		// MESSAGES
 		message_filters::Subscriber<Image> depth_sub(*n, DET_INPUT_IMAGE_TOPIC, 10);
@@ -687,7 +716,7 @@ int main( int argc, char** argv )
 			sync.registerCallback(boost::bind(&callbackkinect_rgb, _1, _2, _3));
 
 			std::cerr << "Plane detector initialized and listening depth images..." << std::endl;
-			ros::spin();
+			spin();
 
 			return 1;
 		}
@@ -702,7 +731,7 @@ int main( int argc, char** argv )
 			sync.registerCallback(boost::bind(&callbackkinect, _1, _2));
 
 			std::cerr << "Plane detector initialized and listening depth images..." << std::endl;
-			ros::spin();
+			spin();
 
 			return 1;
 		}

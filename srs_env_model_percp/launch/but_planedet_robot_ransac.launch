@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Don't forget to run the Kinect throttling nodelete somewhere -->
+    <!-- include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" /-->
+
+    <!-- Run the plane detector -->
+    <node pkg="srs_env_model_percp" type="but_plane_detector_ransac" name="but_plane_detector_ransac">
+        <rosparam file="$(find srs_env_model_percp)/config/planedet_params_robot_ransac.yaml" command="load" />
+        <remap from="points_in" to="/cam3d_throttled/depth_registered/points" />
+        <remap from="rgb_in" to="/cam3d_throttled/rgb/image_color" />
+        <remap from="camera_info_in" to="/cam3d_throttled/rgb/camera_info" />
+    </node>
+
+</launch>
+

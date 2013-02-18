@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <!-- Set to use simulation time -->
     <param name="/use_sim_time" value="true"/>
@@ -20,7 +21,7 @@
         <rosparam file="$(find srs_env_model_percp)/config/bb_estimator_params.yaml" command="load" />
         <remap from="camera_info_in" to="/cam3d/rgb/camera_info" />
         <!-- remap from="depth_image_in" to="/cam3d/depth/image_raw" /-->
-        <remap from="rgb_image_in" to="/cam3d/rgb/image_raw" />
+        <remap from="rgb_image_in" to="/cam3d/rgb/image_color" />
         <remap from="points_in" to="/cam3d/depth/points" />
     </node>
 

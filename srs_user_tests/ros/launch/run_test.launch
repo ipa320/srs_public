@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp" default="e1"/>
+  <arg name="task" default="nav1"/>
+  <arg name="cond" default="b"/>
+  <arg name="sim" default="true"/>
+  
+  <!-- args -->
+	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+  <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
+  
+  <!-- in case of a simulation, run Gazebo etc. -->
+  <group if="$(arg sim)">
+  
+    <include file="$(find cob_default_robot_config)/upload_param.launch" />
+    <include file="$(find cob_default_env_config)/upload_param.launch" />
+
+    <param name="/use_sim_time" value="true" />
+
+
+    <include file="$(find cob_bringup_sim)/launch/robot.launch"/>
+  
+    <include file="$(find srs_env_model_utils)/launch/kinect_noise_generator.launch">
+      <arg name="input_topic" value="/cam3d_throttled/depth_registered/points"/>
+      <arg name="output_topic" value="/cam3d_throttled/depth_registered/points_noised"/>
+    </include>
+    
+    <node pkg="srs_user_tests" type="prepare_robot_sim.py" name="prepare_robot_sim" output="screen"/>
+    
+    <!-- move robot to proper position -->
+    <node name="move_robot_sim" pkg="srs_user_tests" type="move_robot.py" respawn="false" output="screen">
+      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/robot_position.yaml" command="load"/>
+    </node>
+  
+  </group>
+ 
+  
+  <!-- navigation -->
+	<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" >
+		<arg name="map" value="$(find srs_user_tests)/ros/config/$(arg robot_env)-sim/map.yaml"/>
+	</include>
+
+	<!-- Run the interactive teleop -->
+	<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
+	
+	
+	<!-- run proper nodes for 2d/voxel/geomap -->
+	<!-- use noised pointcloud in simulation -->
+	<include file="$(find srs_user_tests)/ros/config/$(arg exp)/launch/$(arg cond)/cond.xml">
+	  <arg name="points_in" unless="$(arg sim)" value="/cam3d_throttled/depth_registered/points_noised"/>
+	</include>
+
+
+</launch>

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- args -->
+	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+  <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
+
+  <include file="$(find cob_default_robot_config)/upload_param.launch" />
+  <include file="$(find cob_default_env_config)/upload_param.launch" />
+
+  <param name="/use_sim_time" value="true" />
+
+
+  <include file="$(find cob_bringup_sim)/launch/robot.launch"/>
+  
+  <include file="$(find srs_env_model_utils)/launch/kinect_noise_generator.launch">
+    <arg name="input_topic" value="/cam3d_throttled/depth_registered/points"/>
+    <arg name="output_topic" value="/cam3d_throttled/depth_registered/points_noised"/>
+  </include>
+
+		<!-- navigation -->
+		<!--include file="$(find cob_navigation_slam)/launch/2dnav_ros_dwa.launch" /-->
+		<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" >
+			<arg name="map" value="$(find srs_user_tests)/ros/config/$(arg robot_env)-sim/map.yaml"/>
+		</include>
+
+		<!-- Run the interactive teleop -->
+		<include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
+        
+		<!-- Run BUT dynamic scene model server node -->
+		<include file="$(find srs_env_model)/launch/but_envmodel_robot.launch">
+  		<arg name="points_in" value="/cam3d_throttled/depth_registered/points_noised"/>
+		</include>
+
+		<!-- Run BUT plane detection node -->
+		<!--include file="$(find srs_env_model_percp)/launch/but_planedet_robot.launch" /-->
+	
+	<!-- Load predefined voxel map -->
+	<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch" />
+	
+	<node pkg="srs_user_tests" type="prepare_robot_sim.py" name="prepare_robot_sim" output="screen"/>
+
+</launch>
+

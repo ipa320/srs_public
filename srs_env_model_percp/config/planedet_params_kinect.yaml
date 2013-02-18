@@ -109,6 +109,9 @@ planedet_visualisation_color : mean_color
 # Plane visualisation time-to-live (sec), if 0, planes are permanent
 planedet_visualisation_ttl : 10
 
+# Plane polygonization maximum polygon size
+planedet_max_poly_size: 2000
+
 #-----------------------------------------------------------------------------------
 # NORMAL ESTIMATION PARAMS 
 # 

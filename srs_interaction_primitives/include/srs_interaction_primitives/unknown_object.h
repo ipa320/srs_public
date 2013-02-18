@@ -75,6 +75,8 @@ public:
    * Callback for interactive markers
    */
   void uboxCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  
+  virtual void setAllowObjectInteraction(bool allow);
 
 private:
   void createUnknownBox();
@@ -92,6 +94,9 @@ private:
 
   // Enables visualization of a predefined model including "red cross"
   bool use_material_;
+  
+  bool allow_object_interaction_;
+  
 };
 
 }

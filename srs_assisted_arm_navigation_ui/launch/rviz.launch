@@ -8,7 +8,7 @@
     <!--rosparam file="$(find srs_assisted_grasping_ui)/config/presets.yaml" command="load" /-->
     <rosparam file="$(find srs_assisted_arm_navigation_ui)/config/presets.yaml" command="load" />
     
-    <remap from="bb_video_in" to="/cam3d/rgb/upright/image_raw_throttled"/>
+    <remap from="bb_video_in" to="/cam3d_throttled/upright/rgb/image_color"/>
     <remap from="goal" to="/move_base_simple/goal"/>
     <param name="is_video_flipped" type="bool" value="true"/>
     <param name="wait_for_start" type="bool" value="false" />

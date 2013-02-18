@@ -46,6 +46,7 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 , m_bSubscribe( subscribe )
 , m_latchedTopics( false )
 , m_pcFrameId(DEFAULT_FRAME_ID)
+, m_ocFrameId("/map")
 , m_bFilterPC(true)
 , m_pointcloudMinZ(-std::numeric_limits<double>::max())
 , m_pointcloudMaxZ(std::numeric_limits<double>::max())
@@ -87,15 +88,18 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	else
 		m_bSubscribe = true;
 
-	// Get FID to which will be points transformed when publishing collision map
-	node_handle.param("pointcloud_frame_id", m_pcFrameId, m_pcFrameId ); //
+	// Get FID to which will be points transformed when receiving the point cloud
+	node_handle.param("pointcloud_frame_id", m_pcFrameId, DEFAULT_FRAME_ID);
+
+	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
+	node_handle.param("ocmap_frame_id", m_ocFrameId, m_ocFrameId);
 
 	// Point cloud limits
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
 	node_handle.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
 
 	// Create publisher
-	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 
 	// If should subscribe, create message filter and connect to the topic
@@ -122,7 +126,6 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	m_data->clear();
 
 //	PERROR( "PointCloudPlugin initialized..." );
-
 }
 
 //! Called when new scan was inserted and now all can be published
@@ -147,7 +150,12 @@ void srs_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timesta
 	pcl::toROSMsg< tPclPoint >(*m_data, cloud);
 
 	// Set message parameters and publish
-	cloud.header.frame_id = m_pcFrameId;
+	if( m_data->header.frame_id != m_ocFrameId )
+	{
+		ROS_ERROR("CPointCloudPlugin::publishInternal: Internal frame id is not compatible with the output one.");
+		return;
+	}
+	cloud.header.frame_id = m_ocFrameId;
 	cloud.header.stamp = timestamp;
 
 //	PERROR( "Publishing cloud. Size: " << m_data->size() << ", topic: " << m_pcPublisher.getTopic() );
@@ -176,8 +184,9 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 	// Pointcloud is used as output for octomap...
 	m_bAsInput = false;
 
+	// 2013/02/01 Majkl: Commented out as the output frame id is derived from the octomap frame id
 	// If different frame id
-	if( m_ocFrameId != m_pcFrameId )
+/*	if( m_ocFrameId != m_pcFrameId )
 	{
 		tf::StampedTransform ocToPcTf;
 
@@ -196,10 +205,9 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 			return;
 		}
 
-
 		// Get transformation matrix
 		pcl_ros::transformAsMatrix(ocToPcTf, m_pcOutTM);	// Sensor TF to defined base TF
-	}
+	}*/
 
 	// Initialize leaf iterators
 	tButServerOcTree & tree( par.map->getTree() );
@@ -216,14 +224,21 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 
 	} // Iterate through octree
 
+	// 2013/02/01 Majkl: Commented out as the output frame id is derived from the octomap frame id
 	// If different frame id
-	if( (!m_bAsInput) && (m_ocFrameId != m_pcFrameId) )
+/*	if( (!m_bAsInput) && (m_ocFrameId != m_pcFrameId) )
 	{
 		// transform point cloud from sensor frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
-	}
 
-	m_DataTimeStamp = par.currentTime;
+		// 2013/01/31 Majkl
+		m_data->header.frame_id = par.frameId;
+		m_data->header.stamp = par.currentTime;
+	}*/
+
+	// 2013/01/31 Majkl
+	m_data->header.frame_id = par.frameId;
+	m_data->header.stamp = par.currentTime;
 
 	lock.unlock();
 //	PERROR( "New map: Unlocked");
@@ -280,7 +295,6 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 //	std::cerr << "PCP.iccb start. Time: " << ros::Time::now() << std::endl;
 
-
 	m_bAsInput = true;
 
 	// Convert input pointcloud
@@ -291,7 +305,6 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 		pcl::fromROSMsg(*cloud, *bufferCloud );
 		pcl::copyPointCloud< pcl::PointXYZ, tPclPoint >( *bufferCloud, *m_data );
-
 	}
 	else
 	{
@@ -300,7 +313,6 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		pcl::fromROSMsg(*cloud, *bufferCloud);
 		pcl::copyPointCloud<pcl::PointXYZRGB, tPclPoint>( *bufferCloud, *m_data );
 	}
-
 
 	//*/
 
@@ -333,17 +345,14 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		// Get transformation matrix
 		pcl_ros::transformAsMatrix(sensorToPcTf, sensorToPcTM);	// Sensor TF to defined base TF
 
-
 		// transform pointcloud from sensor frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, sensorToPcTM);
 	}
 
 //	PERROR("1");
 
-
-
 //	PERROR("2");
-//*/
+
 	// Filter input pointcloud
 	if( m_bFilterPC )		// TODO: Optimize this by removing redundant transforms
 	{
@@ -374,10 +383,8 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		pcl_ros::transformAsMatrix(pcToBaseTf, pcToBaseTM);	// Sensor TF to defined base TF
 		pcl_ros::transformAsMatrix(baseToPcTf, baseToPcTM);	// Sensor TF to defined base TF
 
-
 		// transform pointcloud from pc frame to the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, pcToBaseTM);
-//*
 
 		// filter height and range, also removes NANs:
 		pcl::PassThrough<tPclPoint> pass;
@@ -385,7 +392,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		pass.setFilterLimits(m_pointcloudMinZ, m_pointcloudMaxZ);
 		pass.setInputCloud(m_data->makeShared());
 		pass.filter(*m_data);
-//*/
+
 		// transform pointcloud back to pc frame from the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, baseToPcTM);
 	}
@@ -397,6 +404,8 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
     // Store timestamp
     m_DataTimeStamp = cloud->header.stamp;
 
+//    ROS_DEBUG("CPointCloudPlugin::insertCloudCallback(): stamp = %f", cloud->header.stamp.toSec());
+
  //   PERROR("Insert cloud CB. Size: " << m_data->size() );
 
     // Unlock for invalidation (it has it's own lock)
@@ -405,10 +414,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
  	invalidate();
 
- //	std::cerr << "PCP.iccb end. Time: " << ros::Time::now() << std::endl;
-
 // 	PERROR("Unlock");
-
 }
 
 //! Should plugin publish data?
@@ -467,7 +473,7 @@ void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nod
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 100, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 		if( m_bSubscribe )
 		{

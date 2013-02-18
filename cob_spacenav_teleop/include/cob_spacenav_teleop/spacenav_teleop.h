@@ -83,7 +83,15 @@ struct SpacenavData {
 
 };
 
+struct Buttons {
 
+	boost::signals2::mutex mutex;
+
+	bool left;
+	bool right;
+	bool right_last;
+	bool right_trigger;
+};
 
 
 class SpaceNavTeleop
@@ -111,7 +119,8 @@ protected:
 	void tfTimerCallback(const ros::TimerEvent& ev);
 	ros::Timer tf_timer_;
 
-	ros::Publisher twist_publisher_;
+	ros::Publisher twist_publisher_safe_;
+	ros::Publisher twist_publisher_unsafe_;
 
 	SpacenavData sn_data_;
 
@@ -140,6 +149,13 @@ protected:
 	bool z_pref_;
 
 	ros::Time pref_time_;
+
+	void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
+	ros::Subscriber joy_sub_;
+	bool publishing_to_unsafe_;
+	bool robot_centric_mode_;
+
+	Buttons btns_;
 
 private:
 

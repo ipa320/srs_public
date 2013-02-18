@@ -11,7 +11,7 @@ ocmap_resolution: .025
 # Tree depth used for crawling. Zero means full tree
 ocmap_treedepth: 0
 
-# Interna and published octomap frame id
+# Internal and published octomap frame id
 ocmap_frame_id: "/map"
 
 # Probablility for a "hit" - or "occupied" (will be converted to logodds)
@@ -30,7 +30,8 @@ ocmap_sensor_model/max: .97
 
 # Maximum range for raycasting (-1: unlimited, but it leads to out of memory 
 # because octomap is trying to be too much precise)
-ocmap_max_range: 4.5
+#ocmap_max_range: 4.5
+ocmap_max_range: 7.0
 
 # Debugging information - visualize visible cone marker
 ocmap_visualize_markers: false
@@ -57,8 +58,7 @@ ocmap_filter_outdated: true
 pointcloud_frame_skip: 1
 
 # Internal and published pointcloud frame id
-#pointcloud_frame_id: "/head_cam3d_link"
-pointcloud_frame_id: "/map"
+pointcloud_frame_id: "/head_cam3d_link"
 
 # Point cloud limits in z-axis - minimum
 pointcloud_min_z: 0.1 

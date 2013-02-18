@@ -12,6 +12,7 @@
   <depend package="rospy"/>
   <depend package="tf"/>
   <depend package="geometry_msgs"/>
+  <depend package="srs_interaction_primitives"/>
 
 </package>
 

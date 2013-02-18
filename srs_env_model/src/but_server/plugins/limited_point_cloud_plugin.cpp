@@ -39,7 +39,6 @@ srs_env_model::CLimitedPointCloudPlugin::CLimitedPointCloudPlugin( const std::st
 , m_bTransformCamera( false )
 , m_bSpinThread( true )
 {
-
 }
 
 /**
@@ -87,8 +86,14 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
     // Point cloud publishing topic name
     node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME );
 
+	// Get FID to which will be points transformed when receiving the point cloud
+	node_handle.param("pointcloud_frame_id", m_pcFrameId, DEFAULT_FRAME_ID);
+
+	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
+	node_handle.param("ocmap_frame_id", m_ocFrameId, m_ocFrameId);
+
     // Create publisher
-    m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
+    m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
     // Subscribe to position topic
     // Create subscriber
@@ -107,8 +112,6 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
 */
     // Clear old pointcloud data
     m_data->clear();
-
-
 }
 
 /**
@@ -141,7 +144,8 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
 	// Pointcloud is used as output for octomap...
 	m_bAsInput = false;
 
-	bool bTransformOutput(m_ocFrameId != m_pcFrameId);
+	// 2013/02/01 Majkl: Commented out as the output frame id is derived from the octomap frame id
+/*	bool bTransformOutput(m_ocFrameId != m_pcFrameId);
 
 	// If different frame id
 	if( bTransformOutput )
@@ -163,18 +167,16 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
 			return;
 		}
 
-
 		// Get transformation matrix
 		pcl_ros::transformAsMatrix(ocToPcTf, m_pcOutTM);	// Sensor TF to defined base TF
-	}
+	}*/
 
-
-    m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
+//    m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
+    bool m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
 
     // If different frame id
     if( m_bTransformCamera )
     {
-
         // Some transforms
         tf::StampedTransform camToOcTf;
 
@@ -226,11 +228,16 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
 
 	} // Iterate through octree
 
-	if( bTransformOutput )
+	// 2013/02/01 Majkl: Commented out as the output frame id is derived from the octomap frame id
+/*	if( bTransformOutput )
 	{
 		// transform point cloud from sensor frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
-	}
+	}*/
+
+	// 2013/01/31 Majkl
+	m_data->header.frame_id = par.frameId;
+	m_data->header.stamp = par.currentTime;
 
 	m_DataTimeStamp = par.currentTime;
 
@@ -333,7 +340,7 @@ void srs_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandl
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 1, m_latchedTopics);
+		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 		// Subscribe to position topic
 		// Create subscriber

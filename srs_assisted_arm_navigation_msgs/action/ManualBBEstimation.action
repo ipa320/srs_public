@@ -1,6 +1,7 @@
 # Action server is implemented in RVIZ plugin which acts as bb_estimator client
 # goal
 string object_name
+bool disable_video # aka useless mode for RVIZ plugin
 ---
 # result
 int16[2] p1

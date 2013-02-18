@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <include file="$(find srs_user_tests)/ros/launch/nav_test_remote_common.xml" />
+
+	<!-- Run rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/nav_test_sim.vcg" />
+
+</launch>
+

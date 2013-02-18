@@ -26,6 +26,7 @@ sss = simple_script_server()
 from geometry_msgs.msg import *
 from shared_state_information import *
 
+
 #from gazebo.srv import *
 #import gazebo.msg as gazebo
 

@@ -66,7 +66,7 @@ void srs_env_model::CMap2DPlugin::init(ros::NodeHandle & node_handle)
 	node_handle.param("min_y_size", m_minSizeY, m_minSizeY);
 
 	// Create publisher
-	m_map2DPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 100, m_latchedTopics);
+	m_map2DPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 5, m_latchedTopics);
 }
 
 
@@ -276,6 +276,6 @@ void srs_env_model::CMap2DPlugin::pause( bool bPause, ros::NodeHandle & node_han
 	else
 	{
 		// Create publisher
-		m_map2DPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 100, m_latchedTopics);
+		m_map2DPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 5, m_latchedTopics);
 	}
 }

@@ -46,10 +46,13 @@ PlaneExt::tVertices PlaneExt::ComputeConcaveHull(pcl::PointCloud<pcl::PointXYZ>:
     // create the concave hull of the plane
     pcl::ConcaveHull<pcl::PointXYZ > chull;
     chull.setInputCloud (cloud_projected);
-    chull.setAlpha(0.05);
+    chull.setAlpha(0.15);
 
     tVertices polys;
     chull.reconstruct(*plane_hull, polys);
+
+    if (polys.size() > MAX_POLYS)
+		return tVertices();
 
     return polys;
 }
@@ -94,21 +97,21 @@ void PlaneExt::ConcaveHullRewrite(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hul
 	planePolygonsClipper = PolygonizeConcaveHull(plane_hull, polygon_indices);
 }
 
-bool PlaneExt::ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices)
+bool PlaneExt::ConcaveHullJoinCurrent(pcl::PointCloud<pcl::PointXYZ>::Ptr &plane_hull, tVertices &polygon_indices, int max_poly_size)
 {
 	// Join new polygon with current
 	ClipperLib::ExPolygons newPoly = PolygonizeConcaveHull(plane_hull, polygon_indices);
 
 	std::cerr << "polygonized" << std::endl;
 
-	if (newPoly.size() > 200) {
+	if (newPoly.size() > max_poly_size) {
 
 		std::cerr << "too big (new) polygon" << std::endl;
 		return false;
 
 	}
 
-	if (planePolygonsClipper.size() > 200) {
+	if (planePolygonsClipper.size() > max_poly_size) {
 
 		std::cerr << "too big (exist) polygon" << std::endl;
 		return false;
@@ -247,7 +250,7 @@ visualization_msgs::Marker PlaneExt::NewPlanePoints(pcl::PointCloud<pcl::PointXY
 	return planeTriangles;
 }
 
-visualization_msgs::Marker PlaneExt::AddPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud)
+visualization_msgs::Marker PlaneExt::AddPlanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud, int max_poly_size)
 {
 	// Add new plane hull
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull (new pcl::PointCloud<pcl::PointXYZ>());
@@ -256,7 +259,7 @@ visualization_msgs::Marker PlaneExt::AddPlanePoints(pcl::PointCloud<pcl::PointXY
 
 	// Join with current
 	std::cerr << "concave hull join" << std::endl;
-	ConcaveHullJoinCurrent(cloud_hull, polygons);
+	ConcaveHullJoinCurrent(cloud_hull, polygons, max_poly_size);
 
 	// Triangulate
 	std::cerr << "triangulating polygon" << std::endl;

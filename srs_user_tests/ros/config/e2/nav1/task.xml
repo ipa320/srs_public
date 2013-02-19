@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+
+  <group if="$(arg sim)">
+    
+    <!-- prepare robot for navigation tasks -->
+    <node pkg="srs_user_tests" type="prepare_robot_sim.py" name="prepare_robot_sim" output="screen"/>
+    
+    <rosparam command="load" ns="objects" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/object_locations.yaml"/>
+    
+    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="wohnzimmertisch TV-Bank_Hemnes Tv_Samsung white_shelf couch livingroom_closet large_plant_big large_plant_small block_of_4_books_from_library book_emancipation metal_candleholder door_sill livingroom_clocks door_white_livingroom1 door_white_livingroom2 door_white_livingroom2 stool_wood glass_candleholder thick_candle dust_mop"/>
+    
+    
+  </group>
+
+ 
+
+</launch>
+

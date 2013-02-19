@@ -1,0 +1,164 @@
+
+# KITCHEN__________________________________________________
+
+# LIVING ROOM__________________________________________________
+
+wohnzimmertisch:
+  model: wohnzimmertisch
+  model_type: urdf
+  position: [-5.46, 2.51, 0.00]
+  orientation: [0, 0, -2.35619449]
+
+TV-Bank_Hemnes:
+  model: TV-Bank_Hemnes
+  model_type: urdf
+  position: [-6.695, 1.445, 0.00]
+  orientation: [0, 0, -0.785398164]
+
+Tv_Samsung:
+  model: Tv_Samsung
+  model_type: urdf
+  position: [-6.775, 1.365, 0.57]
+  orientation: [0, 0, 2.35619449]
+
+white_shelf:
+  model: white_shelf
+  model_type: urdf
+  position: [-8.05, 2.81, 0]
+  orientation: [0, 0, 0.785398164]
+
+couch:
+  model: couch
+  model_type: urdf.xacro
+  position: [-4.72, 3.22, 0]
+  orientation: [0, 0, -0.785398164]
+
+dust_mop:
+  model: dust_mop
+  model_type: urdf
+# dust mop task position
+  position: [-5.62, 2.44, 0.60]
+  orientation: [0, 0, 2.35619449]
+
+large_plant_big:
+  model: large_plant_big
+  model_type: urdf
+# normal position
+  position: [-6.5, 5.26, 0.0]
+  orientation: [0, 0, 0]
+# slalom task position
+  #position: [-7.37, 2.86, 0.0]
+  #orientation: [0, 0, 0]
+
+large_plant_small:
+  model: large_plant_small
+  model_type: urdf
+# normal position
+  position: [-6.10, 4.86, 0.0]
+  orientation: [0, 0, 0]
+# slalom task position
+  #position: [-7.25, 3.57, 0.0]
+  #orientation: [0, 0, 0]
+
+stool_wood:
+  model: stool_wood
+  model_type: urdf
+# normal position
+  position: [-3.43, 2.55, 0.00]
+  orientation: [0, 0, 0.785398164]
+# slalom task position
+  #position: [-5.29, 0.69, 0.00]
+  #orientation: [0, 0, 0.785398164]
+
+glass_candleholder:
+  model: glass_candleholder
+  model_type: urdf
+# normal position
+  position: [-3.43, 2.55, 0.45]
+  orientation: [0, 0, 0.785398164]
+# slalom task position
+  #position: [-5.29, 0.69, 0.45]
+  #orientation: [0, 0, 0.785398164]
+
+thick_candle:
+  model: thick_candle
+  model_type: urdf
+# normal position
+  position: [-3.43, 2.55, 0.655]
+  orientation: [0, 0, 0.785398164]
+# slalom task position
+  #position: [-5.29, 0.69, 0.655]
+  #orientation: [0, 0, 0.785398164]
+
+block_of_4_books_from_library:
+  model: block_of_4_books_from_library
+  model_type: urdf
+  position: [-8.27, 2.81, 0.98]
+  orientation: [0, 0, -2.35619449]
+
+livingroom_closet:
+  model: livingroom_closet
+  model_type: urdf
+  position: [-7.65, 5.44, 0.00]
+  orientation: [0, 0, 0]
+
+book_emancipation:
+  model: book_emancipation
+  model_type: urdf
+  position: [-7.12, 5.38, 0.84]
+  orientation: [4.2, -1.570796, 0]
+
+metal_candleholder:
+  model: metal_candleholder
+  model_type: urdf
+  position: [-8.0, 5.4, 0.82]
+  orientation: [0, 0, 3.141592654]
+
+door_sill:
+  model: door_sill
+  model_type: urdf
+  position: [-4.145, -0.385, 0]
+  orientation: [0, 0, -0.785398164]
+
+livingroom_clocks:
+  model: livingroom_clocks
+  model_type: urdf
+  position: [-9.05, 5.16, 1.00]
+  orientation: [0, 0, 0]
+
+door_white_livingroom1:
+  model: door_white_livingroom1
+  model_type: urdf
+  position: [-3.33, -0.70, 0]
+  orientation: [0, 0, 0]
+
+
+door_white_livingroom2:
+  model: door_white_livingroom2
+  model_type: urdf
+# normal position:
+#  position: [-8.58, 4.653, 0]
+#  orientation: [0, 0, -1.570796327]
+# dust mop and slalom task position:
+  position: [-9.13, 4.14, 0]
+  orientation: [0, 0, 3.141592654]
+
+
+# BEDROOM______________________________________________________________
+
+
+# FLOOR______________________________________________________________
+
+
+# OTHER OBJECTS______________________________________________________
+
+
+# IPA OBJECTS_________________________________________________________
+
+
+
+
+
+
+
+

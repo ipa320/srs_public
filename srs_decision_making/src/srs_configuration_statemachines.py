@@ -123,8 +123,11 @@ def robot_configuration(parent, action_name, action_stage):
     global component_list
     global robot_config
     global robot_config_need_no_action
+    global sss;
     
     handles = list()
+    sss.set_light("yellow")
+    sss.sleep(2)
     
     if action_name == 'navigation':
         if current_task_info.object_on_tray: 
@@ -137,7 +140,6 @@ def robot_configuration(parent, action_name, action_stage):
                 action_name = 'navigation_object_in_sdh'
             else:
                 action_name = 'navigation_no_object'
-                
     try:
         #bring robot into the pre-configuration state     
         if action_stage == 'pre-config':
@@ -146,12 +148,47 @@ def robot_configuration(parent, action_name, action_stage):
                 if robot_config_pre[action_name][component_list[index]] in robot_config_need_no_action: 
                     handles.append(None)
                 else:
-                    if component_list[index] == "arm":
+                    if component_list[index] == "tray":
+                        try:
+                            service_full_name = '/tray_monitor/occupied'
+                            #rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+                            rospy.wait_for_service(service_full_name,3)
+                             # to check if the tray is ocuppied
+                            is_ocuppied = rospy.ServiceProxy(service_full_name,Trigger)
+                            resp = is_ocuppied()
+                            print "###Checking if there is any component on the tray..." 
+                            print "###is_ocuppied? ", resp
+                            
+                            if(resp is not True):
+                                print "###The tray is not ocuppied." 
+                                handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
+                                #handle_tray = sss.move("tray","down")
+                                #if handle_tray.get_error_code() != 0:
+                                #    return 'failed'
+                                #handle_sdh = sss.move("sdh","home")
+                                #if handle_sdh.get_error_code() != 0:
+                                #    return 'failed'
+                                #handle_arm = sss.move("arm","folded")
+                                #if handle_arm.get_error_code() != 0:
+                                #    return 'failed'
+                                #handle_arm.wait()
+                                # set light
+                                sss.set_light("green")
+                            else:
+                                print "###I cannot fold my tray, as the tray is ocuppied." 
+                                handles.append(None) # needs further check
+                                error_message = "%s"%e
+                                rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
+                                sss.set_light("yellow")
+                        except rospy.ROSException, e:
+                            error_message = "%s"%e
+                            rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+                            print "the service /tray_monitor/occupied is not available"
+                    elif component_list[index] == "arm":
                         #handles.append(sss.move_planned(component_list[index], robot_config_pre[action_name][component_list[index]], False))
                         handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
                     else:
                         handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
-                    
         #bring robot into the post-configuration state     
         if action_stage == 'post-config':
             #initial the sss handles
@@ -159,10 +196,38 @@ def robot_configuration(parent, action_name, action_stage):
                 if robot_config_post[action_name][component_list[index]] in robot_config_need_no_action: 
                     handles.append(None)
                 else:
-                    if component_list[index] == "arm":
-                        handles.append(sss.move(component_list[index], robot_config_post[action_name][component_list[index]], False))
+                    if component_list[index] == "tray":
+                        # check if tray service is available
+                        try:
+                            service_full_name = '/tray_monitor/occupied'
+                            #rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+                            rospy.wait_for_service(service_full_name,3)
+                            
+                            # to check if the tray is ocuppied
+                            is_ocuppied = rospy.ServiceProxy(service_full_name,Trigger)
+                            resp = is_ocuppied()
+                            print "###Checking if there is any component on the tray..." 
+                            print "###is_ocuppied? ", resp
+                            
+                            if(resp is not True):
+                                print "The tray is not ocuppied."
+                                handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
+                                # set light
+                                sss.set_light("green")
+                            else:
+                                print "###I cannot fold my tray, as the tray is ocuppied." 
+                                handles.append(None)
+                                error_message = "%s"%e
+                                rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
+                        except rospy.ROSException, e:
+                            error_message = "%s"%e
+                            rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+                            print "the service /tray_monitor/occupied is not available"
+                    elif component_list[index] == "arm":
+                        #handles.append(sss.move_planned(component_list[index], robot_config_pre[action_name][component_list[index]], False))
+                        handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))
                     else:
-                        handles.append(sss.move(component_list[index], robot_config_post[action_name][component_list[index]], False))             
+                        handles.append(sss.move(component_list[index], robot_config_pre[action_name][component_list[index]], False))    
                     
     except KeyError:
         print("dictionary key is not found in the set of existing keys")    
@@ -175,25 +240,22 @@ def robot_configuration(parent, action_name, action_stage):
         return failed
         
     #wait for action to finish
-    for index in range(len(component_list)):
-        if handles[index] != None:
-            if parent.preempt_requested():  
-                parent.service_preempt()    
-                return 'preempted'
-            else:                
-                handles[index].wait()
+    #for index in range(len(component_list)):
+        #if handles[index] != None:
+        for handle in handles:
+            if handle is not None:
+                if parent.preempt_requested():  
+                    parent.service_preempst()    
+                    return 'preempted'
+                else:                
+                    #handles[index].wait()
+                    handle.wait()
                 ###########################################################################
                 #TO DO 
                 #need check the state of the handles. return failed after the handles fails.
                 #
                 ############################################################################
-
     return 'succeeded'
-    
-                    
-            
-             
-
 
 class pre_conf(smach.State):
     def __init__(self):
@@ -250,6 +312,7 @@ class co_sm_post_conf(smach.Concurrence):
     def __init__(self, action_name=''):
         smach.Concurrence.__init__(outcomes=['succeeded', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
+                 
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
         self.action_name=action_name
@@ -442,6 +505,7 @@ class srs_grasp_operation(smach.StateMachine):
                                 'grasp_categorisation':'grasp_categorisation'})       
              
             smach.StateMachine.add('POST_CONFIG', co_sm_post_conf,
+                                   
                     transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
                     remapping={'action_name':'action_name'})
             

@@ -9,6 +9,7 @@ from srs_assisted_detection.srv import *
 
 from srs_symbolic_grounding.srv import *
 from srs_symbolic_grounding.msg import *
+from srs_msgs.msg import * # this is for SRSSpatialInfo()
 
 import rospy
 

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp" default="e1"/>
+  <arg name="task" default="nav1"/>
+  <arg name="cond" default="b"/>
+  <arg name="sim" default="true"/>
+  
+  <group if="$(arg sim)">
+    
+    <!-- move robot to proper position -->
+    <node name="move_robot_sim" pkg="srs_user_tests" type="move_robot.py" respawn="false" output="screen">
+      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/robot_position_sim.yaml" command="load"/>
+    </node>
+    
+  </group>
+  
+  <!-- task specific launch files -->
+  <include file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/task.xml">
+    <arg name="exp"  value="$(arg exp)"/>
+    <arg name="task" value="$(arg task)"/>
+    <arg name="cond" value="$(arg cond)"/>
+    <arg name="sim"  value="$(arg sim)"/>
+  </include>
+  
+  
+  
+	<!--include file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/$(arg cond)/cond.xml">
+
+	  
+	</include-->
+  
+  
+</launch>

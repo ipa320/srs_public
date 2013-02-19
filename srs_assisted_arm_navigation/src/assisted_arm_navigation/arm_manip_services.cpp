@@ -102,6 +102,15 @@ bool CArmManipulationEditor::ArmNavNew(ArmNavNew::Request &req, ArmNavNew::Respo
    data.setEndVisible(true);
    data.setJointControlsVisible(joint_controls_,this);
 
+   std_msgs::ColorRGBA goal_color;
+
+   goal_color.r = 0.0;
+   goal_color.g = 1.0;
+   goal_color.b = 0.0;
+   goal_color.a = 0.6;
+
+   data.setGoalColor(goal_color);
+
    #define TR 0.1
 
    if (aco_) {
@@ -447,6 +456,9 @@ bool CArmManipulationEditor::ArmNavSetAttached(ArmNavSetAttached::Request &req, 
 				return true;
 
 			}
+			
+			// once attached, we will remove pregrasps
+			coll_obj_det[idx].allow_pregrasps = false;
 
 		} else {
 

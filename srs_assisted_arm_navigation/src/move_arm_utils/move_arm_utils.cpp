@@ -114,7 +114,16 @@ TrajectoryData::TrajectoryData()
   setCurrentState(NULL);
   setSource("");
   setGroupName("");
-  setColor(makeRandomColor(0.3f, 0.6f));
+  //setColor(makeRandomColor(0.3f, 0.6f));
+  std_msgs::ColorRGBA green;
+
+  green.r = 0.0;
+  green.g = 1.0;
+  green.b = 0.0;
+  green.a = 0.6;
+
+  setColor(green);
+
   reset();
   setId(0);
   showCollisions();
@@ -134,7 +143,17 @@ TrajectoryData::TrajectoryData(const unsigned int& id, const string& source, con
   setSource(source);
   setGroupName(groupName);
   setTrajectory(trajectory);
-  setColor(makeRandomColor(0.3f, 0.6f));
+  //setColor(makeRandomColor(0.3f, 0.6f));
+
+  std_msgs::ColorRGBA green;
+
+  green.r = 0.0;
+  green.g = 1.0;
+  green.b = 0.0;
+  green.a = 0.6;
+
+  setColor(green);
+
   reset();
   showCollisions();
   should_refresh_colors_ = false;
@@ -154,7 +173,17 @@ TrajectoryData::TrajectoryData(const unsigned int& id, const string& source, con
   setGroupName(groupName);
   setTrajectory(trajectory);
   setTrajectoryError(trajectory_error);
-  setColor(makeRandomColor(0.3f, 0.6f));
+  //setColor(makeRandomColor(0.3f, 0.6f));
+
+  std_msgs::ColorRGBA green;
+
+  green.r = 0.0;
+  green.g = 1.0;
+  green.b = 0.0;
+  green.a = 0.6;
+
+  setColor(green);
+
   reset();
   showCollisions();
   should_refresh_colors_ = false;
@@ -264,7 +293,7 @@ void TrajectoryData::updateCollisionMarkers(CollisionModels* cm_, MotionPlanRequ
       return;
     }
     std_msgs::ColorRGBA bad_color;
-    bad_color.a = 1.0f;
+    bad_color.a = 0.6f;
     bad_color.r = 1.0f;
     bad_color.g = 0.0f;
     bad_color.b = 0.0f;
@@ -1540,13 +1569,13 @@ void PlanningSceneEditor::getMotionPlanningMarkers(visualization_msgs::MarkerArr
       std_msgs::ColorRGBA fail_color_c; // collision
       std_msgs::ColorRGBA fail_color_o; // out of reach
 
-      fail_color_c.a = 0.9;
+      fail_color_c.a = 0.6;
       fail_color_c.r = 1.0;
       fail_color_c.g = 0.0;
       fail_color_c.b = 0.0;
 
-      fail_color_o.a = 0.9;
-	  fail_color_o.r = 139.0/255.0;
+      fail_color_o.a = 0.6;
+	  fail_color_o.r = 0.6;
 	  fail_color_o.g = 0.0;
 	  fail_color_o.b = 0.0;
 

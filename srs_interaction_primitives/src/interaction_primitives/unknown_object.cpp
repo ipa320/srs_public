@@ -53,13 +53,11 @@ UnknownObject::UnknownObject(InteractiveMarkerServerPtr server, string frame_id,
 
 void UnknownObject::setAllowObjectInteraction(bool allow)
 {
-  
   ROS_INFO("Interaction allowed");
 
   allow_object_interaction_ = allow;
   if (allow_object_interaction_)
   {
-  
     addMovementControls();
     addRotationControls();
     addScaleControls();
@@ -70,7 +68,6 @@ void UnknownObject::setAllowObjectInteraction(bool allow)
   }
   else
   {
-  
     removeMovementControls();
     removeRotationControls();
     removeScaleControls();
@@ -86,7 +83,6 @@ void UnknownObject::setAllowObjectInteraction(bool allow)
 }
 
 
-
 void UnknownObject::uboxCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
   defaultCallback(feedback);
@@ -97,6 +93,7 @@ void UnknownObject::uboxCallback(const InteractiveMarkerFeedbackConstPtr &feedba
     server_->applyChanges();
   }
 }
+
 
 void UnknownObject::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
@@ -249,6 +246,7 @@ void UnknownObject::createMenu()
   }
 }
 
+
 void UnknownObject::createBox()
 {
   box_.type = Marker::MESH_RESOURCE;
@@ -256,6 +254,7 @@ void UnknownObject::createBox()
   box_.scale = scale_;
   box_.mesh_resource = "package://srs_interaction_primitives/meshes/unknown_object.dae";
 }
+
 
 void UnknownObject::createColorBox()
 {
@@ -269,7 +268,7 @@ void UnknownObject::createColorBox()
   box_.color.a = 0.5;
 
   // Wireframe model - disabled for now, it doesn't scale properly...
-/*  wire_.points.clear();
+  wire_.points.clear();
 
   Point p1, p2;
   double sx = scale_.x / 2;
@@ -379,7 +378,7 @@ void UnknownObject::createColorBox()
   p2.y = -sy + trans_y;
   p2.z = -sz + trans_z;
   wire_.points.push_back(p1);
-  wire_.points.push_back(p2);*/
+  wire_.points.push_back(p2);
 }
 
 
@@ -391,6 +390,7 @@ void UnknownObject::createUnknownBox()
   object_.pose = pose_;
   object_.scale = srs_interaction_primitives::maxScale(scale_);
 }
+
 
 void UnknownObject::create()
 {
@@ -408,7 +408,7 @@ void UnknownObject::create()
   {
       createColorBox();
       control_.markers.push_back(box_);
-//      control_.markers.push_back(wire_);
+      control_.markers.push_back(wire_);
   }
   control_.interaction_mode = InteractiveMarkerControl::MENU;
   control_.always_visible = true;

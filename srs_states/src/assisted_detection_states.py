@@ -150,8 +150,8 @@ class user_intervention_on_detection(smach.State):
         self.target_object_name=userdata.target_object_name
         self.object_list=userdata.target_object_list
         
-        user_intervention_service_called == 1 # this is for testing
-        
+        user_intervention_service_called == 2 # this is for testing
+        print "###user_intervention_service_called ", user_intervention_service_called
         global s3
         s3 = rospy.Service('assisted_answer', UiAnswer, self.answerObjectSrv) # a=array('i',[2,3,4,5]) => (a,0,s)
         s3.spin()
@@ -189,12 +189,11 @@ class user_intervention_on_detection(smach.State):
                 print "Cannot execute the user intervention, as no object has been detected!"
                 return outcome_user_intervention
         
-        global s2
-        s2 = rospy.Service('assisted_BBmove', BBMove, self.moveBBSrv)
-        s2.spin()
-        rospy.loginfo("assisted_answer: BBMove is ready.")
-        
         if(user_intervention_service_called==2): 
+                global s2
+                s2 = rospy.Service('assisted_BBmove', BBMove, self.moveBBSrv)
+                s2.spin()
+                rospy.loginfo("assisted_answer: BBMove is ready.")
                 print self.bb_pose
                 userdata.bb_pose=[self.bb_pose.x,self.bb_pose.y,self.bb_pose.theta]
                 return outcome_user_intervention
@@ -213,25 +212,28 @@ class user_intervention_on_detection(smach.State):
         rospy.loginfo("%s", req.action)
         if(req.action.data == 'give up'):
             outcome_user_intervention = 'give up'
-            answer.message.data='give up, process stopped'
+            answer.message.data = 'give up, process stopped'
         #save
         elif(req.action.data == 'succeeded'):
-            #get position from good object
-            pose=Pose()
-            pose.position.x=self.object_list.detections[req.id].pose.pose.position.x
-            pose.position.y=self.object_list.detections[req.id].pose.pose.position.y
-            pose.position.z=self.object_list.detections[req.id].pose.pose.position.z
-            pose.orientation.x=self.object_list.detections[req.id].pose.pose.orientation.x
-            pose.orientation.y=self.object_list.detections[req.id].pose.pose.orientation.y
-            pose.orientation.z=self.object_list.detections[req.id].pose.pose.orientation.z
-            pose.orientation.w=self.object_list.detections[req.id].pose.pose.orientation.w
-        
-            print "pose is ", pose
-            self.object_pose=pose
-            self.object=self.object_list.detections[req.id] # check id
+            if(len(self.object_list.detections) > 0):
+                #get position from good object
+                pose=Pose()
+                pose.position.x=self.object_list.detections[req.id].pose.pose.position.x
+                pose.position.y=self.object_list.detections[req.id].pose.pose.position.y
+                pose.position.z=self.object_list.detections[req.id].pose.pose.position.z
+                pose.orientation.x=self.object_list.detections[req.id].pose.pose.orientation.x
+                pose.orientation.y=self.object_list.detections[req.id].pose.pose.orientation.y
+                pose.orientation.z=self.object_list.detections[req.id].pose.pose.orientation.z
+                pose.orientation.w=self.object_list.detections[req.id].pose.pose.orientation.w
             
-            outcome_user_intervention = 'succeeded'
-            answer.message.data='succeeded, go to next step'
+                print "pose is ", pose
+                self.object_pose=pose
+                self.object=self.object_list.detections[req.id] # check id
+                
+                outcome_user_intervention = 'succeeded'
+                answer.message.data='succeeded, go to next step'
+            else:
+                print "###No object has been detected"
         
         else: #retry detection
             outcome_user_intervention = 'retry'

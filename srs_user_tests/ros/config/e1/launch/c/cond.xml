@@ -1,18 +1,4 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="points_in" default="/cam3d_throttled/depth_registered/points"/>
-
-  <!-- Geomap. condition -->
-  <include file="$(find cob_3d_mapping_pipeline)/launch/mapping.launch">
-    <arg name="points_in" value="$(arg points_in)"/>
-  </include>
-  
-  <!--node pkg="cob_3d_mapping_point_map" type="trigger_mapping.py" name="trigger_mapping" args="start" output="screen" respawn="false"/-->
-  
-  <!-- this is NOT working properly, why??? -->
-  <!--node ns="geometry_map" pkg="cob_3d_mapping_geometry_map" type="set_geometry_map" name="set_geometry_map" output="screen">
-    <param name="file_path" type="string" value="$(find srs_user_tests)/data/geomap.bag"/>
-  </node-->
-
 </launch>

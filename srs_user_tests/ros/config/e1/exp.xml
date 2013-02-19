@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp" default="e1"/>
+  <arg name="task" default="nav1"/>
+  <arg name="cond" default="b"/>
+  <arg name="sim" default="false"/>
+  
+  <group if="$(arg sim)">
+  
+    <!-- prepare robot for navigation tasks -->
+    <node pkg="srs_user_tests" type="prepare_robot_sim.py" name="prepare_robot_sim" output="screen"/>
+    
+    <!-- move robot to proper position -->
+    <node name="move_robot_sim" pkg="srs_user_tests" type="move_robot.py" respawn="false" output="screen">
+      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/robot_position_sim.yaml" command="load"/>
+    </node>
+    
+  </group>
+
+  <!-- task specific launch files -->
+  <include file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/task.xml">
+    <arg name="exp"  value="$(arg exp)"/>
+    <arg name="task" value="$(arg task)"/>
+    <arg name="cond" value="$(arg cond)"/>
+    <arg name="sim"  value="$(arg sim)"/>
+  </include>
+  
+    <!-- condition (2D/voxel/geo) specific launch files -->
+	<include file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/$(arg cond)/cond.xml">
+
+	  <!-- use noised pointcloud in simulation -->
+	  <arg name="points_in" if="$(arg sim)" value="/cam3d_throttled/depth_registered/points_noised"/>
+	  <arg name="sim" value="$(arg sim)"/>
+	  
+	</include>
+  
+</launch>

@@ -1,11 +1,15 @@
 <?xml version="1.0"?>
 <launch>
 
+  <arg name="points_in" default="/cam3d_throttled/depth_registered/points"/>
+
   <!--include file="$(find srs_assisted_arm_navigation)/launch/cob_common.launch"/-->
 
   <include file="$(find srs_assisted_arm_navigation)/launch/arm_nav_common.xml"/>
   
   <!-- BUT planning environment -->
-  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.xml"/>
+  <include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.xml">
+    <arg name="rgb_cloud" value="$(arg points_in)"/>
+  </include>
 
 </launch>

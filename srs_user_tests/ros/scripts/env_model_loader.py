@@ -28,9 +28,10 @@
 
 import roslib; roslib.load_manifest('srs_user_tests')
 import rospy
-from srs_env_model.srv import LoadSave
+from srs_env_model.srv import LoadSave, ResetOctomap
 import sys
 import os
+from std_msgs.msg import Empty as EmptyMsg
 
 class LoaderSaver():
     
@@ -115,6 +116,7 @@ if __name__ == '__main__':
       
     l = LoaderSaver()
     
+    
     if not rospy.has_param('~action'):
         
         rospy.logerr('Param "action" is not set')
@@ -135,6 +137,30 @@ if __name__ == '__main__':
         
             rospy.logerr("File (%s) does not exist!",file)
             sys.exit()
+            
+        sim = rospy.get_param('/use_sim_time')
+    
+        if sim is True:
+        
+          rospy.loginfo('Waiting until simulation is ready...')
+    
+          rospy.wait_for_message('/sim_init',EmptyMsg)
+          
+          rospy.wait_for_service("/but_env_model/reset_octomap")
+          
+          reset = rospy.ServiceProxy("/but_env_model/reset_octomap", ResetOctomap)
+          
+          try:
+    
+            res = reset()
+            
+            rospy.loginfo('Reset of octomap takes some time, be patient.')
+            
+          except Exception, e:
+        
+            rospy.logerr('Cannot reset octomap, error: %s',str(e))
+          
+        rospy.sleep(10)
         
         l.load(file)
         

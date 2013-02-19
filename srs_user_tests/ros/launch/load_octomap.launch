@@ -1,9 +1,12 @@
 <?xml version="1.0"?>
 <launch>
 
+  <arg name="sim" default="false"/>
+
   <node pkg="srs_user_tests" name="octomap_loader" type="env_model_loader.py" output="screen" respawn="false">
     <param name="action" type="string" value="load"/>
-    <param name="file" type="string" value="$(find srs_user_tests)/data/octomap.enm"/>
+    <param name="file" if="$(arg sim)" type="string" value="$(find srs_user_tests)/data/sim/octomap.enm"/>
+    <param name="file" unless="$(arg sim)" type="string" value="$(find srs_user_tests)/data/octomap.enm"/>
   </node>
 
 </launch>

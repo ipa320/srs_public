@@ -27,22 +27,32 @@
 #
 import roslib; roslib.load_manifest('srs_user_tests')
 import rospy
-from std_srvs.srv import Empty
+from std_srvs.srv import Empty as EmptySrv
 from geometry_msgs.msg import Pose
 from gazebo_msgs.srv import SetModelState
 from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import PoseWithCovarianceStamped
+from std_msgs.msg import Empty as EmptyMsg
 
 
 def main():
     
     rospy.init_node('move_robot_to_given_place')
     
-    g_pause = rospy.ServiceProxy("/gazebo/pause_physics", Empty)
-    g_unpause = rospy.ServiceProxy("/gazebo/unpause_physics", Empty)
+    g_pause = rospy.ServiceProxy("/gazebo/pause_physics", EmptySrv)
+    g_unpause = rospy.ServiceProxy("/gazebo/unpause_physics", EmptySrv)
     g_set_state = rospy.ServiceProxy("/gazebo/set_model_state",SetModelState)
     pub = rospy.Publisher("/initialpose", PoseWithCovarianceStamped,latch=True)
-    rospy.sleep(26)
+    #rospy.sleep(26)
+    
+    sim = rospy.get_param('/use_sim_time')
+    
+    if sim is True:
+        
+          rospy.loginfo('Waiting until simulated robot is prepared for the task...')
+    
+          rospy.wait_for_message('/sim_robot_init',EmptyMsg)
+    
     
     rospy.wait_for_service("/gazebo/pause_physics")
     
@@ -113,6 +123,18 @@ def main():
     pub.publish(loc)
     
     rospy.sleep(1)
+     
+    if sim is True:
+    
+      rospy.loginfo('Simulation is completely ready, publishing to /sim_init topic')
+      
+      pub = rospy.Publisher('/sim_init', EmptyMsg,latch=True)
+      pub.publish(EmptyMsg())
+      pub.publish(EmptyMsg())
+      pub.publish(EmptyMsg())
+      
+      rospy.spin()
+      
     
 
 if __name__ == '__main__':

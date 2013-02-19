@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp" default="e1"/>
+  <arg name="task" default="nav1"/>
+  <arg name="cond" default="b"/>
+  <arg name="sim" default="true"/>
+  
+  <!-- spawn objects in simulation -->
+  <group if="$(arg sim)">
+  
+    <rosparam command="load" ns="objects" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/object_locations.yaml"/>
+    
+    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="wohnzimmertisch TV-Bank_Hemnes Tv_Samsung white_shelf couch livingroom_closet large_plant_big large_plant_small block_of_4_books_from_library book_emancipation metal_candleholder door_sill livingroom_clocks door_white_livingroom1 door_white_livingroom2 stool_wood glass_candleholder thick_candle dust_mop"/>
+    
+  </group>
+
+</launch>

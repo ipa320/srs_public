@@ -4,7 +4,7 @@
   <!-- BUT assisted arm navigation -->
   <include file="$(find srs_assisted_arm_navigation)/launch/but_arm_nav_sim.launch"/>
   
-    <!-- srs interaction primitives -->
+  <!-- srs interaction primitives -->
   <node name="interaction_primitives" pkg="srs_interaction_primitives" type="interaction_primitives_service_server">
     <param name="allow_object_interaction" type="bool" value="false"/>
     <param name="show_object_pregrasp" type="bool" value="true"/>

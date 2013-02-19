@@ -35,15 +35,20 @@ StateVis::StateVis() {
 
 	ros::NodeHandle nh;
 
-	color_def_.r = 0.2;
-	color_def_.g = 0.4;
-	color_def_.b = 1.0;
-	color_def_.a = 1.0;
+	color_def_.r = 0.0;
+	color_def_.g = 1.0;
+	color_def_.b = 0.0;
+	color_def_.a = 0.6;
 
-	color_err_.r = 1.0;
-	color_err_.g = 0.42;
-	color_err_.b = 0.42;
-	color_err_.a = 1.0;
+	color_err_coll_.r = 1.0;
+	color_err_coll_.g = 0.0;
+	color_err_coll_.b = 0.0;
+	color_err_coll_.a = 0.6;
+
+	color_err_out_.r = 0.6;
+	color_err_out_.g = 0.0;
+	color_err_out_.b = 0.0;
+	color_err_out_.a = 0.6;
 
 	m_.header.frame_id = "/rviz_cam_add";
 	m_.header.stamp = ros::Time::now();
@@ -53,12 +58,12 @@ StateVis::StateVis() {
 	m_.action = visualization_msgs::Marker::ADD;
 	m_.pose.position.x = 0.0;
 	m_.pose.position.y = 0.0;
-	m_.pose.position.z = 0.8;
+	m_.pose.position.z = 0.2;
 	m_.pose.orientation.x = 0.0;
 	m_.pose.orientation.y = 0.0;
 	m_.pose.orientation.z = 0.0;
 	m_.pose.orientation.w = 1.0;
-	m_.scale.z = 0.10; // specifies the height of an uppercase "A".
+	m_.scale.z = 0.7; // specifies the height of an uppercase "A".
 	m_.color = color_def_;
 	m_.text = "";
 	m_.lifetime = ros::Duration(1.0);
@@ -71,13 +76,13 @@ StateVis::StateVis() {
 	j_.action = visualization_msgs::Marker::ADD;
 	j_.pose.position.x = 0.0;
 	j_.pose.position.y = 0.0;
-	j_.pose.position.z = 0.8;
+	j_.pose.position.z = 0.2;
 	j_.pose.orientation.x = 0.0;
 	j_.pose.orientation.y = 0.0;
 	j_.pose.orientation.z = 0.0;
 	j_.pose.orientation.w = 1.0;
-	j_.scale.z = 0.10; // specifies the height of an uppercase "A".
-	j_.color = color_err_;
+	j_.scale.z = 0.7; // specifies the height of an uppercase "A".
+	j_.color = color_err_out_;
 	j_.text = "Joints out of limits!";
 	j_.lifetime = ros::Duration(1.0);
 
@@ -118,7 +123,7 @@ void StateVis::stateCallback(const srs_assisted_arm_navigation_msgs::AssistedArm
 	if (msg->joints_out_of_limits) {
 
 			j_.header.stamp = ros::Time::now();
-
+			j_.color = color_err_out_;
 			arr.markers.push_back(j_);
 			marker_pub_.publish(arr);
 			return;
@@ -135,14 +140,14 @@ void StateVis::stateCallback(const srs_assisted_arm_navigation_msgs::AssistedArm
 		if (!msg->position_reachable) {
 
 			m_.text = "Position can't be reached";
-			m_.color = color_err_;
+			m_.color = color_err_out_;
 
 		}
 
 		if (msg->position_in_collision) {
 
 			m_.text = "Position is in collision";
-			m_.color = color_err_;
+			m_.color = color_err_coll_;
 
 		}
 

@@ -165,10 +165,10 @@ std::string CArmManipulationEditor::add_coll_obj_bb(t_det_obj &obj) {
 	   srs_interaction_primitives::ClickablePositions srv;
 
 	   std_msgs::ColorRGBA c;
-	   c.r = 1.0;
+	   c.r = 0.0;
 	   c.g = 0.0;
-	   c.b = 0.0;
-	   c.a = 0.5;
+	   c.b = 1.0;
+	   c.a = 0.6;
 
 	   srv.request.color = c;
 	   srv.request.frame_id = world_frame_;

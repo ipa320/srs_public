@@ -290,14 +290,16 @@ int main(int argc, char** argv) {
 
 	m_pub = n.advertise<sensor_msgs::PointCloud2> ("points_out", 1);
 
-	ros::Rate r(1);
+	sub = n.subscribe("points_in", 1, cloudCallback);
+
+	/*ros::Rate r(1);
 
 	ros::AsyncSpinner spinner(5);
-	spinner.start();
+	spinner.start();*/
 
 	ROS_INFO("Spinning");
 
-	while(ros::ok()) {
+	/*while(ros::ok()) {
 
 		if (m_pub.getNumSubscribers() != 0) sub = n.subscribe("points_in", 1, cloudCallback);
 		else sub.shutdown();
@@ -306,6 +308,8 @@ int main(int argc, char** argv) {
 
 	}
 
-	spinner.stop();
+	spinner.stop();*/
+
+	ros::spin();
 
 }

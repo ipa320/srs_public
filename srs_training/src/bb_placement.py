@@ -13,8 +13,11 @@ class bb_placement():
         but_gui_ns = '/interaction_primitives'
         self.s_add_unknown_object = but_gui_ns + '/add_unknown_object'
         self.s_get_object = but_gui_ns + '/get_unknown_object'
+        self.s_allow_interaction = but_gui_ns + '/set_allow_object_interaction'
         
         rospy.wait_for_service(self.s_add_unknown_object)
+        rospy.wait_for_service(self.s_get_object)
+        rospy.wait_for_service(self.s_allow_interaction)
         
     
     def spawn(self):
@@ -53,6 +56,21 @@ class bb_placement():
           rospy.logerr('Cannot add IM object to the scene, error: %s',str(e))
           
           return False
+          
+          
+       allow_interaction = rospy.ServiceProxy(self.s_allow_interaction, SetAllowObjectInteraction)
+       
+       try:
+            
+            allow_interaction(name = 'unknown_object',
+                              allow = True)
+          
+       except Exception, e:
+          
+          rospy.logerr('Cannot allow interaction, error: %s',str(e))
+          
+          return False
+       
       
        return True
         
@@ -69,5 +87,7 @@ if __name__ == '__main__':
     rospy.loginfo('Initialized')
     
     bb.spawn()
+    
+    rospy.loginfo('Finished')
         
         

@@ -41,7 +41,8 @@ srs_env_model::CCompressedPCPublisher::CCompressedPCPublisher(ros::NodeHandle & 
 , m_publishFID(CPC_WORLD_FRAME)
 , m_cameraFID(CPC_CAMERA_FRAME)
 , m_tfListener()
-, m_tfListener2()
+//, m_tfListener2()
+, m_tfListener2(ros::Duration(30))
 {
 	// Read input parameters via the private node handle
 	ros::NodeHandle pnh("~");

@@ -19,6 +19,7 @@
   <export>
     <rviz plugin="${prefix}/lib/but_assisted_grasping.yaml"/>
     <rosdoc config="rosdoc.yaml" />
+    <cpp cflags="-I${prefix}/include -I${prefix}/srv_gen/cpp/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib"/>
   </export>
 
 </package>

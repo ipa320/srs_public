@@ -220,12 +220,14 @@ namespace srs_env_model
 
 		/// Constructor
 		// 2012/12/14 Majkl: Trying to solve problem with missing time stamps
-//		CDataHolderBase() : m_data(new tData) {}
-        CDataHolderBase() : m_data(new tData), m_DataTimeStamp(ros::Time(0)) {}
+//        CDataHolderBase() : m_data(new tData) {}
+//        CDataHolderBase() : m_data(new tData), m_DataTimeStamp(ros::Time(0)) {}
+        CDataHolderBase() : m_data(new tData), m_DataTimeStamp(ros::Time::now()) {}
 
 		/// Constructor
 //        CDataHolderBase( tData * data ) : m_data(data) {}
-        CDataHolderBase( tData * data ) : m_data(data), m_DataTimeStamp(ros::Time(0)) { }
+//        CDataHolderBase( tData * data ) : m_data(data), m_DataTimeStamp(ros::Time(0)) {}
+        CDataHolderBase( tData * data ) : m_data(data), m_DataTimeStamp(ros::Time::now()) {}
 
 	public:
 		//! Virtual destructor

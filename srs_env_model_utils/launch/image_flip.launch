@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<launch>
+  
+  <arg name="robot" default="$(env ROBOT)"/>
+  <arg name="rgb_points_in" default="/cam3d_throttled/depth_registered/points"/>
+  <arg name="rgb_points_out" default="/cam3d_throttled/upright/depth_registered/points"/>
+  <arg name="image_in" default="/cam3d_throttled/rgb/image_color"/> <!-- rewrite this as soon as there will be image_color also in the simulatio -->
+  <arg name="image_out" default="/cam3d_throttled/upright/rgb/image_color"/>
+  
+  <!-- sensor message gateway node (forwards sensor messages in a desired rate) -->
+  <node name="kinect_image_flip" pkg="cob_image_flip" ns="/cob_image_flip" type="kinect_image_flip" output="screen"> <!--launch-prefix="valgrind"-->
+    <rosparam command="load" file="$(find cob_image_flip)/ros/launch/image_flip_params.yaml"/>
+    <param name="robot" type="string" value="$(arg robot)"/>
+    <remap from="~pointcloud_in" to="$(arg rgb_points_in)"/>
+    <remap from="~pointcloud_out" to="$(arg rgb_points_out)"/>
+    <remap from="~colorimage_in" to="$(arg image_in)"/>
+    <remap from="~colorimage_out" to="$(arg image_out)"/>
+  </node>
+
+</launch>

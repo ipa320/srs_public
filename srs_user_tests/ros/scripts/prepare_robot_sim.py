@@ -35,7 +35,7 @@ sss = simple_script_server()
 def main():
     
     rospy.init_node('prepare_robot_for_nav_test_node')
-    rospy.sleep(2)
+    rospy.sleep(1)
     
     sss.init('head', True)
     sss.init('tray', True)

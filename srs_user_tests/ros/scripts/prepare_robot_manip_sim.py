@@ -48,13 +48,15 @@ def main():
     rospy.loginfo('Moving camera...')
     sss.move('head', 'back', False)
     
+    
     rospy.loginfo('Moving arm...')
     #sss.move('arm', 'folded', True)
     sss.move('arm', 'look_at_table', True)
     
     
     rospy.loginfo('Moving torso...')
-    sss.move('torso', 'back', True)
+    #sss.move('torso', 'back', True)
+    sss.move('torso', 'home', True)
 
 
 if __name__ == '__main__':

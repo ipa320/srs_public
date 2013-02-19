@@ -152,14 +152,13 @@ class user_intervention_on_detection(smach.State):
         
         user_intervention_service_called == 1 # this is for testing
         
-        global s
-        s = rospy.Service('assisted_answer', UiAnswer, self.answerObjectSrv) # a=array('i',[2,3,4,5]) => (a,0,s)
-        s.spin()
+        global s3
+        s3 = rospy.Service('assisted_answer', UiAnswer, self.answerObjectSrv) # a=array('i',[2,3,4,5]) => (a,0,s)
+        s3.spin()
         rospy.loginfo("assisted_answer: UiAnswer is ready.")
         
-        print "### self.object is \n", self.object
-        print "###self.object_list is \n", self.object_list
         print "###user_intervention_service_called is ", user_intervention_service_called
+        
         
         if(user_intervention_service_called==1):
             #userdata.object=self.object
@@ -168,33 +167,35 @@ class user_intervention_on_detection(smach.State):
             
             #this part code should be replaced by the user selection
             # select nearest object in x-y-plane in head_camera_left_link
-#            min_dist = 2 # start value in m
-#            for item in userdata.target_object_list.detections:
-#                dist = sqrt(item.pose.pose.position.x*item.pose.pose.position.x+item.pose.pose.position.y*item.pose.pose.position.y)
-#                if dist < min_dist:
-#                    min_dist = dist
-#                    obj = copy.deepcopy(item)
+            print "###len(self.object_list.detections) ", len(self.object_list.detections)
             if (len(self.object_list.detections) > 0):
-                global listener
-                try:
-                    #transform object_pose into base_link
-                    object_pose_in = self.object.pose
-                    print "###self.object ", self.object
-                    print "###object_pose_in ", object_pose_in
-                    print "###type of object_pose_in ", type(object_pose_in)
-                    
-                    #object_pose_in.header.stamp = rospy.Time.now()
-                    object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id) # it causes problems!!!
-                    object_pose_map = listener.transformPose("/map", object_pose_in)
-                except rospy.ROSException, e:
-                    print "Transformation not possible: %s"%e
-                    return 'failed'
-                userdata.object_pose=object_pose_map
-                userdata.object=self.object
-                print "###outcome_user_intervention", outcome_user_intervention
-                return outcome_user_intervention
+                min_dist = 2 # start value in m
+                for item in userdata.target_object_list.detections:
+                    dist = sqrt(item.pose.pose.position.x*item.pose.pose.position.x+item.pose.pose.position.y*item.pose.pose.position.y)
+                    if dist < min_dists2:
+                        min_dist = dist
+                        obj = copy.deepcopy(item)
+                        
+                    global listener
+                    try:
+                        #transform object_pose into base_link
+                        #object_pose_in = obj
+                        object_pose_in = obj.pose # this is for testing 
+                        print "###object_pose_in ", object_pose_in
+                        print "###type of object_pose_in ", type(object_pose_in)
+                        
+                        #object_pose_in.header.stamp = rospy.Time.now()
+                        object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id) # it causes problems!!!
+                        object_pose_map = listener.transformPose("/map", object_pose_in)
+                    except rospy.ROSException, e:
+                        print "Transformation not possible: %s"%e
+                        return 'failed'
+                    userdata.object_pose=object_pose_map
+                    userdata.object=self.object
+                    print "###user_intervention_service_called==1, outcome_user_intervention", outcome_user_intervention
+                    return outcome_user_intervention
             else:
-                rospy.loginfo("Cannot execute the user intervention, as on object has been detected!")
+                print "Cannot execute the user intervention, as no object has been detected!"
                 print "###outcome_user_intervention", outcome_user_intervention
                 return outcome_user_intervention
         
@@ -206,7 +207,7 @@ class user_intervention_on_detection(smach.State):
         if(user_intervention_service_called==2): 
                 print self.bb_pose
                 userdata.bb_pose=[self.bb_pose.x,self.bb_pose.y,self.bb_pose.theta]
-                print "###outcome_user_intervention", outcome_user_intervention
+                print "###user_intervention_service_called==1, outcome_user_intervention", outcome_user_intervention
                 return outcome_user_intervention
         
     def answerObjectSrv(self,req):    
@@ -221,12 +222,13 @@ class user_intervention_on_detection(smach.State):
         answer=UiAnswerResponse()
         
         rospy.loginfo("%s", req.action)
-        
-        if(req.action=='give up'):
+        print "###request of answerObjectSrv ", req
+        print "###request action of answerObjectSrv ", req.action.data
+        if(req.action.data == 'give up'):
             outcome_user_intervention = 'give up'
             answer.message.data='give up, process stopped'
         #save
-        elif(req.action=='succeeded'):
+        elif(req.action.data == 'succeeded'):
             #get position from good object
             pose=Pose()
             pose.position.x=self.object_list.detections[req.id].pose.pose.position.x
@@ -239,7 +241,7 @@ class user_intervention_on_detection(smach.State):
         
             print "pose is ", pose
             self.object_pose=pose
-            self.object=self.object_list.detections[req.id]
+            self.object=self.object_list.detections[req.id] # check id
             
             outcome_user_intervention = 'succeeded'
             answer.message.data='succeeded, go to next step'

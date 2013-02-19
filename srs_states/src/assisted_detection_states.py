@@ -157,9 +157,6 @@ class user_intervention_on_detection(smach.State):
         s3.spin()
         rospy.loginfo("assisted_answer: UiAnswer is ready.")
         
-        print "###user_intervention_service_called is ", user_intervention_service_called
-        
-        
         if(user_intervention_service_called==1):
             #userdata.object=self.object
             #userdata.object_pose=self.object_poseanswer
@@ -179,12 +176,7 @@ class user_intervention_on_detection(smach.State):
                     global listener
                     try:
                         #transform object_pose into base_link
-                        #object_pose_in = obj
                         object_pose_in = obj.pose # this is for testing 
-                        print "###object_pose_in ", object_pose_in
-                        print "###type of object_pose_in ", type(object_pose_in)
-                        
-                        #object_pose_in.header.stamp = rospy.Time.now()
                         object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id) # it causes problems!!!
                         object_pose_map = listener.transformPose("/map", object_pose_in)
                     except rospy.ROSException, e:
@@ -192,11 +184,9 @@ class user_intervention_on_detection(smach.State):
                         return 'failed'
                     userdata.object_pose=object_pose_map
                     userdata.object=self.object
-                    print "###user_intervention_service_called==1, outcome_user_intervention", outcome_user_intervention
                     return outcome_user_intervention
             else:
                 print "Cannot execute the user intervention, as no object has been detected!"
-                print "###outcome_user_intervention", outcome_user_intervention
                 return outcome_user_intervention
         
         global s2
@@ -207,7 +197,6 @@ class user_intervention_on_detection(smach.State):
         if(user_intervention_service_called==2): 
                 print self.bb_pose
                 userdata.bb_pose=[self.bb_pose.x,self.bb_pose.y,self.bb_pose.theta]
-                print "###user_intervention_service_called==1, outcome_user_intervention", outcome_user_intervention
                 return outcome_user_intervention
         
     def answerObjectSrv(self,req):    
@@ -222,8 +211,6 @@ class user_intervention_on_detection(smach.State):
         answer=UiAnswerResponse()
         
         rospy.loginfo("%s", req.action)
-        print "###request of answerObjectSrv ", req
-        print "###request action of answerObjectSrv ", req.action.data
         if(req.action.data == 'give up'):
             outcome_user_intervention = 'give up'
             answer.message.data='give up, process stopped'

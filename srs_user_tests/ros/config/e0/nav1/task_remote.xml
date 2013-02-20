@@ -7,7 +7,7 @@
   <arg name="sim" default="true"/>
 
   <include file="$(find srs_user_tests)/ros/config/common/nav_test_remote_common.xml" />
-  
+
   <!-- Run rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/$(arg cond)/rviz.vcg" />
 

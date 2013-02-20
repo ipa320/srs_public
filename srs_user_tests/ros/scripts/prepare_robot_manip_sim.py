@@ -40,6 +40,8 @@ def main():
     
     sim = rospy.get_param('/use_sim_time')
     
+    torso_pos = rospy.get_param('~torso','home')
+    
     if sim is True:
     
       rospy.loginfo('Waiting until end of spawning...')
@@ -64,7 +66,7 @@ def main():
     
     
     rospy.loginfo('Moving torso...')
-    sss.move('torso', 'back', True)
+    sss.move('torso', torso_pos, True)
     #sss.move('torso', 'home', True)
     
     if sim is True:

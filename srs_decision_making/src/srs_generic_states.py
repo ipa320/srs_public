@@ -323,10 +323,10 @@ class semantic_dm(smach.State):
             feedback_in_json = '{}'
             if not current_task_info.last_step_info:
                 ## first action. does not matter this. just to keep it filled
-                resultLastStep = 0
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_SUCCESS
             elif current_task_info.last_step_info and current_task_info.last_step_info[len_step_info - 1].outcome == 'succeeded':
                 # convert to the format that knowledge_ros_service understands
-                resultLastStep = 0
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_SUCCESS
                 if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_srs_detection':
                     print userdata.target_object_pose
                     #feedback = pose_to_list(userdata)
@@ -335,11 +335,11 @@ class semantic_dm(smach.State):
                     #rospy.loginfo ("Detected target_object is: %s", userdata.target_object)    
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
                 print 'Result return not_completed'
-                resultLastStep = 1
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_NOT_COMPLETED
 
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'failed':
                 print 'Result return failed'
-                resultLastStep = 2
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_FAIL
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stopped' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preempted':
                 print 'task stopped'
                 #nextStep = 'stop'

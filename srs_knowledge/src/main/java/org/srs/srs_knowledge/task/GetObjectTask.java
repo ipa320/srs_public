@@ -682,13 +682,16 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    HighLevelActionUnit nextHighActUnit = currentHLActSeq.getNextHighLevelActionUnit();
 	    // set feedback? 
 	    if(nextHighActUnit.getActionType().equals("MoveAndGrasp") && !nextHighActUnit.ifParametersSet()) {
-
+		System.out.println("Next Action type is MoveAndGrasp"); 
 		Pose2D posBase = calculateGraspPosFromFBNew(fb);
 		if(posBase == null) {
+		    System.out.println("No Grasping Post returned from Sym Grounding");
 		    return handleFailedMessage();
 		}
 
 		String jsonMove = SRSJSONParser.encodeMoveAction("move", posBase.x, posBase.y, posBase.theta);
+		System.out.println("Grounding Returned Grasping Pose is (JSON): " + jsonMove);
+
 		if(!nextHighActUnit.setParameters("move", jsonMove, "")) {
 		    //currentSubAction++;
 		    return handleFailedMessage();		

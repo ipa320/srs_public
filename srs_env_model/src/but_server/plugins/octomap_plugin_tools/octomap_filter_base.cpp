@@ -64,12 +64,16 @@ bool srs_env_model::COcTreeFilterBase::setTimerLap( double lap )
 /**
  * Filter tree
  */
-void srs_env_model::COcTreeFilterBase::filter( tButServerOcTree & tree )
+void srs_env_model::COcTreeFilterBase::filter( tButServerOcTree & tree, bool bPruneAfterFinish /*= true*/ )
 {
 	++m_framesCount;
 
 	if( useFrame() )
+	{
 		filterInternal( tree );
+		if(bPruneAfterFinish)
+			tree.prune();
+	}
 }
 
 /**

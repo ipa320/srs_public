@@ -273,6 +273,13 @@ namespace srs_env_model
 
 } // namespace srs_env_model
 
-
+/*
+POINT_CLOUD_REGISTER_POINT_STRUCT(pcl::PointXYZRGB,
+		(float, x, x)
+		(float, y, y)
+		(float, z, z)
+		(uint32_t, rgb, rgb)
+)
+*/
 // SERVER_TOOLS_H_INCLUDED
 #endif

@@ -132,7 +132,7 @@ bool srs_env_model::CTestingPlane::isIn(double x, double y, double z)
 {
 	tPoint p( x, y, z );
 
-	return p.dot( m_plane ) + m_d > 0;
+	return p.dot( m_plane ) + m_d >= 0;
 }
 
 

@@ -33,6 +33,7 @@
 #include <tf/transform_listener.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <image_geometry/pinhole_camera_model.h>
+#include <pcl/filters/voxel_grid.h>
 
 namespace srs_env_model
 {
@@ -72,6 +73,9 @@ protected:
 	void computeBBX(const std_msgs::Header& sensor_header, octomap::point3d& bbx_min, octomap::point3d& bbx_max);
 
 protected:
+	//! Sensor frame id
+	std_msgs::Header m_sensor_header;
+
 	//! Initialized
 	bool m_bFilterInitialized;
 
@@ -93,6 +97,9 @@ protected:
 	/// Camera info locking
 	boost::mutex m_lockCamera;
 
+	/// Input cloud lock
+	boost::mutex m_lockData;
+
 	/// Camera info topic name
 	std::string m_camera_info_topic;
 
@@ -100,10 +107,24 @@ protected:
 	ros::Subscriber m_ciSubscriber;
 
 	/// Point cloud
-	const tPointCloud * m_cloudPtr;
+	tPointCloud::ConstPtr m_cloudPtr;
 
 	/// Number of removed leafs
 	long m_numLeafsRemoved;
+
+	/// Number of leafs out of sensor cone
+	long m_numLeafsOutOfCone;
+
+	octomap::point3d m_sensor_origin;
+
+	//! Visualizations marker publisher
+	ros::Publisher marker_pub_;
+
+	//! Use voxel filter to downsample pointcloud
+	pcl::VoxelGrid<tPclPoint> m_vgfilter;
+
+	//! Output filtered cloud
+	tPointCloud::Ptr m_filtered_cloud;
 
 }; // class COcFilterRaycast
 

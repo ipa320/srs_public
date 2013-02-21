@@ -131,6 +131,7 @@ protected:
 	/// Use pointcloud to raycast filter map
 	void filterCloud( const tPointCloud& cloud);
 
+
 	// ------------------------------------------------------------------------
 	// Obstacle cleaning
 
@@ -163,6 +164,7 @@ protected:
 
 	/// Save map service callback - full octree
 	bool saveFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+
 
 protected:
 
@@ -263,6 +265,13 @@ protected:
 
     //! Was map loaded
     bool m_bMapLoaded;
+
+    //! Deleted node probability
+    float m_probDeleted;
+
+	//! Created geometry color
+	uint8_t m_r, m_g, m_b;
+
 
 }; // class COctoMapPlugin;
 

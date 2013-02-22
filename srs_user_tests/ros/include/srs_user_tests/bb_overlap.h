@@ -42,6 +42,7 @@
 #include "tf/transform_listener.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 namespace srs_user_tests {
 
@@ -67,9 +68,24 @@ class BBOverlap {
 
 		ros::Time last_log_out_;
 
+		double points_volume(const tpoints &p);
+
+		double rmin(double val1, double val2);
+		double rmax(double val1, double val2);
+
 	private:
 
 	protected:
+
+		bool publish_debug_markers_;
+
+		double success_val_;
+
+		ros::WallDuration success_min_dur_;
+		ros::WallTime success_first_;
+		ros::WallTime success_last_;
+
+		ros::WallTime success_tmp_;
 
 		ros::Subscriber sub_im_feedback_;
 		ros::Subscriber sub_im_scale_;

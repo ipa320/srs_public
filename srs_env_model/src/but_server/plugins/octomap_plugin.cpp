@@ -108,8 +108,8 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const st
 , m_filterRaycast("/map")
 , m_filterGround("/map")
 , m_bFilterWithInput(false)
-, m_bNewDataToFilter(false)
 , m_filterCloudPlugin(new CPointCloudPlugin("PCFILTER", false ))
+, m_bNewDataToFilter(false)
 , m_bMapLoaded(false)
 {
 	setDefaults();
@@ -283,7 +283,7 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	}
 }
 
-void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
+void srs_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 {
 //	PERROR("insertCloud: Try lock.");
 
@@ -292,19 +292,19 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 //	PERROR("insertCloud: Locked.");
 
 	tPointCloud used_cloud;
-	pcl::copyPointCloud( cloud, used_cloud );
+	pcl::copyPointCloud( *cloud, used_cloud );
 	//*
 
 	Eigen::Matrix4f registration_transform( Eigen::Matrix4f::Identity() );
 
 	// Registration
 	{
-		if( m_registration.isRegistering() && cloud.size() > 0 && m_bNotFirst )
+		if( m_registration.isRegistering() && cloud->size() > 0 && m_bNotFirst )
 		{
 //			pcl::copyPointCloud( *m_data, *m_bufferCloud );
 
 			tPointCloudPtr cloudPtr( new tPointCloud );
-			pcl::copyPointCloud( cloud, *cloudPtr );
+			pcl::copyPointCloud( *cloud, *cloudPtr );
 
 			if( m_registration.registerCloud( cloudPtr, m_mapParameters ) )
 			{
@@ -352,10 +352,10 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_mapParameters.frameId,
-				cloud.header.frame_id, cloud.header.stamp, ros::Duration(5));
+				cloud->header.frame_id, cloud->header.stamp, ros::Duration(5));
 
 		m_tfListener.lookupTransform(m_mapParameters.frameId,
-				cloud.header.frame_id, cloud.header.stamp, cloudToMapTf);
+				cloud->header.frame_id, cloud->header.stamp, cloudToMapTf);
 
 	} catch (tf::TransformException& ex) {
 		ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
@@ -364,7 +364,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	}
 
 	// transform clouds to world frame for insertion
-	if (m_mapParameters.frameId != cloud.header.frame_id)
+	if (m_mapParameters.frameId != cloud->header.frame_id)
 	{
 		Eigen::Matrix4f c2mTM;
 
@@ -378,15 +378,15 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	// Use registration transform
 	pcl::transformPointCloud( pc_ground, pc_ground, registration_transform );
 
-	pc_ground.header = cloud.header;
+	pc_ground.header = cloud->header;
 	pc_ground.header.frame_id = m_mapParameters.frameId;
 
-	pc_nonground.header = cloud.header;
+	pc_nonground.header = cloud->header;
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
 
     // 2012/12/14: Majkl (trying to solve problem with missing time stamps in all message headers)
-	m_DataTimeStamp = cloud.header.stamp;
-	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud.header.stamp.toSec());
+	m_DataTimeStamp = cloud->header.stamp;
+	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud->header.stamp.toSec());
 
 	insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
 
@@ -477,7 +477,7 @@ void srs_env_model::COctoMapPlugin::reset(bool clearLoaded)
 /**
  * Use pointcloud to raycast filter map
  */
-void srs_env_model::COctoMapPlugin::filterCloud( const tPointCloud& cloud)
+void srs_env_model::COctoMapPlugin::filterCloud( tPointCloudConstPtr & cloud)
 {
 //	std::cerr << "Filter cloud in" << std::endl;
 
@@ -488,9 +488,9 @@ void srs_env_model::COctoMapPlugin::filterCloud( const tPointCloud& cloud)
 
 //		std::cerr << "Raycast filter call" << std::endl;
 
-//		m_filterRaycast.setCloud(&cloud);
-//		m_filterRaycast.filter(m_data->getTree());
-//		m_filterRaycast.writeLastRunInfo();
+		m_filterRaycast.setCloud(cloud);
+		m_filterRaycast.filter(m_data->getTree());
+		m_filterRaycast.writeLastRunInfo();
 
 //		std::cerr << "Raycast filter call complete" << std::endl;
 	}

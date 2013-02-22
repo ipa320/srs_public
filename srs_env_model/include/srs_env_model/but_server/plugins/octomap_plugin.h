@@ -82,7 +82,7 @@ public:
 	virtual ~COctoMapPlugin();
 
 	/// Insert pointcloud
-	void insertCloud( const tPointCloud& cloud);
+	void insertCloud(tPointCloud::ConstPtr cloud);
 
 	//! Initialize plugin - called in server constructor
 	virtual void init(ros::NodeHandle & node_handle);
@@ -129,7 +129,7 @@ protected:
 	bool resetOctomapCB(std_srvs::Empty::Request& request,	std_srvs::Empty::Response& response);
 
 	/// Use pointcloud to raycast filter map
-	void filterCloud( const tPointCloud& cloud);
+	void filterCloud( tPointCloudConstPtr & cloud);
 
 
 	// ------------------------------------------------------------------------

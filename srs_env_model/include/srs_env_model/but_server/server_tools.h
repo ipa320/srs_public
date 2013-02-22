@@ -32,6 +32,7 @@
 
 #include <boost/signal.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/make_shared.hpp>
 
 // Small double number
 #define SMALL_DOUBLE double(0.00000001);
@@ -49,6 +50,12 @@ namespace srs_env_model
 {
 	//! ROS octomap type
 	typedef octomap::ButOctomapROS< srs_env_model::EMOcTree > tButServerOcMap;
+
+	//! ROS octomap pointer type
+	typedef boost::shared_ptr<tButServerOcMap> tButServerOcMapPtr;
+
+	//! ROS octomap const pointer type
+	typedef boost::shared_ptr< const tButServerOcMap > tButServerOcMapConstPtr;
 
 	//! Define octree type
 	typedef tButServerOcMap::OcTreeType tButServerOcTree;
@@ -215,14 +222,17 @@ namespace srs_env_model
 		/// Data pointer type
 		typedef boost::shared_ptr< tData > tDataPtr;
 
+		/// Const data pointer type
+		typedef boost::shared_ptr< const tData > tDataConstPtr;
+
 		/// Data has changed signal type
-		typedef boost::signal< void (const tData &, const ros::Time & ) > tSigDataHasChanged;
+		typedef boost::signal< void (tDataConstPtr, const ros::Time & ) > tSigDataHasChanged;
 
 		/// Constructor
 		// 2012/12/14 Majkl: Trying to solve problem with missing time stamps
 //        CDataHolderBase() : m_data(new tData) {}
 //        CDataHolderBase() : m_data(new tData), m_DataTimeStamp(ros::Time(0)) {}
-        CDataHolderBase() : m_data(new tData), m_DataTimeStamp(ros::Time::now()) {}
+        CDataHolderBase() : m_DataTimeStamp(ros::Time::now()) {m_data = boost::make_shared<tData>();}
 
 		/// Constructor
 //        CDataHolderBase( tData * data ) : m_data(data) {}
@@ -252,7 +262,7 @@ namespace srs_env_model
 			{
 	//			std::cerr << "invalidate: Locked." << std::endl;
 				boost::mutex::scoped_lock lock(m_lockData);
-				m_sigDataChanged( *m_data, m_DataTimeStamp );
+				m_sigDataChanged( m_data, m_DataTimeStamp );
 	//			std::cerr << "invalidate: Unlocked." << std::endl;
 			}
 		}

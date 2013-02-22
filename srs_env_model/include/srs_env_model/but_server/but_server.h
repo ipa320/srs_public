@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 2528 2013-02-20 13:03:47Z stancl $
+ * $Id: but_server.h 2537 2013-02-21 15:57:57Z stancl $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -117,7 +117,7 @@ protected:
     void publishAll(const ros::Time& rostime );
 
     //! On octomap data changed
-    void onOcMapDataChanged( const tButServerOcMap & mapdata, const ros::Time & stamp )
+    void onOcMapDataChanged( tButServerOcMapConstPtr mapdata, const ros::Time & stamp )
     {
         publishAll(stamp);
     }

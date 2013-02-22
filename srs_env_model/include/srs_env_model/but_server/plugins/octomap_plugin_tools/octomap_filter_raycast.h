@@ -48,7 +48,7 @@ public:
 	virtual void init(ros::NodeHandle & node_handle);
 
 	//! Configure filter before each frame. Set input cloud.
-	void setCloud(const tPointCloud * cloud);
+	void setCloud(tPointCloudConstPtr cloud);
 
 	//! Write some info about last filter run
 	virtual void writeLastRunInfo();
@@ -107,7 +107,7 @@ protected:
 	ros::Subscriber m_ciSubscriber;
 
 	/// Point cloud
-	tPointCloud::ConstPtr m_cloudPtr;
+	tPointCloudConstPtr m_cloudPtr;
 
 	/// Number of removed leafs
 	long m_numLeafsRemoved;
@@ -119,6 +119,9 @@ protected:
 
 	//! Visualizations marker publisher
 	ros::Publisher marker_pub_;
+
+	//! Grid points publisher
+	ros::Publisher grid_pub_;
 
 	//! Use voxel filter to downsample pointcloud
 	pcl::VoxelGrid<tPclPoint> m_vgfilter;

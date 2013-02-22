@@ -38,7 +38,8 @@
 #include <srs_env_model/topics_list.h>
 
 #define SHOW_VISUALIZATION
-#define NEW_RAYCAST
+//#define NEW_RAYCAST
+//#define PUBLISH_GRID
 
 /**
  * Constructor
@@ -74,7 +75,11 @@ void srs_env_model::COcFilterRaycast::init(ros::NodeHandle & node_handle)
 
 #ifdef SHOW_VISUALIZATION
 	std::cerr << "Initializing Raytrace filter visualization marker publisher" << std::endl;
-	marker_pub_ = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 10);
+	marker_pub_ = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 5);
+#endif
+
+#ifdef PUBLISH_GRID
+	grid_pub_ = node_handle.advertise<sensor_msgs::PointCloud2> ("grid_cloud", 5);
 #endif
 
 	// Add camera info subscriber
@@ -85,12 +90,11 @@ void srs_env_model::COcFilterRaycast::init(ros::NodeHandle & node_handle)
 /**
  * Set input cloud. Must be called before filter call
  */
-void srs_env_model::COcFilterRaycast::setCloud(const tPointCloud * cloud)
+void srs_env_model::COcFilterRaycast::setCloud(tPointCloudConstPtr cloud)
 {
 	assert( cloud != 0 );
 	m_lockData.lock();
-	std::cerr << "Set input cloud" << std::endl;
-	m_cloudPtr = tPointCloudConstPtr(cloud);
+	m_cloudPtr = cloud;
 	m_lockData.unlock();
 }
 
@@ -114,6 +118,9 @@ void srs_env_model::COcFilterRaycast::cameraInfoCB(const sensor_msgs::CameraInfo
 	m_camera_size = m_camera_model.fullResolution();
 	m_sensor_header = cam_info->header;
 
+	// HACK
+	m_sensor_header.frame_id = "/head_cam3d_link";
+
 	// Set flag
 	m_bCamModelInitialized = true;
 }
@@ -129,8 +136,6 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 	m_numLeafsRemoved = 0;
 	m_numLeafsOutOfCone = 0;
 
-	// Get sensor origin
-	m_sensor_origin = getSensorOrigin(m_sensor_header);
 	//octomap::pose6d sensor_pose(m_sensor_origin.x(), m_sensor_origin.y(), m_sensor_origin.z(), 0, 0, 0);
 
 	// Is camera model initialized?
@@ -139,6 +144,9 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 		ROS_ERROR("ERROR: camera model not initialized.");
 		return;
 	}
+
+	// Get sensor origin
+	m_sensor_origin = getSensorOrigin(m_sensor_header);
 
 	tf::StampedTransform trans;
 	try
@@ -159,6 +167,7 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 	computeBBX(m_sensor_header, min, max);
 
 	double resolution(tree.getResolution());
+	float probMiss(tree.getProbMissLog());
 
 	boost::mutex::scoped_lock lock(m_lockCamera);
 
@@ -186,10 +195,9 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 			if (isOccludedMap(m_sensor_origin, it.getCoordinate(), resolution, tree))
 				continue;
 
-			it->setColor(255, 0, 0);
 			// otherwise: degrade node
-			//tree.integrateMissNoTime(&*it);
-			tree.updateNodeLogOdds(&*it, probDeleted);
+//			it->setColor(255, 0, 0);
+			it->setValue(probMiss);
 			++m_numLeafsRemoved;
 		}
 	}
@@ -204,6 +212,18 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 {
 	assert( m_cloudPtr != 0 );
 
+	// Is camera model initialized?
+	if (!m_bCamModelInitialized)
+	{
+		ROS_ERROR("ERROR: camera model not initialized.");
+		return;
+	}
+
+	// compute bbx from sensor cone
+	octomap::point3d min;
+	octomap::point3d max;
+	computeBBX(m_sensor_header, min, max);
+
 	m_lockData.lock();
 
 	m_numLeafsRemoved = 0;
@@ -214,23 +234,26 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 
 	float resolution(tree.getResolution());
 
-	std::cerr << "Starting raytrace" << std::endl;
-
 	m_vgfilter.setLeafSize(resolution, resolution, resolution);
-
-	std::cerr << "Setting clouds" << std::endl;
-
 	m_vgfilter.setInputCloud(m_cloudPtr);
 
-	std::cerr << "Voxelgrid filter. Resolution: " << resolution << " Input cloud size: " << m_cloudPtr->size() << std::endl;
-	std::cerr << "Output cloud: " << m_filtered_cloud << ", size: " << m_filtered_cloud->size() << std::endl;
+//	std::cerr << "Voxelgrid filter. Resolution: " << resolution << " Input cloud size: " << m_cloudPtr->size() << std::endl;
+//	std::cerr << "Output cloud: " << m_filtered_cloud << ", size: " << m_filtered_cloud->size() << std::endl;
 
 	m_vgfilter.filter(*m_filtered_cloud);
 
-	std::cerr << "Raytracing. Grid size: " << m_filtered_cloud->size() << std::endl;
+
+//	std::cerr << "Raytracing. Grid size: " << m_filtered_cloud->size() << std::endl;
+
+#ifdef PUBLISH_GRID
+	tPointCloud::Ptr ends_cloud(new tPointCloud );
+#endif
+
+	float probMiss(tree.getProbMissLog());
 
 	// For all points in cloud
 	tPointCloud::VectorType::const_iterator it, itEnd( m_filtered_cloud->points.end());
+
 	for( it = m_filtered_cloud->points.begin(); it != itEnd; ++it)
 	{
 		// Cast ray through octomap
@@ -239,32 +262,55 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 
 		octomap::point3d obstacle;
 		double range = direction.norm() - resolution;
-		//std::cerr << resolution << std::endl;
 
 		octomap::point3d ray_end( m_sensor_origin + direction.normalized() * range);
-//		std::cerr << "E: "<< ray_end.x() << ", " << ray_end.y() << ", " << ray_end.z() << std::endl;
 
-//		std::cerr << "O: "<< m_sensor_origin.x() << ", " << m_sensor_origin.y() << ", " << m_sensor_origin.z() << std::endl;
+//*
+#ifdef PUBLISH_GRID
+		tPclPoint point;
+		point.x = ray_end.x(); point.y = ray_end.y(); point.z = ray_end.z();
+		point.r = point.g = point.b = 255;
+
+		ends_cloud->points.push_back(point);
+#endif
+//*/
 
 		octomap::KeyRay keyray;
-//*
+
 		if(tree.computeRayKeys(m_sensor_origin, ray_end, keyray))
 		{
-//			std::cerr << "Clearing cells" << std::endl;
-
 			// For all found cells
 			octomap::KeyRay::const_iterator itc, itcEnd( keyray.end());
 			for ( itc = keyray.begin(); itc != itcEnd; ++itc)
 			{
-//				std::cerr << "Cell found" << std::endl;
 				tButServerOcTree::NodeType * node(0);
 				node = tree.search(*itc);
 
-//				std::cerr << "N: " << node << std::endl;
-
-				if( node != 0 && tree.isNodeOccupied(node))
+				if( node != 0 && tree.isNodeOccupied(node) && (!node->hasChildren()))
 				{
-					node->setColor(255, 0, 0 );
+					octomap::point3d point;
+					tree.genCoords(*itc, tree.getTreeDepth(), point);
+/*
+#ifdef PUBLISH_GRID
+		tPclPoint pclpoint;
+		pclpoint.x = point.x(); pclpoint.y = point.y(); pclpoint.z = point.z();
+		pclpoint.r = pclpoint.g = pclpoint.b = 255;
+
+		ends_cloud->points.push_back(pclpoint);
+#endif
+*/
+					node->setValue(probMiss);
+/*
+					float node_range( (point-m_sensor_origin).norm() );
+					if( node_range > range)
+						node->setColor(255, 0, 0 );
+					else
+						node->setColor(0, 255.0*float(node_range/(0.1 + range)), 0 );
+
+					min = -(node_range-range) < min ? range : min;
+					max = -(node_range-range) > max ? range : max;
+
+*/
 					++m_numLeafsRemoved;
 				}
 			}
@@ -275,9 +321,19 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 
 	}
 
-	m_lockData.unlock();
+#ifdef PUBLISH_GRID
+	sensor_msgs::PointCloud2 cloud;
+	// pcl::toROSMsg< tPclPoint >(*m_filtered_cloud, cloud);
+	pcl::toROSMsg< tPclPoint >(*ends_cloud, cloud);
 
-	std::cerr << "End raytrace" << std::endl;
+	// Set message parameters and publish
+	cloud.header.frame_id = m_cloudPtr->header.frame_id;
+	cloud.header.stamp = m_cloudPtr->header.stamp;
+
+	grid_pub_.publish(cloud);
+#endif
+
+	m_lockData.unlock();
 }
 
 #endif
@@ -291,7 +347,6 @@ octomap::point3d srs_env_model::COcFilterRaycast::getSensorOrigin(const std_msgs
 	stamped_in.header = sensor_header;
 
 	std::string fixed_frame_(m_treeFrameId);
-	std::cerr << "FF: " << fixed_frame_ << std::endl;
 
 	// HACK: laser origin
 	if (sensor_header.frame_id == "base_footprint")

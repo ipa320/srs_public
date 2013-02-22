@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- to have some TF -->
+  <node pkg="tf" type="static_transform_publisher" name="map_to_baselink_broadcaster" args="0 0 0 0 0 0 map base_link 100" />
+  
+  <!-- srs interaction primitives -->
+  <node name="interaction_primitives" pkg="srs_interaction_primitives" type="interaction_primitives_service_server">
+    <param name="allow_object_interaction" type="bool" value="true"/>
+  </node>
+  
+  <!-- helper script -->
+  <node pkg="srs_training" type="bb_placement.py" name="bb_placement_training"/>
+  
+  <!-- Run rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find srs_user_tests)/ros/config/bb_overlap_test.vcg" />
+  
+  <node pkg="srs_user_tests" name="bb_overlap_node" type="bb_overlap_node" output="screen" respawn="false"/>
+
+</launch>

@@ -8,9 +8,9 @@
   <arg name="log" default="false"/>
   <arg name="id" default="0"/> <!-- ID of participant -->
   
-  <arg name="pc1" default="cob3-3-pc1"/>
-	<arg name="pc2" default="cob3-3-pc2"/>
-	<arg name="pc3" default="cob3-3-pc3"/>
+  <!--arg name="pc1" default="cob3-3-pc1"/>
+  <arg name="pc2" default="cob3-3-pc2"/>
+  <arg name="pc3" default="cob3-3-pc3"/-->
 
   <!-- include common stuff for given task -->
   <include file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/task_remote.xml">
@@ -19,19 +19,6 @@
     <arg name="cond" value="$(arg cond)"/>
     <arg name="sim"  value="$(arg sim)"/>
   </include>
-  
-  <!-- logging -->
-  <group if="$(arg log)">
-  
-    <!-- run bag logging on PC2 -->
-    <machine name="pc2" address="$(arg pc2)" default="true" unless="$(arg sim)"/>
-
-	  <node name="logger" pkg="srs_user_tests" type="topics_bag.py" output="screen">
-		  <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/bag_record.yaml" command="load" />
-		  <param name="bag_name" value="logs/$(arg id)/$(arg exp)/$(arg task)/$(arg cond)" />
-	  </node>
-  
-  </group>
   
   <group if="$(arg log)">
   

@@ -5,3 +5,6 @@ std_msgs/String object_name
 ---
 #list of the objects
 cob_object_detection_msgs/DetectionArray object_list
+
+#Object ID
+int32 object_id

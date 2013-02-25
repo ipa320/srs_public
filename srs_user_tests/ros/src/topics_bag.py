@@ -89,8 +89,6 @@ import sys, subprocess
 
 import record_topic
 
-from srs_user_tests.srv import *
-
 import global_lock
 
 class topics_bag():

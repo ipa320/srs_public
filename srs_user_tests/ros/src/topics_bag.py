@@ -110,6 +110,8 @@ class topics_bag():
         localtime = time.localtime(time.time())
         filename = self.bag_name + "_" + str(localtime[0]) + "-" + str(localtime[1]) + "-" + str(localtime[2]) + "_" + str(localtime[3]) + "-" + str(localtime[4]) + "-" + str(localtime[5]) + ".bag"
         filelocation = str(roslib.packages.get_pkg_dir(PKG) + "/data/" )
+        if(not os.path.exists(filelocation)):
+            os.makedirs(filelocation)
         rospy.loginfo("Logging to " + filelocation + filename)
         self.bag = rosbag.Bag(filelocation + filename, 'w')
         

@@ -57,7 +57,7 @@ public:
 	bool setTimerLap( double lap );
 
 	//! Filter tree
-	void filter( tButServerOcTree & tree );
+	void filter( tButServerOcTree & tree, bool bPruneAfterFinish = true );
 
 	//! Set filter running mode
 	void setRunMode( ERunMode mode ) { m_mode = mode; }

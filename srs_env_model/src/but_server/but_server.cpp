@@ -92,6 +92,8 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	// Advertise services
 	m_serviceReset = private_nh.advertiseService(ServerReset_SRV, &CButServer::onReset, this);
 	m_servicePause = private_nh.advertiseService(ServerPause_SRV, &CButServer::onPause, this);
+	m_serviceUseInputColor = private_nh.advertiseService( ServerUseInputColor_SRV, &CButServer::onUseInputColor, this);
+
 
 	m_latchedTopics = false;
 	private_nh.param("latch", m_latchedTopics, m_latchedTopics);
@@ -267,4 +269,15 @@ void srs_env_model::CButServer::publishPlugins(const ros::Time& rostime)
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/**
+ * Use/do not use color service callback
+ */
+bool srs_env_model::CButServer::onUseInputColor(srs_env_model::UseInputColor::Request & req, srs_env_model::UseInputColor::Response & res )
+{
+	// Set value to the pc input plugin
+	m_plugInputPointCloud->setUseInputColor(req.use_color);
+
+	return true;
+}
 

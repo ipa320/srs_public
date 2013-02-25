@@ -17,8 +17,13 @@ class bb_placement():
         
         rospy.wait_for_service(self.s_add_unknown_object)
         rospy.wait_for_service(self.s_get_object)
-        rospy.wait_for_service(self.s_allow_interaction)
+        rospy.wait_for_service(self.s_allow_interaction)     
         
+        self.a = 0.4 # height (z)
+        self.b = 0.4 # length (x)
+        self.c = 0.2 # width (y)
+        
+        self.pz = 0.0
     
     def spawn(self):
         
@@ -26,24 +31,24 @@ class bb_placement():
        
        bb_pose.position.x = 0.0
        bb_pose.position.y = 0.0
-       bb_pose.position.z = 0.5
+       bb_pose.position.z = self.pz
        
        bb_pose.orientation.x = 0.0
        bb_pose.orientation.y = 0.0
-       bb_pose.orientation.z = 0.0
+       bb_pose.orientation.z = 0.
        bb_pose.orientation.w = 1.0
        
        bb_lwh = Vector3()
        
-       bb_lwh.x = 0.2
-       bb_lwh.y = 0.1
-       bb_lwh.z = 0.2
+       bb_lwh.x = self.b
+       bb_lwh.y = self.c
+       bb_lwh.z = self.a
     
        add_object = rospy.ServiceProxy(self.s_add_unknown_object, AddUnknownObject)
     
        try:
             
-            add_object(frame_id='/base_link',
+            add_object(frame_id='/map',
                        name='unknown_object',
                        description='Object to be grasped',
                        pose_type= PoseType.POSE_BASE,

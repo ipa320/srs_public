@@ -1,5 +1,5 @@
-min_sensor_dist: .05
-self_see_default_padding: .00
+min_sensor_dist: 0.05
+self_see_default_padding: 0.10
 self_see_default_scale: 1.0
 self_see_links:
 #  - name: arm_0_link

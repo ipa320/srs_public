@@ -57,7 +57,8 @@ class StateVis {
 	  visualization_msgs::Marker j_;
 
 	  std_msgs::ColorRGBA color_def_;
-	  std_msgs::ColorRGBA color_err_;
+	  std_msgs::ColorRGBA color_err_coll_; // if in collision
+	  std_msgs::ColorRGBA color_err_out_; // if out of reach
 
 	private:
 

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="exp" default="e1"/>
+  <arg name="exp" default="e0"/>
   <arg name="task" default="nav1"/>
   <arg name="cond" default="a"/>
   <arg name="sim" default="true"/>

@@ -9,6 +9,9 @@
     <arg name="points_in" value="$(arg points_in)"/>
   </include>
   
+  <!-- floor removal -->
+  <include file="$(find cob_3d_mapping_semantics)/ros/launch/extract_structure.launch"/>
+
   <!-- load pre-recorded map -->
   <include file="$(find srs_user_tests)/ros/launch/load-ipa-geomap.launch">
     <arg name="sim" value="$(arg sim)"/>

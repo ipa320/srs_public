@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="sim" default="false"/>
+  <arg name="exp" default="e1"/>
+  <arg name="task" default="nav1"/>
+
+  <group if="$(arg sim)"> 
+    <node name="move_robot" pkg="srs_user_tests" type="move_robot_sim.py" respawn="false" output="screen">
+      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/robot_position_sim.yaml" command="load"/>
+    </node>
+  </group>
+
+  <group unless="$(arg sim)"> 
+    <node name="move_robot" pkg="srs_user_tests" type="move_robot.py" respawn="false" output="screen">
+      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/robot_position.yaml" command="load"/>
+    </node>
+  </group>
+
+</launch>

@@ -3,9 +3,6 @@ import roslib
 roslib.load_manifest('srs_assisted_detection')
 
 from array import *
-
-
-
 import rospy
 
 from cob_object_detection_msgs.msg import *
@@ -13,8 +10,6 @@ from srs_assisted_detection.srv import *
 from std_msgs.msg import *
 
 from geometry_msgs.msg import *
-
-
 
 def user_msg():    
     rospy.wait_for_service('assisted_BBmove')

@@ -89,6 +89,8 @@ import sys, subprocess
 
 import record_topic
 
+from srs_user_tests.srv import *
+
 import global_lock
 
 class topics_bag():
@@ -135,7 +137,27 @@ class topics_bag():
             self.current_translation[frame["target_frame"]] = [0,0,0]
             self.current_rotation[frame["target_frame"]] = [0,0,0,0]
             
-        
+
+        rospy.Service('~start', Trigger, self.trigger_callback_start)
+        rospy.Service('~stop', Trigger, self.trigger_callback_stop)
+        self.active = 0
+		
+    def trigger_callback_start(self, req):
+        res = TriggerResponse()
+        self.active = True
+        res.success.data = True
+        res.error_message.data = "Bagfile recording started"
+        print res.error_message.data
+        return res
+		  
+    def trigger_callback_stop(self, req):
+        res = TriggerResponse()
+        self.active = False
+        res.success.data = True
+        res.error_message.data = "Bagfile recording stopped"
+        print res.error_message.data
+        return res  
+		  
     def tf_trigger(self, reference_frame, target_frame, tfs):
         #  this function is responsible for setting up the triggers for recording
         # on the bagfile.
@@ -190,28 +212,29 @@ if __name__ == "__main__":
             topics_c.append(topic_r)
         rospy.sleep(2)
         while not rospy.is_shutdown():
- 
-            # listen to tf changes
-            for tfs in bagR.wanted_tfs:
-                triggers = bagR.bag_processor(tfs)
-                if(triggers == "triggered"):
-                    rospy.loginfo("triggered by tf")
+			
+            if bagR.active==1:
+                # listen to tf changes
+                for tfs in bagR.wanted_tfs:
+                    triggers = bagR.bag_processor(tfs)
+                    if(triggers == "triggered"):
+                        rospy.loginfo("triggered by tf")
+                        start_time = rospy.Time.now()
+                        #Records the triggered topics
+                        for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
+                            tops_c.record()
+                    else:
+                        rospy.logdebug("not triggered")
+                # listen to ellapsed time
+                time_msg = "time passed:" + (str)((rospy.Time.now() - start_time).to_sec())
+                rospy.logdebug(time_msg)
+                
+                if(rospy.Time.now() - start_time > time_step):
+                    rospy.loginfo("triggered by time")
                     start_time = rospy.Time.now()
-                    #Records the triggered topics
                     for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
                         tops_c.record()
-                else:
-                    rospy.logdebug("not triggered")
-            # listen to ellapsed time
-            time_msg = "time passed:" + (str)((rospy.Time.now() - start_time).to_sec())
-            rospy.logdebug(time_msg)
-            
-            if(rospy.Time.now() - start_time > time_step):
-                rospy.loginfo("triggered by time")
-                start_time = rospy.Time.now()
-                for tops_c, tfm in itertools.izip(topics_t, bagR.trigger_topics):
-                    tops_c.record()
-            # sleep until next check
+                # sleep until next check
 
             rate.sleep()
 			

@@ -7,7 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 
@@ -29,6 +29,11 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
+rosbuild_add_boost_directories()
+
+include_directories(ros/include)
+
 rosbuild_add_executable(black_image_publisher ros/src/black_image_publisher.cpp)
+rosbuild_add_executable(bb_overlap_node ros/src/bb_overlap.cpp)
 
 rosbuild_add_roslaunch_check(ros/launch ROBOT=cob3-3 ROBOT_ENV=ipa-apartment)

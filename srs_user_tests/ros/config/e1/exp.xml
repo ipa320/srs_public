@@ -30,7 +30,7 @@
 	<include file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/$(arg cond)/cond.xml">
 
 	  <!-- use noised pointcloud in simulation -->
-	  <arg name="points_in" if="$(arg sim)" value="/cam3d_throttled/depth_registered/points_noised"/>
+  	<arg name="points_in" if="$(arg sim)" value="/cam3d_throttled/depth_registered/points_noised"/>
 	  <arg name="sim" value="$(arg sim)"/>
 	  
 	</include>

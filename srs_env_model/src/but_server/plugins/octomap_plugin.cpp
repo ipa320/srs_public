@@ -63,12 +63,15 @@ void srs_env_model::COctoMapPlugin::setDefaults()
 	// Filtering
 	m_bRemoveOutdated = true;
 	m_removeTester = 0; //new CTestingPolymesh(CTestingPolymesh::tPoint( 1.0, 1.0, 0.5 ), quat, CTestingPolymesh::tPoint( 1.0, 1.5, 2.0 ));
-	m_testerLife = 10;
+	m_testerLife = 1;
 
 	// Set maximal tree depth used when crawling. Zero means maximal possible depth.
 	m_crawlDepth = 0;
 	m_bMapLoaded = false;
 	m_bNotFirst = false;
+
+	m_probDeleted = m_mapParameters.probMiss * 0.1;
+	m_r = m_g = m_b = 128;
 }
 
 srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
@@ -105,8 +108,8 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const st
 , m_filterRaycast("/map")
 , m_filterGround("/map")
 , m_bFilterWithInput(false)
-, m_bNewDataToFilter(false)
 , m_filterCloudPlugin(new CPointCloudPlugin("PCFILTER", false ))
+, m_bNewDataToFilter(false)
 , m_bMapLoaded(false)
 {
 	setDefaults();
@@ -194,6 +197,12 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 		m_data->getTree().setClampingThresMax(m_mapParameters.thresMax);
 	}
 
+	// Default color
+	int c;
+	c = m_r; node_handle.param("pointcloud_default_color_r", c, c);	m_r = c;
+	c = m_g; node_handle.param("pointcloud_default_color_g", c, c);	m_g = c;
+	c = m_b; node_handle.param("pointcloud_default_color_b", c, c);	m_b = c;
+
 	// Should ground plane be filtered?
 	node_handle.param("ocmap_filter_ground", m_filterGroundPlane, m_filterGroundPlane);
 
@@ -235,6 +244,7 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	m_serviceSaveFullMap = node_handle.advertiseService( SaveFullMap_SRV,
 				&srs_env_model::COctoMapPlugin::saveFullOctreeCB, this);
 
+
 	// Create publisher
 	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (
 			m_ocPublisherName, 5, m_latchedTopics);
@@ -245,10 +255,13 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 
 	m_bNotFirst = false;
 
+	m_probDeleted = m_mapParameters.probMiss * 0.1;
+
 	// Initialize filters
 	m_filterSingleSpecles.setTreeFrameId(m_mapParameters.frameId);
 	m_filterRaycast.setTreeFrameId(m_mapParameters.frameId);
 	m_filterRaycast.init(node_handle);
+	m_filterGround.setTreeFrameId(m_mapParameters.frameId);
 	m_filterGround.init(node_handle);
 
 	// Set specles filter 20 seconds delay
@@ -270,7 +283,7 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	}
 }
 
-void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
+void srs_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 {
 //	PERROR("insertCloud: Try lock.");
 
@@ -279,19 +292,19 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 //	PERROR("insertCloud: Locked.");
 
 	tPointCloud used_cloud;
-	pcl::copyPointCloud( cloud, used_cloud );
+	pcl::copyPointCloud( *cloud, used_cloud );
 	//*
 
 	Eigen::Matrix4f registration_transform( Eigen::Matrix4f::Identity() );
 
 	// Registration
 	{
-		if( m_registration.isRegistering() && cloud.size() > 0 && m_bNotFirst )
+		if( m_registration.isRegistering() && cloud->size() > 0 && m_bNotFirst )
 		{
 //			pcl::copyPointCloud( *m_data, *m_bufferCloud );
 
 			tPointCloudPtr cloudPtr( new tPointCloud );
-			pcl::copyPointCloud( cloud, *cloudPtr );
+			pcl::copyPointCloud( *cloud, *cloudPtr );
 
 			if( m_registration.registerCloud( cloudPtr, m_mapParameters ) )
 			{
@@ -339,10 +352,10 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_mapParameters.frameId,
-				cloud.header.frame_id, cloud.header.stamp, ros::Duration(5));
+				cloud->header.frame_id, cloud->header.stamp, ros::Duration(5));
 
 		m_tfListener.lookupTransform(m_mapParameters.frameId,
-				cloud.header.frame_id, cloud.header.stamp, cloudToMapTf);
+				cloud->header.frame_id, cloud->header.stamp, cloudToMapTf);
 
 	} catch (tf::TransformException& ex) {
 		ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
@@ -351,7 +364,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	}
 
 	// transform clouds to world frame for insertion
-	if (m_mapParameters.frameId != cloud.header.frame_id)
+	if (m_mapParameters.frameId != cloud->header.frame_id)
 	{
 		Eigen::Matrix4f c2mTM;
 
@@ -365,15 +378,15 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	// Use registration transform
 	pcl::transformPointCloud( pc_ground, pc_ground, registration_transform );
 
-	pc_ground.header = cloud.header;
+	pc_ground.header = cloud->header;
 	pc_ground.header.frame_id = m_mapParameters.frameId;
 
-	pc_nonground.header = cloud.header;
+	pc_nonground.header = cloud->header;
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
 
     // 2012/12/14: Majkl (trying to solve problem with missing time stamps in all message headers)
-	m_DataTimeStamp = cloud.header.stamp;
-	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud.header.stamp.toSec());
+	m_DataTimeStamp = cloud->header.stamp;
+	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud->header.stamp.toSec());
 
 	insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
 
@@ -381,15 +394,19 @@ void srs_env_model::COctoMapPlugin::insertCloud(const tPointCloud & cloud)
 	{
 		//degradeSingleSpeckles();
 		m_filterSingleSpecles.filter(m_data->getTree());
-//		m_filterSingleSpecles.writeLastRunInfo();
+		m_filterSingleSpecles.writeLastRunInfo();
 	}
 
 //	PERROR("Outdated");
 	if (m_bRemoveOutdated && m_bFilterWithInput)
 	{
-		m_filterRaycast.setCloud(&cloud);
-		m_filterRaycast.filter(m_data->getTree());
+//		std::cerr << "Raycast filter call" << std::endl;
+
+//		m_filterRaycast.setCloud(&cloud);
+//		m_filterRaycast.filter(m_data->getTree());
 //		m_filterRaycast.writeLastRunInfo();
+
+//		std::cerr << "Raycast filter call complete" << std::endl;
 	}
 	else
 		m_bNewDataToFilter = true;
@@ -460,7 +477,7 @@ void srs_env_model::COctoMapPlugin::reset(bool clearLoaded)
 /**
  * Use pointcloud to raycast filter map
  */
-void srs_env_model::COctoMapPlugin::filterCloud( const tPointCloud& cloud)
+void srs_env_model::COctoMapPlugin::filterCloud( tPointCloudConstPtr & cloud)
 {
 //	std::cerr << "Filter cloud in" << std::endl;
 
@@ -469,9 +486,13 @@ void srs_env_model::COctoMapPlugin::filterCloud( const tPointCloud& cloud)
 		// Lock data
 		boost::mutex::scoped_lock lock(m_lockData);
 
-		m_filterRaycast.setCloud(&cloud);
+//		std::cerr << "Raycast filter call" << std::endl;
+
+		m_filterRaycast.setCloud(cloud);
 		m_filterRaycast.filter(m_data->getTree());
-//		m_filterRaycast.writeLastRunInfo();
+		m_filterRaycast.writeLastRunInfo();
+
+//		std::cerr << "Raycast filter call complete" << std::endl;
 	}
 }
 
@@ -482,19 +503,12 @@ void srs_env_model::COctoMapPlugin::filterCloud( const tPointCloud& cloud)
 /// Crawl octomap
 void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime)
 {
-	// Lock data
-/*	Already locked in invalidate method
-	PERROR( "crawl: Try lock");
-	boost::mutex::scoped_lock lock(m_lockData);
-	PERROR( "crawl: Locked");
-*/
 	// Fill needed structures
 	fillMapParameters(currentTime);
 
 	// Call new data signal
 	m_sigOnNewData( m_mapParameters );
 
-//	PERROR( "crawl: Unlocked");
 }
 
 //! Should plugin publish data?
@@ -571,16 +585,20 @@ long int srs_env_model::COctoMapPlugin::doObjectTesting(srs_env_model::CTestingO
 	// Create removed nodes counter
 	long int counter(0);
 
-	// For all leaves
+	float probMiss(m_data->getTree().getProbMissLog());
+
+	// For all leafs
 	for (srs_env_model::tButServerOcTree::leaf_iterator it =
 			m_data->getTree().begin_leafs(), end = m_data->getTree().end_leafs(); it
 			!= end; ++it) {
 		// Node is occupied?
-		if (m_data->getTree().isNodeOccupied(*it)) {
+		if (m_data->getTree().isNodeOccupied(*it))
+		{
 			// Node is in testing object
 			if (object->isIn(it.getX(), it.getY(), it.getZ())) {
 				// "Remove" node
-				m_data->getTree().integrateMissNoTime(&*it);
+//				m_data->getTree().setNodeColor(it.getKey(), 255, 0, 0, 255);
+				(*it).setValue(probMiss);
 				//				m_data->getTree().updateNodeLogOdds(&*it, -0.8);
 				++counter;
 			}
@@ -631,7 +649,7 @@ bool srs_env_model::COctoMapPlugin::removeCubeCB(
 	}
 
 	// Add bit of size
-	double d(m_mapParameters.resolution * 0.6);
+	double d(m_mapParameters.resolution);
 
 	// Create new tester
 	m_removeTester = new srs_env_model::CTestingPolymesh(
@@ -704,6 +722,8 @@ bool srs_env_model::COctoMapPlugin::addCubeCB(
 
 	long counter(0);
 	octomap::point3d p = pmin;
+	octomap::OcTreeKey key;
+
 	for (unsigned int x = 0; x < steps[0]; ++x)
 	{
 		p.x() += m_mapParameters.resolution;
@@ -719,7 +739,14 @@ bool srs_env_model::COctoMapPlugin::addCubeCB(
 				//          std::cout << "querying p=" << p << std::endl;
 				p.z() += m_mapParameters.resolution;
 				++counter;
-				m_data->getTree().updateNode(p, true, true);
+
+				// Try to generate octree key
+				if (!m_data->getTree().genKey(p, key)) continue;
+
+				// Set node value
+				m_data->getTree().updateNode(key, true, true);
+				// Set node color
+				m_data->getTree().setNodeColor(key, m_r, m_g, m_b, 255);
 			}
 		}
 	}

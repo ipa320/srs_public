@@ -82,7 +82,7 @@ public:
 	virtual ~COctoMapPlugin();
 
 	/// Insert pointcloud
-	void insertCloud( const tPointCloud& cloud);
+	void insertCloud(tPointCloud::ConstPtr cloud);
 
 	//! Initialize plugin - called in server constructor
 	virtual void init(ros::NodeHandle & node_handle);
@@ -129,7 +129,8 @@ protected:
 	bool resetOctomapCB(std_srvs::Empty::Request& request,	std_srvs::Empty::Response& response);
 
 	/// Use pointcloud to raycast filter map
-	void filterCloud( const tPointCloud& cloud);
+	void filterCloud( tPointCloudConstPtr & cloud);
+
 
 	// ------------------------------------------------------------------------
 	// Obstacle cleaning
@@ -163,6 +164,7 @@ protected:
 
 	/// Save map service callback - full octree
 	bool saveFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+
 
 protected:
 
@@ -263,6 +265,13 @@ protected:
 
     //! Was map loaded
     bool m_bMapLoaded;
+
+    //! Deleted node probability
+    float m_probDeleted;
+
+	//! Created geometry color
+	uint8_t m_r, m_g, m_b;
+
 
 }; // class COctoMapPlugin;
 

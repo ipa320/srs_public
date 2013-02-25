@@ -79,6 +79,12 @@ namespace srs_env_model
 		/// Set frame skip
 		void setFrameSkip(unsigned long skip){ m_use_every_nth = skip; }
 
+		/// Set use input color switch value
+		void setUseInputColor(bool bUseInputColor) {boost::mutex::scoped_lock lock(m_lockData); m_bUseInputColor = bUseInputColor;}
+
+		/// Set default color value
+		void setDefaultColor(uint8_t r, uint8_t g, uint8_t b ){ boost::mutex::scoped_lock lock(m_lockData); m_r = r; m_g = g; m_b = b; }
+
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -138,11 +144,8 @@ namespace srs_env_model
         //
         bool m_latchedTopics;
 
-        //! Used frame id (point cloud will be transformed to it)
-        std::string m_pcFrameId;
-
-        /// Crawled octomap frame id
-        std::string m_ocFrameId;
+        /// Used frame id
+        std::string m_frameId;
 
         //! Do pointcloud filtering?
         bool m_bFilterPC;
@@ -174,6 +177,11 @@ namespace srs_env_model
 		//! Use every n-th frame (if m_frame_number modulo m_use_every_nth)
 		unsigned long m_use_every_nth;
 
+	    //! Use input color information
+	    bool m_bUseInputColor;
+
+	    //! If not using input color use this
+	    uint8_t m_r, m_g, m_b;
 
     }; // class CPointCloudPlugin
 

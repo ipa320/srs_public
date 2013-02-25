@@ -152,8 +152,15 @@ class user_intervention_on_detection(smach.State):
         
         #user_intervention_service_called == 2 # this is for testing
         print "###user_intervention_service_called ", user_intervention_service_called
+        
+        global s2
         global s3
+        s2 = rospy.Service('assisted_BBmove', BBMove, self.moveBBSrv)
+        print "###s2 is started..."
         s3 = rospy.Service('assisted_answer', UiAnswer, self.answerObjectSrv) # a=array('i',[2,3,4,5]) => (a,0,s)
+        print "###s3 is started..."
+        
+        s2.spin()
         s3.spin()
         rospy.loginfo("assisted_answer: UiAnswer is ready.")
         
@@ -165,13 +172,14 @@ class user_intervention_on_detection(smach.State):
             #this part code should be replaced by the user selection
             # select nearest object in x-y-plane in head_camera_left_link
             print "###len(self.object_list.detections) ", len(self.object_list.detections)
+            
             if (len(self.object_list.detections) > 0):
-#                min_dist = 2 # start value in m
-#                for item in userdata.target_object_list.detections:
-#                    dist = sqrt(item.pose.pose.position.x*item.pose.pose.position.x+item.pose.pose.position.y*item.pose.pose.position.y)
-#                    if dist < min_dists2:
-#                        min_dist = dist
-#                        obj = copy.deepcopy(item)
+                min_dist = 2 # start value in m
+                for item in userdata.target_object_list.detections:
+                    dist = sqrt(item.pose.pose.position.x*item.pose.pose.position.x+item.pose.pose.position.y*item.pose.pose.position.y)
+                    if dist < min_dist:
+                        min_dist = dist
+                        obj = copy.deepcopy(item)
                         
                     global listener
                     try:
@@ -190,9 +198,6 @@ class user_intervention_on_detection(smach.State):
                 return outcome_user_intervention
         
         if(user_intervention_service_called==2): 
-                global s2
-                s2 = rospy.Service('assisted_BBmove', BBMove, self.moveBBSrv)
-                s2.spin()
                 rospy.loginfo("assisted_answer: BBMove is ready.")
                 print self.bb_pose
                 userdata.bb_pose=[self.bb_pose.x,self.bb_pose.y,self.bb_pose.theta]
@@ -216,7 +221,7 @@ class user_intervention_on_detection(smach.State):
         #save
         elif(req.action.data == 'succeeded'):
             if((len(self.object_list.detections) > 0) and (req.id < len(self.object_list.detections))):
-                #get position from good object
+                #get position from good objectshutdown
                 pose=Pose()
                 pose.position.x=self.object_list.detections[req.id].pose.pose.position.x
                 pose.position.y=self.object_list.detections[req.id].pose.pose.position.y
@@ -242,9 +247,10 @@ class user_intervention_on_detection(smach.State):
             outcome_user_intervention = 'retry'
             answer.message.data='retry, re-detect the object'
 
-        #shutdown both service
+        #shutdown both service#s.shutdown()
         #s.shutdown()
-        #s2.shutdown()
+        s2.shutdown()
+        s3.shutdown()
         return answer
         
     def moveBBSrv(self,req):
@@ -259,8 +265,8 @@ class user_intervention_on_detection(smach.State):
             rospy.wait_for_service('scan_base_pose',10)
         except rospy.ROSException, e:
             print "Service not available: %s"%e
-            s.shutdown()
-            #s2.shutdown()
+            s3.shutdown()
+            s2.shutdown()
             moveBB.message.data='service failed try again'
 
             outcome_detectObjectSrv = 'failed'
@@ -277,15 +283,16 @@ class user_intervention_on_detection(smach.State):
             res = base_pose_service(req_scan)
             self.bb_pose=res.scan_base_pose_list[0]
             #print res
-            s.shutdown()
+            #s.shutdown()
             #s2.shutdown()
             moveBB.message.data='moving to better position'
 
             outcome_user_intervention = 'bb_move'
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
-            s.shutdown()
-            #s2.shutdown()
+            #s.shutdown()
+            s2.shutdown()
+            s3.shutdown()
             moveBB.message.data='service failed try again'
 
             outcome_user_intervention = 'failed'

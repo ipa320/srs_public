@@ -18,6 +18,8 @@ Grid.OffsetZ=0
 Grid.Plane=0
 Grid.Plane\ Cell\ Count=10
 Grid.Reference\ Frame=<Fixed Frame>
+Ideal\ pose.Enabled=0
+Ideal\ pose.Marker\ Topic=/ideal_bb_pose
 Interactive\ Markers.Enabled=1
 Interactive\ Markers.Show\ Axes=0
 Interactive\ Markers.Show\ Descriptions=1
@@ -26,8 +28,8 @@ Interactive\ Markers.Update\ Topic=/interaction_primitives/update
 Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.01779 1.9458 13.4883 0 -1.90735e-06 1.90735e-06
-Property\ Grid\ State=selection=;expanded=;scrollpos=0,0;splitterpos=150,301;ispageselected=1
+Camera\ Config=1.01779 1.9458 7.11821 0 -1.90735e-06 1.90735e-06
+Property\ Grid\ State=selection=Ideal pose.Enabled;expanded=Ideal pose.Enabled.Ideal pose.Namespaces;scrollpos=0,0;splitterpos=150,301;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -36,3 +38,7 @@ ClassName=rviz::GridDisplay
 Name=Interactive Markers
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
+[Display2]
+Name=Ideal pose
+Package=rviz
+ClassName=rviz::MarkerDisplay

@@ -63,7 +63,7 @@ StateVis::StateVis() {
 	m_.pose.orientation.y = 0.0;
 	m_.pose.orientation.z = 0.0;
 	m_.pose.orientation.w = 1.0;
-	m_.scale.z = 0.7; // specifies the height of an uppercase "A".
+	m_.scale.z = 0.07; // specifies the height of an uppercase "A".
 	m_.color = color_def_;
 	m_.text = "";
 	m_.lifetime = ros::Duration(1.0);
@@ -81,7 +81,7 @@ StateVis::StateVis() {
 	j_.pose.orientation.y = 0.0;
 	j_.pose.orientation.z = 0.0;
 	j_.pose.orientation.w = 1.0;
-	j_.scale.z = 0.7; // specifies the height of an uppercase "A".
+	j_.scale.z = 0.07; // specifies the height of an uppercase "A".
 	j_.color = color_err_out_;
 	j_.text = "Joints out of limits!";
 	j_.lifetime = ros::Duration(1.0);

@@ -13,6 +13,6 @@
   <node pkg="srs_training" type="bb_placement.py" name="bb_placement_training"/>
   
   <!-- Run rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find srs_training)/config/03_bb_placement.vcg" />
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find srs_training)/config/03_bb_placement.vcg"/>
 
 </launch>

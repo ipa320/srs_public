@@ -82,7 +82,7 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 	ROS_DEBUG("Initializing CCompressedPointCloudPlugin");
 
 	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
-	node_handle.param("ocmap_frame_id", m_frameId, m_frameId);
+	node_handle.param("ocmap_frame_id", m_frame_id, m_frame_id);
 
 	if ( m_bSpinThread )
 	{
@@ -187,7 +187,7 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
     		return;
 
     // Just for sure
-	if(m_frameId != par.frameId)
+	if(m_frame_id != par.frameId)
 	{
 		PERROR("Map frame id has changed, this should never happen. Exiting newMapDataCB.");
 		return;
@@ -209,7 +209,7 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
     }
 
 //    m_bTransformCamera = m_cameraFrameId != m_pcFrameId;
-    bool m_bTransformCamera(m_cameraFrameId != m_frameId);
+    bool m_bTransformCamera(m_cameraFrameId != m_frame_id);
 
     m_to_sensor = tf::StampedTransform::getIdentity();
 
@@ -222,15 +222,15 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
         // Get transforms
         try {
             // Transformation - to, from, time, waiting time
-            m_tfListener.waitForTransform(m_cameraFrameId, m_frameId,
+            m_tfListener.waitForTransform(m_cameraFrameId, m_frame_id,
                     par.currentTime, ros::Duration(5));
 
-            m_tfListener.lookupTransform( m_cameraFrameId, m_frameId,
+            m_tfListener.lookupTransform( m_cameraFrameId, m_frame_id,
             		par.currentTime, ocToCamTf );
 
         } catch (tf::TransformException& ex) {
             ROS_ERROR_STREAM( m_name << ": Transform error - " << ex.what() << ", quitting callback");
-            PERROR( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_frameId );
+            PERROR( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_frame_id );
             return;
         }
 
@@ -343,13 +343,13 @@ void srs_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time
 
 		// Majkl 2013/1/24: trying to solve empty header of the output
     	m_octomap_updates_msg->header.stamp = m_DataTimeStamp;
-    	m_octomap_updates_msg->header.frame_id = m_frameId;
+    	m_octomap_updates_msg->header.frame_id = m_frame_id;
 
     	// Convert data
 		pcl::toROSMsg< tPclPoint >(*m_data, m_octomap_updates_msg->pointcloud2);
 
 		// Set message parameters and publish
-		m_octomap_updates_msg->pointcloud2.header.frame_id = m_frameId;
+		m_octomap_updates_msg->pointcloud2.header.frame_id = m_frame_id;
 	//	m_octomap_updates_msg->pointcloud2.header.stamp = timestamp;
 
 		// Majkl 2013/1/24: trying to solve empty header of the output

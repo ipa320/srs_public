@@ -2,7 +2,9 @@
 <launch>
 
   <arg name="points_in" default="/cam3d_throttled/depth_registered/points"/>
-  <arg name="sim" default="false"/>
+  <arg name="sim"/>
+  <arg name="exp"/>
+  <arg name="task"/>
 
   <!-- Geomap. condition -->
   <include file="$(find cob_3d_mapping_pipeline)/launch/mapping.launch">
@@ -15,6 +17,8 @@
   <!-- load pre-recorded map -->
   <include file="$(find srs_user_tests)/ros/launch/load-ipa-geomap.launch">
     <arg name="sim" value="$(arg sim)"/>
+    <arg name="exp" value="$(arg exp)"/>
+    <arg name="task" value="$(arg task)"/>
   </include>
 
 </launch>

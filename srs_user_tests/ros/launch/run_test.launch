@@ -2,11 +2,11 @@
 <launch>
 
   <!-- args for specifying test -->
-  <arg name="exp" default="e1"/>
-  <arg name="task" default="nav1"/>
-  <arg name="cond" default="b"/>
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
   <arg name="sim" default="false"/>
-  <arg name="log" default="false"/>
+  <arg name="log" default="true"/>
   <arg name="id" default="0"/> <!-- ID of participant -->
   
   <arg name="pc1" default="cob3-3-pc1"/>

@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="exp" default="e1"/>
-  <arg name="task" default="nav1"/>
-  <arg name="cond" default="b"/>
-  <arg name="sim" default="true"/>
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
+  <arg name="sim"/>
   
   <group if="$(arg sim)">
     
@@ -23,6 +23,8 @@
   <!-- Load predefined voxel map -->
 	<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch">
 	  <arg name="sim" value="$(arg sim)"/>
+    <arg name="exp" value="$(arg exp)"/>
+    <arg name="task" value="$(arg task)"/>
 	</include>
   
   <!-- spawn objects in simulation -->

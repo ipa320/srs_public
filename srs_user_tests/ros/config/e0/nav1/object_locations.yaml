@@ -4,7 +4,7 @@
 dresser_covaro:
   model: dresser_covaro
   model_type: urdf
-  position: [0, -1.90, 0]
+  position: [0, -1.975, 0]
   orientation: [0, 0, 1.570796327]
 
 dresser_louis:
@@ -16,13 +16,13 @@ dresser_louis:
 counter:
   model: counter
   model_type: urdf
-  position: [1.8, -0.5, 0]
+  position: [1.8, -0.3, 0]
   orientation: [0, 0, 0]
 
 wooden_plank:
   model: wooden_plank
   model_type: urdf
-  position: [1.7, -1.250, 0.95]
+  position: [1.7, -0.570, 0.95]
   orientation: [0, 0, 0]
 
 milk:

@@ -5,7 +5,7 @@
   <arg name="task" default="nav1"/>
   <arg name="cond" default="a"/>
   <arg name="sim" default="true"/>
-  
+
   <group if="$(arg sim)">
     
     <!-- prepare robot for manipulation tasks -->

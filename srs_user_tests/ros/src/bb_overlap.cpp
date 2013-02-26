@@ -36,14 +36,18 @@ BBOverlap::BBOverlap() {
 
 			id_.pub = nh.advertise<visualization_msgs::Marker>("ideal_bb_pose",1);
 
-			id_.points_pub = nh.advertise<visualization_msgs::Marker>("ideal_bb_points",1);
-			im_.points_pub = nh.advertise<visualization_msgs::Marker>("actual_bb_points",1);
-			points_proc_pub_ = nh.advertise<visualization_msgs::Marker>("proc_points",1);
-
 			im_.pose_rec = false;
 			im_.scale_rec = false;
 
 			ros::param::param("~publish_debug_markers",publish_debug_markers_,true);
+
+			if (publish_debug_markers_) {
+
+			  id_.points_pub = nh.advertise<visualization_msgs::Marker>("ideal_bb_points",1);
+			  im_.points_pub = nh.advertise<visualization_msgs::Marker>("actual_bb_points",1);
+			  points_proc_pub_ = nh.advertise<visualization_msgs::Marker>("proc_points",1);
+
+			}
 
 			ros::param::param("~bb/lwh/x",id_.bb.lwh.x,0.2);
 			ros::param::param("~bb/lwh/y",id_.bb.lwh.y,0.1);

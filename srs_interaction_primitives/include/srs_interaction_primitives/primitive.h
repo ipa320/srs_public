@@ -436,6 +436,8 @@ protected:
        show_description_control_,  show_trajectory_control_;
   bool menu_created_;
 
+  geometry_msgs::Vector3 scale_prev_;
+  int scale_saved_;
 };
 
 

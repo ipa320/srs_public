@@ -73,9 +73,10 @@ class time_display():
         print "{0:.0f}".format(self.current_time)
 
 if __name__=="__main__":
-
     rospy.init_node("time_display")
+    r = rospy.Rate(3)
     td = time_display()
     
     while not rospy.is_shutdown():
         td.time_print()
+        r.sleep()

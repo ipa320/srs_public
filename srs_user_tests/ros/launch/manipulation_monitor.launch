@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="exp" default="e0"/>
-  <arg name="task" default="man1"/>
-  <arg name="cond" default="a"/>
-  <arg name="sim" default="true"/>
+  <arg name="exp"/>
+  <arg name="task"/>
+  <!--arg name="cond"/-->
+  <arg name="sim" default="false"/>
 
   <!-- manipulation remote monitor application -->
   <node pkg="srs_user_tests" name="bb_overlap_node" type="bb_overlap_node" output="screen">

@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-
-  <arg name="points_in" default="/cam3d_throttled/depth_registered/points"/>
-
-  <!-- 2D condition - there is nothing to be started -->
-
-</launch>

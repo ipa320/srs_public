@@ -1,8 +1,8 @@
-position_x: 1.3612696093
-position_y: -1.79914897831
-position_z: -0.00161549552937
+position_x: 0 #a1.3612696093
+position_y: 0 # -1.79914897831
+position_z: 0 # -0.00161549552937
 
-orientation_x: 7.11868424878e-06
-orientation_y: 2.38126804196e-05
-orientation_z: 0.857505793275
-orientation_w: -0.514474308283
+orientation_x: 0 # 7.11868424878e-06
+orientation_y: 0 # 2.38126804196e-05
+orientation_z: 0 # 0.857505793275
+orientation_w: 1 # -0.514474308283

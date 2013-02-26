@@ -9,9 +9,12 @@
     <arg name="points_in" value="$(arg points_in)"/>
   </include>
 
+  <!-- this disables usage of color from input point cloud -->
+  <node pkg="srs_user_tests" type="env_model_disable_color.py" name="env_model_disable_color_node"/>
+
   <!-- Load predefined voxel map -->
-	<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch">
-	  <arg name="sim" value="$(arg sim)"/>
-	</include>
+  <include file="$(find srs_user_tests)/ros/launch/load_octomap.launch">
+    <arg name="sim" value="$(arg sim)"/>
+  </include>
 
 </launch>

@@ -326,6 +326,8 @@ void srs_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 
 //	ros::WallTime startTime = ros::WallTime::now();
 
+//	std::cerr << "Input cloud frame id: " << cloud->header.frame_id << std::endl;
+
 	tPointCloud pc_ground; // segmented ground plane
 	tPointCloud pc_nonground; // everything else
 
@@ -460,6 +462,7 @@ void srs_env_model::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf,
 	 octomap::pointcloudPCLToOctomap( nonground, pcNonground );
 	 m_data->getTree().insertScan( pcNonground, sensorOrigin, maxRange, true, false );
 	 */
+//	std::cerr << "Trying to insert cloud. Ground size: " << ground.points.size() << ", Nonground size: " << nonground.points.size() << std::endl;
 	m_data->getTree().insertColoredScan(nonground, sensorOrigin, maxRange, true);
 }
 
@@ -490,7 +493,7 @@ void srs_env_model::COctoMapPlugin::filterCloud( tPointCloudConstPtr & cloud)
 
 		m_filterRaycast.setCloud(cloud);
 		m_filterRaycast.filter(m_data->getTree());
-		m_filterRaycast.writeLastRunInfo();
+//		m_filterRaycast.writeLastRunInfo();
 
 //		std::cerr << "Raycast filter call complete" << std::endl;
 	}

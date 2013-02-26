@@ -53,6 +53,7 @@ srs_env_model::COcFilterRaycast::COcFilterRaycast(const std::string & octree_fra
 	, m_camera_info_topic(CAMERA_INFO_TOPIC_NAME)
 	, m_numLeafsRemoved(0)
 	, m_filtered_cloud( new tPointCloud())
+	, m_miss_speedup( 2.0f )
 {
 
 }
@@ -167,7 +168,7 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 	computeBBX(m_sensor_header, min, max);
 
 	double resolution(tree.getResolution());
-	float probMiss(tree.getProbMissLog());
+	float probMissLog(tree.getProbMissLog() * m_miss_speedup);
 
 	boost::mutex::scoped_lock lock(m_lockCamera);
 
@@ -196,8 +197,11 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 				continue;
 
 			// otherwise: degrade node
-//			it->setColor(255, 0, 0);
-			it->setValue(probMiss);
+			it->setColor(255, 0, 0);
+//			it->setValue(probMiss);
+//			tree.integrateMissNoTime(&(*it));
+			tree.updateNodeLogOdds(&(*it), probMissLog);
+
 			++m_numLeafsRemoved;
 		}
 	}
@@ -483,7 +487,7 @@ void srs_env_model::COcFilterRaycast::computeBBX(const std_msgs::Header& sensor_
 	}
 
 #ifdef SHOW_VISUALIZATION
-	std::cerr << "Publishing visualization marker publisher" << std::endl;
+//	std::cerr << "Publishing visualization marker publisher" << std::endl;
 	std::string fixed_frame_(m_treeFrameId);
 	// // visualize axis-aligned querying bbx
 	visualization_msgs::Marker bbx;

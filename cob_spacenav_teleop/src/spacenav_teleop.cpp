@@ -607,10 +607,10 @@ int main(int argc, char** argv)
   ROS_INFO("Starting COB SpaceNav Teleop...");
   SpaceNavTeleop sp;
 
-  ros::AsyncSpinner spinner(3);
+  /*ros::AsyncSpinner spinner(3);
   spinner.start();
-  ros::waitForShutdown();
+  ros::waitForShutdown();*/
 
-  //ros::spin();
+  ros::spin();
 
 }

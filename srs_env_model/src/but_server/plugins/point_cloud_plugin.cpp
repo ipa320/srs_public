@@ -45,7 +45,6 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 , m_pcSubscriberName("")
 , m_bSubscribe( subscribe )
 , m_latchedTopics( false )
-, m_frameId("/map")
 , m_bFilterPC(true)
 , m_pointcloudMinZ(-std::numeric_limits<double>::max())
 , m_pointcloudMaxZ(std::numeric_limits<double>::max())
@@ -59,6 +58,7 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 , m_b(128)
 {
 	assert( m_data != 0 );
+	m_frame_id = "head_cam3d_link";
 }
 
 /// Destructor
@@ -88,7 +88,7 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 
 	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
 	// We will use the same frame id as octomap plugin
-	node_handle.param("ocmap_frame_id", m_frameId, m_frameId);
+	node_handle.param("ocmap_frame_id", m_frame_id, m_frame_id);
 
 	// Point cloud limits
 	node_handle.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
@@ -103,8 +103,8 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 	c = m_g; node_handle.param("pointcloud_default_color_g", c, c);	m_g = c;
 	c = m_b; node_handle.param("pointcloud_default_color_b", c, c);	m_b = c;
 
-	std::cerr << "Use input color: " << std::string(m_bUseInputColor ? "yes" : "no") << std::endl;
-	std::cerr << "Color: " << m_r << ", " << m_g << ", " << m_b << std::endl;
+//	std::cerr << "Use input color: " << std::string(m_bUseInputColor ? "yes" : "no") << std::endl;
+//	std::cerr << "Color: " << m_r << ", " << m_g << ", " << m_b << std::endl;
 
 	// Create publisher
 	m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
@@ -126,7 +126,7 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 		}
 
 		// Create message filter
-		m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_frameId, 1);
+		m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_frame_id, 1);
 		m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1));
 
 		//std::cerr << "SUBSCRIBER NAME: " << m_pcSubscriberName << ", FRAMEID: " << m_pcFrameId << std::endl;
@@ -160,12 +160,12 @@ void srs_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timesta
 	pcl::toROSMsg< tPclPoint >(*m_data, cloud);
 
 	// Set message parameters and publish
-	if( m_data->header.frame_id != m_frameId )
+	if( m_data->header.frame_id != m_frame_id )
 	{
 		ROS_ERROR("CPointCloudPlugin::publishInternal: Internal frame id is not compatible with the output one.");
 		return;
 	}
-	cloud.header.frame_id = m_frameId;
+	cloud.header.frame_id = m_frame_id;
 	cloud.header.stamp = timestamp;
 
 //	PERROR( "Publishing cloud. Size: " << m_data->size() << ", topic: " << m_pcPublisher.getTopic() );
@@ -189,13 +189,13 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 	m_data->clear();
 
 	// Just for sure
-	if(m_frameId != par.frameId)
+	if(m_frame_id != par.frameId)
 	{
 		PERROR("Map frame id has changed, this should never happen. Exiting newMapDataCB.");
 		return;
 	}
 
-	m_frameId = par.frameId;
+	m_frame_id = par.frameId;
 	m_DataTimeStamp = m_time_stamp = par.currentTime;
 	counter = 0;
 
@@ -308,9 +308,10 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	}
 
 	//*/
+//	std::cerr << "Input cloud frame id: " << cloud->header.frame_id << std::endl;
 
 	// If different frame id
-	if( cloud->header.frame_id != m_frameId )
+	if( cloud->header.frame_id != m_frame_id )
 	{
 //		PERROR( "Wait for input transform" );
 
@@ -320,10 +321,10 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		// Get transforms
 		try {
 			// Transformation - from, to, time, waiting time
-			m_tfListener.waitForTransform(m_frameId, cloud->header.frame_id,
+			m_tfListener.waitForTransform(m_frame_id, cloud->header.frame_id,
 					cloud->header.stamp, ros::Duration(5));
 
-			m_tfListener.lookupTransform(m_frameId, cloud->header.frame_id,
+			m_tfListener.lookupTransform(m_frame_id, cloud->header.frame_id,
 					cloud->header.stamp, sensorToPcTf);
 
 		} catch (tf::TransformException& ex) {
@@ -340,6 +341,8 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 		// transform pointcloud from sensor frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, sensorToPcTM);
+		m_data->header = cloud->header;
+		m_data->header.frame_id = m_frame_id;
 	}
 
 //	PERROR("1");
@@ -355,13 +358,13 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		tf::StampedTransform pcToBaseTf, baseToPcTf;
 		try {
 			// Transformation - to, from, time, waiting time
-			m_tfListener.waitForTransform(BASE_FRAME_ID, m_frameId,
+			m_tfListener.waitForTransform(BASE_FRAME_ID, m_frame_id,
 					cloud->header.stamp, ros::Duration(5));
 
-			m_tfListener.lookupTransform(BASE_FRAME_ID, m_frameId,
+			m_tfListener.lookupTransform(BASE_FRAME_ID, m_frame_id,
 					cloud->header.stamp, pcToBaseTf);
 
-			m_tfListener.lookupTransform(m_frameId, BASE_FRAME_ID,
+			m_tfListener.lookupTransform(m_frame_id, BASE_FRAME_ID,
 					cloud->header.stamp, baseToPcTf );
 
 		} catch (tf::TransformException& ex) {
@@ -392,7 +395,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 	// Modify header
 	m_data->header = cloud->header;
-    m_data->header.frame_id = m_frameId;
+    m_data->header.frame_id = m_frame_id;
 
     // Store timestamp
     m_DataTimeStamp = cloud->header.stamp;
@@ -473,7 +476,7 @@ void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nod
 			m_pcSubscriber  = new message_filters::Subscriber<tIncommingPointCloud>(node_handle, m_pcSubscriberName, 1);
 
 			// Create message filter
-			m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_frameId, 1);
+			m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_frame_id, 1);
 			m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1));
 		}
 	}

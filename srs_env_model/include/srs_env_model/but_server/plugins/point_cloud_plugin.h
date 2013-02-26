@@ -144,9 +144,6 @@ namespace srs_env_model
         //
         bool m_latchedTopics;
 
-        /// Used frame id
-        std::string m_frameId;
-
         //! Do pointcloud filtering?
         bool m_bFilterPC;
 

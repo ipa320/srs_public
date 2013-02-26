@@ -135,6 +135,9 @@ namespace srs_env_model
         /// Point cloud publisher
         ros::Publisher m_pcPublisher;
 
+        /// Input pointcloud frame id used to filter messages
+        std::string m_inputPcFrameId;
+
         //! Should this plugin subscribe to some publishing topic?
         bool m_bSubscribe;
 
@@ -179,6 +182,7 @@ namespace srs_env_model
 
 	    //! If not using input color use this
 	    uint8_t m_r, m_g, m_b;
+
 
     }; // class CPointCloudPlugin
 

@@ -2,6 +2,8 @@
 <launch>
 
   <arg name="sim" default="false"/>
+  <arg name="exp" default="e1"/>
+  <arg name="task" default="nav1"/>
   
   <!-- robot args -->
 	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
@@ -9,8 +11,8 @@
 
   <node pkg="srs_user_tests" name="octomap_loader" type="env_model_loader.py" output="screen" respawn="false">
     <param name="action" type="string" value="load"/>
-    <param name="file" if="$(arg sim)" type="string" value="$(find srs_user_tests)/data/$(arg robot_env)/sim/octomap.enm"/>
-    <param name="file" unless="$(arg sim)" type="string" value="$(find srs_user_tests)/data/$(arg robot_env)/octomap.enm"/>
+    <param name="file" if="$(arg sim)" type="string" value="$(find srs_user_tests)/data/$(arg robot_env)/sim/$(arg exp)/$(arg task)/octomap.enm"/>
+    <param name="file" unless="$(arg sim)" type="string" value="$(find srs_user_tests)/data/$(arg robot_env)/$(arg exp)/$(arg task)/octomap.enm"/>
   </node>
 
 </launch>

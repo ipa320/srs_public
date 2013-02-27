@@ -102,9 +102,9 @@ void srs_env_model::COcFilterRaycast::setCloud(tPointCloudConstPtr cloud)
 //! Write some info about last filter run
 void srs_env_model::COcFilterRaycast::writeLastRunInfo()
 {
-	std::cerr << "COcFilterRaycast: Number of leafs removed: " << m_numLeafsRemoved << std::endl;
-	std::cerr << "COcFilterRaycast: Number of leafs out of cone: " << m_numLeafsOutOfCone << std::endl;
-	std::cerr << "Camera position: " << m_sensor_origin.x() << ", " << m_sensor_origin.y() << ", " << m_sensor_origin.z() << std::endl;
+	ROS_DEBUG_STREAM("COcFilterRaycast: Number of leafs removed: " << m_numLeafsRemoved);
+	ROS_DEBUG_STREAM("COcFilterRaycast: Number of leafs out of cone: " << m_numLeafsOutOfCone);
+	ROS_DEBUG_STREAM("Camera position: " << m_sensor_origin.x() << ", " << m_sensor_origin.y() << ", " << m_sensor_origin.z());
 }
 
 /**
@@ -197,7 +197,7 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 				continue;
 
 			// otherwise: degrade node
-			it->setColor(255, 0, 0);
+//			it->setColor(255, 0, 0);
 //			it->setValue(probMiss);
 //			tree.integrateMissNoTime(&(*it));
 			tree.updateNodeLogOdds(&(*it), probMissLog);

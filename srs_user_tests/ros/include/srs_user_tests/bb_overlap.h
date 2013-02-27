@@ -36,8 +36,10 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "visualization_msgs/InteractiveMarkerFeedback.h"
+#include "visualization_msgs/InteractiveMarkerUpdate.h"
 #include "visualization_msgs/Marker.h"
 #include "srs_interaction_primitives/ScaleChanged.h"
+#include "srs_assisted_arm_navigation_msgs/AssistedArmNavigationState.h"
 #include <boost/thread.hpp>
 #include "tf/transform_listener.h"
 #include <Eigen/Core>
@@ -66,7 +68,9 @@ class BBOverlap {
 
 		~BBOverlap();
 
-		ros::Time last_log_out_;
+		tf::TransformListener tfl_;
+
+		ros::WallTime last_log_out_;
 
 		double points_volume(const tpoints &p);
 
@@ -77,21 +81,40 @@ class BBOverlap {
 
 	protected:
 
+		geometry_msgs::Pose gripper_pose_;
+		geometry_msgs::Pose gripper_pose_curr_;
+		ros::Publisher gripper_pub_;
+		visualization_msgs::Marker gripper_marker_;
+		bool gripper_pose_rec_;
+		ros::Subscriber sub_gripper_update_;
+		double gr_success_val_;
+
+		ros::Subscriber sub_arm_state_;
+
 		bool publish_debug_markers_;
 
-		double success_val_;
+		double bb_success_val_;
 
-		ros::WallDuration success_min_dur_;
-		ros::WallTime success_first_;
-		ros::WallTime success_last_;
+		ros::WallDuration bb_success_min_dur_;
+		ros::WallDuration gr_success_min_dur_;
 
-		ros::WallTime success_tmp_;
+		ros::WallTime bb_success_first_;
+		ros::WallTime bb_success_last_;
+		ros::WallTime bb_success_tmp_;
+
+		ros::WallTime gr_success_first_;
+		ros::WallTime gr_success_last_;
+		ros::WallTime gr_success_tmp_;
 
 		ros::Subscriber sub_im_feedback_;
 		ros::Subscriber sub_im_scale_;
 
 		void im_feedback_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr& msg);
 		void im_scale_cb(const srs_interaction_primitives::ScaleChangedConstPtr& msg);
+		void gripper_im_cb(const visualization_msgs::InteractiveMarkerUpdateConstPtr& msg);
+		void arm_nav_state_cb(const srs_assisted_arm_navigation_msgs::AssistedArmNavigationStateConstPtr& msg);
+
+		bool arm_state_ok_;
 
 		void timer_cb(const ros::TimerEvent&);
 		ros::Timer timer_;

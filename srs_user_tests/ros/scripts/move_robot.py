@@ -14,7 +14,7 @@ def main():
     rospy.sleep(3)
 
     rospy.loginfo("Please move robot to start pose and press <Enter>.")
-    
+    raw_input()
     pose = Pose()
     
     pose.position.x = rospy.get_param('~position_x')
@@ -30,6 +30,7 @@ def main():
 
     loc.pose.pose = pose
     loc.header.frame_id = "/map"
+    loc.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853891945200942]
     pub.publish(loc)
     rospy.sleep(1)
     pub.publish(loc)

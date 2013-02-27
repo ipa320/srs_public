@@ -89,8 +89,6 @@ import sys, subprocess
 
 import record_topic
 
-from srs_user_tests.srv import *
-
 import global_lock
 
 class topics_bag():
@@ -112,6 +110,8 @@ class topics_bag():
         localtime = time.localtime(time.time())
         filename = self.bag_name + "_" + str(localtime[0]) + "-" + str(localtime[1]) + "-" + str(localtime[2]) + "_" + str(localtime[3]) + "-" + str(localtime[4]) + "-" + str(localtime[5]) + ".bag"
         filelocation = str(roslib.packages.get_pkg_dir(PKG) + "/data/" )
+        if(not os.path.exists(filelocation)):
+            os.makedirs(filelocation)
         rospy.loginfo("Logging to " + filelocation + filename)
         self.bag = rosbag.Bag(filelocation + filename, 'w')
         
@@ -140,11 +140,14 @@ class topics_bag():
 
         rospy.Service('~start', Trigger, self.trigger_callback_start)
         rospy.Service('~stop', Trigger, self.trigger_callback_stop)
-        self.active = 0
-		
+
+    def active(self):
+    
+        return global_lock.active_bag		
+        
     def trigger_callback_start(self, req):
         res = TriggerResponse()
-        self.active = True
+        global_lock.active_bag = True
         res.success.data = True
         res.error_message.data = "Bagfile recording started"
         print res.error_message.data
@@ -152,7 +155,7 @@ class topics_bag():
 		  
     def trigger_callback_stop(self, req):
         res = TriggerResponse()
-        self.active = False
+        global_lock.active_bag = False
         res.success.data = True
         res.error_message.data = "Bagfile recording stopped"
         print res.error_message.data
@@ -213,7 +216,7 @@ if __name__ == "__main__":
         rospy.sleep(2)
         while not rospy.is_shutdown():
 			
-            if bagR.active==1:
+            if bagR.active()==1:
                 # listen to tf changes
                 for tfs in bagR.wanted_tfs:
                     triggers = bagR.bag_processor(tfs)

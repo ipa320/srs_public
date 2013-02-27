@@ -525,9 +525,15 @@ class SRS_DM_ACTION(object):
                     ## read parameter server
                     grasp_type = rospy.get_param("srs/grasping_type")
                     tasks.tasks_list[0].addItem('grasping_type', grasp_type)
-
-                    req.json_parameters = tasks.tasks_list[0].task_json_string
                     
+                    # if the task list contains multiple tasks,
+                    # we can use the task id to specify them
+                    # and the sequence of task execution can be controlled here  
+                    req.json_parameters = tasks.tasks_list[0].task_json_string 
+                    #req.json_parameters = tasks.tasks_list[1].task_json_string
+                    
+                    print "###req.json_parameters", req.json_parameters 
+                    #print "###tasks.tasks_list[1]", tasks.tasks_list[1]
             res = requestNewTask(req)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
             print 'Task created with session id of: ' + str(res.sessionId)

@@ -9,9 +9,11 @@ bool ifGeometryInfo
 ---
 
 string[] objects
-string[] classesOfObjects
+string[] classesOfObjects      # object classes
+#string[] objectCategories      # similar to classesofObjects. But mainly for the purpose of UI display, that objects can be put into categories (folders)
 string[] spatialRelation       # e.g. aboveOf, under, behind etc
 string[] spatialRelatedObject  # e.g. Table0,  Bed0,  Door0, etc   # 
 string[] houseHoldId
 srs_msgs/SRSSpatialInfo[] objectsInfo
 string[] readableNames
+string[] jsonProperties   # other properties in Json, such as Fridge inRoom Kitchen etc.

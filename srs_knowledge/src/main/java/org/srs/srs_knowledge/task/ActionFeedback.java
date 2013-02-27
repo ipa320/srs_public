@@ -96,7 +96,7 @@ public class ActionFeedback {
 	    pos.orientation.z = ((Number)(jsonPos.get("rotz"))).doubleValue();
 	    pos.orientation.w = ((Number)(jsonPos.get("rotw"))).doubleValue();	  
 	    System.out.println(this.jsonFeedback);
-	    System.out.println("json decode pose as: " + pos);
+	    //System.out.println("json decode pose as: " + pos);
 	}
 	catch(Exception e) {
 	    System.out.println(e.toString());

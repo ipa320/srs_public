@@ -272,6 +272,27 @@ public class OntoQueryUtil
 	return ret;
     }
 
+    private static ArrayList<String> getSRSObjectCategory(String classURI) {
+	ArrayList<String> ret = new ArrayList<String>();
+	String catURI = OntoQueryUtil.GlobalNameSpace + "SRSCatogory";
+	String nsDef = 
+	    "PREFIX srs: <http://www.srs-project.eu/ontologies/srs.owl#>\n"
+	    + " PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+	    + " PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n";
+	String queryString = " SELECT ?cat  WHERE {\n" 
+	    + "<" + classURI + "> rdfs:subClassOf ?cat . \n"
+	    + " ?cat rdfs:subClassOf <" + catURI + "> .}\n";
+
+	ArrayList<QuerySolution> qr = KnowledgeEngine.ontoDB.executeQueryRaw(nsDef + queryString);
+	for(int i = 0; i < qr.size(); i++) {
+	    String tmp = qr.get(i).getResource("cat").getURI();
+	    ret.add(tmp);
+	}
+	
+	return ret;
+    }
+
+
     //return local names
     public static ArrayList<String> getFurnituresLinkedToObject(String objectClassName) {
 	ArrayList<String> ret = new ArrayList<String>();
@@ -728,6 +749,31 @@ public class OntoQueryUtil
 	return re;
     }
 
+    private static String objectCategory(Individual ind, boolean asJson) {
+	String catStr = "";
+	StringBuffer catTemp = new StringBuffer("");
+	com.hp.hpl.jena.util.iterator.ExtendedIterator<Resource> it = ind.listRDFTypes(false);
+	HashSet<String> sset = new HashSet<String>();
+	String temp = "";
+	while (it.hasNext()) {
+	    com.hp.hpl.jena.util.iterator.ExtendedIterator<RDFNode> itLabels = KnowledgeEngine.ontoDB.model.getOntResource(it.next()).listLabels("en");
+	    while (itLabels.hasNext()) {
+		temp = itLabels.next().asLiteral().getString();
+		catTemp.append(temp);
+		sset.add(temp);
+		catTemp.append(",");
+	    }
+	}
+	//System.out.println("Object categories <SRS>: " + catTemp.toString());
+	if (asJson)
+	    return SRSJSONParser.encodeObjectCategoryInfo(sset);
+	else {
+	    catStr = catTemp.toString();
+	    return catStr;	
+	}
+    }
+
+
     public static GetObjectsOnMap.Response getObjectsOnMapOfType(String objectTypeURI, boolean ifGeometryInfo) {
 	GetObjectsOnMap.Response re = new GetObjectsOnMap.Response();
 	//System.out.println(objectTypeURI + " --- ");
@@ -743,6 +789,17 @@ public class OntoQueryUtil
 		if(temp.getNameSpace().equals(ObjectNameSpace)) {
 		    re.objects.add(temp.getLocalName());
 		    re.classesOfObjects.add(temp.getRDFType(true).getLocalName());
+		    //System.out.println("Object Category (SRS): " + OntoQueryUtil.objectCategory(temp));
+		    
+		    //System.out.println("Object categories <SRS>: " + OntoQueryUtil.getSRSObjectCategory(temp.getRDFType(true).getNameSpace()));
+		    String catStr = OntoQueryUtil.objectCategory(temp, true);
+
+		    /*
+		    if (catStr.length() <= 1) re.objectCategories.add("");
+		    else re.objectCategories.add(catStr.substring(0, catStr.length() - 1));
+		    */
+		    re.jsonProperties.add(catStr);
+
 		    try{
 			stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "spatiallyRelated", temp);
 			//stm = KnowledgeEngine.ontoDB.getPropertyOf(GlobalNameSpace, "aboveOf", temp);
@@ -755,7 +812,7 @@ public class OntoQueryUtil
 			re.spatialRelatedObject.add("NA");
 		    }
 		    try{
-			stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID", temp);			
+			stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "houseHoldObjectID", temp);
 			re.houseHoldId.add(Integer.toString(getIntOfStatement(stm)));
 		    }
 		    catch(Exception e) {
@@ -766,7 +823,7 @@ public class OntoQueryUtil
 		    String readableName = temp.getLocalName();
 		    try{
 			com.hp.hpl.jena.rdf.model.NodeIterator nit = KnowledgeEngine.ontoDB.listPropertiesOf(OntoQueryUtil.GlobalNameSpace, "objectReadableName", temp);
-			//stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "objectReadableName", temp);		
+			//stm = KnowledgeEngine.ontoDB.getPropertyOf(OntoQueryUtil.GlobalNameSpace, "objectReadableName", temp);
 			while(nit.hasNext()) {
 			    RDFNode n = nit.next();
 			    Literal l = n.asLiteral();

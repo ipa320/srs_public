@@ -54,7 +54,7 @@ class detect_object(smach.State):
     def execute(self, userdata):
 
         global current_task_info
-	    #userdauserdata.target_object_listta.object_name = "milk"
+	    #userdata.object_name = "milk"
         # if the object has been identified, and there was no base movement of grasp, then no need to detect again
         if current_task_info.get_object_identification_state() == True:
             userdata.object_pose = self.the_object_pose
@@ -91,7 +91,7 @@ class detect_object(smach.State):
         # check if maximum retries reached
         if self.retries > self.max_retries:
             self.retries = 0
-            hanuserdata.target_object_listdle_torso = sss.move("torso","home",False)
+            handle_torso = sss.move("torso","home",False)
             handle_torso.wait()
             return 'no_more_retries'
 

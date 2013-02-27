@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="file_path" default="$(find srs_user_tests)/ros/src/"/>
+	<node name="extras" pkg="srs_user_tests" type="extras.sh" args="$(arg file_path)">
+	</node>
+
+</launch>

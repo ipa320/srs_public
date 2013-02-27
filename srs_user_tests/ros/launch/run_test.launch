@@ -38,14 +38,8 @@
   
   <group>
   
-    <!-- run localization on PC1 -->
+    <!-- run on PC1 -->
     <machine name="pc1" address="$(arg pc1)" default="true" unless="$(arg sim)"/>
- 
-    <!-- navigation with different map for simulation/real testing site -->
-	  <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" >
-		  <arg name="map" if="$(arg sim)" value="$(find srs_user_tests)/ros/config/$(arg robot_env)-sim/map.yaml"/>
-		  <arg name="map" unless="$(arg sim)" value="$(find srs_user_tests)/ros/config/$(arg robot_env)/map.yaml"/>
-	  </include>
 	  
 	  <!-- Run the interactive teleop -->
 	  <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>

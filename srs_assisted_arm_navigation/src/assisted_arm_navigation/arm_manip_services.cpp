@@ -298,8 +298,12 @@ bool CArmManipulationEditor::ArmNavExecute(ArmNavExecute::Request &req, ArmNavEx
   ROS_INFO("Executing trajectory...");
 
   executeTrajectory(getMotionPlanRequestNameFromId(mpr_id),getTrajectoryNameFromId(filt_traj_id));
+  
+  ROS_INFO("Trajectory was sent...");
 
   reset();
+  
+  ROS_INFO("Reset of stuff after executing trajectory.");
 
   ros::Rate r(10);
 

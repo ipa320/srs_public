@@ -129,6 +129,9 @@ protected:
 	//! Output filtered cloud
 	tPointCloud::Ptr m_filtered_cloud;
 
+	/// Speedup of integrate miss no time function
+	float m_miss_speedup;
+
 }; // class COcFilterRaycast
 
 } // namespace srs_env_model

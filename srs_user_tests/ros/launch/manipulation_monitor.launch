@@ -10,10 +10,14 @@
   <node pkg="srs_user_tests" name="bb_overlap_node" type="bb_overlap_node" output="screen">
 
     <!-- value defines what will be considered as sucessful bb placement (overlap) -->
-    <param name="sucess_val" type="double" value="0.85"/>
+    <param name="bb/success_val" type="double" value="0.85"/>
+    
+    <param name="gr/success_val" type="double" value="0.05"/>
 
     <!-- minimal duration of sucessful overla -->
-    <param name="sucess_min_dur" type="double" value="2.0"/>
+    <param name="bb/success_min_dur" type="double" value="2.0"/>
+
+    <param name="gr/success_min_dur" type="double" value="2.0"/>
 
     <param name="publish_debug_markers" type="bool" value="false"/>
 

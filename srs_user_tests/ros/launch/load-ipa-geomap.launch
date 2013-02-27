@@ -2,8 +2,8 @@
 <launch>
 
   <arg name="sim" default="false"/>
-  <arg name="exp" default="e1"/>
-  <arg name="task" default="nav1"/>
+  <arg name="exp"/>
+  <arg name="task"/>
   
   <!-- robot args -->
 	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>

@@ -128,9 +128,10 @@ class record_topic():
         if(self.msg!=None):
             if not global_lock.locked:
                 try:
-                    self.lock()
-                    self.bagfile.write(self.topic_name, self.msg)
-                    self.unlock()
+                    if(global_lock.active_bag):
+                        self.lock()
+                        self.bagfile.write(self.topic_name, self.msg)
+                        self.unlock()
                 except KeyError, e:
                     rospy.loginfo(self.msg)
         

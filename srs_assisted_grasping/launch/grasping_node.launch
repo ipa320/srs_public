@@ -7,7 +7,7 @@
   <!-- grasping action server node -->
   <node pkg="srs_assisted_grasping" name="reactive_grasping_node" type="reactive_grasping_node" respawn="false" output="screen">
     <rosparam command="load" file="$(find srs_assisted_grasping)/config/sdh_config.yaml" />
-    <remap from="tact_in" to="/sdh_controller/tactile_data_filtered"/>
+    <remap from="tact_in" to="/dsa_controller/tactile_data_filtered"/>
     <remap from="velocity_out" to="/sdh_controller/set_velocities"/>
     <remap from="state_in" to="/sdh_controller/state"/>
     <remap from="set_mode_srv" to="/sdh_controller/set_operation_mode"/>

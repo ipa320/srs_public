@@ -92,6 +92,7 @@
       <param name="ocmap_resolution" value="0.03" type="double"/>
       <param name="pointcloud_frame_skip" value="1" type="int"/>
       <param name="collisionmap_frame_id" value="/base_footprint" type="string"/>
+      <param name="ocmap_filter_outdated" value="false" type="bool"/> <!-- this is set (temporarily) to false to prevent holes in collision map -->
       
       <remap from="but_server_node/rviz_camera_position" to="/rviz_camera_position" />
 		  

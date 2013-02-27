@@ -40,6 +40,7 @@ namespace srs_env_model
      */
     static const std::string ServerReset_SRV = PACKAGE_NAME_PREFIX + std::string("/server_reset");
     static const std::string ServerPause_SRV = PACKAGE_NAME_PREFIX + std::string("/server_pause");
+    static const std::string ServerUseInputColor_SRV = PACKAGE_NAME_PREFIX + std::string("/server_use_input_color");
 
     /**
      * objtree - services

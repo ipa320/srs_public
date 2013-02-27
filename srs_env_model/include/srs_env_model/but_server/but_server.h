@@ -1,7 +1,7 @@
 /******************************************************************************
  * \file
  *
- * $Id: but_server.h 2155 2012-12-27 17:45:59Z spanel $
+ * $Id: but_server.h 2537 2013-02-21 15:57:57Z stancl $
  *
  * Modified by dcgm-robotics@FIT group
  *
@@ -76,6 +76,7 @@
 #include <srs_env_model/but_server/plugins/collision_grid_plugin.h>
 
 #include <srs_env_model/ButServerPause.h>
+#include <srs_env_model/UseInputColor.h>
 
 // Old interactive markers plugin used for testing
 #include <srs_env_model/but_server/plugins/old_imarkers_plugin.h>
@@ -116,7 +117,7 @@ protected:
     void publishAll(const ros::Time& rostime );
 
     //! On octomap data changed
-    void onOcMapDataChanged( const tButServerOcMap & mapdata, const ros::Time & stamp )
+    void onOcMapDataChanged( tButServerOcMapConstPtr mapdata, const ros::Time & stamp )
     {
         publishAll(stamp);
     }
@@ -133,6 +134,10 @@ protected:
 
     //! Publish all
     void publishPlugins(const ros::Time& rostime);
+
+    /// Use/do not use color service callback
+	bool onUseInputColor(srs_env_model::UseInputColor::Request & req, srs_env_model::UseInputColor::Response & res );
+
 
 protected:
     //! Is server running now
@@ -157,6 +162,9 @@ protected:
 
     /// Pause service
     ros::ServiceServer m_servicePause;
+
+	/// Use input color service
+	ros::ServiceServer m_serviceUseInputColor;
 
     //======================================================================================================
     // Plugins

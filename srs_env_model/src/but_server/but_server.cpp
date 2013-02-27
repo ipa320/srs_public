@@ -70,7 +70,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 			m_plugCMap(new CCMapPlugin("CMAP" )),
 			m_plugInputPointCloud( new CPointCloudPlugin("PCIN", true ) ),
 			m_plugOcMapPointCloud( new CPointCloudPlugin( "PCOC", false )),
-			m_plugVisiblePointCloud( new CLimitedPointCloudPlugin( "PCVIS" ) ),
+//			m_plugVisiblePointCloud( new CLimitedPointCloudPlugin( "PCVIS" ) ),
 			m_plugOctoMap( new COctoMapPlugin("OCM", filename)),
 			m_plugCollisionObject( new CCollisionObjectPlugin( "COB" )),
 			m_plugMap2D( new CCollisionGridPlugin( "M2D" )),
@@ -92,6 +92,8 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	// Advertise services
 	m_serviceReset = private_nh.advertiseService(ServerReset_SRV, &CButServer::onReset, this);
 	m_servicePause = private_nh.advertiseService(ServerPause_SRV, &CButServer::onPause, this);
+	m_serviceUseInputColor = private_nh.advertiseService( ServerUseInputColor_SRV, &CButServer::onUseInputColor, this);
+
 
 	m_latchedTopics = false;
 	private_nh.param("latch", m_latchedTopics, m_latchedTopics);
@@ -103,7 +105,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	m_plugins.push_back( m_plugCMap.get() );
 	m_plugins.push_back( m_plugInputPointCloud.get() );
 	m_plugins.push_back( m_plugOcMapPointCloud.get() );
-	m_plugins.push_back( m_plugVisiblePointCloud.get() );
+//	m_plugins.push_back( m_plugVisiblePointCloud.get() );
 	m_plugins.push_back( m_plugOctoMap.get() );
 	m_plugins.push_back( m_plugCollisionObject.get() );
 	m_plugins.push_back( m_plugMap2D.get() );
@@ -122,13 +124,10 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 		m_plugins.push_back( m_plugIMarkers.get() );
 	}
 
-
-
 #ifdef _EXAMPLES_
 	m_plugins.push_back( m_plugExample.get() );
 	m_plugins.push_back( m_plugExampleCrawler.get() );
 #endif
-
 
 	//=========================================================================
 	// Initialize plugins
@@ -146,7 +145,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CMarkerArrayPlugin::handleNewMapData, m_plugMarkerArray, _1 ) );
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCompressedPointCloudPlugin::handleNewMapData, m_plugCompressedPointCloud, _1 ) );
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCollisionObjectPlugin::handleNewMapData, m_plugCollisionObject, _1 ) );
-	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CLimitedPointCloudPlugin::handleNewMapData, m_plugVisiblePointCloud, _1 ) );
+//	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CLimitedPointCloudPlugin::handleNewMapData, m_plugVisiblePointCloud, _1 ) );
 
 	// Connect octomap data changed signal with server publish
 	m_plugOctoMap->getSigDataChanged().connect( boost::bind( &CButServer::onOcMapDataChanged, *this, _1, _2 ));
@@ -270,4 +269,15 @@ void srs_env_model::CButServer::publishPlugins(const ros::Time& rostime)
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/**
+ * Use/do not use color service callback
+ */
+bool srs_env_model::CButServer::onUseInputColor(srs_env_model::UseInputColor::Request & req, srs_env_model::UseInputColor::Response & res )
+{
+	// Set value to the pc input plugin
+	m_plugInputPointCloud->setUseInputColor(req.use_color);
+
+	return true;
+}
 

@@ -47,7 +47,41 @@ UnknownObject::UnknownObject(InteractiveMarkerServerPtr server, string frame_id,
   color_.a = 0.5;
   show_movement_control_ = show_scale_control_ = show_rotation_control_ = show_measure_control_ = show_description_control_ = false;
   use_material_ = true;
+  allow_object_interaction_ = false;
 }
+
+
+void UnknownObject::setAllowObjectInteraction(bool allow)
+{
+  ROS_INFO("Interaction allowed");
+
+  allow_object_interaction_ = allow;
+  if (allow_object_interaction_)
+  {
+    addMovementControls();
+    addRotationControls();
+    addScaleControls();
+
+    menu_handler_.setCheckState(menu_handler_interaction_movement_, MenuHandler::CHECKED);
+    menu_handler_.setCheckState(menu_handler_interaction_rotation_, MenuHandler::CHECKED);
+    menu_handler_.setCheckState(menu_handler_interaction_scale_, MenuHandler::CHECKED);
+  }
+  else
+  {
+    removeMovementControls();
+    removeRotationControls();
+    removeScaleControls();
+  
+    menu_handler_.setCheckState(menu_handler_interaction_movement_, MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_interaction_rotation_, MenuHandler::UNCHECKED);
+    menu_handler_.setCheckState(menu_handler_interaction_scale_, MenuHandler::UNCHECKED);
+  }
+
+  server_->insert(object_);
+  menu_handler_.reApply(*server_);
+  server_->applyChanges();
+}
+
 
 void UnknownObject::uboxCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
@@ -59,6 +93,7 @@ void UnknownObject::uboxCallback(const InteractiveMarkerFeedbackConstPtr &feedba
     server_->applyChanges();
   }
 }
+
 
 void UnknownObject::menuCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
@@ -211,6 +246,7 @@ void UnknownObject::createMenu()
   }
 }
 
+
 void UnknownObject::createBox()
 {
   box_.type = Marker::MESH_RESOURCE;
@@ -218,6 +254,7 @@ void UnknownObject::createBox()
   box_.scale = scale_;
   box_.mesh_resource = "package://srs_interaction_primitives/meshes/unknown_object.dae";
 }
+
 
 void UnknownObject::createColorBox()
 {
@@ -231,7 +268,7 @@ void UnknownObject::createColorBox()
   box_.color.a = 0.5;
 
   // Wireframe model - disabled for now, it doesn't scale properly...
-/*  wire_.points.clear();
+  wire_.points.clear();
 
   Point p1, p2;
   double sx = scale_.x / 2;
@@ -341,7 +378,7 @@ void UnknownObject::createColorBox()
   p2.y = -sy + trans_y;
   p2.z = -sz + trans_z;
   wire_.points.push_back(p1);
-  wire_.points.push_back(p2);*/
+  wire_.points.push_back(p2);
 }
 
 
@@ -353,6 +390,7 @@ void UnknownObject::createUnknownBox()
   object_.pose = pose_;
   object_.scale = srs_interaction_primitives::maxScale(scale_);
 }
+
 
 void UnknownObject::create()
 {
@@ -370,7 +408,7 @@ void UnknownObject::create()
   {
       createColorBox();
       control_.markers.push_back(box_);
-//      control_.markers.push_back(wire_);
+      control_.markers.push_back(wire_);
   }
   control_.interaction_mode = InteractiveMarkerControl::MENU;
   control_.always_visible = true;

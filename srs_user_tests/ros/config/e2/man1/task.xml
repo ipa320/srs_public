@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp" default="e1"/>
+  <arg name="task" default="nav1"/>
+  <arg name="cond" default="b"/>
+  <arg name="sim" default="true"/>
+  
+  <group if="$(arg sim)">
+    
+    <!-- prepare robot for manipulation tasks -->
+    <node pkg="srs_user_tests" type="prepare_robot_manip_sim.py" name="prepare_robot_manip_sim" output="screen">
+      <param name="torso" value="back" type="string"/>
+    </node>
+    
+  </group>
+  
+  
+  <include file="$(find srs_user_tests)/ros/config/common/manip_test_common.xml">
+    <arg name="sim" value="$(arg sim)"/>
+  </include>
+  
+  <!-- Load predefined voxel map -->
+	<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch">
+	  <arg name="sim" value="$(arg sim)"/>
+	</include>
+  
+  <!-- spawn objects in simulation -->
+  <group if="$(arg sim)">
+  
+    <rosparam command="load" ns="objects" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/object_locations.yaml"/>
+    
+    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="SRS_divider1 SRS_divider2 SRS_divider3 SRS_divider4 SRS_divider5 SRS_divider6 SRS_divider7 kitchen_plank schrank_diamondback kitchen_big_cabinet table_ikea_bjursta table_ikea Stuhl_borje Stuhl_borje2 orange_juice orange_juice2 green_tea green_tea2 apple_juice_box zwieback_alternative basmati_rice kitekat corn_flakes_package spaghetti plastic_wrap flower_in_pot1 flower_in_pot2 locker_sliding_door1 locker_sliding_door2"/>
+    
+  </group>
+
+
+</launch>

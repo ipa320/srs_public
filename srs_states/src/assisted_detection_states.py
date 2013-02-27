@@ -40,11 +40,12 @@ class detect_object_assited(smach.State):
         smach.State.__init__(
             self,
             outcomes=['succeeded','failed','preempted'],
-            input_keys=['object_name'],
+            input_keys=['object_name','object_id'],
             output_keys=['object_list'])
 
         self.object_list = DetectionArray()
-        self.object_name = object_name
+        self.object_name = object_name   #doesn't seem to be used 
+        self.object_id = 0
         self.srv_name_object_detection = '/object_detection/detect_object'
 
         self.torso_poses = []
@@ -61,7 +62,8 @@ class detect_object_assited(smach.State):
     def execute(self, userdata):
         global s
         rospy.loginfo("Assisted Detection ready.")
-        self.object_name=userdata.object_name
+        self.object_name = userdata.object_name
+        self.object_id = userdata.object_id
         s = rospy.Service('assisted_detection', UiDetector, self.detectObjectSrv)
         s.spin()
         if (assisted_detection_service_called):
@@ -114,6 +116,9 @@ class detect_object_assited(smach.State):
             outcome_detectObjectSrv = 'failed'
 
         detector_response=UiDetectorResponse() # cob_object_detection; see /srv/UiDetector.srv
+        
+        detector_response.object_id = self.object_id
+        
         if len(res.object_list.detections) > 0:
             detector_response.object_list.header=res.object_list.header
             for x in range(len(res.object_list.detections)):

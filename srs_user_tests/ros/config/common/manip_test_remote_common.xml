@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- Run the SpaceNav teleop -->
+	<!--node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" output="screen"/-->
+	<include file="$(find cob_spacenav_teleop)/launch/spacenav_teleop.launch" />
+
+	<!-- Run env. model voxel map "decompressor" node -->
+	<node pkg="srs_env_model" type="but_cpc_node" name="but_cpc_node" >
+		<remap from="input" to="/but_env_model/octomap_updates"/>
+		<remap from="output" to="/but_env_model/cpc_pointcloud_centers" />
+	</node>
+	
+	<!-- assisted arm navigation commons -->
+	<include file="$(find srs_assisted_arm_navigation_ui)/launch/ui_common.xml"/>
+	
+</launch>

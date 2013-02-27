@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="sim" default="true"/>
+
+  <!-- srs interaction primitives -->
+  <node name="interaction_primitives" pkg="srs_interaction_primitives" type="interaction_primitives_service_server">
+    <param name="allow_object_interaction" type="bool" value="false"/>
+    <param name="show_object_pregrasp" type="bool" value="true"/>
+    <param name="move_arm_to_pregrasp_on_click" type="bool" value="true" />
+  </node>
+  
+  <!-- simulated SDH velocity interface -->
+  <include if="$(arg sim)" file="$(find srs_assisted_grasping)/launch/velocity_interface_sim.launch"/>
+  
+  <!-- grasping action server -->
+  <include file="$(find srs_assisted_grasping)/launch/grasping_node.launch"/>
+  
+  <!-- BUT assisted arm navigation -->
+  <include file="$(find srs_assisted_arm_navigation)/launch/but_arm_nav_rob.launch"> 
+    <arg name="points_in" if="$(arg sim)" value="/cam3d_throttled/depth_registered/points_noised"/>
+  </include>
+  
+  <!-- Load predefined voxel map -->
+	<!--include file="$(find srs_user_tests)/ros/launch/load_octomap.launch"/-->
+  
+</launch>

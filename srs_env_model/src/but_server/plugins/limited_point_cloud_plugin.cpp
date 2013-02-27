@@ -39,7 +39,6 @@ srs_env_model::CLimitedPointCloudPlugin::CLimitedPointCloudPlugin( const std::st
 , m_bTransformCamera( false )
 , m_bSpinThread( true )
 {
-
 }
 
 /**
@@ -87,8 +86,8 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
     // Point cloud publishing topic name
     node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME );
 
-	// Get FID to which will be points transformed when publishing collision map
-	node_handle.param("pointcloud_frame_id", m_pcFrameId, DEFAULT_FRAME_ID );
+	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
+	node_handle.param("ocmap_frame_id", m_frameId, m_frameId);
 
     // Create publisher
     m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
@@ -133,64 +132,44 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
     if( ! m_publishPointCloud )
     		return;
 
+    // Just for sure
+	if(m_frameId != par.frameId)
+	{
+		PERROR("Map frame id has changed, this should never happen. Exiting newMapDataCB.");
+		return;
+	}
+
     //	Clear data
 	m_data->clear();
-	m_ocFrameId = par.frameId;
 	m_DataTimeStamp = m_time_stamp = par.currentTime;
 	counter = 0;
 
 	// Pointcloud is used as output for octomap...
 	m_bAsInput = false;
 
-	bool bTransformOutput(m_ocFrameId != m_pcFrameId);
-
-	// If different frame id
-	if( bTransformOutput )
-	{
-		tf::StampedTransform ocToPcTf;
-
-		// Get transform
-		try {
-			// Transformation - to, from, time, waiting time
-			m_tfListener.waitForTransform(m_pcFrameId, m_ocFrameId,
-					par.currentTime, ros::Duration(5));
-
-			m_tfListener.lookupTransform(m_pcFrameId, m_ocFrameId,
-					par.currentTime, ocToPcTf);
-
-		} catch (tf::TransformException& ex) {
-			ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
-			PERROR( "Transform error.");
-			return;
-		}
 
 
-		// Get transformation matrix
-		pcl_ros::transformAsMatrix(ocToPcTf, m_pcOutTM);	// Sensor TF to defined base TF
-	}
-
-
-    m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
+//    m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
+    bool m_bTransformCamera = m_cameraFrameId != m_frameId;
 
     // If different frame id
     if( m_bTransformCamera )
     {
-
         // Some transforms
         tf::StampedTransform camToOcTf;
 
         // Get transforms
         try {
             // Transformation - from, to, time, waiting time
-            m_tfListener.waitForTransform(m_ocFrameId, m_cameraFrameId,
+            m_tfListener.waitForTransform(m_frameId, m_cameraFrameId,
                     par.currentTime, ros::Duration(5));
 
-            m_tfListener.lookupTransform(m_ocFrameId, m_cameraFrameId,
+            m_tfListener.lookupTransform(m_frameId, m_cameraFrameId,
                     par.currentTime, camToOcTf);
 
         } catch (tf::TransformException& ex) {
             ROS_ERROR_STREAM( m_name << ": Transform error - " << ex.what() << ", quitting callback");
-            PERROR( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_ocFrameId );
+            PERROR( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_frameId );
             return;
         }
  //       PERROR( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_ocFrameId );
@@ -227,11 +206,9 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
 
 	} // Iterate through octree
 
-	if( bTransformOutput )
-	{
-		// transform point cloud from sensor frame to the preset frame
-		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, m_pcOutTM);
-	}
+	// 2013/01/31 Majkl
+	m_data->header.frame_id = par.frameId;
+	m_data->header.stamp = par.currentTime;
 
 	m_DataTimeStamp = par.currentTime;
 

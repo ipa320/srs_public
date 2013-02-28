@@ -49,6 +49,8 @@ SpaceNavTeleop::SpaceNavTeleop() {
 
 	ros::param::param<bool>("~spacenav/instant_stop_enabled",params_.instant_stop_enabled,false);
 
+	ros::param::param<bool>("~unsafe_limiter",params_.unsafe_limiter,false);
+
 	ros::param::param<bool>("~use_rviz_cam",params_.use_rviz_cam,false);
 	ros::param::param<std::string>("~rviz_cam_link",params_.rviz_cam_link,"/rviz_cam");
 
@@ -111,6 +113,9 @@ SpaceNavTeleop::SpaceNavTeleop() {
 
 	if (params_.instant_stop_enabled) ROS_INFO("Instant stop feature enabled.");
 	else ROS_INFO("Instant stop feature disabled.");
+
+	if (params_.unsafe_limiter) ROS_INFO("Unsafe limiter activated.");
+	else ROS_INFO("Unsafe limiter NOT activated.");
 
 	ROS_INFO("Initiated...");
 
@@ -483,6 +488,14 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 
 			publishing_to_unsafe_ = true;
 			ROS_WARN("Publishing to unsafe topic!");
+
+		}
+
+		if (params_.unsafe_limiter) {
+
+			tw.angular.z = 0.0;
+			tw.linear.x = 0.0;
+			tw.linear.y /= 3.0;
 
 		}
 

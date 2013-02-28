@@ -104,12 +104,12 @@ class topics_bag():
         self.wanted_tfs = rospy.get_param('~wanted_tfs')
         self.trigger_topics = rospy.get_param("~trigger_topics")
         self.continuous_topics = rospy.get_param("~continuous_topics")
-        self.bag_name = rospy.get_param("~bag_name")
+        self.bag_path = rospy.get_param("~bag_path")
         
         # this creates the bagfile
         localtime = time.localtime(time.time())
-        filename = self.bag_name + "_" + str(localtime[0]) + "-" + str(localtime[1]) + "-" + str(localtime[2]) + "_" + str(localtime[3]) + "-" + str(localtime[4]) + "-" + str(localtime[5]) + ".bag"
-        filelocation = str(roslib.packages.get_pkg_dir(PKG) + "/data/" )
+        filename = str(localtime[0]) + "-" + str(localtime[1]) + "-" + str(localtime[2]) + "_" + str(localtime[3]) + "-" + str(localtime[4]) + "-" + str(localtime[5]) + ".bag"
+        filelocation = str(roslib.packages.get_pkg_dir(PKG) + "/data/" + self.bag_path )
         if(not os.path.exists(filelocation)):
             os.makedirs(filelocation)
         rospy.loginfo("Logging to " + filelocation + filename)

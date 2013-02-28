@@ -3,7 +3,10 @@
 
 	<!-- Run the SpaceNav teleop -->
 	<node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" output="screen"/>
-	<include file="$(find cob_spacenav_teleop)/launch/spacenav_teleop.launch" />
+	
+  <include file="$(find cob_spacenav_teleop)/launch/spacenav_teleop.launch">
+    <arg name="unsafe_limiter" value="true"/>
+  </include>
 
 	<!-- Run env. model voxel map "decompressor" node -->
 	<node pkg="srs_env_model" type="but_cpc_node" name="but_cpc_node" >

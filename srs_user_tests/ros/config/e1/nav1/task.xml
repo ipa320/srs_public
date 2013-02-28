@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="exp" default="e1"/>
-  <arg name="task" default="nav1"/>
-  <arg name="cond" default="b"/>
-  <arg name="sim" default="true"/>
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
+  <arg name="sim" default="false"/>
 
   <!-- node for publishing black image - for night task -->
   <node pkg="srs_user_tests" name="black_image_publisher" type="black_image_publisher" respawn="false" output="screen"/>

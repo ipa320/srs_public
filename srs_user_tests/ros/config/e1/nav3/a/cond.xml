@@ -2,6 +2,9 @@
 <launch>
 
   <arg name="points_in" default="/cam3d_throttled/depth_registered/points"/>
+  <arg name="sim"/>
+  <arg name="exp"/>
+  <arg name="task"/>
 
   <!-- 2D condition - there is nothing to be started -->
 

@@ -32,6 +32,11 @@
       <arg name="input_topic" value="/cam3d_throttled/depth_registered/points"/>
       <arg name="output_topic" value="/cam3d_throttled/depth_registered/points_noised"/>
     </include>
+
+    <!-- in case of simulation, start localization automatically -->
+    <include file="$(find srs_user_tests)/ros/launch/run_localization.launch">
+      <arg name="sim"  value="$(arg sim)"/>
+    </include>
   
   </group>
   
@@ -68,7 +73,7 @@
 
     <node name="logger" pkg="srs_user_tests" type="topics_bag.py" output="screen">
       <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/bag_record.yaml" command="load" />
-      <param name="bag_name" value="logs/$(arg id)/$(arg exp)/$(arg task)/$(arg cond)"/>
+      <param name="bag_name" value="logs/$(arg id)/$(arg exp)/$(arg task)/$(arg cond)/"/>
     </node>
   
   </group>

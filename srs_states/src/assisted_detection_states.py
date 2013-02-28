@@ -186,7 +186,7 @@ class user_intervention_on_detection(smach.State):
                 return outcome_user_intervention
         else:
             print "Cannot execute the user intervention, as no object has been detected!"
-            return 'give up' # !!! check this
+            return 'give_up' # !!! check this
         
     def answerObjectSrv(self,req):    
         global user_intervention_service_called

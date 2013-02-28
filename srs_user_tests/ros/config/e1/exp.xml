@@ -4,7 +4,7 @@
   <arg name="exp"/>
   <arg name="task"/>
   <arg name="cond"/>
-  <arg name="sim"/>
+  <arg name="sim" default="false"/>
   
   <!-- move robot to proper position -->
   <include file="$(find srs_user_tests)/ros/launch/move_robot.launch">

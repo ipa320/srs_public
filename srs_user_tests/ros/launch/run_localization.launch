@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <launch>
 
- <arg name="exp"/>
- <arg name="task"/>
  <arg name="sim" default="false"/>
+
+ <!-- robot args -->
+ <arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+ <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
 
  <arg name="pc1" default="cob3-3-pc1"/>
  <arg name="pc2" default="cob3-3-pc2"/>

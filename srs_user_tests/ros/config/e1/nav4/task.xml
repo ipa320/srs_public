@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="exp" default="e1"/>
-  <arg name="task" default="nav1"/>
-  <arg name="cond" default="b"/>
-  <arg name="sim" default="true"/>
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
+  <arg name="sim" default="false"/>
   
   <!-- spawn objects in simulation -->
   <group if="$(arg sim)">

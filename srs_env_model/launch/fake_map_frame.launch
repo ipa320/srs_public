@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- to have some TF -->
+  <node pkg="tf" type="static_transform_publisher" name="map_to_baselink_broadcaster" args="0 0 0 0 0 0 map base_link 100" />
+  <node pkg="tf" type="static_transform_publisher" name="map_to_basefootprint_broadcaster" args="0 0 0 0 0 0 map base_footprint 100" />
+
+  <!-- srs interaction primitives -->
+  <node name="interaction_primitives" pkg="srs_interaction_primitives" type="interaction_primitives_service_server">
+    <param name="allow_object_interaction" type="bool" value="true"/>
+  </node>
+
+</launch>

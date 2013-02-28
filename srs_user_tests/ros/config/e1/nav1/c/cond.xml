@@ -10,7 +10,7 @@
   <include file="$(find cob_3d_mapping_pipeline)/launch/mapping.launch">
     <arg name="points_in" value="$(arg points_in)"/>
   </include>
-  
+
   <!-- floor removal -->
   <include file="$(find cob_3d_mapping_semantics)/ros/launch/extract_structure.launch"/>
 
@@ -20,5 +20,8 @@
     <arg name="exp" value="$(arg exp)"/>
     <arg name="task" value="$(arg task)"/>
   </include>
+
+  <!-- start culling -->
+  <include file="$(find cob_3d_fov_segmentation)/ros/launch/fov_segmentation.launch"/>
 
 </launch>

@@ -45,9 +45,6 @@
   
     <!-- run on PC1 -->
     <machine name="pc1" address="$(arg pc1)" default="true" unless="$(arg sim)"/>
-	  
-	  <!-- Run the interactive teleop -->
-	  <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
 	
 	</group>
 	

@@ -117,7 +117,7 @@ class detect_object_assited(smach.State):
 
         detector_response=UiDetectorResponse() # cob_object_detection; see /srv/UiDetector.srv
         
-        detector_response.object_id = self.object_id
+        #detector_response.object_id = self.object_id #!!! check this!!!
         
         if len(res.object_list.detections) > 0:
             detector_response.object_list.header=res.object_list.header
@@ -154,59 +154,39 @@ class user_intervention_on_detection(smach.State):
         
         self.target_object_name=userdata.target_object_name
         self.object_list=userdata.target_object_list
-        
         #user_intervention_service_called == 2 # this is for testing
         print "###user_intervention_service_called ", user_intervention_service_called
         
-        global s2
-        global s3
-        s2 = rospy.Service('assisted_BBmove', BBMove, self.moveBBSrv)
-        print "###s2 is started..."
-        s3 = rospy.Service('assisted_answer', UiAnswer, self.answerObjectSrv) # a=array('i',[2,3,4,5]) => (a,0,s)
-        print "###s3 is started..."
-        
-        s2.spin()
-        s3.spin()
-        rospy.loginfo("assisted_answer: UiAnswer is ready.")
-        
-        if(user_intervention_service_called==1):
-            #userdata.object=self.object
-            #userdata.object_pose=self.object_poseanswer
-            #userdata.bb_pose=self.bbpose
-            
-            #this part code should be replaced by the user selection
-            # select nearest object in x-y-plane in head_camera_left_link
-            print "###len(self.object_list.detections) ", len(self.object_list.detections)
-            
-            if (len(self.object_list.detections) > 0):
-                min_dist = 2 # start value in m
-                for item in userdata.target_object_list.detections:
-                    dist = sqrt(item.pose.pose.position.x*item.pose.pose.position.x+item.pose.pose.position.y*item.pose.pose.position.y)
-                    if dist < min_dist:
-                        min_dist = dist
-                        obj = copy.deepcopy(item)
-                        
-                    global listener
-                    try:
-                        #transform object_pose into base_link
-                        object_pose_in = obj.pose # this is for testing 
-                        object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id) # it causes problems!!!
-                        object_pose_map = listener.transformPose("/map", object_pose_in)
-                    except rospy.ROSException, e:
-                        print "Transformation not possible: %s"%e
-                        return 'failed'
-                    userdata.object_pose=object_pose_map
-                    userdata.object=self.object
-                    return outcome_user_intervention
-            else:
-                print "Cannot execute the user intervention, as no object has been detected!"
+        if (len(self.object_list.detections) > 0):
+            global s2
+            global s3
+            s2 = rospy.Service('assisted_BBmove', BBMove, self.moveBBSrv)
+            print "###s2 is started..."
+            s3 = rospy.Service('assisted_answer', UiAnswer, self.answerObjectSrv) # a=array('i',[2,3,4,5]) => (a,0,s)
+            print "###s3 is started..."
+            s2.spin()
+            s3.spin()
+            rospy.loginfo("assisted_answer: UiAnswer is ready.")
+            if(user_intervention_service_called==1):
+                try:
+                    #transform object_pose into base_link
+                    object_pose_in = self.object.pose
+                    object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
+                    object_pose_map = listener.transformPose("/map", object_pose_in)
+                except rospy.ROSException, e:
+                    print "Transformation not possible: %s"%e
+                    return 'failed'
+                userdata.object_pose=object_pose_map
+                userdata.object=self.object
                 return outcome_user_intervention
-        
-        if(user_intervention_service_called==2): 
+            if(user_intervention_service_called==2): 
                 rospy.loginfo("assisted_answer: BBMove is ready.")
                 print self.bb_pose
                 userdata.bb_pose=[self.bb_pose.x,self.bb_pose.y,self.bb_pose.theta]
                 return outcome_user_intervention
+        else:
+            print "Cannot execute the user intervention, as no object has been detected!"
+            return 'give up' # !!! check this
         
     def answerObjectSrv(self,req):    
         global user_intervention_service_called

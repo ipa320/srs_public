@@ -70,7 +70,7 @@
 
     <node name="logger" pkg="srs_user_tests" type="topics_bag.py" output="screen">
       <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/bag_record.yaml" command="load" />
-      <param name="bag_name" value="logs/$(arg id)/$(arg exp)/$(arg task)/$(arg cond)/"/>
+      <param name="bag_path" value="logs/$(arg id)/$(arg exp)/$(arg task)/$(arg cond)/"/>
     </node>
   
   </group>

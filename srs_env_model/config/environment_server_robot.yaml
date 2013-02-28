@@ -40,7 +40,8 @@ ocmap_visualize_markers: false
 ocmap_filter_ground: false
 
 # Ground filter parameters - distance of points from the plane for RANSAC
-ocmap_ground_filter/distance: 0.04
+#ocmap_ground_filter/distance: 0.04
+ocmap_ground_filter/distance: 0.1
 
 # Ground plane angle
 ocmap_ground_filter/angle: 0.15
@@ -58,7 +59,8 @@ ocmap_filter_outdated: true
 pointcloud_frame_skip: 1
 
 # Point cloud limits in z-axis - minimum
-pointcloud_min_z: 0.1
+#pointcloud_min_z: 0.1
+pointcloud_min_z: 0.2
 
 # Point cloud limits in z-axis - maximum
 pointcloud_max_z: 4.0

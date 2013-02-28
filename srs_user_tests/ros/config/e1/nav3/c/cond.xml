@@ -13,12 +13,15 @@
 
   <!-- floor removal -->
   <include file="$(find cob_3d_mapping_semantics)/ros/launch/extract_structure.launch"/>
-  
+
   <!-- load pre-recorded map -->
   <include file="$(find srs_user_tests)/ros/launch/load-ipa-geomap.launch">
     <arg name="sim" value="$(arg sim)"/>
     <arg name="exp" value="$(arg exp)"/>
     <arg name="task" value="$(arg task)"/>
   </include>
+
+  <!-- start culling -->
+  <include file="$(find cob_3d_fov_segmentation)/ros/launch/fov_segmentation.launch"/>
 
 </launch>

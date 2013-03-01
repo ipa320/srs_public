@@ -33,7 +33,7 @@
   
   <node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" output="screen"/>
   
-  <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch" />
+  <!--include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch" /-->
   
   <include file="$(find srs_env_model_utils)/launch/image_flip.launch" />
   

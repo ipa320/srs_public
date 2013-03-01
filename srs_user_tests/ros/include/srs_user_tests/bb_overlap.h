@@ -72,6 +72,9 @@ class BBOverlap {
 
 		ros::Time last_log_out_;
 
+		bool bb_suc_;
+		bool gr_suc_;
+
 		double points_volume(const tpoints &p);
 
 		double rmin(double val1, double val2);

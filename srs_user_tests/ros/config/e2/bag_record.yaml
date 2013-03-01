@@ -1,0 +1,23 @@
+################
+# continuous recording
+continuous_topics: [/tf, /joint_states, /base_controller/command_safe, /base_controller/command, /spacenav/offset, /spacenav/rot_offset, /spacenav/joy, /interaction_primitives/feedback, /interaction_primitives/unknown_object/update/scale_changed, /planning_scene_warehouse_viewer_controls/update, /but_arm_manip/state]
+
+################
+# triggered recording
+trigger_topics: [/cam3d_throttled/rgb/image_color, /map, /ideal_bb_pose, /planning_scene_markers_array, /dsa_controller/tactile_data] 
+
+# setup time trigger
+trigger_timestep: 10
+
+# setup tf triggers
+trigger_record_translation: 0.5
+trigger_record_rotation: 0.1
+wanted_tfs:
+ - reference_frame: /map
+   target_frame: /base_link
+   trigger_record_translation: 0.5
+   trigger_record_rotation: 0.1
+ - reference_frame: /base_link
+   target_frame: /sdh_palm_link
+   trigger_record_translation: 0.1
+   trigger_record_rotation: 0.1

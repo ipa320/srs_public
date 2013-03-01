@@ -69,10 +69,10 @@ BBOverlap::BBOverlap() {
 
 			double tmp;
 			ros::param::param("~bb/success_min_dur",tmp,2.0);
-			bb_success_min_dur_ = ros::WallDuration(tmp);
+			bb_success_min_dur_ = ros::Duration(tmp);
 
 			ros::param::param("~gr/success_min_dur",tmp,2.0);
-			gr_success_min_dur_ = ros::WallDuration(tmp);
+			gr_success_min_dur_ = ros::Duration(tmp);
 
 			ros::param::param("~bb/success_val",tmp,0.8);
 			bb_success_val_ = tmp;
@@ -80,13 +80,13 @@ BBOverlap::BBOverlap() {
 			ros::param::param("~gr/success_val",tmp,0.05);
 			gr_success_val_ = tmp;
 
-			bb_success_first_ = ros::WallTime(0);
-			bb_success_last_ = ros::WallTime(0);
-			bb_success_tmp_ = ros::WallTime(0);
+			bb_success_first_ = ros::Time(0);
+			bb_success_last_ = ros::Time(0);
+			bb_success_tmp_ = ros::Time(0);
 
-			gr_success_first_ = ros::WallTime(0);
-			gr_success_last_ = ros::WallTime(0);
-			gr_success_tmp_ = ros::WallTime(0);
+			gr_success_first_ = ros::Time(0);
+			gr_success_last_ = ros::Time(0);
+			gr_success_tmp_ = ros::Time(0);
 
 			// TODO read this (+ pose) from params....
 			/*id_.bb.lwh.x = 0.2; // length
@@ -420,7 +420,7 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
 	bool suc = false;
 	double overlap = 0.0;
-	ros::WallTime now = ros::WallTime::now();
+	ros::Time now = ros::Time::now();
 
 	// we have received something...
 	if (im_.pose_rec && im_.scale_rec) {
@@ -596,12 +596,12 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
 		if (overlap > bb_success_val_) {
 
-			if (bb_success_tmp_ == ros::WallTime(0)) bb_success_tmp_ = now;
+			if (bb_success_tmp_ == ros::Time(0)) bb_success_tmp_ = now;
 			else {
 
-				if ((now - bb_success_tmp_) > ros::WallDuration(bb_success_min_dur_)) {
+				if ((now - bb_success_tmp_) > ros::Duration(bb_success_min_dur_)) {
 
-					if (bb_success_first_ == ros::WallTime(0)) bb_success_first_ = now;
+					if (bb_success_first_ == ros::Time(0)) bb_success_first_ = now;
 					bb_success_last_ = now;
 					suc = true;
 
@@ -611,7 +611,7 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
 		} else {
 
-			bb_success_tmp_ = ros::WallTime(0);
+			bb_success_tmp_ = ros::Time(0);
 
 		}
 
@@ -634,12 +634,12 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
 		if ( (gripper_dist < gr_success_val_) && arm_state_ok_) {
 
-			if (gr_success_tmp_ == ros::WallTime(0)) gr_success_tmp_ = now;
+			if (gr_success_tmp_ == ros::Time(0)) gr_success_tmp_ = now;
 			else {
 
-				if ((now - gr_success_tmp_) > ros::WallDuration(gr_success_min_dur_)) {
+				if ((now - gr_success_tmp_) > ros::Duration(gr_success_min_dur_)) {
 
-					if (gr_success_first_ == ros::WallTime(0)) gr_success_first_ = now;
+					if (gr_success_first_ == ros::Time(0)) gr_success_first_ = now;
 					gr_success_last_ = now;
 					gr_suc = true;
 
@@ -647,22 +647,22 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
 			}
 
-		} else gr_success_tmp_ = ros::WallTime(0);
+		} else gr_success_tmp_ = ros::Time(0);
 
 	}
 
-	if ( (ros::WallTime::now() - last_log_out_) > ros::WallDuration(2.0) ) {
+	if ( (ros::Time::now() - last_log_out_) > ros::Duration(2.0) ) {
 
 		//ROS_INFO("ID vol: %f, MAA vol: %f",points_volume(id_p),points_volume(imaa_p));
 
 		//ROS_INFO("dx: %f, dy: %f, dz: %f, vol: %f",dx,dy,dz,ov_p_vol);
 		//ROS_INFO("overlap: %f%% (%f / %f)",overlap*100.0,ov_p_vol,max_v);
 
-		boost::posix_time::ptime f_s = bb_success_first_.toBoost();
+		/*boost::posix_time::ptime f_s = bb_success_first_.toBoost();
 		boost::posix_time::ptime l_s = bb_success_last_.toBoost();
 
 		boost::posix_time::ptime f_gr = gr_success_first_.toBoost();
-		boost::posix_time::ptime l_gr = gr_success_last_.toBoost();
+		boost::posix_time::ptime l_gr = gr_success_last_.toBoost();*/
 
 		if (suc) printf("BB OVERLAP: %03.1f%% (success)\n",overlap*100);
 		else printf("BB OVERLAP: %03.1f%% (fail)\n",overlap*100);
@@ -671,17 +671,21 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 		double gdy = gripper_pose_.position.y - gripper_pose_curr_.position.y;
 		double gdz = gripper_pose_.position.z - gripper_pose_curr_.position.z;
 
-		printf("BB First success: %02d:%02d:%02d\n",f_s.time_of_day().hours(), f_s.time_of_day().minutes(), f_s.time_of_day().seconds());
-		printf("BB Last success: %02d:%02d:%02d\n", l_s.time_of_day().hours(), l_s.time_of_day().minutes(), l_s.time_of_day().seconds());
+		//printf("BB First success: %02d:%02d:%02d\n",f_s.time_of_day().hours(), f_s.time_of_day().minutes(), f_s.time_of_day().seconds());
+		//printf("BB Last success: %02d:%02d:%02d\n", l_s.time_of_day().hours(), l_s.time_of_day().minutes(), l_s.time_of_day().seconds());
+		printf("BB First success: %04d\n",(int)floor(bb_success_first_.toSec()));
+		printf("BB Last success: %04d\n", (int)floor(bb_success_last_.toSec()));
 
 		if (gr_suc) printf("GR Distance: %f [dx: %.2f, dy: %.2f, dz: %.2f] (success)\n",gripper_dist,gdx,gdy,gdz);
 		else printf("GR Distance: %f [dx: %.2f, dy: %.2f, dz: %.2f] (fail)\n",gripper_dist,gdx,gdy,gdz);
 
-		printf("GR First success: %02d:%02d:%02d\n",f_gr.time_of_day().hours(), f_gr.time_of_day().minutes(), f_gr.time_of_day().seconds());
-		printf("GR Last success: %02d:%02d:%02d\n", l_gr.time_of_day().hours(), l_gr.time_of_day().minutes(), l_gr.time_of_day().seconds());
+		/*printf("GR First success: %02d:%02d:%02d\n",f_gr.time_of_day().hours(), f_gr.time_of_day().minutes(), f_gr.time_of_day().seconds());
+		printf("GR Last success: %02d:%02d:%02d\n", l_gr.time_of_day().hours(), l_gr.time_of_day().minutes(), l_gr.time_of_day().seconds());*/
+		printf("GR First success: %04d\n",(int)floor(gr_success_first_.toSec()));
+		printf("GR Last success: %04d\n", (int)floor(gr_success_last_.toSec()));
 		printf("\n");
 
-		last_log_out_ = ros::WallTime::now();
+		last_log_out_ = ros::Time::now();
 
 
 	} // if

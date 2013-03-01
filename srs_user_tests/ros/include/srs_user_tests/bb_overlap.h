@@ -70,7 +70,7 @@ class BBOverlap {
 
 		tf::TransformListener tfl_;
 
-		ros::WallTime last_log_out_;
+		ros::Time last_log_out_;
 
 		double points_volume(const tpoints &p);
 
@@ -95,16 +95,16 @@ class BBOverlap {
 
 		double bb_success_val_;
 
-		ros::WallDuration bb_success_min_dur_;
-		ros::WallDuration gr_success_min_dur_;
+		ros::Duration bb_success_min_dur_;
+		ros::Duration gr_success_min_dur_;
 
-		ros::WallTime bb_success_first_;
-		ros::WallTime bb_success_last_;
-		ros::WallTime bb_success_tmp_;
+		ros::Time bb_success_first_;
+		ros::Time bb_success_last_;
+		ros::Time bb_success_tmp_;
 
-		ros::WallTime gr_success_first_;
-		ros::WallTime gr_success_last_;
-		ros::WallTime gr_success_tmp_;
+		ros::Time gr_success_first_;
+		ros::Time gr_success_last_;
+		ros::Time gr_success_tmp_;
 
 		ros::Subscriber sub_im_feedback_;
 		ros::Subscriber sub_im_scale_;

@@ -6,4 +6,4 @@ int32 id
 std_msgs/String action
 ---
 #response to user when action is finish
-std_msgs/String message
+std_msgs/String message      #succeeded, give_up or retry

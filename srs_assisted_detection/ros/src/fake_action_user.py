@@ -17,12 +17,13 @@ from array import array
 def user_msg():    
     rospy.wait_for_service('assisted_answer')
     s=String()
-    s.data='test'
+    s.data='succeeded'   #succeeded, give_up or retry
     try:
-        add_two_ints = rospy.ServiceProxy('assisted_answer', UiAnswer)
-        rospy.loginfo("client")
+        user_intervention_on_detection = rospy.ServiceProxy('assisted_answer', UiAnswer)
+        rospy.loginfo("this is fake_action_user")
         a=array('i',[2,3,4,5])
-        resp1 = add_two_ints(a,0,s)
+        resp1 = user_intervention_on_detection(a,0,s)   # detected object 0 has been succeeded
+        #resp1 = user_intervention_on_detection(a,7,s)   # detected object 7 OUT OF INDEX
         rospy.loginfo(resp1)
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e

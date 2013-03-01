@@ -1,5 +1,10 @@
 #name of object that the user want. It is clear give him all
-std_msgs/String object_name
+std_msgs/String object_name     
+#Renxi Above is useless, it will be overwritten by the input key of the detection state
+#Maybe it should be set as response instead of request
 ---
 #list of the objects
 cob_object_detection_msgs/DetectionArray object_list
+
+#Object ID
+int32 object_id

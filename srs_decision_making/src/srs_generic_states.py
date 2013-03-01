@@ -142,17 +142,30 @@ class intervention_base_pose(smach.State):
                     list_out.insert(2, float(listtmp[2]))            
                     userdata.intermediate_pose = list_out  
                     """
-                    userdata.intermediate_pose = eval(s.solution.__str__())
-                    #rospy.loginfo("New intermediate target is :%s", list_out)    
+                    #userdata.intermediate_pose = eval(s.solution.__str__())
+                    
+                    if s.solution.find("[") == -1:
+                        # not a list (the position is home order etc.)
+                        userdata.intermediate_pose = s.solution.__str__()
+                    else:
+                        # list [1, 2, 3] etc.
+                        try:
+                            userdata.intermediate_pose = eval(s.solution.__str__())
+                        except Exception, e:
+                            rospy.INFO("%s", e)
+                            return 'failed'
+                    
                     return 'retry'
+                    #rospy.loginfo("New intermediate target is :%s", list_out)    
+                    
             return 'failed'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
             """
-            call srs knowledge ros service for a new scanning or grasping position
+            srs knowledge service would find a new scanning or grasping position automatically
             """
-            userdata.intermediate_pose = "kitchen"   
+            #userdata.intermediate_pose = "kitchen"   
             return 'no_more_retry'
 
 #################################################################################
@@ -259,7 +272,7 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','full_grasp', 'put_on_tray','env_update'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','full_grasp', 'put_on_tray','env_update','reset_robot_after_impossible_task'],
                              io_keys=['target_base_pose',
                                         'target_object_name',
                                         'target_object_pose',
@@ -323,10 +336,10 @@ class semantic_dm(smach.State):
             feedback_in_json = '{}'
             if not current_task_info.last_step_info:
                 ## first action. does not matter this. just to keep it filled
-                resultLastStep = 0
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_SUCCESS
             elif current_task_info.last_step_info and current_task_info.last_step_info[len_step_info - 1].outcome == 'succeeded':
                 # convert to the format that knowledge_ros_service understands
-                resultLastStep = 0
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_SUCCESS
                 if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_srs_detection':
                     print userdata.target_object_pose
                     #feedback = pose_to_list(userdata)
@@ -335,11 +348,11 @@ class semantic_dm(smach.State):
                     #rospy.loginfo ("Detected target_object is: %s", userdata.target_object)    
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
                 print 'Result return not_completed'
-                resultLastStep = 1
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_NOT_COMPLETED
 
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'failed':
                 print 'Result return failed'
-                resultLastStep = 2
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_FAIL
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stopped' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preempted':
                 print 'task stopped'
                 #nextStep = 'stop'
@@ -390,8 +403,11 @@ class semantic_dm(smach.State):
                 print 'succeeded'
                 return 'succeeded'
             elif resp1.nextAction.status == -1:
-                print 'failed'
-                return 'failed'
+                #print 'failed'
+                #return 'failed'
+                print 'impossible task'
+                nextStep = 'reset_robot_after_impossible_task'
+                return nextStep
             
             print resp1.nextAction
             # else should be 0: then continue executing the following
@@ -563,7 +579,8 @@ class semantic_dm(smach.State):
                 
                 else:
                     print 'No valid action'
-                    nextStep = 'failed'
+                    #nextStep = 'failed'
+                    nextStep = 'reset_robot_after_impossible_task'
                     return nextStep
                 
                     
@@ -711,28 +728,86 @@ class prepare_robot(smach.State):
         
         return 'succeeded'
         
-        
-        """
-        
-        
-        handle_torso = sss.move("torso", "home", False)
-        handle_tray = sss.move("tray", "down", False)
-        handle_arm = sss.move("arm", "folded", False)
-        handle_sdh = sss.move("sdh", "cylclosed", False)
-        handle_head = sss.move("head", "front", False)
-    
-        
-        # wait for initial movements to finish
-        handle_torso.wait()
-        handle_tray.wait()
-        handle_arm.wait()
-        handle_sdh.wait()
-        handle_head.wait()
-        
-        
+#prepare the robot for the task
+class reset_robot(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['completed', 'failed'])
+        #self.count=0
 
-        return 'succeeded'
-        """
+        
+    def execute(self,userdata):
+               
+        last_step_info = xmsg.Last_step_info()
+        last_step_info.step_name = "reset_robot"
+        last_step_info.outcome = 'succeeded'
+        last_step_info.semi_autonomous_mode = False
+        
+        #recording the information of last step
+        global current_task_info
+        current_task_info.last_step_info.append(last_step_info)
+                
+        #current_task_info.session_id = 123456
+        
+        #initialisation of the robot
+        # move to initial positions
+        global sss
+        
+        sss.set_light("yellow")
+  
+
+        # reset components
+        handle_head = sss.move("head","front",False)
+        #if handle_head.get_error_code() != 0:
+        #    return 'failed'
+
+        handle_torso = sss.move("torso","home",False)
+        #if handle_torso.get_error_code() != 0:
+        #    return 'failed'
+        
+        sss.sleep(2)
+        sss.say(["The existing task can not be completed, I will reset myself now"],False)
+
+        
+        # check if tray service is available
+        service_full_name = '/tray_monitor/occupied'
+        try:
+            #rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+            rospy.wait_for_service(service_full_name,3)
+        except rospy.ROSException, e:
+            error_message = "%s"%e
+            rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+            return 'failed'
+
+        # check if service can be called
+        try:
+            is_ocuppied = rospy.ServiceProxy(service_full_name,Trigger)
+            resp = is_ocuppied()
+        except rospy.ServiceException, e:
+            error_message = "%s"%e
+            rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
+            return 'failed'
+        
+        #if tray is not occupied
+        if resp != True :
+            handle_tray = sss.move("tray","down")
+            #if handle_tray.get_error_code() != 0:
+            #    return 'failed'
+
+        handle_sdh = sss.move("sdh","home")
+        #if handle_sdh.get_error_code() != 0:
+        #    return 'failed'
+
+
+        handle_arm = sss.move("arm","folded")
+        #if handle_arm.get_error_code() != 0:
+        #    return 'failed'
+        handle_arm.wait()
+        
+        # set light
+        sss.set_light("green")
+        
+        return 'completed'        
+        
 
 def pose_to_list(userdata):
     # userdata.target_object_name

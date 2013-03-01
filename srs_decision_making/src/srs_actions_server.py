@@ -298,7 +298,7 @@ class SRS_DM_ACTION(object):
         self.temp.userdata.target_base_pose=Pose2D()
         self.temp.userdata.target_object_name=''
         self.temp.userdata.target_object_pose=Pose()
-        self.temp.userdata.the_target_object_found = 'sadsadsadsadsda'
+        self.temp.userdata.the_target_object_found = ''
         self.temp.userdata.verified_target_object_pose=Pose()
         
         #session id for current task, on id per task.
@@ -326,7 +326,8 @@ class SRS_DM_ACTION(object):
                                                 'simple_grasp':'SM_OLD_GRASP',
                                                 'full_grasp':'SM_NEW_GRASP',
                                                 'put_on_tray':'SM_PUT_ON_TRAY',
-                                                'env_update':'SM_ENV_UPDATE'},
+                                                'env_update':'SM_ENV_UPDATE',
+                                                'reset_robot_after_impossible_task':'RESET_ROBOT_AFTER_IMPOSSIBLE_TASK'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
                                                'target_object_pose':'target_object_pose',
@@ -386,7 +387,10 @@ class SRS_DM_ACTION(object):
                                    remapping={'target_object_pose':'target_object_pose',
                                               'target_object_hh_id':'target_object_hh_id',
                                               'verified_target_object_pose':'verified_target_object_pose'})
-
+            
+            smach.StateMachine.add('RESET_ROBOT_AFTER_IMPOSSIBLE_TASK', reset_robot(),
+                                   transitions={'completed':'task_aborted', 'failed':'task_aborted'},
+                                   remapping={'grasp_categorisation':'grasp_categorisation' })
                         
 
         return self.temp
@@ -521,9 +525,15 @@ class SRS_DM_ACTION(object):
                     ## read parameter server
                     grasp_type = rospy.get_param("srs/grasping_type")
                     tasks.tasks_list[0].addItem('grasping_type', grasp_type)
-
-                    req.json_parameters = tasks.tasks_list[0].task_json_string
                     
+                    # if the task list contains multiple tasks,
+                    # we can use the task id to specify them
+                    # and the sequence of task execution can be controlled here  
+                    req.json_parameters = tasks.tasks_list[0].task_json_string 
+                    #req.json_parameters = tasks.tasks_list[1].task_json_string
+                    
+                    print "###req.json_parameters", req.json_parameters 
+                    #print "###tasks.tasks_list[1]", tasks.tasks_list[1]
             res = requestNewTask(req)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
             print 'Task created with session id of: ' + str(res.sessionId)

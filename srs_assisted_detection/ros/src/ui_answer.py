@@ -22,13 +22,8 @@ def answerObjectSrv(req):
 
     global func
     func=1
-        
-
     #save
-    
-        
     #send action only grasp at the moment   
-  
     global pose
     pose.position.x=detect.object_list.detections[req.id].pose.pose.position.x
     pose.position.y=detect.object_list.detections[req.id].pose.pose.position.y
@@ -47,9 +42,6 @@ def answerObjectSrv(req):
     moveBB=UiAnswerResponse()
     moveBB.message.data='get data waiting for action'
     return moveBB
-
-        
-        
         
 def moveBBSrv(req):
     rospy.loginfo("Get BB information")
@@ -69,10 +61,6 @@ def moveBBSrv(req):
     s2.shutdown()
     return moveBB
     
-    
-    
-    
-    
 def assisted_answer_server(detections):
     #rospy.init_node('asisted_answer_server')
     global detect
@@ -86,5 +74,8 @@ def assisted_answer_server(detections):
     s.spin()
     s2.spin()
     return [func,pose,action]
+
+
 if __name__ == "__main__":
     assisted_answer_server('test')
+    

@@ -26,20 +26,23 @@ def detectObjectSrv(req):
             roi=RegionOfInterest()
             resp1=srv_get_Objects(req.object_name,roi)
             #rospy.loginfo(resp1.object_list.detections[0])
-           
-
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
             
-        global detector_response
+        # detector_response => 
+        # list of the objects
+        # cob_object_detection_msgs/DetectionArray object_list
+        global detector_response # detector_response=UiDetectorResponse()
         if len(resp1.object_list.detections) > 0:
             detector_response.object_list.header=resp1.object_list.header
             for x in range(len(resp1.object_list.detections)):
                 detector_response.object_list.detections.insert(x,resp1.object_list.detections[x])
-        
-        s.shutdown()
-        return detector_response  
-
+            s.shutdown()
+            return detector_response
+        else:
+            s.shutdown()
+            rospy.loginfo("There is no detected object!")
+            return detector_response
 
 def asisted_Detection_server():
  #   rospy.init_node('asisted_Detection_server')

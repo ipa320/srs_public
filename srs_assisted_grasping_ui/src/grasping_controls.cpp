@@ -339,8 +339,7 @@ CButGraspingControls::CButGraspingControls(wxWindow *parent, const wxString& tit
     t_gui_update = boost::thread(&CButGraspingControls::GuiUpdateThread,this);
 
     //gui_update_timer_ = nh.createTimer(ros::Duration(0.5),&CButGraspingControls::timerCallback,this);
-
-    tact_sub_  = nh.subscribe("/sdh_controller/tactile_data_filtered", 10, &CButGraspingControls::TactileDataCallback,this);
+    tact_sub_  = nh.subscribe("/dsa_controller/tactile_data_filtered", 10, &CButGraspingControls::TactileDataCallback,this);
 
     service_grasping_allow_ = nh.advertiseService(SRV_ALLOW,&CButGraspingControls::GraspingAllow,this);
 

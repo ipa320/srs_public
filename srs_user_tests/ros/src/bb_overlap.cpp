@@ -39,6 +39,9 @@ BBOverlap::BBOverlap() {
 
 			im_.pose_rec = false;
 			im_.scale_rec = false;
+			
+			gr_suc_ = false;
+			bb_suc_ = false;
 
 			ros::param::param("~publish_debug_markers",publish_debug_markers_,true);
 
@@ -597,21 +600,27 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 		if (overlap > bb_success_val_) {
 
 			if (bb_success_tmp_ == ros::Time(0)) bb_success_tmp_ = now;
-			else {
 
-				if ((now - bb_success_tmp_) > ros::Duration(bb_success_min_dur_)) {
+			if ((now - bb_success_tmp_) > ros::Duration(bb_success_min_dur_)) {
 
-					if (bb_success_first_ == ros::Time(0)) bb_success_first_ = now;
-					bb_success_last_ = now;
-					suc = true;
+				if (bb_success_first_ == ros::Time(0)) bb_success_first_ = now;
+				
+				suc = true;
+
+				if (bb_suc_ == false) {
+					
+				  bb_success_last_ = now;
+				  bb_suc_ = true;	
 
 				}
 
 			}
 
+
 		} else {
 
 			bb_success_tmp_ = ros::Time(0);
+			bb_suc_ = false;
 
 		}
 
@@ -635,19 +644,31 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 		if ( (gripper_dist < gr_success_val_) && arm_state_ok_) {
 
 			if (gr_success_tmp_ == ros::Time(0)) gr_success_tmp_ = now;
-			else {
 
 				if ((now - gr_success_tmp_) > ros::Duration(gr_success_min_dur_)) {
 
 					if (gr_success_first_ == ros::Time(0)) gr_success_first_ = now;
-					gr_success_last_ = now;
+					
 					gr_suc = true;
+					
+					if (gr_suc_ == false) {
+					
+				  gr_success_last_ = now;
+				  gr_suc_ = true;	
 
 				}
 
-			}
+				}
 
-		} else gr_success_tmp_ = ros::Time(0);
+
+
+		} else {
+		
+		  
+		  gr_success_tmp_ = ros::Time(0);
+		  gr_suc_ = false;
+		  
+		  }
 
 	}
 

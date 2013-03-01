@@ -48,6 +48,10 @@ Autonomous\ Navi\ Path.Enabled=0
 Autonomous\ Navi\ Path.Topic=/move_base/DWAPlannerROS/global_plan
 Collision\ Indicator.Enabled=1
 Collision\ Indicator.Marker\ Topic=/collision_velocity_filter/velocity_limited_marker
+Geomap\ Lines.Enabled=0
+Geomap\ Lines.Marker\ Topic=/geometry_map/geometry_marker
+Geomap\ Planes.Enabled=0
+Geomap\ Planes.Marker\ Array\ Topic=/shape_visualization_fov/marker_array
 In-Scene\ Teleop.Enabled=0
 In-Scene\ Teleop.Show\ Axes=0
 In-Scene\ Teleop.Show\ Descriptions=1
@@ -292,7 +296,7 @@ Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
 Camera\ Config=1.011 1.57898 2.58019 0.0439039 1.69889 -0.241965
-Property\ Grid\ State=selection=3D Global Voxel Map.Enabled;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=150,301;ispageselected=1
+Property\ Grid\ State=selection=Geomap Lines.Enabled;expanded=Kinect FOV.Enabled.Kinect FOV.StatusTopStatus,3D Global Voxel Map.Enabled.3D Global Voxel Map.StatusTopStatus,Geomap Planes.Enabled.Geomap Planes.Namespaces,Geomap Lines.Enabled.Geomap Lines.Namespaces,Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=181,363;ispageselected=1
 [Display0]
 Name=Robot
 Package=rviz
@@ -330,22 +334,30 @@ Name=3D Global Voxel Map
 Package=srs_env_model_ui
 ClassName=CButPointCloud
 [Display9]
+Name=Geomap Planes
+Package=rviz
+ClassName=rviz::MarkerArrayDisplay
+[Display10]
+Name=Geomap Lines
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display11]
 Name=Collision Indicator
 Package=rviz
 ClassName=rviz::MarkerDisplay
-[Display10]
+[Display12]
 Name=RViz Camera Pose Publisher
 Package=srs_env_model_ui
 ClassName=CCameraPublisherDisplay
-[Display11]
+[Display13]
 Name=Autonomous Navi Path
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display12]
+[Display14]
 Name=In-Scene Teleop
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display13]
+[Display15]
 Name=Inflated Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay

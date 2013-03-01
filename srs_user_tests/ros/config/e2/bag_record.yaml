@@ -4,7 +4,7 @@ continuous_topics: [/tf, /joint_states, /base_controller/command_safe, /base_con
 
 ################
 # triggered recording
-trigger_topics: [/cam3d_throttled/rgb/image_color, /map, /ideal_bb_pose, /planning_scene_markers_array, /dsa_controller/tactile_data] 
+trigger_topics: [/cam3d_throttled/rgb/image_color, /cam3d_throttled/depth_registered/points, /map, /ideal_bb_pose, /planning_scene_markers_array, /dsa_controller/tactile_data] 
 
 # setup time trigger
 trigger_timestep: 10

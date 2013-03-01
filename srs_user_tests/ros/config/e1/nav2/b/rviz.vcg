@@ -297,7 +297,7 @@ Robot\:\ Robot\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.531 5.99264 12.8264 -4.94971 -2.60313 5.75931
+Camera\ Config=1.036 3.54263 6.02731 3.78223 0.302807 -2.35907
 Property\ Grid\ State=selection=Autonomous Navi Path.Enabled;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=248,496;ispageselected=1
 [Display0]
 Name=RGB Video

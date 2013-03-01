@@ -48,7 +48,6 @@ Autonomous\ Navi\ Path.Enabled=0
 Autonomous\ Navi\ Path.Topic=/move_base/DWAPlannerROS/global_plan
 Collision\ Indicator.Enabled=1
 Collision\ Indicator.Marker\ Topic=/collision_velocity_filter/velocity_limited_marker
-Collision\ Indicator.cob_velocity_limited_marker=1
 In-Scene\ Teleop.Enabled=0
 In-Scene\ Teleop.Show\ Axes=0
 In-Scene\ Teleop.Show\ Descriptions=1
@@ -82,11 +81,11 @@ Kinect\ FOV..IntensityChannel\ Name=z
 Kinect\ FOV..IntensityMax\ ColorR=1
 Kinect\ FOV..IntensityMax\ ColorG=1
 Kinect\ FOV..IntensityMax\ ColorB=1
-Kinect\ FOV..IntensityMax\ Intensity=3.44
+Kinect\ FOV..IntensityMax\ Intensity=4.977
 Kinect\ FOV..IntensityMin\ ColorR=0
 Kinect\ FOV..IntensityMin\ ColorG=0
 Kinect\ FOV..IntensityMin\ ColorB=0
-Kinect\ FOV..IntensityMin\ Intensity=1.396
+Kinect\ FOV..IntensityMin\ Intensity=1.232
 Kinect\ FOV..IntensityUse\ full\ RGB\ spectrum=0
 Laser\ Scan\ Front.Alpha=1
 Laser\ Scan\ Front.Billboard\ Size=0.1
@@ -298,8 +297,8 @@ Robot\:\ Robot\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.866 0.734435 4.35699 -1.44245 -0.509746 -1.45553
-Property\ Grid\ State=selection=;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=150,301;ispageselected=1
+Camera\ Config=0.996 2.74444 4.28263 1.74807 0.548095 -8.40173
+Property\ Grid\ State=selection=;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=248,496;ispageselected=1
 [Display0]
 Name=RGB Video
 Package=rviz

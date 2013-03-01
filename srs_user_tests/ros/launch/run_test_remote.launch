@@ -6,7 +6,7 @@
   <arg name="cond"/>
   <arg name="sim" default="false"/>
   <arg name="log" default="true"/>
-  <arg name="id" default="0"/> <!-- ID of participant -->
+  <arg name="id"/> <!-- ID of participant -->
   
   <!--arg name="pc1" default="cob3-3-pc1"/>
   <arg name="pc2" default="cob3-3-pc2"/>

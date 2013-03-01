@@ -13,7 +13,7 @@
       <param name="torso" value="back" type="string"/>
     </node>
     
-    <node name="move_robot" pkg="srs_user_tests" type="move_robot_sim_e0man1.py" respawn="false" output="screen">
+    <node name="move_robot_e0man1" pkg="srs_user_tests" type="move_robot_sim_e0man1.py" respawn="false" output="screen">
       <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/robot_position_sim.yaml" command="load"/>
     </node>
 

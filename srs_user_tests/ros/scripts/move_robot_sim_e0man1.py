@@ -38,7 +38,7 @@ from std_msgs.msg import Empty as EmptyMsg
 def main():
     rospy.init_node('move_robot_to_given_place')
     while not rospy.is_shutdown():
-        rospy.sleep(10)
+        rospy.sleep(60)
         print "reposition robot now"
         reposition_robot()
 

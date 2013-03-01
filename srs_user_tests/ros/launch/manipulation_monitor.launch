@@ -10,7 +10,7 @@
   <node pkg="srs_user_tests" name="bb_overlap_node" type="bb_overlap_node" output="screen">
 
     <!-- value defines what will be considered as sucessful bb placement (overlap) -->
-    <param name="bb/success_val" type="double" value="0.85"/>
+    <param name="bb/success_val" type="double" value="0.40"/>
     
     <param name="gr/success_val" type="double" value="0.05"/>
 

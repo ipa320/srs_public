@@ -2,8 +2,8 @@
 <launch>
 
   <arg name="sim" default="false"/>
-  <arg name="exp" default="e1"/>
-  <arg name="task" default="nav1"/>
+  <arg name="exp"/>
+  <arg name="task"/>
 
   <group if="$(arg sim)"> 
     <node name="move_robot" pkg="srs_user_tests" type="move_robot_sim.py" respawn="false" output="screen">

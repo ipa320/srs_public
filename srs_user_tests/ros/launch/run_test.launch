@@ -45,9 +45,6 @@
   
     <!-- run on PC1 -->
     <machine name="pc1" address="$(arg pc1)" default="true" unless="$(arg sim)"/>
-	  
-	  <!-- Run the interactive teleop -->
-	  <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
 	
 	</group>
 	
@@ -72,7 +69,7 @@
     <machine name="pc2" address="$(arg pc2)" default="true" unless="$(arg sim)"/>
 
     <node name="logger" pkg="srs_user_tests" type="topics_bag.py" output="screen">
-      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/bag_record.yaml" command="load" />
+      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/bag_record.yaml" command="load" />
       <param name="bag_path" value="logs/$(arg id)/$(arg exp)/$(arg task)/$(arg cond)/"/>
     </node>
   

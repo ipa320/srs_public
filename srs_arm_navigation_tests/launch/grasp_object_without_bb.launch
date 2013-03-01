@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="sim" default="false"/>
+
+  <!-- this call states for assisted grasping of unknown object -->
+  <!-- grasping_unknown_object_{test,robot}.launch must be started in advance -->
+  <node name="fake_dm_grasp" pkg="srs_arm_navigation_tests" type="grasp_unknown_object_no_bb.py" output="screen">
+    
+    <rosparam command="load" file="$(find srs_arm_navigation_tests)/config/params.yaml" />
+    
+    <!-- load predefined position of BB -->
+    <rosparam if="$(arg sim)" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/bb_position_sim.yaml" command="load" />
+
+    <rosparam unless="$(arg sim)" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/bb_position.yaml" command="load" />
+    
+  </node>
+
+</launch>

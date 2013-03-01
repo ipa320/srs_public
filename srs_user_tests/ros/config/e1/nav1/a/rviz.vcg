@@ -297,7 +297,7 @@ Robot\:\ Robot\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.511 5.47264 15.3627 -10.199 -0.119931 10.3025
+Camera\ Config=0.996 2.74444 4.28263 1.74807 0.548095 -8.40173
 Property\ Grid\ State=selection=;expanded=3D Global Voxel Map.Enabled.3D Global Voxel Map.StatusTopStatus,Kinect FOV.Enabled.Kinect FOV.StatusTopStatus,Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=150,301;ispageselected=1
 [Display0]
 Name=RGB Video

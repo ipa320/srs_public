@@ -56,22 +56,28 @@ BBOverlap::BBOverlap() {
 
 			}
 
-			ros::param::param("~bb/lwh/x",id_.bb.lwh.x,0.2);
-			ros::param::param("~bb/lwh/y",id_.bb.lwh.y,0.1);
-			ros::param::param("~bb/lwh/z",id_.bb.lwh.z,0.4);
+			ros::param::param("~bb/lwh/x",id_.bb.lwh.x,0.0);
+			ros::param::param("~bb/lwh/y",id_.bb.lwh.y,0.0);
+			ros::param::param("~bb/lwh/z",id_.bb.lwh.z,0.0);
 
-			ros::param::param("~bb/position/x",id_.bb.pose.position.x,-0.15);
-			ros::param::param("~bb/position/y",id_.bb.pose.position.y,0.6);
-			ros::param::param("~bb/position/z",id_.bb.pose.position.z,0.5);
+			ros::param::param("~bb/position/x",id_.bb.pose.position.x,0.0);
+			ros::param::param("~bb/position/y",id_.bb.pose.position.y,0.0);
+			ros::param::param("~bb/position/z",id_.bb.pose.position.z,0.0);
 
-			ros::param::param("~bb/orientation/x",id_.bb.pose.orientation.x,-8.79007958941e-07);
-			ros::param::param("~bb/orientation/y",id_.bb.pose.orientation.y,3.27846130193e-07);
-			ros::param::param("~bb/orientation/z",id_.bb.pose.orientation.z,0.429966424682);
-			ros::param::param("~bb/orientation/w",id_.bb.pose.orientation.w,0.90284486721);
+			ros::param::param("~bb/orientation/x",id_.bb.pose.orientation.x,0.0);
+			ros::param::param("~bb/orientation/y",id_.bb.pose.orientation.y,0.0);
+			ros::param::param("~bb/orientation/z",id_.bb.pose.orientation.z,0.0);
+			ros::param::param("~bb/orientation/w",id_.bb.pose.orientation.w,1.0);
 
 			ros::param::param("~gripper/position/x",gripper_pose_.position.x,0.0);
 			ros::param::param("~gripper/position/y",gripper_pose_.position.y,0.0);
 			ros::param::param("~gripper/position/z",gripper_pose_.position.z,0.0);
+
+			// relative to absolute position
+			gripper_pose_.position.x += id_.bb.pose.position.x;
+			gripper_pose_.position.y += id_.bb.pose.position.y;
+			gripper_pose_.position.z += id_.bb.pose.position.z;
+			//gripper_pose_.position.z += id_.bb.lwh.z/2.0;
 
 			double tmp;
 			ros::param::param("~bb/success_min_dur",tmp,2.0);
@@ -127,7 +133,9 @@ BBOverlap::BBOverlap() {
 			id_.marker.scale.z = id_.bb.lwh.z;
 
 
-			gripper_marker_.color.g = 1.0;
+			gripper_marker_.color.r = 1.0;
+			gripper_marker_.color.g = 140.0/255.0;
+			gripper_marker_.color.b = 0.0;
 			gripper_marker_.color.a = 0.6;
 			gripper_marker_.header.frame_id = "/map";
 			gripper_marker_.pose = gripper_pose_;

@@ -92,6 +92,7 @@ def main():
     print "  x: " + str(ret.pose.position.x)
     print "  y: " + str(ret.pose.position.y)
     print "  z: " + str(ret.pose.position.z - (ret.scale.z/2.0))
+    #print "  z: " + str(ret.pose.position.z)
     
     print " orientation:"
     print "  x: " + str(ret.pose.orientation.x)

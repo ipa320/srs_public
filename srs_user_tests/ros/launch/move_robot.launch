@@ -11,10 +11,10 @@
     </node>
   </group>
 
-  <group unless="$(arg sim)"> 
+  <!--group unless="$(arg sim)"> 
     <node name="move_robot" pkg="srs_user_tests" type="move_robot.py" respawn="false" output="screen">
       <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/robot_position.yaml" command="load"/>
     </node>
-  </group>
+  </group-->
 
 </launch>

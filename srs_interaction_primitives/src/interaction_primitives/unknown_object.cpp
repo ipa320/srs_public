@@ -45,10 +45,10 @@ UnknownObject::UnknownObject(InteractiveMarkerServerPtr server, string frame_id,
 //	color_.g = 0.5;
 //	color_.b = 0.6;
 //	color_.a = 1.0;
-	color_.r = 0.8;
+	color_.r = 0.85;
 	color_.g = 0.85;
 	color_.b = 0.9;
-	color_.a = 0.5;
+	color_.a = 0.7;
 
 	show_movement_control_ = show_scale_control_ = show_rotation_control_ = show_measure_control_ = show_description_control_ = false;
 	use_material_ = true;
@@ -270,7 +270,8 @@ void UnknownObject::createColorBox()
   box_.pose.position.z = 0;
   box_.scale = scale_;
   box_.color = color_;
-  box_.color.a = 0.5;
+//  box_.color.a = 0.5;
+  box_.color.a = 0.75;
 
   // Wireframe model - disabled for now, it doesn't scale properly...
   wire_.points.clear();

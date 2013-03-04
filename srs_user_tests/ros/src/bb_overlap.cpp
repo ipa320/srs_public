@@ -37,8 +37,14 @@ BBOverlap::BBOverlap() {
 			id_.pub = nh.advertise<visualization_msgs::Marker>("ideal_bb_pose",1);
 			gripper_pub_ = nh.advertise<visualization_msgs::Marker>("gripper_target_pose",1);
 
+
+			srv_move_ = nh.advertiseService("move_bb", &BBOverlap::moveX,this);
+
 			im_.pose_rec = false;
 			im_.scale_rec = false;
+			
+			gr_suc_ = false;
+			bb_suc_ = false;
 
 			ros::param::param("~publish_debug_markers",publish_debug_markers_,true);
 
@@ -50,29 +56,35 @@ BBOverlap::BBOverlap() {
 
 			}
 
-			ros::param::param("~bb/lwh/x",id_.bb.lwh.x,0.2);
-			ros::param::param("~bb/lwh/y",id_.bb.lwh.y,0.1);
-			ros::param::param("~bb/lwh/z",id_.bb.lwh.z,0.4);
+			ros::param::param("~bb/lwh/x",id_.bb.lwh.x,0.0);
+			ros::param::param("~bb/lwh/y",id_.bb.lwh.y,0.0);
+			ros::param::param("~bb/lwh/z",id_.bb.lwh.z,0.0);
 
-			ros::param::param("~bb/position/x",id_.bb.pose.position.x,-0.15);
-			ros::param::param("~bb/position/y",id_.bb.pose.position.y,0.6);
-			ros::param::param("~bb/position/z",id_.bb.pose.position.z,0.5);
+			ros::param::param("~bb/position/x",id_.bb.pose.position.x,0.0);
+			ros::param::param("~bb/position/y",id_.bb.pose.position.y,0.0);
+			ros::param::param("~bb/position/z",id_.bb.pose.position.z,0.0);
 
-			ros::param::param("~bb/orientation/x",id_.bb.pose.orientation.x,-8.79007958941e-07);
-			ros::param::param("~bb/orientation/y",id_.bb.pose.orientation.y,3.27846130193e-07);
-			ros::param::param("~bb/orientation/z",id_.bb.pose.orientation.z,0.429966424682);
-			ros::param::param("~bb/orientation/w",id_.bb.pose.orientation.w,0.90284486721);
+			ros::param::param("~bb/orientation/x",id_.bb.pose.orientation.x,0.0);
+			ros::param::param("~bb/orientation/y",id_.bb.pose.orientation.y,0.0);
+			ros::param::param("~bb/orientation/z",id_.bb.pose.orientation.z,0.0);
+			ros::param::param("~bb/orientation/w",id_.bb.pose.orientation.w,1.0);
 
 			ros::param::param("~gripper/position/x",gripper_pose_.position.x,0.0);
 			ros::param::param("~gripper/position/y",gripper_pose_.position.y,0.0);
 			ros::param::param("~gripper/position/z",gripper_pose_.position.z,0.0);
 
+			// relative to absolute position
+			gripper_pose_.position.x += id_.bb.pose.position.x;
+			gripper_pose_.position.y += id_.bb.pose.position.y;
+			gripper_pose_.position.z += id_.bb.pose.position.z;
+			//gripper_pose_.position.z += id_.bb.lwh.z/2.0;
+
 			double tmp;
 			ros::param::param("~bb/success_min_dur",tmp,2.0);
-			bb_success_min_dur_ = ros::WallDuration(tmp);
+			bb_success_min_dur_ = ros::Duration(tmp);
 
 			ros::param::param("~gr/success_min_dur",tmp,2.0);
-			gr_success_min_dur_ = ros::WallDuration(tmp);
+			gr_success_min_dur_ = ros::Duration(tmp);
 
 			ros::param::param("~bb/success_val",tmp,0.8);
 			bb_success_val_ = tmp;
@@ -80,13 +92,13 @@ BBOverlap::BBOverlap() {
 			ros::param::param("~gr/success_val",tmp,0.05);
 			gr_success_val_ = tmp;
 
-			bb_success_first_ = ros::WallTime(0);
-			bb_success_last_ = ros::WallTime(0);
-			bb_success_tmp_ = ros::WallTime(0);
+			bb_success_first_ = ros::Time(0);
+			bb_success_last_ = ros::Time(0);
+			bb_success_tmp_ = ros::Time(0);
 
-			gr_success_first_ = ros::WallTime(0);
-			gr_success_last_ = ros::WallTime(0);
-			gr_success_tmp_ = ros::WallTime(0);
+			gr_success_first_ = ros::Time(0);
+			gr_success_last_ = ros::Time(0);
+			gr_success_tmp_ = ros::Time(0);
 
 			// TODO read this (+ pose) from params....
 			/*id_.bb.lwh.x = 0.2; // length
@@ -104,8 +116,7 @@ BBOverlap::BBOverlap() {
 
 			id_.vol = id_.bb.lwh.x * id_.bb.lwh.y * id_.bb.lwh.z;
 
-			id_.marker.color.g = 1.0;
-			id_.marker.color.a = 0.6;
+
 			id_.marker.header.frame_id = "/map";
 
 			id_.marker.pose.position = id_.bb.pose.position;
@@ -113,12 +124,18 @@ BBOverlap::BBOverlap() {
 
 			id_.marker.pose.orientation = id_.bb.pose.orientation;
 
+			id_.marker.color.g = 1.0;
+			id_.marker.color.a = 0.6;
+
 			id_.marker.type = visualization_msgs::Marker::CUBE;
 			id_.marker.scale.x = id_.bb.lwh.x*2.0;
 			id_.marker.scale.y = id_.bb.lwh.y*2.0;
 			id_.marker.scale.z = id_.bb.lwh.z;
 
-			gripper_marker_.color.g = 1.0;
+
+			gripper_marker_.color.r = 1.0;
+			gripper_marker_.color.g = 140.0/255.0;
+			gripper_marker_.color.b = 0.0;
 			gripper_marker_.color.a = 0.6;
 			gripper_marker_.header.frame_id = "/map";
 			gripper_marker_.pose = gripper_pose_;
@@ -138,11 +155,61 @@ BBOverlap::BBOverlap() {
 			arm_state_ok_ = false;
 			sub_arm_state_ = nh.subscribe<srs_assisted_arm_navigation_msgs::AssistedArmNavigationState>("/but_arm_manip/state",1,&BBOverlap::arm_nav_state_cb,this);
 
+
 			timer_ = nh.createTimer(ros::Duration(0.05),&BBOverlap::timer_cb,this);
 
 			ROS_INFO("Initialized.");
 
 		}
+
+bool BBOverlap::moveX(SetFloat::Request& req, SetFloat::Response& res) {
+
+	bool update_marker = false;
+
+
+	if (req.axis=="x") {
+
+		id_.bb.pose.position.x += req.v;
+		update_marker = true;
+
+	}
+
+	if (req.axis=="y") {
+
+		id_.bb.pose.position.y += req.v;
+		update_marker = true;
+
+	}
+
+	if (req.axis=="z") {
+
+		tf::Quaternion rot = tf::createQuaternionFromRPY(0.0,0.0,req.v);
+
+		tf::Quaternion g; // current IM marker pose
+		tf::quaternionMsgToTF(id_.bb.pose.orientation, g);
+
+		g = rot*g;
+		tf::quaternionTFToMsg(g,id_.bb.pose.orientation);
+		update_marker = true;
+
+	}
+
+	if (update_marker) {
+
+		id_.marker.pose.position = id_.bb.pose.position;
+		id_.marker.pose.position.z += id_.bb.lwh.z/2.0;
+
+		id_.marker.pose.orientation = id_.bb.pose.orientation;
+
+		return true;
+
+	}
+
+	ROS_WARN("Use x,y or z as axis!");
+	return false;
+
+}
+
 
 void BBOverlap::arm_nav_state_cb(const srs_assisted_arm_navigation_msgs::AssistedArmNavigationStateConstPtr& msg) {
 
@@ -336,10 +403,19 @@ void BBOverlap::publish_points(tpoints points, ros::Publisher &pub, std_msgs::Co
 
 }
 
+/*int BBOverlap::getch()
+{
+    int r;
+    unsigned char c;
+    if ((r = read(0, &c, sizeof(c))) < 0) {
+        return r;
+    } else {
+        return c;
+    }
+}*/
 
 
 BBOverlap::~BBOverlap() {
-
 
 }
 
@@ -407,11 +483,15 @@ double BBOverlap::rmax(double val1, double val2) {
 
 void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
+
+
 	ROS_INFO_ONCE("Timer triggered");
 
 	boost::mutex::scoped_lock(im_.mutex);
 
 	if (id_.pub.getNumSubscribers() > 0) {
+
+		ROS_INFO_ONCE("Publishing BB ideal position.");
 
 		id_.marker.header.stamp = ros::Time::now();
 		id_.pub.publish(id_.marker);
@@ -420,7 +500,7 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
 	bool suc = false;
 	double overlap = 0.0;
-	ros::WallTime now = ros::WallTime::now();
+	ros::Time now = ros::Time::now();
 
 	// we have received something...
 	if (im_.pose_rec && im_.scale_rec) {
@@ -596,22 +676,28 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
 		if (overlap > bb_success_val_) {
 
-			if (bb_success_tmp_ == ros::WallTime(0)) bb_success_tmp_ = now;
-			else {
+			if (bb_success_tmp_ == ros::Time(0)) bb_success_tmp_ = now;
 
-				if ((now - bb_success_tmp_) > ros::WallDuration(bb_success_min_dur_)) {
+			if ((now - bb_success_tmp_) > ros::Duration(bb_success_min_dur_)) {
 
-					if (bb_success_first_ == ros::WallTime(0)) bb_success_first_ = now;
-					bb_success_last_ = now;
-					suc = true;
+				if (bb_success_first_ == ros::Time(0)) bb_success_first_ = now;
+				
+				suc = true;
+
+				if (bb_suc_ == false) {
+					
+				  bb_success_last_ = now;
+				  bb_suc_ = true;	
 
 				}
 
 			}
 
+
 		} else {
 
-			bb_success_tmp_ = ros::WallTime(0);
+			bb_success_tmp_ = ros::Time(0);
+			bb_suc_ = false;
 
 		}
 
@@ -634,35 +720,47 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
 		if ( (gripper_dist < gr_success_val_) && arm_state_ok_) {
 
-			if (gr_success_tmp_ == ros::WallTime(0)) gr_success_tmp_ = now;
-			else {
+			if (gr_success_tmp_ == ros::Time(0)) gr_success_tmp_ = now;
 
-				if ((now - gr_success_tmp_) > ros::WallDuration(gr_success_min_dur_)) {
+				if ((now - gr_success_tmp_) > ros::Duration(gr_success_min_dur_)) {
 
-					if (gr_success_first_ == ros::WallTime(0)) gr_success_first_ = now;
-					gr_success_last_ = now;
+					if (gr_success_first_ == ros::Time(0)) gr_success_first_ = now;
+					
 					gr_suc = true;
+					
+					if (gr_suc_ == false) {
+					
+				  gr_success_last_ = now;
+				  gr_suc_ = true;	
 
 				}
 
-			}
+				}
 
-		} else gr_success_tmp_ = ros::WallTime(0);
+
+
+		} else {
+		
+		  
+		  gr_success_tmp_ = ros::Time(0);
+		  gr_suc_ = false;
+		  
+		  }
 
 	}
 
-	if ( (ros::WallTime::now() - last_log_out_) > ros::WallDuration(2.0) ) {
+	if ( (ros::Time::now() - last_log_out_) > ros::Duration(2.0) ) {
 
 		//ROS_INFO("ID vol: %f, MAA vol: %f",points_volume(id_p),points_volume(imaa_p));
 
 		//ROS_INFO("dx: %f, dy: %f, dz: %f, vol: %f",dx,dy,dz,ov_p_vol);
 		//ROS_INFO("overlap: %f%% (%f / %f)",overlap*100.0,ov_p_vol,max_v);
 
-		boost::posix_time::ptime f_s = bb_success_first_.toBoost();
+		/*boost::posix_time::ptime f_s = bb_success_first_.toBoost();
 		boost::posix_time::ptime l_s = bb_success_last_.toBoost();
 
 		boost::posix_time::ptime f_gr = gr_success_first_.toBoost();
-		boost::posix_time::ptime l_gr = gr_success_last_.toBoost();
+		boost::posix_time::ptime l_gr = gr_success_last_.toBoost();*/
 
 		if (suc) printf("BB OVERLAP: %03.1f%% (success)\n",overlap*100);
 		else printf("BB OVERLAP: %03.1f%% (fail)\n",overlap*100);
@@ -671,17 +769,21 @@ void BBOverlap::timer_cb(const ros::TimerEvent&) {
 		double gdy = gripper_pose_.position.y - gripper_pose_curr_.position.y;
 		double gdz = gripper_pose_.position.z - gripper_pose_curr_.position.z;
 
-		printf("BB First success: %02d:%02d:%02d\n",f_s.time_of_day().hours(), f_s.time_of_day().minutes(), f_s.time_of_day().seconds());
-		printf("BB Last success: %02d:%02d:%02d\n", l_s.time_of_day().hours(), l_s.time_of_day().minutes(), l_s.time_of_day().seconds());
+		//printf("BB First success: %02d:%02d:%02d\n",f_s.time_of_day().hours(), f_s.time_of_day().minutes(), f_s.time_of_day().seconds());
+		//printf("BB Last success: %02d:%02d:%02d\n", l_s.time_of_day().hours(), l_s.time_of_day().minutes(), l_s.time_of_day().seconds());
+		printf("BB First success: %04d\n",(int)floor(bb_success_first_.toSec()));
+		printf("BB Last success: %04d\n", (int)floor(bb_success_last_.toSec()));
 
 		if (gr_suc) printf("GR Distance: %f [dx: %.2f, dy: %.2f, dz: %.2f] (success)\n",gripper_dist,gdx,gdy,gdz);
 		else printf("GR Distance: %f [dx: %.2f, dy: %.2f, dz: %.2f] (fail)\n",gripper_dist,gdx,gdy,gdz);
 
-		printf("GR First success: %02d:%02d:%02d\n",f_gr.time_of_day().hours(), f_gr.time_of_day().minutes(), f_gr.time_of_day().seconds());
-		printf("GR Last success: %02d:%02d:%02d\n", l_gr.time_of_day().hours(), l_gr.time_of_day().minutes(), l_gr.time_of_day().seconds());
+		/*printf("GR First success: %02d:%02d:%02d\n",f_gr.time_of_day().hours(), f_gr.time_of_day().minutes(), f_gr.time_of_day().seconds());
+		printf("GR Last success: %02d:%02d:%02d\n", l_gr.time_of_day().hours(), l_gr.time_of_day().minutes(), l_gr.time_of_day().seconds());*/
+		printf("GR First success: %04d\n",(int)floor(gr_success_first_.toSec()));
+		printf("GR Last success: %04d\n", (int)floor(gr_success_last_.toSec()));
 		printf("\n");
 
-		last_log_out_ = ros::WallTime::now();
+		last_log_out_ = ros::Time::now();
 
 
 	} // if
@@ -708,6 +810,7 @@ int main(int argc, char** argv)
 
       ROS_INFO("Starting");
       ros::init(argc, argv, "bb_overlap");
+
 
       BBOverlap *bb = new BBOverlap();
 

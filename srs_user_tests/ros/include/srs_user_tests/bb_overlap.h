@@ -45,6 +45,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include <interactive_markers/interactive_marker_server.h>
+#include "srs_user_tests/SetFloat.h"
 
 namespace srs_user_tests {
 
@@ -70,16 +72,23 @@ class BBOverlap {
 
 		tf::TransformListener tfl_;
 
-		ros::WallTime last_log_out_;
+		ros::Time last_log_out_;
+
+		bool bb_suc_;
+		bool gr_suc_;
 
 		double points_volume(const tpoints &p);
 
 		double rmin(double val1, double val2);
 		double rmax(double val1, double val2);
 
+		bool moveX(SetFloat::Request& req, SetFloat::Response& res);
+
 	private:
 
 	protected:
+
+		ros::ServiceServer srv_move_;
 
 		geometry_msgs::Pose gripper_pose_;
 		geometry_msgs::Pose gripper_pose_curr_;
@@ -95,16 +104,16 @@ class BBOverlap {
 
 		double bb_success_val_;
 
-		ros::WallDuration bb_success_min_dur_;
-		ros::WallDuration gr_success_min_dur_;
+		ros::Duration bb_success_min_dur_;
+		ros::Duration gr_success_min_dur_;
 
-		ros::WallTime bb_success_first_;
-		ros::WallTime bb_success_last_;
-		ros::WallTime bb_success_tmp_;
+		ros::Time bb_success_first_;
+		ros::Time bb_success_last_;
+		ros::Time bb_success_tmp_;
 
-		ros::WallTime gr_success_first_;
-		ros::WallTime gr_success_last_;
-		ros::WallTime gr_success_tmp_;
+		ros::Time gr_success_first_;
+		ros::Time gr_success_last_;
+		ros::Time gr_success_tmp_;
 
 		ros::Subscriber sub_im_feedback_;
 		ros::Subscriber sub_im_scale_;
@@ -125,7 +134,6 @@ class BBOverlap {
 
 			boost::mutex mutex;
 			visualization_msgs::Marker marker;
-			//geometry_msgs::Vector3 lwh;
 			tbb bb;
 			ros::Publisher pub;
 			double vol;

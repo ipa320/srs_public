@@ -63,9 +63,11 @@ from actionlib import *
 from actionlib.msg import *
 from smach import Iterator, StateMachine, CBState
 from smach_ros import ConditionState, IntrospectionServer
+import unicodedata
 
 from srs_knowledge.srv import *
 from srs_knowledge.msg import *
+
 
 #from cob_tray_sensors.srv import *
 
@@ -265,8 +267,57 @@ class SRS_DM_ACTION(object):
         
         rospy.loginfo("Waiting for wake up the server ...")
         
-    
-
+    #processing manual command
+    #move("torso",[[tilt1, pan, tilt2]])
+    #as well as 
+    #move("torso", "front")
+    #move("head", "back")
+    #move("tray", "home")
+    def process_manual_command (self, the_task):
+        
+        #possible components and positions more details in cob_robots
+        pre_positions = dict()
+        pre_positions['torso'] = ['home','left','right','back','front','nod','bow','shake']
+        pre_positions['head'] = ['front','back']
+        pre_positions['tray'] = ['up','down']
+        #default outcome
+        outcome = 'task_failed'
+              
+        global sss
+        # only processing manual command for known component
+        if 'predefined_pose' in the_task['destination']:
+            #move tor
+            if the_task['component'] == 'torso' and the_task['destination']['predefined_pose'] in pre_positions['torso']:
+                handle = sss.move(the_task['component'], str(the_task['destination']['predefined_pose']), False)
+                handle.wait()
+                outcome = 'task_succeeded'
+            #move head
+            if the_task['component'] == 'head'and the_task['destination']['predefined_pose'] in pre_positions['head']:  
+                handle = sss.move(the_task['component'], str(the_task['destination']['predefined_pose']), False)
+                handle.wait()
+                outcome = 'task_succeeded'
+            #move tray
+            if the_task['component'] == 'tray' and the_task['destination']['predefined_pose'] in pre_positions['tray']:      
+                handle = sss.move(the_task['component'], str(the_task['destination']['predefined_pose']), False)
+                handle.wait()
+                outcome = 'task_succeeded'                
+                        
+        if the_task['component'] == 'torso' and 'torso_pose' in the_task['destination'] :
+            if 'tilt1' in the_task['destination']['torso_pose'] and 'tilt2' in the_task['destination']['torso_pose'] and 'pan' in the_task['destination']['torso_pose']: 
+                target = list()             
+                target = [[the_task['destination']['torso_pose']['tilt1'], the_task['destination']['torso_pose']['pan'], the_task['destination']['torso_pose']['tilt2'] ]]            
+                handle = sss.move(the_task['component'], target, False)
+                handle.wait()  
+                outcome = 'task_succeeded' 
+                               
+        if outcome == "task_succeeded": 
+            self._result.return_value=3
+            self._as.set_succeeded(self._result)
+        else :
+            self._result.return_value=4
+            self._as.set_aborted(self._result)                
+                
+        return
         
     def robot_initialisation_process(self):
         if not self.robot_initialised :
@@ -486,8 +537,7 @@ class SRS_DM_ACTION(object):
             
         current_task_info._srs_as = copy.copy(self)
         
-
-
+        
         ##############################################
         # taskrequest From Knowledge_ros_service
         ##############################################
@@ -520,6 +570,20 @@ class SRS_DM_ACTION(object):
                 print current_task_info.json_parameters
                 tasks = json_parser.Tasks(current_task_info.json_parameters)
                 if len(tasks.tasks_list) > 0:
+                    
+                    the_task = json.loads(tasks.tasks_list[0].task_json_string)                    
+                   
+                    print "current single task is"
+                    print the_task
+                    print "##############"
+                    
+                    # pre_processing for manual command
+                    if 'mode' in the_task :
+                        if the_task['mode'] == 'manual' :
+                            self.process_manual_command (the_task)
+                            #no more task completed
+                            return
+                    
                     #task_dict = tt.tasks[0]
                     #task_json = tt.tasks_json[0]
                     ## read parameter server

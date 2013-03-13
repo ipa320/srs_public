@@ -390,7 +390,7 @@ class grasp_unknown_object_assisted(smach.State):
                allow_collision=True,
                attached=False,
                attach_to_frame_id='',
-               allow_pregrasps=True);
+               allow_pregrasps=False);
       
     except Exception, e:
       

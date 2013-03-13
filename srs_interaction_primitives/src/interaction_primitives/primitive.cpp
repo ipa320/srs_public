@@ -301,7 +301,7 @@ void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbac
 		{
 			object_.controls[0].markers[0].scale = scale_;
 		}
-		object_.scale = srs_interaction_primitives::maxScale(scale_);
+		object_.scale = SCALE_COEFF * srs_interaction_primitives::maxScale(scale_);
 
 		updateControls();
 
@@ -625,8 +625,8 @@ void Primitive::addScaleControls()
           break;
       }
 
-      makeArrow(int_marker, control, 3.0 * sign);
-//      makeArrow(int_marker, control, 3.5 * sign);
+//      makeArrow(int_marker, control, 3.0 * sign);
+      makeArrow(int_marker, control, 3.5 * sign);
 
       int_marker.controls.push_back(control);
       server_->insert(int_marker, boost::bind(&Primitive::scaleFeedback, this, _1));

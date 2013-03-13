@@ -21,4 +21,7 @@
     <arg name="task" value="$(arg task)"/>
   </include>
 
+  <!-- start culling -->
+  <include file="$(find cob_3d_fov_segmentation)/ros/launch/fov_segmentation.launch"/>
+
 </launch>

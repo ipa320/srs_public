@@ -809,6 +809,67 @@ class reset_robot(smach.State):
         return 'completed'        
         
 
+# enable intervention through UI_PRO
+# completed: the task is completed fully by the remote user via ui_PRO
+# give_up: remote user 
+# failed: soft or hard ware failure during the intervention 
+class remote_user_intervention(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, 
+                             outcomes=['completed', 'give_up' ,'failed'],
+                             input_keys=['semi_autonomous_mode'])       
+        
+        #self.count=0
+    def execute(self,userdata):
+        
+        print ('CHECKING IF USER INTERVENTION IS REQUIRED')
+        # check if user intervention is required. 
+        # give_up if the task is in fully autonomous mode
+        if userdata.semi_autonomous_mode == False:
+            return 'give_up'
+        
+        
+        global current_task_info
+        
+        #name of the overall task
+        the_task_name = current_task_info.task_feedback.task_name 
+        
+        #parameter of the overall task
+        the_task_parameter = current_task_info.task_feedback.task_parameter
+        
+        step_id = len (current_task_info.last_step_info)         
+        
+        if step_id > 0:
+            #name of the current step 
+            the_action_name = current_task_info.last_step_info[step_id-1].step_name 
+            
+            #out come of the last action
+            the_action_outcome = current_task_info.last_step_info[step_id-1].outcome
+        
+            #object of the action
+            the_action_object = current_task_info.task_feedback.action_object
+        
+            #parent of the object
+            the_action_object_parent = current_task_info.task_feedback.action_object_parent
+        
+        else:
+            #the task has not been started yet, not need for intervention
+            return 'give_up'
+         
+                
+        #
+        # get confirmation from UI_LOC
+        #
+        
+        
+        #
+        # processing user intervention from UI_PRO
+        #
+        
+        
+        return 'give_up'
+    
+
 def pose_to_list(userdata):
     # userdata.target_object_name
     poseList = ('detect', userdata.target_object_name, str(userdata.target_object_pose.pose.position.x), str(userdata.target_object_pose.pose.position.y), str(userdata.target_object_pose.pose.position.z), str(userdata.target_object_pose.pose.orientation.x), str(userdata.target_object_pose.pose.orientation.y), str(userdata.target_object_pose.pose.orientation.z), str(userdata.target_object_pose.pose.orientation.w))

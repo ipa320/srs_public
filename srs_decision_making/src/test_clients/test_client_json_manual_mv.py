@@ -35,8 +35,9 @@ if __name__ == '__main__':
         # publish and subscribe over ROS.
         #json_parameters = '{"tasks":[{"time_schedule":1263798000000,"task":"get","deliver_destination":{"predefined_pose":"order"},"object":{"object_type":"Milkbox"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}'
         #json_parameters = '{"tasks":[{"time_schedule":1263798000000,"task":"get","deliver_destination":{"pose2d":{"theta":0.0,"y":0.0,"x":0.0}},"object":{"object_type":"Milkbox"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}'
-        #json_parameters = '{"tasks":[{"task":"move", "mode":"manual", "component":"torso","destination":{"predefined_pose":"nod"}}],"initializer":{"device_type":"ui_pri","device_id":"ui_pri_101"}} '
-        json_parameters = '{"tasks":[{"task":"move", "mode":"manual", "component":"torso","destination":{"torso_pose":{"tilt1":-0.1,"pan":0.1,"tilt2":0.15}}}],"initializer":{"device_type":"ui_pri","device_id":"ui_pri_101"}}'
+        #json_parameters = '{"tasks":[{"task":"move", "mode":"manual", "component":"torso","destination":{"predefined_pose":"front"}}],"initializer":{"device_type":"ui_pri","device_id":"ui_pri_101"}} '
+        #json_parameters = '{"tasks":[{"task":"move", "mode":"manual", "component":"torso","destination":{"torso_pose":{"tilt1":-0.1,"pan":0.1,"tilt2":0.15}}}],"initializer":{"device_type":"ui_pri","device_id":"ui_pri_101"}}'
+        json_parameters = '{"tasks":[{"task":"move", "mode":"manual", "component":"tray","destination":{"predefined_pose":"up"}}],"initializer":{"device_type":"ui_pri","device_id":"ui_pri_101"}} '
 
         #json_parameters = "{\"tasks\":[{\"time_schedule\":1263798000000,\"task\":\"move\",\"destination\":{\"predefined_pose\":\"home\"}}],\"initializer\":{\"device_type\":\"ui_loc\",\"device_id\":\"ui_loc_0001\"}}"
         rospy.init_node('dm_client2')

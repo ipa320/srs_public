@@ -390,12 +390,12 @@ class SRS_DM_ACTION(object):
                                                'scan_pose_list':'scan_pose_list'})
             
             smach.StateMachine.add('SM_NAVIGATION', srs_navigation_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'})
 
             smach.StateMachine.add('SM_DETECTION', srs_detection_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'target_object_id':'target_object_id',
                                               'target_workspace_name':'target_workspace_name',
@@ -404,7 +404,7 @@ class SRS_DM_ACTION(object):
                                               'target_object_pose':'target_object_pose' })
        
             smach.StateMachine.add('SM_NEW_GRASP', srs_grasp_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'target_object_id':'target_object_id',
                                               'target_workspace_name':'target_workspace_name',
@@ -418,7 +418,7 @@ class SRS_DM_ACTION(object):
             #Old grasp added for backward compatible, should be removed after knowledge service updated completely
             '''
             smach.StateMachine.add('SM_OLD_GRASP', srs_old_grasp_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_id':'target_object_id',
@@ -430,11 +430,11 @@ class SRS_DM_ACTION(object):
             '''
             
             smach.StateMachine.add('SM_PUT_ON_TRAY', srs_put_on_tray_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'grasp_categorisation':'grasp_categorisation' })
 
             smach.StateMachine.add('SM_ENV_UPDATE', srs_enviroment_update_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_pose':'target_object_pose',
                                               'target_object_hh_id':'target_object_hh_id',
                                               'verified_target_object_pose':'verified_target_object_pose'})
@@ -442,6 +442,11 @@ class SRS_DM_ACTION(object):
             smach.StateMachine.add('RESET_ROBOT_AFTER_IMPOSSIBLE_TASK', reset_robot(),
                                    transitions={'completed':'task_aborted', 'failed':'task_aborted'},
                                    remapping={'grasp_categorisation':'grasp_categorisation' })
+
+            smach.StateMachine.add('CHECKING_USER_INTERVENTION', remote_user_intervention(),
+                                   transitions={'give_up':'SEMANTIC_DM', 'failed':'task_aborted', 'completed':'task_succeeded'},
+                                   remapping={'semi_autonomous_mode':'semi_autonomous_mode' })
+                        
                         
 
         return self.temp

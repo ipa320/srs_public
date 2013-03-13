@@ -864,6 +864,7 @@ class remote_user_intervention(smach.State):
         
         #
         # processing user intervention from UI_PRO
+        # current_task_info._srs_as._as.publish_feedback(_feedback)
         #
         
         

@@ -51,9 +51,6 @@ Collision\ Indicator.Marker\ Topic=/collision_velocity_filter/velocity_limited_m
 GeoMap\ Lines.=1
 GeoMap\ Lines.Enabled=1
 GeoMap\ Lines.Marker\ Topic=/geometry_map/geometry_marker
-GeoMap\ Planes.Enabled=1
-GeoMap\ Planes.Marker\ Array\ Topic=/structure_visualization/marker_array
-GeoMap\ Planes.shape\ visualization=1
 In-Scene\ Teleop.Enabled=0
 In-Scene\ Teleop.Show\ Axes=0
 In-Scene\ Teleop.Show\ Descriptions=1
@@ -183,6 +180,9 @@ Laser\ Scan\ Top..IntensityMin\ ColorG=1
 Laser\ Scan\ Top..IntensityMin\ ColorB=0
 Laser\ Scan\ Top..IntensityMin\ Intensity=0
 Laser\ Scan\ Top..IntensityUse\ full\ RGB\ spectrum=0
+Marker.Enabled=1
+Marker.Marker\ Topic=/shape_visualization_fov/marker
+Marker.shape\ visualization=1
 RGB\ Video.Enabled=1
 RGB\ Video.Image\ Topic=/cam3d_throttled/rgb/image_color
 RGB\ Video.Transport\ Hint=raw
@@ -304,7 +304,7 @@ Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
 Camera\ Config=1.011 1.09446 4.8357 -5.86568 0.137442 5.40282
-Property\ Grid\ State=selection=GeoMap Lines.Enabled;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus,GeoMap Planes.Enabled,GeoMap Planes.Enabled.GeoMap Planes.Namespaces,GeoMap Lines.Enabled.GeoMap Lines.Namespaces;scrollpos=0,0;splitterpos=248,496;ispageselected=1
+Property\ Grid\ State=selection=Marker.Enabled.Marker.Marker Topic;expanded=3D Global Voxel Map.Enabled.3D Global Voxel Map.StatusTopStatus,Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus,GeoMap Lines.Enabled.GeoMap Lines.Namespaces,Marker.Enabled,Marker.Enabled.Marker.Namespaces;scrollpos=0,0;splitterpos=248,496;ispageselected=1
 [Display0]
 Name=RGB Video
 Package=rviz
@@ -366,10 +366,10 @@ Name=Inflated Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay
 [Display15]
-Name=GeoMap Planes
-Package=rviz
-ClassName=rviz::MarkerArrayDisplay
-[Display16]
 Name=GeoMap Lines
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display16]
+Name=Marker
 Package=rviz
 ClassName=rviz::MarkerDisplay

@@ -147,9 +147,9 @@ Laser\ Scan\ Top..IntensityUse\ full\ RGB\ spectrum=0
 Marker.=1
 Marker.Enabled=1
 Marker.Marker\ Topic=/geometry_map/geometry_marker
-MarkerArray.Enabled=1
-MarkerArray.Marker\ Array\ Topic=/shape_visualization_fov/marker_array
-MarkerArray.shape\ visualization=1
+Marker2.Enabled=1
+Marker2.Marker\ Topic=/shape_visualization_fov/marker
+Marker2.shape\ visualization=1
 RGB\ Video.Enabled=1
 RGB\ Video.Image\ Topic=/cam3d_throttled/rgb/image_color
 RGB\ Video.Transport\ Hint=raw
@@ -271,7 +271,7 @@ Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
 Camera\ Config=1.036 3.54263 6.02731 3.78223 0.302807 -2.35907
-Property\ Grid\ State=selection=Marker.Enabled;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus,MarkerArray.Enabled.MarkerArray.Namespaces,Marker.Enabled.Marker.Namespaces;scrollpos=0,0;splitterpos=248,496;ispageselected=1
+Property\ Grid\ State=selection=;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus,Marker.Enabled.Marker.Namespaces,Marker2.Enabled.Marker2.Namespaces;scrollpos=0,0;splitterpos=248,496;ispageselected=1
 [Display0]
 Name=RGB Video
 Package=rviz
@@ -329,10 +329,10 @@ Name=Inflated Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay
 [Display14]
-Name=MarkerArray
-Package=rviz
-ClassName=rviz::MarkerArrayDisplay
-[Display15]
 Name=Marker
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display15]
+Name=Marker2
 Package=rviz
 ClassName=rviz::MarkerDisplay

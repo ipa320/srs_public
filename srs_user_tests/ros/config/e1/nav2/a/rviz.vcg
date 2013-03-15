@@ -63,7 +63,7 @@ Kinect\ FOV.Alpha=1
 Kinect\ FOV.Billboard\ Size=0.02
 Kinect\ FOV.Color\ Transformer=RGB8
 Kinect\ FOV.Decay\ Time=0
-Kinect\ FOV.Enabled=0
+Kinect\ FOV.Enabled=1
 Kinect\ FOV.Position\ Transformer=XYZ
 Kinect\ FOV.Selectable=1
 Kinect\ FOV.Style=0
@@ -298,7 +298,7 @@ Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
 Camera\ Config=1.036 3.54263 6.02731 3.78223 0.302807 -2.35907
-Property\ Grid\ State=selection=Kinect FOV.Enabled;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=248,496;ispageselected=1
+Property\ Grid\ State=selection=;expanded=3D Global Voxel Map.Enabled.3D Global Voxel Map.StatusTopStatus,Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=248,496;ispageselected=1
 [Display0]
 Name=RGB Video
 Package=rviz

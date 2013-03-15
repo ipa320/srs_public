@@ -50,7 +50,6 @@ Autonomous\ Navi\ Path.Enabled=0
 Autonomous\ Navi\ Path.Topic=/move_base/DWAPlannerROS/global_plan
 Collision\ Indicator.Enabled=1
 Collision\ Indicator.Marker\ Topic=/collision_velocity_filter/velocity_limited_marker
-Collision\ Indicator.cob_velocity_limited_marker=1
 In-Scene\ Teleop.Enabled=0
 In-Scene\ Teleop.Show\ Axes=0
 In-Scene\ Teleop.Show\ Descriptions=1
@@ -122,7 +121,7 @@ Laser\ Scan\ Historic\ \(Obstacles\).Alpha=0.8
 Laser\ Scan\ Historic\ \(Obstacles\).ColorR=0.556863
 Laser\ Scan\ Historic\ \(Obstacles\).ColorG=0.0823529
 Laser\ Scan\ Historic\ \(Obstacles\).ColorB=0.215686
-Laser\ Scan\ Historic\ \(Obstacles\).Enabled=1
+Laser\ Scan\ Historic\ \(Obstacles\).Enabled=0
 Laser\ Scan\ Historic\ \(Obstacles\).Topic=/move_base/local_costmap/obstacles
 Laser\ Scan\ Rear.Alpha=1
 Laser\ Scan\ Rear.Billboard\ Size=0.07
@@ -301,7 +300,7 @@ Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
 Camera\ Config=1.011 1.09446 4.8357 -5.86568 0.137442 5.40282
-Property\ Grid\ State=selection=;expanded=3D Geometric Map.Enabled.3D Geometric Map.Namespaces,Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=248,496;ispageselected=1
+Property\ Grid\ State=selection=Laser Scan Historic (Obstacles).Enabled;expanded=3D Geometric Map.Enabled.3D Geometric Map.StatusTopStatus,3D Geometric Map.Enabled.3D Geometric Map.Namespaces,Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=248,496;ispageselected=1
 [Display0]
 Name=RGB Video
 Package=rviz

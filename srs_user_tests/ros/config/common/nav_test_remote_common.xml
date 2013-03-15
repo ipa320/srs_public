@@ -13,5 +13,8 @@
 		<remap from="input" to="/but_env_model/octomap_updates"/>
 		<remap from="output" to="/but_env_model/cpc_pointcloud_centers" />
 	</node>
+<node pkg="cob_3d_visualization" type="shape_visualization" name="shape_visualization_fov" output="screen">
+	<remap from="~shape_array" to="/fov_segmentation/shape_array_out"/>
+</node>
 	
 </launch>

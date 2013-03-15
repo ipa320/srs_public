@@ -37,6 +37,9 @@ BBOverlap::BBOverlap() {
 			id_.pub = nh.advertise<visualization_msgs::Marker>("ideal_bb_pose",1);
 			gripper_pub_ = nh.advertise<visualization_msgs::Marker>("gripper_target_pose",1);
 
+
+			srv_move_ = nh.advertiseService("move_bb", &BBOverlap::moveX,this);
+
 			im_.pose_rec = false;
 			im_.scale_rec = false;
 			
@@ -53,22 +56,28 @@ BBOverlap::BBOverlap() {
 
 			}
 
-			ros::param::param("~bb/lwh/x",id_.bb.lwh.x,0.2);
-			ros::param::param("~bb/lwh/y",id_.bb.lwh.y,0.1);
-			ros::param::param("~bb/lwh/z",id_.bb.lwh.z,0.4);
+			ros::param::param("~bb/lwh/x",id_.bb.lwh.x,0.0);
+			ros::param::param("~bb/lwh/y",id_.bb.lwh.y,0.0);
+			ros::param::param("~bb/lwh/z",id_.bb.lwh.z,0.0);
 
-			ros::param::param("~bb/position/x",id_.bb.pose.position.x,-0.15);
-			ros::param::param("~bb/position/y",id_.bb.pose.position.y,0.6);
-			ros::param::param("~bb/position/z",id_.bb.pose.position.z,0.5);
+			ros::param::param("~bb/position/x",id_.bb.pose.position.x,0.0);
+			ros::param::param("~bb/position/y",id_.bb.pose.position.y,0.0);
+			ros::param::param("~bb/position/z",id_.bb.pose.position.z,0.0);
 
-			ros::param::param("~bb/orientation/x",id_.bb.pose.orientation.x,-8.79007958941e-07);
-			ros::param::param("~bb/orientation/y",id_.bb.pose.orientation.y,3.27846130193e-07);
-			ros::param::param("~bb/orientation/z",id_.bb.pose.orientation.z,0.429966424682);
-			ros::param::param("~bb/orientation/w",id_.bb.pose.orientation.w,0.90284486721);
+			ros::param::param("~bb/orientation/x",id_.bb.pose.orientation.x,0.0);
+			ros::param::param("~bb/orientation/y",id_.bb.pose.orientation.y,0.0);
+			ros::param::param("~bb/orientation/z",id_.bb.pose.orientation.z,0.0);
+			ros::param::param("~bb/orientation/w",id_.bb.pose.orientation.w,1.0);
 
 			ros::param::param("~gripper/position/x",gripper_pose_.position.x,0.0);
 			ros::param::param("~gripper/position/y",gripper_pose_.position.y,0.0);
 			ros::param::param("~gripper/position/z",gripper_pose_.position.z,0.0);
+
+			// relative to absolute position
+			gripper_pose_.position.x += id_.bb.pose.position.x;
+			gripper_pose_.position.y += id_.bb.pose.position.y;
+			gripper_pose_.position.z += id_.bb.pose.position.z;
+			//gripper_pose_.position.z += id_.bb.lwh.z/2.0;
 
 			double tmp;
 			ros::param::param("~bb/success_min_dur",tmp,2.0);
@@ -107,8 +116,7 @@ BBOverlap::BBOverlap() {
 
 			id_.vol = id_.bb.lwh.x * id_.bb.lwh.y * id_.bb.lwh.z;
 
-			id_.marker.color.g = 1.0;
-			id_.marker.color.a = 0.6;
+
 			id_.marker.header.frame_id = "/map";
 
 			id_.marker.pose.position = id_.bb.pose.position;
@@ -116,12 +124,18 @@ BBOverlap::BBOverlap() {
 
 			id_.marker.pose.orientation = id_.bb.pose.orientation;
 
+			id_.marker.color.g = 1.0;
+			id_.marker.color.a = 0.6;
+
 			id_.marker.type = visualization_msgs::Marker::CUBE;
 			id_.marker.scale.x = id_.bb.lwh.x*2.0;
 			id_.marker.scale.y = id_.bb.lwh.y*2.0;
 			id_.marker.scale.z = id_.bb.lwh.z;
 
-			gripper_marker_.color.g = 1.0;
+
+			gripper_marker_.color.r = 1.0;
+			gripper_marker_.color.g = 140.0/255.0;
+			gripper_marker_.color.b = 0.0;
 			gripper_marker_.color.a = 0.6;
 			gripper_marker_.header.frame_id = "/map";
 			gripper_marker_.pose = gripper_pose_;
@@ -141,11 +155,61 @@ BBOverlap::BBOverlap() {
 			arm_state_ok_ = false;
 			sub_arm_state_ = nh.subscribe<srs_assisted_arm_navigation_msgs::AssistedArmNavigationState>("/but_arm_manip/state",1,&BBOverlap::arm_nav_state_cb,this);
 
+
 			timer_ = nh.createTimer(ros::Duration(0.05),&BBOverlap::timer_cb,this);
 
 			ROS_INFO("Initialized.");
 
 		}
+
+bool BBOverlap::moveX(SetFloat::Request& req, SetFloat::Response& res) {
+
+	bool update_marker = false;
+
+
+	if (req.axis=="x") {
+
+		id_.bb.pose.position.x += req.v;
+		update_marker = true;
+
+	}
+
+	if (req.axis=="y") {
+
+		id_.bb.pose.position.y += req.v;
+		update_marker = true;
+
+	}
+
+	if (req.axis=="z") {
+
+		tf::Quaternion rot = tf::createQuaternionFromRPY(0.0,0.0,req.v);
+
+		tf::Quaternion g; // current IM marker pose
+		tf::quaternionMsgToTF(id_.bb.pose.orientation, g);
+
+		g = rot*g;
+		tf::quaternionTFToMsg(g,id_.bb.pose.orientation);
+		update_marker = true;
+
+	}
+
+	if (update_marker) {
+
+		id_.marker.pose.position = id_.bb.pose.position;
+		id_.marker.pose.position.z += id_.bb.lwh.z/2.0;
+
+		id_.marker.pose.orientation = id_.bb.pose.orientation;
+
+		return true;
+
+	}
+
+	ROS_WARN("Use x,y or z as axis!");
+	return false;
+
+}
+
 
 void BBOverlap::arm_nav_state_cb(const srs_assisted_arm_navigation_msgs::AssistedArmNavigationStateConstPtr& msg) {
 
@@ -339,10 +403,19 @@ void BBOverlap::publish_points(tpoints points, ros::Publisher &pub, std_msgs::Co
 
 }
 
+/*int BBOverlap::getch()
+{
+    int r;
+    unsigned char c;
+    if ((r = read(0, &c, sizeof(c))) < 0) {
+        return r;
+    } else {
+        return c;
+    }
+}*/
 
 
 BBOverlap::~BBOverlap() {
-
 
 }
 
@@ -410,11 +483,15 @@ double BBOverlap::rmax(double val1, double val2) {
 
 void BBOverlap::timer_cb(const ros::TimerEvent&) {
 
+
+
 	ROS_INFO_ONCE("Timer triggered");
 
 	boost::mutex::scoped_lock(im_.mutex);
 
 	if (id_.pub.getNumSubscribers() > 0) {
+
+		ROS_INFO_ONCE("Publishing BB ideal position.");
 
 		id_.marker.header.stamp = ros::Time::now();
 		id_.pub.publish(id_.marker);
@@ -733,6 +810,7 @@ int main(int argc, char** argv)
 
       ROS_INFO("Starting");
       ros::init(argc, argv, "bb_overlap");
+
 
       BBOverlap *bb = new BBOverlap();
 

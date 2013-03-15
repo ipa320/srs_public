@@ -45,6 +45,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include <interactive_markers/interactive_marker_server.h>
+#include "srs_user_tests/SetFloat.h"
 
 namespace srs_user_tests {
 
@@ -80,9 +82,13 @@ class BBOverlap {
 		double rmin(double val1, double val2);
 		double rmax(double val1, double val2);
 
+		bool moveX(SetFloat::Request& req, SetFloat::Response& res);
+
 	private:
 
 	protected:
+
+		ros::ServiceServer srv_move_;
 
 		geometry_msgs::Pose gripper_pose_;
 		geometry_msgs::Pose gripper_pose_curr_;
@@ -128,7 +134,6 @@ class BBOverlap {
 
 			boost::mutex mutex;
 			visualization_msgs::Marker marker;
-			//geometry_msgs::Vector3 lwh;
 			tbb bb;
 			ros::Publisher pub;
 			double vol;

@@ -44,13 +44,9 @@ Target\ Frame=<Fixed Frame>
 3D\ Global\ Voxel\ Map..IntensityUse\ full\ RGB\ spectrum=0
 3_CButBBEstimationDisplay.Enabled=1
 Arm\ Nav\ Markers\ 2.Enabled=1
-Arm\ Nav\ Markers\ 2.MPR\ 0\ Trajectory\ 1_trajectory=1
-Arm\ Nav\ Markers\ 2.MPR\ 0_Goal=1
 Arm\ Nav\ Markers\ 2.Marker\ Array\ Topic=/planning_scene_visualizer_markers_array
-Arm\ Nav\ Markers\ 2.unknown_object_1\+collision_map=1
 Arm\ Nav\ Markers\ 3.Enabled=1
 Arm\ Nav\ Markers\ 3.Marker\ Array\ Topic=/but_arm_manip/state_vis
-Arm\ Nav\ Markers\ 3.state_vis=1
 Arm\ Nav\ Markers.Enabled=0
 Arm\ Nav\ Markers.Show\ Axes=0
 Arm\ Nav\ Markers.Show\ Descriptions=1
@@ -202,11 +198,9 @@ Laser\ Scan\ Top..IntensityMin\ Intensity=0
 Laser\ Scan\ Top..IntensityUse\ full\ RGB\ spectrum=0
 Planning\ Scene.Enabled=1
 Planning\ Scene.Marker\ Array\ Topic=/planning_scene_markers_array
-Planning\ Scene.collision_map_markers=1
-Planning\ Scene.unknown_object_1=1
 RGB\ Video.Enabled=1
 RGB\ Video.Image\ Topic=/cam3d_throttled/upright/rgb/image_color
-RGB\ Video.Transport\ Hint=theora
+RGB\ Video.Transport\ Hint=raw
 RViz\ Camera\ Pose\ Publisher.Enabled=0
 Robot\ Footprint.Alpha=1
 Robot\ Footprint.ColorR=1
@@ -224,8 +218,8 @@ Robot.Visual\ Enabled=1
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=1.181 1.81719 2.98942 -4.88443 1.32822 5.47938
-Property\ Grid\ State=selection=Robot.Enabled;expanded=Collision Indicator.Enabled.Collision Indicator.StatusTopStatus,Collision Indicator.Enabled.Collision Indicator.Namespaces,Laser Scan Front.Enabled.Laser Scan Front.StatusTopStatus,Laser Scan Rear.Enabled.Laser Scan Rear.StatusTopStatus,Laser Scan Top.Enabled.Laser Scan Top.StatusTopStatus,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus,1_CButArmNavDisplay.Enabled.1_CButArmNavDisplay.StatusTopStatus,3_CButBBEstimationDisplay.Enabled.3_CButBBEstimationDisplay.StatusTopStatus,2_CButGraspingDisplay.Enabled.2_CButGraspingDisplay.StatusTopStatus,Arm Nav Markers.Enabled.Arm Nav Markers.StatusTopStatus,Arm Nav Markers 2.Enabled.Arm Nav Markers 2.Namespaces,Planning Scene.Enabled.Planning Scene.Namespaces,Arm Nav Markers 3.Enabled.Arm Nav Markers 3.Namespaces,BB ideal pose.Enabled.BB ideal pose.StatusTopStatus,BB ideal pose.Enabled.BB ideal pose.Namespaces;scrollpos=0,0;splitterpos=248,496;ispageselected=1
+Camera\ Config=1.221 1.81219 1.57761 -4.65464 1.21083 5.51589
+Property\ Grid\ State=selection=RGB Video.Enabled.RGB Video.Transport Hint;expanded=RGB Video.Enabled,Robot.Enabled.Robot.StatusTopStatus,Robot.Enabled.Robot: RobotLinks,Collision Indicator.Enabled.Collision Indicator.StatusTopStatus,Collision Indicator.Enabled.Collision Indicator.Namespaces,Laser Scan Front.Enabled.Laser Scan Front.StatusTopStatus,Laser Scan Rear.Enabled.Laser Scan Rear.StatusTopStatus,Laser Scan Top.Enabled.Laser Scan Top.StatusTopStatus,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus,1_CButArmNavDisplay.Enabled.1_CButArmNavDisplay.StatusTopStatus,3_CButBBEstimationDisplay.Enabled.3_CButBBEstimationDisplay.StatusTopStatus,2_CButGraspingDisplay.Enabled.2_CButGraspingDisplay.StatusTopStatus,Arm Nav Markers.Enabled.Arm Nav Markers.StatusTopStatus,Arm Nav Markers 2.Enabled.Arm Nav Markers 2.Namespaces,Planning Scene.Enabled.Planning Scene.Namespaces,Arm Nav Markers 3.Enabled.Arm Nav Markers 3.Namespaces,BB ideal pose.Enabled.BB ideal pose.StatusTopStatus,BB ideal pose.Enabled.BB ideal pose.Namespaces;scrollpos=0,0;splitterpos=261,522;ispageselected=1
 [Display0]
 Name=RGB Video
 Package=rviz

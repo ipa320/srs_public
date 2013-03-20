@@ -14,8 +14,9 @@
   <!--depend package="cob_linear_nav"/-->
   <depend package="cob_navigation_global"/>
   <depend package="cob_linear_nav"/>
-  <depend package="cob_mmcontroller"/>
-  <depend package="cob_manipulator"/>
+  <!--depend package="cob_mmcontroller"/-->
+  <!--depend package="cob_manipulator"/-->
+  <depend package="cob_arm_navigation"/>
   <depend package="cob_kinematics"/>
   <!--depend package="cob_tray_sensors"/-->
   <depend package="cob_object_detection_msgs"/>

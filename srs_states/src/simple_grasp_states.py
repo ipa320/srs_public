@@ -16,7 +16,8 @@ from tf.transformations import *
 from kinematics_msgs.srv import *
 
 #this should be in manipulation_msgs
-from cob_mmcontroller.msg import *
+#from cob_mmcontroller.msg import *
+#from cob_arm_navigation.msg import *
 
 from shared_state_information import *
 #import grasping_functions

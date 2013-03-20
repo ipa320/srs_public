@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="cob_manipulator" type="kinematics_node" name="srs_arm_kinematics" output="screen">
+    <node pkg="cob_arm_navigation" type="kinematics_node" name="srs_arm_kinematics" output="screen">
         <param name="group" type="string" value="arm" />
         <param name="use_collision_map" type="bool" value="false" />
         <param name="arm/root_name" type="string" value="base_link" />

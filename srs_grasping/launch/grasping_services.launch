@@ -6,6 +6,7 @@
 
    <node pkg="srs_grasping" type="get_pregrasps.py" name="get_pregrasps" ns="get_pregrasps" cwd="node" respawn="false" output="screen" />
 
+
    <!--shifted to DM, as the service is required by other componenets as well -->
    <include file="$(find cob_arm_navigation)/launch/constraint_aware_kinematics.xml"/>
    <include file="$(find cob_tactiletools)/launch/filters.launch"/>

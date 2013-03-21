@@ -39,15 +39,20 @@ namespace srs_interaction_primitives
 UnknownObject::UnknownObject(InteractiveMarkerServerPtr server, string frame_id, string name)
     : Primitive(server, frame_id, name, srs_interaction_primitives::PrimitiveType::UNKNOWN_OBJECT)
 {
-  description_ = "";
-  color_.r = 0.3;
-  color_.g = 0.5;
-  color_.b = 0.6;
-//  color_.a = 1.0;
-  color_.a = 0.5;
-  show_movement_control_ = show_scale_control_ = show_rotation_control_ = show_measure_control_ = show_description_control_ = false;
-  use_material_ = true;
-  allow_object_interaction_ = false;
+	description_ = "";
+
+//	color_.r = 0.3;
+//	color_.g = 0.5;
+//	color_.b = 0.6;
+//	color_.a = 1.0;
+	color_.r = 0.85;
+	color_.g = 0.85;
+	color_.b = 0.9;
+	color_.a = 0.7;
+
+	show_movement_control_ = show_scale_control_ = show_rotation_control_ = show_measure_control_ = show_description_control_ = false;
+	use_material_ = true;
+	allow_object_interaction_ = false;
 }
 
 
@@ -265,7 +270,8 @@ void UnknownObject::createColorBox()
   box_.pose.position.z = 0;
   box_.scale = scale_;
   box_.color = color_;
-  box_.color.a = 0.5;
+//  box_.color.a = 0.5;
+  box_.color.a = 0.75;
 
   // Wireframe model - disabled for now, it doesn't scale properly...
   wire_.points.clear();
@@ -283,12 +289,10 @@ void UnknownObject::createColorBox()
   wire_.pose.position.y = 0;
   wire_.pose.position.z = 0;
   wire_.scale = scale_;
-//  wire_.color.r = color_.b;
-//  wire_.color.g = color_.r;
-//  wire_.color.b = color_.g;
   wire_.color = color_;
   wire_.color.a = 1.0;
-  wire_.scale.x = 0.002;
+//  wire_.scale.x = 0.002;
+  wire_.scale.x = 0.004;
 
   p1.x = -sx + trans_x;
   p1.y = -sy + trans_y;

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
+  <arg name="sim"/>
+
+  <group if="$(arg sim)">
+    
+    <!-- prepare robot for manipulation tasks -->
+    <node pkg="srs_user_tests" type="prepare_robot_manip_sim.py" name="prepare_robot_manip_sim" output="screen">
+      <param name="torso" value="back" type="string"/>
+    </node>
+    
+    <node name="move_robot_e0man1" pkg="srs_user_tests" type="move_robot_sim_e0man1.py" respawn="false" output="screen">
+      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/robot_position_sim.yaml" command="load"/>
+    </node>
+
+  </group>
+  
+  <include file="$(find srs_user_tests)/ros/config/common/manip_test_common.xml">
+    <arg name="sim" value="$(arg sim)"/>
+  </include>
+  
+  <!-- Load predefined voxel map -->
+	<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch">
+	  <arg name="sim" value="$(arg sim)"/>
+    <arg name="exp" value="$(arg exp)"/>
+    <arg name="task" value="$(arg task)"/>
+	</include>
+  
+  <!-- spawn objects in simulation -->
+  <group if="$(arg sim)">
+  
+    <rosparam command="load" ns="objects" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/object_locations.yaml"/>
+    
+    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="dresser_covaro dresser_louis counter wooden_plank milk"/>
+    
+  </group>
+
+
+</launch>

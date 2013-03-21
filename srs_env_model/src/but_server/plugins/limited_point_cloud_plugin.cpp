@@ -87,7 +87,7 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
     node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME );
 
 	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
-	node_handle.param("ocmap_frame_id", m_frameId, m_frameId);
+	node_handle.param("ocmap_frame_id", m_frame_id, m_frame_id);
 
     // Create publisher
     m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
@@ -133,7 +133,7 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
     		return;
 
     // Just for sure
-	if(m_frameId != par.frameId)
+	if(m_frame_id != par.frameId)
 	{
 		PERROR("Map frame id has changed, this should never happen. Exiting newMapDataCB.");
 		return;
@@ -150,7 +150,7 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
 
 
 //    m_bTransformCamera = m_cameraFrameId != m_ocFrameId;
-    bool m_bTransformCamera = m_cameraFrameId != m_frameId;
+    bool m_bTransformCamera = m_cameraFrameId != m_frame_id;
 
     // If different frame id
     if( m_bTransformCamera )
@@ -161,15 +161,15 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
         // Get transforms
         try {
             // Transformation - from, to, time, waiting time
-            m_tfListener.waitForTransform(m_frameId, m_cameraFrameId,
+            m_tfListener.waitForTransform(m_frame_id, m_cameraFrameId,
                     par.currentTime, ros::Duration(5));
 
-            m_tfListener.lookupTransform(m_frameId, m_cameraFrameId,
+            m_tfListener.lookupTransform(m_frame_id, m_cameraFrameId,
                     par.currentTime, camToOcTf);
 
         } catch (tf::TransformException& ex) {
             ROS_ERROR_STREAM( m_name << ": Transform error - " << ex.what() << ", quitting callback");
-            PERROR( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_frameId );
+            PERROR( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_frame_id );
             return;
         }
  //       PERROR( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_ocFrameId );

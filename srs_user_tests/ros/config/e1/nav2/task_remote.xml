@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="exp" default="e1"/>
-  <arg name="task" default="nav1"/>
-  <arg name="cond" default="b"/>
-  <arg name="sim" default="true"/>
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
+  <arg name="sim" default="false"/>
 
   <include file="$(find srs_user_tests)/ros/config/common/nav_test_remote_common.xml" />
   
   <!-- Run rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/$(arg cond)/rviz.vcg" />
+	<node pkg="rviz" type="rviz" name="rviz" args="-f /map -d $(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/$(arg cond)/rviz.vcg"/>
 
 </launch>

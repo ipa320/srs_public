@@ -76,6 +76,8 @@ float maxScale(geometry_msgs::Vector3 scale);
  */
 float minScale(geometry_msgs::Vector3 scale);
 
+const float SCALE_COEFF = 1.0;
+
 /**
  * This class is parent class for BUT GUI primitives
  *
@@ -251,7 +253,7 @@ public:
     scale_change.y = scale.y - scale_.y;
     scale_change.z = scale.z - scale_.z;
     scale_ = scale;
-    object_.scale = srs_interaction_primitives::maxScale(scale_);
+    object_.scale = SCALE_COEFF * srs_interaction_primitives::maxScale(scale_);
     updatePublisher_->publishScaleChanged(scale_, scale_change);
   }
 
@@ -436,6 +438,8 @@ protected:
        show_description_control_,  show_trajectory_control_;
   bool menu_created_;
 
+  geometry_msgs::Vector3 scale_prev_;
+  int scale_saved_;
 };
 
 

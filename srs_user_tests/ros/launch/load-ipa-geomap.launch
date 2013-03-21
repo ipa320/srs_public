@@ -2,14 +2,16 @@
 <launch>
 
   <arg name="sim" default="false"/>
+  <arg name="exp"/>
+  <arg name="task"/>
   
   <!-- robot args -->
 	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
   <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
 
   <node ns="geometry_map" pkg="cob_3d_mapping_geometry_map" type="set_geometry_map" name="set_geometry_map" output="screen">
-    <param name="file_path" if="$(arg sim)" type="string" value="$(find srs_user_tests)/data/$(arg robot_env)/sim/geomap.bag"/>
-    <param name="file_path" unless="$(arg sim)" type="string" value="$(find srs_user_tests)/data/$(arg robot_env)/geomap.bag"/>
+    <param name="file_path" if="$(arg sim)" type="string" value="$(find srs_user_tests)/data/$(arg robot_env)/sim/$(arg exp)/$(arg task)/geomap.bag"/>
+    <param name="file_path" unless="$(arg sim)" type="string" value="$(find srs_user_tests)/data/$(arg robot_env)/$(arg exp)/$(arg task)/geomap.bag"/>
   </node>
 
 </launch>

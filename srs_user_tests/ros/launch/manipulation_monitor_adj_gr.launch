@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp"/>
+  <arg name="task"/>
+  <!--arg name="cond"/-->
+  <arg name="sim" default="false"/>
+
+  <!-- manipulation remote monitor application -->
+  <node pkg="srs_user_tests" name="gr_adj_node" type="print_gripper_pose.py" output="screen">
+
+
+    <param name="publish_debug_markers" type="bool" value="false"/>
+
+    <!-- load predefined position of BB -->
+    <rosparam if="$(arg sim)" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/bb_position_sim.yaml" command="load" />
+
+    <rosparam unless="$(arg sim)" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/bb_position.yaml" command="load" />
+
+  </node>
+
+
+
+</launch>

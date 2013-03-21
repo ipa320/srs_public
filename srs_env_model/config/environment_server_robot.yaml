@@ -40,7 +40,8 @@ ocmap_visualize_markers: false
 ocmap_filter_ground: false
 
 # Ground filter parameters - distance of points from the plane for RANSAC
-ocmap_ground_filter/distance: 0.04
+#ocmap_ground_filter/distance: 0.04
+ocmap_ground_filter/distance: 0.1
 
 # Ground plane angle
 ocmap_ground_filter/angle: 0.15
@@ -57,15 +58,20 @@ ocmap_filter_outdated: true
 # Input frames (clouds) skipping - use every n-th input message
 pointcloud_frame_skip: 1
 
-# Internal and published pointcloud frame id
-pointcloud_frame_id: "/head_cam3d_link"
-
 # Point cloud limits in z-axis - minimum
-pointcloud_min_z: 0.1 
+#pointcloud_min_z: 0.1
+pointcloud_min_z: 0.2
 
 # Point cloud limits in z-axis - maximum
 pointcloud_max_z: 4.0
 
+# Use input color if possible
+pointcloud_use_input_color: true
+
+# Default color
+pointcloud_default_color_r: 150
+pointcloud_default_color_g: 150
+pointcloud_default_color_b: 150
 
 ###############################################################################
 # Point cloud plugin - registration

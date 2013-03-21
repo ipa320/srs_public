@@ -2,10 +2,12 @@
 <launch>
 
   <!-- args for specifying test -->
-  <arg name="exp" default="e1"/>
-  <arg name="task" default="nav1"/>
-  <arg name="cond" default="b"/>
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
   <arg name="sim" default="false"/>
+  <arg name="log" default="true"/>
+  <arg name="id"/> <!-- ID of participant -->
   
   <arg name="pc1" default="cob3-3-pc1"/>
 	<arg name="pc2" default="cob3-3-pc2"/>
@@ -30,23 +32,19 @@
       <arg name="input_topic" value="/cam3d_throttled/depth_registered/points"/>
       <arg name="output_topic" value="/cam3d_throttled/depth_registered/points_noised"/>
     </include>
+
+    <!-- in case of simulation, start localization automatically -->
+    <include file="$(find srs_user_tests)/ros/launch/run_localization.launch">
+      <arg name="sim"  value="$(arg sim)"/>
+    </include>
   
   </group>
   
   
   <group>
   
-    <!-- run localization on PC1 -->
+    <!-- run on PC1 -->
     <machine name="pc1" address="$(arg pc1)" default="true" unless="$(arg sim)"/>
- 
-    <!-- navigation with different map for simulation/real testing site -->
-	  <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch" >
-		  <arg name="map" if="$(arg sim)" value="$(find srs_user_tests)/ros/config/$(arg robot_env)-sim/map.yaml"/>
-		  <arg name="map" unless="$(arg sim)" value="$(find srs_user_tests)/ros/config/$(arg robot_env)/map.yaml"/>
-	  </include>
-	  
-	  <!-- Run the interactive teleop -->
-	  <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch"/>
 	
 	</group>
 	
@@ -64,7 +62,19 @@
 	  </include>
 	
 	</group>
-	
+
+  <!-- logging -->
+  <group if="$(arg log)">
+  
+    <machine name="pc2" address="$(arg pc2)" default="true" unless="$(arg sim)"/>
+
+    <node name="logger" pkg="srs_user_tests" type="topics_bag.py" output="screen">
+      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/bag_record.yaml" command="load" />
+      <param name="bag_path" value="logs/$(arg id)/$(arg exp)/$(arg task)/$(arg cond)/"/>
+    </node>
+  
+  </group>
+
 	<machine name="pc1" address="$(arg pc1)" default="true" unless="$(arg sim)"/>
 	
 </launch>

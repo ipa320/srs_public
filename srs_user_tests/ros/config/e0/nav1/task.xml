@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="exp" default="e1"/>
-  <arg name="task" default="nav1"/>
-  <arg name="cond" default="a"/>
-  <arg name="sim" default="true"/>
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
+  <arg name="sim"/>
 
   <group if="$(arg sim)">
     
@@ -22,6 +22,8 @@
      <!-- use noised pointcloud in simulation -->
   	<arg name="points_in" if="$(arg sim)" value="/cam3d_throttled/depth_registered/points_noised"/>
 	  <arg name="sim" value="$(arg sim)"/>
+    <arg name="exp" value="$(arg exp)"/>
+    <arg name="task" value="$(arg task)"/>
  </include>
 
 </launch>

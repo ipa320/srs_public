@@ -2,7 +2,9 @@
 <launch>
 
   <arg name="points_in" default="/cam3d_throttled/depth_registered/points"/>
-  <arg name="sim" default="false"/>
+  <arg name="sim"/>
+  <arg name="exp"/>
+  <arg name="task"/>
 
   <!-- Voxel condition - start env. server -->
   <include file="$(find srs_env_model)/launch/but_envmodel_robot.launch">
@@ -12,6 +14,8 @@
   <!-- Load predefined voxel map -->
 	<include file="$(find srs_user_tests)/ros/launch/load_octomap.launch">
 	  <arg name="sim" value="$(arg sim)"/>
+    <arg name="exp" value="$(arg exp)"/>
+    <arg name="task" value="$(arg task)"/>
 	</include>
 
 </launch>

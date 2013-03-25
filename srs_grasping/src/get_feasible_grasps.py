@@ -82,9 +82,9 @@ class get_feasible_grasps():
 		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
 		self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state);
 		
-		rospy.loginfo("Waiting /arm_kinematics/get_constraint_aware_ik service...");
-		rospy.wait_for_service('/arm_kinematics/get_constraint_aware_ik')
-		rospy.loginfo("/arm_kinematics/get_constraint_aware_ik is ready.");
+		rospy.loginfo("Waiting /srs_arm_kinematics/get_ik service...");
+		rospy.wait_for_service('/srs_arm_kinematics/get_ik')
+		rospy.loginfo("/srs_arm_kinematics/get_ik is ready.");
 
 		rospy.loginfo("Waiting /get_db_grasps service...");
 		rospy.wait_for_service('/get_db_grasps')

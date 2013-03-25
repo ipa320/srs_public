@@ -18,7 +18,7 @@ class graspingutils():
 
 	def __init__(self, simulation=True):
 		self.simulation = simulation
-		self.ik_service = rospy.ServiceProxy('/arm_kinematics/get_constraint_aware_ik', GetConstraintAwarePositionIK)
+		self.ik_service = rospy.ServiceProxy('/srs_arm_kinematics/get_ik', GetPositionIK)
 		self.is_grasped_service = rospy.ServiceProxy('/sdh_controller/is_grasped', Trigger)
 		self.is_cylindric_grasped_service = rospy.ServiceProxy('/sdh_controller/is_cylindric_grasped', Trigger)
 
@@ -144,7 +144,7 @@ class graspingutils():
 
 
 	def callIKSolver(self,current_pose, goal_pose):
-		req = GetConstraintAwarePositionIKRequest();
+		req = GetPositionIKRequest();
 		req.ik_request.ik_link_name = "sdh_palm_link";
 		req.ik_request.ik_seed_state.joint_state.position = current_pose;
 		req.ik_request.pose_stamped = goal_pose;

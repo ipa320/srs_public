@@ -216,6 +216,8 @@ class srs_grasp(smach.State):
                         r.sleep()
 		"""
 		rospy.sleep(5)
+		#TODO: Solve the closing hand sequence. It's closing after the sleep, so the tactil check fails.
+
 		#Confirm the grasp based on force feedback
 		if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
 			#Regrasp (close MORE the fingers)

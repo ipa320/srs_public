@@ -9,4 +9,7 @@
    <!--shifted to DM, as the service is required by other componenets as well -->
    <include file="$(find cob_tactiletools)/launch/filters.launch"/>
 
+   <!-- Reactive grasping -->
+   <include file="$(find srs_assisted_grasping)/launch/grasping_node.launch"/>
+
 </launch>

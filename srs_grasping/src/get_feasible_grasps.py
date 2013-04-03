@@ -125,11 +125,11 @@ class get_feasible_grasps():
 
 				pre = grasping_functions.graspingutils.pose_from_matrix(pre_trans);
 				g = grasping_functions.graspingutils.pose_from_matrix(grasp_trans);
-			
+				surface_distance = g.pose.position.z - request.object_pose.position.z
 				category = grasping_functions.graspingutils.get_grasp_category(pre.pose.position, g.pose.position);
 				
+				nvg = FeasibleGrasp(grasp_configuration.sdh_joint_values, "/sdh_palm_link", g, pre, surface_distance, category);
 				fpos = self.get_finger_positions(category)
-				nvg = FeasibleGrasp(grasp_configuration.sdh_joint_values, "/sdh_palm_link", g, pre, -1.0, category);
 				pre.pose = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre.pose, request.pregrasp_offsets);
 			
 				if (grasping_functions.graspingutils.valid_grasp(category)) and (not self.checkCollisions(fpos, nvg, request.object_pose)):
@@ -141,13 +141,6 @@ class get_feasible_grasps():
 								for k in range(0,self.ik_loop_reply):
 									(gc, error) = grasping_functions.graspingutils.callIKSolver(pgc, g);
 									if(error.val == error.SUCCESS):
-										#To get the distance between the hand and the surface.
-										f_op = PoseStamped();
-										f_op.pose.orientation = request.object_pose.orientation
-										f_rot = grasping_functions.graspingutils.rotation_matrix(f_op.pose);
-										f_st = f_rot*grasping_functions.graspingutils.matrix_from_pose(grasp_configuration.grasp.pose);
-										st = grasping_functions.graspingutils.pose_from_matrix(f_st);
-										nvg.surface_distance = st.pose.position.z
 										raise FeasibleGraspFound();
 					except FeasibleGraspFound:
 						resp.feasible_grasp_available = True;

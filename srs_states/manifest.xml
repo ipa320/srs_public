@@ -28,9 +28,9 @@
   <depend package="srs_assisted_detection"/>
   <depend package="srs_knowledge"/>
   <depend package="srs_symbolic_grounding"/>
+  <depend package="srs_assisted_grasping_msgs"/>
   
-  
-  
+
 
   <!--Start-->
   <!--Packages removed for simplifying the testing process, they will be loaded dynamicly within the states-->

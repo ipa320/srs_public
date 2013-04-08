@@ -105,17 +105,27 @@ class put_object_on_tray(smach.State):
         smach.State.__init__(
             self,
             outcomes=['succeeded', 'failed' ,'preempted'],
-            input_keys=['grasp_categorisation'])
+            input_keys=['grasp_categorisation','surface_distance'])
         
         
     def execute(self, userdata):
         #TODO select position on tray depending on how many objects are on the tray already
         global current_task_info
+        ipa_arm_navigation = 'false'
+            
+        try:
+            ipa_arm_navigation = rospy.get_param("srs/ipa_arm_navigation")
+        except Exception, e:
+            rospy.INFO('can not read parameter of srs/ipa_arm_navigation, use the default value planned arm navigation disabled')         
+        
         
         if True:#current_task_info.object_in_hand and not current_task_info.object_on_tray:
-        
+
             # move object to frontside
-            handle_arm = sss.move("arm","grasp-to-tray",False)
+            if ipa_arm_navigation.lower() == 'true':
+                handle_arm = sss.move("arm","grasp-to-tray",False, 'Planned')
+            else:
+                handle_arm = sss.move("arm","grasp-to-tray",False)
             sss.sleep(2)
             sss.move("tray","up")
             handle_arm.wait()
@@ -136,9 +146,11 @@ class put_object_on_tray(smach.State):
         if self.preempt_requested():
             self.service_preempt()
             return 'preempted'
-
-        # move arm to backside again
-        handle_arm = sss.move("arm","tray-to-folded",False)
+        if ipa_arm_navigation.lower() == 'true':
+            # move arm to backside again
+            handle_arm = sss.move("arm","tray-to-folded",False, 'Planned')
+        else:
+            handle_arm = sss.move("arm","tray-to-folded",False)
         sss.sleep(3)
         sss.move("sdh","home")
         handle_arm.wait()

@@ -186,37 +186,16 @@ class srs_grasp(smach.State):
 		goal.target_configuration.data = list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)
 		f = 3000.0
 		goal.max_force.data = [f, f, f, f, f, f] # 6 tactile pads
-		goal.time = rospy.Duration(8.0)
-
+		goal.time = rospy.Duration(3.0)
 		client.send_goal(goal)
 
 		rospy.loginfo('Closing gripper using reactive grasping')
 		client.wait_for_result()
-
+		rospy.sleep(3)
 		result = client.get_result()
-		print "----------------------------"
-		print result.actual_joint_values
-		print result.actual_forces
-		print result.time_to_stop
-		print "----------------------------"
-		"""
-		sdh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)], False)
-		sss.say(["I am grasping the object now!"])
-		rospy.sleep(3);
-		sdh_handle.wait(4)
 		
-                r = rospy.Rate(10)
-                preempted = False
-                sdh_state = -1
-                while True:
-			preempted = self.preempt_requested()
-                        sdh_state = sdh_handle.get_state()
-                        if preempted or ( sdh_state == 3) or (sdh_state == 4):
-                        	break # stop waiting  
-                        r.sleep()
-		"""
-		rospy.sleep(5)
 		#TODO: Solve the closing hand sequence. It's closing after the sleep, so the tactil check fails.
+		rospy.sleep(1)
 
 		#Confirm the grasp based on force feedback
 		if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
@@ -228,13 +207,19 @@ class srs_grasp(smach.State):
 			regrasp[5] += 0.07
 			print "to:\n", regrasp
 
-			sdh_handle = sss.move("sdh", [regrasp])
-			rospy.sleep(2)
-			sdh_handle.wait(3)
 
-			rospy.sleep(5)
+
+			goal.target_configuration.data = regrasp
+			client.send_goal(goal)
+
+			rospy.loginfo('Regrasp: Closing gripper using reactive grasping')
+			client.wait_for_result()
+			rospy.sleep(3)
+			result = client.get_result()
+			rospy.sleep(1)
+
 			if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
-				sss.say(["I can not fix the object correctly!"])
+				sss.say(["Regrasp: I can not fix the object correctly!"])
 				raise BadGrasp();
 
 		#post-grasp
@@ -257,7 +242,7 @@ class srs_grasp(smach.State):
 			aux = 0.0;
 			for i in range(0,5):
 				post_grasp_stamped.pose.position.x = aux_x + aux;
-				(post_grasp_conf2, error_code) = grasping_functions.graspingutils.callIKSolver(post_grasp_conf, post_grasp_sostamped)
+				(post_grasp_conf2, error_code) = grasping_functions.graspingutils.callIKSolver(post_grasp_conf, post_grasp_stamped)
 				aux += 0.02;
 				if(error_code.val == error_code.SUCCESS):
 					postgrasp_trajectory.append(post_grasp_conf2);

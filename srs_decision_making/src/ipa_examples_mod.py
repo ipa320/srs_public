@@ -116,7 +116,7 @@ class put_object_on_tray(smach.State):
         try:
             ipa_arm_navigation = rospy.get_param("srs/ipa_arm_navigation")
         except Exception, e:
-            rospy.INFO('can not read parameter of srs/ipa_arm_navigation, use the default value planned arm navigation disabled')         
+            print('can not read parameter of srs/ipa_arm_navigation, use the default value planned arm navigation disabled')         
         
         
         if True:#current_task_info.object_in_hand and not current_task_info.object_on_tray:

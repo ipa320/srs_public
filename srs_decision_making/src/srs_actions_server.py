@@ -351,6 +351,7 @@ class SRS_DM_ACTION(object):
         self.temp.userdata.target_object_pose=Pose()
         self.temp.userdata.the_target_object_found = ''
         self.temp.userdata.verified_target_object_pose=Pose()
+        self.temp.userdata.surface_distance = -1000
         
         #session id for current task, on id per task.
         #session id can be shared by different clients
@@ -411,7 +412,8 @@ class SRS_DM_ACTION(object):
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object':'the_target_object_found',
                                               'target_object_pose':'target_object_pose',
-                                              'grasp_categorisation':'grasp_categorisation'})
+                                              'grasp_categorisation':'grasp_categorisation',
+                                              'surface_distance':'surface_distance'})
             
             '''
             START
@@ -423,7 +425,8 @@ class SRS_DM_ACTION(object):
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_id':'target_object_id',
                                               'target_object':'the_target_object_found',
-                                              'grasp_categorisation':'grasp_categorisation'})
+                                              'grasp_categorisation':'grasp_categorisation',
+                                              'surface_distance':'surface_distance'})
             '''
             #Old grasp added for backward compatible, should be removed after knowledge service updated completely
             END
@@ -431,7 +434,8 @@ class SRS_DM_ACTION(object):
             
             smach.StateMachine.add('SM_PUT_ON_TRAY', srs_put_on_tray_operation(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
-                                   remapping={'grasp_categorisation':'grasp_categorisation' })
+                                   remapping={'grasp_categorisation':'grasp_categorisation',
+                                              'surface_distance':'surface_distance' })
 
             smach.StateMachine.add('SM_ENV_UPDATE', srs_enviroment_update_operation(),
                                    transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},

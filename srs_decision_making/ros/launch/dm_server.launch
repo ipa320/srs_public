@@ -8,6 +8,9 @@
     <node pkg="srs_decision_making" type="ui_pri_topics.py" name="ui_pri_topics" output="screen">
         </node>
         
+    <node pkg="srs_decision_making" type="ui_pri_topics_yes_no.py" name="answer_yes_no" output="screen">
+        </node>
+    
     <node pkg="srs_decision_making_interface" type="srs_decision_making_ui_interface.py" name="srs_decision_making_ui_interface" output="screen">
         </node>
 

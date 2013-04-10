@@ -1,5 +1,5 @@
 # array of id from all good object. The id is the position in the array of the first service
-int32[] good_id
+#int32[] good_id
 #id of array, for this object the action will be used. If the use dont want special object always set id=0
 int32 id
 #name of action

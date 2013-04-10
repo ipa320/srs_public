@@ -837,18 +837,6 @@ class remote_user_intervention(smach.State):
         if userdata.semi_autonomous_mode == False:
             return 'give_up'
         
-        rospy.wait_for_service('answer_yes_no')
-        try:
-            # call ui_pri_topic_yes_no
-            # if the answer is "no", then return 'give_up'
-            answer_yes_no = rospy.ServiceProxy('answer_yes_no', xsrv.answer_yes_no)
-            resp = answer_yes_no()
-            if resp.answer == "No":
-                print "### answer_yes_no returns no"
-                #return 'give_up'
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-            
         global current_task_info
         #name of the overall task
         #the_task_name = current_task_info.task_feedback.task_name 
@@ -884,11 +872,21 @@ class remote_user_intervention(smach.State):
             try:
                 print "### action client of echo server is working..."
                 client = actionlib.SimpleActionClient('srs_ui_pro/echo_server', echo_server_msg.dm_serverAction)
-                now = rospy.get_rostime()
                 if client.wait_for_server(timeout=rospy.Duration(5)) is False:
                     print "### there is not response from dm_server"
                     return 'give_up'
                 
+                rospy.wait_for_service('answer_yes_no')
+                try:
+                    # call ui_pri_topic_yes_no
+                    # if the answer is "no", then return 'give_up'
+                    answer_yes_no = rospy.ServiceProxy('answer_yes_no', xsrv.answer_yes_no)
+                    resp = answer_yes_no()
+                    if resp.answer == "No":
+                        print "### answer_yes_no returns no"
+                        #return 'give_up'
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s"%e
                 
                 goal = echo_server_msg.dm_serverGoal()
                 
@@ -948,6 +946,7 @@ class remote_user_intervention(smach.State):
                 json_decoded = json.loads(self.server_json_result)
                 result = json_decoded['result']
                 # result should be succeeded
+                print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ result of user intervention ", result
                 if result == "succeeded":
                     return 'completed'
                 elif result == "failed":

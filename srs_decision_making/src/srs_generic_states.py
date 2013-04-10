@@ -872,21 +872,22 @@ class remote_user_intervention(smach.State):
             try:
                 print "### action client of echo server is working..."
                 client = actionlib.SimpleActionClient('srs_ui_pro/echo_server', echo_server_msg.dm_serverAction)
-                if client.wait_for_server(timeout=rospy.Duration(5)) is False:
-                    print "### there is not response from dm_server"
-                    return 'give_up'
                 
-                rospy.wait_for_service('answer_yes_no')
-                try:
-                    # call ui_pri_topic_yes_no
-                    # if the answer is "no", then return 'give_up'
-                    answer_yes_no = rospy.ServiceProxy('answer_yes_no', xsrv.answer_yes_no)
-                    resp = answer_yes_no()
-                    if resp.answer == "No":
-                        print "### answer_yes_no returns no"
-                        #return 'give_up'
-                except rospy.ServiceException, e:
-                    print "Service call failed: %s"%e
+                if client.wait_for_server(timeout=rospy.Duration(5)) is False:
+                    rospy.loginfo ("there is no response from srs_ui_pro, this intervention action cannot be executed now...")
+                    return 'give_up'
+                else:
+                    rospy.wait_for_service('answer_yes_no')
+                    try:
+                        # call ui_pri_topic_yes_no
+                        # if the answer is "no", then return 'give_up'
+                        answer_yes_no = rospy.ServiceProxy('answer_yes_no', xsrv.answer_yes_no)
+                        resp = answer_yes_no()
+                        if resp.answer == "No":
+                            print "### answer_yes_no returns no"
+                            #return 'give_up'
+                    except rospy.ServiceException, e:
+                        print "Service call failed: %s"%e
                 
                 goal = echo_server_msg.dm_serverGoal()
                 
@@ -920,33 +921,25 @@ class remote_user_intervention(smach.State):
                 
                 server_feedback = echo_server_msg.dm_serverFeedback()
                 server_result = echo_server_msg.dm_serverResult()
+                
                 # send the goal to echo server
                 client.send_goal(goal, self.result_callback, self.active_callback, self.feedback_callback)
-                rospy.spin()
+                rospy.sleep(25)
                 
-                # result format is: {"exception_id":1, "feedback_type ":"unstructured", "content":"Waiting srs_ui_pro"}
-                # to restructure the result, and publish it as current_task_info
-                #feedback = xmsg.ExecutionFeedback()
-                #current_task_info._srs_as._as.publish_feedback(result)
-                
-                #json_feedback format: {"exception_id":-1, "feedback_type ":"unstructured", "content":"Waiting srs_ui_pro"}
-                #json_result format: "{\"exception_id\":"+str(exception_id)+", \"result\":\""+result+"\"}";
-                #!!! there is an error in dm_server line _create_result() 
+                if self.server_json_result == "" :
+                    rospy.loginfo ("there is no response from srs_ui_pro, the current intervention action has been given up...")
+                    return "give_up"
                 
                 _feedback = xmsg.ExecutionFeedback()
                 _feedback.current_state =  self.server_current_status + ": started"
                 _feedback.solution_required = False
                 _feedback.exceptional_case_id = exception_id
                 _feedback.json_feedback = self.server_json_feedback
-                
-                print "### _feedback is ", _feedback.json_feedback
-                
                 current_task_info._srs_as._as.publish_feedback(_feedback)
-                
+            
                 json_decoded = json.loads(self.server_json_result)
                 result = json_decoded['result']
                 # result should be succeeded
-                print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ result of user intervention ", result
                 if result == "succeeded":
                     return 'completed'
                 elif result == "failed":

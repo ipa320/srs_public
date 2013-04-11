@@ -6,14 +6,12 @@
   <arg name="cond" default="b"/>
   <arg name="sim" default="true"/>
   
-  <group if="$(arg sim)">
-    
-    <!-- move robot to proper position -->
-    <node name="move_robot_sim" pkg="srs_user_tests" type="move_robot.py" respawn="false" output="screen">
-      <rosparam file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/robot_position_sim.yaml" command="load"/>
-    </node>
-    
-  </group>
+  <!-- move robot to proper position -->
+  <include file="$(find srs_user_tests)/ros/launch/move_robot.launch">
+    <arg name="exp"  value="$(arg exp)"/>
+    <arg name="task" value="$(arg task)"/>
+    <arg name="sim"  value="$(arg sim)"/>
+  </include>
   
   <!-- task specific launch files -->
   <include file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/task.xml">

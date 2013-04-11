@@ -3,95 +3,62 @@ Background\ ColorG=0
 Background\ ColorB=0
 Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
-2D\ Map.Alpha=0,7
+2D\ Map.Alpha=0.8
 2D\ Map.Draw\ Behind=0
 2D\ Map.Enabled=1
 2D\ Map.Topic=/map
-3D\ Geometric\ Map.Enabled=1
-3D\ Geometric\ Map.Marker\ Topic=/shape_visualization/marker
-3D\ Geometric\ Map.shape\ visualization=1
-3D\ Global\ Voxel\ Map.Alpha=1
-3D\ Global\ Voxel\ Map.Billboard\ Size=0,01
-3D\ Global\ Voxel\ Map.Camera\ Info\ Topic=/cam3d_throttled/rgb/camera_info
-3D\ Global\ Voxel\ Map.Color\ Transformer=RGB8
-3D\ Global\ Voxel\ Map.Cull\ View\ Frustum=1
-3D\ Global\ Voxel\ Map.Decay\ Time=0
-3D\ Global\ Voxel\ Map.Enabled=0
-3D\ Global\ Voxel\ Map.Max\ Distance=50
-3D\ Global\ Voxel\ Map.Position\ Transformer=XYZ
-3D\ Global\ Voxel\ Map.Selectable=1
-3D\ Global\ Voxel\ Map.Show\ View\ Frustum=1
-3D\ Global\ Voxel\ Map.Style=2
-3D\ Global\ Voxel\ Map.Topic=/but_env_model/cpc_pointcloud_centers
-3D\ Global\ Voxel\ Map.View\ Frustum\ Depth=4
-3D\ Global\ Voxel\ Map..AxisAutocompute\ Value\ Bounds=1
-3D\ Global\ Voxel\ Map..AxisAxis=2
-3D\ Global\ Voxel\ Map..AxisMax\ Value=10
-3D\ Global\ Voxel\ Map..AxisMin\ Value=-10
-3D\ Global\ Voxel\ Map..AxisUse\ Fixed\ Frame=1
-3D\ Global\ Voxel\ Map..Flat\ ColorColorR=1
-3D\ Global\ Voxel\ Map..Flat\ ColorColorG=1
-3D\ Global\ Voxel\ Map..Flat\ ColorColorB=1
-3D\ Global\ Voxel\ Map..IntensityAutocompute\ Intensity\ Bounds=1
-3D\ Global\ Voxel\ Map..IntensityChannel\ Name=intensity
-3D\ Global\ Voxel\ Map..IntensityMax\ ColorR=1
-3D\ Global\ Voxel\ Map..IntensityMax\ ColorG=1
-3D\ Global\ Voxel\ Map..IntensityMax\ ColorB=1
-3D\ Global\ Voxel\ Map..IntensityMax\ Intensity=4096
-3D\ Global\ Voxel\ Map..IntensityMin\ ColorR=0
-3D\ Global\ Voxel\ Map..IntensityMin\ ColorG=0
-3D\ Global\ Voxel\ Map..IntensityMin\ ColorB=0
-3D\ Global\ Voxel\ Map..IntensityMin\ Intensity=0
-3D\ Global\ Voxel\ Map..IntensityUse\ full\ RGB\ spectrum=0
 Autonomous\ Navi\ Path.Alpha=1
-Autonomous\ Navi\ Path.ColorR=0,1
+Autonomous\ Navi\ Path.ColorR=0.1
 Autonomous\ Navi\ Path.ColorG=1
 Autonomous\ Navi\ Path.ColorB=0
 Autonomous\ Navi\ Path.Enabled=0
 Autonomous\ Navi\ Path.Topic=/move_base/DWAPlannerROS/global_plan
 Collision\ Indicator.Enabled=1
 Collision\ Indicator.Marker\ Topic=/collision_velocity_filter/velocity_limited_marker
+Geo\ planes.Enabled=1
+Geo\ planes.Marker\ Topic=/shape_visualization_fov/marker
+Geo\ planes.shape\ visualization=1
 In-Scene\ Teleop.Enabled=0
 In-Scene\ Teleop.Show\ Axes=0
 In-Scene\ Teleop.Show\ Descriptions=1
 In-Scene\ Teleop.Show\ Tool\ Tips=1
 In-Scene\ Teleop.Update\ Topic=/cob_interactive_teleop/update
-Inflated\ Obstacles.Alpha=1
-Inflated\ Obstacles.ColorR=0,1
-Inflated\ Obstacles.ColorG=1
-Inflated\ Obstacles.ColorB=0
+Inflated\ Obstacles.Alpha=0.3
+Inflated\ Obstacles.ColorR=0.227451
+Inflated\ Obstacles.ColorG=0.92549
+Inflated\ Obstacles.ColorB=0.105882
 Inflated\ Obstacles.Enabled=0
 Inflated\ Obstacles.Topic=/move_base/local_costmap/inflated_obstacles
 Kinect\ FOV.Alpha=1
-Kinect\ FOV.Billboard\ Size=0,01
+Kinect\ FOV.Billboard\ Size=0.02
 Kinect\ FOV.Color\ Transformer=Intensity
 Kinect\ FOV.Decay\ Time=0
-Kinect\ FOV.Enabled=0
+Kinect\ FOV.Enabled=1
 Kinect\ FOV.Position\ Transformer=XYZ
 Kinect\ FOV.Selectable=1
 Kinect\ FOV.Style=0
-Kinect\ FOV.Topic=/cam3d_throttled/depth_registered/points_noised
+Kinect\ FOV.Topic=/cam3d_throttled/depth_registered/points
 Kinect\ FOV..AxisAutocompute\ Value\ Bounds=1
 Kinect\ FOV..AxisAxis=2
-Kinect\ FOV..AxisMax\ Value=1,11832
-Kinect\ FOV..AxisMin\ Value=-0,0916457
+Kinect\ FOV..AxisMax\ Value=2.72326
+Kinect\ FOV..AxisMin\ Value=1.54658
 Kinect\ FOV..AxisUse\ Fixed\ Frame=1
-Kinect\ FOV..Flat\ ColorColorR=1
-Kinect\ FOV..Flat\ ColorColorG=1
-Kinect\ FOV..Flat\ ColorColorB=1
+Kinect\ FOV..Flat\ ColorColorR=0.376471
+Kinect\ FOV..Flat\ ColorColorG=0.376471
+Kinect\ FOV..Flat\ ColorColorB=0.376471
 Kinect\ FOV..IntensityAutocompute\ Intensity\ Bounds=1
 Kinect\ FOV..IntensityChannel\ Name=z
 Kinect\ FOV..IntensityMax\ ColorR=1
 Kinect\ FOV..IntensityMax\ ColorG=1
 Kinect\ FOV..IntensityMax\ ColorB=1
-Kinect\ FOV..IntensityMax\ Intensity=5,01641
+Kinect\ FOV..IntensityMax\ Intensity=2.514
 Kinect\ FOV..IntensityMin\ ColorR=0
 Kinect\ FOV..IntensityMin\ ColorG=0
 Kinect\ FOV..IntensityMin\ ColorB=0
-Kinect\ FOV..IntensityMin\ Intensity=1,52771
+Kinect\ FOV..IntensityMin\ Intensity=0.719
 Kinect\ FOV..IntensityUse\ full\ RGB\ spectrum=0
 Laser\ Scan\ Front.Alpha=1
-Laser\ Scan\ Front.Billboard\ Size=0,01
+Laser\ Scan\ Front.Billboard\ Size=0.1
 Laser\ Scan\ Front.Color\ Transformer=Flat Color
 Laser\ Scan\ Front.Decay\ Time=0
 Laser\ Scan\ Front.Enabled=1
@@ -118,14 +85,14 @@ Laser\ Scan\ Front..IntensityMin\ ColorG=1
 Laser\ Scan\ Front..IntensityMin\ ColorB=0
 Laser\ Scan\ Front..IntensityMin\ Intensity=0
 Laser\ Scan\ Front..IntensityUse\ full\ RGB\ spectrum=0
-Laser\ Scan\ Historic\ \(Obstacles\).Alpha=1
-Laser\ Scan\ Historic\ \(Obstacles\).ColorR=0,1
-Laser\ Scan\ Historic\ \(Obstacles\).ColorG=1
-Laser\ Scan\ Historic\ \(Obstacles\).ColorB=0
-Laser\ Scan\ Historic\ \(Obstacles\).Enabled=1
+Laser\ Scan\ Historic\ \(Obstacles\).Alpha=0.8
+Laser\ Scan\ Historic\ \(Obstacles\).ColorR=0.556863
+Laser\ Scan\ Historic\ \(Obstacles\).ColorG=0.0823529
+Laser\ Scan\ Historic\ \(Obstacles\).ColorB=0.215686
+Laser\ Scan\ Historic\ \(Obstacles\).Enabled=0
 Laser\ Scan\ Historic\ \(Obstacles\).Topic=/move_base/local_costmap/obstacles
 Laser\ Scan\ Rear.Alpha=1
-Laser\ Scan\ Rear.Billboard\ Size=0,01
+Laser\ Scan\ Rear.Billboard\ Size=0.1
 Laser\ Scan\ Rear.Color\ Transformer=Flat Color
 Laser\ Scan\ Rear.Decay\ Time=0
 Laser\ Scan\ Rear.Enabled=1
@@ -153,7 +120,7 @@ Laser\ Scan\ Rear..IntensityMin\ ColorB=0
 Laser\ Scan\ Rear..IntensityMin\ Intensity=0
 Laser\ Scan\ Rear..IntensityUse\ full\ RGB\ spectrum=0
 Laser\ Scan\ Top.Alpha=1
-Laser\ Scan\ Top.Billboard\ Size=0,01
+Laser\ Scan\ Top.Billboard\ Size=0.1
 Laser\ Scan\ Top.Color\ Transformer=Flat Color
 Laser\ Scan\ Top.Decay\ Time=0
 Laser\ Scan\ Top.Enabled=1
@@ -182,7 +149,7 @@ Laser\ Scan\ Top..IntensityMin\ Intensity=0
 Laser\ Scan\ Top..IntensityUse\ full\ RGB\ spectrum=0
 RGB\ Video.Enabled=1
 RGB\ Video.Image\ Topic=/black_image
-RGB\ Video.Transport\ Hint=theora
+RGB\ Video.Transport\ Hint=raw
 RViz\ Camera\ Pose\ Publisher.Enabled=1
 Robot\ Footprint.Alpha=1
 Robot\ Footprint.ColorR=1
@@ -297,11 +264,14 @@ Robot\:\ Robot\ Link\ tray_phidgets_4_linkShow\ Axes=0
 Robot\:\ Robot\ Link\ tray_phidgets_4_linkShow\ Trail=0
 Robot\:\ Robot\ Link\ tray_right_linkShow\ Axes=0
 Robot\:\ Robot\ Link\ tray_right_linkShow\ Trail=0
+geo\ lines.=1
+geo\ lines.Enabled=1
+geo\ lines.Marker\ Topic=/geometry_map/geometry_marker
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.796 5.82083 27.8226 -11.3898 -0.101771 11.0209
-Property\ Grid\ State=selection=Kinect FOV.Enabled;expanded=3D Global Voxel Map.Enabled.3D Global Voxel Map.StatusTopStatus,3D Geometric Map.Enabled.3D Geometric Map.Namespaces,Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=150,301;ispageselected=1
+Camera\ Config=0.996 2.74444 4.28263 1.74807 0.548095 -8.40173
+Property\ Grid\ State=selection=;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus,geo lines.Enabled.geo lines.Namespaces,Geo planes.Enabled.Geo planes.Namespaces;scrollpos=0,0;splitterpos=248,496;ispageselected=1
 [Display0]
 Name=RGB Video
 Package=rviz
@@ -311,58 +281,58 @@ Name=2D Map
 Package=rviz
 ClassName=rviz::MapDisplay
 [Display2]
-Name=3D Global Voxel Map
-Package=srs_env_model_ui
-ClassName=CButPointCloud
-[Display3]
-Name=3D Geometric Map
-Package=rviz
-ClassName=rviz::MarkerDisplay
-[Display4]
 Name=Kinect FOV
 Package=rviz
 ClassName=rviz::PointCloud2Display
-[Display5]
+[Display3]
 Name=Robot
 Package=rviz
 ClassName=rviz::RobotModelDisplay
-[Display6]
+[Display4]
 Name=Robot Footprint
 Package=rviz
 ClassName=rviz::PolygonDisplay
-[Display7]
+[Display5]
 Name=Collision Indicator
 Package=rviz
 ClassName=rviz::MarkerDisplay
-[Display8]
+[Display6]
 Name=Laser Scan Front
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display9]
+[Display7]
 Name=Laser Scan Rear
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display10]
+[Display8]
 Name=Laser Scan Top
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display11]
+[Display9]
 Name=Laser Scan Historic (Obstacles)
 Package=rviz
 ClassName=rviz::GridCellsDisplay
-[Display12]
+[Display10]
 Name=RViz Camera Pose Publisher
 Package=srs_env_model_ui
 ClassName=CCameraPublisherDisplay
-[Display13]
+[Display11]
 Name=Autonomous Navi Path
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display14]
+[Display12]
 Name=In-Scene Teleop
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display15]
+[Display13]
 Name=Inflated Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay
+[Display14]
+Name=geo lines
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display15]
+Name=Geo planes
+Package=rviz
+ClassName=rviz::MarkerDisplay

@@ -381,7 +381,7 @@ class srs_put_on_tray_operation(smach.StateMachine):
     
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
-                                    input_keys=['grasp_categorisation'])
+                                    input_keys=['grasp_categorisation','surface_distance'])
         self.userdata.action_name = 'put_on_tray'
         #add_common_states(self)
         
@@ -392,7 +392,7 @@ class srs_put_on_tray_operation(smach.StateMachine):
             
             smach.StateMachine.add('ACTION', co_sm_transfer_to_tray,
                     transitions={'succeeded':'POST_CONFIG', 'not_completed':'not_completed', 'paused':'PAUSED_DURING_ACTION', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},
-                    remapping={'grasp_categorisation':'grasp_categorisation'})
+                    remapping={'grasp_categorisation':'grasp_categorisation','surface_distance':'surface_distance'})
 
         
             smach.StateMachine.add('POST_CONFIG', co_sm_post_conf,
@@ -483,7 +483,7 @@ class srs_grasp_operation(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','target_object_id','target_object','target_workspace_name','semi_autonomous_mode'],
-                                    output_keys=['grasp_categorisation'])
+                                    output_keys=['grasp_categorisation','surface_distance'])
         self.userdata.action_name = 'grasp'
         self.userdata.grasp_categorisation = ""
         self.userdata.target_object_old_pose = Pose()
@@ -502,7 +502,8 @@ class srs_grasp_operation(smach.StateMachine):
                                 'target_object_id':'target_object_id',
                                 'target_object':'target_object',
                                 'target_workspace_name':'target_workspace_name',
-                                'grasp_categorisation':'grasp_categorisation'})       
+                                'grasp_categorisation':'grasp_categorisation',
+                                'surface_distance':'surface_distance'})       
              
             smach.StateMachine.add('POST_CONFIG', co_sm_post_conf,
                                    
@@ -524,7 +525,7 @@ class srs_old_grasp_operation(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
                                     input_keys=['target_object_name','target_object_id','target_object','semi_autonomous_mode'],
-                                    output_keys=['grasp_categorisation'])
+                                    output_keys=['grasp_categorisation','surface_distance'])
         self.userdata.action_name = 'grasp'
         self.userdata.grasp_categorisation = ""
         self.userdata.target_object_old_pose = Pose()
@@ -542,7 +543,8 @@ class srs_old_grasp_operation(smach.StateMachine):
                                 'semi_autonomous_mode':'semi_autonomous_mode',
                                 'target_object_id':'target_object_id',
                                 'target_object':'target_object',
-                                'grasp_categorisation':'grasp_categorisation'})       
+                                'grasp_categorisation':'grasp_categorisation',
+                                'surface_distance':'surface_distance'})       
              
             smach.StateMachine.add('POST_CONFIG', co_sm_post_conf,
                     transitions={'succeeded':'succeeded', 'paused':'PAUSED_DURING_POST_CONFIG', 'failed':'failed', 'preempted':'preempted', 'stopped':'stopped'},

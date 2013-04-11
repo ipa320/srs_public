@@ -7,8 +7,10 @@ Target\ Frame=<Fixed Frame>
 2D\ Map.Draw\ Behind=0
 2D\ Map.Enabled=1
 2D\ Map.Topic=/map
+3D\ Geometric\ Map.Enabled=0
+3D\ Geometric\ Map.Marker\ Topic=/shape_visualization/marker
 3D\ Global\ Voxel\ Map.Alpha=1
-3D\ Global\ Voxel\ Map.Billboard\ Size=0.06
+3D\ Global\ Voxel\ Map.Billboard\ Size=0.03
 3D\ Global\ Voxel\ Map.Camera\ Info\ Topic=/cam3d_throttled/rgb/camera_info
 3D\ Global\ Voxel\ Map.Color\ Transformer=RGB8
 3D\ Global\ Voxel\ Map.Cull\ View\ Frustum=1
@@ -63,11 +65,11 @@ Kinect\ FOV.Alpha=1
 Kinect\ FOV.Billboard\ Size=0.02
 Kinect\ FOV.Color\ Transformer=RGB8
 Kinect\ FOV.Decay\ Time=0
-Kinect\ FOV.Enabled=0
+Kinect\ FOV.Enabled=1
 Kinect\ FOV.Position\ Transformer=XYZ
 Kinect\ FOV.Selectable=1
 Kinect\ FOV.Style=0
-Kinect\ FOV.Topic=/cam3d_throttled/depth_registered/points_noised
+Kinect\ FOV.Topic=/cam3d_throttled/depth_registered/points
 Kinect\ FOV..AxisAutocompute\ Value\ Bounds=1
 Kinect\ FOV..AxisAxis=2
 Kinect\ FOV..AxisMax\ Value=10
@@ -119,7 +121,7 @@ Laser\ Scan\ Historic\ \(Obstacles\).Alpha=0.8
 Laser\ Scan\ Historic\ \(Obstacles\).ColorR=0.556863
 Laser\ Scan\ Historic\ \(Obstacles\).ColorG=0.0823529
 Laser\ Scan\ Historic\ \(Obstacles\).ColorB=0.215686
-Laser\ Scan\ Historic\ \(Obstacles\).Enabled=1
+Laser\ Scan\ Historic\ \(Obstacles\).Enabled=0
 Laser\ Scan\ Historic\ \(Obstacles\).Topic=/move_base/local_costmap/obstacles
 Laser\ Scan\ Rear.Alpha=1
 Laser\ Scan\ Rear.Billboard\ Size=0.07
@@ -178,7 +180,7 @@ Laser\ Scan\ Top..IntensityMin\ ColorB=0
 Laser\ Scan\ Top..IntensityMin\ Intensity=0
 Laser\ Scan\ Top..IntensityUse\ full\ RGB\ spectrum=0
 RGB\ Video.Enabled=1
-RGB\ Video.Image\ Topic=/cam3d/rgb/image_raw
+RGB\ Video.Image\ Topic=/cam3d_throttled/rgb/image_color
 RGB\ Video.Transport\ Hint=raw
 RViz\ Camera\ Pose\ Publisher.Enabled=1
 Robot\ Footprint.Alpha=1
@@ -297,8 +299,8 @@ Robot\:\ Robot\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.531 5.99264 12.8264 -4.94971 -2.60313 5.75931
-Property\ Grid\ State=selection=Kinect FOV.Enabled;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=248,496;ispageselected=1
+Camera\ Config=1.011 1.09446 4.62979 -5.86568 0.137442 5.40282
+Property\ Grid\ State=selection=RGB Video.Enabled;expanded=3D Global Voxel Map.Enabled.3D Global Voxel Map.StatusTopStatus,3D Geometric Map.Enabled.3D Geometric Map.StatusTopStatus,3D Geometric Map.Enabled.3D Geometric Map.Namespaces,Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=247,496;ispageselected=1
 [Display0]
 Name=RGB Video
 Package=rviz
@@ -312,50 +314,54 @@ Name=3D Global Voxel Map
 Package=srs_env_model_ui
 ClassName=CButPointCloud
 [Display3]
+Name=3D Geometric Map
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display4]
 Name=Kinect FOV
 Package=rviz
 ClassName=rviz::PointCloud2Display
-[Display4]
+[Display5]
 Name=Robot
 Package=rviz
 ClassName=rviz::RobotModelDisplay
-[Display5]
+[Display6]
 Name=Robot Footprint
 Package=rviz
 ClassName=rviz::PolygonDisplay
-[Display6]
+[Display7]
 Name=Collision Indicator
 Package=rviz
 ClassName=rviz::MarkerDisplay
-[Display7]
+[Display8]
 Name=Laser Scan Front
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display8]
+[Display9]
 Name=Laser Scan Rear
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display9]
+[Display10]
 Name=Laser Scan Top
 Package=rviz
 ClassName=rviz::LaserScanDisplay
-[Display10]
+[Display11]
 Name=Laser Scan Historic (Obstacles)
 Package=rviz
 ClassName=rviz::GridCellsDisplay
-[Display11]
+[Display12]
 Name=RViz Camera Pose Publisher
 Package=srs_env_model_ui
 ClassName=CCameraPublisherDisplay
-[Display12]
+[Display13]
 Name=Autonomous Navi Path
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display13]
+[Display14]
 Name=In-Scene Teleop
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display14]
+[Display15]
 Name=Inflated Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay

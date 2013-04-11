@@ -400,8 +400,6 @@ void CArmManipulationEditor::processSpaceNav() {
 // timer for publishing TF for additional camera frame
 void CArmManipulationEditor::tfTimerCallback(const ros::TimerEvent& ev) {
 
-	ROS_INFO_ONCE("Publishing TF for additional RVIZ camera.");
-
 	//boost::mutex::scoped_lock(im_server_mutex_);
 	//im_server_mutex_.lock();
 	//lockScene();
@@ -418,6 +416,8 @@ void CArmManipulationEditor::tfTimerCallback(const ros::TimerEvent& ev) {
 		return;
 
 	}
+
+  ROS_INFO_ONCE("Publishing TF for additional RVIZ camera.");
 
 	//im_server_mutex_.unlock();
 	//unlockScene();
@@ -600,6 +600,8 @@ void CArmManipulationEditor::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) 
 	if ((int)joy->buttons.size() == 2) {
 
 		ROS_INFO_ONCE("Spacenav data received!");
+
+    if (!inited) return; // added at int. meeting
 
 		boost::mutex::scoped_lock(spacenav.mutex_);
 
@@ -1170,10 +1172,11 @@ int main(int argc, char** argv)
 
       ROS_INFO("Spinning");
 
-      //ros::spin();
-      ros::AsyncSpinner spinner(6);
+      ros::spin();
+
+      /*ros::AsyncSpinner spinner(6);
       spinner.start();
-      ros::waitForShutdown();
+      ros::waitForShutdown();*/
 
       delete ps_editor;
 

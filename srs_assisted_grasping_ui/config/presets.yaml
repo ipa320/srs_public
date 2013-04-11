@@ -1,13 +1,13 @@
 grasping_presets:
- -
-  name: Empty bottle
-  forces: [300.0, 300.0, 300.0, 300.0, 300.0, 300.0]
-  target_pos: [0.0, 0.0, 1.57, 0.0, 1.57, 0.0, 1.57] # fist
-  time: 6.0
   
  -
   name: Full bottle
-  forces: [900.0, 900.0, 900.0, 900.0, 900.0, 900.0]
+  forces: [1500.0, 1500.0, 1500.0, 1500.0, 1500.0, 1500.0]
+  target_pos: [0.0, 0.0, 1.57, 0.0, 1.57, 0.0, 1.57] # fist
+  time: 6.0
+ -
+  name: Empty bottle
+  forces: [300.0, 300.0, 300.0, 300.0, 300.0, 300.0]
   target_pos: [0.0, 0.0, 1.57, 0.0, 1.57, 0.0, 1.57] # fist
   time: 6.0
  -

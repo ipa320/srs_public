@@ -53,124 +53,141 @@ Primitive::Primitive(InteractiveMarkerServerPtr server, string frame_id, string 
   color_green_a01_.g = 1.0;
   color_green_a01_.b = 0.0;
   color_green_a01_.a = 0.1;
+
+  scale_saved_ = 0;
 }
 
 void Primitive::defaultCallback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP)
-  {
-/*    pose_change.position.x -= feedback->pose.position.x;
-    pose_change.position.y -= feedback->pose.position.y;
-    pose_change.position.z -= feedback->pose.position.z;
-    pose_change.orientation.x -= feedback->pose.orientation.x;
-    pose_change.orientation.y -= feedback->pose.orientation.y;
-    pose_change.orientation.z -= feedback->pose.orientation.z;
-    pose_change.orientation.w -= feedback->pose.orientation.w;*/
-
-	geometry_msgs::Pose npose = feedback->pose;
-	if (frame_id_ != feedback->header.frame_id)
+	// Update the scale marker positions
+	if( scale_saved_ > 1 )
 	{
-      //ROS_INFO("Different frame ids");
-	  try
-	  {
-		tfListener = new tf::TransformListener();
-		tfListener->waitForTransform(feedback->header.frame_id, frame_id_, feedback->header.stamp, ros::Duration(2.0));
-		tfListener->lookupTransform(feedback->header.frame_id, frame_id_, feedback->header.stamp, feedbackToDefaultTransform);
-		delete tfListener;
-		transformer.setTransform(feedbackToDefaultTransform);
+		Vector3 scale_change;
+		scale_change.x = scale_.x - scale_prev_.x;
+		scale_change.y = scale_.y - scale_prev_.y;
+		scale_change.z = scale_.z - scale_prev_.z;
+		scale_saved_ = 0;
 
-		btVector3 position;
-		position.setX(feedback->pose.position.x);
-		position.setY(feedback->pose.position.y);
-		position.setZ(feedback->pose.position.z);
+		updatePublisher_->publishScaleChanged(scale_, scale_change);
 
-		btQuaternion orientation;
-		orientation.setX(feedback->pose.orientation.x);
-		orientation.setY(feedback->pose.orientation.y);
-		orientation.setZ(feedback->pose.orientation.z);
-		orientation.setW(feedback->pose.orientation.w);
+		removeScaleControls();
+		addScaleControls();
 
-		tf::Stamped<btTransform> pose;
-		pose.setOrigin(position);
-		pose.setRotation(orientation);
-		pose.frame_id_ = feedback->header.frame_id;
-		transformer.transformPose(frame_id_, pose, pose);
-
-		npose.position.x = pose.getOrigin().getX();
-		npose.position.y = pose.getOrigin().getY();
-		npose.position.z = pose.getOrigin().getZ();
-		npose.orientation.x = pose.getRotation().getX();
-		npose.orientation.y = pose.getRotation().getY();
-		npose.orientation.z = pose.getRotation().getZ();
-		npose.orientation.w = pose.getRotation().getW();
-	  }
-	  catch (tf::TransformException& ex)
-	  {
-		ROS_WARN("Transform error!");
-		delete tfListener;
-		return;
-	  }
+		server_->applyChanges();
 	}
 
-	// Calculate the pose change in the frame_id_
-	pose_change.position = npose.position;
-	pose_change.position.x -= pose_.position.x;
-	pose_change.position.y -= pose_.position.y;
-	pose_change.position.z -= pose_.position.z;
+	// Process the feedback
+	if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP)
+	{
+		geometry_msgs::Pose npose = feedback->pose;
+		if (frame_id_ != feedback->header.frame_id)
+		{
+			//ROS_INFO("Different frame ids");
+			try
+			{
+				tfListener = new tf::TransformListener();
+				tfListener->waitForTransform(feedback->header.frame_id, frame_id_, feedback->header.stamp, ros::Duration(2.0));
+				tfListener->lookupTransform(feedback->header.frame_id, frame_id_, feedback->header.stamp, feedbackToDefaultTransform);
+				delete tfListener;
+				transformer.setTransform(feedbackToDefaultTransform);
 
-	btQuaternion orientation(pose_.orientation.x,
-							 pose_.orientation.y,
-							 pose_.orientation.z,
-							 pose_.orientation.w);
-	orientation.inverse();
-	orientation *= btQuaternion(npose.orientation.x,
-			                    npose.orientation.y,
-			                    npose.orientation.z,
-			                    npose.orientation.w);
-    pose_change.orientation.x = orientation.getX();
-    pose_change.orientation.y = orientation.getY();
-    pose_change.orientation.z = orientation.getZ();
-    pose_change.orientation.w = orientation.getW();
+				btVector3 position;
+				position.setX(feedback->pose.position.x);
+				position.setY(feedback->pose.position.y);
+				position.setZ(feedback->pose.position.z);
 
-    // Store the new position
-    pose_ = npose;
+				btQuaternion orientation;
+				orientation.setX(feedback->pose.orientation.x);
+				orientation.setY(feedback->pose.orientation.y);
+				orientation.setZ(feedback->pose.orientation.z);
+				orientation.setW(feedback->pose.orientation.w);
 
-    insert();
-    server_->applyChanges();
+				tf::Stamped<btTransform> pose;
+				pose.setOrigin(position);
+				pose.setRotation(orientation);
+				pose.frame_id_ = feedback->header.frame_id;
+				transformer.transformPose(frame_id_, pose, pose);
 
-    // Majkl: Why the pose changed was published in the message frame ID and not in the IM's one?
-//    updatePublisher_->publishPoseChanged(feedback->pose, pose_change);
-    updatePublisher_->publishPoseChanged(pose_, pose_change);
-  }
+				npose.position.x = pose.getOrigin().getX();
+				npose.position.y = pose.getOrigin().getY();
+				npose.position.z = pose.getOrigin().getZ();
+				npose.orientation.x = pose.getRotation().getX();
+				npose.orientation.y = pose.getRotation().getY();
+				npose.orientation.z = pose.getRotation().getZ();
+				npose.orientation.w = pose.getRotation().getW();
+			}
+			catch (tf::TransformException& ex)
+			{
+				ROS_WARN("Transform error!");
+				delete tfListener;
+				return;
+			}
+		}
+
+		// Calculate the pose change in the frame_id_
+		pose_change.position = npose.position;
+		pose_change.position.x -= pose_.position.x;
+		pose_change.position.y -= pose_.position.y;
+		pose_change.position.z -= pose_.position.z;
+
+		btQuaternion orientation(pose_.orientation.x,
+								 pose_.orientation.y,
+								 pose_.orientation.z,
+								 pose_.orientation.w);
+		orientation.inverse();
+		orientation *= btQuaternion(npose.orientation.x,
+				                    npose.orientation.y,
+								    npose.orientation.z,
+								    npose.orientation.w);
+
+		pose_change.orientation.x = orientation.getX();
+		pose_change.orientation.y = orientation.getY();
+		pose_change.orientation.z = orientation.getZ();
+		pose_change.orientation.w = orientation.getW();
+
+		// Store the new position
+		pose_ = npose;
+
+		insert();
+		server_->applyChanges();
+
+		// Majkl: Why the pose changed was published in the message frame ID and not in the IM's one?
+		//    updatePublisher_->publishPoseChanged(feedback->pose, pose_change);
+		updatePublisher_->publishPoseChanged(pose_, pose_change);
+	}
 }
 
 void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
-	static Vector3 scale_change;
-
 	btVector3 center(pose_.position.x, pose_.position.y, pose_.position.z);
 	btQuaternion orient(pose_.orientation.x, pose_.orientation.y, pose_.orientation.z, pose_.orientation.w);
 
 	if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_DOWN)
 	{
-		scale_change.x = scale_.x;
-		scale_change.y = scale_.y;
-		scale_change.z = scale_.z;
+		scale_prev_.x = scale_.x;
+		scale_prev_.y = scale_.y;
+		scale_prev_.z = scale_.z;
+		scale_saved_ = 1;
 	}
-	else if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP)
+	else if (feedback->event_type == InteractiveMarkerFeedback::MOUSE_UP && scale_saved_ > 0)
 	{
-		scale_change.x = scale_.x - scale_change.x;
-		scale_change.y = scale_.y - scale_change.y;
-		scale_change.z = scale_.z - scale_change.z;
+		Vector3 scale_change;
+		scale_change.x = scale_.x - scale_prev_.x;
+		scale_change.y = scale_.y - scale_prev_.y;
+		scale_change.z = scale_.z - scale_prev_.z;
+		scale_saved_ = 0;
+
 		updatePublisher_->publishScaleChanged(scale_, scale_change);
-		scale_change.x = scale_change.y = scale_change.z = 0;
 
 		removeScaleControls();
 		addScaleControls();
+
 		server_->applyChanges();
 	}
-	else
+	else if (feedback->event_type == InteractiveMarkerFeedback::POSE_UPDATE  && scale_saved_ > 0)
 	{
+		++scale_saved_;
+
 		geometry_msgs::Pose npose = feedback->pose;
 		if( frame_id_ != feedback->header.frame_id )
 		{
@@ -216,9 +233,9 @@ void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbac
 		  }
 		}
 
-//		btVector3 position(npose.position.x, npose.position.y, npose.position.z);
-//		btVector3 vec = position - center;
-//		double size = vec.length();
+		btVector3 position(npose.position.x, npose.position.y, npose.position.z);
+		btVector3 vec = position - center;
+		double size = vec.length();
 
 		btVector3 rotated = quatRotate(orient, btVector3(1, 0, 0));
 		int xsign = 1;
@@ -241,27 +258,39 @@ void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbac
 
 		if (feedback->marker_name == name_ + "_min_x")
 		{
-			scale_.x = scale_change.x + xsign * (pose_.position.x - npose.position.x);
+			int sign = (pose_.position.x - npose.position.x) > 0.0 ? 1 : -1;
+			scale_.x = scale_prev_.x + xsign * sign * size;
+//			scale_.x = scale_prev_.x + xsign * (pose_.position.x - npose.position.x);
 		}
 		else if (feedback->marker_name == name_ + "_max_x")
 		{
-			scale_.x = scale_change.x + xsign * (npose.position.x - pose_.position.x);
+			int sign = (npose.position.x - pose_.position.x) > 0.0 ? 1 : -1;
+			scale_.x = scale_prev_.x + xsign * sign * size;
+//			scale_.x = scale_prev_.x + xsign * (npose.position.x - pose_.position.x);
 		}
 		else if (feedback->marker_name == name_ + "_min_y")
 		{
-			scale_.y = scale_change.y + ysign * (pose_.position.y - npose.position.y);
+			int sign = (pose_.position.y - npose.position.y) > 0.0 ? 1 : -1;
+			scale_.y = scale_prev_.y + ysign * sign * size;
+//			scale_.y = scale_prev_.y + ysign * (pose_.position.y - npose.position.y);
 		}
 		else if (feedback->marker_name == name_ + "_max_y")
 		{
-			scale_.y = scale_change.y + ysign * (npose.position.y - pose_.position.y);
+			int sign = (npose.position.y - pose_.position.y) > 0.0 ? 1 : -1;
+			scale_.y = scale_prev_.y + ysign * sign * size;
+//			scale_.y = scale_prev_.y + ysign * (npose.position.y - pose_.position.y);
 		}
 		else if (feedback->marker_name == name_ + "_min_z")
 		{
-			scale_.z = scale_change.z + zsign * (pose_.position.z - npose.position.z);
+			int sign = (pose_.position.z - npose.position.z) > 0.0 ? 1 : -1;
+			scale_.z = scale_prev_.z + zsign * sign * size;
+//			scale_.z = scale_prev_.z + zsign * (pose_.position.z - npose.position.z);
 		}
 		else if (feedback->marker_name == name_ + "_max_z")
 		{
-			scale_.z = scale_change.z + zsign * (npose.position.z - pose_.position.z);
+			int sign = (npose.position.z - pose_.position.z) > 0.0 ? 1 : -1;
+			scale_.z = scale_prev_.z + zsign * sign * size;
+//			scale_.z = scale_prev_.z + zsign * (npose.position.z - pose_.position.z);
 		}
 
 		if (scale_.x < 0.0) scale_.x = 0.001;
@@ -272,7 +301,7 @@ void Primitive::scaleFeedback(const visualization_msgs::InteractiveMarkerFeedbac
 		{
 			object_.controls[0].markers[0].scale = scale_;
 		}
-		object_.scale = srs_interaction_primitives::maxScale(scale_);
+		object_.scale = SCALE_COEFF * srs_interaction_primitives::maxScale(scale_);
 
 		updateControls();
 
@@ -596,8 +625,8 @@ void Primitive::addScaleControls()
           break;
       }
 
-      makeArrow(int_marker, control, 3.0 * sign);
-//      makeArrow(int_marker, control, 3.5 * sign);
+//      makeArrow(int_marker, control, 3.0 * sign);
+      makeArrow(int_marker, control, 3.5 * sign);
 
       int_marker.controls.push_back(control);
       server_->insert(int_marker, boost::bind(&Primitive::scaleFeedback, this, _1));

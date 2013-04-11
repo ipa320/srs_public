@@ -1,0 +1,27 @@
+<launch>
+
+	<!--shifted to DM, as the service is required by other componenets as well -->
+	<include file="$(find cob_tactiletools)/launch/filters.launch"/>
+
+
+	<!-- Reactive grasping -->
+	<include file="$(find srs_assisted_grasping)/launch/grasping_node.launch"/>
+
+
+	<!-- IPA plan.env. -->
+	<include file="$(find cob_arm_navigation)/launch/start_planning_environment.launch"/>
+
+
+	<!-- BUT IK planner -->
+<!--
+	<include file="$(find srs_assisted_arm_navigation)/launch/planning_env_but.xml"/>
+	<include file="$(find srs_assisted_arm_navigation)/launch/constraint_aware_kinematics.xml"/>
+	<include file="$(find srs_assisted_arm_navigation)/launch/ompl_planning.xml"/>
+
+	<node pkg="trajectory_filter_server" type="trajectory_filter_server" name="trajectory_filter_server">
+		<rosparam command="load" file="$(find trajectory_filter_server)/config/filters.yaml" />
+		<rosparam file="$(find srs_assisted_arm_navigation)/config/$(env ROBOT)/joint_limits.yaml"/>
+	</node>
+-->
+
+</launch>

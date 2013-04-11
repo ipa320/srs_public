@@ -8,7 +8,7 @@ Target\ Frame=<Fixed Frame>
 2D\ Map.Enabled=1
 2D\ Map.Topic=/map
 3D\ Global\ Voxel\ Map.Alpha=1
-3D\ Global\ Voxel\ Map.Billboard\ Size=0.06
+3D\ Global\ Voxel\ Map.Billboard\ Size=0.03
 3D\ Global\ Voxel\ Map.Camera\ Info\ Topic=/cam3d_throttled/rgb/camera_info
 3D\ Global\ Voxel\ Map.Color\ Transformer=RGB8
 3D\ Global\ Voxel\ Map.Cull\ View\ Frustum=1
@@ -48,6 +48,7 @@ Autonomous\ Navi\ Path.Enabled=0
 Autonomous\ Navi\ Path.Topic=/move_base/DWAPlannerROS/global_plan
 Collision\ Indicator.Enabled=1
 Collision\ Indicator.Marker\ Topic=/collision_velocity_filter/velocity_limited_marker
+Collision\ Indicator.cob_velocity_limited_marker=1
 In-Scene\ Teleop.Enabled=0
 In-Scene\ Teleop.Show\ Axes=0
 In-Scene\ Teleop.Show\ Descriptions=1
@@ -67,7 +68,7 @@ Kinect\ FOV.Enabled=1
 Kinect\ FOV.Position\ Transformer=XYZ
 Kinect\ FOV.Selectable=1
 Kinect\ FOV.Style=0
-Kinect\ FOV.Topic=/cam3d_throttled/depth_registered/points_noised
+Kinect\ FOV.Topic=/cam3d_throttled/depth_registered/points
 Kinect\ FOV..AxisAutocompute\ Value\ Bounds=1
 Kinect\ FOV..AxisAxis=2
 Kinect\ FOV..AxisMax\ Value=10
@@ -115,12 +116,6 @@ Laser\ Scan\ Front..IntensityMin\ ColorG=1
 Laser\ Scan\ Front..IntensityMin\ ColorB=0
 Laser\ Scan\ Front..IntensityMin\ Intensity=0
 Laser\ Scan\ Front..IntensityUse\ full\ RGB\ spectrum=0
-Laser\ Scan\ Historic\ \(Obstacles\).Alpha=0.8
-Laser\ Scan\ Historic\ \(Obstacles\).ColorR=0.556863
-Laser\ Scan\ Historic\ \(Obstacles\).ColorG=0.0823529
-Laser\ Scan\ Historic\ \(Obstacles\).ColorB=0.215686
-Laser\ Scan\ Historic\ \(Obstacles\).Enabled=1
-Laser\ Scan\ Historic\ \(Obstacles\).Topic=/move_base/local_costmap/obstacles
 Laser\ Scan\ Rear.Alpha=1
 Laser\ Scan\ Rear.Billboard\ Size=0.07
 Laser\ Scan\ Rear.Color\ Transformer=Flat Color
@@ -178,7 +173,7 @@ Laser\ Scan\ Top..IntensityMin\ ColorB=0
 Laser\ Scan\ Top..IntensityMin\ Intensity=0
 Laser\ Scan\ Top..IntensityUse\ full\ RGB\ spectrum=0
 RGB\ Video.Enabled=1
-RGB\ Video.Image\ Topic=/cam3d/rgb/image_raw
+RGB\ Video.Image\ Topic=/cam3d_throttled/rgb/image_color
 RGB\ Video.Transport\ Hint=raw
 RViz\ Camera\ Pose\ Publisher.Enabled=1
 Robot\ Footprint.Alpha=1
@@ -297,8 +292,8 @@ Robot\:\ Robot\ Link\ tray_right_linkShow\ Trail=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.531 5.99264 12.8264 -4.94971 -2.60313 5.75931
-Property\ Grid\ State=selection=Autonomous Navi Path.Enabled;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=248,496;ispageselected=1
+Camera\ Config=1.121 5.84398 7.77708 -2.65197 0.0829504 7.64275
+Property\ Grid\ State=selection=3D Global Voxel Map.Enabled;expanded=Collision Indicator.Enabled.Collision Indicator.Namespaces,RViz Camera Pose Publisher.Enabled.RViz Camera Pose Publisher.StatusTopStatus,In-Scene Teleop.Enabled.In-Scene Teleop.StatusTopStatus;scrollpos=0,0;splitterpos=248,496;ispageselected=1
 [Display0]
 Name=RGB Video
 Package=rviz
@@ -340,22 +335,18 @@ Name=Laser Scan Top
 Package=rviz
 ClassName=rviz::LaserScanDisplay
 [Display10]
-Name=Laser Scan Historic (Obstacles)
-Package=rviz
-ClassName=rviz::GridCellsDisplay
-[Display11]
 Name=RViz Camera Pose Publisher
 Package=srs_env_model_ui
 ClassName=CCameraPublisherDisplay
-[Display12]
+[Display11]
 Name=Autonomous Navi Path
 Package=rviz
 ClassName=rviz::PathDisplay
-[Display13]
+[Display12]
 Name=In-Scene Teleop
 Package=rviz
 ClassName=rviz::InteractiveMarkerDisplay
-[Display14]
+[Display13]
 Name=Inflated Obstacles
 Package=rviz
 ClassName=rviz::GridCellsDisplay

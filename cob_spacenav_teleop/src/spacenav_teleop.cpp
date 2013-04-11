@@ -49,6 +49,8 @@ SpaceNavTeleop::SpaceNavTeleop() {
 
 	ros::param::param<bool>("~spacenav/instant_stop_enabled",params_.instant_stop_enabled,false);
 
+	ros::param::param<bool>("~unsafe_limiter",params_.unsafe_limiter,false);
+
 	ros::param::param<bool>("~use_rviz_cam",params_.use_rviz_cam,false);
 	ros::param::param<std::string>("~rviz_cam_link",params_.rviz_cam_link,"/rviz_cam");
 
@@ -65,6 +67,10 @@ SpaceNavTeleop::SpaceNavTeleop() {
 
 	// and limit maximal values
 
+  btns_.left = false;
+  btns_.right = false;
+  btns_.right_last = false;
+  btns_.right_trigger = false;
 
 	stop_detected_ = false;
 	//some_dir_limited_ = false;
@@ -89,12 +95,12 @@ SpaceNavTeleop::SpaceNavTeleop() {
 
 	ros::NodeHandle nh("~");
 
-	offset_sub_ = nh.subscribe("/spacenav/offset",1,&SpaceNavTeleop::spacenavOffsetCallback,this);
-	rot_offset_sub_ = nh.subscribe("/spacenav/rot_offset",1,&SpaceNavTeleop::spacenavRotOffsetCallback,this);
-	joy_sub_ = nh.subscribe<sensor_msgs::Joy>("/spacenav/joy",1,&SpaceNavTeleop::joyCallback,this);
+	offset_sub_ = nh.subscribe("/spacenav/offset",3,&SpaceNavTeleop::spacenavOffsetCallback,this);
+	rot_offset_sub_ = nh.subscribe("/spacenav/rot_offset",3,&SpaceNavTeleop::spacenavRotOffsetCallback,this);
+	joy_sub_ = nh.subscribe<sensor_msgs::Joy>("/spacenav/joy",3,&SpaceNavTeleop::joyCallback,this);
 
-	twist_publisher_safe_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel_safe",1);
-	twist_publisher_unsafe_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel_unsafe",1);
+	twist_publisher_safe_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel_safe",3);
+	twist_publisher_unsafe_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel_unsafe",3);
 
 	publishing_to_unsafe_ = false;
 	robot_centric_mode_ = false;
@@ -107,6 +113,9 @@ SpaceNavTeleop::SpaceNavTeleop() {
 
 	if (params_.instant_stop_enabled) ROS_INFO("Instant stop feature enabled.");
 	else ROS_INFO("Instant stop feature disabled.");
+
+	if (params_.unsafe_limiter) ROS_INFO("Unsafe limiter activated.");
+	else ROS_INFO("Unsafe limiter NOT activated.");
 
 	ROS_INFO("Initiated...");
 
@@ -132,7 +141,7 @@ void SpaceNavTeleop::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
 	btns_.right = joy->buttons[1];
 
 	// activate "triger" only if teleop is enabled
-	if (enabled_ && !btns_.right_last && btns_.right) btns_.right_trigger = true;
+	if (enabled_ && (!btns_.right_last) && btns_.right) btns_.right_trigger = true;
 
 	btns_.mutex.unlock();
 
@@ -482,6 +491,14 @@ void SpaceNavTeleop::timerCallback(const ros::TimerEvent& ev) {
 
 		}
 
+		if (params_.unsafe_limiter) {
+
+			tw.angular.z = 0.0;
+			tw.linear.x = 0.0;
+			tw.linear.y /= 3.0;
+
+		}
+
 		twist_publisher_unsafe_.publish(tw);
 
 	} else {
@@ -607,10 +624,10 @@ int main(int argc, char** argv)
   ROS_INFO("Starting COB SpaceNav Teleop...");
   SpaceNavTeleop sp;
 
-  ros::AsyncSpinner spinner(3);
+  /*ros::AsyncSpinner spinner(3);
   spinner.start();
-  ros::waitForShutdown();
+  ros::waitForShutdown();*/
 
-  //ros::spin();
+  ros::spin();
 
 }

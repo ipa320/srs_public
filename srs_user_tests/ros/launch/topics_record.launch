@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-	<arg name="bag_name" default="test"/>
+	<arg name="bag_path" default="$(pwd)"/>
 
 	<node name="logger" pkg="srs_user_tests" type="topics_bag.py" output="screen">
 		<rosparam file="$(find srs_user_tests)/ros/config/bag_record.yaml" command="load" />
-		<param name="bag_name" value="$(arg bag_name)" />
+		<param name="bag_path" value="$(arg bag_path)" />
 	</node>
 
 </launch>

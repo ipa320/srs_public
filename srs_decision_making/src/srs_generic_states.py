@@ -895,6 +895,7 @@ class remote_user_intervention(smach.State):
                 try:
                     json_decoded = json.loads(current_task_info.json_parameters)
                 except Exception:
+                    rospy.loginfo ("current_task_info.json_parameters is invalid...")
                     return 'give_up'
                     
                 current_tasks = json_decoded['tasks']

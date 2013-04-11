@@ -892,8 +892,11 @@ class remote_user_intervention(smach.State):
                 goal = echo_server_msg.dm_serverGoal()
                 
                 # see the json_parser file
-                json_decoded = json.loads(current_task_info.json_parameters)
-                
+                try:
+                    json_decoded = json.loads(current_task_info.json_parameters)
+                except Exception:
+                    return 'give_up'
+                    
                 current_tasks = json_decoded['tasks']
                 
                 # value for "exception_id" in goal

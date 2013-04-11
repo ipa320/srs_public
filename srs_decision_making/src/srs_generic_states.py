@@ -827,7 +827,7 @@ class remote_user_intervention(smach.State):
         self.server_json_feedback = ""
         self.server_output = ""
         self.server_json_result = ""
-        
+        self.flag = False
    
     def execute(self,userdata):
         
@@ -924,10 +924,18 @@ class remote_user_intervention(smach.State):
                 
                 # send the goal to echo server
                 client.send_goal(goal, self.result_callback, self.active_callback, self.feedback_callback)
-                rospy.sleep(25)
+                #rospy.sleep(25)
+                
+                timeout = 5
+                while(self.flag != True and timeout > 0):
+                    rospy.sleep(1)
+                    timeout = timeout - 1
                 
                 if self.server_json_result == "" :
+                    rospy.loginfo ("*******")
                     rospy.loginfo ("there is no response from srs_ui_pro, the current intervention action has been given up...")
+                    rospy.loginfo ("*******")
+                    rospy.sleep(3)
                     return "give_up"
                 
                 _feedback = xmsg.ExecutionFeedback()
@@ -980,6 +988,7 @@ class remote_user_intervention(smach.State):
         self.server_json_result = server_result.json_result
         rospy.loginfo ("server_feedback.state is: %s",state)
         rospy.loginfo ("server_feedback.result_callback is: %s",server_result.json_result)
+        self.flag = True
         
 
 def pose_to_list(userdata):

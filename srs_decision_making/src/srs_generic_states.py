@@ -926,7 +926,7 @@ class remote_user_intervention(smach.State):
                 client.send_goal(goal, self.result_callback, self.active_callback, self.feedback_callback)
                 #rospy.sleep(25)
                 
-                timeout = 5
+                timeout = 300
                 while(self.flag != True and timeout > 0):
                     rospy.sleep(1)
                     timeout = timeout - 1

@@ -17,7 +17,7 @@ from srs_knowledge.srv import *
 from pr2_controllers_msgs.msg import JointTrajectoryControllerState
 from srs_msgs.msg import SRSSpatialInfo 
 from srs_assisted_grasping_msgs.msg import *
-
+from arm_navigation_msgs.msg import *
 
 class select_srs_grasp(smach.State):
 
@@ -82,6 +82,8 @@ class srs_grasp(smach.State):
 	return (len(grasp_configuration)-1);
 
     def execute(self, userdata):
+
+        client = actionlib.SimpleActionClient('/but_arm_manip/reactive_grasping_action',ReactiveGraspingAction)
         grasp_configuration_id = userdata.grasp_configuration_id
         #grasp_configuration_id = self.get_fake_id(userdata.grasp_configuration);
 	
@@ -128,7 +130,7 @@ class srs_grasp(smach.State):
             except Exception, e:
                 rospy.INFO('can not read parameter of srs/ipa_arm_navigation, use the default value planned arm navigation disabled')
             
-            if ipa_arm_navigation.lower() == 'true':
+            if ipa_arm_navigation.lower() != 'true':
                 #mode = "planned"
                 grasp_trajectory.append(self.current_arm_state)
             else:
@@ -137,7 +139,8 @@ class srs_grasp(smach.State):
                 if(error_code.val != error_code.SUCCESS):
                     sss.say(["I can not move the arm to the pregrasp position!"])
                     raise BadGrasp();
-                grasp_trajectory.append(pgc1)
+		else:
+                    grasp_trajectory.append(pgc1)
                 
                 #second pre-grasp
                 aux_pre = pre_grasp_stamped.pose.position.x;
@@ -149,18 +152,20 @@ class srs_grasp(smach.State):
                     if(error_code.val == error_code.SUCCESS):
                         grasp_trajectory.append(pgc2);
                         break;
+		    else:
+			print "Non valid pregrasp: ",i
             #grasp
             (gc, error_code) = grasping_functions.graspingutils.callIKSolver(grasp_trajectory[len(grasp_trajectory)-1], grasp_stamped)
             if(error_code.val != error_code.SUCCESS):
                 sss.say(["I can not move the arm to the grasp position!"])
                 raise BadGrasp();
-            grasp_trajectory.append(gc);
+	    else:
+                grasp_trajectory.append(gc);
             
+
             #Move arm to pregrasp->grasp position.
-            arm_handle = sss.move("arm", grasp_trajectory, False)
-            rospy.sleep(4)
-            arm_handle.wait(6)
-            
+            arm_handle = sss.move("arm", grasp_trajectory, False, mode='Planned')
+
             # wait while movement
             r = rospy.Rate(10)
             preempted = False
@@ -171,9 +176,11 @@ class srs_grasp(smach.State):
                 if preempted or ( arm_state == 3) or (arm_state == 4):
                     break # stop waiting
                 r.sleep()
-            
+
+            rospy.sleep(2)
+            arm_handle.wait(2)
+
             #Close SDH based on the grasp configuration to grasp.
-            client = actionlib.SimpleActionClient('/but_arm_manip/reactive_grasping_action',ReactiveGraspingAction)
             rospy.loginfo("Waiting for reactive grasping server...")
             client.wait_for_server()
             
@@ -183,38 +190,18 @@ class srs_grasp(smach.State):
             goal.target_configuration.data = list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)
             f = 3000.0
             goal.max_force.data = [f, f, f, f, f, f] # 6 tactile pads
-            goal.time = rospy.Duration(8.0)
+            goal.time = rospy.Duration(3.0)
             
             client.send_goal(goal)
             
             rospy.loginfo('Closing gripper using reactive grasping')
             client.wait_for_result()
-            
             result = client.get_result()
-            print "----------------------------"
-            print result.actual_joint_values
-            print result.actual_forces
-            print result.time_to_stop
-            print "----------------------------"
-            """
-            sdh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)], False)
-            sss.say(["I am grasping the object now!"])
-            rospy.sleep(3);
-            sdh_handle.wait(4)
-		    
-		    r = rospy.Rate(10)
-            preempted = False
-            sdh_state = -1
-            while True:
-                preempted = self.preempt_requested()
-                sdh_state = sdh_handle.get_state()
-                if preempted or ( sdh_state == 3) or (sdh_state == 4):
-                    break # stop waiting
-                r.sleep()
-		    """
-            rospy.sleep(5)
+	    rospy.sleep(4)
+
             #TODO: Solve the closing hand sequence. It's closing after the sleep, so the tactil check fails.
-            
+            rospy.sleep(1)
+
             #Confirm the grasp based on force feedback
             if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
                 #Regrasp (close MORE the fingers)
@@ -225,14 +212,19 @@ class srs_grasp(smach.State):
                 regrasp[5] += 0.07
                 print "to:\n", regrasp
                 
-                sdh_handle = sss.move("sdh", [regrasp])
-                rospy.sleep(2)
-                sdh_handle.wait(3)
-                
-                rospy.sleep(5)
+		goal.target_configuration.data = regrasp
+		client.send_goal(goal)
+
+		rospy.loginfo('Regrasp: Closing gripper using reactive grasping')
+		client.wait_for_result()
+		result = client.get_result()
+		rospy.sleep(4)
+
+		rospy.sleep(1)
                 if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
                     sss.say(["I can not fix the object correctly!"])
                     raise BadGrasp();
+
             #post-grasp
             aux_x = post_grasp_stamped.pose.position.x;
             aux = 0.0;
@@ -258,7 +250,7 @@ class srs_grasp(smach.State):
                     if(error_code.val == error_code.SUCCESS):
                         postgrasp_trajectory.append(post_grasp_conf2);
                         break;
-            arm_handle = sss.move("arm",postgrasp_trajectory, False)
+            arm_handle = sss.move("arm",postgrasp_trajectory, False, mode='Planned')
             sss.say(["I have grasped the object with success!"])
             rospy.sleep(2)
             arm_handle.wait(3)

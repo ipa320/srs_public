@@ -834,6 +834,11 @@ class remote_user_intervention(smach.State):
         print ('CHECKING IF USER INTERVENTION IS REQUIRED')
         # check if user intervention is required. 
         # give_up if the task is in fully autonomous mode
+        print ('This is time for us to trigger the user intervention from UI_PRO')
+        
+        rospy.sleep (5)
+        
+        
         if userdata.semi_autonomous_mode == False:
             return 'give_up'
         

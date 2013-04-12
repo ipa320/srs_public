@@ -29,7 +29,7 @@
   <depend package="srs_knowledge"/>
   <depend package="srs_symbolic_grounding"/>
   <depend package="srs_assisted_grasping_msgs"/>
-  
+  <depend package="arm_navigation_msgs"/>
 
 
   <!--Start-->

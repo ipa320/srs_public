@@ -20,8 +20,8 @@ class graspingutils():
 
 	def __init__(self, simulation=True):
 		self.simulation = simulation
-		self.ik_service_name = rospy.get_param("/srs/ik_solver") 
-		self.env_service_name = rospy.get_param("/srs/env_planner") 
+		self.ik_service_name = rospy.get_param("/srs/ik_solver", "/cob_ik_wrapper/arm/get_ik") 
+		self.env_service_name = rospy.get_param("/srs/env_planner", "/environment_server/set_planning_scene_diff") 
 		self.SetPlanningSceneDiffService = rospy.ServiceProxy(self.env_service_name, SetPlanningSceneDiff)
 		self.ik_service = rospy.ServiceProxy(self.ik_service_name, self.get_ik_srv_type()) 
 		self.is_grasped_service = rospy.ServiceProxy('/sdh_controller/is_grasped', Trigger)

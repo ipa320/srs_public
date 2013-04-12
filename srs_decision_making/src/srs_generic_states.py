@@ -834,11 +834,6 @@ class remote_user_intervention(smach.State):
         print ('CHECKING IF USER INTERVENTION IS REQUIRED')
         # check if user intervention is required. 
         # give_up if the task is in fully autonomous mode
-        print ('This is time for us to trigger the user intervention from UI_PRO')
-        
-        rospy.sleep (5)
-        
-        
         if userdata.semi_autonomous_mode == False:
             return 'give_up'
         
@@ -889,7 +884,9 @@ class remote_user_intervention(smach.State):
                         answer_yes_no = rospy.ServiceProxy('answer_yes_no', xsrv.answer_yes_no)
                         resp = answer_yes_no()
                         if resp.answer == "No":
-                            print "### answer_yes_no returns no"
+                            rospy.loginfo ("the use refused to get any remote assistance...")
+                            # in this stage, the anser_yes_no is not used
+                            # to use it, just make sure the following line is available
                             #return 'give_up'
                     except rospy.ServiceException, e:
                         print "Service call failed: %s"%e
@@ -897,8 +894,12 @@ class remote_user_intervention(smach.State):
                 goal = echo_server_msg.dm_serverGoal()
                 
                 # see the json_parser file
-                json_decoded = json.loads(current_task_info.json_parameters)
-                
+                try:
+                    json_decoded = json.loads(current_task_info.json_parameters)
+                except Exception:
+                    rospy.loginfo ("current_task_info.json_parameters is invalid...")
+                    return 'give_up'
+                    
                 current_tasks = json_decoded['tasks']
                 
                 # value for "exception_id" in goal

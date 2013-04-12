@@ -162,7 +162,7 @@ class srs_grasp(smach.State):
 	    else:
                 grasp_trajectory.append(gc);
             
-	    raw_input("AAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
             #Move arm to pregrasp->grasp position.
             arm_handle = sss.move("arm", grasp_trajectory, False, mode='Planned')
 

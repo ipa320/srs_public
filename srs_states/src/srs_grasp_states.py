@@ -162,7 +162,6 @@ class srs_grasp(smach.State):
 	    else:
                 grasp_trajectory.append(gc);
             
-
             #Move arm to pregrasp->grasp position.
             arm_handle = sss.move("arm", grasp_trajectory, False, mode='Planned')
 
@@ -180,6 +179,12 @@ class srs_grasp(smach.State):
             rospy.sleep(2)
             arm_handle.wait(2)
 
+	    # To deprecate when the ReactiveGrasp working again ################
+            sdh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)]) 
+       	    sdh_handle.wait() 
+	    rospy.sleep(10) 
+	    ####################################################################
+	    """
             #Close SDH based on the grasp configuration to grasp.
             rospy.loginfo("Waiting for reactive grasping server...")
             client.wait_for_server()
@@ -198,10 +203,8 @@ class srs_grasp(smach.State):
             client.wait_for_result()
             result = client.get_result()
 	    rospy.sleep(4)
-
-            #TODO: Solve the closing hand sequence. It's closing after the sleep, so the tactil check fails.
-            rospy.sleep(1)
-
+	    """
+	    
             #Confirm the grasp based on force feedback
             if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
                 #Regrasp (close MORE the fingers)
@@ -211,7 +214,14 @@ class srs_grasp(smach.State):
                 regrasp[3] += 0.07
                 regrasp[5] += 0.07
                 print "to:\n", regrasp
-                
+
+		# To deprecate when the ReactiveGrasp working again ############
+		sdh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)]) 
+		sdh_handle.wait() 
+		rospy.sleep(10) 
+		################################################################
+
+		"""
 		goal.target_configuration.data = regrasp
 		client.send_goal(goal)
 
@@ -219,8 +229,7 @@ class srs_grasp(smach.State):
 		client.wait_for_result()
 		result = client.get_result()
 		rospy.sleep(4)
-
-		rospy.sleep(1)
+		"""
                 if not grasping_functions.graspingutils.sdh_tactil_sensor_result():
                     sss.say(["I can not fix the object correctly!"])
                     raise BadGrasp();

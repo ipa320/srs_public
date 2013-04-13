@@ -1,7 +1,3 @@
-# this message contains information to define the comunication between the Decision making (DM) and UI_Pri in case of need of object selection
-
-string command   # currently supported commands for user intervention are: ask (meaning display dialog box and ask the user the question that is in the message)
-
-string message   # some free text to be displayed in the popup window to the user
-
-uint32 requestID # the uniqie ID used by DM to distinguish which responce corresponds to which command. Note: the requestID MUST be included in the responceID.
+string command
+string message
+uint32 requestID

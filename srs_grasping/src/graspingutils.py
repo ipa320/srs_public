@@ -26,6 +26,7 @@ class graspingutils():
 		self.ik_service = rospy.ServiceProxy(self.ik_service_name, self.get_ik_srv_type()) 
 		self.is_grasped_service = rospy.ServiceProxy('/sdh_controller/is_grasped', Trigger)
 		self.is_cylindric_grasped_service = rospy.ServiceProxy('/sdh_controller/is_cylindric_grasped', Trigger)
+		self.is_grasped_aux = rospy.ServiceProxy('/srs_grasping/is_grasped', Trigger)
 
 	def get_ik_srv_name(self):
 		return self.ik_service_name;
@@ -315,7 +316,8 @@ class graspingutils():
 		try:
 			resp1 = self.is_grasped_service()
 			resp2 = self.is_cylindric_grasped_service()
-			response = resp1.success.data or resp2.success.data
+			resp_aux = self.is_grasped_aux()
+			response = resp1.success.data or resp2.success.data or resp_aux.success.data
 		except rospy.ServiceException, e:
 			rospy.logerr("Service did not process request: %s", str(e))
 			return GraspingErrorCodes.SERVICE_DID_NOT_PROCESS_REQUEST

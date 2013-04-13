@@ -64,7 +64,7 @@ class select_srs_grasp(smach.State):
 
 class srs_grasp(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','not_completed','failed', 'preempted'], 
+        smach.State.__init__(self, outcomes=['succeeded','not_completed','failed', 'preempted','retry'], 
                              input_keys=['grasp_configuration','grasp_configuration_id'], 
                              output_keys=['grasp_categorisation','surface_distance'])
 
@@ -285,7 +285,7 @@ class grasp_base_pose_estimation(smach.State):
     def execute(self, userdata):
         
         self.counter = self.counter + 1
-        if self.counter > 1:
+        if self.counter > 2:
             self.counter = 0
             #only need to retry once
             return 'not_retry'

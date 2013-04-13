@@ -104,7 +104,7 @@ class put_object_on_tray(smach.State):
     def __init__(self):
         smach.State.__init__(
             self,
-            outcomes=['succeeded', 'failed' ,'preempted'],
+            outcomes=['succeeded', 'failed' ,'preempted', 'not_completed'],
             input_keys=['grasp_categorisation','surface_distance'])
         
         
@@ -120,12 +120,19 @@ class put_object_on_tray(smach.State):
         
         
         if True:#current_task_info.object_in_hand and not current_task_info.object_on_tray:
-
+            
+            print userdata.surface_distance
+            
+            target_pose = "grasp-to-tray"
+            
+            if userdata.surface_distance >= 0.1:
+                target_pose = "grasp-to-tray_top"
+            
             # move object to frontside
             if ipa_arm_navigation.lower() == 'true':
-                handle_arm = sss.move("arm","grasp-to-tray",False, 'Planned')
+                handle_arm = sss.move("arm",target_pose ,False, 'Planned')
             else:
-                handle_arm = sss.move("arm","grasp-to-tray",False)
+                handle_arm = sss.move("arm",target_pose ,False)
             sss.sleep(2)
             sss.move("tray","up")
             handle_arm.wait()
@@ -158,8 +165,28 @@ class put_object_on_tray(smach.State):
         if self.preempt_requested():
             self.service_preempt()
             return 'preempted'
-        else:
-            return 'succeeded'
+        else:     
+            try:
+                service_full_name = '/tray_monitor/occupied'
+                #rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+                rospy.wait_for_service(service_full_name,3)
+                            
+                # to check if the tray is ocuppied
+                is_ocuppied = rospy.ServiceProxy(service_full_name,Trigger)
+                resp = is_ocuppied()
+                print "###Checking if there is any component on the tray..." 
+                print "###is_ocuppied? ", resp
+                            
+                if(resp is not True):
+                    print "The tray is not ocuppied."
+                    return 'not_completed'
+                else:
+                    return 'succeeded'
+            except rospy.ROSException, e:
+                    error_message = "%s"%e
+                    rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+                    print "the service /tray_monitor/occupied is not available"
+                    return 'failed'
 
 
 #verify_object FROM PRO+IPA, the interface still need to be clarified 

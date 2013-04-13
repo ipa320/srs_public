@@ -118,7 +118,7 @@ class sm_approach_pose_assisted(smach.StateMachine):
         
         with self:
             smach.StateMachine.add('APPROACH_POSE', approach_pose_without_retry(),
-					transitions={'succeeded':'succeeded', 'not_completed':'INTERVENTION', 'failed':'failed', 'preempted':'preempted'},
+					transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed', 'preempted':'preempted'},
 					remapping={'base_pose':'target_base_pose'})
             
             smach.StateMachine.add('INTERVENTION', intervention_base_pose(),
@@ -176,7 +176,7 @@ class sm_transfer_object_to_tray(smach.StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, 
             outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
-                                    input_keys=['grasp_categorisation'])
+                                    input_keys=['grasp_categorisation','surface_distance'])
         
         self.userdata.post_table_pos=""
     
@@ -188,8 +188,8 @@ class sm_transfer_object_to_tray(smach.StateMachine):
                 transitions={'succeeded':'PUT_OBJECT_ON_TRAY','failed':'failed','preempted':'preempted'},
                 remapping={'base_pose':'post_table_pos'})                              
             smach.StateMachine.add('PUT_OBJECT_ON_TRAY', put_object_on_tray(),
-                transitions={'succeeded':'succeeded', 'failed':'failed','preempted':'preempted'},
-                remapping={'grasp_categorisation':'grasp_categorisation'})       
+                transitions={'succeeded':'succeeded', 'failed':'failed','preempted':'preempted', 'not_completed':'not_completed'},
+                remapping={'grasp_categorisation':'grasp_categorisation', 'surface_distance':'surface_distance'})       
             
 ################################################################################
 #environment object update state machine

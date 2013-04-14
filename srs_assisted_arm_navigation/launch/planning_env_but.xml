@@ -15,7 +15,7 @@
 	  <node pkg="trajectory_filter_server" type="trajectory_filter_server" name="trajectory_filter_server">
 		  <rosparam command="load" file="$(find trajectory_filter_server)/config/filters.yaml" />
 		  <rosparam file="$(find cob_manipulation_config)/$(env ROBOT)/joint_limits.yaml"/>
-  	</node>
+  	</node-->
 	  
 	  <node pkg="move_arm" type="move_arm_simple_action" name="cob_move_arm">
      
@@ -30,10 +30,10 @@
       
         <remap from="filter_trajectory" to="/trajectory_filter_server/filter_trajectory_with_constraints"/>
         
-    </node>
+    	</node>
 
 			    
-	</group-->
+	<!--/group-->
 	
 	<!-- customized copy of cob_arm_navigation.launch and kinect_perception.launch from cob_arm_navigation -->
 	<group>

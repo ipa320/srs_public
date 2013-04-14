@@ -8,7 +8,13 @@ int32 sessionId
 # then stateLastAction = [0, 1, 2]
 #int32[] stateLastAction      # to be deprecated
 
-# 0: success 1: fail, 2: n/a, or others. 
+
+# resultLastAction is used to specify if the last action has been executed successfully or not. Base on the last step, the task planner can decide what to do next.
+# 0: success 1: fail, 2: n/a, or others.
+int8 LAST_ACTION_SUCCESS = 0
+int8 LAST_ACTION_NOT_COMPLETED = 1
+int8 LAST_ACTION_FAIL = 2
+ 
 int32 resultLastAction
 
 ### for action "detection", 

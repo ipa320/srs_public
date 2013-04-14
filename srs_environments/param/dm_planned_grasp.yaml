@@ -4,3 +4,4 @@ srs/grasping_type: 'Planned'
 srs/ipa_arm_navigation: 'True'
 srs/detection_type: 'Simple' 
 srs/enviroment_confirmation: 'False'
+

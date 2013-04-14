@@ -260,7 +260,7 @@ with co_sm_detection:
 co_sm_new_grasp = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
                  input_keys=['target_object_name','target_object_id','target_object','target_workspace_name','semi_autonomous_mode'],
-                 output_keys=['grasp_categorisation'],
+                 output_keys=['grasp_categorisation','surface_distance'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
 
@@ -272,7 +272,8 @@ with co_sm_new_grasp:
                                         'target_object_id':'target_object_id',
                                         'target_object':'target_object',
                                         'target_workspace_name':'target_workspace_name',
-                                        'grasp_categorisation':'grasp_categorisation'})
+                                        'grasp_categorisation':'grasp_categorisation',
+                                        'surface_distance':'surface_distance'})
 
 
 ###################################################
@@ -282,7 +283,7 @@ with co_sm_new_grasp:
 co_sm_old_grasp = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
                  input_keys=['target_object_name','target_object_id','target_object','semi_autonomous_mode'],
-                 output_keys=['grasp_categorisation'],
+                 output_keys=['grasp_categorisation','surface_distance'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
 
@@ -293,7 +294,8 @@ with co_sm_old_grasp:
                                         'semi_autonomous_mode':'semi_autonomous_mode',
                                         'target_object_id':'target_object_id',
                                         'target_object':'target_object',
-                                        'grasp_categorisation':'grasp_categorisation'})
+                                        'grasp_categorisation':'grasp_categorisation',
+                                        'surface_distance':'surface_distance'})
 
 ###################################################
 # creating the concurrence state machine put object on tray
@@ -301,13 +303,14 @@ with co_sm_old_grasp:
 
 co_sm_transfer_to_tray = smach.Concurrence (outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted', 'paused'],
                  default_outcome='failed',
-                 input_keys=['grasp_categorisation'],
+                 input_keys=['grasp_categorisation','surface_distance'],
                  child_termination_cb = common_child_term_cb,
                  outcome_cb = common_out_cb)
 with co_sm_transfer_to_tray:
             smach.Concurrence.add('State_Checking_During_Operation', state_checking_during_operation())   
             smach.Concurrence.add('MAIN_OPERATION', sm_srs_put_on_tray(),
-                            remapping={'grasp_categorisation':'grasp_categorisation'})
+                            remapping={'grasp_categorisation':'grasp_categorisation',
+                                       'surface_distance':'surface_distance'})
 
 
 ###################################################

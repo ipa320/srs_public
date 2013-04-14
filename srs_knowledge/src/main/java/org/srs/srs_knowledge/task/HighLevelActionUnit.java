@@ -147,8 +147,14 @@ public abstract class HighLevelActionUnit {
 	    return ca;
 	}
 
-	GenericAction genericAction = actionUnits.get(ind);
-	
+	GenericAction genericAction = new GenericAction();
+	try {
+	    genericAction = actionUnits.get(ind);
+	}
+	catch(IndexOutOfBoundsException e) {
+	    return null;
+	}
+
 	ca.generic = genericAction;
 
 	ca.actionType = "generic";

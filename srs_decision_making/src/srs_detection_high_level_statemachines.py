@@ -157,10 +157,10 @@ class sm_assisted_detection(smach.StateMachine):
         with self:
             smach.StateMachine.add('DETECT_OBJECT-assisted', detect_object_assited(),
                     transitions={'succeeded':'USER_INTERVENTION', 'failed':'failed', 'preempted':'preempted'},
-                    remapping={'object_name':'target_object_name', 'object_list':'target_object_list' })
+                    remapping={'object_name':'target_object_name', 'object_list':'target_object_list' , 'object_id':'target_object_id'})
             
             smach.StateMachine.add('USER_INTERVENTION', user_intervention_on_detection(),
-					transitions={'succeeded':'succeeded', 'bb_move':'BB_MOVE', 'give_up':'not_completed', 'failed':'failed', 'preempted':'preempted'},
+					transitions={'succeeded':'succeeded', 'bb_move':'BB_MOVE', 'give_up':'not_completed', 'failed':'failed', 'preempted':'preempted','retry':'DETECT_OBJECT-assisted'},
 					remapping={'target_object_name':'target_object_name', 'object':'target_object', 'object_pose':'target_object_pose', 'bb_pose':'new_scan_pose', 'target_object_list':'target_object_list'})
             
             smach.StateMachine.add('BB_MOVE', approach_pose_without_retry(),

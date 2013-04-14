@@ -315,7 +315,7 @@ public class KnowledgeEngine
 	ServiceServer<QuerySparQL.Request, QuerySparQL.Response, QuerySparQL> srv = nodeHandle.advertiseService( querySparQLService , new QuerySparQL(), scb);
     }
 
-    private PlanNextAction.Response newHandlePlanNextAction( PlanNextAction.Request request) throws NullPointerException {
+    private PlanNextAction.Response handlePlanNextAction( PlanNextAction.Request request) throws NullPointerException {
 	PlanNextAction.Response res = new PlanNextAction.Response();
 	CUAction ca = new CUAction(); 
 	
@@ -374,7 +374,7 @@ public class KnowledgeEngine
     {
 	ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response> scb = new ServiceServer.Callback<PlanNextAction.Request, PlanNextAction.Response>() {
             public PlanNextAction.Response call(PlanNextAction.Request request) {
-		return newHandlePlanNextAction(request);
+		return handlePlanNextAction(request);
             }
 	};
 	

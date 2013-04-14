@@ -1,47 +1,47 @@
 <?xml version="1.0"?>
 <launch>
 
-        <!-- SRS common enviroment parameters -->
+    <!-- SRS common enviroment parameters -->
 	<include file="$(find srs_environments)/ros/launch/common.launch"/>
 
-	<!-- start Gazebo -->
-	<include file="$(find cob_bringup_sim)/launch/robot.launch"/>
+    <!-- start Gazebo -->
+    <include file="$(find cob_bringup_sim)/launch/robot.launch"/>
+    
+    <!-- start navigation omini-->
+    <!--include file="$(find cob_navigation_global)/launch/2dnav_dwa.launch"/-->
 
-	<!-- start navigation omini-->
-	<!--include file="$(find cob_navigation_global)/launch/2dnav_dwa.launch"/-->
+    <!-- start navigation omini-->
+    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch"/>
+    <!-- start navigation linear-->
+    <!--include file="$(find cob_navigation_global)/launch/2dnav_linear.xml"/-->
 
-	<!-- start navigation omini-->
-	<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch"/>
-	<!-- start navigation linear-->
-	<!--include file="$(find cob_navigation_global)/launch/2dnav_linear.xml"/-->
-
-	<!--start navigation linear-->
-	<!--include file="$(find cob_navigation_linear)/ros/launch/2dnav_linear_include.launch"/-->
-
-	<!-- start object detection -->
-	<include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
-	
-	<!-- upload parameters -->
-	<include file="$(find cob_default_robot_config)/upload_param.launch"/>	
-	<include file="$(find cob_default_env_config)/upload_param.launch"/>
-
-        <!-- object data base -->
-	<include file="$(find srs_object_database)/launch/srs_db.launch"/>
+    <!--start navigation linear-->
+    <!--include file="$(find cob_navigation_linear)/ros/launch/2dnav_linear_include.launch"/-->
+    
+    <!-- start object detection -->
+    <include file="$(find cob_object_detection_fake)/ros/launch/object_detection_fake.launch"/>
+    
+    <!-- upload parameters -->
+    <include file="$(find cob_default_robot_config)/upload_param.launch"/>  
+    <!--include file="$(find cob_default_env_config)/upload_navigation_goals.launch"/-->
+    
+    <!-- object data base -->
+    <include file="$(find srs_object_database)/launch/srs_db.launch"/>
   
-	<!-- table -->
-	<include file="$(find srs_scenarios)/ros/launch/table_ikea.launch"/>
-
-	<!-- decision making action server-->
-	<include file="$(find srs_decision_making)/ros/launch/srs_decision_making.launch"/>
+    <!-- table -->
+    <include file="$(find srs_scenarios)/ros/launch/table_ikea.launch"/>
+    
+    <!-- decision making action server-->
+    <include file="$(find srs_decision_making)/ros/launch/srs_decision_making.launch"/>
         
-	<!-- SRS arm kinematics for sdh_palm_link -->
-	<include file="$(find srs_scenarios)/ros/launch/srs_arm_kinematics.launch"/>
-	
-	<!-- cob arm navigation -->
-	<arg name="use_cob_arm_nav" default="0"/>
-	<include file="$(find cob_arm_navigation)/launch/start_planning_environment.launch" if="$(arg use_cob_arm_nav)"/>
-	
-	<!-- cob try sensor monitor -->
-	<include file="$(find cob_tray_monitor)/ros/launch/tray_monitor.launch"/>
+    <!-- SRS arm kinematics for sdh_palm_link -->
+    <include file="$(find srs_scenarios)/ros/launch/srs_arm_kinematics.launch"/>
+    
+    <!-- cob arm navigation -->
+    <arg name="use_cob_arm_nav" default="0"/>
+    <include file="$(find cob_arm_navigation)/launch/start_planning_environment.launch" if="$(arg use_cob_arm_nav)"/>
+    
+    <!-- cob try sensor monitor -->
+    <include file="$(find cob_tray_monitor)/ros/launch/tray_monitor.launch"/>
 
 </launch>

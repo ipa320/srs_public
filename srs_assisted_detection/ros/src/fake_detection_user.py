@@ -14,7 +14,7 @@ from std_msgs.msg import *
 def user_msg():    
     rospy.wait_for_service('assisted_detection')
     string=String()
-    string.data='milk'
+    string.data='junk'   #this is useless, it will be overwritten by the input key of the detection state
     try:
         add_two_ints = rospy.ServiceProxy('assisted_detection', UiDetector)
         rospy.loginfo("client")

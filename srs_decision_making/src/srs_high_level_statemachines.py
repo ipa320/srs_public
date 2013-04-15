@@ -271,7 +271,7 @@ class sm_srs_new_grasp(SRS_StateMachine):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
             input_keys=['target_object_name','target_object_id','target_object','target_workspace_name','semi_autonomous_mode'],
-            output_keys=['grasp_categorisation'])
+            output_keys=['grasp_categorisation', 'surface_distance'])
         
         self.customised_initial("sm_srs_grasp")
         
@@ -293,7 +293,8 @@ class sm_srs_new_grasp(SRS_StateMachine):
                                               'target_object_id':'target_object_id',
                                               'target_object':'target_object',
                                               'target_workspace_name':'target_workspace_name',
-                                              'grasp_categorisation':'grasp_categorisation'})
+                                              'grasp_categorisation':'grasp_categorisation', 
+                                              'surface_distance':'surface_distance'})
         
         if self.grasp_type.lower() == 'assisted':
             #assisted grasp
@@ -305,7 +306,8 @@ class sm_srs_new_grasp(SRS_StateMachine):
                                               'target_object_id':'target_object_id',
                                               'target_object':'target_object',
                                               'target_workspace_name':'target_workspace_name',
-                                              'grasp_categorisation':'grasp_categorisation'})
+                                              'grasp_categorisation':'grasp_categorisation', 
+                                              'surface_distance':'surface_distance'})
         else:
             #simple grasp    
             with self:
@@ -316,7 +318,8 @@ class sm_srs_new_grasp(SRS_StateMachine):
                                               'target_object_id':'target_object_id',
                                               'target_object':'target_object',
                                               'target_workspace_name':'target_workspace_name',
-                                              'grasp_categorisation':'grasp_categorisation'})
+                                              'grasp_categorisation':'grasp_categorisation', 
+                                              'surface_distance':'surface_distance'})
 
 ################################################################################
 #Old grasp for backward compatibility (the grasp include the detection)
@@ -328,7 +331,7 @@ class sm_srs_old_grasp(SRS_StateMachine):
         smach.StateMachine.__init__(self,
             outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
             input_keys=['target_object_name','target_object_id','target_object','semi_autonomous_mode'],
-            output_keys=['grasp_categorisation'])
+            output_keys=['grasp_categorisation','surface_distance'])
         
         self.customised_initial("sm_srs_grasp")
         
@@ -339,7 +342,8 @@ class sm_srs_old_grasp(SRS_StateMachine):
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_id':'target_object_id',
                                               'target_object':'target_object',
-                                              'grasp_categorisation':'grasp_categorisation'})
+                                              'grasp_categorisation':'grasp_categorisation', 
+                                              'surface_distance':'surface_distance'})
 ################################################################################
 #Transfer object to tray state machine
 #
@@ -349,7 +353,7 @@ class sm_srs_put_on_tray(SRS_StateMachine):
     def __init__(self):    
         smach.StateMachine.__init__(self, 
             outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
-            input_keys=['grasp_categorisation'])
+            input_keys=['grasp_categorisation','surface_distance'])
         
         self.customised_initial("sm_put_object_on_tray")
         self.userdata.post_table_pos=""
@@ -357,7 +361,7 @@ class sm_srs_put_on_tray(SRS_StateMachine):
         with self:
             smach.StateMachine.add("PUT_ON_TRAY", sm_transfer_object_to_tray(),
                 transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
-                remapping={'grasp_categorisation': 'grasp_categorisation'})                  
+                remapping={'grasp_categorisation': 'grasp_categorisation','surface_distance':'surface_distance'})                  
             
 ################################################################################
 #3D environment update state machine

@@ -82,9 +82,9 @@ class get_feasible_grasps():
 		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
 		self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state);
 		
-		rospy.loginfo("Waiting /arm_kinematics/get_constraint_aware_ik service...");
-		rospy.wait_for_service('/arm_kinematics/get_constraint_aware_ik')
-		rospy.loginfo("/arm_kinematics/get_constraint_aware_ik is ready.");
+		rospy.loginfo("Waiting %s service...",  grasping_functions.graspingutils.get_ik_srv_name());
+		rospy.wait_for_service( grasping_functions.graspingutils.get_ik_srv_name())
+		rospy.loginfo("%s is ready.",  grasping_functions.graspingutils.get_ik_srv_name());
 
 		rospy.loginfo("Waiting /get_db_grasps service...");
 		rospy.wait_for_service('/get_db_grasps')
@@ -96,9 +96,11 @@ class get_feasible_grasps():
 		x = time.time();
 		rospy.loginfo("/get_feasible_grasps service has been called...");
 
-		if len(request.pregrasp_offsets) != 2:
+		pregrasp_offsets = request.pregrasp_offsets
+		if len(pregrasp_offsets) != 2:
 			print "pregrasps_offsets value must be an array with length 2: [X,Z]"
-			print "Using default values: [0.2, 0.0]"
+			print "Using default values: [0.5, 0.0]"
+			pregrasp_offsets = [0.0, 0.0];
 
 		client_response = self.client(request.object_id)
 		grasp_configuration = client_response.grasp_configuration;
@@ -110,6 +112,8 @@ class get_feasible_grasps():
 			continue;
 
 		rotacion = grasping_functions.graspingutils.rotation_matrix(request.object_pose);
+
+
 		resp = GetFeasibleGraspsResponse();
 		resp.error_code.val = 0;
 		resp.feasible_grasp_available = False;
@@ -123,17 +127,18 @@ class get_feasible_grasps():
 
 				pre = grasping_functions.graspingutils.pose_from_matrix(pre_trans);
 				g = grasping_functions.graspingutils.pose_from_matrix(grasp_trans);
-			
+				surface_distance = g.pose.position.z - request.object_pose.position.z
 				category = grasping_functions.graspingutils.get_grasp_category(pre.pose.position, g.pose.position);
+				
+				nvg = FeasibleGrasp(grasp_configuration.sdh_joint_values, "/sdh_palm_link", g, pre, surface_distance, category);
 				fpos = self.get_finger_positions(category)
-				nvg = FeasibleGrasp(grasp_configuration.sdh_joint_values, "/sdh_palm_link", g, pre, category);
-				pre.pose = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre.pose, request.pregrasp_offsets);
+				pre.pose = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre.pose, pregrasp_offsets);
 			
 				if (grasping_functions.graspingutils.valid_grasp(category)) and (not self.checkCollisions(fpos, nvg, request.object_pose)):
 					class FeasibleGraspFound(Exception): pass
 					try:
 						for w in range(0, self.ik_loop_reply):
-							(pgc, error) = grasping_functions.graspingutils.callIKSolver(self.cjc, pre);				
+							(pgc, error) = grasping_functions.graspingutils.callIKSolver(self.cjc, pre);			
 							if(error.val == error.SUCCESS):
 								for k in range(0,self.ik_loop_reply):
 									(gc, error) = grasping_functions.graspingutils.callIKSolver(pgc, g);
@@ -221,10 +226,11 @@ class get_feasible_grasps():
 
 		self.finger_correction = (0, -0.0685)[nvg.category == "TOP"];
 		finger_pos = self.transform_finger_positions(fpositions, nvg.grasp.pose);
-		
+
 		for fp in finger_pos:
 			if (obj_pose.position.z + 0.05)> (fp.pose.position.z + self.finger_correction):
 				return True;
+
 		return False;
 
 

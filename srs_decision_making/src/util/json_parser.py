@@ -272,6 +272,15 @@ JASON request formation
 
 {"tasks":[{"time_schedule":1263798000000,"task":"get","object":{"object_type":"Milkbox"}},{"time_schedule":1263798000000,"task":"move","destination":{"predefined_pose":"sofa_right"}}],"initializer":{"device_type":"ui_loc","device_id":"ui_loc_0001"}}
 
+
+Manual command format:
+
+{"tasks":[{"task":"move", "mode":"manual", "component":"torso","destination":{"predefined_pose":"nod"}}],"initializer":{"device_type":"ui_pri","device_id":"ui_pri_101"}}
+
+{"tasks":[{"task":"move", "mode":"manual", "component":"torso","destination":{"torso_pose":{"tilt1":-0.1,"pan":0.1,"tilt2":0.15}}}],"initializer":{"device_type":"ui_pri","device_id":"ui_pri_101"}}
+
+{"tasks":[{"task":"move", "mode":"manual", "component":"head","destination":{"predefined_pose":"home"}}],"initializer":{"device_type":"ui_pri","device_id":"ui_pri_101"}}
+
 """          
             
             

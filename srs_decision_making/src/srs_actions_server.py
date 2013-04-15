@@ -63,9 +63,11 @@ from actionlib import *
 from actionlib.msg import *
 from smach import Iterator, StateMachine, CBState
 from smach_ros import ConditionState, IntrospectionServer
+import unicodedata
 
 from srs_knowledge.srv import *
 from srs_knowledge.msg import *
+
 
 #from cob_tray_sensors.srv import *
 
@@ -265,8 +267,57 @@ class SRS_DM_ACTION(object):
         
         rospy.loginfo("Waiting for wake up the server ...")
         
-    
-
+    #processing manual command
+    #move("torso",[[tilt1, pan, tilt2]])
+    #as well as 
+    #move("torso", "front")
+    #move("head", "back")
+    #move("tray", "home")
+    def process_manual_command (self, the_task):
+        
+        #possible components and positions more details in cob_robots
+        pre_positions = dict()
+        pre_positions['torso'] = ['home','left','right','back','front','nod','bow','shake']
+        pre_positions['head'] = ['front','back']
+        pre_positions['tray'] = ['up','down']
+        #default outcome
+        outcome = 'task_failed'
+              
+        global sss
+        # only processing manual command for known component
+        if 'predefined_pose' in the_task['destination']:
+            #move tor
+            if the_task['component'] == 'torso' and the_task['destination']['predefined_pose'] in pre_positions['torso']:
+                handle = sss.move(the_task['component'], str(the_task['destination']['predefined_pose']), False)
+                handle.wait()
+                outcome = 'task_succeeded'
+            #move head
+            if the_task['component'] == 'head'and the_task['destination']['predefined_pose'] in pre_positions['head']:  
+                handle = sss.move(the_task['component'], str(the_task['destination']['predefined_pose']), False)
+                handle.wait()
+                outcome = 'task_succeeded'
+            #move tray
+            if the_task['component'] == 'tray' and the_task['destination']['predefined_pose'] in pre_positions['tray']:      
+                handle = sss.move(the_task['component'], str(the_task['destination']['predefined_pose']), False)
+                handle.wait()
+                outcome = 'task_succeeded'                
+                        
+        if the_task['component'] == 'torso' and 'torso_pose' in the_task['destination'] :
+            if 'tilt1' in the_task['destination']['torso_pose'] and 'tilt2' in the_task['destination']['torso_pose'] and 'pan' in the_task['destination']['torso_pose']: 
+                target = list()             
+                target = [[the_task['destination']['torso_pose']['tilt1'], the_task['destination']['torso_pose']['pan'], the_task['destination']['torso_pose']['tilt2'] ]]            
+                handle = sss.move(the_task['component'], target, False)
+                handle.wait()  
+                outcome = 'task_succeeded' 
+                               
+        if outcome == "task_succeeded": 
+            self._result.return_value=3
+            self._as.set_succeeded(self._result)
+        else :
+            self._result.return_value=4
+            self._as.set_aborted(self._result)                
+                
+        return
         
     def robot_initialisation_process(self):
         if not self.robot_initialised :
@@ -298,8 +349,9 @@ class SRS_DM_ACTION(object):
         self.temp.userdata.target_base_pose=Pose2D()
         self.temp.userdata.target_object_name=''
         self.temp.userdata.target_object_pose=Pose()
-        self.temp.userdata.the_target_object_found = 'sadsadsadsadsda'
+        self.temp.userdata.the_target_object_found = ''
         self.temp.userdata.verified_target_object_pose=Pose()
+        self.temp.userdata.surface_distance = -1000
         
         #session id for current task, on id per task.
         #session id can be shared by different clients
@@ -326,7 +378,8 @@ class SRS_DM_ACTION(object):
                                                 'simple_grasp':'SM_OLD_GRASP',
                                                 'full_grasp':'SM_NEW_GRASP',
                                                 'put_on_tray':'SM_PUT_ON_TRAY',
-                                                'env_update':'SM_ENV_UPDATE'},
+                                                'env_update':'SM_ENV_UPDATE',
+                                                'reset_robot_after_impossible_task':'RESET_ROBOT_AFTER_IMPOSSIBLE_TASK'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'target_object_name':'target_object_name',
                                                'target_object_pose':'target_object_pose',
@@ -338,12 +391,12 @@ class SRS_DM_ACTION(object):
                                                'scan_pose_list':'scan_pose_list'})
             
             smach.StateMachine.add('SM_NAVIGATION', srs_navigation_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_base_pose':'target_base_pose',
                                                'semi_autonomous_mode':'semi_autonomous_mode'})
 
             smach.StateMachine.add('SM_DETECTION', srs_detection_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'target_object_id':'target_object_id',
                                               'target_workspace_name':'target_workspace_name',
@@ -352,41 +405,52 @@ class SRS_DM_ACTION(object):
                                               'target_object_pose':'target_object_pose' })
        
             smach.StateMachine.add('SM_NEW_GRASP', srs_grasp_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'target_object_id':'target_object_id',
                                               'target_workspace_name':'target_workspace_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object':'the_target_object_found',
                                               'target_object_pose':'target_object_pose',
-                                              'grasp_categorisation':'grasp_categorisation'})
+                                              'grasp_categorisation':'grasp_categorisation',
+                                              'surface_distance':'surface_distance'})
             
             '''
             START
             #Old grasp added for backward compatible, should be removed after knowledge service updated completely
             '''
             smach.StateMachine.add('SM_OLD_GRASP', srs_old_grasp_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_name':'target_object_name',
                                               'semi_autonomous_mode':'semi_autonomous_mode',
                                               'target_object_id':'target_object_id',
                                               'target_object':'the_target_object_found',
-                                              'grasp_categorisation':'grasp_categorisation'})
+                                              'grasp_categorisation':'grasp_categorisation',
+                                              'surface_distance':'surface_distance'})
             '''
             #Old grasp added for backward compatible, should be removed after knowledge service updated completely
             END
             '''
             
             smach.StateMachine.add('SM_PUT_ON_TRAY', srs_put_on_tray_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
-                                   remapping={'grasp_categorisation':'grasp_categorisation' })
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   remapping={'grasp_categorisation':'grasp_categorisation',
+                                              'surface_distance':'surface_distance' })
 
             smach.StateMachine.add('SM_ENV_UPDATE', srs_enviroment_update_operation(),
-                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'SEMANTIC_DM', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
+                                   transitions={'succeeded':'SEMANTIC_DM', 'not_completed':'CHECKING_USER_INTERVENTION', 'failed':'SEMANTIC_DM','stopped':'task_preempted','preempted':'task_preempted'},
                                    remapping={'target_object_pose':'target_object_pose',
                                               'target_object_hh_id':'target_object_hh_id',
                                               'verified_target_object_pose':'verified_target_object_pose'})
+            
+            smach.StateMachine.add('RESET_ROBOT_AFTER_IMPOSSIBLE_TASK', reset_robot(),
+                                   transitions={'completed':'task_aborted', 'failed':'task_aborted'},
+                                   remapping={'grasp_categorisation':'grasp_categorisation' })
 
+            smach.StateMachine.add('CHECKING_USER_INTERVENTION', remote_user_intervention(),
+                                   transitions={'give_up':'SEMANTIC_DM', 'failed':'task_aborted', 'completed':'task_succeeded'},
+                                   remapping={'semi_autonomous_mode':'semi_autonomous_mode' })
+                        
                         
 
         return self.temp
@@ -482,8 +546,7 @@ class SRS_DM_ACTION(object):
             
         current_task_info._srs_as = copy.copy(self)
         
-
-
+        
         ##############################################
         # taskrequest From Knowledge_ros_service
         ##############################################
@@ -516,14 +579,34 @@ class SRS_DM_ACTION(object):
                 print current_task_info.json_parameters
                 tasks = json_parser.Tasks(current_task_info.json_parameters)
                 if len(tasks.tasks_list) > 0:
+                    
+                    the_task = json.loads(tasks.tasks_list[0].task_json_string)                    
+                   
+                    print "current single task is"
+                    print the_task
+                    print "##############"
+                    
+                    # pre_processing for manual command
+                    if 'mode' in the_task :
+                        if the_task['mode'] == 'manual' :
+                            self.process_manual_command (the_task)
+                            #no more task completed
+                            return
+                    
                     #task_dict = tt.tasks[0]
                     #task_json = tt.tasks_json[0]
                     ## read parameter server
                     grasp_type = rospy.get_param("srs/grasping_type")
                     tasks.tasks_list[0].addItem('grasping_type', grasp_type)
-
-                    req.json_parameters = tasks.tasks_list[0].task_json_string
                     
+                    # if the task list contains multiple tasks,
+                    # we can use the task id to specify them
+                    # and the sequence of task execution can be controlled here  
+                    req.json_parameters = tasks.tasks_list[0].task_json_string 
+                    #req.json_parameters = tasks.tasks_list[1].task_json_string
+                    
+                    print "###req.json_parameters", req.json_parameters 
+                    #print "###tasks.tasks_list[1]", tasks.tasks_list[1]
             res = requestNewTask(req)
             #res = requestNewTask(current_task_info.task_name, current_task_info.task_parameter, "order")
             print 'Task created with session id of: ' + str(res.sessionId)

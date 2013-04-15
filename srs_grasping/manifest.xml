@@ -24,6 +24,7 @@
   <depend package="cob_srvs"/> 
   <depend package="cob_script_server"/>
   <depend package="cob_object_detection_msgs"/>
+  <depend package="cob_kinematics"/>
 
   <!--depend package="openrave"/-->  			<!-- Uncomment this line if you use the openrave_planning package -->
   <!--rosdep name="openrave"/--> 				<!-- Comment this line if you use the openrave_planning package -->

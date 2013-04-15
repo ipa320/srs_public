@@ -35,9 +35,9 @@
 #include <algorithm>
 #include <sstream>
 #include <climits>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include <assimp/assimp.hpp>
+#include <assimp/aiScene.h>
+#include <assimp/aiPostProcess.h>
 
 template <typename tpCloudType>
 void robot_self_filter::SelfMask<tpCloudType>::freeMemory (void)

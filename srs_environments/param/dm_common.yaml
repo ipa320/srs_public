@@ -6,3 +6,6 @@ srs/common/default_navigation_mode: "omni"
 srs/common/max_num_of_grasp_configurations_per_side: 1
 srs/common/scan_pose_scale: 0.5
 srs/common/grasp_pose_scale: 0.8
+srs/ik_solver: '/cob_ik_wrapper/arm/get_constraint_aware_ik'
+srs/env_planner: '/environment_server/set_planning_scene_diff'
+

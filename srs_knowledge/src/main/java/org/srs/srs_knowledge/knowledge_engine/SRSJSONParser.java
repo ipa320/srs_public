@@ -412,6 +412,30 @@ public class SRSJSONParser
 	}
     }
 
+    public static String encodeObjectCategoryInfo(HashSet<String> items) {
+	JSONArray cats = new JSONArray();
+	Iterator<String> it = items.iterator();
+	while (it.hasNext()) {
+	    cats.add(it.next());
+	}
+
+	JSONObject cat = new JSONObject();
+	cat.put("object_categories", cats);
+
+	try {
+	    StringWriter out = new StringWriter();
+	    cat.writeJSONString(out);
+	    String jsonText = out.toString();
+	    return jsonText;
+	}
+	catch(IOException ie) {
+	    System.out.println("IO Exception when writing JSON STRING");
+	    System.out.println(ie.getMessage());
+	    return "";
+	}
+    }
+
+
     public static JSONObject decodeJsonActionInfo(String jsonActionInfo) {
 	JSONParser parser = new JSONParser();
 	JSONObject actionInfo = new JSONObject();

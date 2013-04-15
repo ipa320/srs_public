@@ -144,7 +144,8 @@ class sm_srs_grasp_simple (smach.StateMachine):
         smach.StateMachine.__init__(self, 
             outcomes=['succeeded', 'not_completed', 'failed', 'preempted'],
             input_keys=['target_object_name','target_object_id', 'target_object','target_workspace_name','semi_autonomous_mode'],
-            output_keys=['grasp_categorisation'])
+            output_keys=['grasp_categorisation', 'surface_distance'])
+        self.userdata.surface_distance = -1000 # default value for surface_distance, if the value is negative, the parameter will be ignored. 
               
         self.max_retries = 5  # default value for max retries 
         try:
@@ -173,7 +174,7 @@ class sm_srs_grasp_assisted (smach.StateMachine):
         smach.StateMachine.__init__(self, 
             outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
             input_keys=['target_object_name','target_object_id', 'target_object','target_workspace_name','semi_autonomous_mode'],
-            output_keys=['grasp_categorisation'])
+            output_keys=['grasp_categorisation', 'surface_distance'])
         
         self.userdata.grasp_configuration = ""   #list of possible grasp configuration
         self.userdata.poses = ""                 #list of pre grasp pose of the above configuration
@@ -212,7 +213,7 @@ class sm_srs_grasp_assisted (smach.StateMachine):
             
                 smach.StateMachine.add('GRASP_SRS_GRASP', srs_grasp(),
                     transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
-                    remapping={'grasp_configuration_id':'index_of_the_selected_pose', 'grasp_configuration':'grasp_configuration', 'grasp_categorisation':'grasp_categorisation' })
+                    remapping={'grasp_configuration_id':'index_of_the_selected_pose', 'grasp_configuration':'grasp_configuration', 'grasp_categorisation':'grasp_categorisation', 'surface_distance':'surface_distance'})
             
 
 ################################################################################
@@ -225,7 +226,7 @@ class sm_srs_grasp_planned (smach.StateMachine):
         smach.StateMachine.__init__(self, 
             outcomes=['succeeded', 'not_completed', 'failed', 'stopped', 'preempted'],
             input_keys=['target_object_name','target_object_id', 'target_object','target_workspace_name','semi_autonomous_mode'],
-            output_keys=['grasp_categorisation'])
+            output_keys=['grasp_categorisation','surface_distance'])
         
         self.userdata.grasp_configuration = ""   #list of possible grasp configuration
         self.userdata.poses = ""                 #list of pre grasp pose of the above configuration
@@ -278,8 +279,8 @@ class sm_srs_grasp_planned (smach.StateMachine):
                     remapping={'poses':'poses', 'index_of_the_selected_pose':'pose_id'})
             
                 smach.StateMachine.add('GRASP_SRS_GRASP', srs_grasp(),
-                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
-                    remapping={'grasp_configuration_id':'index_of_the_selected_pose', 'grasp_configuration':'grasp_configuration', 'grasp_categorisation':'grasp_categorisation' })
+                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted', 'retry':'GRASP_BEST_BASE_POSE_ESTIMATION'},
+                    remapping={'grasp_configuration_id':'index_of_the_selected_pose', 'grasp_configuration':'grasp_configuration', 'grasp_categorisation':'grasp_categorisation', 'surface_distance':'surface_distance' })
             
                 smach.StateMachine.add('GRASP_BEST_BASE_POSE_ESTIMATION', grasp_base_pose_estimation(),
                     transitions={'retry':'GRASP_MOVE_BASE', 'not_retry':'not_completed', 'failed':'failed','preempted':'preempted'},
@@ -305,8 +306,8 @@ class sm_srs_grasp_planned (smach.StateMachine):
                     remapping={'poses':'poses', 'index_of_the_selected_pose':'pose_id'})
             
                 smach.StateMachine.add('GRASP_SRS_GRASP', srs_grasp(),
-                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted'},
-                    remapping={'grasp_configuration_id':'index_of_the_selected_pose', 'grasp_configuration':'grasp_configuration', 'grasp_categorisation':'grasp_categorisation' })
+                    transitions={'succeeded':'succeeded', 'not_completed':'not_completed', 'failed':'failed','preempted':'preempted', 'retry':'GRASP_BEST_BASE_POSE_ESTIMATION'},
+                    remapping={'grasp_configuration_id':'index_of_the_selected_pose', 'grasp_configuration':'grasp_configuration', 'grasp_categorisation':'grasp_categorisation', 'surface_distance':'surface_distance' })
             
                 smach.StateMachine.add('GRASP_BEST_BASE_POSE_ESTIMATION', grasp_base_pose_estimation(),
                     transitions={'retry':'GRASP_MOVE_BASE', 'not_retry':'not_completed', 'failed':'failed','preempted':'preempted'},

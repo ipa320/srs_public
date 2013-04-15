@@ -264,10 +264,27 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	//	if(nextHLActSeq.hasNextHighLevelActionUnit()) {
 	HighLevelActionUnit nextHighActUnit = nextHLActSeq.getCurrentHighLevelActionUnit();
 	if(nextHighActUnit != null) {
-	    int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
+	    int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit
+
+	    CUAction ca = nextHighActUnit.getCUActionAt(tempI);
+	    
+	    while (ca == null) {
+		
+		System.out.println("CUACTION IS NULL....... Keep trying   " + currentSubAction);
+		currentSubAction++;
+		if(currentSubAction >= allSubSeqs.size()) {
+		    return null;
+		}
+		nextHLActSeq = allSubSeqs.get(currentSubAction);
+		nextHighActUnit = nextHLActSeq.getCurrentHighLevelActionUnit();
+		
+		tempI = nextHighActUnit.getNextCUActionIndex(true);
+		ca = nextHighActUnit.getCUActionAt(tempI); 
+	    }
+ 
 	    // TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
 	    // SO STUPID CODE HERE
-	    
+	    /*
 	    if(tempI == HighLevelActionUnit.COMPLETED_SUCCESS || tempI == HighLevelActionUnit.COMPLETED_FAIL || tempI == HighLevelActionUnit.INVALID_INDEX) {
 		CUAction ca = new CUAction();
 		ca.status = -1;
@@ -276,11 +293,34 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 	    else {
 		//System.out.println("GET NEXT CU ACTION AT:  " + tempI);
 		CUAction ca = nextHighActUnit.getCUActionAt(tempI);
+
+		while (ca == null) {
+
+
+		    System.out.println("CUACTION IS NULL....... Keep trying   " + currentSubAction);
+
+
+		    currentSubAction++;
+	
+	
+		    if(currentSubAction >= allSubSeqs.size()) {
+			return null;
+		    }
+		    nextHLActSeq = allSubSeqs.get(currentSubAction);
+		
+		    nextHighActUnit = nextHLActSeq.getCurrentHighLevelActionUnit();
+
+		    tempI = nextHighActUnit.getNextCUActionIndex(true);
+		    ca = nextHighActUnit.getCUActionAt(tempI); 
+		}
+	    */
+	    /*
 		if(ca == null) {
 		    System.out.println("CUACTION IS NULL.......");
 		}
-		return ca;
-	    }
+		*/
+	    return ca;
+	    //}
 	}
 	
 	return null;
@@ -504,6 +544,12 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 			return handleFailedMessage();
 		    }
 		    ca = highAct.getCUActionAt(ni);
+
+		    // maybe actionUnit is empty
+		    if (ca == null)  {
+			return handleFailedMessage();
+		    }
+
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
 		    //lastActionType = ca.generic.actionInfo.get(0);
@@ -744,7 +790,11 @@ public class SearchObjectTask extends org.srs.srs_knowledge.task.Task
 		    return ca;
 		}		
 		else {
-		    return nextHighActUnit.getCUActionAt(tempI);
+		    CUAction ca = nextHighActUnit.getCUActionAt(tempI);
+		    // maybe actionUnit is empty
+		    return ca == null ? handleFailedMessage() : ca;
+		    
+		    //return nextHighActUnit.getCUActionAt(tempI);
 		}
 	    }
 	}

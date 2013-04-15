@@ -30,7 +30,7 @@
       
         <remap from="filter_trajectory" to="/trajectory_filter_server/filter_trajectory_with_constraints"/>
         
-    </node>
+    	</node>
 
 			    
 	</group-->

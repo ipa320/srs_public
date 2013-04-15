@@ -58,7 +58,6 @@ import ros.pkg.srs_knowledge.msg.*;
 import ros.pkg.geometry_msgs.msg.Pose2D;
 import ros.pkg.geometry_msgs.msg.Pose;
 import org.srs.srs_knowledge.knowledge_engine.*;
-//import org.srs.srs_knowledge.utils.*;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
@@ -155,7 +154,9 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    try{
 		//System.out.println("Created HLActionSeq ");
 		HighLevelActionSequence subSeq = createSubSequenceForSingleWorkspace(u);
-		allSubSeqs.add(subSeq);
+		if (subSeq != null)
+		    allSubSeqs.add(subSeq);
+		else System.out.println("SubSequence is null - probably no valid scanning position is given by symbolic grounding service");
 	    }
 	    catch(RosException e) {
 		System.out.println("ROSEXCEPTION -- when calling symbolic grounding for scanning positions.  \t" + e.getMessage() + "\t" + e.toString());
@@ -212,7 +213,7 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	ArrayList<Pose2D> posList;
 	try {
 	    posList = calculateScanPositions(spatialInfo);
-	    System.out.println(posList.size());
+	    System.out.println("Scan Poses: " + posList.size() + "  " + workspace.asResource().getLocalName());
 	}
 	catch(RosException e) {
 	    System.out.println(e.toString()); 
@@ -288,17 +289,19 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    // get the current SubActionSequence item
 	    System.out.println("Sequence size is " + allSubSeqs.size());
 	    HighLevelActionSequence subActSeq = allSubSeqs.get(currentSubAction);
-	    
 	    HighLevelActionUnit highAct = subActSeq.getCurrentHighLevelActionUnit();
+
 	    // decide if the current SubActionSequence is finished or stuck somewhere? 
 	    // if successfully finished, then finished
 	    // if stuck (fail), move to the next subActionSequence
 	    if(highAct != null) {
 
+
 		// TODO:
 		updateDBObjectPose();
 				
 		int ni = highAct.getNextCUActionIndex(stateLastAction); 
+
 		switch(ni) {
 		case HighLevelActionUnit.COMPLETED_SUCCESS:
 		    System.out.println("COMPLETED_SUCCESS");
@@ -333,6 +336,12 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 			return handleFailedMessage();
 		    }
 		    ca = highAct.getCUActionAt(ni);
+
+		    // maybe actionUnit is empty
+		    if (ca == null)  {
+			return handleFailedMessage();
+		    }
+		    
 		    // since it is going to use String list to represent action info. So cation type is always assumed to be generic, hence the first item in the list actionInfo should contain the action type information...
 		    // WARNING: No error checking here
 		    //lastActionType = ca.generic.actionInfo.get(0);
@@ -369,9 +378,27 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	HighLevelActionUnit nextHighActUnit = nextHLActSeq.getCurrentHighLevelActionUnit();
 	if(nextHighActUnit != null) {
 	    int tempI = nextHighActUnit.getNextCUActionIndex(true); //// it does not matter if true or false, as this is to retrieve the first actionunit 
+
+	    CUAction ca = nextHighActUnit.getCUActionAt(tempI);
+	    
+	    while (ca == null) {
+		
+		System.out.println("CUACTION IS NULL....... Keep trying   " + currentSubAction);
+		currentSubAction++;
+		if(currentSubAction >= allSubSeqs.size()) {
+		    return null;
+		}
+		nextHLActSeq = allSubSeqs.get(currentSubAction);
+		nextHighActUnit = nextHLActSeq.getCurrentHighLevelActionUnit();
+		
+		tempI = nextHighActUnit.getNextCUActionIndex(true);
+		ca = nextHighActUnit.getCUActionAt(tempI); 
+	    }
+
+	    
 	    // TODO: COULD BE DONE RECURSIVELY. BUT TOO COMPLEX UNNECESSARY AND DIFFICULT TO DEBUG. 
 	    // SO STUPID CODE HERE
-	    
+	    /*
 	    if(tempI == HighLevelActionUnit.COMPLETED_SUCCESS || tempI == HighLevelActionUnit.COMPLETED_FAIL || tempI == HighLevelActionUnit.INVALID_INDEX) {
 		CUAction ca = new CUAction();
 		ca.status = -1;
@@ -380,11 +407,27 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    else {
 		//System.out.println("GET NEXT CU ACTION AT:  " + tempI);
 		CUAction ca = nextHighActUnit.getCUActionAt(tempI);
-		if(ca == null) {
-		    System.out.println("CUACTION IS NULL.......");
+
+		while (ca == null) {
+
+		    System.out.println("CUACTION IS NULL....... Keep trying   " + currentSubAction);
+		    currentSubAction++;
+		    if(currentSubAction >= allSubSeqs.size()) {
+			return null;
+		    }
+		    nextHLActSeq = allSubSeqs.get(currentSubAction);
+		    nextHighActUnit = nextHLActSeq.getCurrentHighLevelActionUnit();
+
+		    tempI = nextHighActUnit.getNextCUActionIndex(true);
+		    ca = nextHighActUnit.getCUActionAt(tempI); 
 		}
-		return ca;
-	    }
+	    */
+		/*
+		if(ca == null) {
+		System.out.println("CUACTION IS NULL.......");
+		}*/
+	    return ca;
+		//}
 	}
 	
 	return null;
@@ -639,13 +682,16 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 	    HighLevelActionUnit nextHighActUnit = currentHLActSeq.getNextHighLevelActionUnit();
 	    // set feedback? 
 	    if(nextHighActUnit.getActionType().equals("MoveAndGrasp") && !nextHighActUnit.ifParametersSet()) {
-
+		System.out.println("Next Action type is MoveAndGrasp"); 
 		Pose2D posBase = calculateGraspPosFromFBNew(fb);
 		if(posBase == null) {
+		    System.out.println("No Grasping Post returned from Sym Grounding");
 		    return handleFailedMessage();
 		}
 
 		String jsonMove = SRSJSONParser.encodeMoveAction("move", posBase.x, posBase.y, posBase.theta);
+		System.out.println("Grounding Returned Grasping Pose is (JSON): " + jsonMove);
+
 		if(!nextHighActUnit.setParameters("move", jsonMove, "")) {
 		    //currentSubAction++;
 		    return handleFailedMessage();		
@@ -669,7 +715,16 @@ public class GetObjectTask extends org.srs.srs_knowledge.task.Task
 		    return ca;
 		}		
 		else {
+		    CUAction ca = nextHighActUnit.getCUActionAt(tempI);
+		    // maybe actionUnit is empty
+		    return ca == null ? handleFailedMessage() : ca;
+		    /*
+		    if (ca == null)  {
+			return handleFailedMessage();
+		    }
+
 		    return nextHighActUnit.getCUActionAt(tempI);
+		    */
 		}
 	    }
 	}

@@ -37,7 +37,6 @@ class detect_object(smach.State):
         self.retries = 0
         self.object_name = object_name
         self.srv_name_object_detection = '/object_detection/detect_object'
-
         self.torso_poses = []
         self.torso_poses.append("back_right")
         self.torso_poses.append("back_right")
@@ -185,6 +184,8 @@ class detect_object(smach.State):
         try:
             #transform object_pose into base_link
             object_pose_in = copy.deepcopy(obj.pose)
+            print "###obj", obj
+            print "###obj.pose", obj.pose
             object_pose_in.header.stamp = listener.getLatestCommonTime("/map",object_pose_in.header.frame_id)
             object_pose_map = listener.transformPose("/map", object_pose_in)
             obj.pose = copy.deepcopy(object_pose_map)

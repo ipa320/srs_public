@@ -30,6 +30,8 @@ from srs_knowledge.srv import *
 from srs_knowledge.msg import *
 import util.json_parser as json_parser
 
+import srs_ui_pro.msg as echo_server_msg
+
 """
 This file contains (or import) basic states for SRS high level state machines.
 
@@ -142,17 +144,30 @@ class intervention_base_pose(smach.State):
                     list_out.insert(2, float(listtmp[2]))            
                     userdata.intermediate_pose = list_out  
                     """
-                    userdata.intermediate_pose = eval(s.solution.__str__())
-                    #rospy.loginfo("New intermediate target is :%s", list_out)    
+                    #userdata.intermediate_pose = eval(s.solution.__str__())
+                    
+                    if s.solution.find("[") == -1:
+                        # not a list (the position is home order etc.)
+                        userdata.intermediate_pose = s.solution.__str__()
+                    else:
+                        # list [1, 2, 3] etc.
+                        try:
+                            userdata.intermediate_pose = eval(s.solution.__str__())
+                        except Exception, e:
+                            rospy.INFO("%s", e)
+                            return 'failed'
+                    
                     return 'retry'
+                    #rospy.loginfo("New intermediate target is :%s", list_out)    
+                    
             return 'failed'
         else:
             # no user intervention, UI is not connected or not able to handle current situation 
             # fully autonomous mode for the current statemachine, robot try to handle error by it self with semantic KB
             """
-            call srs knowledge ros service for a new scanning or grasping position
+            srs knowledge service would find a new scanning or grasping position automatically
             """
-            userdata.intermediate_pose = "kitchen"   
+            #userdata.intermediate_pose = "kitchen"   
             return 'no_more_retry'
 
 #################################################################################
@@ -259,7 +274,7 @@ class semantic_dm(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, 
-                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','full_grasp', 'put_on_tray','env_update'],
+                             outcomes=['succeeded','failed','preempted','navigation','detection','simple_grasp','full_grasp', 'put_on_tray','env_update','reset_robot_after_impossible_task'],
                              io_keys=['target_base_pose',
                                         'target_object_name',
                                         'target_object_pose',
@@ -323,10 +338,10 @@ class semantic_dm(smach.State):
             feedback_in_json = '{}'
             if not current_task_info.last_step_info:
                 ## first action. does not matter this. just to keep it filled
-                resultLastStep = 0
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_SUCCESS
             elif current_task_info.last_step_info and current_task_info.last_step_info[len_step_info - 1].outcome == 'succeeded':
                 # convert to the format that knowledge_ros_service understands
-                resultLastStep = 0
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_SUCCESS
                 if current_task_info.last_step_info[len_step_info - 1].step_name == 'sm_srs_detection':
                     print userdata.target_object_pose
                     #feedback = pose_to_list(userdata)
@@ -335,11 +350,11 @@ class semantic_dm(smach.State):
                     #rospy.loginfo ("Detected target_object is: %s", userdata.target_object)    
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'not_completed':
                 print 'Result return not_completed'
-                resultLastStep = 1
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_NOT_COMPLETED
 
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'failed':
                 print 'Result return failed'
-                resultLastStep = 2
+                resultLastStep = PlanNextActionRequest().LAST_ACTION_FAIL
             elif current_task_info.last_step_info[len_step_info - 1].outcome == 'stopped' or current_task_info.last_step_info[len_step_info - 1].outcome == 'preempted':
                 print 'task stopped'
                 #nextStep = 'stop'
@@ -390,8 +405,11 @@ class semantic_dm(smach.State):
                 print 'succeeded'
                 return 'succeeded'
             elif resp1.nextAction.status == -1:
-                print 'failed'
-                return 'failed'
+                #print 'failed'
+                #return 'failed'
+                print 'impossible task'
+                nextStep = 'reset_robot_after_impossible_task'
+                return nextStep
             
             print resp1.nextAction
             # else should be 0: then continue executing the following
@@ -563,7 +581,8 @@ class semantic_dm(smach.State):
                 
                 else:
                     print 'No valid action'
-                    nextStep = 'failed'
+                    #nextStep = 'failed'
+                    nextStep = 'reset_robot_after_impossible_task'
                     return nextStep
                 
                     
@@ -711,28 +730,317 @@ class prepare_robot(smach.State):
         
         return 'succeeded'
         
+#prepare the robot for the task
+class reset_robot(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['completed', 'failed'])
+        #self.count=0
+
         
-        """
+    def execute(self,userdata):
+               
+        last_step_info = xmsg.Last_step_info()
+        last_step_info.step_name = "reset_robot"
+        last_step_info.outcome = 'succeeded'
+        last_step_info.semi_autonomous_mode = False
         
+        #recording the information of last step
+        global current_task_info
+        current_task_info.last_step_info.append(last_step_info)
+                
+        #current_task_info.session_id = 123456
         
-        handle_torso = sss.move("torso", "home", False)
-        handle_tray = sss.move("tray", "down", False)
-        handle_arm = sss.move("arm", "folded", False)
-        handle_sdh = sss.move("sdh", "cylclosed", False)
-        handle_head = sss.move("head", "front", False)
-    
+        #initialisation of the robot
+        # move to initial positions
+        global sss
         
-        # wait for initial movements to finish
-        handle_torso.wait()
-        handle_tray.wait()
+        sss.set_light("yellow")
+  
+
+        # reset components
+        handle_head = sss.move("head","front",False)
+        #if handle_head.get_error_code() != 0:
+        #    return 'failed'
+
+        handle_torso = sss.move("torso","home",False)
+        #if handle_torso.get_error_code() != 0:
+        #    return 'failed'
+        
+        sss.sleep(2)
+        sss.say(["The existing task can not be completed, I will reset myself now"],False)
+
+        
+        # check if tray service is available
+        service_full_name = '/tray_monitor/occupied'
+        try:
+            #rospy.wait_for_service(service_full_name,rospy.get_param('server_timeout',3))
+            rospy.wait_for_service(service_full_name,3)
+        except rospy.ROSException, e:
+            error_message = "%s"%e
+            rospy.logerr("<<%s>> service not available, error: %s",service_full_name, error_message)
+            return 'failed'
+
+        # check if service can be called
+        try:
+            is_ocuppied = rospy.ServiceProxy(service_full_name,Trigger)
+            resp = is_ocuppied()
+        except rospy.ServiceException, e:
+            error_message = "%s"%e
+            rospy.logerr("calling <<%s>> service not successfull, error: %s",service_full_name, error_message)
+            return 'failed'
+        
+        #if tray is not occupied
+        if resp != True :
+            handle_tray = sss.move("tray","down")
+            #if handle_tray.get_error_code() != 0:
+            #    return 'failed'
+
+        handle_sdh = sss.move("sdh","home")
+        #if handle_sdh.get_error_code() != 0:
+        #    return 'failed'
+
+
+        handle_arm = sss.move("arm","folded")
+        #if handle_arm.get_error_code() != 0:
+        #    return 'failed'
         handle_arm.wait()
-        handle_sdh.wait()
-        handle_head.wait()
         
+        # set light
+        sss.set_light("green")
+        
+        return 'completed'        
         
 
-        return 'succeeded'
-        """
+# enable intervention through UI_PRO
+# completed: the task is completed fully by the remote user via ui_PRO
+# give_up: remote user 
+# failed: soft or hard ware failure during the intervention 
+class remote_user_intervention(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, 
+                             outcomes=['completed', 'give_up' ,'failed'],
+                             input_keys=['semi_autonomous_mode'])       
+        
+        #self.count=0
+         # values from srs_ui_pro echo_server
+        self.server_current_status = ""
+        self.server_json_feedback = ""
+        self.server_output = ""
+        self.server_json_result = ""
+        self.flag = False
+        
+    def give_up(self, last_action):
+        
+        #recovery logic for last action
+        global sss
+        ipa_arm_navigation = 'false'         
+        try:
+            ipa_arm_navigation = rospy.get_param("srs/ipa_arm_navigation")
+        except Exception, e:
+            print('can not read parameter of srs/ipa_arm_navigation, use the default value planned arm navigation disabled')
+        
+        
+        if last_action == 'sm_srs_grasp' :
+            # if there is no user intervention and the grasp was failed, move arm back to the hold position 
+            if ipa_arm_navigation.lower() == 'true':
+                handle_arm = sss.move('arm','hold',False, 'Planned')
+            else:
+                handle_arm = sss.move('arm','hold',False)
+            sss.sleep(2)
+            handle_arm.wait()
+        
+        return 'give_up'
+        
+   
+    def execute(self,userdata):
+        
+        print ('CHECKING IF USER INTERVENTION IS REQUIRED')
+        # check if user intervention is required. 
+        # give_up if the task is in fully autonomous mode
+        if userdata.semi_autonomous_mode == False:
+            return 'give_up'
+        
+        global current_task_info
+        #name of the overall task
+        #the_task_name = current_task_info.task_feedback.task_name 
+        
+        #if not the_task_name:
+            #return 'give_up'
+        
+        the_task_feedback = current_task_info.task_feedback
+        
+        if not the_task_feedback:
+            return 'give_up'
+        
+        #parameter of the overall task
+        the_task_parameter = current_task_info.task_feedback.task_parameter
+        
+        step_id = len (current_task_info.last_step_info)         
+        
+        print "### user intervention is going on..."
+        
+        if step_id > 0:
+            #name of the current step 
+            the_action_name = current_task_info.last_step_info[step_id-1].step_name 
+            
+            #out come of the last action
+            the_action_outcome = current_task_info.last_step_info[step_id-1].outcome
+        
+            #object of the action
+            the_action_object = current_task_info.task_feedback.action_object
+        
+            #parent of the object
+            the_action_object_parent = current_task_info.task_feedback.action_object_parent
+            
+            try:
+                print "### action client of echo server is working..."
+                client = actionlib.SimpleActionClient('srs_ui_pro/echo_server', echo_server_msg.dm_serverAction)
+                
+                if client.wait_for_server(timeout=rospy.Duration(5)) is False:
+                    rospy.loginfo ("there is no response from srs_ui_pro, this intervention action cannot be executed now...")
+                    return self.give_up(the_action_name)
+                else:
+                    global sss      
+                    rospy.sleep(6)            
+                    sss.say(["I can not finish the task"])
+                    sss.say(["Remote Operators are Online Should we ask them for help"])
+                    
+                    rospy.wait_for_service('answer_yes_no')
+                    try:
+                        # call ui_pri_topic_yes_no
+                        # if the answer is "no", then return 'give_up'
+                        answer_yes_no = rospy.ServiceProxy('answer_yes_no', xsrv.answer_yes_no)
+                        resp = answer_yes_no()
+                        if resp.answer == "No":
+                            rospy.loginfo ("the use refused to get any remote assistance...")
+                            # in this stage, the anser_yes_no is not used
+                            # to use it, just make sure the following line is available
+                            #return 'give_up'
+                    except rospy.ServiceException, e:
+                        print "Service call failed: %s"%e
+                
+                goal = echo_server_msg.dm_serverGoal()
+                
+                # see the json_parser file
+                try:
+                    json_decoded = json.loads(current_task_info.json_parameters)
+                except Exception:
+                    rospy.loginfo ("current_task_info.json_parameters is invalid...")
+                    return self.give_up(the_action_name)
+                    
+                current_tasks = json_decoded['tasks']
+                
+                # value for "exception_id" in goal
+                exception_id = 1
+                
+                time_schedule = 'null'
+                current_task = 'null'
+                deliver_destination = 'null'
+                
+                
+                # value for "time_schedule" in goal
+                try:
+                    time_schedule = current_tasks[0]['time_schedule']
+                except Exception:
+                    rospy.loginfo ("no time schedule in this task set null")
+                
+                
+                # value for "task" in goal
+                try:
+                    current_task = current_tasks[0]['task']
+                except Exception:
+                    rospy.loginfo ("no name in this task set null")
+                
+                # value for "deliver_destination" in goal
+                try:
+                    deliver_destination = current_tasks[0]['deliver_destination']
+                except Exception:
+                    rospy.loginfo ("no destination in this task set null")    
+                
+                # value for "additional_information" in goal
+                additional_information = "this is a test message"
+                
+                current_goal = {"exception_id": exception_id, "tasks": [{"time_schedule": time_schedule, "task": current_task, "deliver_destination": deliver_destination}], "additional_information": additional_information}
+                
+                 #convert current goal to json object
+                json_input = json.dumps(current_goal)
+               
+                # construct a goal
+                goal.json_input = json_input
+                
+                server_feedback = echo_server_msg.dm_serverFeedback()
+                server_result = echo_server_msg.dm_serverResult()
+                
+                # send the goal to echo server
+                client.send_goal(goal, self.result_callback, self.active_callback, self.feedback_callback)
+                #rospy.sleep(25)
+                
+                timeout = 300
+                while(self.flag != True and timeout > 0):
+                    rospy.sleep(1)
+                    timeout = timeout - 1
+                
+                if self.server_json_result == "" :
+                    rospy.loginfo ("*******")
+                    rospy.loginfo ("there is no response from srs_ui_pro, the current intervention action has been given up...")
+                    rospy.loginfo ("*******")
+                    rospy.sleep(3)
+                    return self.give_up(the_action_name)
+                
+                _feedback = xmsg.ExecutionFeedback()
+                _feedback.current_state =  self.server_current_status + ": started"
+                _feedback.solution_required = False
+                _feedback.exceptional_case_id = exception_id
+                _feedback.json_feedback = self.server_json_feedback
+                current_task_info._srs_as._as.publish_feedback(_feedback)
+            
+                json_decoded = json.loads(self.server_json_result)
+                result = json_decoded['result']
+                # result should be succeeded
+                if result == "succeeded":           
+                    sss.say(["With the help of remote Operators, The task has been completed "])
+                    return 'completed'
+                elif result == "failed":
+                    sss.say(["This task is impossible, I have to give up"])
+                    return "failed"
+                else:
+                    return "give_up"
+            except rospy.ROSInterruptException:
+                print "error before completion"
+                return "failed"
+        else:
+            #the task has not been started yet, not need for intervention 
+            return 'give_up'
+         
+                
+        #
+        # get confirmation from UI_LOC
+        #
+        
+        
+        #
+        # processing user intervention from UI_PRO
+        # current_task_info._srs_as._as.publish_feedback(_feedback)
+        #
+        
+        
+        #return 'give_up'
+
+    def feedback_callback(self, server_feedback):
+        #self.server_current_status = server_feedback.current_status
+        self.server_json_feedback = server_feedback.json_feedback
+        #rospy.loginfo ("server_feedback.current_status is: %s", server_feedback.current_status)
+        rospy.loginfo ("server_feedback.json_feedback is: %s",server_feedback.json_feedback)
+            
+    def active_callback(self):
+        rospy.loginfo ("goal has been sent to the echo_server...")
+    
+    def result_callback(self, state, server_result):
+        self.server_json_result = server_result.json_result
+        rospy.loginfo ("server_feedback.state is: %s",state)
+        rospy.loginfo ("server_feedback.result_callback is: %s",server_result.json_result)
+        self.flag = True
+        
 
 def pose_to_list(userdata):
     # userdata.target_object_name

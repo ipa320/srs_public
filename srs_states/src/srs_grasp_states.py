@@ -116,8 +116,8 @@ class srs_grasp(smach.State):
         
         #postgrasp
         post_grasp_stamped = copy.deepcopy(grasp_stamped);
-        post_grasp_stamped.pose.position.x += 0.15;
-        post_grasp_stamped.pose.position.z += 0.2;
+        post_grasp_stamped.pose.position.x += 0.05;
+        post_grasp_stamped.pose.position.z += 0.25;
         
         grasp_trajectory = [];
         postgrasp_trajectory = [];
@@ -166,7 +166,7 @@ class srs_grasp(smach.State):
             arm_handle.wait(5)
 
             #Move arm to grasp position.
-            arm_handle = sss.move("arm", [grasp_trajectory[1]], True)
+            arm_handle = sss.move("arm", [grasp_trajectory[1]], True, mode='Planned')
             # wait while movement
             r = rospy.Rate(10)
             preempted = False
@@ -241,7 +241,7 @@ class srs_grasp(smach.State):
             
             for i in range(0,5):
                 post_grasp_stamped.pose.position.x = aux_x + aux;
-                (post_grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(self.current_arm_state, post_grasp_stamped)
+                (post_grasp_conf, error_code) = grasping_functions.graspingutils.callIKSolver(grasp_trajectory[1], post_grasp_stamped)
                 aux += 0.01;
                 if(error_code.val == error_code.SUCCESS):
                     postgrasp_trajectory.append(post_grasp_conf);
@@ -251,10 +251,32 @@ class srs_grasp(smach.State):
                 sss.say(["I can not move the object to the postgrasp position!"])
            	raise BadGrasp();
 
-            arm_handle = sss.move("arm",postgrasp_trajectory, False, mode='Planned')
+            arm_handle = sss.move("arm",postgrasp_trajectory, True)
             sss.say(["I have grasped the object with success!"])
             rospy.sleep(3)
             arm_handle.wait(3)
+
+
+	    #second postgrasp
+            aux_x = post_grasp_stamped.pose.position.x;
+            aux = 0.05;
+            postgrasp_trajectory = [];
+
+            for i in range(0,5):
+                post_grasp_stamped.pose.position.x = aux_x + aux;
+                (post_grasp_conf2, error_code) = grasping_functions.graspingutils.callIKSolver(post_grasp_conf, post_grasp_stamped)
+                aux += 0.01;
+                if(error_code.val == error_code.SUCCESS):
+                    postgrasp_trajectory.append(post_grasp_conf2);
+                    break;
+		else:
+		    print "Second postgrasp failed: ",i
+
+	    if len(postgrasp_trajectory) == 0:
+		    arm_handle = sss.move("arm",[postgrasp_trajectory[len(postgrasp_trajectory)-1]], True)
+		    rospy.sleep(3)
+		    arm_handle.wait(3)
+
 
             return 'succeeded'
 

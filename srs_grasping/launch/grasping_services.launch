@@ -1,15 +1,13 @@
 <launch>
 
-   <node pkg="srs_grasping" type="get_db_grasps.py" name="get_db_grasps" ns="get_db_grasps" cwd="node" respawn="false" output="screen" />
+	<node pkg="srs_grasping" type="get_db_grasps.py" name="get_db_grasps" ns="srs_grasping" cwd="node" respawn="false" output="screen" />
 
-   <node pkg="srs_grasping" type="get_feasible_grasps.py" name="get_feasible_grasps" ns="get_feasible_grasps" cwd="node" respawn="false" output="screen" />
+	<node pkg="srs_grasping" type="get_feasible_grasps.py" name="get_feasible_grasps" ns="srs_grasping" cwd="node" respawn="false" output="screen" />
 
-   <node pkg="srs_grasping" type="get_pregrasps.py" name="get_pregrasps" ns="get_pregrasps" cwd="node" respawn="false" output="screen" />
+	<node pkg="srs_grasping" type="get_pregrasps.py" name="get_pregrasps" ns="srs_grasping" cwd="node" respawn="false" output="screen" />
 
-   <!--shifted to DM, as the service is required by other componenets as well -->
-   <include file="$(find cob_tactiletools)/launch/filters.launch"/>
+	<node pkg="srs_grasping" type="is_grasped.py" name="is_grasped" ns="srs_grasping" cwd="node" respawn="false" output="screen" />
 
-   <!-- Reactive grasping -->
-   <include file="$(find srs_assisted_grasping)/launch/grasping_node.launch"/>
+	<include file="$(find srs_grasping)/launch/grasping_utils.launch"/>
 
 </launch>

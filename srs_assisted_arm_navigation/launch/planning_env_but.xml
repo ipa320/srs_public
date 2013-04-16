@@ -30,7 +30,7 @@
       
         <remap from="filter_trajectory" to="/trajectory_filter_server/filter_trajectory_with_constraints"/>
         
-    </node>
+    	</node>
 
 			    
 	</group-->
@@ -75,23 +75,12 @@
     <node name="but_server_node" pkg="srs_env_model" type="but_server_node" respawn="true" output="log">
 	    
       <!-- Node parameters -->
-      <rosparam file="$(find srs_env_model)/config/environment_server_defaults.yaml" command="load"/>
+      <rosparam file="$(find srs_assisted_arm_navigation)/config/environment_server_robot.yaml" command="load"/>
 	    
       <remap from="but_server_node/camera_info" to="/cam3d_throttled/rgb/camera_info"/>
       <remap from="but_server_node/points_in" to="/cam3d_throttled/depth_registered/points_filtered"/>
       <remap from="but_server_node/points_filter" to="/cam3d_throttled/depth_registered/points" />
 		  
-      <!--param name="registration_mode" type="string" value="icpnl"/-->
-		  
-      <!-- Set 3d camera maximal relevant distance in meters -->
-      <param name="ocmap_max_range" type="double" value="4.5"/>
-
-      <!-- Other parameters -->
-      <param name="pointcloud_min_z" value="0.2" type="double"/>
-      <param name="pointcloud_max_z" value="2.0" type="double" />
-      <param name="ocmap_resolution" value="0.03" type="double"/>
-      <param name="pointcloud_frame_skip" value="1" type="int"/>
-      <param name="collisionmap_frame_id" value="/base_footprint" type="string"/>
       
       <remap from="but_server_node/rviz_camera_position" to="/rviz_camera_position" />
 		  

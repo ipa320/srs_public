@@ -9,6 +9,9 @@
 	<!-- grasp service -->	
 	<include file="$(find srs_grasping)/launch/grasping_services.launch"/>
 
+        <!-- srs_ui_pro services -->
+        <include file="$(find srs_ui_pro)/launch/srs_ui_pro.launch"/>
+
 	<!-- srs_arm_kinematics dependency -->
-	<include file="$(find cob_arm_navigation)/launch/start_planning_environment.launch"/>
+	<!--include file="$(find cob_arm_navigation)/launch/start_planning_environment.launch"/-->
 </launch>

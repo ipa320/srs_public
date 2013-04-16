@@ -21,8 +21,11 @@ def user_msg():
     try:
         user_intervention_on_detection = rospy.ServiceProxy('assisted_answer', UiAnswer)
         rospy.loginfo("this is fake_action_user")
-        a=array('i',[2,3,4,5])
-        resp1 = user_intervention_on_detection(a,0,s)   # detected object 0 has been succeeded
+        #a=array('i',[2,3,4,5])
+        #resp1 = user_intervention_on_detection(a,0,s)   # detected object 0 has been succeeded
+        
+        resp1 = user_intervention_on_detection(0,s)   # detected object 0 has been succeeded
+        
         #resp1 = user_intervention_on_detection(a,7,s)   # detected object 7 OUT OF INDEX
         rospy.loginfo(resp1)
     except rospy.ServiceException, e:

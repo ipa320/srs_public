@@ -36,13 +36,17 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "visualization_msgs/InteractiveMarkerFeedback.h"
+#include "visualization_msgs/InteractiveMarkerUpdate.h"
 #include "visualization_msgs/Marker.h"
 #include "srs_interaction_primitives/ScaleChanged.h"
+#include "srs_assisted_arm_navigation_msgs/AssistedArmNavigationState.h"
 #include <boost/thread.hpp>
 #include "tf/transform_listener.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include <interactive_markers/interactive_marker_server.h>
+#include "srs_user_tests/SetFloat.h"
 
 namespace srs_user_tests {
 
@@ -66,32 +70,60 @@ class BBOverlap {
 
 		~BBOverlap();
 
+		tf::TransformListener tfl_;
+
 		ros::Time last_log_out_;
+
+		bool bb_suc_;
+		bool gr_suc_;
 
 		double points_volume(const tpoints &p);
 
 		double rmin(double val1, double val2);
 		double rmax(double val1, double val2);
 
+		bool moveX(SetFloat::Request& req, SetFloat::Response& res);
+
 	private:
 
 	protected:
 
+		ros::ServiceServer srv_move_;
+
+		geometry_msgs::Pose gripper_pose_;
+		geometry_msgs::Pose gripper_pose_curr_;
+		ros::Publisher gripper_pub_;
+		visualization_msgs::Marker gripper_marker_;
+		bool gripper_pose_rec_;
+		ros::Subscriber sub_gripper_update_;
+		double gr_success_val_;
+
+		ros::Subscriber sub_arm_state_;
+
 		bool publish_debug_markers_;
 
-		double success_val_;
+		double bb_success_val_;
 
-		ros::WallDuration success_min_dur_;
-		ros::WallTime success_first_;
-		ros::WallTime success_last_;
+		ros::Duration bb_success_min_dur_;
+		ros::Duration gr_success_min_dur_;
 
-		ros::WallTime success_tmp_;
+		ros::Time bb_success_first_;
+		ros::Time bb_success_last_;
+		ros::Time bb_success_tmp_;
+
+		ros::Time gr_success_first_;
+		ros::Time gr_success_last_;
+		ros::Time gr_success_tmp_;
 
 		ros::Subscriber sub_im_feedback_;
 		ros::Subscriber sub_im_scale_;
 
 		void im_feedback_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr& msg);
 		void im_scale_cb(const srs_interaction_primitives::ScaleChangedConstPtr& msg);
+		void gripper_im_cb(const visualization_msgs::InteractiveMarkerUpdateConstPtr& msg);
+		void arm_nav_state_cb(const srs_assisted_arm_navigation_msgs::AssistedArmNavigationStateConstPtr& msg);
+
+		bool arm_state_ok_;
 
 		void timer_cb(const ros::TimerEvent&);
 		ros::Timer timer_;
@@ -102,7 +134,6 @@ class BBOverlap {
 
 			boost::mutex mutex;
 			visualization_msgs::Marker marker;
-			//geometry_msgs::Vector3 lwh;
 			tbb bb;
 			ros::Publisher pub;
 			double vol;

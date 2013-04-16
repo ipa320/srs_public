@@ -6,5 +6,5 @@ std_msgs/String object_name
 #list of the objects
 cob_object_detection_msgs/DetectionArray object_list
 
-#Object ID
+#Object ID, this is for MRS 
 int32 object_id

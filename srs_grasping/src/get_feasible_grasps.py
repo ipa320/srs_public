@@ -82,9 +82,9 @@ class get_feasible_grasps():
 		self.listener = tf.TransformListener(True, rospy.Duration(10.0))
 		self.arm_state = rospy.Subscriber("/arm_controller/state", JointTrajectoryControllerState, self.get_joint_state);
 		
-		rospy.loginfo("Waiting /srs_arm_kinematics/get_ik service...");
-		rospy.wait_for_service('/srs_arm_kinematics/get_ik')
-		rospy.loginfo("/srs_arm_kinematics/get_ik is ready.");
+		rospy.loginfo("Waiting %s service...",  grasping_functions.graspingutils.get_ik_srv_name());
+		rospy.wait_for_service( grasping_functions.graspingutils.get_ik_srv_name())
+		rospy.loginfo("%s is ready.",  grasping_functions.graspingutils.get_ik_srv_name());
 
 		rospy.loginfo("Waiting /get_db_grasps service...");
 		rospy.wait_for_service('/get_db_grasps')
@@ -96,9 +96,11 @@ class get_feasible_grasps():
 		x = time.time();
 		rospy.loginfo("/get_feasible_grasps service has been called...");
 
-		if len(request.pregrasp_offsets) != 2:
+		pregrasp_offsets = request.pregrasp_offsets
+		if len(pregrasp_offsets) != 2:
 			print "pregrasps_offsets value must be an array with length 2: [X,Z]"
-			print "Using default values: [0.2, 0.0]"
+			print "Using default values: [0.5, 0.0]"
+			pregrasp_offsets = [0.0, 0.0];
 
 		client_response = self.client(request.object_id)
 		grasp_configuration = client_response.grasp_configuration;
@@ -130,13 +132,13 @@ class get_feasible_grasps():
 				
 				nvg = FeasibleGrasp(grasp_configuration.sdh_joint_values, "/sdh_palm_link", g, pre, surface_distance, category);
 				fpos = self.get_finger_positions(category)
-				pre.pose = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre.pose, request.pregrasp_offsets);
+				pre.pose = grasping_functions.graspingutils.set_pregrasp_offsets(category, pre.pose, pregrasp_offsets);
 			
 				if (grasping_functions.graspingutils.valid_grasp(category)) and (not self.checkCollisions(fpos, nvg, request.object_pose)):
 					class FeasibleGraspFound(Exception): pass
 					try:
 						for w in range(0, self.ik_loop_reply):
-							(pgc, error) = grasping_functions.graspingutils.callIKSolver(self.cjc, pre);				
+							(pgc, error) = grasping_functions.graspingutils.callIKSolver(self.cjc, pre);			
 							if(error.val == error.SUCCESS):
 								for k in range(0,self.ik_loop_reply):
 									(gc, error) = grasping_functions.graspingutils.callIKSolver(pgc, g);

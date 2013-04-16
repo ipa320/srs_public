@@ -612,7 +612,8 @@ long int srs_env_model::COctoMapPlugin::doObjectTesting(srs_env_model::CTestingO
  * Remove cube as a service - callback
  */
 #define G2EPOINT( gp ) (Eigen::Vector3f( gp.x, gp.y, gp.z ))
-#define G2EQUAT( gp ) (Eigen::Quaternionf( gp.x, gp.y, gp.z, gp.w ))
+//#define G2EQUAT( gp ) (Eigen::Quaternionf( gp.x, gp.y, gp.z, gp.w ))
+#define G2EQUAT( gp ) (Eigen::Quaternionf( gp.w, gp.x, gp.y, gp.z ))
 bool srs_env_model::COctoMapPlugin::removeCubeCB(
 		srs_env_model::RemoveCube::Request & req,
 		srs_env_model::RemoveCube::Response & res) {

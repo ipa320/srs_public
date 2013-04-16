@@ -23,6 +23,7 @@
   <depend package="srs_knowledge"/>
   <depend package="srs_states"/>
   <depend package="srs_object_verification"/>
+  <depend package="srs_ui_pro"/>
 </package>
 
 

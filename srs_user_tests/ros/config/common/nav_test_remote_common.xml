@@ -3,12 +3,18 @@
 
 	<!-- Run the SpaceNav teleop -->
 	<node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" output="screen"/>
-	<include file="$(find cob_spacenav_teleop)/launch/spacenav_teleop.launch" />
+	
+  <include file="$(find cob_spacenav_teleop)/launch/spacenav_teleop.launch">
+    <arg name="unsafe_limiter" value="true"/>
+  </include>
 
 	<!-- Run env. model voxel map "decompressor" node -->
 	<node pkg="srs_env_model" type="but_cpc_node" name="but_cpc_node" >
 		<remap from="input" to="/but_env_model/octomap_updates"/>
 		<remap from="output" to="/but_env_model/cpc_pointcloud_centers" />
 	</node>
+<node pkg="cob_3d_visualization" type="shape_visualization" name="shape_visualization_fov" output="screen">
+	<remap from="~shape_array" to="/fov_segmentation/shape_array_out"/>
+</node>
 	
 </launch>

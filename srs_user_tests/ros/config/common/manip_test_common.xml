@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="sim" default="true"/>
+  <arg name="sim" default="false"/>
 
   <!-- srs interaction primitives -->
   <node name="interaction_primitives" pkg="srs_interaction_primitives" type="interaction_primitives_service_server">

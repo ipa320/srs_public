@@ -159,8 +159,8 @@ class srs_grasp(smach.State):
             if(error_code.val != error_code.SUCCESS):
                 sss.say(["I can not move the arm to the grasp position!"])
                 raise BadGrasp();
-	    else:
-                grasp_trajectory.append(gc);
+	    #else:
+                #grasp_trajectory.append(gc);
             
             #Move arm to pregrasp->grasp position.
             arm_handle = sss.move("arm", grasp_trajectory, True, mode='Planned')
@@ -176,8 +176,23 @@ class srs_grasp(smach.State):
                     break # stop waiting
                 r.sleep()
 
-            rospy.sleep(6)
-            arm_handle.wait(6)
+            rospy.sleep(5)
+            arm_handle.wait(5)
+
+            arm_handle = sss.move("arm", [gc], True, mode='Planned')
+            # wait while movement
+            r = rospy.Rate(10)
+            preempted = False
+            arm_state = -1
+            while True:
+                preempted = self.preempt_requested()
+                arm_state = arm_handle.get_state()
+                if preempted or ( arm_state == 3) or (arm_state == 4):
+                    break # stop waiting
+                r.sleep()
+
+            rospy.sleep(3)
+            arm_handle.wait(3)
 
 	    # To deprecate #####################################################
             #sdh_handle = sss.move("sdh", [list(userdata.grasp_configuration[grasp_configuration_id].sdh_joint_values)]) 
@@ -260,8 +275,8 @@ class srs_grasp(smach.State):
                         break;
             arm_handle = sss.move("arm",postgrasp_trajectory, False, mode='Planned')
             sss.say(["I have grasped the object with success!"])
-            rospy.sleep(6)
-            arm_handle.wait(6)
+            rospy.sleep(3)
+            arm_handle.wait(3)
             
             return 'succeeded'
         except BadGrasp:

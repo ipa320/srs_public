@@ -130,11 +130,10 @@ class srs_grasp(smach.State):
             except Exception, e:
                 rospy.INFO('can not read parameter of srs/ipa_arm_navigation, use the default value planned arm navigation disabled')
             
+            #pre-grasp
             if ipa_arm_navigation.lower() != 'true':
-                #mode = "planned"
                 grasp_trajectory.append(self.current_arm_state)
             else:
-                #pre-grasp
                 (pgc1, error_code) = grasping_functions.graspingutils.callIKSolver(self.current_arm_state, pre_grasp_stamped)
                 if(error_code.val != error_code.SUCCESS):
                     sss.say(["I can not move the arm to the pregrasp position!"])
@@ -142,29 +141,16 @@ class srs_grasp(smach.State):
 		else:
                     grasp_trajectory.append(pgc1)
                 
-                #second pre-grasp
-                aux_pre = pre_grasp_stamped.pose.position.x;
-                aux = 0.0;
-                for i in range(0,5):
-                    aux += 0.02;
-                    pre_grasp_stamped.pose.position.x = aux_pre + aux;
-                    (pgc2, error_code) = grasping_functions.graspingutils.callIKSolver(pgc1, pre_grasp_stamped)
-                    if(error_code.val == error_code.SUCCESS):
-                        grasp_trajectory.append(pgc2);
-                        break;
-		    else:
-			print "Non valid pregrasp: ",i
             #grasp
             (gc, error_code) = grasping_functions.graspingutils.callIKSolver(grasp_trajectory[len(grasp_trajectory)-1], grasp_stamped)
             if(error_code.val != error_code.SUCCESS):
                 sss.say(["I can not move the arm to the grasp position!"])
                 raise BadGrasp();
-	    #else:
-                #grasp_trajectory.append(gc);
+	    else:
+                grasp_trajectory.append(gc);
             
-            #Move arm to pregrasp->grasp position.
-            arm_handle = sss.move("arm", grasp_trajectory, True, mode='Planned')
-
+            #Move arm to pregrasp position.
+            arm_handle = sss.move("arm", [grasp_trajectory[0]], True, mode='Planned')
             # wait while movement
             r = rospy.Rate(10)
             preempted = False
@@ -179,7 +165,8 @@ class srs_grasp(smach.State):
             rospy.sleep(5)
             arm_handle.wait(5)
 
-            arm_handle = sss.move("arm", [gc], True, mode='Planned')
+            #Move arm to grasp position.
+            arm_handle = sss.move("arm", [grasp_trajectory[1]], True)
             # wait while movement
             r = rospy.Rate(10)
             preempted = False
@@ -262,23 +249,15 @@ class srs_grasp(smach.State):
             
             if len(postgrasp_trajectory) == 0:
                 sss.say(["I can not move the object to the postgrasp position!"])
-            else:
-                #second post-grasp
-                aux_x = post_grasp_stamped.pose.position.x;
-                aux = 0.0;
-                for i in range(0,5):
-                    post_grasp_stamped.pose.position.x = aux_x + aux;
-                    (post_grasp_conf2, error_code) = grasping_functions.graspingutils.callIKSolver(post_grasp_conf, post_grasp_stamped)
-                    aux += 0.02;
-                    if(error_code.val == error_code.SUCCESS):
-                        postgrasp_trajectory.append(post_grasp_conf2);
-                        break;
+           	raise BadGrasp();
+
             arm_handle = sss.move("arm",postgrasp_trajectory, False, mode='Planned')
             sss.say(["I have grasped the object with success!"])
             rospy.sleep(3)
             arm_handle.wait(3)
-            
+
             return 'succeeded'
+
         except BadGrasp:
             sss.say(["I can not catch the object!"], False)
             return 'not_completed';

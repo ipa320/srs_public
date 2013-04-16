@@ -112,7 +112,7 @@ class is_grasped():
 
 		if num_fingers>=1: #>=2
 			res.success.data = True
-			res.error_message.data = "Number of fingers touching the object: ",num_fingers
+			res.error_message.data = "Number of fingers touching the object: ",str(num_fingers)
 		else:
 			res.success.data = False
 			res.error_message.data = "Fingers are not touching the object"

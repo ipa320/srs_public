@@ -29,7 +29,7 @@
     <include file="$(find srs_object_database)/launch/srs_db.launch"/>
   
     <!-- table -->
-    <include file="$(find srs_scenarios)/ros/launch/table_ikea.launch"/>
+    <include file="$(find srs_scenarios)/ros/launch/table_ikea_test.launch"/>
     
     <!-- decision making action server-->
     <include file="$(find srs_decision_making)/ros/launch/srs_decision_making.launch"/>

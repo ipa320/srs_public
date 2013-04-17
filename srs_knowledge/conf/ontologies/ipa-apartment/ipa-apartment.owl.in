@@ -18,7 +18,7 @@
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:srs="http://www.srs-project.eu/ontologies/srs.owl#">
     <owl:Ontology rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl">
-        <owl:imports rdf:resource="file:///home/goa/git/care-o-bot/srs_public/srs_knowledge/conf/ontologies/srs.owl"/>
+        <owl:imports rdf:resource="file://@OWL_PATH_PREFIX@/conf/ontologies/srs.owl"/>
     </owl:Ontology>
     
 

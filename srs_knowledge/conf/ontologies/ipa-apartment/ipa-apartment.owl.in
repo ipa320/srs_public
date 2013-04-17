@@ -552,10 +552,10 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#kitchen">
         <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:xCoordinate rdf:datatype="&xsd;float">-2.04</srs:xCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
-        <srs:yCoordinate rdf:datatype="&xsd;float">0.3</srs:yCoordinate>
-        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-2.04 0.3 0]</inSRSCoordinateFormat>
+        <srs:yCoordinate rdf:datatype="&xsd;float">-0.575</srs:yCoordinate>
+        <srs:xCoordinate rdf:datatype="&xsd;float">-0.663</srs:xCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">3.14</srs:orientationTheta>
+        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-0.663 -0.575 3.14]</inSRSCoordinateFormat>
         <srs:objectReadableName xml:lang="de">Kuche</srs:objectReadableName>
         <srs:objectReadableName xml:lang="en">IPA Kitchen</srs:objectReadableName>
         <srs:objectReadableName xml:lang="it">cucina</srs:objectReadableName>
@@ -568,10 +568,10 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#kitchen_backwards">
         <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:yCoordinate rdf:datatype="&xsd;float">-0.3</srs:yCoordinate>
-        <srs:xCoordinate rdf:datatype="&xsd;float">-2.04</srs:xCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">3.14</srs:orientationTheta>
-        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-2.04 -0.3 3.14]</inSRSCoordinateFormat>
+        <srs:yCoordinate rdf:datatype="&xsd;float">-0.575</srs:yCoordinate>
+        <srs:xCoordinate rdf:datatype="&xsd;float">-0.663</srs:xCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
+        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-0.663 -0.575 0]</inSRSCoordinateFormat>
         <srs:objectReadableName xml:lang="de">Kuche (ruckwarts)</srs:objectReadableName>
         <srs:objectReadableName xml:lang="en">Kitchen (Backward)</srs:objectReadableName>
         <srs:objectReadableName xml:lang="it">Cucina (indietro)</srs:objectReadableName>
@@ -583,7 +583,6 @@
     <!-- http://www.srs-project.eu/ontologies/ipa-apartment.owl#new_kitchen -->
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#new_kitchen">
-        <rdf:type rdf:resource="&srs;Point2D"/>
         <srs:xCoordinate rdf:datatype="&xsd;float">-2.14</srs:xCoordinate>
         <srs:yCoordinate rdf:datatype="&xsd;float">0</srs:yCoordinate>
         <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
@@ -600,10 +599,10 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#order">
         <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:yCoordinate rdf:datatype="&xsd;float">-0.7</srs:yCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">0.75</srs:orientationTheta>
-        <srs:xCoordinate rdf:datatype="&xsd;float">1.47</srs:xCoordinate>
-        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[1.47 -0.7 0.75]</inSRSCoordinateFormat>
+        <srs:yCoordinate rdf:datatype="&xsd;float">-0.298</srs:yCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">0.418</srs:orientationTheta>
+        <srs:xCoordinate rdf:datatype="&xsd;float">2.33</srs:xCoordinate>
+        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[2.33 -0.298 0.418]</inSRSCoordinateFormat>
         <srs:objectReadableName xml:lang="de">Benutzer (Bestellen Position)</srs:objectReadableName>
         <srs:objectReadableName xml:lang="en">User (Order Position)</srs:objectReadableName>
         <srs:objectReadableName xml:lang="it">utente (ordine di posizione)</srs:objectReadableName>

@@ -599,10 +599,10 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#order">
         <rdf:type rdf:resource="&srs;Point2D"/>
-        <srs:yCoordinate rdf:datatype="&xsd;float">-0.298</srs:yCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">0.418</srs:orientationTheta>
-        <srs:xCoordinate rdf:datatype="&xsd;float">2.33</srs:xCoordinate>
-        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[2.33 -0.298 0.418]</inSRSCoordinateFormat>
+        <srs:yCoordinate rdf:datatype="&xsd;float">-0.89</srs:yCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">0.627</srs:orientationTheta>
+        <srs:xCoordinate rdf:datatype="&xsd;float">2.72</srs:xCoordinate>
+        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[2.72 -0.89 0.627]</inSRSCoordinateFormat>
         <srs:objectReadableName xml:lang="de">Benutzer (Bestellen Position)</srs:objectReadableName>
         <srs:objectReadableName xml:lang="en">User (Order Position)</srs:objectReadableName>
         <srs:objectReadableName xml:lang="it">utente (ordine di posizione)</srs:objectReadableName>

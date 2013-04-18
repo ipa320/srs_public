@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
+  <arg name="id"/>
+  <arg name="start"/>
+  <arg name="end"/>
+  <arg name="path" default="$(find srs_user_tests)/logs/"/>
+  <arg name="debug" default="false"/>
+  
+  <param name="/use_sim_time" value="false" />
+  
+  <node pkg="srs_user_tests" name="tf_eval" type="test_eval_tf.py" output="screen">
+    <param name="path" value="$(arg path)"/>
+    <param name="exp" value="$(arg exp)"/>
+    <param name="id" value="$(arg id)"/>
+    <param name="task" value="$(arg task)"/>
+    <param name="cond" value="$(arg cond)"/>
+    <param name="debug" value="$(arg debug)"/>
+    <param name="start_time" value="$(arg start)"/>
+    <param name="end_time" value="$(arg end)"/>
+    <param name="frame_1" value="/map"/>
+    <param name="frame_2" value="/rviz_cam"/>    
+  </node>
+
+</launch>

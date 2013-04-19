@@ -23,6 +23,7 @@
     <param name="end_time" value="$(arg end)"/>
     <param name="frame_1" value="/map"/>
     <param name="frame_2" value="/rviz_cam"/>    
+    <param name="output_file" value="rviz_camera_motion.csv"/>
   </node>
 
 </launch>

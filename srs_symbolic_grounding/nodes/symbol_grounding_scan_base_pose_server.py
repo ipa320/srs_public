@@ -285,7 +285,7 @@ def handle_symbol_grounding_scan_base_pose(req):
 	
 
 	#calculate the detection width
-	rb_distance = 0.7 #distance between the robot base and the edge of the parent obj
+	rb_distance = 1.0#0.7 #distance between the robot base and the edge of the parent obj
 	robot_h = 1.4 #set the height of the detector
 	detection_angle = (30.0 / 180.0) * math.pi #set the detection angle (wide) of the detector 
 	camera_distance = math.sqrt((robot_h - parent_obj_h) ** 2 + (rb_distance - 0.2) ** 2) #distance between the detector and the surface of the parent obj

@@ -1,4 +1,4 @@
-srs/common/detection_max_retries:  7
+srs/common/detection_max_retries:  3
 srs/common/grasp_max_retries:  5
 srs/common/navigation_linear_travel_threshold: 0.5
 srs/common/max_time_out: 15

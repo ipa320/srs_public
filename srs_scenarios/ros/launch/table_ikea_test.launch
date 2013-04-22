@@ -5,6 +5,6 @@
 	<param name="table_description" command="$(find xacro)/xacro.py $(find cob_gazebo_objects)/objects/table_ikea.urdf.xacro" />
 
 	<!-- push table_description to factory and spawn robot in gazebo -->
-	<node name="spawn_table" pkg="gazebo" type="spawn_model" args="-urdf -param table_description -x 1.15 -y -1.2 -z 0.1 -model table_model" respawn="false" output="screen" />
+	<node name="spawn_table" pkg="gazebo" type="spawn_model" args="-urdf -param table_description -x 1.5 -y -1.2 -z 0.1 -model table_model" respawn="false" output="screen" />
 
 </launch>

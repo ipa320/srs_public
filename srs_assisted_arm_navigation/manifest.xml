@@ -1,12 +1,6 @@
 <package>
   <description brief="srs_assisted_arm_navigation">
-
-Arm navigation package provided by dcgm-robotics@FIT group:
-- assisted arm manipulation for RViz using Interactive Markers and Warehouse Viewer
-- manual grasping plugin for RViz
-
-The package is partially derived from the pr2_arm_navigation package. It modifies components developed for PR2 robot so that you can use it with COB. Moreover, the package also provides several services that simplifies usage of the COB arm navigation.
-
+    An interactive arm motion planning. Developed for SRS project and Care-O-Bot robot, reusable for any robot supporting arm_navigation stack.
   </description>
   <author>Zdenek Materna (imaterna@fit.vutbr.cz), Michal Spanel (spanel@fit.vutbr.cz)</author>
   <license>LGPL</license>
@@ -16,28 +10,31 @@ The package is partially derived from the pr2_arm_navigation package. It modifie
   <depend package="roscpp"/>
   <depend package="move_arm"/>
   <depend package="rviz"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="actionlib"/>
+  <depend package="sensor_msgs"/>
+  <depend package="message_filters"/>
+  <depend package="trajectory_filter_server"/>
+  <depend package="mongodb"/>
+  <depend package="mongo_ros"/>
+  <depend package="arm_kinematics_constraint_aware"/>
+  <depend package="planning_environment"/>
+  <depend package="nodelet"/>
+  <depend package="ompl_ros_interface"/>
+  <depend package="head_monitor_msgs"/>
+  
   <depend package="cob_arm_navigation"/>
   <depend package="cob_default_env_config"/>
   <depend package="cob_default_robot_config"/>
   <depend package="cob_navigation_global"/>
-  <depend package="actionlib_msgs"/>
-  <depend package="actionlib"/>
-  <!--depend package="cob_script_server"/-->
+  <depend package="cob_kinematics"/>
+  <depend package="cob_script_server"/>
+  
   <depend package="srs_env_model"/>
   <depend package="srs_env_model_percp"/>
   <depend package="srs_interaction_primitives"/>
   <depend package="srs_env_model_utils"/>
   <depend package="srs_assisted_arm_navigation_msgs"/>
-  <depend package="sensor_msgs"/>
-  <depend package="message_filters"/>
-  
-  <depend package="trajectory_filter_server"/>
-  <depend package="cob_script_server"/>
-  <depend package="mongodb"/>
-  <depend package="arm_kinematics_constraint_aware"/>
-  <depend package="planning_environment"/>
-  <depend package="nodelet"/>
-  <depend package="ompl_ros_interface"/>
 
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />

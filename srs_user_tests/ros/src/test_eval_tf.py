@@ -2,7 +2,7 @@
 import roslib; roslib.load_manifest('srs_user_tests')
 
 import rospy
-from math import fabs
+from math import fabs, sqrt
 import numpy
 import tf
 import rosbag
@@ -26,6 +26,7 @@ class TfEval(object):
         self.task = rospy.get_param('~task')
         self.cond = rospy.get_param('~cond')
         self.path = rospy.get_param('~path')
+        self.output_file = rospy.get_param('~output_file')
         
         self.start_time = rospy.Time(rospy.get_param('~start_time',0.0))
         self.end_time = rospy.Time(rospy.get_param('~end_time',0.0))
@@ -100,14 +101,14 @@ class TfEval(object):
         
         self.timer_trig = False
         
-        if os.path.isfile(self.path + 'tf-output.csv'):
+        if os.path.isfile(self.path + self.output_file):
         
-            self.csv = open(self.path + 'tf-output.csv','a')
+            self.csv = open(self.path + self.output_file,'a')
             
         else:
             
             rospy.loginfo('Creating new CSV file.')
-            self.csv = open(self.path + 'tf-output.csv','w')
+            self.csv = open(self.path + self.output_file,'w')
             self.csv.write('id;experiment;task;condition;start;end;changes;total;path_len\n')
         
         #rospy.Timer(self.timer_period, self.timer)
@@ -130,6 +131,7 @@ class TfEval(object):
         started = False
         last_pose = None
         last = None
+        last_pose_path = None
         
         path_len = 0.0
         
@@ -217,8 +219,13 @@ class TfEval(object):
                         if last_pose is None:
                             
                             last_pose = np
+                            last_pose_path = np
                             
                             continue
+                        
+                        pdist = sqrt((np.pose.position.x - last_pose_path.pose.position.x)**2 + (np.pose.position.y - last_pose_path.pose.position.y)**2 + (np.pose.position.z - last_pose_path.pose.position.z)**2)
+                        path_len += pdist
+                        last_pose_path = np
                 
                         dpx = fabs(np.pose.position.x - last_pose.pose.position.x)
                         dpy = fabs(np.pose.position.y - last_pose.pose.position.y)

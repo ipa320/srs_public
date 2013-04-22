@@ -22,8 +22,8 @@
     <param name="start_time" value="$(arg start)"/>
     <param name="end_time" value="$(arg end)"/>
     <param name="frame_1" value="/map"/>
-    <param name="frame_2" value="/rviz_cam"/>    
-    <param name="output_file" value="rviz_camera_motion.csv"/>
+    <param name="frame_2" value="/base_link"/>    
+    <param name="output_file" value="robot_movement.csv"/>
   </node>
 
 </launch>

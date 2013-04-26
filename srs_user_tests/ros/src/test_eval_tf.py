@@ -338,13 +338,19 @@ class TfEval(object):
         tot = str(round(dur.to_sec(),2))
         ch = str(round(schanges.to_sec(),2))
         
-        rospy.loginfo('Real start: %s, real end: %s.',str(fstart_real.to_sec()),str(end_real.to_sec()))
-        rospy.loginfo('Total duration: ' + tot)
-        rospy.loginfo('Changes:' + ch + ', path length: ' + str(round(spath_len,2)))
+        if fstart_real != rospy.Time(0):
+        
+            rospy.loginfo('Real start: %s, real end: %s.',str(fstart_real.to_sec()),str(end_real.to_sec()))
+            rospy.loginfo('Total duration: ' + tot)
+            rospy.loginfo('Changes:' + ch + ', path length: ' + str(round(spath_len,2)))
+            
+            self.csv.write(self.id + ';' + self.exp + ';' + self.task + ';' + self.cond + ';' + str(fstart_real.to_sec()) + ';' + str(end_real.to_sec()) + ';' + ch + ';' + tot + ';' + str(round(spath_len,2)) + '\n')
+            
+        else:
+            
+            rospy.logwarn("Can't compute anything. One of the frames was probably not available.")
         
         
-        # self.csv.write('id;experiment;task;condition;start;end;changes;total')
-        self.csv.write(self.id + ';' + self.exp + ';' + self.task + ';' + self.cond + ';' + str(fstart_real.to_sec()) + ';' + str(end_real.to_sec()) + ';' + ch + ';' + tot + ';' + str(round(spath_len,2)) + '\n')
         self.csv.close()
         
         

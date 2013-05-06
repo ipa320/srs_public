@@ -21,7 +21,7 @@
   <group if="$(arg sim)">
   
     <include file="$(find cob_default_robot_config)/upload_param.launch" />
-    <include file="$(find cob_default_env_config)/upload_param.launch" />
+    <include file="$(find cob_default_env_config)/upload_object_locations.launch" />
 
     <param name="/use_sim_time" value="true" />
 

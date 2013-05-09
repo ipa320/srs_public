@@ -120,22 +120,25 @@ class TfEval(object):
         dur = self.end_time.to_sec() - self.start_time.to_sec()
         rospy.loginfo('Start time: %f, end time: %f (dur: %f)',round(self.start_time.to_sec(),2), round(self.end_time.to_sec(),2),round(dur,2))
         
+        self.change_occ_time = rospy.Time(0)
+        self.change_last_time = rospy.Time(0)
+        self.intgr = 0
+        self.change = False
+        self.last_path_len = 0.0
+        
         
     def readBag(self,start,end,start_pose=None):
         
-        change_occ_time = rospy.Time(0)
-        change_last_time = rospy.Time(0)
+        
         frames_avail = rospy.Time(0)
-        cnt = 0
-        intgr = 0
+
         frames_checked = False
-        change = False
+        
         started = False
         last_pose = start_pose
         last = None
 
         
-        last_path_len = 0.0
         
         np = None
         
@@ -208,8 +211,6 @@ class TfEval(object):
                     if (t - last >= self.timer_period): # we don't want to do calculations each for iteration
                         
                         last = t
-                        
-                        #self.pose.header.stamp = t - rospy.Duration(0.5)
                         self.pose.header.stamp = rospy.Time(0)
         
                         try:
@@ -234,10 +235,6 @@ class TfEval(object):
                         
                         pdist = sqrt((np.pose.position.x - last_pose.pose.position.x)**2 + (np.pose.position.y - last_pose.pose.position.y)**2 + (np.pose.position.z - last_pose.pose.position.z)**2)
                         path_len += pdist
-                
-                        #dpx = fabs(np.pose.position.x - last_pose.pose.position.x)
-                        #dpy = fabs(np.pose.position.y - last_pose.pose.position.y)
-                        #dpz = fabs(np.pose.position.z - last_pose.pose.position.z)
                         
                         (r, p, y) = tf.transformations.euler_from_quaternion([np.pose.orientation.x,
                                                                              np.pose.orientation.y,
@@ -256,38 +253,36 @@ class TfEval(object):
                         
                         
                         # if there is any change in position/orientation, lets do some stuff
-                        if path_len > last_path_len or dor > 0.0 or dop > 0.0 or doy > 0.0:
+                        if path_len > self.last_path_len or dor > 0.0 or dop > 0.0 or doy > 0.0:
                         
-                            if change==False:
+                            if self.change==False:
                                 
-                                change_occ_time = t
-                                change = True
-                                intgr = 0
+                                self.change_occ_time = t
+                                self.change = True
+                                self.intgr = 0
         
-                            cnt = 0
-                            intgr += 1
-                            change_last_time = t
+                            #cnt = 0
+                            self.intgr += 1
+                            self.change_last_time = t
                             
                             rotations += doy
                             last_pose = np
-                            last_path_len = path_len
+                            self.last_path_len = path_len
                             
                         else:
                             
-                            if change == True and cnt > 20:
+                            if self.change == True and (t-self.change_last_time) >= rospy.Duration(2.0): #cnt > 50: # 20
                                 
-                                if intgr > 1:
+                                if self.intgr > 1:
                                 
-                                    dt = change_last_time - change_occ_time
+                                    dt = self.change_last_time - self.change_occ_time
                                     changes += dt
                                     
-                                    if self.debug: #and dt != rospy.Duration(0.0):
-                                    
-                                        print str(dt.to_sec()) + '; ' + str(intgr)
+                                if self.debug: #and dt != rospy.Duration(0.0):
                                 
-                                change = False
+                                    print str(dt.to_sec()) + '; ' + str(self.intgr)
                                 
-                            cnt += 1
+                                self.change = False
                             
                         
         except rosbag.ROSBagFormatException:

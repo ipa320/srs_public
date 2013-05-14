@@ -33,7 +33,7 @@
   
     <rosparam command="load" ns="objects" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/object_locations.yaml"/>
     
-    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="bedroom_rail steckdosenleiste_schlafzimmer door_white_bedroom self_made_shelf self_made_shelf_boundings_bottomPlate self_made_shelf_boundings_leftPlate self_made_shelf_boundings_rightPlate self_made_shelf_boundings_topPlate self_made_shelf_boundings_backPlate Bett_Fjellse Nachttisch_Malm white_shelf2 korbstuhl Kommode_Malm Lampe_Arstid book_romantiker book_gardening book_heilkrauter book_pferdewitze book_death wooden_box swedish_pills black_vase_with_white_flower book_very_large picture_frame brown_basket blanket_colored bedroom_picture medication_prospan_empty artificial_plant boards_before_bedroom blaueTuere02"/>
+    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="door_white_bedroom white_shelf2 self_made_shelf self_made_shelf_boundings_bottomPlate self_made_shelf_boundings_leftPlate self_made_shelf_boundings_rightPlate self_made_shelf_boundings_topPlate self_made_shelf_boundings_backPlate bedroom_picture Bett_Fjellse_middlePillow Nachttisch_Malm Kommode_Malm korbstuhl book_death book_romantiker book_gardening book_heilkrauter book_pferdewitze picture_frame brown_basket blanket_colored"/>
     
   </group>
 

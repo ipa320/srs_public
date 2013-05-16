@@ -289,8 +289,8 @@ beer_hofbraeu:
 pizza_box:
   model: pizza_box
   model_type: urdf
-  position: [-5.83, 0.74, 0.88]
-  orientation: [0, 0, -0.872664626]
+  position: [-5.83, 0.8, 0.88]
+  orientation: [0, 0, -1.082104136]
 
 couch:
   model: couch

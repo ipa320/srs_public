@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="exp"/>
+  <arg name="task"/>
+  <arg name="cond"/>
+  <arg name="sim"/>
+
+  <group if="$(arg sim)">
+    
+    <!-- prepare robot for navigation tasks -->
+    <node pkg="srs_user_tests" type="prepare_robot_sim.py" name="prepare_robot_sim" output="screen"/>
+    
+    <rosparam command="load" ns="objects" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/object_locations.yaml"/>
+    
+    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args=" kitchen_plank kitekat corn_flakes_package spaghetti plastic_wrap flower_in_pot1 kitchen_big_cabinet white_vase_with_red_plant schrank_diamondback flower_in_pot2 carton_small carton_small2 carton_small3 carton_small4 carton_small5 carton_small6 Kommode_Malm_hoch SRS_divider1 SRS_divider2 SRS_divider3 SRS_divider4 SRS_divider5 SRS_divider6 SRS_divider7 SRS_divider8 expedit_white_ikea_shelf crate_small crate_small2 crate_large crate_large2 door_sill white_shelf couch wohnzimmertisch TV-Bank_Hemnes Tv_Samsung livingroom_closet metal_candleholder book_emancipation large_plant_big large_plant_small door_white_livingroom1 door_white_livingroom2 livingroom_clocks bedroom_rail steckdosenleiste_schlafzimmer door_white_bedroom white_shelf2 self_made_shelf self_made_shelf_boundings_bottomPlate self_made_shelf_boundings_leftPlate self_made_shelf_boundings_rightPlate self_made_shelf_boundings_topPlate self_made_shelf_boundings_backPlate bedroom_picture artificial_plant Bett_Fjellse_middlePillow Nachttisch_Malm Kommode_Malm korbstuhl book_death book_romantiker book_gardening book_heilkrauter book_pferdewitze picture_frame brown_basket blanket_colored wooden_box swedish_pills black_vase_with_white_flower Lampe_Arstid blaueTuere01 blaueTuere02 boards_before_bedroom locker_sliding_door1 locker_sliding_door2"/>
+    
+    
+  </group>
+
+ <include file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/$(arg cond)/cond.xml">
+     <!-- use noised pointcloud in simulation -->
+  	<arg name="points_in" if="$(arg sim)" value="/cam3d_throttled/depth_registered/points_noised"/>
+	  <arg name="sim" value="$(arg sim)"/>
+    <arg name="exp" value="$(arg exp)"/>
+    <arg name="task" value="$(arg task)"/>
+ </include>
+
+</launch>
+

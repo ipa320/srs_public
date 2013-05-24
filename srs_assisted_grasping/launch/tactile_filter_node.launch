@@ -4,8 +4,8 @@
   <!-- tactile filter node -->
   <node pkg="srs_assisted_grasping" name="tactile_filter_node" type="tactile_filter_node" respawn="false" output="screen">
     <!--rosparam command="load" file="$(find srs_assisted_grasping)/config/sdh_config.yaml" /-->
-    <remap from="tact_in" to="/sdh_controller/tactile_data"/>
-    <remap from="tact_out" to="/sdh_controller/tactile_data_filtered"/>
+    <remap from="tact_in" to="/dsa_controller/tactile_data"/>
+    <remap from="tact_out" to="/dsa_controller/tactile_data_filtered"/>
   </node>
     
 </launch>

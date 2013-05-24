@@ -166,7 +166,7 @@ crate_small:
 crate_small2:
   model: crate_small2
   model_type: urdf
-  position: [1.66, -1.535, 0.35]
+  position: [2, -1.35, 0.70]
   orientation: [0, 0, 0]
 
 crate_large:
@@ -289,8 +289,8 @@ beer_hofbraeu:
 pizza_box:
   model: pizza_box
   model_type: urdf
-  position: [-5.83, 0.8, 0.88]
-  orientation: [0, 0, -1.082104136]
+  position: [-5.83, 0.74, 0.88]
+  orientation: [0, 0, -0.872664626]
 
 couch:
   model: couch
@@ -367,7 +367,7 @@ large_plant_big:
 large_plant_small:
   model: large_plant_small
   model_type: urdf
-  position: [-5.87, 3.81, 0.0]
+  position: [-5.70, 4.45, 0.0]
   orientation: [0, 0, 0]
 
 stool_wood:

@@ -32,7 +32,7 @@
   
     <rosparam command="load" ns="objects" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/object_locations.yaml"/>
     
-    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="SRS_divider1 SRS_divider2 SRS_divider3 SRS_divider4 SRS_divider5 SRS_divider6 SRS_divider7 kitchen_plank schrank_diamondback kitchen_big_cabinet table_ikea_bjursta table_ikea Stuhl_borje Stuhl_borje2 orange_juice orange_juice2 green_tea green_tea2 apple_juice_box zwieback_alternative basmati_rice kitekat corn_flakes_package spaghetti plastic_wrap flower_in_pot1 flower_in_pot2 locker_sliding_door1 locker_sliding_door2"/>
+    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="kitchen_big_cabinet schrank_diamondback carton_small carton_small2 carton_small4 carton_small5 Kommode_Malm_hoch SRS_divider1 SRS_divider2 SRS_divider4 expedit_white_ikea_shelf crate_small crate_small2 crate_large crate_large2 SRS_divider3 table_ikea Stuhl_borje Stuhl_borje2 orange_juice orange_juice2 green_tea green_tea2 basmati_rice zwieback_alternative apple_juice_box"/>
     
   </group>
 

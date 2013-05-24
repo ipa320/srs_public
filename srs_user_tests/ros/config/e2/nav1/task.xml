@@ -13,7 +13,7 @@
     
     <rosparam command="load" ns="objects" file="$(find srs_user_tests)/ros/config/$(arg exp)/$(arg task)/object_locations.yaml"/>
     
-    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="wohnzimmertisch TV-Bank_Hemnes Tv_Samsung white_shelf couch livingroom_closet large_plant_big large_plant_small block_of_4_books_from_library book_emancipation metal_candleholder door_sill livingroom_clocks door_white_livingroom1 door_white_livingroom2 door_white_livingroom2 stool_wood glass_candleholder thick_candle dust_mop"/>
+    <node name="spawn_object" pkg="srs_user_tests" type="spawn_object.py" args="door_sill white_shelf block_of_4_books_from_library glass_candleholder thick_candle beer_hofbraeu pizza_box couch wohnzimmertisch dust_mop beer_rothaus pizza_box2 TV-Bank_Hemnes Tv_Samsung livingroom_closet metal_candleholder book_emancipation large_plant_big large_plant_small stool_wood styroprene large_carton_empty door_white_livingroom2 livingroom_clocks blue_white_tray sliding_door"/>
     
     
   </group>

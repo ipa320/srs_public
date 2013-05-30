@@ -9902,6 +9902,19 @@ Cf. Surface, whose instances are two-dimensional, intangible regions of space.</
     </owl:Class>
     
 
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Firstaidbox -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Firstaidbox">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Medicine"/>
+    </owl:Class>
+
+
+    <!-- http://www.srs-project.eu/ontologies/srs.owl#Benzydamine -->
+
+    <owl:Class rdf:about="http://www.srs-project.eu/ontologies/srs.owl#Benzydamine">
+        <rdfs:subClassOf rdf:resource="http://www.srs-project.eu/ontologies/srs.owl#Medicine"/>
+    </owl:Class>
+
 
     <!-- http://www.srs-project.eu/ontologies/srs.owl#book -->
 

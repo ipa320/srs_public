@@ -187,6 +187,75 @@
     
 
 
+    <!-- http://www.srs-project.eu/ontologies/ipa-apartment.owl#AntiGrippal0 -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#AntiGrippal0">
+        <rdf:type rdf:resource="&srs;anti_grippal"/>
+        <srs:yCoord rdf:datatype="&xsd;float">-1.21</srs:yCoord>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
+        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
+        <srs:zCoord rdf:datatype="&xsd;float">1.10</srs:zCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">1.5</srs:xCoord>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">28</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Anti Grippalen</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Anti Grippal</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Anti Grippal</srs:objectReadableName>
+        <srs:aboveOf rdf:resource="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Table0"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/ipa-apartment.owl#Benzydamine0 -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Benzydamine0">
+        <rdf:type rdf:resource="&srs;Benzydamine"/>
+        <srs:yCoord rdf:datatype="&xsd;float">-1.21</srs:yCoord>
+        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
+        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
+        <srs:zCoord rdf:datatype="&xsd;float">1.10</srs:zCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">1.5</srs:xCoord>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">31</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Benzydamine</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Benzydamine</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Benzydamine</srs:objectReadableName>
+        <srs:aboveOf rdf:resource="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Table0"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.srs-project.eu/ontologies/ipa-apartment.owl#Book0 -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Book0">
+        <rdf:type rdf:resource="&srs;Book"/>
+        <srs:yCoord rdf:datatype="&xsd;float">-1.21</srs:yCoord>
+        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
+        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
+        <srs:zCoord rdf:datatype="&xsd;float">1.10</srs:zCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">1.5</srs:xCoord>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">26</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Buch</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Anti Grippal</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Prenota</srs:objectReadableName>
+        <srs:aboveOf rdf:resource="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Table0"/>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://www.srs-project.eu/ontologies/ipa-apartment.owl#Bottle0 -->
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Bottle0">
@@ -229,7 +298,7 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Dishwasher0">
         <rdf:type rdf:resource="&srs;Dishwasher"/>
-        <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">-1.2</srs:xCoord>
         <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
@@ -251,11 +320,34 @@
     
 
 
+    <!-- http://www.srs-project.eu/ontologies/ipa-apartment.owl#FirstAidBox0 -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#FirstAidBox0">
+        <rdf:type rdf:resource="&srs;Firstaidbox"/>
+        <srs:yCoord rdf:datatype="&xsd;float">-1.21</srs:yCoord>
+        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
+        <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
+        <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
+        <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
+        <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
+        <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
+        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
+        <srs:zCoord rdf:datatype="&xsd;float">1.10</srs:zCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">1.5</srs:xCoord>
+        <srs:houseHoldObjectID rdf:datatype="&xsd;int">32</srs:houseHoldObjectID>
+        <srs:objectReadableName xml:lang="de">Erste-Hilfe-Box</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">First Aid Box</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">First Aid Box</srs:objectReadableName>
+        <srs:aboveOf rdf:resource="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Table0"/>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://www.srs-project.eu/ontologies/ipa-apartment.owl#Fridge0 -->
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Fridge0">
         <rdf:type rdf:resource="&srs;Refrigerator-Freezer"/>
-        <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">-1.2</srs:xCoord>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
@@ -292,21 +384,21 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#MilkBox0">
         <rdf:type rdf:resource="&srs;Milkbox"/>
-        <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
+        <srs:yCoord rdf:datatype="&xsd;float">-1.21</srs:yCoord>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:widthOfObject rdf:datatype="&xsd;float">0.06</srs:widthOfObject>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.1</srs:lengthOfObject>
-        <srs:yCoord rdf:datatype="&xsd;float">0.16</srs:yCoord>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.2</srs:heightOfObject>
-        <srs:zCoord rdf:datatype="&xsd;float">0.90</srs:zCoord>
         <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
+        <srs:zCoord rdf:datatype="&xsd;float">1.10</srs:zCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">1.5</srs:xCoord>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">9</srs:houseHoldObjectID>
         <srs:objectReadableName xml:lang="de">Milch</srs:objectReadableName>
         <srs:objectReadableName xml:lang="en">Milkbox</srs:objectReadableName>
         <srs:objectReadableName xml:lang="it">Latte</srs:objectReadableName>
-        <srs:aboveOf rdf:resource="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Dishwasher0"/>
+        <srs:aboveOf rdf:resource="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Table0"/>
     </owl:NamedIndividual>
     
 
@@ -316,7 +408,7 @@
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Oven0">
         <rdf:type rdf:resource="&srs;Oven"/>
         <srs:yCoord rdf:datatype="&xsd;float">-1.04</srs:yCoord>
-        <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">-1.2</srs:xCoord>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
@@ -409,7 +501,7 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Sink0">
         <rdf:type rdf:resource="&srs;Sink"/>
-        <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">-1.2</srs:xCoord>
         <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
         <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
         <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
@@ -435,19 +527,19 @@
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Sofa0">
         <rdf:type rdf:resource="&srs;Sofa-PieceOfFurniture"/>
+        <srs:qz rdf:datatype="&xsd;float">-0.7071</srs:qz>
         <srs:r3d rdf:datatype="&xsd;float">0</srs:r3d>
+        <srs:zCoord rdf:datatype="&xsd;float">0</srs:zCoord>
         <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
         <srs:p3d rdf:datatype="&xsd;float">0</srs:p3d>
-        <srs:qz rdf:datatype="&xsd;float">0</srs:qz>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
-        <srs:zCoord rdf:datatype="&xsd;float">0.225</srs:zCoord>
         <srs:heightOfObject rdf:datatype="&xsd;float">0.45</srs:heightOfObject>
         <srs:yCoord rdf:datatype="&xsd;float">0.595</srs:yCoord>
+        <srs:qu rdf:datatype="&xsd;float">0.7071</srs:qu>
         <srs:lengthOfObject rdf:datatype="&xsd;float">0.89</srs:lengthOfObject>
-        <srs:qu rdf:datatype="&xsd;float">1</srs:qu>
         <srs:widthOfObject rdf:datatype="&xsd;float">1.75</srs:widthOfObject>
-        <srs:xCoord rdf:datatype="&xsd;float">2.625</srs:xCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">3.6</srs:xCoord>
         <srs:houseHoldObjectID rdf:datatype="&xsd;int">5</srs:houseHoldObjectID>
         <srs:objectReadableName xml:lang="de">Sofa</srs:objectReadableName>
         <srs:objectReadableName xml:lang="en">Sofa in Living room</srs:objectReadableName>
@@ -462,7 +554,7 @@
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#Stove0">
         <rdf:type rdf:resource="&srs;StoveTop"/>
         <srs:yCoord rdf:datatype="&xsd;float">-0.54</srs:yCoord>
-        <srs:xCoord rdf:datatype="&xsd;float">-3.2</srs:xCoord>
+        <srs:xCoord rdf:datatype="&xsd;float">-1.2</srs:xCoord>
         <srs:qy rdf:datatype="&xsd;float">0</srs:qy>
         <srs:y3d rdf:datatype="&xsd;float">0</srs:y3d>
         <srs:qx rdf:datatype="&xsd;float">0</srs:qx>
@@ -583,10 +675,10 @@
     <!-- http://www.srs-project.eu/ontologies/ipa-apartment.owl#new_kitchen -->
 
     <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#new_kitchen">
-        <srs:xCoordinate rdf:datatype="&xsd;float">-2.14</srs:xCoordinate>
-        <srs:yCoordinate rdf:datatype="&xsd;float">0</srs:yCoordinate>
-        <srs:orientationTheta rdf:datatype="&xsd;float">0</srs:orientationTheta>
-        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[-2.14 0.0 0]</inSRSCoordinateFormat>
+        <srs:yCoordinate rdf:datatype="&xsd;float">-1.83</srs:yCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">-3.14</srs:orientationTheta>
+        <srs:xCoordinate rdf:datatype="&xsd;float">0.05</srs:xCoordinate>
+        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[0.05 -1.83 -3.14]</inSRSCoordinateFormat>
         <srs:objectReadableName xml:lang="de">Kuche</srs:objectReadableName>
         <srs:objectReadableName xml:lang="en">Kitchen </srs:objectReadableName>
         <srs:objectReadableName xml:lang="it">cucina</srs:objectReadableName>
@@ -606,6 +698,21 @@
         <srs:objectReadableName xml:lang="de">Benutzer (Bestellen Position)</srs:objectReadableName>
         <srs:objectReadableName xml:lang="en">User (Order Position)</srs:objectReadableName>
         <srs:objectReadableName xml:lang="it">utente (ordine di posizione)</srs:objectReadableName>
+        <srs:insideOf rdf:resource="http://www.srs-project.eu/ontologies/ipa-apartment.owl#ipa-apartment"/>
+    </owl:NamedIndividual>  
+
+
+    <!-- http://www.srs-project.eu/ontologies/ipa-apartment.owl#table_side -->
+
+    <owl:NamedIndividual rdf:about="http://www.srs-project.eu/ontologies/ipa-apartment.owl#table_side">
+        <rdf:type rdf:resource="&srs;Point2D"/>
+        <srs:yCoordinate rdf:datatype="&xsd;float">-1.83</srs:yCoordinate>
+        <srs:orientationTheta rdf:datatype="&xsd;float">-3.14</srs:orientationTheta>
+        <srs:xCoordinate rdf:datatype="&xsd;float">0.05</srs:xCoordinate>
+        <inSRSCoordinateFormat rdf:datatype="&rdfs;Literal">[0.05 -1.83 -3.14]</inSRSCoordinateFormat>
+        <srs:objectReadableName xml:lang="de">Weiter zu Tisch</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="en">Next to table</srs:objectReadableName>
+        <srs:objectReadableName xml:lang="it">Accanto al tavolo</srs:objectReadableName>
         <srs:insideOf rdf:resource="http://www.srs-project.eu/ontologies/ipa-apartment.owl#ipa-apartment"/>
     </owl:NamedIndividual>
 </rdf:RDF>
